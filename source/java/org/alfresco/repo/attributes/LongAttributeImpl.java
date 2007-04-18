@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import org.alfresco.repo.avm.AVMDAOs;
+
 /**
  * Long valued attribute.
  * @author britt
@@ -35,9 +37,20 @@ public class LongAttributeImpl extends AttributeImpl implements LongAttribute
     
     private long fValue;
     
+    public LongAttributeImpl()
+    {
+    }
+    
     public LongAttributeImpl(long value)
     {
         fValue = value;
+        AVMDAOs.Instance().fAttributeDAO.save(this);
+    }
+    
+    public LongAttributeImpl(LongAttribute attr)
+    {
+        fValue = attr.getLongValue();
+        AVMDAOs.Instance().fAttributeDAO.save(this);
     }
     
     /* (non-Javadoc)

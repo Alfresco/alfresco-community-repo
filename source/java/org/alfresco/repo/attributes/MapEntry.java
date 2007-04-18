@@ -54,4 +54,10 @@ public interface MapEntry
      * @return The value attribute.
      */
     public Attribute getAttribute();
+    
+    /**
+     * Set the value of this attribute.
+     * @param attr
+     */
+    public void setAttribute(Attribute attr);
 }

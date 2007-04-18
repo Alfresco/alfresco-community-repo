@@ -25,33 +25,25 @@
 
 package org.alfresco.repo.attributes;
 
-import org.alfresco.repo.avm.AVMDAOs;
-
 /**
- * Persistent implementation of String valued attribute.
+ * Value based implementation of a double attribute.
  * @author britt
  */
-public class StringAttributeImpl extends AttributeImpl implements
-        StringAttribute
+public class DoubleAttributeValue extends AttributeValue implements
+        DoubleAttribute
 {
-    private static final long serialVersionUID = -2877268541212029648L;
+    private static final long serialVersionUID = 1710813761810342910L;
 
-    private String fValue;
+    private double fData;
     
-    public StringAttributeImpl()
+    public DoubleAttributeValue(double value)
     {
+        fData = value;
     }
     
-    public StringAttributeImpl(String value)
+    public DoubleAttributeValue(DoubleAttribute attr)
     {
-        fValue = value;
-        AVMDAOs.Instance().fAttributeDAO.save(this);
-    }
-
-    public StringAttributeImpl(StringAttribute attr)
-    {
-        fValue = attr.getStringValue();
-        AVMDAOs.Instance().fAttributeDAO.save(this);
+        fData = attr.getDoubleValue();
     }
     
     /* (non-Javadoc)
@@ -59,24 +51,24 @@ public class StringAttributeImpl extends AttributeImpl implements
      */
     public Type getType()
     {
-        return Type.STRING;
+        return Type.DOUBLE;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#getStringValue()
+     * @see org.alfresco.repo.attributes.AttributeValue#getDoubleValue()
      */
     @Override
-    public String getStringValue()
+    public double getDoubleValue()
     {
-        return fValue;
+        return fData;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#setStringValue(java.lang.String)
+     * @see org.alfresco.repo.attributes.AttributeValue#setDoubleValue(double)
      */
     @Override
-    public void setStringValue(String value)
+    public void setDoubleValue(double value)
     {
-        fValue = value;
+        fData = value;
     }
 }

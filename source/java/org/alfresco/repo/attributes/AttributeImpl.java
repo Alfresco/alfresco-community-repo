@@ -42,6 +42,11 @@ public abstract class AttributeImpl implements Attribute
     private long fID;
     
     /**
+     * The optimistic locking version.
+     */
+    private long fVersion;
+    
+    /**
      * Base constructor.
      */
     protected AttributeImpl()
@@ -58,12 +63,22 @@ public abstract class AttributeImpl implements Attribute
         return fID;
     }
     
+    public void setVersion(long version)
+    {
+        fVersion = version;
+    }
+    
+    public long getVersion()
+    {
+        return fVersion;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.attributes.Value#clear()
      */
     public void clear() 
     {
-        throw new AtrributeMethodNotImplemented("Not ListValue or MapValue");
+        throw new AttributeMethodNotImplemented("Not ListValue or MapValue");
     }
 
     /* (non-Javadoc)
@@ -71,7 +86,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public Set<Entry<String, Attribute>> entrySet() 
     {
-        throw new AtrributeMethodNotImplemented("Not MapValue");
+        throw new AttributeMethodNotImplemented("Not MapValue");
     }
 
     /* (non-Javadoc)
@@ -79,7 +94,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public Attribute get(String key) 
     {
-        throw new AtrributeMethodNotImplemented("Not MapValue");
+        throw new AttributeMethodNotImplemented("Not MapValue");
     }
 
     /* (non-Javadoc)
@@ -87,7 +102,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public byte[] getBlobValue() 
     {
-        throw new AtrributeMethodNotImplemented("Not BlobValue");
+        throw new AttributeMethodNotImplemented("Not BlobValue");
     }
 
     /* (non-Javadoc)
@@ -95,7 +110,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public double getDoubleValue() 
     {
-        throw new AtrributeMethodNotImplemented("Not DoubleValue");
+        throw new AttributeMethodNotImplemented("Not DoubleValue");
     }
 
     /* (non-Javadoc)
@@ -103,7 +118,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public int getIntValue() 
     {
-        throw new AtrributeMethodNotImplemented("Not IntValue");
+        throw new AttributeMethodNotImplemented("Not IntValue");
     }
 
     /* (non-Javadoc)
@@ -111,7 +126,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public long getLongValue() 
     {
-        throw new AtrributeMethodNotImplemented("Not LongValue");
+        throw new AttributeMethodNotImplemented("Not LongValue");
     }
 
     /* (non-Javadoc)
@@ -119,7 +134,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public Serializable getSerializableValue() 
     {
-        throw new AtrributeMethodNotImplemented("Not SerializableValue");
+        throw new AttributeMethodNotImplemented("Not SerializableValue");
     }
 
     /* (non-Javadoc)
@@ -127,7 +142,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public String getStringValue() 
     {
-        throw new AtrributeMethodNotImplemented("Not StringValue");
+        throw new AttributeMethodNotImplemented("Not StringValue");
     }
 
     /* (non-Javadoc)
@@ -135,7 +150,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public Set<String> keySet() 
     {
-        throw new AtrributeMethodNotImplemented("Not MapValue");
+        throw new AttributeMethodNotImplemented("Not MapValue");
     }
 
     /* (non-Javadoc)
@@ -143,7 +158,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public void put(String key, Attribute value) 
     {
-        throw new AtrributeMethodNotImplemented("Not MapValue");
+        throw new AttributeMethodNotImplemented("Not MapValue");
     }
 
     /* (non-Javadoc)
@@ -151,7 +166,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public void remove(String key) 
     {
-        throw new AtrributeMethodNotImplemented("Not MapValue");    
+        throw new AttributeMethodNotImplemented("Not MapValue");    
     }
 
     /* (non-Javadoc)
@@ -159,7 +174,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public void setBlobValue(byte[] value) 
     {
-        throw new AtrributeMethodNotImplemented("Not BlobValue");
+        throw new AttributeMethodNotImplemented("Not BlobValue");
     }
 
     /* (non-Javadoc)
@@ -167,7 +182,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public void setDoubleValue(double value) 
     {
-        throw new AtrributeMethodNotImplemented("Not DoubleValue");
+        throw new AttributeMethodNotImplemented("Not DoubleValue");
     }
 
     /* (non-Javadoc)
@@ -175,7 +190,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public void setIntValue(int value) 
     {
-        throw new AtrributeMethodNotImplemented("Not IntValue");
+        throw new AttributeMethodNotImplemented("Not IntValue");
     }
 
     /* (non-Javadoc)
@@ -183,7 +198,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public void setLongValue(long value) 
     {
-        throw new AtrributeMethodNotImplemented("Not LongValue");
+        throw new AttributeMethodNotImplemented("Not LongValue");
     }
 
     /* (non-Javadoc)
@@ -191,7 +206,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public void setSerializableValue(Serializable value) 
     {
-        throw new AtrributeMethodNotImplemented("Not SerializableValue");
+        throw new AttributeMethodNotImplemented("Not SerializableValue");
     }
 
     /* (non-Javadoc)
@@ -199,7 +214,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public void setStringValue(String value) 
     {
-        throw new AtrributeMethodNotImplemented("Not StringValue");
+        throw new AttributeMethodNotImplemented("Not StringValue");
     }
 
     /* (non-Javadoc)
@@ -207,7 +222,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public Collection<Attribute> values() 
     {
-        throw new AtrributeMethodNotImplemented("Not MapValue");
+        throw new AttributeMethodNotImplemented("Not MapValue");
     }
 
     /* (non-Javadoc)
@@ -215,7 +230,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public boolean getBooleanValue() 
     {
-        throw new AtrributeMethodNotImplemented("Not BooleanValue");
+        throw new AttributeMethodNotImplemented("Not BooleanValue");
     }
 
     /* (non-Javadoc)
@@ -223,7 +238,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public byte getByteValue() 
     {
-        throw new AtrributeMethodNotImplemented("Not ByteValue");
+        throw new AttributeMethodNotImplemented("Not ByteValue");
     }
 
     /* (non-Javadoc)
@@ -231,7 +246,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public float getFloatValue() 
     {
-        throw new AtrributeMethodNotImplemented("Not FloatValue");
+        throw new AttributeMethodNotImplemented("Not FloatValue");
     }
 
     /* (non-Javadoc)
@@ -239,7 +254,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public short getShortValue() 
     {
-        throw new AtrributeMethodNotImplemented("Not ShortValue");
+        throw new AttributeMethodNotImplemented("Not ShortValue");
     }
 
     /* (non-Javadoc)
@@ -247,7 +262,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public void setBooleanValue(boolean value) 
     {
-        throw new AtrributeMethodNotImplemented("Not BooleanValue");
+        throw new AttributeMethodNotImplemented("Not BooleanValue");
     }
 
     /* (non-Javadoc)
@@ -255,7 +270,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public void setByteValue(byte value) 
     {
-        throw new AtrributeMethodNotImplemented("Not ByteValue");
+        throw new AttributeMethodNotImplemented("Not ByteValue");
     }
 
     /* (non-Javadoc)
@@ -263,7 +278,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public void setFloatValue(float value) 
     {
-        throw new AtrributeMethodNotImplemented("Not FloatValue");
+        throw new AttributeMethodNotImplemented("Not FloatValue");
     }
 
     /* (non-Javadoc)
@@ -271,6 +286,6 @@ public abstract class AttributeImpl implements Attribute
      */
     public void setShortValue(short value) 
     {
-        throw new AtrributeMethodNotImplemented("Not ShortValue");
+        throw new AttributeMethodNotImplemented("Not ShortValue");
     }
 }

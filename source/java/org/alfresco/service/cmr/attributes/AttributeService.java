@@ -47,13 +47,13 @@ public interface AttributeService
      * @param name The name of the Attribute.
      * @param value The value to set.
      */
-    public void setAttribute(String path, Attribute value);
+    public void setAttribute(String path, String name, Attribute value);
     
     /**
      * Remove an Attribute.
      * @param name The name of the Attribute.
      */
-    public void removeAttribute(String path);
+    public void removeAttribute(String path, String name);
 
     /**
      * Query for a list of attributes which are contained in the container

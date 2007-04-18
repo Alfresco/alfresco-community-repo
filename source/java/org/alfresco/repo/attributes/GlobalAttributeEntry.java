@@ -40,4 +40,9 @@ public interface GlobalAttributeEntry
      * Get the Attribute.
      */
     public Attribute getAttribute();
+    
+    /**
+     * Set the Attribute.
+     */
+    public void setAttribute(Attribute attr);
 }

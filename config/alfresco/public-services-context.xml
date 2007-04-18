@@ -890,6 +890,51 @@
         </property>
     </bean>
 
+	<!-- Attribute Service -->
+		
+    <!-- Read transaction advisor for attribute service. -->
+    <bean id="attributeServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingReadTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+            	<value>getAttributes</value>
+            	<value>query</value>
+            </list>
+        </property>
+    </bean>
+	
+	<!-- Write transaction advisor for attribute service. -->
+    <bean id="attributeServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+            	<value>setAttribute</value>
+            	<value>removeAttribute</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="AttributeService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.service.cmr.attributes.AttributeService</value>
+            </list>
+        </property>
+        <property name="targetName">
+            <value>attributeService</value>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <value>attributeServiceWriteTxnAdvisor</value>
+                <value>attributeServiceReadTxnAdvisor</value>
+            </list>
+        </property>
+    </bean>
+
 	 <!-- Deployment Service. -->
 	
 	 <bean id="deploymentService" class="org.alfresco.repo.deploy.DeploymentServiceImpl">

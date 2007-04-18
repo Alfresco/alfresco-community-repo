@@ -27,7 +27,7 @@ public interface GlobalAttributeEntryDAO
     /**
      * Get an attribute by name.
      * @param name The name of the attribute.
-     * @return The attribute or null.
+     * @return The entry or null.
      */
-    public Attribute get(String name);
+    public GlobalAttributeEntry get(String name);
 }

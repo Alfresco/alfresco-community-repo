@@ -119,6 +119,12 @@
 		<property name="avmAspectNameDAO">
 			<ref bean="avmAspectNameDAO"/>
 		</property>
+		<property name="attributeDAO">
+		    <ref bean="attributeDAO"/>
+		</property>
+		<property name="mapEntryDAO">
+		    <ref bean="mapEntryDAO"/>
+		</property>
 	</bean>
 	
 	<bean id="lookupCache" class="org.alfresco.repo.avm.LookupCache">

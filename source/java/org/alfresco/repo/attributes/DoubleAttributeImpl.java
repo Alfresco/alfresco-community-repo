@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import org.alfresco.repo.avm.AVMDAOs;
+
 /**
  * @author britt
  *
@@ -35,9 +37,20 @@ public class DoubleAttributeImpl extends AttributeImpl implements Attribute
 
     private double fValue;
     
+    public DoubleAttributeImpl()
+    {
+    }
+
     public DoubleAttributeImpl(double value)
     {
         fValue = value;   
+        AVMDAOs.Instance().fAttributeDAO.save(this);
+    }
+    
+    public DoubleAttributeImpl(DoubleAttribute attr)
+    {
+        fValue = attr.getDoubleValue();
+        AVMDAOs.Instance().fAttributeDAO.save(this);
     }
     
     /* (non-Javadoc)

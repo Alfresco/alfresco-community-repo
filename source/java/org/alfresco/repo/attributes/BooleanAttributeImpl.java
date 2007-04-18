@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import org.alfresco.repo.avm.AVMDAOs;
+
 /**
  * @author britt
  *
@@ -35,6 +37,22 @@ public class BooleanAttributeImpl extends AttributeImpl implements
     private static final long serialVersionUID = 8483440613101900682L;
 
     private boolean fValue;
+
+    public BooleanAttributeImpl()
+    {
+    }
+
+    public BooleanAttributeImpl(boolean value)
+    {
+        fValue = value;
+        AVMDAOs.Instance().fAttributeDAO.save(this);
+    }
+    
+    public BooleanAttributeImpl(BooleanAttribute attr)
+    {
+        fValue = attr.getBooleanValue();
+        AVMDAOs.Instance().fAttributeDAO.save(this);
+    }
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.attributes.AttributeImpl#getBooleanValue()
@@ -44,7 +62,7 @@ public class BooleanAttributeImpl extends AttributeImpl implements
     {
         return fValue;
     }
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.attributes.AttributeImpl#setBooleanValue(boolean)
      */

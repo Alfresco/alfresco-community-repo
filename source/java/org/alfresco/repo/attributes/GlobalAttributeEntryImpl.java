@@ -35,6 +35,10 @@ public class GlobalAttributeEntryImpl implements GlobalAttributeEntry
     
     private Attribute fAttribute;
     
+    public GlobalAttributeEntryImpl()
+    {
+    }
+    
     public GlobalAttributeEntryImpl(String name, Attribute attr)
     {
         fName = name;

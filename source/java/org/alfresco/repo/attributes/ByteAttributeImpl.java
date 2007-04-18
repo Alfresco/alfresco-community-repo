@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import org.alfresco.repo.avm.AVMDAOs;
+
 /**
  * A Byte Attribute.
  * @author britt
@@ -35,11 +37,22 @@ public class ByteAttributeImpl extends AttributeImpl implements ByteAttribute
 
     private byte fValue;
     
+    public ByteAttributeImpl()
+    {
+    }
+
     public ByteAttributeImpl(byte value)
     {
         fValue = value;
+        AVMDAOs.Instance().fAttributeDAO.save(this);
     }
 
+    public ByteAttributeImpl(ByteAttribute attr)
+    {
+        fValue = attr.getByteValue();
+        AVMDAOs.Instance().fAttributeDAO.save(this);
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.attributes.Attribute#getType()
      */

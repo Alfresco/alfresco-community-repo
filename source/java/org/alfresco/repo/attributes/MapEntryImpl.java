@@ -39,6 +39,10 @@ public class MapEntryImpl implements MapEntry
     
     private Attribute fAttribute;
     
+    public MapEntryImpl()
+    {
+    }
+    
     public MapEntryImpl(MapAttribute map,
                         String key,
                         Attribute attribute)

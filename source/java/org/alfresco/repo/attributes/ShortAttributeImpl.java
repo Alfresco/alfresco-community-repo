@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import org.alfresco.repo.avm.AVMDAOs;
+
 /**
  * A short attribute.
  * @author britt
@@ -35,9 +37,20 @@ public class ShortAttributeImpl extends AttributeImpl implements ShortAttribute
 
     private short fValue;
     
+    public ShortAttributeImpl()
+    {
+    }
+    
     public ShortAttributeImpl(short value)
     {
         fValue = value;
+        AVMDAOs.Instance().fAttributeDAO.save(this);
+    }
+    
+    public ShortAttributeImpl(ShortAttribute attr)
+    {
+        fValue = attr.getShortValue();
+        AVMDAOs.Instance().fAttributeDAO.save(this);
     }
     
     /* (non-Javadoc)

@@ -17,49 +17,43 @@
         <!-- A boolean valued attribute -->
         <subclass name="BooleanAttributeImpl" proxy="BooleanAttribute" lazy="true"
                   discriminator-value="O">
-            <property name="booleanValue" column="bool_value" type="boolean" index="attribute_bool_index"/>
+            <property name="booleanValue" column="bool_value" type="boolean"/>
         </subclass>
         <!-- A byte valued attribute -->
         <subclass name="ByteAttributeImpl" proxy="ByteAttribute" lazy="true"
                   discriminator-value="Y">
-            <property name="byteValue" column="byte_value" type="byte" index="attribute_byte_index"/>
+            <property name="byteValue" column="byte_value" type="byte"/>
         </subclass>
         <!-- A short valued attribute -->
         <subclass name="ShortAttributeImpl" proxy="ShortAttribute" lazy="true"
                   discriminator-value="H">
-            <property name="shortValue" column="short_value" type="short" index="attribute_short_index"/>
+            <property name="shortValue" column="short_value" type="short"/>
         </subclass>        
         <!-- An integer valued attribute. -->
         <subclass name="IntAttributeImpl" proxy="IntAttribute" lazy="true"
                   discriminator-value="I">
-            <property name="intValue" column="int_value" type="int" index="attribute_int_index"/>
+            <property name="intValue" column="int_value" type="int"/>
         </subclass>
         <!-- A long valued attribute -->
         <subclass name="LongAttributeImpl" proxy="LongAttribute" lazy="true"
                   discriminator-value="L">
-            <property name="longValue" column="long_value" type="long" index="attribute_long_index"/>
+            <property name="longValue" column="long_value" type="long"/>
         </subclass>
         <!-- A float valued attribute -->
         <subclass name="FloatAttributeImpl" proxy="FloatAttribute" lazy="true"
                   discriminator-value="F">
-            <property name="floatValue" column="float_value" type="float" index="attribute_float_index"/>
+            <property name="floatValue" column="float_value" type="float"/>
         </subclass>        
         <!-- A double valued attribute -->
         <subclass name="DoubleAttributeImpl" proxy="DoubleAttribute" lazy="true"
                   discriminator-value="D">
-            <property name="doubleValue" column="double_value" type="double" index="attribute_double_index"/>
+            <property name="doubleValue" column="double_value" type="double"/>
         </subclass>
         <!-- A string valued attribute -->
         <subclass name="StringAttributeImpl" proxy="StringAttribute" lazy="true"
                   discriminator-value="S">
             <property name="stringValue" column="string_value" type="string"
-                      length="512" index="attribute_string_index(64)"/>
-        </subclass>
-        <!-- A blob valued attribute -->
-        <subclass name="BlobAttributeImpl" proxy="BlobAttribute" lazy="true"
-                  discriminator-value="B">
-            <property name="blobValue" column="blob_value" type="blob"
-                      length="8192"/>
+                      length="512"/>
         </subclass>
         <!-- A serializable attribute -->
         <subclass name="SerializableAttributeImpl" proxy="SerializableAttribute" lazy="true"
@@ -72,19 +66,19 @@
                   discriminator-value="M">
         </subclass>
     </class>
-    <class name="GlobalAttributeEntryImpl" proxy="GlobalAttributeEntry">
+    <class name="GlobalAttributeEntryImpl" proxy="GlobalAttributeEntry" table="alf_global_attributes">
         <cache usage="read-write"/>
         <id name="name" type="string" length="160"/>
         <many-to-one class="AttributeImpl" name="attribute" unique="true"/>
     </class>
-    <class name="MapEntryImpl" proxy="MapEntry" lazy="false">
+    <class name="MapEntryImpl" proxy="MapEntry" lazy="false" table="alf_map_attribute_entries">
         <cache usage="read-write"/>
         <id name="id" column="id" type="long">
             <generator class="native"/>
         </id>
         <natural-id>
             <many-to-one class="MapAttributeImpl" name="map" column="map_id"/>
-            <property name="key" type="string" length="160" column="key" index="map_key_index"/>
+            <property name="key" type="string" length="160" column="mkey" index="map_key_index"/>
         </natural-id>
         <many-to-one class="AttributeImpl" name="attribute" column="attribute_id"/>
     </class>        

@@ -25,33 +25,24 @@
 
 package org.alfresco.repo.attributes;
 
-import org.alfresco.repo.avm.AVMDAOs;
-
 /**
- * Persistent implementation of String valued attribute.
+ * Value based implementation of byte attribute.
  * @author britt
  */
-public class StringAttributeImpl extends AttributeImpl implements
-        StringAttribute
+public class ByteAttributeValue extends AttributeValue implements ByteAttribute
 {
-    private static final long serialVersionUID = -2877268541212029648L;
+    private static final long serialVersionUID = -5011945743563985072L;
 
-    private String fValue;
+    private byte fData;
     
-    public StringAttributeImpl()
+    public ByteAttributeValue(byte value)
     {
+        fData = value;
     }
     
-    public StringAttributeImpl(String value)
+    public ByteAttributeValue(ByteAttribute attr)
     {
-        fValue = value;
-        AVMDAOs.Instance().fAttributeDAO.save(this);
-    }
-
-    public StringAttributeImpl(StringAttribute attr)
-    {
-        fValue = attr.getStringValue();
-        AVMDAOs.Instance().fAttributeDAO.save(this);
+        fData = attr.getByteValue();
     }
     
     /* (non-Javadoc)
@@ -59,24 +50,24 @@ public class StringAttributeImpl extends AttributeImpl implements
      */
     public Type getType()
     {
-        return Type.STRING;
+        return Type.BYTE;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#getStringValue()
+     * @see org.alfresco.repo.attributes.AttributeValue#getByteValue()
      */
     @Override
-    public String getStringValue()
+    public byte getByteValue()
     {
-        return fValue;
+        return fData;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#setStringValue(java.lang.String)
+     * @see org.alfresco.repo.attributes.AttributeValue#setByteValue(byte)
      */
     @Override
-    public void setStringValue(String value)
+    public void setByteValue(byte value)
     {
-        fValue = value;
+        fData = value;
     }
 }

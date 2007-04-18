@@ -20,23 +20,57 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 
 package org.alfresco.repo.attributes;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import java.io.Serializable;
 
 /**
- * For unimplemented attribute methods.
+ * Value based implemenation of a Serializable attribute.
  * @author britt
  */
-public class ValueMethodNotImplementedException extends AlfrescoRuntimeException
+public class SerializableAttributeValue extends AttributeValue implements
+        SerializableAttribute
 {
-    private static final long serialVersionUID = -7167699355451456957L;
+    private static final long serialVersionUID = 7899458940760116171L;
 
-    public ValueMethodNotImplementedException(String message)
+    private Serializable fData;
+    
+    public SerializableAttributeValue(Serializable value)
     {
-        super(message);
+        fData = value;
+    }
+    
+    public SerializableAttributeValue(SerializableAttribute attr)
+    {
+        fData = attr.getSerializableValue();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.Attribute#getType()
+     */
+    public Type getType()
+    {
+        return Type.SERIALIZABLE;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.AttributeValue#getSerializableValue()
+     */
+    @Override
+    public Serializable getSerializableValue()
+    {
+        return fData;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.AttributeValue#setSerializableValue(java.io.Serializable)
+     */
+    @Override
+    public void setSerializableValue(Serializable value)
+    {
+        fData = value;
     }
 }

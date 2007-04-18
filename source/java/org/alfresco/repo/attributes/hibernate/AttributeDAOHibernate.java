@@ -25,10 +25,14 @@
 
 package org.alfresco.repo.attributes.hibernate;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.repo.attributes.AttributeDAO;
+import org.alfresco.repo.attributes.MapAttribute;
+import org.alfresco.repo.attributes.MapEntryDAO;
+import org.alfresco.repo.attributes.Attribute.Type;
 import org.alfresco.service.cmr.attributes.AttrQuery;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -39,11 +43,23 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 public class AttributeDAOHibernate extends HibernateDaoSupport implements
         AttributeDAO
 {
+    private MapEntryDAO fMapEntryDAO;
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.attributes.AttributeDAO#delete(org.alfresco.repo.attributes.Attribute)
      */
     public void delete(Attribute attr)
     {
+        if (attr.getType() == Type.MAP)
+        {
+            MapAttribute map = (MapAttribute)attr;
+            Collection<Attribute> attrs = map.values();
+            fMapEntryDAO.delete(map);
+            for (Attribute subAttr : attrs)
+            {
+                delete(subAttr);
+            }
+        }
         getSession().delete(attr);
     }
 

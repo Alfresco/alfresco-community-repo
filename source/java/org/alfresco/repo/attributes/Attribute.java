@@ -46,7 +46,6 @@ public interface Attribute extends Serializable
         FLOAT,
         DOUBLE,
         STRING,
-        BLOB,
         SERIALIZABLE,
         MAP
     };

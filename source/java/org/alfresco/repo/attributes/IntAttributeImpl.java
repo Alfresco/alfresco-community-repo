@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import org.alfresco.repo.avm.AVMDAOs;
+
 /**
  * An integer attribute.
  * @author britt
@@ -35,9 +37,20 @@ public class IntAttributeImpl extends AttributeImpl implements IntAttribute
 
     private int fValue;
     
+    public IntAttributeImpl()
+    {
+    }
+    
     public IntAttributeImpl(int value)
     {
         fValue = value;
+        AVMDAOs.Instance().fAttributeDAO.save(this);
+    }
+    
+    public IntAttributeImpl(IntAttribute attr)
+    {
+        fValue = attr.getIntValue();
+        AVMDAOs.Instance().fAttributeDAO.save(this);
     }
     
     /* (non-Javadoc)

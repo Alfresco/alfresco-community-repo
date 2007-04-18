@@ -57,11 +57,9 @@ public class GlobalAttributeEntryDAOHibernate extends HibernateDaoSupport
     /* (non-Javadoc)
      * @see org.alfresco.repo.attributes.GlobalAttributeEntryDAO#get(java.lang.String)
      */
-    public Attribute get(String name)
+    public GlobalAttributeEntry get(String name)
     {
-        GlobalAttributeEntry entry =
-            (GlobalAttributeEntry)getSession().get(GlobalAttributeEntryImpl.class, name);
-        return entry.getAttribute();
+        return (GlobalAttributeEntry)getSession().get(GlobalAttributeEntryImpl.class, name);
     }
 
     /* (non-Javadoc)

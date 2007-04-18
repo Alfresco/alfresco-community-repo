@@ -20,63 +20,23 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing
+ * http://www.alfresco.com/legal/licensing"
  */
 
 package org.alfresco.repo.attributes;
 
-import org.alfresco.repo.avm.AVMDAOs;
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * Persistent implementation of String valued attribute.
+ * For unimplemented attribute methods.
  * @author britt
  */
-public class StringAttributeImpl extends AttributeImpl implements
-        StringAttribute
+public class AttributeMethodNotImplemented extends AlfrescoRuntimeException
 {
-    private static final long serialVersionUID = -2877268541212029648L;
+    private static final long serialVersionUID = -7167699355451456957L;
 
-    private String fValue;
-    
-    public StringAttributeImpl()
+    public AttributeMethodNotImplemented(String message)
     {
-    }
-    
-    public StringAttributeImpl(String value)
-    {
-        fValue = value;
-        AVMDAOs.Instance().fAttributeDAO.save(this);
-    }
-
-    public StringAttributeImpl(StringAttribute attr)
-    {
-        fValue = attr.getStringValue();
-        AVMDAOs.Instance().fAttributeDAO.save(this);
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
-    public Type getType()
-    {
-        return Type.STRING;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#getStringValue()
-     */
-    @Override
-    public String getStringValue()
-    {
-        return fValue;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#setStringValue(java.lang.String)
-     */
-    @Override
-    public void setStringValue(String value)
-    {
-        fValue = value;
+        super(message);
     }
 }

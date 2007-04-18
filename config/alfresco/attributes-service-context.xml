@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
+	"http://www.springframework.org/dtd/spring-beans.dtd">
+	
+<beans>
+
+    <bean id="attributeService" class="org.alfresco.repo.attributes.AttributeServiceImpl">
+        <property name="attributeConverter">
+            <ref bean="attributeConverter"/>
+        </property>
+        <property name="globalAttributeEntryDao">
+            <ref bean="globalAttributeEntryDAO"/>
+        </property>
+    </bean>
+    
+    <bean id="attributeConverter" class="org.alfresco.repo.attributes.AttributeConverter"/>
+    
+    <bean id="attributeDAO" class="org.alfresco.repo.attributes.hibernate.AttributeDAOHibernate">
+        <property name="sessionFactory">
+            <ref bean="sessionFactory"/>
+        </property>
+    </bean>
+
+    <bean id="globalAttributeEntryDAO" class="org.alfresco.repo.attributes.hibernate.GlobalAttributeEntryDAOHibernate">
+        <property name="sessionFactory">
+            <ref bean="sessionFactory"/>
+        </property>
+    </bean>
+
+	<bean id="mapEntryDAO" class="org.alfresco.repo.attributes.hibernate.MapEntryDAOHibernate">
+	    <property name="sessionFactory">
+	        <ref bean="sessionFactory"/>
+	    </property>
+	</bean>
+
+</beans>

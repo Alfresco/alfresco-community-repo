@@ -34,16 +34,89 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.AVMDAOs;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
 
 /**
+ * Persistent map attribute implementation.
  * @author britt
- *
  */
 public class MapAttributeImpl extends AttributeImpl implements MapAttribute
 {
+    private static final long serialVersionUID = -2627849542488029248L;
+
     public MapAttributeImpl()
     {
+    }
+    
+    public MapAttributeImpl(MapAttribute attr)
+    {
+        AVMDAOs.Instance().fAttributeDAO.save(this);
+        for (Map.Entry<String, Attribute> entry : attr.entrySet())
+        {
+            Attribute value = entry.getValue();
+            Attribute newAttr = null;
+            switch (value.getType())
+            {
+                case BOOLEAN :
+                {
+                    newAttr = new BooleanAttributeImpl(value.getBooleanValue());
+                    break;
+                }
+                case BYTE :
+                {
+                    newAttr = new ByteAttributeImpl(value.getByteValue());
+                    break;
+                }
+                case SHORT :
+                {
+                    newAttr = new ShortAttributeImpl(value.getShortValue());
+                    break;
+                }
+                case INT :
+                {
+                    newAttr = new IntAttributeImpl(value.getIntValue());
+                    break;
+                }
+                case LONG :
+                {
+                    newAttr = new LongAttributeImpl(value.getLongValue());
+                    break;
+                }
+                case FLOAT :
+                {
+                    newAttr = new FloatAttributeImpl(value.getFloatValue());
+                    break;
+                }
+                case DOUBLE :
+                {
+                    newAttr = new DoubleAttributeImpl(value.getDoubleValue());
+                    break;
+                }
+                case STRING :
+                {
+                    newAttr = new StringAttributeImpl(value.getStringValue());
+                    break;
+                }
+                case SERIALIZABLE :
+                {
+                    newAttr = new SerializableAttributeImpl(value.getSerializableValue());
+                    break;
+                }
+                case MAP :
+                {
+                    newAttr = new MapAttributeImpl((MapAttribute)value);
+                    break;
+                }
+                default :
+                {
+                    throw new AlfrescoRuntimeException("Unknown Attribute Type: " + value.getType());
+                }
+            }
+            MapEntry mapEntry = new MapEntryImpl(this, entry.getKey(), newAttr);
+            AVMDAOs.Instance().fMapEntryDAO.save(mapEntry);
+        }
     }
     
     /* (non-Javadoc)
@@ -108,7 +181,15 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
     @Override
     public void put(String key, Attribute value)
     {
-        MapEntry entry = new MapEntryImpl(this, key, value);
+        MapEntry entry = AVMDAOs.Instance().fMapEntryDAO.get(this, key);
+        if (entry == null)
+        {
+            Attribute oldAttr = entry.getAttribute();
+            entry.setAttribute(value);
+            AVMDAOs.Instance().fAttributeDAO.delete(oldAttr);
+            return;
+        }
+        entry = new MapEntryImpl(this, key, value);
         AVMDAOs.Instance().fMapEntryDAO.save(entry);
     }
 
@@ -119,10 +200,13 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
     public void remove(String key)
     {
         MapEntry entry = AVMDAOs.Instance().fMapEntryDAO.get(this, key);
-        if (entry != null)
+        if (entry == null)
         {
-            AVMDAOs.Instance().fMapEntryDAO.delete(entry);
+            throw new AVMNotFoundException("Attribute Not Found: " + key);
         }
+        Attribute attr = entry.getAttribute();
+        AVMDAOs.Instance().fMapEntryDAO.delete(entry);
+        AVMDAOs.Instance().fAttributeDAO.delete(attr);
     }
 
     /* (non-Javadoc)

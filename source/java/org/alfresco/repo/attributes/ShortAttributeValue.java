@@ -25,33 +25,25 @@
 
 package org.alfresco.repo.attributes;
 
-import org.alfresco.repo.avm.AVMDAOs;
-
 /**
- * Persistent implementation of String valued attribute.
+ * Value based implementation of a short attribute.
  * @author britt
  */
-public class StringAttributeImpl extends AttributeImpl implements
-        StringAttribute
+public class ShortAttributeValue extends AttributeValue implements
+        ShortAttribute
 {
-    private static final long serialVersionUID = -2877268541212029648L;
+    private static final long serialVersionUID = -2224950695651369979L;
 
-    private String fValue;
+    private short fData;
     
-    public StringAttributeImpl()
+    public ShortAttributeValue(short value)
     {
+        fData = value;
     }
     
-    public StringAttributeImpl(String value)
+    public ShortAttributeValue(ShortAttribute attr)
     {
-        fValue = value;
-        AVMDAOs.Instance().fAttributeDAO.save(this);
-    }
-
-    public StringAttributeImpl(StringAttribute attr)
-    {
-        fValue = attr.getStringValue();
-        AVMDAOs.Instance().fAttributeDAO.save(this);
+        fData = attr.getShortValue();    
     }
     
     /* (non-Javadoc)
@@ -59,24 +51,24 @@ public class StringAttributeImpl extends AttributeImpl implements
      */
     public Type getType()
     {
-        return Type.STRING;
+        return Type.SHORT;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#getStringValue()
+     * @see org.alfresco.repo.attributes.AttributeValue#getShortValue()
      */
     @Override
-    public String getStringValue()
+    public short getShortValue()
     {
-        return fValue;
+        return fData;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#setStringValue(java.lang.String)
+     * @see org.alfresco.repo.attributes.AttributeValue#setShortValue(short)
      */
     @Override
-    public void setStringValue(String value)
+    public void setShortValue(short value)
     {
-        fValue = value;
+        fData = value;
     }
 }

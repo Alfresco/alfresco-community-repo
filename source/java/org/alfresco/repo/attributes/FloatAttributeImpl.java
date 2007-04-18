@@ -25,9 +25,11 @@
 
 package org.alfresco.repo.attributes;
 
+import org.alfresco.repo.avm.AVMDAOs;
+
 /**
+ * Persistent implementation of float attribute.
  * @author britt
- *
  */
 public class FloatAttributeImpl extends AttributeImpl implements FloatAttribute
 {
@@ -35,9 +37,20 @@ public class FloatAttributeImpl extends AttributeImpl implements FloatAttribute
 
     private float fValue;
     
+    public FloatAttributeImpl()
+    {
+    }
+    
     public FloatAttributeImpl(float value)
     {
         fValue = value;
+        AVMDAOs.Instance().fAttributeDAO.save(this);
+    }
+    
+    public FloatAttributeImpl(FloatAttribute attr)
+    {
+        fValue = attr.getFloatValue();
+        AVMDAOs.Instance().fAttributeDAO.save(this);
     }
     
     /* (non-Javadoc)

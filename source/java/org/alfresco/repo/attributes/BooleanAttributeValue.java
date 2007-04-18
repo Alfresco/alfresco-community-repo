@@ -26,18 +26,24 @@
 package org.alfresco.repo.attributes;
 
 /**
- * Persistent implementation of Blob attribute.
+ * Value based implementation of a boolean attribute.
  * @author britt
  */
-public class BlobAttributeImpl extends AttributeImpl implements BlobAttribute
+public class BooleanAttributeValue extends AttributeValue implements
+        BooleanAttribute
 {
-    private static final long serialVersionUID = 53323685626921588L;
+    private static final long serialVersionUID = 4019402783943642209L;
 
-    private byte[] fValue;
-
-    public BlobAttributeImpl(byte[] value)
+    private boolean fData;
+    
+    public BooleanAttributeValue(boolean value)
     {
-        fValue = value;
+        fData = value;
+    }
+    
+    public BooleanAttributeValue(BooleanAttribute attr)
+    {
+        fData = attr.getBooleanValue();
     }
     
     /* (non-Javadoc)
@@ -45,24 +51,24 @@ public class BlobAttributeImpl extends AttributeImpl implements BlobAttribute
      */
     public Type getType()
     {
-        return Type.BLOB;
+        return Type.BOOLEAN;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#getBlobValue()
+     * @see org.alfresco.repo.attributes.AttributeValue#getBooleanValue()
      */
     @Override
-    public byte[] getBlobValue()
+    public boolean getBooleanValue()
     {
-        return fValue;
+        return fData;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#setBlobValue(byte[])
+     * @see org.alfresco.repo.attributes.AttributeValue#setBooleanValue(boolean)
      */
     @Override
-    public void setBlobValue(byte[] value)
+    public void setBooleanValue(boolean value)
     {
-        fValue = value;
+        fData = value;
     }
 }

@@ -25,33 +25,24 @@
 
 package org.alfresco.repo.attributes;
 
-import org.alfresco.repo.avm.AVMDAOs;
-
 /**
- * Persistent implementation of String valued attribute.
+ * Value based implementation of int attribute.
  * @author britt
  */
-public class StringAttributeImpl extends AttributeImpl implements
-        StringAttribute
+public class IntAttributeValue extends AttributeValue implements IntAttribute
 {
-    private static final long serialVersionUID = -2877268541212029648L;
+    private static final long serialVersionUID = -7547112946658496030L;
 
-    private String fValue;
+    private int fData;
     
-    public StringAttributeImpl()
+    public IntAttributeValue(int value)
     {
+        fData = value;
     }
     
-    public StringAttributeImpl(String value)
+    public IntAttributeValue(IntAttribute attr)
     {
-        fValue = value;
-        AVMDAOs.Instance().fAttributeDAO.save(this);
-    }
-
-    public StringAttributeImpl(StringAttribute attr)
-    {
-        fValue = attr.getStringValue();
-        AVMDAOs.Instance().fAttributeDAO.save(this);
+        fData = attr.getIntValue();
     }
     
     /* (non-Javadoc)
@@ -59,24 +50,24 @@ public class StringAttributeImpl extends AttributeImpl implements
      */
     public Type getType()
     {
-        return Type.STRING;
+        return Type.INT;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#getStringValue()
+     * @see org.alfresco.repo.attributes.AttributeValue#getIntValue()
      */
     @Override
-    public String getStringValue()
+    public int getIntValue()
     {
-        return fValue;
+        return fData;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#setStringValue(java.lang.String)
+     * @see org.alfresco.repo.attributes.AttributeValue#setIntValue(int)
      */
     @Override
-    public void setStringValue(String value)
+    public void setIntValue(int value)
     {
-        fValue = value;
+        fData = value;
     }
 }

@@ -26,9 +26,49 @@
 package org.alfresco.repo.attributes;
 
 /**
- * Placeholder interface for Blob attributes.
+ * Value based implementation of float attribute
  * @author britt
  */
-public interface BlobAttribute extends Attribute
+public class FloatAttributeValue extends AttributeValue implements
+        FloatAttribute
 {
+    private static final long serialVersionUID = -1645099708530314562L;
+
+    private float fData;
+    
+    public FloatAttributeValue(float value)
+    {
+        fData = value;
+    }
+    
+    public FloatAttributeValue(FloatAttribute attr)
+    {
+        fData = attr.getFloatValue();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.Attribute#getType()
+     */
+    public Type getType()
+    {
+        return Type.FLOAT;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.AttributeValue#getFloatValue()
+     */
+    @Override
+    public float getFloatValue()
+    {
+        return fData;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.AttributeValue#setFloatValue(float)
+     */
+    @Override
+    public void setFloatValue(float value)
+    {
+        fData = value;
+    }
 }

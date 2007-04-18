@@ -27,6 +27,8 @@ package org.alfresco.repo.attributes;
 
 import java.io.Serializable;
 
+import org.alfresco.repo.avm.AVMDAOs;
+
 /**
  * Persistent implemantation of a Serializable attribute.
  * @author britt
@@ -38,9 +40,20 @@ public class SerializableAttributeImpl extends AttributeImpl implements
 
     private Serializable fValue;
     
+    public SerializableAttributeImpl()
+    {
+    }
+    
     public SerializableAttributeImpl(Serializable value)
     {
         fValue = value;
+        AVMDAOs.Instance().fAttributeDAO.save(this);
+    }
+    
+    public SerializableAttributeImpl(SerializableAttribute attr)
+    {
+        fValue = attr.getSerializableValue();
+        AVMDAOs.Instance().fAttributeDAO.save(this);        
     }
     
     /* (non-Javadoc)

@@ -28,6 +28,7 @@ package org.alfresco.repo.attributes;
 import java.util.List;
 
 import org.alfresco.service.cmr.attributes.AttrQuery;
+import org.alfresco.util.Pair;
 
 /**
  * Interface for persistence operations on attributes.
@@ -49,10 +50,9 @@ public interface AttributeDAO
     
     /**
      * Find all attributes that match a given path and AttrQuery.
-     * @param path The path, starting from the top to the map in which to
-     * search for matching attributes.
+     * @param map The map within which to query.
      * @param query The AttrQuery.
-     * @return A List of Attributes.
+     * @return A List of key, attribute value pairs.
      */
-    List<Attribute> find(String path, AttrQuery query);
+    List<Pair<String,Attribute>> find(MapAttribute map, AttrQuery query);
 }

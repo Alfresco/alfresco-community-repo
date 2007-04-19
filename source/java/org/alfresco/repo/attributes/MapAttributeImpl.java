@@ -182,7 +182,7 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
     public void put(String key, Attribute value)
     {
         MapEntry entry = AVMDAOs.Instance().fMapEntryDAO.get(this, key);
-        if (entry == null)
+        if (entry != null)
         {
             Attribute oldAttr = entry.getAttribute();
             entry.setAttribute(value);

@@ -11,6 +11,9 @@
         <property name="globalAttributeEntryDao">
             <ref bean="globalAttributeEntryDAO"/>
         </property>
+        <property name="attributeDao">
+            <ref bean="attributeDAO"/>
+        </property>
     </bean>
     
     <bean id="attributeConverter" class="org.alfresco.repo.attributes.AttributeConverter"/>

@@ -28,6 +28,7 @@ package org.alfresco.service.cmr.attributes;
 import java.util.List;
 
 import org.alfresco.repo.attributes.Attribute;
+import org.alfresco.util.Pair;
 
 /**
  * This provides services for reading, writing, and querying global attributes.
@@ -62,7 +63,7 @@ public interface AttributeService
      * @param query
      * @return A List of matching attributes.
      */
-    public List<Attribute> query(String path, AttrQuery query);
+    public List<Pair<String, Attribute>> query(String path, AttrQuery query);
     
     /**
      * Get all the keys for a given attribute path.

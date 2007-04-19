@@ -27,7 +27,18 @@ package org.alfresco.repo.attributes;
 
 import java.util.List;
 
+import org.alfresco.service.cmr.attributes.AttrAndQuery;
+import org.alfresco.service.cmr.attributes.AttrNotQuery;
+import org.alfresco.service.cmr.attributes.AttrOrQuery;
+import org.alfresco.service.cmr.attributes.AttrQueryEquals;
+import org.alfresco.service.cmr.attributes.AttrQueryGT;
+import org.alfresco.service.cmr.attributes.AttrQueryGTE;
+import org.alfresco.service.cmr.attributes.AttrQueryLT;
+import org.alfresco.service.cmr.attributes.AttrQueryLTE;
+import org.alfresco.service.cmr.attributes.AttrQueryLike;
+import org.alfresco.service.cmr.attributes.AttrQueryNE;
 import org.alfresco.service.cmr.attributes.AttributeService;
+import org.alfresco.util.Pair;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import junit.framework.TestCase;
@@ -38,9 +49,9 @@ import junit.framework.TestCase;
  */
 public class AttributeServiceTest extends TestCase
 {
-    private FileSystemXmlApplicationContext fContext = null;
+    private static FileSystemXmlApplicationContext fContext = null;
     
-    private AttributeService fService;
+    private static AttributeService fService;
     
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
@@ -66,8 +77,6 @@ public class AttributeServiceTest extends TestCase
         {
             fService.removeAttribute("", key);
         }
-        fContext.close();
-        fContext = null;
     }
     
     public void testBasic()
@@ -101,6 +110,116 @@ public class AttributeServiceTest extends TestCase
             {
                 System.out.println(key + " => " + fService.getAttribute(key));
             }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+    }
+    
+    /**
+     * Test the query capability.
+     */
+    public void testQuery()
+    {
+        try
+        {
+            // Put some attributes in place.
+            MapAttribute map = new MapAttributeValue();
+            map.put("a", new StringAttributeValue("a"));
+            map.put("b", new StringAttributeValue("a"));
+            map.put("c", new StringAttributeValue("a"));
+            map.put("d", new StringAttributeValue("a"));
+            map.put("e", new StringAttributeValue("a"));
+            map.put("f", new StringAttributeValue("a"));
+            map.put("g", new StringAttributeValue("a"));
+            map.put("h", new StringAttributeValue("a"));
+            map.put("i", new StringAttributeValue("a"));
+            map.put("j", new StringAttributeValue("a"));
+            map.put("k", new StringAttributeValue("a"));
+            map.put("l", new StringAttributeValue("a"));
+            map.put("m", new StringAttributeValue("a"));
+            map.put("n", new StringAttributeValue("a"));
+            map.put("o", new StringAttributeValue("a"));
+            map.put("p", new StringAttributeValue("a"));
+            map.put("q", new StringAttributeValue("a"));
+            map.put("r", new StringAttributeValue("a"));
+            map.put("s", new StringAttributeValue("a"));
+            map.put("t", new StringAttributeValue("a"));
+            map.put("u", new StringAttributeValue("a"));
+            map.put("v", new StringAttributeValue("a"));
+            map.put("w", new StringAttributeValue("a"));
+            map.put("x", new StringAttributeValue("a"));
+            map.put("y", new StringAttributeValue("a"));
+            map.put("z", new StringAttributeValue("a"));
+            fService.setAttribute("", "map1", map);
+            fService.setAttribute("", "map2", map);
+            List<Pair<String, Attribute>> result =
+                fService.query("map1", new AttrQueryEquals("w"));
+            assertEquals(1, result.size());
+            result =
+                fService.query("map1", new AttrQueryLT("d"));
+            assertEquals(3, result.size());
+            result =
+                fService.query("map1", new AttrQueryLTE("d"));
+            assertEquals(4, result.size());
+            result = 
+                fService.query("map1", new AttrQueryGT("v"));
+            assertEquals(4, result.size());
+            result =
+                fService.query("map1", new AttrQueryGTE("v"));
+            assertEquals(5, result.size());
+            result =
+                fService.query("map1", new AttrQueryNE("g"));
+            assertEquals(25, result.size());
+            result =
+                fService.query("map1", new AttrNotQuery(new AttrQueryGT("d")));
+            assertEquals(4, result.size());
+            result =
+                fService.query("map1", new AttrAndQuery(new AttrQueryGT("g"),
+                                                        new AttrQueryLT("l")));
+            assertEquals(4, result.size());
+            result =
+                fService.query("map1", new AttrOrQuery(new AttrQueryLT("d"),
+                                                       new AttrQueryGT("w")));
+            assertEquals(6, result.size());
+            result =
+                fService.query("map1", new AttrQueryLike("%"));
+            assertEquals(26, result.size());
+            fService.setAttribute("map2", "submap", map);
+            result =
+                fService.query("map2/submap", new AttrQueryEquals("w"));
+            assertEquals(1, result.size());
+            result =
+                fService.query("map2/submap", new AttrQueryLT("d"));
+            assertEquals(3, result.size());
+            result =
+                fService.query("map2/submap", new AttrQueryLTE("d"));
+            assertEquals(4, result.size());
+            result = 
+                fService.query("map2/submap", new AttrQueryGT("v"));
+            assertEquals(4, result.size());
+            result =
+                fService.query("map2/submap", new AttrQueryGTE("v"));
+            assertEquals(5, result.size());
+            result =
+                fService.query("map2/submap", new AttrQueryNE("g"));
+            assertEquals(25, result.size());
+            result =
+                fService.query("map2/submap", new AttrNotQuery(new AttrQueryGT("d")));
+            assertEquals(4, result.size());
+            result =
+                fService.query("map2/submap", new AttrAndQuery(new AttrQueryGT("g"),
+                                                        new AttrQueryLT("l")));
+            assertEquals(4, result.size());
+            result =
+                fService.query("map2/submap", new AttrOrQuery(new AttrQueryLT("d"),
+                                                       new AttrQueryGT("w")));
+            assertEquals(6, result.size());
+            result =
+                fService.query("map2/submap", new AttrQueryLike("%"));
+            assertEquals(26, result.size());
         }
         catch (Exception e)
         {

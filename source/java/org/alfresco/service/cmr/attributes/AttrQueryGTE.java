@@ -48,8 +48,8 @@ public class AttrQueryGTE extends AttrQuery
     @Override
     public String getPredicate(AttrQueryHelper helper) 
     {
-        String name = ":name" + helper.getNextSuffix();
+        String name = "name" + helper.getNextSuffix();
         helper.setParameter(name, fValue);
-        return "me.key >= " + name;
+        return "me.key >= :" + name;
     }
 }

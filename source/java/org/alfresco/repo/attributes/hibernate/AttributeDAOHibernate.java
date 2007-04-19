@@ -25,15 +25,22 @@
 
 package org.alfresco.repo.attributes.hibernate;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
+import org.alfresco.repo.attributes.AttrQueryHelperImpl;
 import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.repo.attributes.AttributeDAO;
 import org.alfresco.repo.attributes.MapAttribute;
+import org.alfresco.repo.attributes.MapEntry;
 import org.alfresco.repo.attributes.MapEntryDAO;
 import org.alfresco.repo.attributes.Attribute.Type;
 import org.alfresco.service.cmr.attributes.AttrQuery;
+import org.alfresco.service.cmr.attributes.AttrQueryHelper;
+import org.alfresco.util.Pair;
+import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
@@ -75,10 +82,25 @@ public class AttributeDAOHibernate extends HibernateDaoSupport implements
     /* (non-Javadoc)
      * @see org.alfresco.repo.attributes.AttributeDAO#find(java.lang.String, org.alfresco.service.cmr.attributes.AttrQuery)
      */
-    public List<Attribute> find(String path, AttrQuery query)
+    @SuppressWarnings("unchecked")
+    public List<Pair<String, Attribute>> find(MapAttribute map, AttrQuery query)
     {
-        // TODO Need to implement query processing.
-        return null;
+        AttrQueryHelper helper = new AttrQueryHelperImpl();
+        String predicate = query.getPredicate(helper);
+        String fullQuery = "from MapEntryImpl me where me.map = :map and " + predicate;
+        Query hQuery = getSession().createQuery(fullQuery);
+        hQuery.setEntity("map", map);
+        for (Map.Entry<String, String> param : helper.getParameters().entrySet())
+        {
+            hQuery.setParameter(param.getKey(), param.getValue());
+        }
+        List<MapEntry> hits = (List<MapEntry>)hQuery.list();
+        List<Pair<String, Attribute>> result = new ArrayList<Pair<String, Attribute>>();
+        for (MapEntry entry : hits)
+        {
+            result.add(new Pair<String, Attribute>(entry.getKey(), entry.getAttribute()));
+        }
+        return result;
     }
 
     /* (non-Javadoc)

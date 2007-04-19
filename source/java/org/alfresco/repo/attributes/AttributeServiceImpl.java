@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMWrongTypeException;
+import org.alfresco.util.Pair;
 
 /**
  * Implementation of the AttributeService interface.
@@ -42,6 +43,8 @@ import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 public class AttributeServiceImpl implements AttributeService
 {
     private GlobalAttributeEntryDAO fGlobalAttributeEntryDAO;
+    
+    private AttributeDAO fAttributeDAO;
     
     private AttributeConverter fAttributeConverter;
     
@@ -52,6 +55,11 @@ public class AttributeServiceImpl implements AttributeService
     public void setGlobalAttributeEntryDao(GlobalAttributeEntryDAO dao)
     {
         fGlobalAttributeEntryDAO = dao;
+    }
+    
+    public void setAttributeDao(AttributeDAO dao)
+    {
+        fAttributeDAO = dao;
     }
     
     public void setAttributeConverter(AttributeConverter converter)
@@ -138,9 +146,49 @@ public class AttributeServiceImpl implements AttributeService
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.attributes.AttributeService#query(java.lang.String, org.alfresco.service.cmr.attributes.AttrQuery)
      */
-    public List<Attribute> query(String path, AttrQuery query)
+    public List<Pair<String, Attribute>> query(String path, AttrQuery query)
     {
-        return null;
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Null Attribute Path.");
+        }
+        List<String> keys = parsePath(path);
+        if (keys.size() == 0)
+        {
+            throw new AVMBadArgumentException("Cannot query top level Attributes.");
+        }
+        GlobalAttributeEntry entry = fGlobalAttributeEntryDAO.get(keys.get(0));
+        if (entry == null)
+        {
+            throw new AVMNotFoundException("Attribute Not Found: " + keys.get(0));
+        }
+        Attribute current = entry.getAttribute();
+        if (current.getType() != Type.MAP)
+        {
+            throw new AVMWrongTypeException("Attribute Not Map: " + keys.get(0));
+        }
+        for (int i = 1; i < keys.size(); i++)
+        {
+            current = current.get(keys.get(i));
+            if (current == null)
+            {
+                throw new AVMNotFoundException("Attribute Not Found: " + keys.get(i));
+            }
+            if (current.getType() != Type.MAP)
+            {
+                throw new AVMWrongTypeException("Attribute Not Map: " + keys.get(i));
+            }
+        }
+        List<Pair<String, Attribute>> rawResult =
+            fAttributeDAO.find((MapAttribute)current, query);
+        List<Pair<String, Attribute>> result = 
+            new ArrayList<Pair<String, Attribute>>();
+        for (Pair<String, Attribute> raw : rawResult)
+        {
+            result.add(new Pair<String, Attribute>(raw.getFirst(), 
+                                                   fAttributeConverter.toValue(raw.getSecond())));
+        }
+        return result;
     }
 
     /* (non-Javadoc)
@@ -267,3 +315,4 @@ public class AttributeServiceImpl implements AttributeService
         return new ArrayList<String>(current.keySet());
     }
 }
+

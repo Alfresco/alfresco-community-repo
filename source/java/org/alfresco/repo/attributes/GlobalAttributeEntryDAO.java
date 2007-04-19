@@ -1,5 +1,7 @@
 package org.alfresco.repo.attributes;
 
+import java.util.List;
+
 /**
  * Interface for persistence of the top level attribute map.
  * @author britt
@@ -30,4 +32,10 @@ public interface GlobalAttributeEntryDAO
      * @return The entry or null.
      */
     public GlobalAttributeEntry get(String name);
+    
+    /**
+     * Get all keys for global attributes.
+     * @return A list of all top level keys.
+     */
+    public List<String> getKeys();
 }

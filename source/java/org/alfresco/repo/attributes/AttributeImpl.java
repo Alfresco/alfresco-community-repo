@@ -288,4 +288,30 @@ public abstract class AttributeImpl implements Attribute
     {
         throw new AttributeMethodNotImplemented("Not ShortValue");
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (!(obj instanceof AttributeImpl))
+        {
+            return false;
+        }
+        return fID == ((AttributeImpl)obj).fID;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode()
+    {
+        return (int)fID;
+    }
 }

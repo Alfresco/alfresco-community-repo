@@ -63,4 +63,11 @@ public interface AttributeService
      * @return A List of matching attributes.
      */
     public List<Attribute> query(String path, AttrQuery query);
+    
+    /**
+     * Get all the keys for a given attribute path.
+     * @param path The attribute path.
+     * @return A list of all keys.
+     */
+    public List<String> getKeys(String path);
 }

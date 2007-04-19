@@ -223,4 +223,23 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
         }
         return attrs;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append('{');
+        for (Map.Entry<String, Attribute> entry : entrySet())
+        {
+            builder.append(entry.getKey());
+            builder.append('=');
+            builder.append(entry.getValue().toString());
+            builder.append(' ');
+        }
+        builder.append('}');
+        return builder.toString();
+    }
 }

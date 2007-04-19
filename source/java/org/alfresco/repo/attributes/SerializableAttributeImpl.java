@@ -81,4 +81,13 @@ public class SerializableAttributeImpl extends AttributeImpl implements
     {
         fValue = value;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        return fValue.toString();
+    }
 }

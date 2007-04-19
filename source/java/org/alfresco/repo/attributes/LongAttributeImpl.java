@@ -78,4 +78,13 @@ public class LongAttributeImpl extends AttributeImpl implements LongAttribute
     {
        fValue = value;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        return Long.toString(fValue);
+    }
 }

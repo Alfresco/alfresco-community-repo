@@ -70,4 +70,13 @@ public class IntAttributeValue extends AttributeValue implements IntAttribute
     {
         fData = value;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        return Integer.toString(fData);
+    }
 }

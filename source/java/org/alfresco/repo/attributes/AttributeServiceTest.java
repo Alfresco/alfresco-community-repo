@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import java.util.List;
+
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
@@ -59,6 +61,11 @@ public class AttributeServiceTest extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
+        List<String> globalKeys = fService.getKeys("");
+        for (String key : globalKeys)
+        {
+            fService.removeAttribute("", key);
+        }
         fContext.close();
         fContext = null;
     }
@@ -87,8 +94,13 @@ public class AttributeServiceTest extends TestCase
             assertNotNull(fService.getAttribute("boolean"));
             assertEquals(42, (int)fService.getAttribute("short").getShortValue());
             assertEquals("I sneeze.", fService.getAttribute("map/funky").getStringValue());
-            Attribute found = fService.getAttribute("map");
-            System.out.println(found);
+            assertEquals(10, fService.getKeys("").size());
+            assertEquals(5, fService.getKeys("map").size());
+            List<String> keys = fService.getKeys("");
+            for (String key : keys)
+            {
+                System.out.println(key + " => " + fService.getAttribute(key));
+            }
         }
         catch (Exception e)
         {

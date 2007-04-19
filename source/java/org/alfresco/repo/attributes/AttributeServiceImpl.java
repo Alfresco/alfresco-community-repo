@@ -227,4 +227,43 @@ public class AttributeServiceImpl implements AttributeService
         }
         current.put(name, toSave);   
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#getKeys(java.lang.String)
+     */
+    public List<String> getKeys(String path)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Null Attribute Path.");
+        }
+        List<String> keys = parsePath(path);
+        if (keys.size() == 0)
+        {
+            return fGlobalAttributeEntryDAO.getKeys();
+        }
+        GlobalAttributeEntry entry = fGlobalAttributeEntryDAO.get(keys.get(0));
+        if (entry == null)
+        {
+            throw new AVMNotFoundException("Attribute Not Found: " + keys.get(0));
+        }
+        Attribute current = entry.getAttribute();
+        if (current.getType() != Type.MAP)
+        {
+            throw new AVMWrongTypeException("Attribute Not Map: " + keys.get(0));
+        }
+        for (int i = 1; i < keys.size(); i++)
+        {
+            current = current.get(keys.get(i));
+            if (current == null)
+            {
+                throw new AVMNotFoundException("Attribute Not Found: " + keys.get(i));
+            }
+            if (current.getType() != Type.MAP)
+            {
+                throw new AVMWrongTypeException("Attribute Not Map: " + keys.get(i));
+            }
+        }
+        return new ArrayList<String>(current.keySet());
+    }
 }

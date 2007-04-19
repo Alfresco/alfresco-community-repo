@@ -186,4 +186,23 @@ public class MapAttributeValue extends AttributeValue implements MapAttribute
     {
         return fData.values();
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append('{');
+        for (Map.Entry<String, Attribute> entry : fData.entrySet())
+        {
+            builder.append(entry.getKey());
+            builder.append('=');
+            builder.append(entry.getValue().toString());
+            builder.append(' ');
+        }
+        builder.append('}');
+        return builder.toString();
+    }
 }

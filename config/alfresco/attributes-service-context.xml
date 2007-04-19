@@ -19,11 +19,17 @@
         <property name="sessionFactory">
             <ref bean="sessionFactory"/>
         </property>
+        <property name="mapEntryDao">
+            <ref bean="mapEntryDAO"/>
+        </property>
     </bean>
 
     <bean id="globalAttributeEntryDAO" class="org.alfresco.repo.attributes.hibernate.GlobalAttributeEntryDAOHibernate">
         <property name="sessionFactory">
             <ref bean="sessionFactory"/>
+        </property>
+        <property name="attributeDao">
+            <ref bean="attributeDAO"/>
         </property>
     </bean>
 

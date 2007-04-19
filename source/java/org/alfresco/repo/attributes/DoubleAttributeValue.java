@@ -71,4 +71,13 @@ public class DoubleAttributeValue extends AttributeValue implements
     {
         fData = value;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        return Double.toString(fData);
+    }
 }

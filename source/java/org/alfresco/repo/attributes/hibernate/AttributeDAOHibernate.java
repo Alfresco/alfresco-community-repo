@@ -45,6 +45,15 @@ public class AttributeDAOHibernate extends HibernateDaoSupport implements
 {
     private MapEntryDAO fMapEntryDAO;
     
+    public AttributeDAOHibernate()
+    {
+    }
+    
+    public void setMapEntryDao(MapEntryDAO dao)
+    {
+        fMapEntryDAO = dao;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.attributes.AttributeDAO#delete(org.alfresco.repo.attributes.Attribute)
      */

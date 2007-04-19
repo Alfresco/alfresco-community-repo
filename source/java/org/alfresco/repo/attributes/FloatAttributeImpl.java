@@ -78,4 +78,13 @@ public class FloatAttributeImpl extends AttributeImpl implements FloatAttribute
     {
         fValue = value;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        return Float.toString(fValue);
+    }
 }

@@ -70,4 +70,13 @@ public class ByteAttributeValue extends AttributeValue implements ByteAttribute
     {
         fData = value;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        return Byte.toString(fData);
+    }
 }

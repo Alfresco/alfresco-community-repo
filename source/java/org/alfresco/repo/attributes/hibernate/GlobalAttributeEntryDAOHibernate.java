@@ -25,10 +25,14 @@
 
 package org.alfresco.repo.attributes.hibernate;
 
+import java.util.List;
+
 import org.alfresco.repo.attributes.Attribute;
+import org.alfresco.repo.attributes.AttributeDAO;
 import org.alfresco.repo.attributes.GlobalAttributeEntry;
 import org.alfresco.repo.attributes.GlobalAttributeEntryDAO;
 import org.alfresco.repo.attributes.GlobalAttributeEntryImpl;
+import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
@@ -38,12 +42,25 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 public class GlobalAttributeEntryDAOHibernate extends HibernateDaoSupport
         implements GlobalAttributeEntryDAO
 {
+    private AttributeDAO fAttributeDAO;
+    
+    public GlobalAttributeEntryDAOHibernate()
+    {
+    }
+    
+    public void setAttributeDao(AttributeDAO dao)
+    {
+        fAttributeDAO = dao;
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.attributes.GlobalAttributeEntryDAO#delete(org.alfresco.repo.attributes.GlobalAttributeEntry)
      */
     public void delete(GlobalAttributeEntry entry)
     {
+        Attribute attr = entry.getAttribute();
         getSession().delete(entry);
+        fAttributeDAO.delete(attr);
     }
 
     /* (non-Javadoc)
@@ -68,5 +85,15 @@ public class GlobalAttributeEntryDAOHibernate extends HibernateDaoSupport
     public void save(GlobalAttributeEntry entry)
     {
         getSession().save(entry);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.GlobalAttributeEntryDAO#getKeys()
+     */
+    @SuppressWarnings("unchecked")
+    public List<String> getKeys()
+    {
+        Query query = getSession().createQuery("select gae.name from GlobalAttributeEntryImpl gae");
+        return (List<String>)query.list();
     }
 }

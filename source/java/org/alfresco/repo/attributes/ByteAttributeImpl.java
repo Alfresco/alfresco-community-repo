@@ -78,4 +78,13 @@ public class ByteAttributeImpl extends AttributeImpl implements ByteAttribute
     {
         fValue = value;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        return Byte.toString(fValue);
+    }
 }

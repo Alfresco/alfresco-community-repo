@@ -39,7 +39,6 @@ import javax.transaction.UserTransaction;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.template.AbsoluteUrlMethod;
-import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -224,7 +223,7 @@ public abstract class BaseTemplateContentServlet extends BaseServlet
             }
             
             // create the model - put the supplied noderef in as space/document as appropriate
-            Object model = getModel(serviceRegistry, req, templateRef, nodeRef);
+            Map<String, Object> model = getModel(serviceRegistry, req, templateRef, nodeRef);
             
             // process the template against the node content directly to the response output stream
             // assuming the repo is capable of streaming in chunks, this should allow large files
@@ -232,7 +231,6 @@ public abstract class BaseTemplateContentServlet extends BaseServlet
             try
             {
                templateService.processTemplate(
-                     null,
                      templateRef.toString(),
                      model,
                      res.getWriter());
@@ -280,15 +278,14 @@ public abstract class BaseTemplateContentServlet extends BaseServlet
     * @return an object model ready for executing template against
     */
    @SuppressWarnings("unchecked")
-   private Object getModel(ServiceRegistry services, HttpServletRequest req, NodeRef templateRef, NodeRef nodeRef)
+   private Map<String, Object> getModel(ServiceRegistry services, HttpServletRequest req, NodeRef templateRef, NodeRef nodeRef)
    {
       // build FreeMarker default model and merge
       Map<String, Object> root = buildModel(services, req, templateRef);
       
       // put the current NodeRef in as "space" and "document"
-      TemplateNode node = new TemplateNode(nodeRef, services, this.imageResolver);
-      root.put("space", node);
-      root.put("document", node);
+      root.put("space", nodeRef);
+      root.put("document", nodeRef);
       
       // add URL arguments as a map called 'args' to the root of the model
       Map<String, String> args = new HashMap<String, String>(8, 1.0f);

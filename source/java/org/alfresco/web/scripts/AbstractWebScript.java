@@ -37,7 +37,7 @@ import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptLocation;
-import org.alfresco.service.cmr.repository.TemplateExtensionImplementation;
+import org.alfresco.service.cmr.repository.TemplateProcessorExtension;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
@@ -255,13 +255,13 @@ public abstract class AbstractWebScript implements WebScript
             NodeRef companyHome = scriptContext.getCompanyHome();
             if (companyHome != null)
             {
-                model.put("companyhome", new TemplateNode(scriptContext.getCompanyHome(), serviceRegistry, tr));
+                model.put("companyhome", scriptContext.getCompanyHome());
             }
             NodeRef person = scriptContext.getPerson();
             if (person != null)
             {
-                model.put("person", new TemplateNode(person, serviceRegistry, tr));
-                model.put("userhome", new TemplateNode(scriptContext.getUserHome(person), serviceRegistry, tr));
+                model.put("person", person);
+                model.put("userhome", scriptContext.getUserHome(person));
             }
         }
         
@@ -274,14 +274,6 @@ public abstract class AbstractWebScript implements WebScript
         // add template support
         model.put("absurl", new AbsoluteUrlMethod(req.getServerPath()));
         model.put("date", new Date());
-        
-        // add the template extensions to the model
-        // the extensions include custom root helper objects and custom template method objects
-        for (TemplateExtensionImplementation ext : serviceRegistry.getTemplateService().getExtensions())
-        {
-            ext.setTemplateImageResolver(tr);
-            model.put(ext.getExtensionName(), ext);
-        }
         
         // add custom model
         if (customModel != null)

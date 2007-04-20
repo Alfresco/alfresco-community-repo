@@ -77,7 +77,7 @@ public class NodeInfoBean
       if (this.nodeService.exists(nodeRef))
       {
          Repository.getServiceRegistry(context).getTemplateService().processTemplate(
-               null, "/alfresco/templates/client/summary_panel.ftl", getModel(nodeRef), out);
+               "/alfresco/templates/client/summary_panel.ftl", getModel(nodeRef), out);
       }
       else
       {

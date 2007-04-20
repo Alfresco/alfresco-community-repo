@@ -223,7 +223,7 @@ public class RenderingEngineTemplateImpl
       String result = null;
       try
       {
-         result = templateService.processTemplateString(null, 
+         result = templateService.processTemplateString("freemarker", 
                                                         outputPathPattern,
                                                         new SimpleHash(root));
       }

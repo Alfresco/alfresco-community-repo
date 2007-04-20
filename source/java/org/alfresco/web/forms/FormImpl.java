@@ -168,7 +168,7 @@ public class FormImpl
                          " in webapp " + webappName +
                          " and xml data " + XMLUtil.toString(formInstanceData));
          }
-         result = templateService.processTemplateString(null, 
+         result = templateService.processTemplateString("freemarker", 
                                                         outputPathPattern, 
                                                         new SimpleHash(root));
       }

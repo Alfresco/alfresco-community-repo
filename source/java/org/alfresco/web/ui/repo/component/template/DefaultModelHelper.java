@@ -26,7 +26,6 @@ package org.alfresco.web.ui.repo.component.template;
 
 import java.util.Map;
 
-import org.alfresco.repo.template.FreeMarkerProcessor;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
@@ -95,8 +94,8 @@ public class DefaultModelHelper
       NodeRef companyRootRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());
       NodeRef userRootRef = new NodeRef(Repository.getStoreRef(), user.getHomeSpaceId());
       
-      return FreeMarkerProcessor.buildDefaultModel(
-              services, user.getPerson(), companyRootRef, userRootRef, template, resolver);
+      return services.getTemplateService().buildDefaultModel(
+              user.getPerson(), companyRootRef, userRootRef, template, resolver);
    }
    
    /** Template Image resolver helper */

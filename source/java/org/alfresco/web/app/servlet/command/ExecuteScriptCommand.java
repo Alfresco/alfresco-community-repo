@@ -27,7 +27,6 @@ package org.alfresco.web.app.servlet.command;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.jscript.RhinoScriptService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -89,8 +88,7 @@ public final class ExecuteScriptCommand implements Command
       }
       
       // build the model needed to execute the script
-      Map<String, Object> model = RhinoScriptService.buildDefaultModel(
-            serviceRegistry,
+      Map<String, Object> model = serviceRegistry.getScriptService().buildDefaultModel(
             personRef,
             new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId()),
             (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER),

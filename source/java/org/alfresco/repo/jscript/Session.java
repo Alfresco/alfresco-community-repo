@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.jscript;
 
+import org.alfresco.repo.processor.BaseProcessorExtension;
 import org.alfresco.service.ServiceRegistry;
 
 /**
@@ -33,7 +34,7 @@ import org.alfresco.service.ServiceRegistry;
  * 
  * @author Andy Hind
  */
-public class Session extends BaseScriptImplementation
+public class Session extends BaseProcessorExtension
 {
     /** Service registry */
     private ServiceRegistry services;

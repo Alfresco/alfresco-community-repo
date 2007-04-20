@@ -39,8 +39,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformer;
 import org.alfresco.repo.search.QueryParameterDefImpl;
-import org.alfresco.repo.template.FreeMarkerProcessor;
-import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -1739,8 +1737,7 @@ public class Node implements Serializable, Scopeable
     private String processTemplate(String template, NodeRef templateRef, ScriptableObject args)
     {
         // build default model for the template processing
-        Map<String, Object> model = FreeMarkerProcessor.buildDefaultModel(
-                services,
+        Map<String, Object> model = this.services.getTemplateService().buildDefaultModel(
                 ((Node)((Wrapper)scope.get("person", scope)).unwrap()).getNodeRef(),
                 ((Node)((Wrapper)scope.get("companyhome", scope)).unwrap()).getNodeRef(),
                 ((Node)((Wrapper)scope.get("userhome", scope)).unwrap()).getNodeRef(),
@@ -1750,12 +1747,12 @@ public class Node implements Serializable, Scopeable
         // add the current node as either the document/space as appropriate
         if (this.getIsDocument())
         {
-            model.put("document", new TemplateNode(this.nodeRef, this.services, null));
-            model.put("space", new TemplateNode(getPrimaryParentAssoc().getParentRef(), this.services, null));
+            model.put("document", this.nodeRef);
+            model.put("space", getPrimaryParentAssoc().getParentRef());
         }
         else
         {
-            model.put("space", new TemplateNode(this.nodeRef, this.services, null));
+            model.put("space", this.nodeRef);
         }
         
         // add the supplied args to the 'args' root object

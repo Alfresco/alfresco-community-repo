@@ -37,7 +37,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Andy Hind
  */
-public final class Classification extends BaseScopableScriptImplementation
+public final class Classification extends BaseScopableProcessorExtension
 {
     private ServiceRegistry services;
 

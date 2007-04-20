@@ -54,7 +54,7 @@ import org.dom4j.io.SAXReader;
  * 
  * @author Kevin Roast
  */
-public final class Search extends BaseScopableScriptImplementation
+public final class Search extends BaseScopableProcessorExtension
 {
     /** Service registry */
     private ServiceRegistry services;

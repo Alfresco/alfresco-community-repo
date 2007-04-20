@@ -41,7 +41,7 @@ import freemarker.template.TemplateScalarModel;
  * <p>
  * Usage: hasPermission(TemplateNode node, String permission) - 1 on true, 0 on false
  */
-public class HasPermissionMethod extends BaseTemplateExtensionImplementation implements TemplateMethodModelEx
+public class HasPermissionMethod extends BaseTemplateProcessorExtension implements TemplateMethodModelEx
 {
     /**
      * @see freemarker.template.TemplateMethodModel#exec(java.util.List)

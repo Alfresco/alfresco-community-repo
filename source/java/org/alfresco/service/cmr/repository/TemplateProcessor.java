@@ -33,8 +33,8 @@ import java.io.Writer;
  * 
  * @author Kevin Roast
  */
-public interface TemplateProcessor
-{
+public interface TemplateProcessor extends Processor
+{   
     /**
      * Process a template against the supplied data model and write to the out.
      * 

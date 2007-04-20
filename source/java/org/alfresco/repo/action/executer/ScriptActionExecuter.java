@@ -29,7 +29,6 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
-import org.alfresco.repo.jscript.RhinoScriptService;
 import org.alfresco.repo.jscript.ScriptAction;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
@@ -129,8 +128,7 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
                 
                 // the default scripting model provides access to well known objects and searching
                 // facilities - it also provides basic create/update/delete/copy/move services
-                Map<String, Object> model = RhinoScriptService.buildDefaultModel(
-                        this.serviceRegistry,
+                Map<String, Object> model = this.serviceRegistry.getScriptService().buildDefaultModel(
                         personRef,
                         getCompanyHome(),
                         homeSpaceRef,

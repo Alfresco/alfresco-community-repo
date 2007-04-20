@@ -36,19 +36,18 @@ import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.ServiceRegistry;
+import org.alfresco.repo.processor.BaseProcessor;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.ProcessorExtension;
 import org.alfresco.service.cmr.repository.ScriptException;
-import org.alfresco.service.cmr.repository.ScriptImplementation;
 import org.alfresco.service.cmr.repository.ScriptLocation;
-import org.alfresco.service.cmr.repository.ScriptService;
+import org.alfresco.service.cmr.repository.ScriptProcessor;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ParameterCheck;
 import org.apache.log4j.Logger;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.NativeArray;
@@ -58,40 +57,24 @@ import org.mozilla.javascript.Wrapper;
 import org.springframework.util.FileCopyUtils;
 
 /**
- * Implementation of the ScriptService using the Rhino JavaScript engine.
+ * Implementation of the ScriptEninge using the Rhino JavaScript engine.
  * 
  * @author Kevin Roast
  */
-public class RhinoScriptService implements ScriptService
+public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcessor
 {
-    private static final Logger logger = Logger.getLogger(RhinoScriptService.class);
+    private static final Logger logger = Logger.getLogger(RhinoScriptProcessor.class);
     
     private static final String IMPORT_PREFIX = "<import";
     private static final String IMPORT_RESOURCE = "resource=\"";
     private static final String PATH_CLASSPATH = "classpath:";
     private static final String SCRIPT_ROOT = "_root";
     
-    /** Repository Service Registry */
-    private ServiceRegistry services;
-    
     /** Store into which to resolve cm:name based script paths */
     private StoreRef storeRef;
     
     /** Store root path to resolve cm:name based scripts path from */
     private String storePath;
-    
-    /** List of global scripts */
-    private List<ScriptImplementation> globalScripts = new ArrayList<ScriptImplementation>(); 
-
-    /**
-     * Set the Service Registry
-     * 
-     * @param  service registry
-     */
-    public void setServiceRegistry(ServiceRegistry services)
-    {
-        this.services = services;
-    }
     
     /**
      * Set the default store reference
@@ -112,102 +95,10 @@ public class RhinoScriptService implements ScriptService
     }
 
     /**
-     * @see org.alfresco.service.cmr.repository.ScriptService#registerScript(java.lang.Object)
+     * @see org.alfresco.service.cmr.repository.ScriptProcessor#execute(org.alfresco.service.cmr.repository.ScriptLocation, java.util.Map)
      */
-    public void registerScript(ScriptImplementation script)
+    public Object execute(ScriptLocation location, Map<String, Object> model)
     {
-    	this.globalScripts.add(script);
-    }
-    
-    /**
-     * @see org.alfresco.service.cmr.repository.ScriptService#executeScript(java.lang.String, java.util.Map)
-     */
-    public Object executeScript(String scriptClasspath, Map<String, Object> model)
-        throws ScriptException
-    {
-        if (scriptClasspath == null)
-        {
-            throw new IllegalArgumentException("Script ClassPath is mandatory.");
-        }
-        
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Executing script: " + scriptClasspath);
-        }
-        
-        try
-        {
-            InputStream stream = getClass().getClassLoader().getResourceAsStream(scriptClasspath);
-            if (stream == null)
-            {
-                throw new AlfrescoRuntimeException("Unable to load classpath resource: " + scriptClasspath);
-            }
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            FileCopyUtils.copy(stream, os);  // both streams are closed
-            byte[] bytes = os.toByteArray();
-            
-            return executeScriptImpl(resolveScriptImports(new String(bytes)), model);
-        }
-        catch (Throwable err)
-        {
-            throw new ScriptException("Failed to execute script '" + scriptClasspath + "': " + err.getMessage(), err);
-        }
-    }
-
-    /**
-     * @see org.alfresco.service.cmr.repository.ScriptService#executeScript(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.util.Map)
-     */
-    public Object executeScript(NodeRef scriptRef, QName contentProp, Map<String, Object> model)
-        throws ScriptException
-    {
-        if (scriptRef == null)
-        {
-            throw new IllegalArgumentException("Script NodeRef is mandatory.");
-        }
-        
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Executing script: " + scriptRef.toString());
-        }
-        
-        try
-        {
-            if (this.services.getNodeService().exists(scriptRef) == false)
-            {
-                throw new AlfrescoRuntimeException("Script Node does not exist: " + scriptRef);
-            }
-            
-            if (contentProp == null)
-            {
-                contentProp = ContentModel.PROP_CONTENT;
-            }
-            ContentReader cr = this.services.getContentService().getReader(scriptRef, contentProp);
-            if (cr == null || cr.exists() == false)
-            {
-                throw new AlfrescoRuntimeException("Script Node content not found: " + scriptRef);
-            }
-            
-            return executeScriptImpl(resolveScriptImports(cr.getContentString()), model);
-        }
-        catch (Throwable err)
-        {
-            throw new ScriptException("Failed to execute script '" + scriptRef.toString() + "': " + err.getMessage(), err);
-        }
-    }
-    
-    /**
-     * @see org.alfresco.service.cmr.repository.ScriptService#executeScript(org.alfresco.service.cmr.repository.ScriptLocation, java.util.Map)
-     */
-    public Object executeScript(ScriptLocation location, Map<String, Object> model)
-    	throws ScriptException
-    {
-    	ParameterCheck.mandatory("Location", location);
-        
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Executing script: " + location.toString());
-        }
-        
         try
         {   
             ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -221,23 +112,66 @@ public class RhinoScriptService implements ScriptService
             throw new ScriptException("Failed to execute script '" + location.toString() + "': " + err.getMessage(), err);
         }
     }
+    
+    /**
+     * @see org.alfresco.service.cmr.repository.ScriptProcessor#execute(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.util.Map)
+     */
+    public Object execute(NodeRef nodeRef, QName contentProp, Map<String, Object> model)
+    {
+        try
+        {
+            if (this.services.getNodeService().exists(nodeRef) == false)
+            {
+                throw new AlfrescoRuntimeException("Script Node does not exist: " + nodeRef);
+            }
+            
+            if (contentProp == null)
+            {
+                contentProp = ContentModel.PROP_CONTENT;
+            }
+            ContentReader cr = this.services.getContentService().getReader(nodeRef, contentProp);
+            if (cr == null || cr.exists() == false)
+            {
+                throw new AlfrescoRuntimeException("Script Node content not found: " + nodeRef);
+            }
+            
+            return executeScriptImpl(resolveScriptImports(cr.getContentString()), model);
+        }
+        catch (Throwable err)
+        {
+            throw new ScriptException("Failed to execute script '" + nodeRef.toString() + "': " + err.getMessage(), err);
+        }
+    }
 
     /**
-     * @see org.alfresco.service.cmr.repository.ScriptService#executeScriptString(java.lang.String, java.util.Map)
+     * @see org.alfresco.service.cmr.repository.ScriptProcessor#execute(java.lang.String, java.util.Map)
      */
-    public Object executeScriptString(String script, Map<String, Object> model)
-        throws ScriptException
+    public Object execute(String location, Map<String, Object> model)
+    {        
+        try
+        {
+            InputStream stream = getClass().getClassLoader().getResourceAsStream(location);
+            if (stream == null)
+            {
+                throw new AlfrescoRuntimeException("Unable to load classpath resource: " + location);
+            }
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            FileCopyUtils.copy(stream, os);  // both streams are closed
+            byte[] bytes = os.toByteArray();
+            
+            return executeScriptImpl(resolveScriptImports(new String(bytes)), model);
+        }
+        catch (Throwable err)
+        {
+            throw new ScriptException("Failed to execute script '" + location + "': " + err.getMessage(), err);
+        }
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.repository.ScriptProcessor#executeString(java.lang.String, java.util.Map)
+     */
+    public Object executeString(String script, Map<String, Object> model)
     {
-        if (script == null || script.length() == 0)
-        {
-            throw new IllegalArgumentException("Script argument is mandatory.");
-        }
-        
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Executing script:\n" + script);
-        }
-        
         try
         {
             return executeScriptImpl(resolveScriptImports(script), model);
@@ -247,6 +181,7 @@ public class RhinoScriptService implements ScriptService
             throw new ScriptException("Failed to execute supplied script: " + err.getMessage(), err);
         }
     }
+
     
     /**
      * Resolve the imports in the specified script. Include directives are of the following form:
@@ -453,7 +388,7 @@ public class RhinoScriptService implements ScriptService
             if (resource.startsWith("/"))
             {
                 // resolve from default SpacesStore as cm:name based path
-                // we have to assume "/Company Home" as the root for now
+                // TODO: remove this once FFS correctly allows name path resolving from store root!
                 NodeRef rootNodeRef = this.services.getNodeService().getRootNode(this.storeRef);
                 List<NodeRef> nodes = this.services.getSearchService().selectNodes(
                         rootNodeRef, this.storePath, null, this.services.getNamespaceService(), false);
@@ -516,7 +451,7 @@ public class RhinoScriptService implements ScriptService
      * 
      * @throws AlfrescoRuntimeException
      */
-    private Object executeScriptImpl(String script, Map<String, Object> model)
+    private Object executeScriptImpl(String script, Map<String, Object> origModel)
         throws AlfrescoRuntimeException
     {
         long startTime = 0;
@@ -524,6 +459,9 @@ public class RhinoScriptService implements ScriptService
         {
             startTime = System.currentTimeMillis();
         }
+        
+        // Convert the model
+        Map<String, Object> model = convertToRhinoModel(origModel);
         
         // check that rhino script engine is available
         Context cx = Context.enter();
@@ -541,9 +479,9 @@ public class RhinoScriptService implements ScriptService
             }
             
             // add the global scripts
-            for (ScriptImplementation ex : this.globalScripts) 
+            for (ProcessorExtension ex : this.processExtensions.values()) 
             {
-            	model.put(ex.getScriptName(), ex);
+            	model.put(ex.getExtensionName(), ex);
 			}
             
             // insert supplied object model into root of the default scope
@@ -596,50 +534,25 @@ public class RhinoScriptService implements ScriptService
     }
     
     /**
-     * Create the default data-model available to scripts as global scope level objects:
-     * <p>
-     * 'companyhome' - the Company Home node<br>
-     * 'userhome' - the current user home space node<br>
-     * 'person' - the node representing the current user Person<br>
-     * 'script' - the node representing the script itself (may not be available)<br>
-     * 'document' - document context node (may not be available)<br>
-     * 'space' - space context node (may not be available)
+     * Converts the passed model into a Rhino model
      * 
-     * @param services      ServiceRegistry
-     * @param person        The current user Person Node
-     * @param companyHome   The CompanyHome ref
-     * @param userHome      The User home space ref
-     * @param script        Optional ref to the script itself
-     * @param document      Optional ref to a document Node
-     * @param space         Optional ref to a space Node
-     * @param resolver      Image resolver to resolve icon images etc.
-     * 
-     * @return A Map of global scope scriptable Node objects
+     * @param model the model
+     * @return  Map<String, Object> the converted model
      */
-    public static Map<String, Object> buildDefaultModel(
-            ServiceRegistry services,
-            NodeRef person, NodeRef companyHome, NodeRef userHome,
-            NodeRef script, NodeRef document, NodeRef space)
+    private Map<String, Object> convertToRhinoModel(Map<String, Object> model)
     {
-        Map<String, Object> model = new HashMap<String, Object>();
-        
-        // add the well known node wrapper objects
-        model.put("companyhome", new Node(companyHome, services));
-        model.put("userhome", new Node(userHome, services));
-        model.put("person", new Node(person, services));
-        if (script != null)
+        Map<String, Object> newModel = new HashMap<String, Object>(model.size());
+        for (Map.Entry<String, Object> entry : model.entrySet())
         {
-            model.put("script", new Node(script, services));
+            if (entry.getValue() instanceof NodeRef)
+            {
+                newModel.put(entry.getKey(), new Node((NodeRef)entry.getValue(), this.services));
+            }
+            else
+            {
+                newModel.put(entry.getKey(), entry.getValue());
+            }
         }
-        if (document != null)
-        {
-            model.put("document", new Node(document, services));
-        }
-        if (space != null)
-        {
-            model.put("space", new Node(space, services));
-        }
-        
-        return model;
+        return newModel;
     }
 }

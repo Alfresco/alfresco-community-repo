@@ -22,30 +22,26 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.jscript;
-
-import org.alfresco.repo.processor.BaseProcessorExtension;
-import org.apache.log4j.Logger;
+package org.alfresco.service.cmr.repository;
 
 /**
+ * Interface to represent a server side template extension implementation
+ * 
  * @author Kevin Roast
  */
-public final class ScriptLogger extends BaseProcessorExtension
-{
-    private static final Logger logger = Logger.getLogger(ScriptLogger.class);
+public interface TemplateProcessorExtension extends ProcessorExtension
+{   
+    /**
+     * Set the template image resolver for this extension
+     * 
+     * @param resolver      TemplateImageResolver
+     */
+    void setTemplateImageResolver(TemplateImageResolver resolver);
     
-    public boolean isLoggingEnabled()
-    {
-        return logger.isDebugEnabled();
-    }
-    
-    public boolean jsGet_isLoggingEnabled()
-    {
-        return isLoggingEnabled();
-    }
-    
-    public void log(String str)
-    {
-        logger.debug(str);
-    }
+    /**
+     * Get the template image resolver for this extension
+     * 
+     * @return TemplateImageResolver
+     */
+    TemplateImageResolver getTemplateImageResolver();
 }

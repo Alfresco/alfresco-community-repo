@@ -37,7 +37,7 @@ import org.mozilla.javascript.Scriptable;
  * 
  * @author Kevin Roast
  */
-public final class CrossRepositoryCopy extends BaseScopableScriptImplementation
+public final class CrossRepositoryCopy extends BaseScopableProcessorExtension
 {
     public final static String BEAN_NAME = "crossCopyScript";
     

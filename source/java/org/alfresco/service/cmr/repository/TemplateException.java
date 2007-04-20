@@ -31,6 +31,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
  */
 public class TemplateException extends AlfrescoRuntimeException
 {
+    private static final long serialVersionUID = 2863142603098852564L;
+
     /**
      * @param msgId
      */

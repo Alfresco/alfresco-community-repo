@@ -25,30 +25,16 @@
 package org.alfresco.service.cmr.repository;
 
 /**
- * Interface to represent a server side template extension implementation
+ * Interface to represent a server side script implementation
  * 
- * @author Kevin Roast
+ * @author Roy Wetherall
  */
-public interface TemplateExtensionImplementation
+public interface ProcessorExtension 
 {
-    /**
-     * Returns the name of the template extension 
-     * 
-     * @return the name of the template extension
-     */
-    String getExtensionName();
-    
-    /**
-     * Set the template image resolver for this extension
-     * 
-     * @param resolver      TemplateImageResolver
-     */
-    void setTemplateImageResolver(TemplateImageResolver resolver);
-    
-    /**
-     * Get the template image resolver for this extension
-     * 
-     * @return TemplateImageResolver
-     */
-    TemplateImageResolver getTemplateImageResolver();
+	/**
+	 * Returns the name of the extension 
+	 * 
+	 * @return the name of the extension
+	 */
+	String getExtensionName();
 }

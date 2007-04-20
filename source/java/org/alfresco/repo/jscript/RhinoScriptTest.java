@@ -260,7 +260,7 @@ public class RhinoScriptTest extends TestCase
                         scriptService.executeScript(contentNodeRef, BaseNodeServiceTest.PROP_QNAME_TEST_CONTENT, model);
                         
                         // test executing a script directly as a String
-                        scriptService.executeScriptString(TESTSCRIPT1, model);
+                        scriptService.executeScriptString("javascript", TESTSCRIPT1, model);
                     }
                     catch (Throwable err)
                     {

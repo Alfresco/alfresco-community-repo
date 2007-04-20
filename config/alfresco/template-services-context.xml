@@ -3,44 +3,39 @@
 
 <beans>
 
-    <bean id="templateService" class="org.alfresco.repo.template.TemplateServiceImpl">
-        <!-- A Map of named template engines to class implementations/Spring bean IDs -->
-        <!-- The key of each property is the name of the engine - this is the name that is passed in -->
-        <!-- to the TemplateService by the caller. The value is either a fully qualified class name for -->
-        <!-- the object to create, or the Spring bean ID if the object requires Spring service injection. -->
-		  <property name="templateEngines">
-            <map>
-                <entry key="freemarker">
-                    <value>freeMarkerProcessor</value>
-                </entry>
-            </map>
-        </property>
+    <bean id="templateService" class="org.alfresco.repo.processor.TemplateServiceImpl">
         <property name="defaultTemplateEngine">
             <value>freemarker</value>
         </property>
-    </bean>
-    
-    <!-- This engine requires Spring config setup to use Repository services -->
-    <!-- The beans are not thread safe and therefore we create one per request -->
-    <bean id="freeMarkerProcessor" class="org.alfresco.repo.template.FreeMarkerProcessor" singleton="false">
-        <property name="nodeService">
+    	<property name="nodeService">
             <ref bean="NodeService"/>
         </property>
-        <property name="contentService">
-            <ref bean="ContentService"/>
-        </property>
-        <!-- 
-        <property name="defaultEncoding">
-            <value>UTF-8</value>
-        </property>
-        -->
+    </bean>
+    
+    <bean id="baseTemplateProcessor" abstract="true" init-method="register">
+    	<property name="templateService">
+            <ref bean="templateService"/>
+        </property>    	
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>	
+    </bean>
+    
+    <!-- The beans are not thread safe and therefore we create one per request -->
+    <bean id="freeMarkerProcessor" parent="baseTemplateProcessor" class="org.alfresco.repo.template.FreeMarkerProcessor">
+		<property name="name">
+			<value>freemarker</value>
+		</property>
+		<property name="extension">
+			<value>ftl</value>
+		</property>
     </bean>
     
     <!-- base config implementation that template extension beans extend from - for auto registration
          as a global template helper with the TemplateService -->
     <bean id="baseTemplateImplementation" abstract="true" init-method="register">
-        <property name="templateService">
-            <ref bean="templateService"/>
+        <property name="processor">
+            <ref bean="freeMarkerProcessor"/>
         </property>
     </bean>
     

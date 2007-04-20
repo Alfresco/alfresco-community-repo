@@ -25,7 +25,7 @@
 package org.alfresco.service.cmr.repository;
 
 import java.io.Writer;
-import java.util.List;
+import java.util.Map;
 
 import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
@@ -47,6 +47,44 @@ import org.alfresco.service.PublicService;
 @PublicService
 public interface TemplateService
 {
+    /** Keys for default model values */
+    public static final String KEY_IMAGE_RESOLVER = "imageresolver";
+    public static final String KEY_COMPANY_HOME = "companyhome";
+    public static final String KEY_USER_HOME = "userhome";
+    public static final String KEY_PERSON = "person";
+    public static final String KEY_TEMPLATE = "template";
+    public static final String KEY_DATE = "date";
+    
+    /**
+     * Process a template against the upplied data model and return the result as
+     * a string.
+     * 
+     * The template engine used will be determined by the extension of the template.
+     *      
+     * @param template     Template (qualified classpath name or noderef)
+     * @param model        Object model to process template against
+     * 
+     * @return output of the template process as a String
+     * @throws TemplateException
+     */
+    @Auditable(parameters = {"template", "model"})
+    public String processTemplate(String template, Object model)
+        throws TemplateException;
+    
+    /**
+     * Process a template against the supplied data model and write to the out.
+     * 
+     * The template engine used will be determined by the extension of the template.
+     * 
+     * @param engine       Name of the template engine to use
+     * @param template     Template (qualified classpath name or noderef)
+     * @param model        Object model to process template against
+     * @param out          Writer object to send output too
+     */
+    @Auditable(parameters = {"template", "model", "out"})
+    public void processTemplate(String template, Object model, Writer out)
+        throws TemplateException;
+    
     /**
      * Process a template against the supplied data model and write to the out.
      * 
@@ -101,7 +139,7 @@ public interface TemplateService
     @Auditable(parameters = {"engine", "template", "model", "out"})
     public void processTemplateString(String engine, String template, Object model, Writer out)
         throws TemplateException;
-    
+        
     /**
      * Return a TemplateProcessor instance for the specified engine name.
      * Note that the processor instance is NOT thread safe!
@@ -114,18 +152,28 @@ public interface TemplateService
     public TemplateProcessor getTemplateProcessor(String engine);
     
     /**
-     * Registers a template extension implementation with the Template service
+     * Registers a new template processor with the template service
      * 
-     * @param extension     the template extension implementation
+     * @param templateProcessor     the template processor to register
      */
-    @Auditable(parameters = {"extension"})
-    public void registerExtension(TemplateExtensionImplementation extension);
+    @Auditable(parameters = {"templateProcessor"})
+    public void registerTemplateProcessor(TemplateProcessor templateProcessor);
     
     /**
-     * Returns a list of the Template Extension objects configured for this service
+     * Helper method to build a default model
      * 
-     * @return list of the Template Extension objects configured for this service
+     * @param person        the person node reference
+     * @param companyHome   the company home node refereence
+     * @param userHome      the user home node reference
+     * @param template      the node ref for the template (optional)
+     * @param imageResolver the image resolver (optional)
+     * @return
      */
-    @Auditable(warn = true, recordReturnedObject = false)
-    public List<TemplateExtensionImplementation> getExtensions();
+    @Auditable(parameters = {"person", "compantHome", "userHome", "template", "imageResolver"})
+    public Map<String, Object> buildDefaultModel(
+            NodeRef person, 
+            NodeRef companyHome, 
+            NodeRef userHome,
+            NodeRef template,
+            TemplateImageResolver imageResolver);
 }

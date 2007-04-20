@@ -32,7 +32,7 @@ import org.alfresco.service.cmr.repository.TemplateImageResolver;
  * 
  * @author Andy Hind
  */
-public class Session extends BaseTemplateExtensionImplementation
+public class Session extends BaseTemplateProcessorExtension
 {
     private ServiceRegistry services;
 

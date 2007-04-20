@@ -41,7 +41,7 @@ import freemarker.template.TemplateModelException;
  * <p>
  * Usage: xmldate(Date date)
  */
-public class ISO8601DateFormatMethod extends BaseTemplateExtensionImplementation implements TemplateMethodModelEx
+public class ISO8601DateFormatMethod extends BaseTemplateProcessorExtension implements TemplateMethodModelEx
 {
     /**
      * @see freemarker.template.TemplateMethodModel#exec(java.util.List)

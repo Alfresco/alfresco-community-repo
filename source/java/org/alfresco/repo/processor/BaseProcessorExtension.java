@@ -22,19 +22,57 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.service.cmr.repository;
+package org.alfresco.repo.processor;
+
+import org.alfresco.service.cmr.repository.Processor;
+import org.alfresco.service.cmr.repository.ProcessorExtension;
 
 /**
- * Interface to represent a server side script implementation
+ * Abstract base class for a processor extension
  * 
  * @author Roy Wetherall
  */
-public interface ScriptImplementation 
+public abstract class BaseProcessorExtension implements ProcessorExtension
 {
+	/** The processor */
+	private Processor processor;
+	
+	/** The name of the extension */
+	private String extensionName;
+	
 	/**
-	 * Returns the name of the script 
+	 * Sets the processor
 	 * 
-	 * @return the name of the script
+	 * @param scriptProcessor		the processor
 	 */
-	String getScriptName();
+	public void setProcessor(Processor processor)
+	{
+		this.processor = processor;
+	}
+	
+	/**
+	 * Registers this script with the script service
+	 */
+	public void register()
+	{
+		this.processor.registerProcessorExtension(this);
+	}
+	
+	/**
+	 * Sets the extension name
+	 * 
+	 * @param extensionName the extension name
+	 */
+	public void setExtensionName(String extension)
+	{
+		this.extensionName = extension;
+	}
+    
+    /**
+     * @see org.alfresco.service.cmr.repository.ProcessorExtension#getExtensionName()
+     */
+    public String getExtensionName()
+    {
+    	return this.extensionName;
+    }
 }

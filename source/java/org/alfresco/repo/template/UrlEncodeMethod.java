@@ -41,7 +41,7 @@ import freemarker.template.TemplateScalarModel;
  * <p>
  * Usage: urlencode(String url)
  */
-public class UrlEncodeMethod extends BaseTemplateExtensionImplementation implements TemplateMethodModelEx
+public class UrlEncodeMethod extends BaseTemplateProcessorExtension implements TemplateMethodModelEx
 {
     /**
      * @see freemarker.template.TemplateMethodModel#exec(java.util.List)

@@ -41,7 +41,7 @@ import freemarker.template.TemplateScalarModel;
  * <p>
  * Usage: message(String id)
  */
-public class I18NMessageMethod extends BaseTemplateExtensionImplementation implements TemplateMethodModelEx
+public class I18NMessageMethod extends BaseTemplateProcessorExtension implements TemplateMethodModelEx
 {
     /**
      * @see freemarker.template.TemplateMethodModel#exec(java.util.List)

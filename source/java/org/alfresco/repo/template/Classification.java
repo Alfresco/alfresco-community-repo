@@ -40,7 +40,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Andy Hind
  */
-public class Classification extends BaseTemplateExtensionImplementation
+public class Classification extends BaseTemplateProcessorExtension
 {
     private ServiceRegistry services;
     private StoreRef storeRef;

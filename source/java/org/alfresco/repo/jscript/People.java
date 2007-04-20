@@ -40,7 +40,7 @@ import org.alfresco.util.ParameterCheck;
  * 
  * @author davidc
  */
-public final class People extends BaseScopableScriptImplementation
+public final class People extends BaseScopableProcessorExtension
 {
     /** Repository Service Registry */
     private ServiceRegistry services;

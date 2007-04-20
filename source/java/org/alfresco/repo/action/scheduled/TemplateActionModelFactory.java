@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.action.scheduled;
 
+import java.util.Map;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -46,7 +48,7 @@ public interface TemplateActionModelFactory
      * 
      * @return - the model for the template engine.
      */
-    public Object getModel();
+    public Map<String, Object> getModel();
     
     /**
      * Build a model with a default node context.
@@ -54,5 +56,5 @@ public interface TemplateActionModelFactory
      * @param nodeRef
      * @return - the model (with nodeRef as its context).
      */
-    public Object getModel(NodeRef nodeRef);
+    public Map<String, Object> getModel(NodeRef nodeRef);
 }

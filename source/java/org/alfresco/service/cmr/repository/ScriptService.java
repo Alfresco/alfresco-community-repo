@@ -49,7 +49,9 @@ import org.alfresco.service.namespace.QName;
 public interface ScriptService
 {
     /**
-     * Process a script against the supplied data model.
+     * Process a script against the supplied data model.  
+     * 
+     * Uses the most approparite script engine or the default if none found.
      * 
      * @param scriptClasspath   Script location as qualified classpath name
      * @param model             Object model to process script against
@@ -61,9 +63,27 @@ public interface ScriptService
     @Auditable(parameters = {"scriptClasspath", "model"})
     public Object executeScript(String scriptClasspath, Map<String, Object> model)
         throws ScriptException;
+    /**
+     * Process a script against the supplied data model.  
+     * 
+     * Use the 
+     * 
+     * @param engine            the script engine to use
+     * @param scriptClasspath   Script location as qualified classpath name
+     * @param model             Object model to process script against
+     * 
+     * @return output of the script (may be null or any valid wrapped JavaScript object)
+     * 
+     * @throws ScriptException
+     */
+    @Auditable(parameters = {"engine", "scriptClasspath", "model"})
+    public Object executeScript(String engine, String scriptClasspath, Map<String, Object> model)
+        throws ScriptException;
     
     /**
      * Process a script against the supplied data model.
+     * 
+     * Uses the most approparite script engine or the default if none found.
      * 
      * @param scriptRef    Script NodeRef location
      * @param contentProp  QName of the property on the node that contains the content, null can
@@ -81,6 +101,25 @@ public interface ScriptService
     /**
      * Process a script against the supplied data model.
      * 
+     * @param engine       the script engine to use
+     * @param scriptRef    Script NodeRef location
+     * @param contentProp  QName of the property on the node that contains the content, null can
+     *                     be passed to indicate the default property of 'cm:content'
+     * @param model        Object model to process script against
+     * 
+     * @return output of the script (may be null or any valid wrapped JavaScript object)
+     * 
+     * @throws ScriptException
+     */
+    @Auditable(key = Auditable.Key.ARG_1, parameters = {"engine", "scriptRef", "contentProp", "model"})
+    public Object executeScript(String engine, NodeRef scriptRef, QName contentProp, Map<String, Object> model)
+        throws ScriptException;
+    
+    /**
+     * Process a script against the supplied data model
+     * 
+     * Uses the most approparite script engine or the default if none found.
+     * 
      * @param scriptLocation	object representing the script location
      * @param model				Object model to process script against
      * 
@@ -95,6 +134,21 @@ public interface ScriptService
     /**
      * Process a script against the supplied data model.
      * 
+     * @param engine            the script engine to use
+     * @param scriptLocation    object representing the script location
+     * @param model             Object model to process script against
+     * 
+     * @return  output of the script (may be null or any other valid wrapped JavaScript object)
+     * 
+     * @throws ScriptException
+     */
+    @Auditable(parameters = {"engine", "scriptLocation", "model"})
+    public Object executeScript(String engine, ScriptLocation scriptLocation, Map<String, Object> model)
+        throws ScriptException;
+    
+    /**
+     * Process a script against the supplied data model.  Uses the default script engine.
+     * 
      * @param script       Script content as a String.
      * @param model        Object model to process script against
      * 
@@ -107,10 +161,53 @@ public interface ScriptService
         throws ScriptException;
     
     /**
-     * Registers a script implementation with the script service
+     * Process a script against the supplied data model.
      * 
-     * @param script	the script implementation
+     * @param engine       the script engine to use
+     * @param script       Script content as a String.
+     * @param model        Object model to process script against
+     * 
+     * @return output of the script (may be null or any valid wrapped JavaScript object)
+     * 
+     * @throws ScriptException
      */
-    @Auditable(parameters = {"script"})
-    public void registerScript(ScriptImplementation script);
+    @Auditable(parameters = {"engine", "script", "model"})
+    public Object executeScriptString(String engine, String script, Map<String, Object> model)
+        throws ScriptException;
+    
+    /**
+     * Registers a script processor with the script service
+     * 
+     * @param scriptProcessor
+     */
+    @Auditable(parameters = {"scriptProcessot"})
+    public void registerScriptProcessor(ScriptProcessor scriptProcessor);
+    
+    /**
+     * Create the default data-model available to scripts as global scope level objects:
+     * <p>
+     * 'companyhome' - the Company Home node<br>
+     * 'userhome' - the current user home space node<br>
+     * 'person' - the node representing the current user Person<br>
+     * 'script' - the node representing the script itself (may not be available)<br>
+     * 'document' - document context node (may not be available)<br>
+     * 'space' - space context node (may not be available)
+     * 
+     * @param person        The current user Person Node
+     * @param companyHome   The CompanyHome ref
+     * @param userHome      The User home space ref
+     * @param script        Optional ref to the script itself
+     * @param document      Optional ref to a document Node
+     * @param space         Optional ref to a space Node
+     * @param resolver      Image resolver to resolve icon images etc.
+     * 
+     * @return A Map of global scope scriptable Node objects
+     */
+    public Map<String, Object> buildDefaultModel(
+            NodeRef person, 
+            NodeRef companyHome, 
+            NodeRef userHome,
+            NodeRef script, 
+            NodeRef document, 
+            NodeRef space);
 }

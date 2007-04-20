@@ -24,48 +24,52 @@
  */
 package org.alfresco.service.cmr.repository;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import java.util.Map;
+
+import org.alfresco.service.namespace.QName;
 
 /**
- * @author Kevin Roast
+ * Script processor interface
+ * 
+ * @author Roy Wetherall
  */
-public class ScriptException extends AlfrescoRuntimeException
-{
-    private static final long serialVersionUID = 1739480648583299623L;
-
+public interface ScriptProcessor extends Processor
+{    
     /**
-     * @param msgId
+     * Execute script
+     * 
+     * @param location  the location of the script 
+     * @param model     context model
+     * @return Object   the result of the script
      */
-    public ScriptException(String msgId)
-    {
-        super(msgId);
-    }
-
-    /**
-     * @param msgId
-     * @param cause
-     */
-    public ScriptException(String msgId, Throwable cause)
-    {
-        super(msgId, cause);
-    }
+    public Object execute(ScriptLocation location, Map<String, Object> model);
     
     /**
-     * @param msgId
-     * @param params
+     * Execute script
+     * 
+     * @param nodeRef       the script node reference
+     * @param contentProp   the content property of the script
+     * @param model         the context model
+     * @return Object       the result of the script
      */
-    public ScriptException(String msgId, Object[] params)
-    {
-        super(msgId, params);
-    }
+    public Object execute(NodeRef nodeRef, QName contentProp, Map<String, Object> model);
+    
+    /** 
+     * Execute script
+     * 
+     * @param location  the classpath string locating the script
+     * @param model     the context model
+     * @return Object   the result of the script
+     */
+    public Object execute(String location, Map<String, Object> model);
     
     /**
-     * @param msgId
-     * @param msgParams
-     * @param cause
+     * Execute script string
+     * 
+     * @param script    the script string
+     * @param model     the context model
+     * @return Obejct   the result of the script 
      */
-    public ScriptException(String msgId, Object[] msgParams, Throwable cause)
-    {
-        super(msgId, msgParams, cause);
-    }
+    public Object executeString(String script, Map<String, Object> model);
+
 }

@@ -36,7 +36,7 @@ import org.alfresco.service.cmr.action.ActionService;
  * 
  * @author davidc
  */
-public final class Actions extends BaseScopableScriptImplementation
+public final class Actions extends BaseScopableProcessorExtension
 {
     /** Repository Service Registry */
     private ServiceRegistry services;

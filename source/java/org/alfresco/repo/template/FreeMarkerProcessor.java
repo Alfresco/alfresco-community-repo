@@ -26,18 +26,17 @@ package org.alfresco.repo.template;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.repo.processor.BaseProcessor;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.ProcessorExtension;
 import org.alfresco.service.cmr.repository.TemplateException;
-import org.alfresco.service.cmr.repository.TemplateExtensionImplementation;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
+import org.alfresco.service.cmr.repository.TemplateProcessorExtension;
+import org.alfresco.service.cmr.repository.TemplateService;
 import org.apache.log4j.Logger;
 
 import freemarker.cache.MruCacheStorage;
@@ -61,7 +60,7 @@ import freemarker.template.TemplateExceptionHandler;
  * 
  * @author Kevin Roast
  */
-public class FreeMarkerProcessor implements TemplateProcessor
+public class FreeMarkerProcessor extends BaseProcessor implements TemplateProcessor
 {
     private final static String MSG_ERROR_NO_TEMPLATE   = "error_no_template";
     private final static String MSG_ERROR_TEMPLATE_FAIL = "error_template_fail";
@@ -72,35 +71,9 @@ public class FreeMarkerProcessor implements TemplateProcessor
     /** Pseudo path to String based template */
     private static final String PATH = "string://fixed";
     
-    /** The permission-safe node service */
-    private NodeService nodeService;
-    
-    /** The Content Service to use */
-    private ContentService contentService;
-    
     /** Template encoding */
     private String defaultEncoding;
     
-    /**
-     * Set the node service
-     * 
-     * @param nodeService       The permission-safe node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-    
-    /**
-     * Set the content service
-     * 
-     * @param contentService    The ContentService to use
-     */
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
-    }
-
     /**
      * Set the default template encoding
      * 
@@ -124,7 +97,7 @@ public class FreeMarkerProcessor implements TemplateProcessor
         config.setCacheStorage(new MruCacheStorage(2, 0));
         
         // use our custom loader to find templates on the ClassPath
-        config.setTemplateLoader(new ClassPathRepoTemplateLoader(nodeService, contentService));
+        config.setTemplateLoader(new ClassPathRepoTemplateLoader(this.services.getNodeService(), this.services.getContentService()));
         
         // use our custom object wrapper that can deal with QNameMap objects directly
         config.setObjectWrapper(new QNameAwareObjectWrapper());
@@ -213,7 +186,8 @@ public class FreeMarkerProcessor implements TemplateProcessor
                 try
                 {
                     // perform the template processing against supplied data model
-                    t.process(model, out);
+                    Object freeMarkerModel = convertToFreeMarkerModel(model);
+                    t.process(freeMarkerModel, out);
                 }
                 catch (Throwable err)
                 {
@@ -270,7 +244,8 @@ public class FreeMarkerProcessor implements TemplateProcessor
                 try
                 {
                     // perform the template processing against supplied data model
-                    t.process(model, out);
+                    Object freeMarkerModel = convertToFreeMarkerModel(model);
+                    t.process(freeMarkerModel, out);
                     
                     if (logger.isDebugEnabled())
                     {
@@ -294,58 +269,52 @@ public class FreeMarkerProcessor implements TemplateProcessor
         }
     }
     
-    /**
-     * Create the default data-model available to templates as global objects.
-     * <p>
-     * 'companyhome' - the Company Home node<br>
-     * 'userhome' - the current user home space node<br>
-     * 'person' - the node representing the current user Person<br>
-     * 'template' - the node representing the template itself (may not be available)
-     * <p>
-     * Also adds various helper util objects and methods.
-     * 
-     * @param services      ServiceRegistry
-     * @param person        The current user Person Node
-     * @param companyHome   The CompanyHome ref
-     * @param userHome      The User home space ref
-     * @param template      Optional ref to the template itself
-     * @param resolver      Image resolver to resolve icon images etc.
-     * 
-     * @return A Map of Templatable Node objects and util objects.
-     */
-    public static Map<String, Object> buildDefaultModel(
-            ServiceRegistry services,
-            NodeRef person, NodeRef companyHome, NodeRef userHome, NodeRef template,
-            TemplateImageResolver imageResolver)
+    private Object convertToFreeMarkerModel(Object model)
     {
-        Map<String, Object> model = new HashMap<String, Object>(16, 1.0f);
-        
-        // supply the Company Home space as "companyhome"
-        model.put("companyhome", new TemplateNode(companyHome, services, imageResolver));
-        
-        // supply the users Home Space as "userhome"
-        model.put("userhome", new TemplateNode(userHome, services, imageResolver));
-        
-        // supply the current user Node as "person"
-        model.put("person", new TemplateNode(person, services, imageResolver));
-        
-        // add the template itself as "template" if it comes from content on a node
-        if (template != null)
-        {
-            model.put("template", new TemplateNode(template, services, imageResolver));
+        // If we dont have a map in our hand we just return the passes model
+        if (model instanceof Map)
+        {        
+            Map<String, Object> freeMarkerModel = new HashMap<String, Object>(((Map)model).size());
+            
+            // Look for the image resolver in the model
+            TemplateImageResolver imageResolver = (TemplateImageResolver)((Map)model).get(TemplateService.KEY_IMAGE_RESOLVER);
+            
+            for (Object objKey : ((Map)model).keySet())
+            {
+                String key = (String)objKey;
+                if (key.equals(TemplateService.KEY_IMAGE_RESOLVER) == false)
+                {
+                    Object value = ((Map)model).get(key);
+                    if (value instanceof NodeRef)
+                    {
+                        // Concer the node reference to a template node
+                        freeMarkerModel.put(key, new TemplateNode((NodeRef)value, this.services, imageResolver));
+                    }
+                    else
+                    {
+                        // Just add the objec to the free marker model
+                        freeMarkerModel.put(key, ((Map)model).get(key));
+                    }
+                }
+            }
+            
+            
+            // add the template extensions to the model
+            // the extensions include custom root helper objects and custom template method objects
+            for (ProcessorExtension ext : this.processExtensions.values())
+            {
+                if (ext instanceof TemplateProcessorExtension)
+                {
+                    ((TemplateProcessorExtension)ext).setTemplateImageResolver(imageResolver);
+                }
+                freeMarkerModel.put(ext.getExtensionName(), ext);
+            }
+            
+            return freeMarkerModel;
         }
-        
-        // current date/time is useful to have and isn't supplied by FreeMarker by default
-        model.put("date", new Date());
-        
-        // add the template extensions to the model
-        // the extensions include custom root helper objects and custom template method objects
-        for (TemplateExtensionImplementation ext : services.getTemplateService().getExtensions())
+        else
         {
-            ext.setTemplateImageResolver(imageResolver);
-            model.put(ext.getExtensionName(), ext);
+            return model;
         }
-        
-        return model;
     }
 }

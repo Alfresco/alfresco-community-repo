@@ -3,7 +3,25 @@
 
 <beans>
 
-    <bean id="scriptService" class="org.alfresco.repo.jscript.RhinoScriptService">
+	<bean id="scriptService" class="org.alfresco.repo.processor.ScriptServiceImpl">
+	    <property name="defaultScriptProcessor">
+            <value>javascript</value>
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService"/>
+        </property>
+    </bean>
+
+    <bean id="javaScriptProcessor" class="org.alfresco.repo.jscript.RhinoScriptProcessor" init-method="register">
+    	<property name="name">
+            <value>javascript</value>
+        </property>
+        <property name="extension">
+            <value>js</value>
+        </property>        
+        <property name="scriptService">
+            <ref bean="scriptService"/>
+        </property>
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>
@@ -20,20 +38,20 @@
     
     <!-- base config implementation that script extension beans extend from - for auto registration
          as a global script with the ScriptService -->
-    <bean id="baseScriptImplementation" abstract="true" init-method="register">
-        <property name="scriptService">
-            <ref bean="scriptService"/>
+    <bean id="baseJavaScriptExtension" abstract="true" init-method="register">
+        <property name="processor">
+            <ref bean="javaScriptProcessor"/>
         </property>
     </bean>    
     
-    <bean id="loggerScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.ScriptLogger">
-        <property name="scriptName">
+    <bean id="loggerScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.ScriptLogger">
+        <property name="extensionName">
             <value>logger</value>
         </property>
     </bean>
     
-    <bean id="utilsScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.ScriptUtils">
-        <property name="scriptName">
+    <bean id="utilsScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.ScriptUtils">
+        <property name="extensionName">
             <value>utils</value>
         </property>
         <property name="serviceRegistry">
@@ -41,8 +59,8 @@
         </property>
     </bean>
     
-    <bean id="actionsScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.Actions">
-        <property name="scriptName">
+    <bean id="actionsScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.Actions">
+        <property name="extensionName">
             <value>actions</value>
         </property>        
         <property name="serviceRegistry">
@@ -50,8 +68,8 @@
         </property>
     </bean>
 
-    <bean id="searchScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.Search">
-        <property name="scriptName">
+    <bean id="searchScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.Search">
+        <property name="extensionName">
             <value>search</value>
         </property>        
         <property name="serviceRegistry">
@@ -62,8 +80,8 @@
         </property>
     </bean>
 
-    <bean id="classificationScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.Classification">
-        <property name="scriptName">
+    <bean id="classificationScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.Classification">
+        <property name="extensionName">
             <value>classification</value>
         </property>        
         <property name="serviceRegistry">
@@ -74,8 +92,8 @@
         </property>
     </bean>
 
-    <bean id="peopleScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.People">
-        <property name="scriptName">
+    <bean id="peopleScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.People">
+        <property name="extensionName">
             <value>people</value>
         </property>        
         <property name="serviceRegistry">
@@ -89,8 +107,8 @@
         </property>
     </bean>
 
-    <bean id="sessionScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.Session">
-        <property name="scriptName">
+    <bean id="sessionScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.Session">
+        <property name="extensionName">
             <value>session</value>
         </property>        
         <property name="serviceRegistry">
@@ -104,8 +122,8 @@
         </property>
     </bean>
     
-    <bean id="avmScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.AVM">
-        <property name="scriptName">
+    <bean id="avmScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.AVM">
+        <property name="extensionName">
             <value>avm</value>
         </property>        
         <property name="serviceRegistry">
@@ -113,8 +131,8 @@
         </property>
     </bean>
     
-    <bean id="crossCopyScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.CrossRepositoryCopy">
-        <property name="scriptName">
+    <bean id="crossCopyScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.CrossRepositoryCopy">
+        <property name="extensionName">
             <value>crossRepoCopy</value>
         </property>        
         <property name="serviceRegistry">

@@ -34,7 +34,7 @@ import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
  * 
  * @author Kevin Roast
  */
-public class AVM extends BaseTemplateExtensionImplementation
+public class AVM extends BaseTemplateProcessorExtension
 {
     private ServiceRegistry services;
 

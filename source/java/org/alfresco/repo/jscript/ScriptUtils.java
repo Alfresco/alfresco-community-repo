@@ -32,7 +32,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author Kevin Roast
  */
-public final class ScriptUtils extends BaseScopableScriptImplementation
+public final class ScriptUtils extends BaseScopableProcessorExtension
 {
     /** Services */
     private ServiceRegistry services;

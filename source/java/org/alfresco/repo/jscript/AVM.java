@@ -34,7 +34,7 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
  *  
  * @author Kevin Roast
  */
-public final class AVM extends BaseScopableScriptImplementation
+public final class AVM extends BaseScopableProcessorExtension
 {
     /** Repository Service Registry */
     private ServiceRegistry services;

@@ -22,57 +22,34 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.jscript;
+package org.alfresco.service.cmr.repository;
 
-import org.alfresco.service.cmr.repository.ScriptImplementation;
-import org.alfresco.service.cmr.repository.ScriptService;
 
 /**
- * Abstract base class for a script implementation
+ * Processor interface.
  * 
  * @author Roy Wetherall
  */
-public abstract class BaseScriptImplementation implements ScriptImplementation
+public interface Processor
 {
-	/** The script service */
-	private ScriptService scriptService;
-	
-	/** The name of the script */
-	private String scriptName;
-	
-	/**
-	 * Sets the script service
-	 * 
-	 * @param scriptService		the script service
-	 */
-	public void setScriptService(ScriptService scriptService)
-	{
-		this.scriptService = scriptService;
-	}
-	
-	/**
-	 * Registers this script with the script service
-	 */
-	public void register()
-	{
-		this.scriptService.registerScript(this);
-	}
-	
-	/**
-	 * Sets the script name
-	 * 
-	 * @param scriptName the script name
-	 */
-	public void setScriptName(String scriptName)
-	{
-		this.scriptName = scriptName;
-	}
+    /**
+     * Get the name of the processor
+     * 
+     * @return  the name of the processor
+     */
+    public String getName();
     
     /**
-     * @see org.alfresco.service.cmr.repository.ScriptImplementation#getScriptName()
+     * The file extension that the processor is associated with, null if none.
+     * 
+     * @return  the extension
      */
-    public String getScriptName()
-    {
-    	return this.scriptName;
-    }
+    public String getExtension();
+    
+    /**
+     * Registers a processor extension with the processor
+     * 
+     * @param processorExtension    the process extension
+     */
+    public void registerProcessorExtension(ProcessorExtension processorExtension);
 }

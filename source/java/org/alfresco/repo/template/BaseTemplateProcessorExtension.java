@@ -24,37 +24,22 @@
  */
 package org.alfresco.repo.template;
 
-import org.alfresco.service.cmr.repository.TemplateExtensionImplementation;
+import org.alfresco.repo.processor.BaseProcessorExtension;
+import org.alfresco.service.cmr.repository.TemplateProcessorExtension;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
-import org.alfresco.service.cmr.repository.TemplateService;
 
 /**
  * Abstract base class for a template extension implementation
  * 
  * @author Kevin Roast
  */
-public abstract class BaseTemplateExtensionImplementation implements TemplateExtensionImplementation
-{
-    /** The template service instance */
-    private TemplateService templateService;
-    
-    /** The name of the template extension */
-    private String extensionName;
-    
+public abstract class BaseTemplateProcessorExtension extends BaseProcessorExtension implements TemplateProcessorExtension
+{   
     /** The TemplateImageResolver for the current template execution thread */
     private ThreadLocal<TemplateImageResolver> resolver = new ThreadLocal<TemplateImageResolver>();
     
-    
     /**
-     * @param templateService   The TemplateService to set.
-     */
-    public void setTemplateService(TemplateService templateService)
-    {
-        this.templateService = templateService;
-    }
-    
-    /**
-     * @see org.alfresco.service.cmr.repository.TemplateExtensionImplementation#setTemplateImageResolver(org.alfresco.service.cmr.repository.TemplateImageResolver)
+     * @see org.alfresco.service.cmr.repository.TemplateProcessorExtension#setTemplateImageResolver(org.alfresco.service.cmr.repository.TemplateImageResolver)
      */
     public void setTemplateImageResolver(TemplateImageResolver resolver)
     {
@@ -62,36 +47,10 @@ public abstract class BaseTemplateExtensionImplementation implements TemplateExt
     }
     
     /**
-     * @see org.alfresco.service.cmr.repository.TemplateExtensionImplementation#getTemplateImageResolver()
+     * @see org.alfresco.service.cmr.repository.TemplateProcessorExtension#getTemplateImageResolver()
      */
     public TemplateImageResolver getTemplateImageResolver()
     {
         return this.resolver.get();
-    }
-
-    /**
-     * Registers this template extension with the Template Service
-     */
-    public void register()
-    {
-        this.templateService.registerExtension(this);
-    }
-    
-    /**
-     * Returns the name of the template extension 
-     * 
-     * @return the name of the template extension
-     */
-    public String getExtensionName()
-    {
-        return extensionName;
-    }
-
-    /**
-     * @param extensionName     The template extension name.
-     */
-    public void setExtensionName(String extensionName)
-    {
-        this.extensionName = extensionName;
     }
 }

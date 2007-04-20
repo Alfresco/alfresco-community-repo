@@ -42,7 +42,7 @@ import freemarker.template.TemplateScalarModel;
  * <p>
  * Usage: hasAspect(TemplateNode node, String aspect) - 1 on true, 0 on false
  */
-public class HasAspectMethod extends BaseTemplateExtensionImplementation implements TemplateMethodModelEx
+public class HasAspectMethod extends BaseTemplateProcessorExtension implements TemplateMethodModelEx
 {
     /**
      * @see freemarker.template.TemplateMethodModel#exec(java.util.List)

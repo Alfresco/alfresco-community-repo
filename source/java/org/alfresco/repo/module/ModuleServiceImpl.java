@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.admin.registry.RegistryService;
@@ -176,7 +177,9 @@ public class ModuleServiceImpl implements ModuleService
                 try
                 {
                     InputStream is = new BufferedInputStream(resource.getInputStream());
-                    ModuleDetails details = new ModuleDetailsImpl(is);
+                    Properties properties = new Properties();
+                    properties.load(is);
+                    ModuleDetails details = new ModuleDetailsImpl(properties);
                     moduleDetailsById.put(details.getId(), details);
                 }
                 catch (Throwable e)

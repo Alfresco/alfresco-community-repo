@@ -270,7 +270,7 @@ public class ModuleComponentHelper
     private void startModule(ModuleDetails module, Set<ModuleComponent> executedComponents)
     {
         String moduleId = module.getId();
-        VersionNumber moduleVersion = module.getVersionNumber();
+        VersionNumber moduleVersion = module.getVersion();
         // Get the module details from the registry
         RegistryKey moduleKeyInstalledVersion = new RegistryKey(
                 ModuleComponentHelper.URI_MODULES_1_0,
@@ -336,7 +336,7 @@ public class ModuleComponentHelper
         }
         
         // Check the version applicability
-        VersionNumber moduleVersion = module.getVersionNumber();
+        VersionNumber moduleVersion = module.getVersion();
         VersionNumber minVersion = component.getAppliesFromVersionNumber();
         VersionNumber maxVersion = component.getAppliesToVersionNumber();
         if (moduleVersion.compareTo(minVersion) < 0 || moduleVersion.compareTo(maxVersion) > 0)

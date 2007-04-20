@@ -24,6 +24,9 @@
  */
 package org.alfresco.service.cmr.module;
 
+import java.util.Date;
+import java.util.Properties;
+
 import org.alfresco.util.VersionNumber;
 
 /**
@@ -34,12 +37,21 @@ import org.alfresco.util.VersionNumber;
  */
 public interface ModuleDetails
 {
+    static final String PROP_ID = "module.id";
+    static final String PROP_VERSION = "module.version";
+    static final String PROP_TITLE = "module.title";
+    static final String PROP_DESCRIPTION = "module.description";
+    static final String PROP_REPO_VERSION_MIN = "module.repo.version.min";
+    static final String PROP_REPO_VERSION_MAX = "module.repo.version.max";
+    static final String PROP_INSTALL_DATE = "module.installDate";
+    static final String PROP_INSTALL_STATE = "module.installState";
+    
     /**
-     * Indicates whether the details exists or not
+     * Get all defined properties.
      * 
-     * @return  true if it exists, false otherwise
+     * @return Returns the properties defined by this set of details
      */
-    boolean exists();
+    Properties getProperties();
     
     /**
      * Get the id of the module
@@ -53,7 +65,7 @@ public interface ModuleDetails
      * 
      * @return  module version number
      */
-    VersionNumber getVersionNumber();
+    VersionNumber getVersion();
     
     /**
      * Get the title of the module
@@ -72,9 +84,16 @@ public interface ModuleDetails
     /**
      * Get the modules install date
      * 
-     * @return  module install date
+     * @return  module install date or <tt>null</tt> if it has not been set
      */
-    String getInstalledDate();
+    Date getInstallDate();
+    
+    /**
+     * Set the module installation date.
+     * 
+     * @param installDate   the module install date
+     */
+    void setInstallDate(Date installDate);
     
     /**
      * Get the modules install state
@@ -82,4 +101,11 @@ public interface ModuleDetails
      * @return  the modules install state
      */
     ModuleInstallState getInstallState();
+    
+    /**
+     * Set the module install state.
+     * 
+     * @param installState  the module install state
+     */
+    void setInstallState(ModuleInstallState installState);
 }

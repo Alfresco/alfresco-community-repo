@@ -36,6 +36,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.alfresco.util.TempFileProvider;
 import org.springframework.util.FileCopyUtils;
 
 import de.schlichtherle.io.DefaultRaesZipDetector;
@@ -212,7 +213,8 @@ public class ModuleManagementToolTest extends TestCase
         }
         catch (ModuleManagementToolException exception)
         {
-            // ignore since we are expecting this
+            exception.printStackTrace();
+            System.out.println("Expected failure: " + exception.getMessage());
         }
     }
     
@@ -232,7 +234,7 @@ public class ModuleManagementToolTest extends TestCase
     private String getFileLocation(String extension, String location)
         throws IOException
     {
-        File file = File.createTempFile("moduleManagementToolTest-", extension);        
+        File file = TempFileProvider.createTempFile("moduleManagementToolTest-", extension);        
         InputStream is = this.getClass().getClassLoader().getResourceAsStream(location);
         assertNotNull(is);
         OutputStream os = new FileOutputStream(file);        

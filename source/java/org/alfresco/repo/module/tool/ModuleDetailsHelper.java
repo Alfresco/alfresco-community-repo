@@ -27,10 +27,10 @@ package org.alfresco.repo.module.tool;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Date;
+import java.util.Properties;
 
 import org.alfresco.repo.module.ModuleDetailsImpl;
-import org.alfresco.service.cmr.module.ModuleInstallState;
+import org.alfresco.service.cmr.module.ModuleDetails;
 
 import de.schlichtherle.io.File;
 import de.schlichtherle.io.FileInputStream;
@@ -40,34 +40,45 @@ import de.schlichtherle.io.FileOutputStream;
  * Module details helper used by the module mangement tool
  * 
  * @author Roy Wetherall
+ * @author Derek Hulley
  */
-public class ModuleDetailsHelper extends ModuleDetailsImpl
-{    
+public class ModuleDetailsHelper
+{
     /**
-     * Constructor
-     * 
-     * @param is    input stream
+     * Factory method to create module details from a stream of a properties file
+     * @param is                the properties input stream, which will be closed during the call
+     * @return                  Returns the initialized module details
      */
-    public ModuleDetailsHelper(InputStream is)
+    public static ModuleDetails createModuleDetailsFromPropertiesStream(InputStream is) throws IOException
     {
-        super(is);
+        try
+        {
+            Properties properties = new Properties();
+            properties.load(is);
+            return new ModuleDetailsImpl(properties);
+        }
+        finally
+        {
+            try { is.close(); } catch (Throwable e) {}
+        }
     }
 
     /**
      * Creates a module details helper object based on a file location.
      * 
      * @param location  file location
-     * @return           module details helper object
+     * @return          Returns the module details or null if the location points to nothing
      */
-    public static ModuleDetailsHelper create(String location)
+    public static ModuleDetails createModuleDetailsFromPropertyLocation(String location)
     {
-        ModuleDetailsHelper result = null;
+        ModuleDetails result = null;
         try
         {
             File file = new File(location, ModuleManagementTool.DETECTOR_AMP_AND_WAR);
             if (file.exists() == true)
             {
-                result = new ModuleDetailsHelper(new FileInputStream(file));
+                InputStream is = new FileInputStream(file);
+                result = createModuleDetailsFromPropertiesStream(is);
             }
         }
         catch (IOException exception)
@@ -78,15 +89,17 @@ public class ModuleDetailsHelper extends ModuleDetailsImpl
     }
     
     /**
-     * Creates a module details helper object based on a war location and the module id
+     * Creates a module details instance based on a war location and the module id
      * 
      * @param warLocation   the war location
      * @param moduleId      the module id
-     * @return              the module details helper
+     * @return              Returns the module details for the given module ID as it occurs in the WAR, or <tt>null</tt>
+     *                      if there are no module details available.
      */
-    public static ModuleDetailsHelper create(String warLocation, String moduleId)
+    public static ModuleDetails createModuleDetailsFromWarAndId(String warLocation, String moduleId)
     {
-        return ModuleDetailsHelper.create(ModuleDetailsHelper.getModulePropertiesFileLocation(warLocation, moduleId));
+        String modulePropertiesFileLocation = ModuleDetailsHelper.getModulePropertiesFileLocation(warLocation, moduleId);
+        return ModuleDetailsHelper.createModuleDetailsFromPropertyLocation(modulePropertiesFileLocation);
     }
     
     /**
@@ -102,27 +115,30 @@ public class ModuleDetailsHelper extends ModuleDetailsImpl
     }
     
     /**
-     * Saves the module detailsin to the war in the correct location based on the module id
+     * Saves the module details to the war in the correct location based on the module id
      * 
      * @param warLocation   the war location
      * @param moduleId      the module id
      */
-    public void save(String warLocation, String moduleId)
+    public static void saveModuleDetails(String warLocation, ModuleDetails moduleDetails)
     {
+        // Ensure that it is a valid set of properties
+        String moduleId = moduleDetails.getId();
         try
         {
-            File file = new File(getModulePropertiesFileLocation(warLocation, moduleId), ModuleManagementTool.DETECTOR_AMP_AND_WAR);
+            String modulePropertiesFileLocation = getModulePropertiesFileLocation(warLocation, moduleId);
+            File file = new File(modulePropertiesFileLocation, ModuleManagementTool.DETECTOR_AMP_AND_WAR);
             if (file.exists() == false)
             {
-                file.createNewFile();               
+                file.createNewFile();
             }  
             
+            // Get all the module properties
+            Properties moduleProperties = moduleDetails.getProperties();
             OutputStream os = new FileOutputStream(file);
             try
             {
-                Date now = new Date();
-                this.properties.setProperty(PROP_INSTALL_DATE, now.toString());
-                this.properties.store(os, null);
+                moduleProperties.store(os, null);
             }
             finally
             {
@@ -131,18 +147,11 @@ public class ModuleDetailsHelper extends ModuleDetailsImpl
         }
         catch (IOException exception)
         {
-            throw new ModuleManagementToolException("Unable to save module details into WAR file.", exception);
+            throw new ModuleManagementToolException(
+                    "Unable to save module details into WAR file: \n" +
+                    "   Module: " + moduleDetails.getId() + "\n" +
+                    "   Properties: " + moduleDetails.getProperties(),
+                    exception);
         }
     }
-    
-    /**
-     * Set the install state
-     * 
-     * @param installState  the install state
-     */
-    public void setInstallState(ModuleInstallState installState)
-    {
-        this.properties.setProperty(PROP_INSTALL_STATE, installState.toString());
-    }
-
 }

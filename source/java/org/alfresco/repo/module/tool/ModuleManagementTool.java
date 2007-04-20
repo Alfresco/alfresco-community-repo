@@ -26,15 +26,18 @@ package org.alfresco.repo.module.tool;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleInstallState;
+import org.alfresco.util.VersionNumber;
 import org.doomdark.uuid.UUIDGenerator;
 
 import de.schlichtherle.io.DefaultRaesZipDetector;
@@ -62,7 +65,7 @@ public class ModuleManagementTool
      * The property to add to a custom {@link #FILE_MAPPING_PROPERTIES file-mapping.properties} to inherit the default values.
      * The default is <code>true</code>.
      */
-    private static final String PROP_INHERIT_DEFAULT = "inherit.default";
+    private static final String PROP_INHERIT_DEFAULT = "include.default";
     
     /** Standard directories found in the alfresco war */
     public static final String MODULE_DIR = "/WEB-INF/classes/alfresco/module";
@@ -243,17 +246,23 @@ public class ModuleManagementTool
             }
             
             // Get the details of the installing module
-            ModuleDetailsHelper installingModuleDetails = ModuleDetailsHelper.create(ampFileLocation + "/module.properties");
-            if (installingModuleDetails.exists() == false)
+            String propertiesLocation = ampFileLocation + "/module.properties";
+            ModuleDetails installingModuleDetails = ModuleDetailsHelper.createModuleDetailsFromPropertyLocation(propertiesLocation);
+            if (installingModuleDetails == null)
             {
                 throw new ModuleManagementToolException("No module.properties file has been found in the installing .amp file '" + ampFileLocation + "'");
             }
+            String installingId = installingModuleDetails.getId();
+            VersionNumber installingVersion = installingModuleDetails.getVersion();
             
             // Get the detail of the installed module
-            ModuleDetailsHelper installedModuleDetails = ModuleDetailsHelper.create(warFileLocation, installingModuleDetails.getId());
+            ModuleDetails installedModuleDetails = ModuleDetailsHelper.createModuleDetailsFromWarAndId(warFileLocation, installingModuleDetails.getId());
             if (installedModuleDetails != null)
-            {            
-                int compareValue = installedModuleDetails.getVersionNumber().compareTo(installingModuleDetails.getVersionNumber());
+            {
+                String installedId = installedModuleDetails.getId();
+                VersionNumber installedVersion = installedModuleDetails.getVersion();
+                
+                int compareValue = installedVersion.compareTo(installingVersion);
                 if (forceInstall == true || compareValue == -1)
                 {
                     if (forceInstall == true)
@@ -263,8 +272,8 @@ public class ModuleManagementTool
                     }
                     
                     // Trying to update the extension, old files need to cleaned before we proceed
-                    outputMessage("Clearing out files relating to version '" + installedModuleDetails.getVersionNumber() + "' of module '" + installedModuleDetails.getId() + "'");
-                    cleanWAR(warFileLocation, installedModuleDetails.getId(), preview);
+                    outputMessage("Clearing out files relating to version '" + installedVersion + "' of module '" + installedId + "'");
+                    cleanWAR(warFileLocation, installedId, preview);
                 }
                 else if (compareValue == 0)
                 {
@@ -276,7 +285,7 @@ public class ModuleManagementTool
                 {
                     // Trying to install an earlier version of the extension
                     outputMessage("WARNING: A later version of this module is already installed in the WAR");
-                    throw new ModuleManagementToolException("An earlier version of this module is already installed.  You must first unistall the current version before installing this version of the module.");
+                    throw new ModuleManagementToolException("A later version of this module is already installed.  You must first unistall the current version before installing this version of the module.");
                 }
                 
             }
@@ -302,27 +311,39 @@ public class ModuleManagementTool
             }
             
             // Copy the files from the AEP file into the WAR file
-            outputMessage("Adding files relating to version '" + installingModuleDetails.getVersionNumber() + "' of module '" + installingModuleDetails.getId() + "'");
-            InstalledFiles installedFiles = new InstalledFiles(warFileLocation, installingModuleDetails.getId());
+            outputMessage("Adding files relating to version '" + installingVersion + "' of module '" + installingId + "'");
+            InstalledFiles installedFiles = new InstalledFiles(warFileLocation, installingId);
             for (Map.Entry<Object, Object> entry : fileMappingProperties.entrySet())
             {
+                // The file mappings are expected to start with "/"
+                String mappingSource = (String) entry.getKey();
+                if (mappingSource.length() == 0 || !mappingSource.startsWith("/"))
+                {
+                    throw new AlfrescoRuntimeException("File mapping sources must start with '/', but was: " + mappingSource);
+                }
+                String mappingTarget = (String) entry.getValue();
+                if (mappingTarget.length() == 0 || !mappingTarget.startsWith("/"))
+                {
+                    throw new AlfrescoRuntimeException("File mapping targets must start with '/' but was '" + mappingTarget + "'");
+                }
+                
                 // Run throught the files one by one figuring out what we are going to do during the copy
-                copyToWar(ampFileLocation, warFileLocation, (String)entry.getKey(), (String)entry.getValue(), installedFiles, preview);
+                copyToWar(ampFileLocation, warFileLocation, mappingSource, mappingTarget, installedFiles, preview);
                 
                 if (preview == false)
                 {
                     // Get a reference to the source folder (if it isn't present don't do anything)
-                    File source = new File(ampFileLocation + "/" + entry.getKey(), DETECTOR_AMP_AND_WAR);
+                    File source = new File(ampFileLocation + "/" + mappingSource, DETECTOR_AMP_AND_WAR);
                     if (source != null && source.list() != null)
                     {
                         // Get a reference to the destination folder
-                        File destination = new File(warFileLocation + "/" + entry.getValue(), DETECTOR_AMP_AND_WAR);
+                        File destination = new File(warFileLocation + "/" + mappingTarget, DETECTOR_AMP_AND_WAR);
                         if (destination == null)
                         {
-                            throw new ModuleManagementToolException("The destination folder '" + entry.getValue() + "' as specified in mapping properties does not exist in the war");
+                            throw new ModuleManagementToolException("The destination folder '" + mappingTarget + "' as specified in mapping properties does not exist in the war");
                         }
                         // Do the bulk copy since this is quicker than copying files one by one
-                        destination.copyAllFrom(source);             
+                        destination.copyAllFrom(source);
                     }
                 }
             }   
@@ -334,7 +355,8 @@ public class ModuleManagementTool
            
                 // Update the installed module details
                 installingModuleDetails.setInstallState(ModuleInstallState.INSTALLED);
-                installingModuleDetails.save(warFileLocation, installingModuleDetails.getId());
+                installingModuleDetails.setInstallDate(new Date());
+                ModuleDetailsHelper.saveModuleDetails(warFileLocation, installingModuleDetails);
 
                 // Update the zip files
                 File.update(); 
@@ -462,8 +484,8 @@ public class ModuleManagementTool
      * 
      * @param ampFileLocation   the AMP file location
      * @param warFileLocation   the WAR file location
-     * @param sourceDir         the directory in the AMP to copy from
-     * @param destinationDir    the directory in the WAR to copy to
+     * @param sourceDir         the directory in the AMP to copy from.  It must start with "/".
+     * @param destinationDir    the directory in the WAR to copy to.  It must start with "/".
      * @param installedFiles    a list of the currently installed files
      * @param preview           indicates whether this is a preview install or not
      * @throws IOException      throws any IOExpceptions thar are raised
@@ -471,6 +493,25 @@ public class ModuleManagementTool
     private void copyToWar(String ampFileLocation, String warFileLocation, String sourceDir, String destinationDir, InstalledFiles installedFiles, boolean preview)
         throws IOException
     {
+        if (sourceDir.length() == 0 || !sourceDir.startsWith("/"))
+        {
+            throw new IllegalArgumentException("sourceDir must start with '/'");
+        }
+        if (destinationDir.length() == 0 || !destinationDir.startsWith("/"))
+        {
+            throw new IllegalArgumentException("destinationDir must start with '/'");
+        }
+        
+        // Handle source and destination if they are just the root '/'
+        if (sourceDir.equals("/"))
+        {
+            sourceDir = "";
+        }
+        if (destinationDir.equals("/"))
+        {
+            destinationDir = "";
+        }
+        
         String sourceLocation = ampFileLocation + sourceDir;               
         File ampConfig = new File(sourceLocation, DETECTOR_AMP_AND_WAR);
         
@@ -562,7 +603,7 @@ public class ModuleManagementTool
      */
     public void listModules(String warLocation)
     {
-        ModuleDetailsHelper moduleDetails = null;
+        ModuleDetails moduleDetails = null;
         boolean previous = this.verbose;
         this.verbose = true;
         try
@@ -585,18 +626,19 @@ public class ModuleManagementTool
                         {
                             try
                             {
-                                moduleDetails = new ModuleDetailsHelper(new FileInputStream(moduleProperties));
+                                InputStream is = new FileInputStream(moduleProperties);
+                                moduleDetails = ModuleDetailsHelper.createModuleDetailsFromPropertiesStream(is);
                             }
-                            catch (FileNotFoundException exception)
+                            catch (IOException exception)
                             {
-                                throw new ModuleManagementToolException("Unable to open module properties file '" + moduleProperties.getPath() + "'");
+                                throw new ModuleManagementToolException("Unable to open module properties file '" + moduleProperties.getPath() + "'", exception);
                             }
                             
                             outputMessage("Module '" + moduleDetails.getId() + "' installed in '" + warLocation + "'");
-                            outputMessage("Title: " + moduleDetails.getTitle(), true);
-                            outputMessage("Version: " + moduleDetails.getVersionNumber(), true);
-                            outputMessage("Install Date: " + moduleDetails.getInstalledDate(), true);                
-                            outputMessage("Desription: " + moduleDetails.getDescription(), true); 
+                            outputMessage("   Title:        " + moduleDetails.getTitle(), true);
+                            outputMessage("   Version:      " + moduleDetails.getVersion(), true);
+                            outputMessage("   Install Date: " + moduleDetails.getInstallDate(), true);                
+                            outputMessage("   Desription:   " + moduleDetails.getDescription(), true); 
                         }
                     }
                 }

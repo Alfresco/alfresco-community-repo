@@ -24,13 +24,15 @@
  */
 package org.alfresco.repo.module;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
-import org.alfresco.repo.module.tool.ModuleManagementToolException;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleInstallState;
+import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.VersionNumber;
 
 /**
@@ -42,42 +44,82 @@ import org.alfresco.util.VersionNumber;
  */
 public class ModuleDetailsImpl implements ModuleDetails
 {
-    /** Property names */
-    protected static final String PROP_ID = "module.id";
-    protected static final String PROP_TITLE = "module.title";
-    protected static final String PROP_DESCRIPTION = "module.description";
-    protected static final String PROP_VERSION = "module.version";
-    protected static final String PROP_INSTALL_DATE = "module.installDate";
-    protected static final String PROP_INSTALL_STATE = "module.installState";
-    
-    /** Properties object */
-    protected Properties properties;
+    private String id;
+    private VersionNumber version;
+    private String title;
+    private String description;
+    private VersionNumber repoVersionMin;
+    private VersionNumber repoVersionMax;
+    private Date installDate;
+    private ModuleInstallState installState;
     
     /** 
-     * Constructor
-     * 
-     * @param is    input stream, which will be closed
+     * @param properties        the set of properties
      */
-    public ModuleDetailsImpl(InputStream is)
+    public ModuleDetailsImpl(Properties properties)
     {
-        try
+        // Check that the required properties are present
+        List<String> missingProperties = new ArrayList<String>(1);
+        // ID
+        id = properties.getProperty(PROP_ID);
+        if (id == null) { missingProperties.add(PROP_ID); }
+        // VERSION
+        if (properties.getProperty(PROP_VERSION) == null)
         {
-            this.properties = new Properties();
-            this.properties.load(is);            
+            missingProperties.add(PROP_VERSION);
         }
-        catch (IOException exception)
+        else
         {
-            throw new ModuleManagementToolException("Unable to load module details from property file.", exception);
+            version = new VersionNumber(properties.getProperty(PROP_VERSION));
         }
-        finally
+        // TITLE
+        title = properties.getProperty(PROP_TITLE);
+        if (title == null) { missingProperties.add(PROP_TITLE); }
+        // DESCRIPTION
+        description = properties.getProperty(PROP_DESCRIPTION);
+        if (description == null) { missingProperties.add(PROP_DESCRIPTION); }
+        // REPO MIN
+        if (properties.getProperty(PROP_REPO_VERSION_MIN) == null)
         {
-            try { is.close(); } catch (IOException e) { e.printStackTrace(); }
+            repoVersionMin = new VersionNumber("0.0.0");
         }
+        else
+        {
+            repoVersionMin = new VersionNumber(properties.getProperty(PROP_REPO_VERSION_MIN));
+        }
+        // REPO MAX
+        if (properties.getProperty(PROP_REPO_VERSION_MAX) == null)
+        {
+            repoVersionMax = new VersionNumber("999.999.999");
+        }
+        else
+        {
+            repoVersionMax = new VersionNumber(properties.getProperty(PROP_REPO_VERSION_MAX));
+        }
+        // INSTALL DATE
+        if (properties.getProperty(PROP_INSTALL_DATE) != null)
+        {
+            String installDateStr = properties.getProperty(PROP_INSTALL_DATE);
+            try
+            {
+                installDate = ISO8601DateFormat.parse(installDateStr);
+            }
+            catch (Throwable e)
+            {
+                throw new AlfrescoRuntimeException("Unable to parse install date: " + installDateStr, e);
+            }
+        }
+        // Check
+        if (missingProperties.size() > 0)
+        {
+            throw new AlfrescoRuntimeException("The following module properties need to be defined: " + missingProperties);
+        }
+        
+        // Set other defaults
+        installState = ModuleInstallState.INSTALLED;
     }
     
     /**
-     * Constructor
-     *  
      * @param id                module id
      * @param versionNumber     version number
      * @param title             title   
@@ -85,81 +127,96 @@ public class ModuleDetailsImpl implements ModuleDetails
      */
     public ModuleDetailsImpl(String id, VersionNumber versionNumber, String title, String description)
     {
-        this.properties = new Properties();
-        this.properties.setProperty(PROP_ID, id);
-        this.properties.setProperty(PROP_VERSION, versionNumber.toString());
-        this.properties.setProperty(PROP_TITLE, title);
-        this.properties.setProperty(PROP_DESCRIPTION, description);
+        this.id = id;
+        this.version = versionNumber;
+        this.title = title;
+        this.description = description;
     }
 
-    /**
-     * @see org.alfresco.service.cmr.module.ModuleDetails#exists()
-     */
-    public boolean exists()
+    public Properties getProperties()
     {
-        return (this.properties != null);
-    }
-    
-    /**
-     * @see org.alfresco.service.cmr.module.ModuleDetails#getId()
-     */
-    public String getId()
-    {
-        return this.properties.getProperty(PROP_ID);
-    }
-    
-    /**
-     * @see org.alfresco.service.cmr.module.ModuleDetails#getVersionNumber()
-     */
-    public VersionNumber getVersionNumber()
-    {
-        return new VersionNumber(this.properties.getProperty(PROP_VERSION));
-    }
-    
-    /**
-     * @see org.alfresco.service.cmr.module.ModuleDetails#getTitle()
-     */
-    public String getTitle()
-    {
-        return this.properties.getProperty(PROP_TITLE);
-    }
-    
-    /**
-     * @see org.alfresco.service.cmr.module.ModuleDetails#getDescription()
-     */
-    public String getDescription()
-    {
-        return this.properties.getProperty(PROP_DESCRIPTION);
-    }
-    
-    /**
-     * @see org.alfresco.service.cmr.module.ModuleDetails#getInstalledDate()
-     */
-    public String getInstalledDate()
-    {
-        return this.properties.getProperty(PROP_INSTALL_DATE);
-    }
-    
-    /**
-     * @see org.alfresco.service.cmr.module.ModuleDetails#getInstallState()
-     */
-    public ModuleInstallState getInstallState()
-    {
-        ModuleInstallState result = ModuleInstallState.INSTALLED;
-        String value = this.properties.getProperty(PROP_INSTALL_STATE);
-        if (value != null && value.length() != 0)
+        Properties properties = new Properties();
+        // Mandatory properties
+        properties.setProperty(PROP_ID, id);
+        properties.setProperty(PROP_VERSION, version.toString());
+        properties.setProperty(PROP_TITLE, title);
+        properties.setProperty(PROP_DESCRIPTION, description);
+        // Optional properites
+        if (repoVersionMin != null)
         {
-            result = ModuleInstallState.valueOf(value);
+            properties.setProperty(PROP_REPO_VERSION_MIN, repoVersionMin.toString());
         }
-        return result;
+        if (repoVersionMax != null)
+        {
+            properties.setProperty(PROP_REPO_VERSION_MAX, repoVersionMax.toString());
+        }
+        if (installDate != null)
+        {
+            String installDateStr = ISO8601DateFormat.format(installDate);
+            properties.setProperty(PROP_INSTALL_DATE, installDateStr);
+        }
+        if (installState != null)
+        {
+            String installStateStr = installState.toString();
+            properties.setProperty(PROP_INSTALL_STATE, installStateStr);
+        }
+        // Done
+        return properties;
     }
     
-    /**
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {
-        return getId();
+        return "ModuleDetails[" + getProperties() + "]";
+    }
+
+    public String getId()
+    {
+        return id;
+    }
+    
+    public VersionNumber getVersion()
+    {
+        return version;
+    }
+    
+    public String getTitle()
+    {
+        return title;
+    }
+    
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public VersionNumber getRepoVersionMin()
+    {
+        return repoVersionMin;
+    }
+
+    public VersionNumber getRepoVersionMax()
+    {
+        return repoVersionMax;
+    }
+
+    public Date getInstallDate()
+    {
+        return installDate;
+    }
+    
+    public void setInstallDate(Date installDate)
+    {
+        this.installDate = installDate;
+    }
+    
+    public ModuleInstallState getInstallState()
+    {
+        return installState;
+    }
+    
+    public void setInstallState(ModuleInstallState installState)
+    {
+        this.installState = installState;
     }
 }

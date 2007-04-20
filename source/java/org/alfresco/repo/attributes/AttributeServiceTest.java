@@ -227,4 +227,53 @@ public class AttributeServiceTest extends TestCase
             fail();
         }
     }
+    
+    public void testDelete()
+    {
+        try
+        {
+            // Put some attributes in place.
+            MapAttribute map = new MapAttributeValue();
+            map.put("a", new StringAttributeValue("a"));
+            map.put("b", new StringAttributeValue("b"));
+            map.put("c", new StringAttributeValue("c"));
+            map.put("d", new StringAttributeValue("d"));
+            map.put("e", new StringAttributeValue("e"));
+            map.put("f", new StringAttributeValue("f"));
+            map.put("g", new StringAttributeValue("g"));
+            map.put("h", new StringAttributeValue("h"));
+            map.put("i", new StringAttributeValue("i"));
+            map.put("j", new StringAttributeValue("j"));
+            map.put("k", new StringAttributeValue("k"));
+            map.put("l", new StringAttributeValue("l"));
+            map.put("m", new StringAttributeValue("m"));
+            map.put("n", new StringAttributeValue("n"));
+            map.put("o", new StringAttributeValue("o"));
+            map.put("p", new StringAttributeValue("p"));
+            map.put("q", new StringAttributeValue("q"));
+            map.put("r", new StringAttributeValue("r"));
+            map.put("s", new StringAttributeValue("s"));
+            map.put("t", new StringAttributeValue("t"));
+            map.put("u", new StringAttributeValue("u"));
+            map.put("v", new StringAttributeValue("v"));
+            map.put("w", new StringAttributeValue("w"));
+            map.put("x", new StringAttributeValue("x"));
+            map.put("y", new StringAttributeValue("y"));
+            map.put("z", new StringAttributeValue("z"));
+            fService.setAttribute("", "map", map);
+            fService.setAttribute("map", "submap", map);
+            fService.setAttribute("map/submap", "subsubmap", map);
+            assertEquals(27, fService.getKeys("map").size());
+            assertEquals(27, fService.getKeys("map/submap").size());
+            fService.removeAttribute("map/submap/subsubmap", "b");
+            assertEquals(25, fService.getKeys("map/submap/subsubmap").size());
+            fService.removeAttribute("map/submap", "subsubmap");
+            assertEquals(26, fService.getKeys("map/submap").size());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+    
 }

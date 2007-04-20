@@ -28,6 +28,7 @@ import java.util.Collection;
 
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
@@ -351,5 +352,13 @@ public class ServiceDescriptorRegistry
     public CrossRepositoryCopyService getCrossRepositoryCopyService()
     {
         return (CrossRepositoryCopyService)getService(CROSS_REPO_COPY_SERVICE);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getAttributeService()
+     */
+    public AttributeService getAttributeService()
+    {
+        return (AttributeService)getService(ATTRIBUTE_SERVICE);
     }
 }

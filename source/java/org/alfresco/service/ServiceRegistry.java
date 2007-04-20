@@ -27,6 +27,7 @@ package org.alfresco.service;
 import java.util.Collection;
 
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
@@ -104,6 +105,7 @@ public interface ServiceRegistry
     static final QName AVM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMService");
     static final QName AVM_SYNC_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMSyncService");
     static final QName CROSS_REPO_COPY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CrossRepositoryCopyService");
+    static final QName ATTRIBUTE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AttributeService");
     
     /**
      * Get the list of services provided by the Repository
@@ -315,4 +317,11 @@ public interface ServiceRegistry
      */
     @NotAuditable
     CrossRepositoryCopyService getCrossRepositoryCopyService();
+    
+    /**
+     * Get the attribute service (or null if one is not provided)
+     * @return
+     */
+    @NotAuditable
+    AttributeService getAttributeService();
 }

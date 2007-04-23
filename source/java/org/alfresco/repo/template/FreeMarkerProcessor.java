@@ -301,7 +301,7 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
             
             // add the template extensions to the model
             // the extensions include custom root helper objects and custom template method objects
-            for (ProcessorExtension ext : this.processExtensions.values())
+            for (ProcessorExtension ext : this.processorExtensions.values())
             {
                 if (ext instanceof TemplateProcessorExtension)
                 {

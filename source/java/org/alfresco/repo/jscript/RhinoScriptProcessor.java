@@ -479,7 +479,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             }
             
             // add the global scripts
-            for (ProcessorExtension ex : this.processExtensions.values()) 
+            for (ProcessorExtension ex : this.processorExtensions.values()) 
             {
             	model.put(ex.getExtensionName(), ex);
 			}

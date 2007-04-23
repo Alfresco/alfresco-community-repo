@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.processor;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,7 +60,7 @@ public abstract class BaseProcessor implements Processor
     protected ServiceRegistry services;
     
     /** A map containing all the processor extenstions */
-    protected Map<String, ProcessorExtension> processExtensions = new HashMap<String, ProcessorExtension>(10);
+    protected Map<String, ProcessorExtension> processorExtensions = new HashMap<String, ProcessorExtension>(10);
     
     /**
      * Registers this processor with the relevant services
@@ -153,6 +154,16 @@ public abstract class BaseProcessor implements Processor
      */
     public void registerProcessorExtension(ProcessorExtension processorExtension)
     {
-        this.processExtensions.put(processorExtension.getExtensionName(), processorExtension);
+        this.processorExtensions.put(processorExtension.getExtensionName(), processorExtension);
+    }
+    
+    /**
+     * Get the collection of processor extensions
+     * 
+     * @return  Collection<ProcessorExtension>  collection of processor extensions
+     */
+    public Collection<ProcessorExtension> getProcessorExtensions()
+    {
+        return this.processorExtensions.values();
     }
 }

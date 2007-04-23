@@ -52,6 +52,7 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
     
     public MapAttributeImpl(MapAttribute attr)
     {
+        super(attr.getAcl());
         AVMDAOs.Instance().fAttributeDAO.save(this);
         for (Map.Entry<String, Attribute> entry : attr.entrySet())
         {

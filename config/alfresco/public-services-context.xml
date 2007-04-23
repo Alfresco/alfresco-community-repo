@@ -901,6 +901,7 @@
             <list>
             	<value>getAttributes</value>
             	<value>query</value>
+            	<value>getKeys</value>
             </list>
         </property>
     </bean>

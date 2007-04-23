@@ -43,6 +43,7 @@ public class BooleanAttributeValue extends AttributeValue implements
     
     public BooleanAttributeValue(BooleanAttribute attr)
     {
+        super(attr.getAcl());
         fData = attr.getBooleanValue();
     }
     

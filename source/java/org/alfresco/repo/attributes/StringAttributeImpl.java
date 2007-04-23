@@ -50,6 +50,7 @@ public class StringAttributeImpl extends AttributeImpl implements
 
     public StringAttributeImpl(StringAttribute attr)
     {
+        super(attr.getAcl());
         fValue = attr.getStringValue();
         AVMDAOs.Instance().fAttributeDAO.save(this);
     }

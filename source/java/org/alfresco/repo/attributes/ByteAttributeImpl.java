@@ -49,6 +49,7 @@ public class ByteAttributeImpl extends AttributeImpl implements ByteAttribute
 
     public ByteAttributeImpl(ByteAttribute attr)
     {
+        super(attr.getAcl());
         fValue = attr.getByteValue();
         AVMDAOs.Instance().fAttributeDAO.save(this);
     }

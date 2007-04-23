@@ -60,6 +60,15 @@ public abstract class AttributeImpl implements Attribute
     {
     }
     
+    /**
+     * Helper constructor for copy constructors.
+     * @param acl The ACL.
+     */
+    protected AttributeImpl(DbAccessControlList acl)
+    {
+        fACL = acl;
+    }
+    
     public void setId(long id)
     {
         fID = id;

@@ -42,6 +42,7 @@ public class ByteAttributeValue extends AttributeValue implements ByteAttribute
     
     public ByteAttributeValue(ByteAttribute attr)
     {
+        super(attr.getAcl());
         fData = attr.getByteValue();
     }
     

@@ -42,6 +42,7 @@ public class LongAttributeValue extends AttributeValue implements LongAttribute
 
     public LongAttributeValue(LongAttribute attr)
     {
+        super(attr.getAcl());
         fData = attr.getLongValue();
     }
     

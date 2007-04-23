@@ -49,6 +49,7 @@ public class LongAttributeImpl extends AttributeImpl implements LongAttribute
     
     public LongAttributeImpl(LongAttribute attr)
     {
+        super(attr.getAcl());
         fValue = attr.getLongValue();
         AVMDAOs.Instance().fAttributeDAO.save(this);
     }

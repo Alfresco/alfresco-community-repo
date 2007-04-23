@@ -43,6 +43,7 @@ public class FloatAttributeValue extends AttributeValue implements
     
     public FloatAttributeValue(FloatAttribute attr)
     {
+        super(attr.getAcl());
         fData = attr.getFloatValue();
     }
     

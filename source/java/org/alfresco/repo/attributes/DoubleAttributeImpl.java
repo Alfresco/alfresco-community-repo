@@ -49,6 +49,7 @@ public class DoubleAttributeImpl extends AttributeImpl implements Attribute
     
     public DoubleAttributeImpl(DoubleAttribute attr)
     {
+        super(attr.getAcl());
         fValue = attr.getDoubleValue();
         AVMDAOs.Instance().fAttributeDAO.save(this);
     }

@@ -37,27 +37,50 @@ import org.alfresco.util.Pair;
 public interface AttributeService 
 {
     /**
-     * Get a Global Attribute.
+     * Get an Attribute.
      * @param path The path of the Attribute.
      * @return The value of the attribute or null.
      */
     public Attribute getAttribute(String path);
     
     /**
-     * Set a Global Attribute. Overwrites if it exists.
+     * Get an attribute.
+     * @param keys The keys in the attribute path.
+     * @return The value of the attribute or null.
+     */
+    public Attribute getAttribute(List<String> keys);
+    
+    
+    /**
+     * Set an attribute. Overwrites if it exists.
      * @param name The name of the Attribute.
      * @param value The value to set.
      */
     public void setAttribute(String path, String name, Attribute value);
     
     /**
+     * Set an attribute
+     * @param keys List of attribute path keys.
+     * @param name The name of the attribute to set.
+     * @param value The Attribute to set.
+     */
+    public void setAttribute(List<String> keys, String name, Attribute value);
+    
+    /**
      * Remove an Attribute.
      * @param name The name of the Attribute.
      */
     public void removeAttribute(String path, String name);
+    
+    /**
+     * Remove an Attribute.
+     * @param keys List of attribute path keys.
+     * @param name The name of the attribute to remove.
+     */
+    public void removeAttribute(List<String> keys, String name);
 
     /**
-     * Query for a list of attributes which are contained in the container
+     * Query for a list of attributes which are contained in the map
      * defined by the given path and meet the query criteria.
      * @param path
      * @param query
@@ -66,9 +89,25 @@ public interface AttributeService
     public List<Pair<String, Attribute>> query(String path, AttrQuery query);
     
     /**
+     * Query for a list of attributes which are contained in a map defined by the
+     * given path and meet the query criteria.
+     * @param keys The list of attribute path keys.
+     * @param query
+     * @return A list of matching attributes.
+     */
+    public List<Pair<String, Attribute>> query(List<String> keys, AttrQuery query);
+    
+    /**
      * Get all the keys for a given attribute path.
      * @param path The attribute path.
      * @return A list of all keys.
      */
     public List<String> getKeys(String path);
+    
+    /**
+     * Get all the keys for a give attribute path.
+     * @param keys The keys of the attribute path.
+     * @return A list of all keys.
+     */
+    public List<String> getKeys(List<String> keys);
 }

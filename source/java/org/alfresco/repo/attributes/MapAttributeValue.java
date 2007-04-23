@@ -50,6 +50,7 @@ public class MapAttributeValue extends AttributeValue implements MapAttribute
     
     public MapAttributeValue(MapAttribute attr)
     {
+        super(attr.getAcl());
         fData = new HashMap<String, Attribute>();
         for (Map.Entry<String, Attribute> entry : attr.entrySet())
         {

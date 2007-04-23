@@ -42,6 +42,7 @@ public class IntAttributeValue extends AttributeValue implements IntAttribute
     
     public IntAttributeValue(IntAttribute attr)
     {
+        super(attr.getAcl());
         fData = attr.getIntValue();
     }
     

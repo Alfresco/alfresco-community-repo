@@ -49,6 +49,7 @@ public class FloatAttributeImpl extends AttributeImpl implements FloatAttribute
     
     public FloatAttributeImpl(FloatAttribute attr)
     {
+        super(attr.getAcl());
         fValue = attr.getFloatValue();
         AVMDAOs.Instance().fAttributeDAO.save(this);
     }

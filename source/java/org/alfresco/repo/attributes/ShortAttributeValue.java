@@ -43,6 +43,7 @@ public class ShortAttributeValue extends AttributeValue implements
     
     public ShortAttributeValue(ShortAttribute attr)
     {
+        super(attr.getAcl());
         fData = attr.getShortValue();    
     }
     

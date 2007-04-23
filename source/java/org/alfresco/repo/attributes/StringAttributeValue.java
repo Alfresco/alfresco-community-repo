@@ -43,6 +43,7 @@ public class StringAttributeValue extends AttributeValue implements
     
     public StringAttributeValue(StringAttribute attr)
     {
+        super(attr.getAcl());
         fData = attr.getStringValue();
     }
     

@@ -49,6 +49,7 @@ public class ShortAttributeImpl extends AttributeImpl implements ShortAttribute
     
     public ShortAttributeImpl(ShortAttribute attr)
     {
+        super(attr.getAcl());
         fValue = attr.getShortValue();
         AVMDAOs.Instance().fAttributeDAO.save(this);
     }

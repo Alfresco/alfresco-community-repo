@@ -49,6 +49,7 @@ public class IntAttributeImpl extends AttributeImpl implements IntAttribute
     
     public IntAttributeImpl(IntAttribute attr)
     {
+        super(attr.getAcl());
         fValue = attr.getIntValue();
         AVMDAOs.Instance().fAttributeDAO.save(this);
     }

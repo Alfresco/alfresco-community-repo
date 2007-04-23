@@ -38,6 +38,23 @@ import org.alfresco.repo.domain.DbAccessControlList;
  */
 public abstract class AttributeValue implements Attribute
 {
+    /**
+     * ACL for this Attribute
+     */
+    private DbAccessControlList fACL;
+    
+    public AttributeValue()
+    {
+    }
+    
+    /**
+     * Helper for copy constructors.
+     */
+    public AttributeValue(DbAccessControlList acl)
+    {
+        fACL = acl;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.attributes.Attribute#clear()
      */
@@ -254,14 +271,12 @@ public abstract class AttributeValue implements Attribute
         throw new AttributeMethodNotImplemented("Not a map.");
     }
 
-    // I'm not sure if ACLs are serializable.  So for now the following two
-    // methods are noops.
     /* (non-Javadoc)
      * @see org.alfresco.repo.attributes.Attribute#getAcl()
      */
     public DbAccessControlList getAcl()
     {
-        return null;
+        return fACL;
     }
 
     /* (non-Javadoc)
@@ -269,6 +284,6 @@ public abstract class AttributeValue implements Attribute
      */
     public void setAcl(DbAccessControlList acl)
     {
-        // Do Nothing.
+        fACL = acl;
     }
 }

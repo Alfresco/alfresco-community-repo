@@ -43,6 +43,7 @@ public class DoubleAttributeValue extends AttributeValue implements
     
     public DoubleAttributeValue(DoubleAttribute attr)
     {
+        super(attr.getAcl());
         fData = attr.getDoubleValue();
     }
     

@@ -45,6 +45,7 @@ public class SerializableAttributeValue extends AttributeValue implements
     
     public SerializableAttributeValue(SerializableAttribute attr)
     {
+        super(attr.getAcl());
         fData = attr.getSerializableValue();
     }
     

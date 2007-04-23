@@ -50,6 +50,7 @@ public class BooleanAttributeImpl extends AttributeImpl implements
     
     public BooleanAttributeImpl(BooleanAttribute attr)
     {
+        super(attr.getAcl());
         fValue = attr.getBooleanValue();
         AVMDAOs.Instance().fAttributeDAO.save(this);
     }

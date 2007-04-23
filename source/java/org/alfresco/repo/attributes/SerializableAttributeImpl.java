@@ -52,6 +52,7 @@ public class SerializableAttributeImpl extends AttributeImpl implements
     
     public SerializableAttributeImpl(SerializableAttribute attr)
     {
+        super(attr.getAcl());
         fValue = attr.getSerializableValue();
         AVMDAOs.Instance().fAttributeDAO.save(this);        
     }

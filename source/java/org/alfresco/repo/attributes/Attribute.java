@@ -30,6 +30,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.domain.DbAccessControlList;
+
 /**
  * Interface for polymorphic attributes.
  * @author britt
@@ -49,6 +51,18 @@ public interface Attribute extends Serializable
         SERIALIZABLE,
         MAP
     };
+    
+    /**
+     * Set the ACL on this Attribute.
+     * @param acl The ACL.
+     */
+    public void setAcl(DbAccessControlList acl);
+    
+    /**
+     * Get the (possibly null ACL) on this Attribute.
+     * @return The ACL or null.
+     */
+    public DbAccessControlList getAcl();
     
     /**
      * Get the value type for this node.

@@ -14,6 +14,8 @@
         </id>
         <discriminator column="type" type="string" length="1"/>
         <version column="version" name="version" type="long"/>
+		<many-to-one name="acl" column="acl_id" foreign-key="fk_attributes_n_acl"
+			class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"/>
         <!-- A boolean valued attribute -->
         <subclass name="BooleanAttributeImpl" proxy="BooleanAttribute" lazy="true"
                   discriminator-value="O">

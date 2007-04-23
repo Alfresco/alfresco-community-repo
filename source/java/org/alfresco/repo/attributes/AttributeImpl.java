@@ -30,6 +30,8 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.alfresco.repo.domain.DbAccessControlList;
+
 /**
  * The base class of the implementation of Values.
  * @author britt
@@ -45,6 +47,11 @@ public abstract class AttributeImpl implements Attribute
      * The optimistic locking version.
      */
     private long fVersion;
+    
+    /**
+     * ACL for this Attribute.
+     */
+    private DbAccessControlList fACL;
     
     /**
      * Base constructor.
@@ -313,5 +320,21 @@ public abstract class AttributeImpl implements Attribute
     public int hashCode()
     {
         return (int)fID;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.Attribute#getAcl()
+     */
+    public DbAccessControlList getAcl()
+    {
+        return fACL;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.Attribute#setAcl(org.alfresco.repo.domain.DbAccessControlList)
+     */
+    public void setAcl(DbAccessControlList acl)
+    {
+        fACL = acl;
     }
 }

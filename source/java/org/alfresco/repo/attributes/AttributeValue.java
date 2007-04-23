@@ -30,6 +30,8 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.alfresco.repo.domain.DbAccessControlList;
+
 /**
  * Value based non-persistent implementation of Attribute.
  * @author britt
@@ -250,5 +252,23 @@ public abstract class AttributeValue implements Attribute
     public Collection<Attribute> values()
     {
         throw new AttributeMethodNotImplemented("Not a map.");
+    }
+
+    // I'm not sure if ACLs are serializable.  So for now the following two
+    // methods are noops.
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.Attribute#getAcl()
+     */
+    public DbAccessControlList getAcl()
+    {
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.Attribute#setAcl(org.alfresco.repo.domain.DbAccessControlList)
+     */
+    public void setAcl(DbAccessControlList acl)
+    {
+        // Do Nothing.
     }
 }

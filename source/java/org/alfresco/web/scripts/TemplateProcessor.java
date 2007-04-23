@@ -26,6 +26,7 @@ package org.alfresco.web.scripts;
 
 import org.alfresco.repo.template.FreeMarkerProcessor;
 import org.alfresco.repo.template.QNameAwareObjectWrapper;
+import org.alfresco.service.cmr.repository.ProcessorExtension;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -54,6 +55,7 @@ public class TemplateProcessor extends FreeMarkerProcessor implements Applicatio
     private TemplateLoader templateLoader = null;
     private String defaultEncoding;
     private Configuration templateConfig;
+    private FreeMarkerProcessor freeMarkerProcessor;
 
 
     /* (non-Javadoc)
@@ -81,6 +83,16 @@ public class TemplateProcessor extends FreeMarkerProcessor implements Applicatio
     public void setTemplateLoader(TemplateLoader templateLoader)
     {
         this.templateLoader = templateLoader;
+    }
+    
+    /**
+     * Set the freemarker processor
+     * 
+     * @param freeMarkerProcessor   the free marker processor
+     */
+    public void setFreeMarkerProcessor(FreeMarkerProcessor freeMarkerProcessor)
+    {
+        this.freeMarkerProcessor = freeMarkerProcessor;
     }
 
     /**
@@ -125,6 +137,18 @@ public class TemplateProcessor extends FreeMarkerProcessor implements Applicatio
         templateConfig = config;
     }
     
+    /**
+     * Tempory fix to initialise this template processor with the freeMarker extensions expected by
+     * the templates.    
+     */
+    private void initProcessorExtensions()
+    {
+        for (ProcessorExtension processorExtension : this.freeMarkerProcessor.getProcessorExtensions())
+        {
+            this.registerProcessorExtension(processorExtension);
+        }
+    }
+    
     /* (non-Javadoc)
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
@@ -150,6 +174,7 @@ public class TemplateProcessor extends FreeMarkerProcessor implements Applicatio
         protected void onBootstrap(ApplicationEvent event)
         {
             initConfig();
+            initProcessorExtensions();
         }
     
         @Override

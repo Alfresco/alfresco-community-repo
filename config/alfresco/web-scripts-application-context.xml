@@ -23,6 +23,8 @@
    </bean>
 
    <bean id="webscripts.templateprocessor" class="org.alfresco.web.scripts.TemplateProcessor">
+      <property name="freeMarkerProcessor" ref="freeMarkerProcessor" />	
+      <property name="serviceRegistry" ref="ServiceRegistry" />		
       <!-- <property name="defaultEncoding"><value>UTF-8</value></property> -->
    </bean>
 

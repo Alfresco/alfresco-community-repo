@@ -37,6 +37,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredTransaction;
@@ -56,11 +57,11 @@ public abstract class AbstractWebScript implements WebScript
     private ServiceRegistry serviceRegistry;
     private DescriptorService descriptorService;
 
+    
     //
     // Initialisation
     //
     
-        
     /**
      * @param scriptContext
      */
@@ -160,7 +161,6 @@ public abstract class AbstractWebScript implements WebScript
     }
     
 
-
     //
     // Scripting Support
     //
@@ -242,9 +242,7 @@ public abstract class AbstractWebScript implements WebScript
     final protected Map<String, Object> createTemplateModel(WebScriptRequest req, WebScriptResponse res, Map<String, Object> customModel)
     {
         // create template model
-        Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
-        
-        TemplateImageResolver tr = getWebScriptRegistry().getTemplateImageResolver();
+        Map<String, Object> model = new HashMap<String, Object>(8, 1.0f);
         
         // add repository context
         if (getDescription().getRequiredAuthentication() != RequiredAuthentication.none &&
@@ -272,6 +270,7 @@ public abstract class AbstractWebScript implements WebScript
         // add template support
         model.put("absurl", new AbsoluteUrlMethod(req.getServerPath()));
         model.put("date", new Date());
+        model.put(TemplateService.KEY_IMAGE_RESOLVER, getWebScriptRegistry().getTemplateImageResolver());
         
         // add custom model
         if (customModel != null)

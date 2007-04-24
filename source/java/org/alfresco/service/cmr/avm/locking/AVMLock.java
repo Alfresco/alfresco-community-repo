@@ -30,10 +30,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.attributes.Attribute;
-import org.alfresco.repo.attributes.BooleanAttributeImpl;
+import org.alfresco.repo.attributes.BooleanAttributeValue;
 import org.alfresco.repo.attributes.MapAttribute;
-import org.alfresco.repo.attributes.MapAttributeImpl;
-import org.alfresco.repo.attributes.StringAttributeImpl;
+import org.alfresco.repo.attributes.MapAttributeValue;
+import org.alfresco.repo.attributes.StringAttributeValue;
 
 /**
  * Struct representing an AVM lock.
@@ -99,16 +99,16 @@ public class AVMLock implements Serializable
 
     public Attribute getAttribute()
     {
-        MapAttribute lockData = new MapAttributeImpl();
-        lockData.put(PATH, new StringAttributeImpl(fPath));
-        lockData.put(STORE, new StringAttributeImpl(fStore));
-        lockData.put(TYPE, new StringAttributeImpl(fType.name()));
-        lockData.put(WEBPROJECT, new StringAttributeImpl(fWebProject));
-        MapAttribute owners = new MapAttributeImpl();
+        MapAttribute lockData = new MapAttributeValue();
+        lockData.put(PATH, new StringAttributeValue(fPath));
+        lockData.put(STORE, new StringAttributeValue(fStore));
+        lockData.put(TYPE, new StringAttributeValue(fType.name()));
+        lockData.put(WEBPROJECT, new StringAttributeValue(fWebProject));
+        MapAttribute owners = new MapAttributeValue();
         for (String owner : fOwners)
         {
             // The value is a dummy.
-            owners.put(owner, new BooleanAttributeImpl(true));
+            owners.put(owner, new BooleanAttributeValue(true));
         }
         lockData.put(OWNERS, owners);
         return lockData;

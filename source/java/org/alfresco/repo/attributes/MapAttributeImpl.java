@@ -158,7 +158,12 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
     @Override
     public Attribute get(String key)
     {
-        return AVMDAOs.Instance().fMapEntryDAO.get(this, key).getAttribute();
+        MapEntry entry = AVMDAOs.Instance().fMapEntryDAO.get(this, key);
+        if (entry == null)
+        {
+            return null;
+        }
+        return entry.getAttribute();
     }
 
     /* (non-Javadoc)

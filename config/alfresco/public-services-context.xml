@@ -971,6 +971,53 @@
             </list>
         </property>
     </bean>
+
+
+	<!-- AVM Locking Service. -->
+	
+    <bean id="avmLockingServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingReadTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+            	<value>getLock</value>
+            	<value>getUserLocks</value>
+            	<value>getWebProjectLocks</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="avmLockingServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+            	<value>addWebProject</value>
+            	<value>lockPath</value>
+            	<value>removeLock</value>
+            	<value>removeWebProject</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="AVMLockingService" class="org.springframework.aop.framework.ProxyFactoryBean">
+	    <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.service.cmr.avm.locking.AVMLockingService</value>
+            </list>
+        </property>
+        <property name="targetName">
+            <value>avmLockingService</value>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <value>avmLockingServiceWriteTxnAdvisor</value>
+                <value>avmLockingServiceReadTxnAdvisor</value>
+            </list>
+        </property>
+    </bean>
     
     <!-- Workflow Service -->
     

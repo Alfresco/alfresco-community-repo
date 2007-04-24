@@ -70,21 +70,21 @@ public interface AVMLockingService
     public List<AVMLock> getUsersLocks(String user);
     
     /**
-     * Get all locks in a webProject.
-     * @param webProject
-     * @return A List (possibly empty) of all locks in a web project.
-     */
-    public List<AVMLock> getLocks(String webProject);
-    
-    /**
-     * Add a web project.
+     * Add a web project to the locking tables.
      * @param webProject The web project name.
      */
     public void addWebProject(String webProject);
     
     /**
-     * Remove a web project from the locking tables.
+     * Remove a web project and all associated data from the locking tables.
      * @param webProject The web project name.
      */
     public void removeWebProject(String webProject);
+    
+    /**
+     * Get all locks in a give web project.
+     * @param webProject The web project name.
+     * @return All the locks found.
+     */
+    public List<AVMLock> getWebProjectLocks(String webProject);
 }

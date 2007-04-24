@@ -252,6 +252,18 @@
         </property>
     </bean>
 
+	<!-- AVM Locking. -->
+	
+	<bean id="avmLockingService" class="org.alfresco.repo.avm.locking.AVMLockingServiceImpl"
+	      init-method="init">
+	    <property name="attributeService">
+	        <ref bean="attributeService"/>
+	    </property>
+	    <property name="retryingTransactionHelper">
+	        <ref bean="retryingTransactionHelper"/>
+	    </property>
+	</bean>
+
 </beans>
 
 	

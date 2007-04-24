@@ -33,6 +33,7 @@ import java.util.Map;
 import org.alfresco.repo.admin.registry.RegistryService;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.BaseAlfrescoTestCase;
 import org.alfresco.util.VersionNumber;
 
@@ -83,6 +84,7 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
     };
     
     private RegistryService registryService;
+    private DescriptorService descriptorService;
     private DummyModuleService moduleService;
     private ModuleComponentHelper helper;
     
@@ -93,6 +95,7 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
         super.setUp();
         
         registryService = (RegistryService) ctx.getBean("RegistryService");
+        descriptorService = serviceRegistry.getDescriptorService();
         
         moduleService = new DummyModuleService();
         helper = new ModuleComponentHelper();
@@ -100,6 +103,7 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
         helper.setModuleService(moduleService);
         helper.setRegistryService(registryService);
         helper.setServiceRegistry(serviceRegistry);
+        helper.setDescriptorService(descriptorService);
         
         // Register the components
         components = new DummyModuleComponent[3][3];    // i,j

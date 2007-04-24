@@ -45,6 +45,7 @@ import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VersionNumber;
@@ -71,6 +72,7 @@ public class ModuleComponentHelper
     private static final String MSG_STARTING = "module.msg.starting";
     private static final String MSG_INSTALLING = "module.msg.installing";
     private static final String MSG_UPGRADING = "module.msg.upgrading";
+    private static final String ERR_UNSUPPORTED_REPO_VERSION = "module.err.unsupported_repo_version";
     private static final String ERR_NO_DOWNGRADE = "module.err.downgrading_not_supported";
     private static final String ERR_COMPONENT_ALREADY_REGISTERED = "module.err.component_already_registered";
     private static final String MSG_MISSING = "module.msg.missing";
@@ -79,6 +81,7 @@ public class ModuleComponentHelper
     private static Log loggerService = LogFactory.getLog(ModuleServiceImpl.class);
     
     private ServiceRegistry serviceRegistry;
+    private DescriptorService descriptorService;
     private AuthenticationComponent authenticationComponent;
     private RegistryService registryService;
     private ModuleService moduleService;
@@ -96,6 +99,14 @@ public class ModuleComponentHelper
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
+    }
+
+    /**
+     * @param descriptorService gives access to the current repository version
+     */
+    public void setDescriptorService(DescriptorService descriptorService)
+    {
+        this.descriptorService = descriptorService;
     }
 
     /**
@@ -271,6 +282,20 @@ public class ModuleComponentHelper
     {
         String moduleId = module.getId();
         VersionNumber moduleVersion = module.getVersion();
+        
+        // First check that the module version is fundamentall compatible with the repository
+        VersionNumber repoVersionNumber = descriptorService.getServerDescriptor().getVersionNumber();
+        VersionNumber minRepoVersionNumber = module.getRepoVersionMin();
+        VersionNumber maxRepoVersionNumber = module.getRepoVersionMax();
+        if ((minRepoVersionNumber != null && repoVersionNumber.compareTo(minRepoVersionNumber) < 0) ||
+            (maxRepoVersionNumber != null && repoVersionNumber.compareTo(maxRepoVersionNumber) > 0))
+        {
+            // The current repo version is not supported
+            throw AlfrescoRuntimeException.create(
+                    ERR_UNSUPPORTED_REPO_VERSION,
+                    moduleId, moduleVersion, repoVersionNumber, minRepoVersionNumber, maxRepoVersionNumber);
+        }
+        
         // Get the module details from the registry
         RegistryKey moduleKeyInstalledVersion = new RegistryKey(
                 ModuleComponentHelper.URI_MODULES_1_0,

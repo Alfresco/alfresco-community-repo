@@ -82,6 +82,26 @@ public interface ModuleDetails
     String getDescription();
     
     /**
+     * @return Returns the minimum version of the repository in which the module may be active
+     */
+    VersionNumber getRepoVersionMin();
+
+    /**
+     * @param repoVersionMin the minimum version of the repository in which the module may be acitve
+     */
+    void setRepoVersionMin(VersionNumber repoVersionMin);
+    
+    /**
+     * @return Returns the maximum version of the repository in which the module may be active
+     */
+    VersionNumber getRepoVersionMax();
+    
+    /**
+     * @param repoVersionMax the maximum version of the repository in which the module may be acitve
+     */
+    void setRepoVersionMax(VersionNumber repoVersionMax);
+    
+    /**
      * Get the modules install date
      * 
      * @return  module install date or <tt>null</tt> if it has not been set

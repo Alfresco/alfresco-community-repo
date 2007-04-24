@@ -24,6 +24,8 @@
  */
 package org.alfresco.service.descriptor;
 
+import org.alfresco.util.VersionNumber;
+
 
 /**
  * Provides meta-data for the Alfresco stack.
@@ -66,6 +68,11 @@ public interface Descriptor
      * @return  the build number i.e. build-1
      */
     public String getVersionBuild();
+    
+    /**
+     * @return Returns the object representing the major-minor-revision numbers
+     */
+    public VersionNumber getVersionNumber();
     
     /**
      * Gets the full version number

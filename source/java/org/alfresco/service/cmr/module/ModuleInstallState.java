@@ -25,13 +25,18 @@
 package org.alfresco.service.cmr.module;
 
 /**
- * Enum used to indicate the install state of a module
+ * Enum used to indicate the install state of a module.
  * 
  * @author Roy Wetherall
  */
 public enum ModuleInstallState
 {
-    INSTALLED,      // indicates that a module is installed
-    DISABLED,       // indicates that a module is installed but it functionality is disabled
-    UNINSTALLED     // indicates that a module is uninstalled
+    /** The state of the module is unknown */
+    UKNOWN,
+    /** The module is installed */
+    INSTALLED,
+    /** The module is disabled */
+    DISABLED,
+    /** The module has been uninstalled */
+    UNINSTALLED;
 }

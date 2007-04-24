@@ -40,6 +40,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
@@ -73,6 +74,7 @@ public class ModuleServiceImpl implements ModuleService
     private static Log logger = LogFactory.getLog(ModuleServiceImpl.class);
 
     private ServiceRegistry serviceRegistry;
+    private DescriptorService descriptorService;
     private AuthenticationComponent authenticationComponent;
     private ModuleComponentHelper moduleComponentHelper;
     /** A cache of module details by module ID */
@@ -89,6 +91,12 @@ public class ModuleServiceImpl implements ModuleService
     {
         this.serviceRegistry = serviceRegistry;
         this.moduleComponentHelper.setServiceRegistry(this.serviceRegistry);
+    }
+
+    public void setDescriptorService(DescriptorService descriptorService)
+    {
+        this.descriptorService = descriptorService;
+        this.moduleComponentHelper.setDescriptorService(descriptorService);
     }
 
     /**

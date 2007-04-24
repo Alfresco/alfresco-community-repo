@@ -50,6 +50,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
+import org.alfresco.util.VersionNumber;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -453,6 +454,11 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
             return "Unknown";
         }
         
+        public VersionNumber getVersionNumber()
+        {
+            return new VersionNumber("1.0.0");
+        }
+        
         /* (non-Javadoc)
          * @see org.alfresco.service.descriptor.Descriptor#getVersion()
          */
@@ -503,9 +509,17 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
      */
     public abstract class BaseDescriptor implements Descriptor
     {
-        /* (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersion()
-         */
+        public VersionNumber getVersionNumber()
+        {
+            StringBuilder version = new StringBuilder();
+            version.append(getVersionMajor());
+            version.append(".");
+            version.append(getVersionMinor());
+            version.append(".");
+            version.append(getVersionRevision());
+            return new VersionNumber(version.toString());
+        }
+        
         public String getVersion()
         {
             StringBuilder version = new StringBuilder(getVersionMajor());

@@ -42,6 +42,9 @@ import org.alfresco.util.VersionNumber;
  * 
  * @author Roy Wetherall 
  */
+/**
+ * @author Derek Hulley
+ */
 public class ModuleDetailsImpl implements ModuleDetails
 {
     private String id;
@@ -113,6 +116,13 @@ public class ModuleDetailsImpl implements ModuleDetails
         if (missingProperties.size() > 0)
         {
             throw new AlfrescoRuntimeException("The following module properties need to be defined: " + missingProperties);
+        }
+        if (repoVersionMax.compareTo(repoVersionMin) < 0)
+        {
+            throw new AlfrescoRuntimeException("The max repo version must be greater than the min repo version:\n" +
+                    "   ID:               " + id + "\n" +
+                    "   Min repo version: " + repoVersionMin + "\n" +
+                    "   Max repo version: " + repoVersionMax);
         }
         
         // Set other defaults
@@ -195,9 +205,19 @@ public class ModuleDetailsImpl implements ModuleDetails
         return repoVersionMin;
     }
 
+    public void setRepoVersionMin(VersionNumber repoVersionMin)
+    {
+        this.repoVersionMin = repoVersionMin;
+    }
+
     public VersionNumber getRepoVersionMax()
     {
         return repoVersionMax;
+    }
+
+    public void setRepoVersionMax(VersionNumber repoVersionMax)
+    {
+        this.repoVersionMax = repoVersionMax;
     }
 
     public Date getInstallDate()

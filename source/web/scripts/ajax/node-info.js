@@ -13,7 +13,6 @@ var zIndex = 99;
  */
 Alfresco.NodeInfoManager = function()
 {
-   //YAHOO.util.Event.addListener(window, "resize", this.resize);
 }
 
 /**
@@ -118,7 +117,7 @@ Alfresco.NodeInfoPanel.prototype =
                { 
                   success: this.loadNodeInfoHandler,
                   failure: handleErrorYahoo,    // global error handler
-                  argument: [this.nodeRef, this]
+                  argument: [this]
                }, 
                "noderef=" + this.nodeRef);
          }
@@ -134,7 +133,7 @@ Alfresco.NodeInfoPanel.prototype =
     */
    loadNodeInfoHandler: function(response)
    {
-      var panel = response.argument[1];
+      var panel = response.argument[0];
       
       // create a 'div' to hold the summary table
       var div = document.createElement("div");

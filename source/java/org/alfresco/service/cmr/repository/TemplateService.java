@@ -169,7 +169,7 @@ public interface TemplateService
      * @param imageResolver the image resolver (optional)
      * @return
      */
-    @Auditable(parameters = {"person", "compantHome", "userHome", "template", "imageResolver"})
+    @Auditable(parameters = {"person", "companyHome", "userHome", "template", "imageResolver"})
     public Map<String, Object> buildDefaultModel(
             NodeRef person, 
             NodeRef companyHome, 

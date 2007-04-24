@@ -99,13 +99,14 @@ public class ValueConverter
         {
             // recursively convert each value in the collection
             Collection<Serializable> collection = (Collection<Serializable>)value;
-            Serializable[] array = new Serializable[collection.size()];
+            Object[] array = new Object[collection.size()];
             int index = 0;
             for (Serializable obj : collection)
             {
                 array[index++] = convertValueForScript(services, scope, qname, obj);
             }
-            value = array;
+            // convert array to a native JavaScript Array
+            value = (Serializable)Context.getCurrentContext().newArray(scope, array);
         }
         // simple numbers and strings are wrapped automatically by Rhino
         

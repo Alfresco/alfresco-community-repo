@@ -90,6 +90,8 @@ public class TemplateNode extends BasePermissionsNode
     private ChildAssociationRef primaryParentAssoc = null;
     private Boolean isCategory = null;
     
+    private PropertyConverter propertyConverter = new TemplatePropertyConverter();
+    
     
     // ------------------------------------------------------------------------------
     // Construction 
@@ -197,20 +199,9 @@ public class TemplateNode extends BasePermissionsNode
             
             for (QName qname : props.keySet())
             {
-                Serializable propValue = props.get(qname);
-                if (propValue instanceof NodeRef)
-                {
-                    // NodeRef object properties are converted to new TemplateNode objects
-                    // so they can be used as objects within a template
-                    propValue = new TemplateNode(((NodeRef)propValue), this.services, this.imageResolver);
-                }
-                else if (propValue instanceof ContentData)
-                {
-                    // ContentData object properties are converted to TemplateContentData objects
-                    // so the content and other properties of those objects can be accessed
-                    propValue = new TemplateContentData((ContentData)propValue, qname);
-                }
-                this.properties.put(qname.toString(), propValue);
+                Serializable value = this.propertyConverter.convertProperty(
+                        props.get(qname), qname, this.services, getImageResolver());
+                this.properties.put(qname.toString(), value);
             }
             
             this.propsRetrieved = true;
@@ -457,5 +448,31 @@ public class TemplateNode extends BasePermissionsNode
     public TemplateImageResolver getImageResolver()
     {
         return this.imageResolver;
+    }
+    
+    
+    // ------------------------------------------------------------------------------
+    // Inner classes
+    
+    /**
+     * Class to convert properties into template accessable objects
+     */
+    class TemplatePropertyConverter extends PropertyConverter
+    {
+        @Override
+        public Serializable convertProperty(
+                Serializable value, QName name, ServiceRegistry services, TemplateImageResolver resolver)
+        {
+            if (value instanceof ContentData)
+            {
+                // ContentData object properties are converted to TemplateContentData objects
+                // so the content and other properties of those objects can be accessed
+                return new TemplateContentData((ContentData)value, name);
+            }
+            else
+            {
+                return super.convertProperty(value, name, services, resolver);
+            }
+        }
     }
 }

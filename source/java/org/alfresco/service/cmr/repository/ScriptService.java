@@ -180,7 +180,7 @@ public interface ScriptService
      * 
      * @param scriptProcessor
      */
-    @Auditable(parameters = {"scriptProcessot"})
+    @Auditable(parameters = {"scriptProcessor"})
     public void registerScriptProcessor(ScriptProcessor scriptProcessor);
     
     /**
@@ -203,6 +203,7 @@ public interface ScriptService
      * 
      * @return A Map of global scope scriptable Node objects
      */
+    @Auditable(parameters = {"person", "companyHome", "userHome", "script", "document", "document"})
     public Map<String, Object> buildDefaultModel(
             NodeRef person, 
             NodeRef companyHome, 

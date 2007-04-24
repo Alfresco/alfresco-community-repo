@@ -269,6 +269,13 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
         }
     }
     
+    /**
+     * Converts the passed model into a FreeMarker model
+     * 
+     * @param model     the model
+     * 
+     * @return Object the converted model
+     */
     private Object convertToFreeMarkerModel(Object model)
     {
         // If we dont have a map in our hand we just return the passes model

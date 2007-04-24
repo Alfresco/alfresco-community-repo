@@ -536,8 +536,9 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     /**
      * Converts the passed model into a Rhino model
      * 
-     * @param model the model
-     * @return  Map<String, Object> the converted model
+     * @param model     the model
+     * 
+     * @return Map<String, Object> the converted model
      */
     private Map<String, Object> convertToRhinoModel(Map<String, Object> model)
     {

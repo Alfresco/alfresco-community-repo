@@ -7,28 +7,28 @@
         <property name="defaultTemplateEngine">
             <value>freemarker</value>
         </property>
-    	<property name="nodeService">
+        <property name="nodeService">
             <ref bean="NodeService"/>
         </property>
     </bean>
     
     <bean id="baseTemplateProcessor" abstract="true" init-method="register">
-    	<property name="templateService">
+        <property name="templateService">
             <ref bean="templateService"/>
-        </property>    	
+        </property>     
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
-        </property>	
+        </property>  
     </bean>
     
     <!-- The beans are not thread safe and therefore we create one per request -->
     <bean id="freeMarkerProcessor" parent="baseTemplateProcessor" class="org.alfresco.repo.template.FreeMarkerProcessor">
-		<property name="name">
-			<value>freemarker</value>
-		</property>
-		<property name="extension">
-			<value>ftl</value>
-		</property>
+        <property name="name">
+            <value>freemarker</value>
+        </property>
+        <property name="extension">
+            <value>ftl</value>
+        </property>
     </bean>
     
     <!-- base config implementation that template extension beans extend from - for auto registration
@@ -63,6 +63,15 @@
         </property>
         <property name="storeUrl">
             <value>${spaces.store}</value>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+    
+    <bean id="workflowTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.Workflow">
+        <property name="extensionName">
+            <value>workflow</value>
         </property>
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>

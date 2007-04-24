@@ -246,14 +246,14 @@ function getContextPath()
             el.style.left = (pos[0] + 20 - ((pos[0] + elWidth) - docWidth)) + "px";
          }
          //log(" Element Y:" + pos[1] + " doc height:" + YAHOO.util.Dom.getDocumentHeight());
-         if (pos[1] - 12 + elHeight < YAHOO.util.Dom.getDocumentHeight())
+         if (pos[1] + 12 + elHeight < YAHOO.util.Dom.getDocumentHeight())
          {
             el.style.top = (pos[1] + 12) + "px";
          }
          else
          {
             //log(" Shifting Y coord up - overflow");
-            el.style.top = (pos[1] - elHeight - 4) + "px";
+            el.style.top = (pos[1] - elHeight + 4) + "px";
          }
       }
    };

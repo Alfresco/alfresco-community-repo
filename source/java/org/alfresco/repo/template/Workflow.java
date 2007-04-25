@@ -33,6 +33,7 @@ import java.util.Map;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
@@ -103,12 +104,19 @@ public class Workflow extends BaseTemplateProcessorExtension
         return convertTasks(tasks);
     }
     
+    /**
+     * Convert a list of WorkflowTask items into bean objects accessable from templates
+     * 
+     * @param tasks     List of WorkflowTask objects to convert
+     * 
+     * @return List of WorkflowTaskItem bean wrapper objects
+     */
     private List<WorkflowTaskItem> convertTasks(List<WorkflowTask> tasks)
     {
         List<WorkflowTaskItem> items = new ArrayList<WorkflowTaskItem>(tasks.size());
         for (WorkflowTask task : tasks)
         {
-            items.add(new WorkflowTaskItem(task));
+            items.add(new WorkflowTaskItem(this.services, getTemplateImageResolver(), task));
         }
         
         return items;
@@ -123,14 +131,18 @@ public class Workflow extends BaseTemplateProcessorExtension
     /**
      * Simple bean wrapper around a WorkflowTask item 
      */
-    public class WorkflowTaskItem
+    public static class WorkflowTaskItem
     {
         private WorkflowTask task;
         private QNameMap<String, Serializable> properties = null;
+        private ServiceRegistry services;
+        private TemplateImageResolver resolver;
         
-        WorkflowTaskItem(WorkflowTask task)
+        public WorkflowTaskItem(ServiceRegistry services, TemplateImageResolver resolver, WorkflowTask task)
         {
             this.task = task;
+            this.services = services;
+            this.resolver = resolver;
         }
         
         public String getType()
@@ -168,7 +180,7 @@ public class Workflow extends BaseTemplateProcessorExtension
          */
         public TemplateNode getInitiator()
         {
-            return new TemplateNode(this.task.path.instance.initiator, services, getTemplateImageResolver());
+            return new TemplateNode(this.task.path.instance.initiator, services, resolver);
         }
         
         /**
@@ -177,7 +189,7 @@ public class Workflow extends BaseTemplateProcessorExtension
         public TemplateNode getPackage()
         {
             NodeRef packageRef = (NodeRef)this.task.properties.get(WorkflowModel.ASSOC_PACKAGE);
-            return new TemplateNode(packageRef, services, getTemplateImageResolver());
+            return new TemplateNode(packageRef, services, resolver);
         }
         
         /**
@@ -219,7 +231,7 @@ public class Workflow extends BaseTemplateProcessorExtension
                 for (QName qname : this.task.properties.keySet())
                 {
                     Serializable value = converter.convertProperty(
-                        this.task.properties.get(qname), qname, services, getTemplateImageResolver());
+                        this.task.properties.get(qname), qname, services, resolver);
                     this.properties.put(qname.toString(), value);
                 }
             }

@@ -199,6 +199,11 @@ public class PageTag extends TagSupport
          out.write(reqPath);
          out.write("/scripts/ajax/common.js\"></script>");
          
+         // pop-up panel helper objects
+         out.write("<script type=\"text/javascript\" src=\"");
+         out.write(reqPath);
+         out.write("/scripts/ajax/summary-info.js\"></script>");
+         
          // set the context path used by some Alfresco script objects
          out.write("<script type=\"text/javascript\">");
          out.write("setContextPath('");

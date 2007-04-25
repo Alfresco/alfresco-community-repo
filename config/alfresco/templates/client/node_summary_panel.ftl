@@ -11,8 +11,8 @@
 	                  <#assign navurl="/navigate/showSpaceDetails/">
 	               </#if>
 	               <#assign navurl=navurl + node.nodeRef.storeRef.protocol + '/' + node.nodeRef.storeRef.identifier + '/' + node.nodeRef.id>
-	               <td width=24><center><a href='${absurl(navurl)}'><img src='${absurl("/images/icons/View_details.gif")}' style='cursor:pointer' width=12 height=16 border=0 title="Details" alt="Details"></a></center></td>
-	               <td width=14 align=right><img src='${absurl("/images/icons/close_panel.gif")}' onclick="AlfNodeInfoMgr.close('${node.nodeRef}');" style='cursor:pointer' width=14 height=14 border=0 title="Close" alt="Close"></td>
+	               <td width=24><center><a href='${url.context}${navurl}'><img src='${url.context}/images/icons/View_details.gif' style='cursor:pointer' width=12 height=16 border=0 title="Details" alt="Details"></a></center></td>
+	               <td width=14 align=right><img src='${url.context}/images/icons/close_panel.gif' onclick="AlfNodeInfoMgr.close('${node.nodeRef}');" style='cursor:pointer' width=14 height=14 border=0 title="Close" alt="Close"></td>
 	            </tr>
 	         </table>
 	      </td>
@@ -23,27 +23,27 @@
 	         <#assign isImage=node.isDocument && (node.mimetype = "image/gif" || node.mimetype = "image/jpeg" || node.mimetype = "image/png")>
 	         <#assign isVideo=node.isDocument && node.mimetype?starts_with("video/")>
 	         <#if isImage>
-	            <a href="${absurl(node.url)}" target="new"><img src="${absurl(node.url)}" width=120 border=0></a>
+	            <a href="${url.context}${node.url}" target="new"><img src="${url.context}${node.url}" width=120 border=0></a>
 	         <#elseif isVideo>
 	            <object width="320" height="240" border="0" id="player">
 	               <param name="UIMode" value="none" />
-	               <param name="URL" value="${absurl(node.url)}" />
+	               <param name="URL" value="${url.context}${node.url}" />
 	               <param name="autoStart" value="true" />
-	               <#--<embed type="application/x-mplayer2" pluginspage="http://microsoft.com/windows/mediaplayer/en/download/" src="${absurl(node.url)}" showcontrols="1" showdisplay="0" showstatusbar="0" autosize="1" autoplay="0" autoStart="0" height="240" width="320"></embed>-->
-	               <embed width="320" height="240" src="${absurl(node.url)}" border="0" showcontrols="1" showdisplay="0" showstatusbar="0" autosize="1" autoplay="0" autoStart="0"></embed>
+	               <#--<embed type="application/x-mplayer2" pluginspage="http://microsoft.com/windows/mediaplayer/en/download/" src="${url.context}${node.url}" showcontrols="1" showdisplay="0" showstatusbar="0" autosize="1" autoplay="0" autoStart="0" height="240" width="320"></embed>-->
+	               <embed width="320" height="240" src="${url.context}${node.url}" border="0" showcontrols="1" showdisplay="0" showstatusbar="0" autosize="1" autoplay="0" autoStart="0"></embed>
 	            </object>
 	         <#else>
 	            <table cellspacing=0 cellpadding=0 border=0>
 	               <tr>
 	                  <td>
 	                     <div style="border: thin solid #cccccc; padding:4px">
-	                        <a href="${absurl(node.url)}" <#if node.isDocument>target="new"</#if>><img src="${absurl(node.icon32)}" width=32 height=32 border=0></a>
+	                        <a href="${url.context}${node.url}" <#if node.isDocument>target="new"</#if>><img src="${url.context}${node.icon32}" width=32 height=32 border=0></a>
 	                     </div>
 	                  </td>
-	                  <td><img src="${absurl('/images/parts/rightSideShadow42.gif')}" width=6 height=42></td>
+	                  <td><img src="${url.context}/images/parts/rightSideShadow42.gif" width=6 height=42></td>
 	               </tr>
 	               <tr>
-	                  <td colspan=2><img src="${absurl('/images/parts/bottomShadow42.gif')}" width=48 height=5></td>
+	                  <td colspan=2><img src="${url.context}/images/parts/bottomShadow42.gif" width=48 height=5></td>
 	               </tr>
 	            </table>
 	         </#if>

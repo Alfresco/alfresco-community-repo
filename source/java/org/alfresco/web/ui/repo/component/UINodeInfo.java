@@ -91,9 +91,8 @@ public class UINodeInfo extends SelfRenderingComponent
             get(NODE_INFO_SCRIPTS_WRITTEN);
          if (present == null)
          {
-            out.write("<script type=\"text/javascript\" src=\"");
-            out.write(context.getExternalContext().getRequestContextPath());
-            out.write("/scripts/ajax/node-info.js\"></script>");
+            out.write("<script>var AlfNodeInfoMgr = new Alfresco.PanelManager(" +
+                      "\"NodeInfoBean.sendNodeInfo\", \"noderef\");</script>");
             
             context.getExternalContext().getRequestMap().put(
                   NODE_INFO_SCRIPTS_WRITTEN, Boolean.TRUE);

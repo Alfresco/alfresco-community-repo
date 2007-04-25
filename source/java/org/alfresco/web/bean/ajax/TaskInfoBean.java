@@ -36,9 +36,12 @@ import org.alfresco.repo.template.AbsoluteUrlMethod;
 import org.alfresco.repo.template.CropContentMethod;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.template.UrlEncodeMethod;
+import org.alfresco.repo.template.Workflow;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.web.app.servlet.BaseTemplateContentServlet;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
@@ -46,43 +49,40 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Bean used by an AJAX control to send information back on the 
- * requested node.
+ * Bean used by an AJAX control to send information back on the requested workflow task.
  * 
- * @author gavinc
+ * @author Kevin Roast
  */
-public class NodeInfoBean
+public class TaskInfoBean
 {
-   private NodeService nodeService;
-   
-   private static final Log logger = LogFactory.getLog(NodeInfoBean.class);
+   private WorkflowService workflowService;
    
    /**
-    * Returns information on the node identified by the 'noderef'
+    * Returns information on the node identified by the 'taskId'
     * parameter found in the ExternalContext.
     * <p>
     * The result is the formatted HTML to show on the client.
     */
-   public void sendNodeInfo() throws IOException
+   public void sendTaskInfo() throws IOException
    {
       FacesContext context = FacesContext.getCurrentInstance();
       ResponseWriter out = context.getResponseWriter();
       
-      String strNodeRef = (String)context.getExternalContext().getRequestParameterMap().get("noderef");
-      if (strNodeRef == null || strNodeRef.length() == 0)
+      String taskId = (String)context.getExternalContext().getRequestParameterMap().get("taskId");
+      if (taskId == null || taskId.length() == 0)
       {
-         throw new IllegalArgumentException("'noderef' parameter is missing");
+         throw new IllegalArgumentException("'taskId' parameter is missing");
       }
       
-      NodeRef nodeRef = new NodeRef(strNodeRef);
-      if (this.nodeService.exists(nodeRef))
+      WorkflowTask task = this.workflowService.getTaskById(taskId);
+      if (task != null)
       {
          Repository.getServiceRegistry(context).getTemplateService().processTemplate(
-               "/alfresco/templates/client/node_summary_panel.ftl", getModel(nodeRef), out);
+               "/alfresco/templates/client/task_summary_panel.ftl", getModel(task), out);
       }
       else
       {
-         out.write("<span class='errorMessage'>Node could not be found in the repository!</span>");
+         out.write("<span class='errorMessage'>Task could not be found.</span>");
       }
    }
 
@@ -91,31 +91,30 @@ public class NodeInfoBean
    // Bean getters and setters
    
    /**
-    * @param nodeService      The NodeService to set.
+    * @param workflowService    The WorkflowService to set.
     */
-   public void setNodeService(NodeService nodeService)
+   public void setWorkflowService(WorkflowService workflowService)
    {
-      this.nodeService = nodeService;
+      this.workflowService = workflowService;
    }
    
    
    // ------------------------------------------------------------------------------
    // Helper methods
    
-   private Map<String, Object> getModel(NodeRef nodeRef)
+   private Map<String, Object> getModel(WorkflowTask task)
    {
       FacesContext context = FacesContext.getCurrentInstance();
       Map<String, Object> model = new HashMap<String, Object>(8, 1.0f);
       
-      // create api methods
+      // create template api methods and objects
       model.put("date", new Date());
-      model.put("cropContent", new CropContentMethod());
       model.put("url", new BaseTemplateContentServlet.URLHelper(
               context.getExternalContext().getRequestContextPath()));
-      model.put("node", new TemplateNode(
-            nodeRef,
+      model.put("task", new Workflow.WorkflowTaskItem(
             Repository.getServiceRegistry(context),
-            this.imageResolver));
+            this.imageResolver,
+            task));
       
       return model;
    }

@@ -1,103 +1,106 @@
 //
-// Supporting JavaScript for the NodeInfo component
-// Gavin Cornwell 17-07-2006
-// Kevin Roast 21-02-2007 (rewrite to use individual panel objects and convert to YUI)
+// Supporting JavaScript for the Summary Info pop-up panel objects
+// Kevin Roast 24-04-2007
 //
 // NOTE: This script requires common.js - which needs to be loaded
 //       prior to this one on the containing HTML page.
 
-var zIndex = 99;
+var _zIndex = 99;
 
 /**
- * Node Info Manager constructor
+ * Panel Manager constructor
+ * 
+ * @param serverCall    Server call to make on display e.g. NodeInfoBean.sendNodeInfo
+ * @param argName       Argument name to pass panel ID object as e.g. nodeRef
  */
-Alfresco.NodeInfoManager = function()
+Alfresco.PanelManager = function(serverCall, argName)
 {
+   this.serverCall = serverCall;
+   this.argName = argName;
 }
 
 /**
- * Definition of the Node Info Manager class.
- * Responsible for open/closing NodeInfoPanel dynamic summary panel objects.
+ * Definition of the Panel Manager class.
+ * Responsible for open/closing InfoPanel dynamic summary panel objects.
  */
-Alfresco.NodeInfoManager.prototype =
+Alfresco.PanelManager.prototype =
 {
    panels: [],
    displayed: [],
+   serverCall: null,
+   argName: null,
    
    /**
-    * Request toggle of the open/close state of a node info panel
+    * Request toggle of the open/close state of an info panel
     */
-   toggle: function(nodeRef, launchElement)
+   toggle: function(id, launchElement)
    {
-      if (this.displayed[nodeRef] == undefined || this.displayed[nodeRef] == null)
+      if (this.displayed[id] == undefined || this.displayed[id] == null)
       {
-         var panel = this.panels[nodeRef];
+         var panel = this.panels[id];
          if (panel == undefined || panel == null)
          {
-            panel = new Alfresco.NodeInfoPanel(nodeRef, launchElement);
-            this.panels[nodeRef] = panel;
+            panel = new Alfresco.InfoPanel(this, id, launchElement);
+            this.panels[id] = panel;
          }
-         this.displayed[nodeRef] = true;
-         panel.showNodeInfo();
+         this.displayed[id] = true;
+         panel.showInfo();
       }
       else
       {
-         this.close(nodeRef);
+         this.close(id);
       }
    },
    
    /**
-    * Request a Close of the node info panel
+    * Request a Close of the Summary info panel
     */
-   close: function(nodeRef)
+   close: function(id)
    {
-      var panel = this.panels[nodeRef];
+      var panel = this.panels[id];
       if (panel != undefined && panel != null)
       {
-         this.displayed[nodeRef] = null;
-         panel.hideNodeInfo();
+         this.displayed[id] = null;
+         panel.hideInfo();
       }
    },
    
    /**
-    * Return if a given node info panel is currently displayable
+    * Return if a given info panel is currently displayable
     */
-   displayable: function(nodeRef)
+   displayable: function(id)
    {
-      return (this.displayed[nodeRef] != undefined && this.displayed[nodeRef] != null);
+      return (this.displayed[id] != undefined && this.displayed[id] != null);
    }
 }
 
-/**
- * Construct the single Node Info Manager instance
- */
-var AlfNodeInfoMgr = new Alfresco.NodeInfoManager();
-
 
 /**
- * Constructor for the Node Info Panel object
+ * Constructor for the Info Panel object
  */
-Alfresco.NodeInfoPanel = function(nodeRef, launchElement)
+Alfresco.InfoPanel = function(manager, id, launchElement)
 {
-   this.nodeRef = nodeRef;
+   this.manager = manager;
+   this.id = id;
    this.launchElement = launchElement;
 }
 
 /**
- * Definition of the Node Info Panel object
+ * Definition of the Info Panel object
  */
-Alfresco.NodeInfoPanel.prototype = 
+Alfresco.InfoPanel.prototype = 
 {
-   nodeRef: null,
+   manager: null,
+   id: null,
    launchElement: null,
    popupElement: null,
    visible: false,
    loading: false,
    
    /**
-    * Makes the AJAX request back to the server to get the node info.
+    * Makes the AJAX request back to the server to get the panel info.
     */
-   showNodeInfo: function()
+   showInfo: function()
    {
       if (this.loading == false)
       {
@@ -113,25 +116,25 @@ Alfresco.NodeInfoPanel.prototype =
             
             YAHOO.util.Connect.asyncRequest(
                "POST",
-               getContextPath() + '/ajax/invoke/NodeInfoBean.sendNodeInfo',
+               getContextPath() + '/ajax/invoke/' + this.manager.serverCall,
                { 
-                  success: this.loadNodeInfoHandler,
+                  success: this.loadInfoHandler,
                   failure: handleErrorYahoo,    // global error handler
                   argument: [this]
                }, 
-               "noderef=" + this.nodeRef);
+               this.manager.argName + "=" + this.id);
          }
          else
          {
-            this.displayNodeInfo();
+            this.displayInfo();
          }
       }
    },
    
    /**
-    * Callback function for showNodeInfo() above
+    * Callback function for showInfo() above
     */
-   loadNodeInfoHandler: function(response)
+   loadInfoHandler: function(response)
    {
       var panel = response.argument[0];
       
@@ -156,13 +159,13 @@ Alfresco.NodeInfoPanel.prototype =
       panel.loading = false;
       
       // display the div for the first time
-      panel.displayNodeInfo();
+      panel.displayInfo();
    },
    
    /**
-    * Display the summary info panel for the node
+    * Display the summary info panel for the panel
     */
-   displayNodeInfo: function()
+   displayInfo: function()
    {
       var elImg = Alfresco.Dom.getElementByTagName(this.launchElement, "img");
       if (elImg != null)
@@ -170,14 +173,14 @@ Alfresco.NodeInfoPanel.prototype =
          elImg.src = getContextPath() + "/images/icons/popup.gif";
       }
       
-      if (AlfNodeInfoMgr.displayable(this.nodeRef) == true)
+      if (this.manager.displayable(this.id) == true)
       {
          if (this.popupElement != null && this.visible == false)
          {
             // set opacity in browser independant way
             YAHOO.util.Dom.setStyle(this.popupElement, "opacity", 0.0);
             this.popupElement.style.display = "block";
-            this.popupElement.style.zIndex = zIndex++;   // pop to front
+            this.popupElement.style.zIndex = _zIndex++;   // pop to front
             
             Alfresco.Dom.smartAlignElement(this.popupElement, this.launchElement, 700);
             
@@ -194,9 +197,9 @@ Alfresco.NodeInfoPanel.prototype =
    },
    
    /**
-    * Hide the summary info panel for the node
+    * Hide the summary info panel
     */
-   hideNodeInfo: function()
+   hideInfo: function()
    {
       if (this.popupElement != null && this.visible == true)
       {

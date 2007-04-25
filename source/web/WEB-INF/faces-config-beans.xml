@@ -3179,6 +3179,19 @@
    
    <managed-bean>
       <description>
+         Bean that returns information on a workflow task
+      </description>
+      <managed-bean-name>TaskInfoBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.ajax.TaskInfoBean</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+      <managed-property>
+         <property-name>workflowService</property-name>
+         <value>#{WorkflowService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
          Bean that returns manages the tree data for the navigator component
       </description>
       <managed-bean-name>NavigatorPluginBean</managed-bean-name>

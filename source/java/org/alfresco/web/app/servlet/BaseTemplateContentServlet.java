@@ -297,8 +297,8 @@ public abstract class BaseTemplateContentServlet extends BaseServlet
       }
       root.put("args", args);
       
-      // method to allow absolute client urls to be generated
-      root.put("absurl", new AbsoluteUrlMethod(req.getContextPath()));
+      // method to allow client urls to be generated
+      root.put("url", new URLHelper(req.getContextPath()));
       
       return root;
    }
@@ -311,4 +311,22 @@ public abstract class BaseTemplateContentServlet extends BaseServlet
          return Utils.getFileTypeImage(getServletContext(), filename, small);
       }
    };
+   
+   /**
+    * Helper to return context path for generating urls
+    */
+   public static class URLHelper
+   {
+       String context;
+       
+       public URLHelper(String context)
+       {
+           this.context = context;
+       }
+       
+       public String getContext()
+       {
+           return context;
+       }
+   }
 }

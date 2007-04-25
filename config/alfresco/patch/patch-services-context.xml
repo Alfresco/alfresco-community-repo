@@ -703,6 +703,17 @@
         </property>
     </bean>
 
+    <bean id="patch.AVMGuidPatch" class="org.alfresco.repo.admin.patch.impl.AVMGuidPatch" parent="basePatch">
+        <property name="id"><value>patch.AVMGuidPatch</value></property>
+        <property name="description"><value>patch.AVMGuidPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>40</value></property>
+        <property name="targetSchema"><value>41</value></property>
+        <property name="avmNodeDao">
+            <ref bean="avmNodeDAO"/>
+        </property>
+    </bean>
+
     <bean id="patch.webscripts" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.webscripts</value></property>
         <property name="description"><value>patch.webscripts.description</value></property>

@@ -22,6 +22,7 @@
  * http://www.alfresco.com/legal/licensing" */
 package org.alfresco.repo.avm;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -99,4 +100,10 @@ public interface AVMNodeDAO
      * Inappropriate hack to get Hibernate to play nice.
      */
     public void flush();
+    
+    /**
+     * Get a batch 
+     * @return An iterator over all nodes.
+     */
+    List<AVMNode> getEmptyGUIDS(int count);
 }

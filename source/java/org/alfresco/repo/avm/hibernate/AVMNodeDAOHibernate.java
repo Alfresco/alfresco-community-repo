@@ -172,4 +172,15 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
     {
         getSession().flush();
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNodeDAO#getEmptyGUIDS(int)
+     */
+    @SuppressWarnings("unchecked")
+    public List<AVMNode> getEmptyGUIDS(int count)
+    {
+        Query query = getSession().createQuery("from AVMNodeImpl an where an.guid is null");
+        query.setMaxResults(count);
+        return (List<AVMNode>)query.list();
+    }
 }

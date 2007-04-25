@@ -242,37 +242,19 @@ public abstract class AbstractReindexComponent implements IndexRecovery
             }
         }
     }
-    
-    /**
-     * Gets the last indexed transaction working back from the provided index.
-     * This method can be used to hunt for a starting point for indexing of
-     * transactions not yet in the index.
-     */
-    protected long getLastIndexedTxn(long lastTxnId)
+
+    protected enum InIndex
     {
-        // get the last transaction
-        long lastFoundTxnId = lastTxnId + 10L;
-        boolean found = false;
-        while (!found && lastFoundTxnId >= 0)
-        {
-            // reduce the transaction ID
-            lastFoundTxnId = lastFoundTxnId - 10L;
-            // break out as soon as we find a transaction that is in the index
-            found = isTxnIdPresentInIndex(lastFoundTxnId);
-            if (found)
-            {
-                break;
-            }
-        }
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Found last index txn before " + lastTxnId + ": " + lastFoundTxnId);
-        }
-        return lastFoundTxnId;
+        YES, NO, INDETERMINATE;
     }
     
-    protected boolean isTxnIdPresentInIndex(long txnId)
+    /**
+     * Determines if a given transaction is definitely in the index or not.
+     * 
+     * @param txnId     a specific transaction
+     * @return          Returns <tt>true</tt> if the transaction is definitely in the index
+     */
+    protected InIndex isTxnIdPresentInIndex(long txnId)
     {
         if (logger.isDebugEnabled())
         {
@@ -282,7 +264,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         Transaction txn = nodeDaoService.getTxnById(txnId);
         if (txn == null)
         {
-            return true;
+            return InIndex.YES;
         }
 
         // count the changes in the transaction
@@ -290,28 +272,38 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         int deleteCount = nodeDaoService.getTxnDeleteCount(txnId);
         if (logger.isDebugEnabled())
         {
-            logger.debug("Transaction has " + updateCount + " updates and " + deleteCount + " deletes: " + txnId);
+            logger.debug("Transaction " + txnId + " has " + updateCount + " updates and " + deleteCount + " deletes.");
         }
         
-        // get the stores
-        boolean found = false;
-        List<StoreRef> storeRefs = nodeService.getStores();
-        for (StoreRef storeRef : storeRefs)
+
+        InIndex result = InIndex.NO;
+        if (updateCount == 0 && deleteCount == 0)
         {
-            boolean inStore = isTxnIdPresentInIndex(storeRef, txn, updateCount, deleteCount);
-            if (inStore)
+            // If there are no update or deletes, then it is impossible to know if the transaction was removed
+            // from the index or was never there in the first place.
+            result = InIndex.INDETERMINATE;
+        }
+        else
+        {
+            // get the stores
+            List<StoreRef> storeRefs = nodeService.getStores();
+            for (StoreRef storeRef : storeRefs)
             {
-                // found in a particular store
-                found = true;
-                break;
+                boolean inStore = isTxnIdPresentInIndex(storeRef, txn, updateCount, deleteCount);
+                if (inStore)
+                {
+                    // found in a particular store
+                    result = InIndex.YES;
+                    break;
+                }
             }
         }
         // done
         if (logger.isDebugEnabled())
         {
-            logger.debug("Transaction " + txnId + " was " + (found ? "found" : "not found") + " in indexes.");
+            logger.debug("Transaction " + txnId + " present in indexes: " + result);
         }
-        return found;
+        return result;
     }
     
     /**
@@ -340,7 +332,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                 {
                     if (logger.isDebugEnabled())
                     {
-                        logger.debug("Index has results for txn (OK): " + txnId);
+                        logger.debug("Index has results for txn " + txnId + " for store " + storeRef);
                     }
                     return true;        // there were updates/creates and results for the txn were found
                 }
@@ -348,7 +340,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                 {
                     if (logger.isDebugEnabled())
                     {
-                        logger.debug("Index has no results for txn (Index out of date): " + txnId);
+                        logger.debug("Transaction " + txnId + " not in index for store " + storeRef + ".  Possibly out of date.");
                     }
                     return false;
                 }
@@ -450,7 +442,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                                 null,
                                 null,
                                 nodeRef);
-                      indexer.deleteNode(assocRef);
+                        indexer.deleteNode(assocRef);
                     }
                     else                                                        // node created
                     {

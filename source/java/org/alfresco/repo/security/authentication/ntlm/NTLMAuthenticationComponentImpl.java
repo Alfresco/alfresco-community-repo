@@ -34,6 +34,8 @@ import java.security.Security;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import javax.transaction.UserTransaction;
+
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.AuthenticationServiceException;
 import net.sf.acegisecurity.BadCredentialsException;
@@ -53,7 +55,9 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -95,6 +99,10 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
     
     private boolean m_allowGuest;
     
+    // Allow authenticated users that do not have an Alfresco person to logon as guest
+    
+    private boolean m_allowAuthUserAsGuest;
+    
     // Table of currently active passthru authentications and the associated authentication session
     //
     // If the two authentication stages are not completed within a reasonable time the authentication
@@ -114,6 +122,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
     
     private PersonService m_personService;
     private NodeService m_nodeService;
+    private TransactionService m_transactionService;
     
     /**
      * Passthru Session Reaper Thread
@@ -363,6 +372,16 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
     }
     
     /**
+     * Allow authenticated users with no alfresco person record to logon with guest access
+     * 
+     * @param auth String
+     */
+    public void setAllowAuthUserAsGuest(String auth)
+    {
+        m_allowAuthUserAsGuest = Boolean.parseBoolean(auth);
+    }
+    
+    /**
      * Set the JCE provider
      * 
      * @param providerClass String
@@ -461,6 +480,16 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
         m_nodeService = nodeService;
     }
     
+    /**
+     * Set the transaction service
+     * 
+     * @param transService TransactionService
+     */
+    public final void setTransactionService(TransactionService transService)
+    {
+        m_transactionService = transService;
+    }
+
     /**
      * Return the authentication session timeout, in milliseconds
      * 
@@ -756,7 +785,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
             
             // Open an authentication session for the new token and add to the active session list
             
-            authSess = m_passthruServers.openSession();
+            authSess = m_passthruServers.openSession( false, ntlmToken.getClientDomain());
             
             // Check if the session was opened to the passthru server
             
@@ -792,6 +821,8 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
         }
         else
         {
+            UserTransaction tx = null;
+            
             try
             {
                 // Stage two of the authentication, send the hashed password to the authentication server
@@ -835,6 +866,11 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
                 
                 ntlmToken.setAuthenticated(true);
 
+                // Wrap the service calls in a transaction
+                
+            	tx = m_transactionService.getUserTransaction( true);
+            	tx.begin();
+            	
                 // Map the passthru username to an Alfresco person
                 
                 NodeRef userNode = m_personService.getPerson(username);
@@ -861,7 +897,32 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
                     if ( logger.isDebugEnabled())
                         logger.debug("Setting current user using username " + username);
                 }
-            }                
+            }
+            catch (NoSuchPersonException ex)
+            {
+            	// Check if authenticated users are allowed on as guest when there is no Alfresco person record
+            	
+            	if ( m_allowAuthUserAsGuest == true)
+            	{
+                    // Set the guest authority
+                    
+                    GrantedAuthority[] authorities = new GrantedAuthority[1];
+                    authorities[0] = new GrantedAuthorityImpl(NTLMAuthorityGuest);
+                    
+                    ntlmToken.setAuthorities(authorities);
+
+                    // DEBUG
+                    
+                    if ( logger.isDebugEnabled())
+                        logger.debug("Allow passthru authenticated user to logon as guest, user=" + ntlmToken.getName());
+            	}
+            	else
+            	{
+            		// Logon failure, no matching person record
+            		
+                    throw new AuthenticationServiceException("Logon failure", ex);
+            	}
+            }
             catch (IOException ex)
             {
                 // Error connecting to the authentication server
@@ -899,6 +960,12 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
                 else
                     throw new BadCredentialsException("Logon failure");
             }
+            catch (Exception ex)
+            {
+                // General error
+                
+                throw new AuthenticationServiceException("General error", ex);
+            }
             finally
             {
                 // Make sure the authentication session is closed
@@ -918,6 +985,19 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
                     catch (Exception ex)
                     {
                     }
+                }
+                
+                // Commit or rollback the transaction, if active
+                
+                if ( tx != null)
+                {
+                	try
+                	{
+                		tx.commit();
+                	}
+                	catch ( Exception ex)
+                	{
+                	}
                 }
             }
         }

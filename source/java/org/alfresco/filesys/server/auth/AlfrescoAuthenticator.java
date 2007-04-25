@@ -245,7 +245,7 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
         {
             // Create an authentication token for the session
             
-            NTLMPassthruToken authToken = new NTLMPassthruToken();
+            NTLMPassthruToken authToken = new NTLMPassthruToken( mapClientAddressToDomain( sess.getRemoteAddress()));
             
             // Run the first stage of the passthru authentication to get the challenge
             

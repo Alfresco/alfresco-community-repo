@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.security.authentication.ntlm;
 
+import java.net.InetAddress;
+
 import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.providers.*;
 
@@ -37,12 +39,28 @@ public class NTLMLocalToken extends UsernamePasswordAuthenticationToken
 {
     private static final long serialVersionUID = -7946514578455279387L;
 
+    // Optional client domain and IP address, used to route the passthru authentication to the correct server(s)
+    
+    private String m_clientDomain;
+    private String m_clientAddr;
+    
     /**
      * Class constructor
      */
     protected NTLMLocalToken()
     {
         super(null, null);
+    }
+
+    /**
+     * Class constructor
+     * 
+     * @param ipAddr InetAddress
+     */
+    protected NTLMLocalToken( InetAddress ipAddr)
+    {
+    	if ( ipAddr != null)
+    		m_clientAddr = ipAddr.getHostAddress();
     }
     
     /**
@@ -55,6 +73,21 @@ public class NTLMLocalToken extends UsernamePasswordAuthenticationToken
         super(username.toLowerCase(), plainPwd);
     }
     
+    /**
+     * Class constructor
+     * 
+     * @param username String
+     * @param plainPwd String
+     * @param domain String
+     * @param ipAddr String
+     */
+    public NTLMLocalToken(String username, String plainPwd, String domain, String ipAddr) {
+        super(username != null ? username.toLowerCase() : "", plainPwd);
+        
+        m_clientDomain = domain;
+        m_clientAddr   = ipAddr;
+    }
+       
     /**
      * Check if the user logged on as a guest
      * 
@@ -102,5 +135,45 @@ public class NTLMLocalToken extends UsernamePasswordAuthenticationToken
         // Return the status
         
         return found;
+    }
+
+    /**
+     * Check if the client domain name is set
+     * 
+     * @return boolean
+     */
+    public final boolean hasClientDomain()
+    {
+    	return m_clientDomain != null ? true : false;
+    }
+    
+    /**
+     * Return the client domain
+     * 
+     * @return String
+     */
+    public final String getClientDomain()
+    {
+    	return m_clientDomain;
+    }
+
+    /**
+     * Check if the client IP address is set
+     * 
+     * @return boolean
+     */
+    public final boolean hasClientAddress()
+    {
+    	return m_clientAddr != null ? true : false;
+    }
+    
+    /**
+     * Return the client IP address
+     * 
+     * @return String
+     */
+    public final String getClientAddress()
+    {
+    	return m_clientAddr;
     }
 }

@@ -82,6 +82,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     /** The placeholder for the configured <code>Dialect</code> class name: <b>${db.script.dialect}</b> */
     private static final String PLACEHOLDER_SCRIPT_DIALECT = "\\$\\{db\\.script\\.dialect\\}";
 
+    private static final String MSG_BYPASSING_SCHEMA_UPDATE = "schema.update.msg.bypassing";
     private static final String MSG_EXECUTING_SCRIPT = "schema.update.msg.executing_script";
     private static final String MSG_OPTIONAL_STATEMENT_FAILED = "schema.update.msg.optional_statement_failed";
     private static final String MSG_DUMPING_SCHEMA_CREATE = "schema.update.msg.dumping_schema_create";
@@ -650,12 +651,16 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             if (updateSchema)
             {
                 updateSchema(cfg, session, connection);
+                
+                // verify that all patches have been applied correctly 
+                checkSchemaPatchScripts(cfg, session, connection, validateUpdateScriptPatches, false);  // check scripts
+                checkSchemaPatchScripts(cfg, session, connection, preUpdateScriptPatches, false);       // check scripts
+                checkSchemaPatchScripts(cfg, session, connection, postUpdateScriptPatches, false);      // check scripts
             }
-            
-            // verify that all patches have been applied correctly 
-            checkSchemaPatchScripts(cfg, session, connection, validateUpdateScriptPatches, false);  // check scripts
-            checkSchemaPatchScripts(cfg, session, connection, preUpdateScriptPatches, false);       // check scripts
-            checkSchemaPatchScripts(cfg, session, connection, postUpdateScriptPatches, false);      // check scripts
+            else
+            {
+                logger.info(I18NUtil.getMessage(MSG_BYPASSING_SCHEMA_UPDATE));
+            }
 
             // Reset the configuration
             cfg.setProperty(Environment.CONNECTION_PROVIDER, defaultConnectionProviderFactoryClass);

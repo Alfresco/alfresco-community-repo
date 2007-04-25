@@ -75,6 +75,9 @@ import org.alfresco.filesys.server.auth.acl.AccessControlManager;
 import org.alfresco.filesys.server.auth.acl.AccessControlParser;
 import org.alfresco.filesys.server.auth.acl.DefaultAccessControlManager;
 import org.alfresco.filesys.server.auth.acl.InvalidACLTypeException;
+import org.alfresco.filesys.server.auth.passthru.DomainMapping;
+import org.alfresco.filesys.server.auth.passthru.RangeDomainMapping;
+import org.alfresco.filesys.server.auth.passthru.SubnetDomainMapping;
 import org.alfresco.filesys.server.core.DeviceContext;
 import org.alfresco.filesys.server.core.DeviceContextException;
 import org.alfresco.filesys.server.core.ShareMapper;
@@ -402,6 +405,10 @@ public class ServerConfiguration extends AbstractLifecycleBean
     private PersonService m_personService;
     private TransactionService m_transactionService;
 
+    // Domain mappings, by subnet
+    
+    private List<DomainMapping> m_domainMappings;
+    
     /**
      * Class constructor
      */
@@ -2260,6 +2267,75 @@ public class ServerConfiguration extends AbstractLifecycleBean
             setJCEProvider("cryptix.jce.provider.CryptixCrypto");
         }
         
+        // Check if any domain mappings have been specified
+        
+        ConfigElement domainMappings = config.getConfigElement( "DomainMappings");
+        if ( domainMappings != null)
+        {
+        	// Get the domain mapping elements
+        	
+        	List<ConfigElement> mappings = domainMappings.getChildren();
+        	if ( mappings != null)
+        	{
+        		DomainMapping mapping = null;
+        		
+        		for ( ConfigElement domainMap : mappings)
+        		{
+        			if ( domainMap.getName().equals( "Domain"))
+        			{
+        				// Get the domain name
+        				
+        				String name = domainMap.getAttribute( "name");
+        				
+        				// Check if the domain is specified by subnet or range
+        				
+        				if ( domainMap.hasAttribute( "subnet"))
+        				{
+	        				String subnetStr = domainMap.getAttribute( "subnet");
+	        				String maskStr   = domainMap.getAttribute( "mask");
+	        				
+	        				// Parse the subnet and mask, to validate and convert to int values
+	        				
+	        				int subnet = IPAddress.parseNumericAddress( subnetStr);
+	        				int mask   = IPAddress.parseNumericAddress( maskStr);
+	        				
+	        				if ( subnet == 0 || mask == 0)
+	        					throw new AlfrescoRuntimeException( "Invalid subnet/mask for domain mapping " + name);
+	        				
+	        				// Create the subnet domain mapping
+	        				
+	        				mapping = new SubnetDomainMapping( name, subnet, mask);
+        				}
+        				else if ( domainMap.hasAttribute( "rangeFrom"))
+        				{
+        					String rangeFromStr = domainMap.getAttribute( "rangeFrom");
+        					String rangeToStr   = domainMap.getAttribute( "rangeTo");
+        					
+        					// Parse the range from/to values and convert to int values
+        					
+        					int rangeFrom = IPAddress.parseNumericAddress( rangeFromStr);
+        					int rangeTo   = IPAddress.parseNumericAddress( rangeToStr);
+	        				
+        					if ( rangeFrom == 0 || rangeTo == 0)
+	        					throw new AlfrescoRuntimeException( "Invalid address range domain mapping " + name);
+        					
+	        				// Create the subnet domain mapping
+	        				
+	        				mapping = new RangeDomainMapping( name, rangeFrom, rangeTo);
+        				}
+        				else
+        					throw new AlfrescoRuntimeException( "Invalid domain mapping specified");
+        				
+        				// Create the domain mapping
+        				
+        				if ( m_domainMappings == null)
+        					m_domainMappings = new ArrayList<DomainMapping>();
+        				m_domainMappings.add( mapping);
+        			}
+        		}
+        	}
+        }
+        
         // Check if an authenticator has been specified
 
         ConfigElement authElem = config.getConfigElement("authenticator");
@@ -3197,6 +3273,26 @@ public class ServerConfiguration extends AbstractLifecycleBean
         return domainName;
     }
 
+    /**
+     * Check if there are domain mappings
+     * 
+     * @return boolean
+     */
+    public final boolean hasDomainMappings()
+    {
+    	return m_domainMappings != null ? true : false;
+    }
+    
+    /**
+     * Return the domain mappings
+     * 
+     * @return List<DomainMapping>
+     */
+    public final List<DomainMapping> getDomainMappings()
+    {
+    	return m_domainMappings;
+    }
+    
     /**
      * Return the primary filesystem shared device, or null if not available
      * 

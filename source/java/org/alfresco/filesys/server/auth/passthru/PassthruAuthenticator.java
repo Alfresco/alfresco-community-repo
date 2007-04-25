@@ -358,7 +358,11 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
     	
         try
         {
-	        AuthenticateSession authSess = m_passthruServers.openSession();
+        	// Try and map the client address to a domain
+        	
+        	String domain = mapClientAddressToDomain( sess.getRemoteAddress());
+        	
+	        AuthenticateSession authSess = m_passthruServers.openSession( false, domain);
 	        if (authSess != null)
 	        {
 	

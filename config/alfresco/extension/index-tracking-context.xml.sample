@@ -39,8 +39,11 @@
     <!-- Forces the reindexing of nodes where content may have been missing before -->
     <!--
        This component can be triggered at intervals where asynchronous content sharing
-       between clustered servers has been set up.
+       between clustered servers has been set up.  If content sharing is synchronous
+       (see ReplicatingContentStore.setOutboundThreadPoolExecutor) then this component
+       is not required.
     -->
+    <!--
     <bean id="missingContentReindexTrigger" class="org.alfresco.util.TriggerBean">
         <property name="jobDetail">
             <bean class="org.springframework.scheduling.quartz.JobDetailBean">
@@ -59,7 +62,6 @@
         <property name="scheduler">
             <ref bean="schedulerFactory" />
         </property>
-        <!-- Give the server 5 minutes and then check for missing content -->
         <property name="startDelayMinutes">
             <value>5</value>
         </property>
@@ -67,5 +69,6 @@
             <value>0</value>
         </property>
     </bean>
+    -->
 
 </beans>

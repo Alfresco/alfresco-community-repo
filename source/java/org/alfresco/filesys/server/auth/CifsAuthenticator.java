@@ -24,8 +24,11 @@
  */
 package org.alfresco.filesys.server.auth;
 
+import java.net.InetAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import javax.transaction.UserTransaction;
@@ -33,7 +36,11 @@ import javax.transaction.UserTransaction;
 import net.sf.acegisecurity.Authentication;
 
 import org.alfresco.config.ConfigElement;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.server.SrvSession;
+import org.alfresco.filesys.server.auth.passthru.DomainMapping;
+import org.alfresco.filesys.server.auth.passthru.RangeDomainMapping;
+import org.alfresco.filesys.server.auth.passthru.SubnetDomainMapping;
 import org.alfresco.filesys.server.config.InvalidConfigurationException;
 import org.alfresco.filesys.server.config.ServerConfiguration;
 import org.alfresco.filesys.server.core.SharedDevice;
@@ -53,6 +60,7 @@ import org.alfresco.filesys.smb.server.VirtualCircuit;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
 import org.alfresco.filesys.util.DataPacker;
 import org.alfresco.filesys.util.HexDump;
+import org.alfresco.filesys.util.IPAddress;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoder;
@@ -968,5 +976,45 @@ public abstract class CifsAuthenticator
     		
     		m_authComponent.setGuestUserAsCurrentUser();
     	}
+    }
+    
+    
+    /**
+     * Map a client IP address to a domain
+     * 
+     * @param clientIP InetAddress
+     * @return String
+     */
+    protected final String mapClientAddressToDomain( InetAddress clientIP)
+    {
+    	// Check if there are any domain mappings
+    	
+    	if ( m_config.hasDomainMappings() == false)
+    		return null;
+
+    	// convert the client IP address to an integer value
+    	
+    	int clientAddr = IPAddress.asInteger( clientIP);
+    	for ( DomainMapping domainMap : m_config.getDomainMappings())
+    	{
+    		if ( domainMap.isMemberOfDomain( clientAddr))
+    		{
+    			// DEBUG
+    		
+    			if ( logger.isDebugEnabled())
+    				logger.debug( "Mapped client IP " + clientIP + " to domain " + domainMap.getDomain());
+    		
+    			return domainMap.getDomain();
+    		}
+    	}
+    	
+    	// DEBUG
+    	
+    	if ( logger.isDebugEnabled())
+    		logger.debug( "Failed to map client IP " + clientIP + " to a domain");
+    	
+    	// No domain mapping for the client address
+    	
+    	return null;
     }
 }

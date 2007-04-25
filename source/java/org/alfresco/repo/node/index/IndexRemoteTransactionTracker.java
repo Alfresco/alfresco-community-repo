@@ -40,6 +40,7 @@ public class IndexRemoteTransactionTracker extends AbstractReindexComponent
     private static Log logger = LogFactory.getLog(IndexRemoteTransactionTracker.class);
     
     private boolean remoteOnly;
+    private boolean started;
     private long currentTxnId;
     
     public IndexRemoteTransactionTracker()
@@ -67,17 +68,11 @@ public class IndexRemoteTransactionTracker extends AbstractReindexComponent
     @Override
     protected void reindexImpl()
     {
-        if (currentTxnId < 0)
+        if (!started)
         {
-            // initialize the starting point
-            Transaction lastTxn = nodeDaoService.getLastTxn();
-            if (lastTxn == null)
-            {
-                // there is nothing to do
-                return;
-            }
-            long lastTxnId = lastTxn.getId();
-            currentTxnId = getLastIndexedTxn(lastTxnId);
+            // Initialize the starting poing
+            currentTxnId = getLastIndexedTxn();
+            started = true;
         }
         
         if (logger.isDebugEnabled())
@@ -107,6 +102,88 @@ public class IndexRemoteTransactionTracker extends AbstractReindexComponent
                 currentTxnId = txnId;
             }
         }
+    }
+    
+    private static final long DECREMENT_COUNT = 10L;
+    /**
+     * Finds the last indexed transaction.  It works backwards from the
+     * last index in increments, respecting the {@link #setRemoteOnly(boolean) remoteOnly}
+     * flag.
+     * 
+     * @return Returns the last index transaction or -1 if there is none
+     */
+    protected long getLastIndexedTxn()
+    {
+        // get the last transaction
+        Transaction txn = null;
+        if (remoteOnly)
+        {
+            txn = nodeDaoService.getLastRemoteTxn();
+        }
+        else
+        {
+            txn = nodeDaoService.getLastTxn();
+        }
+        if (txn == null)
+        {
+            // There is no last transaction to use
+            return -1L;
+        }
+        long currentTxnId = txn.getId();
+        while (currentTxnId >= 0L)
+        {
+            // Check if the current txn is in the index
+            InIndex txnInIndex = isTxnIdPresentInIndex(currentTxnId);
+            if (txnInIndex == InIndex.YES)
+            {
+                // We found somewhere to start
+                break;
+            }
+            
+            // Get back in time
+            long lastCheckTxnId = currentTxnId;
+            currentTxnId -= DECREMENT_COUNT;
+            if (currentTxnId < 0L)
+            {
+                currentTxnId = -1L;
+            }
+            // We don't know if this number we have is a local or remote txn, so get the very next one
+            Transaction nextTxn = null;
+            if (remoteOnly)
+            {
+                List<Transaction> nextTxns = nodeDaoService.getNextRemoteTxns(currentTxnId, 1);
+                if (nextTxns.size() > 0)
+                {
+                    nextTxn = nextTxns.get(0);
+                }
+            }
+            else
+            {
+                List<Transaction> nextTxns = nodeDaoService.getNextTxns(currentTxnId, 1);
+                if (nextTxns.size() > 0)
+                {
+                    nextTxn = nextTxns.get(0);
+                }
+            }
+            if (nextTxn == null)
+            {
+                // There was nothing relevant after this, so keep going back in time
+                continue;
+            }
+            else if (nextTxn.getId() >= lastCheckTxnId)
+            {
+                // Decrementing by DECREMENT_COUNT was not enough
+                continue;
+            }
+            // Adjust the last one we looked at to reflect the correct txn id
+            currentTxnId = nextTxn.getId();
+        }
+        // We are close enough to the beginning, so just go for the first transaction
+        if (currentTxnId < 0L)
+        {
+            currentTxnId = -1L;
+        }
+        return currentTxnId;
     }
     
     private static final int MAX_TXN_COUNT = 1000;

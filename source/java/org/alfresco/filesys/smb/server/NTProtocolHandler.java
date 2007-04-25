@@ -3414,11 +3414,21 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
             if (searchDone == true || ctx.hasMoreFiles() == false)
             {
-
                 // Debug
 
                 if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_SEARCH))
                     logger.debug("End start search [" + searchId + "] (Search complete)");
+
+                // Release the search context
+
+                vc.deallocateSearchSlot(searchId);
+            }
+            else if (( srchFlag & FindFirstNext.CloseSearch) != 0)
+            {
+                // Debug
+
+                if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_SEARCH))
+                    logger.debug("End start search [" + searchId + "] (Close)");
 
                 // Release the search context
 
@@ -3674,6 +3684,17 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
                 if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_SEARCH))
                     logger.debug("End start search [" + searchId + "] (Search complete)");
+
+                // Release the search context
+
+                vc.deallocateSearchSlot(searchId);
+            }
+            else if (( srchFlag & FindFirstNext.CloseSearch) != 0)
+            {
+                // Debug
+
+                if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_SEARCH))
+                    logger.debug("End start search [" + searchId + "] (Close)");
 
                 // Release the search context
 

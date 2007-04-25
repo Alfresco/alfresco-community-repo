@@ -184,6 +184,23 @@ public class IPAddress
     /**
      * Convert a raw IP address array as a String
      * 
+     * @param ipaddr int
+     * @return String
+     */
+    public final static String asString(int ipaddr)
+    {
+    	byte[] ipbyts = new byte[4];
+    	ipbyts[0] = (byte) ((ipaddr >> 24) & 0xFF);
+    	ipbyts[1] = (byte) ((ipaddr >> 16) & 0xFF);
+    	ipbyts[2] = (byte) ((ipaddr >> 8)  & 0xFF);
+    	ipbyts[3] = (byte) (ipaddr & 0xFF);
+    	
+    	return asString( ipbyts);
+    }
+    
+    /**
+     * Convert a raw IP address array as a String
+     * 
      * @param ipaddr byte[]
      * @return String
      */

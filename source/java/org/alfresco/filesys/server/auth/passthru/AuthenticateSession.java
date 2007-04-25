@@ -1119,6 +1119,8 @@ public class AuthenticateSession
 
             if (getPCShare().hasDomain())
                 pkt.packString(getPCShare().getDomain(), false);
+            else if ( domain != null)
+            	pkt.packString( domain, false);
             else
                 pkt.packString("?", false);
 

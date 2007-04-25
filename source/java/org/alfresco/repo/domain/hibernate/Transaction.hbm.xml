@@ -78,6 +78,17 @@
          join status.transaction as txn
    </query>
    
+   <query name="txn.GetLastRemoteTxnId">
+      select
+         max(txn.id)
+      from
+         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
+         join status.transaction as txn
+         join txn.server as server
+      where
+         server.ipAddress != :serverIpAddress
+   </query>
+   
    <query name="txn.CountTransactions">
       select
          count(txn.id)

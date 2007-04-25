@@ -277,6 +277,7 @@ public interface NodeDaoService
     
     public Transaction getTxnById(long txnId);
     public Transaction getLastTxn();
+    public Transaction getLastRemoteTxn();
     public Transaction getLastTxnForStore(final StoreRef storeRef);
     public int getTxnUpdateCount(final long txnId);
     public int getTxnDeleteCount(final long txnId);

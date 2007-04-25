@@ -132,8 +132,8 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                 return;
             }
             long txnId = txn.getId();
-            boolean txnInIndex = isTxnIdPresentInIndex(txnId);
-            if (!txnInIndex)
+            InIndex txnInIndex = isTxnIdPresentInIndex(txnId);
+            if (txnInIndex != InIndex.YES)
             {
                 String msg = I18NUtil.getMessage(ERR_INDEX_OUT_OF_DATE);
                 logger.warn(msg);

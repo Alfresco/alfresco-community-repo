@@ -127,6 +127,16 @@ public class PassthruServerDetails
     }
     
     /**
+     * Set the domain that the offline server belongs to
+     * 
+     * @param domain String
+     */
+    public final void setDomain(String domain)
+    {
+    	m_domain = domain;
+    }
+    
+    /**
      * Set the online status for the server
      * 
      * @param online boolean

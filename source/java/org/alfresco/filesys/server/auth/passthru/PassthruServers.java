@@ -306,27 +306,34 @@ public class PassthruServers
      */
     public final AuthenticateSession openSession()
     {
-        return openSession( false);
+        return openSession( false, null);
     }
     
     /**
      * Open a new session to an authentication server
      * 
      * @param useExtSec boolean
+     * @param clientDomain String
      * @return AuthenticateSession
      */
-    public final AuthenticateSession openSession(boolean useExtSec)
+    public final AuthenticateSession openSession(boolean useExtSec, String clientDomain)
     {
-        // Get the details of an authentication server to connect to 
+    	// Get the details of an authentication server to connect to 
 
-        PassthruServerDetails passthruServer = getAuthenticationServer();
+        PassthruServerDetails passthruServer = null;
+        
+        if ( clientDomain != null)
+        	passthruServer = getAuthenticationServer( clientDomain);
+        else
+        	passthruServer = getAuthenticationServer();
+        
         if ( passthruServer == null)
             return null;
 
         // Debug
         
         if ( logger.isDebugEnabled())
-            logger.debug("Open authenticate session to " + passthruServer);
+            logger.debug("Open authenticate session to " + passthruServer + ( clientDomain != null ? " (routed for client domain " + clientDomain + ")" : ""));
         
         // Open a new authentication session to the server
         
@@ -397,6 +404,49 @@ public class PassthruServers
                 m_onlineList.add(m_onlineList.remove(0));
             if ( m_onlineList.size() > 0)
                 passthruServer = m_onlineList.get(0);
+        }
+        
+        return passthruServer;
+    }
+    
+    /**
+     * Return the details of an online server to use for authentication of the specified client
+     * domain
+     * 
+     * @params clientDomain String
+     * @return PassthruServerDetails
+     */
+    protected PassthruServerDetails getAuthenticationServer( String clientDomain)
+    {
+        // Rotate the head of the list and return the new head of list server details
+
+        PassthruServerDetails passthruServer = null;
+
+        synchronized ( m_onlineList)
+        {
+        	int idx = 0;
+        	
+        	while ( idx < m_onlineList.size() && passthruServer == null)
+        	{
+        		// Get the current passthru server details
+        		
+        		PassthruServerDetails curServer = m_onlineList.get( idx);
+        		
+        		if ( curServer.getDomain() != null && curServer.getDomain().equals( clientDomain))
+        		{
+        			// Use this passthru server
+        		
+        			passthruServer = curServer;
+        			
+        			// Move to the back of the list
+        			
+        			m_onlineList.add( m_onlineList.remove( idx));
+        		}
+        		
+        		// Update the server index
+        		
+        		idx++;
+        	}
         }
         
         return passthruServer;
@@ -502,6 +552,17 @@ public class PassthruServers
             
             String srvName = tokens.nextToken().trim();
             
+            // Check if the server address also contains a domain name
+            
+            String domain = null;
+            int pos = srvName.indexOf( '\\');
+            
+            if ( pos != -1)
+            {
+            	domain = srvName.substring(0, pos);
+            	srvName = srvName.substring( pos + 1);
+            }
+            
             // If a name a has been specified convert it to an address, if an address has been specified
             // then convert to a name.
             
@@ -549,7 +610,7 @@ public class PassthruServers
             {
                 // Create the passthru server details
 
-                PassthruServerDetails passthruServer = new PassthruServerDetails(srvName, null, srvAddr, false);
+                PassthruServerDetails passthruServer = new PassthruServerDetails(srvName, domain, srvAddr, false);
                 m_offlineList.add( passthruServer);
                 
                 // Debug

@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.security.authentication.ntlm;
 
+import java.net.InetAddress;
+
 /**
  * <p>Used to provide passthru authentication to a remote Windows server using multiple stages that
  * allows authentication details to be passed between a client and the remote authenticating server without
@@ -57,6 +59,28 @@ public class NTLMPassthruToken extends NTLMLocalToken
         // We do not know the username yet, and will not know the password
         
         super("", "");
+    }
+    
+    /**
+     * Class constructor
+     * 
+     * @params domain String
+     */
+    public NTLMPassthruToken( String domain)
+    {
+        // We do not know the username yet, and will not know the password
+        
+        super("", "", domain, null);
+    }
+    
+    /**
+     * Class constructor
+     * 
+     * @param ipAddr InetAddress
+     */
+    public NTLMPassthruToken( InetAddress ipAddr)
+    {
+        super( ipAddr);
     }
     
     /**

@@ -32,12 +32,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.config.ConfigElement;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowModel;
@@ -74,6 +76,7 @@ public class StartWorkflowWizard extends BaseWizardBean
    protected String previouslySelectedWorkflow;
    protected List<SelectItem> availableWorkflows;
    protected Map<String, WorkflowDefinition> workflows;
+   protected Map<String, String> wcmWorkflows;
    protected WorkflowService workflowService;
    protected Node startTaskNode;
    protected List<Node> resources;
@@ -531,16 +534,25 @@ public class StartWorkflowWizard extends BaseWizardBean
       this.availableWorkflows = new ArrayList<SelectItem>(4);
       this.workflows = new HashMap<String, WorkflowDefinition>(4);
       
+      // get the list of configured WCM workflows and filter these from
+      // the list as these workflows are specific to WCM functionality and AVM stores
+      Map<String, String> configuredWcmWorkflows = this.getWCMWorkflows();
+      
       List<WorkflowDefinition> workflowDefs =  this.workflowService.getDefinitions();
       for (WorkflowDefinition workflowDef : workflowDefs)
       {
-         String label = workflowDef.title;
-         if (workflowDef.description != null && workflowDef.description.length() > 0)
+         String name = workflowDef.name;
+         if (configuredWcmWorkflows.containsKey(name) == false)
          {
-            label = label + " (" + workflowDef.description + ")";
+            // add the workflow if it is not a WCM specific workflow
+            String label = workflowDef.title;
+            if (workflowDef.description != null && workflowDef.description.length() > 0)
+            {
+               label = label + " (" + workflowDef.description + ")";
+            }
+            this.availableWorkflows.add(new SelectItem(workflowDef.id, label));
+            this.workflows.put(workflowDef.id, workflowDef);
          }
-         this.availableWorkflows.add(new SelectItem(workflowDef.id, label));
-         this.workflows.put(workflowDef.id, workflowDef);
       }
       
       // set the initial selected workflow to the first in the list, unless there are no
@@ -649,5 +661,43 @@ public class StartWorkflowWizard extends BaseWizardBean
          this.packageItemsRichList.setValue(null);
          this.packageItemsRichList = null;
       }
+   }
+   
+   /**
+    * @return The configured comma separated list of WCM workflows, if the config
+    *         can not be found an empty string will be returned
+    */
+   protected Map<String, String> getWCMWorkflows()
+   {
+      if (wcmWorkflows == null)
+      {
+         FacesContext fc = FacesContext.getCurrentInstance();
+         ConfigElement config = Application.getConfigService(fc).getGlobalConfig().getConfigElement("wcm");
+         if (config != null)
+         {
+            ConfigElement workflowConfig = config.getChild("workflows");
+            if (workflowConfig != null)
+            {
+               StringTokenizer t = new StringTokenizer(workflowConfig.getValue().trim(), ", ");
+               wcmWorkflows = new HashMap<String, String>(t.countTokens());
+               while (t.hasMoreTokens())
+               {
+                  String wfName = "jbpm$" + t.nextToken();
+                  wcmWorkflows.put(wfName, wfName);
+               }
+            }
+            else
+            {
+               if (logger.isWarnEnabled())
+                  logger.warn("WARNING: Unable to find WCM 'workflows' config element definition.");
+            }
+         }
+         else
+         {
+            logger.warn("WARNING: Unable to find 'wcm' config element definition.");
+         }
+      }
+      
+      return wcmWorkflows;
    }
 }

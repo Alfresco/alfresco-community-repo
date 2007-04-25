@@ -465,16 +465,16 @@ public class CreateWebContentWizard extends BaseContentWizard
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("saving file content to " + fileName);
 
-      String path = this.avmBrowseBean.getCurrentPath();
-      path = AVMConstants.getCorrespondingPathInPreviewStore(path);
+      final String cwd = AVMConstants.getCorrespondingPathInPreviewStore(this.avmBrowseBean.getCurrentPath());
       final Form form = (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) 
                          ? this.getForm()
                          : null);
+      String path = null;
       if (form != null)
       {
          path = form.getOutputPathForFormInstanceData(this.instanceDataDocument,
                                                       fileName,
-                                                      path, 
+                                                      cwd, 
                                                       this.avmBrowseBean.getWebapp());
          this.content = XMLUtil.toString(this.instanceDataDocument, false);
          final String[] sb = AVMNodeConverter.SplitBase(path);
@@ -513,6 +513,7 @@ public class CreateWebContentWizard extends BaseContentWizard
          };
          props.clear();
          props.put(WCMAppModel.PROP_PARENT_FORM_NAME, form.getName());
+         props.put(WCMAppModel.PROP_ORIGINAL_PARENT_PATH, cwd);
          this.nodeService.addAspect(formInstanceDataNodeRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA, props);
 
          this.renditions = new LinkedList<Rendition>();
@@ -520,7 +521,8 @@ public class CreateWebContentWizard extends BaseContentWizard
          {
             try
             {
-               this.renditions.add(ret.render(this.formInstanceData));
+               path = ret.getOutputPathForRendition(this.formInstanceData, cwd);
+               this.renditions.add(ret.render(this.formInstanceData, path));
             }
             catch (Exception e)
             {

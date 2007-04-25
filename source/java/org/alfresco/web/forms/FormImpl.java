@@ -154,6 +154,7 @@ public class FormImpl
       root.put("xml", NodeModel.wrap(formInstanceData));
       root.put("name", formInstanceDataName);
       root.put("date", new SimpleDate(new Date(), SimpleDate.DATETIME));
+      root.put("cwd", AVMConstants.getWebappRelativePath(parentAVMPath));
 
       final TemplateService templateService = this.getServiceRegistry().getTemplateService();
 

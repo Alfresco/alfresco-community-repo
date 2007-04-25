@@ -69,9 +69,13 @@ public interface RenderingEngineTemplate
    /**
     * Returns the output path for the rendition.
     *
+    * @param formInstanceData the form instance data to use for 
+    * processing the pattern.
+    * @param currentAVMPath the current path where the form is being created.
     * @return the output path for the rendition.
     */
-   public String getOutputPathForRendition(final FormInstanceData formInstanceData);
+   public String getOutputPathForRendition(final FormInstanceData formInstanceData,
+                                           final String currentAVMPath);
 
    /**
     * Returns the mimetype to use when generating content for this
@@ -87,8 +91,10 @@ public interface RenderingEngineTemplate
     *
     * @param formInstanceData the form instance data for which to produce
     * the rendition.
+    * @param renditionAVMPath the path to use for the rendition.
     */
-   public Rendition render(final FormInstanceData formInstanceData)
+   public Rendition render(final FormInstanceData formInstanceData,
+                           final String renditionAVMPath)
       throws IOException,
       SAXException,
       RenderingEngine.RenderingException;

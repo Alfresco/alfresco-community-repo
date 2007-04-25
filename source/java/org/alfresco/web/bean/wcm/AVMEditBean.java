@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.faces.context.FacesContext;
@@ -590,12 +591,44 @@ public class AVMEditBean
 
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("regenerating renditions of " + fid);
+      String originalParentAvmPath = (String)
+         this.nodeService.getProperty(((FormInstanceDataImpl)fid).getNodeRef(), 
+                                      WCMAppModel.PROP_ORIGINAL_PARENT_PATH);
+      if (originalParentAvmPath == null)
+      {
+         originalParentAvmPath = AVMNodeConverter.SplitBase(avmPath)[0];
+      }
+      final HashSet<RenderingEngineTemplate> allRets = 
+         new HashSet<RenderingEngineTemplate>(this.getForm().getRenderingEngineTemplates());
 
-      for (RenderingEngineTemplate ret : this.getForm().getRenderingEngineTemplates())
+      // regenerate existing renditions
+      for (final Rendition r : fid.getRenditions())
+      {
+         final RenderingEngineTemplate ret = r.getRenderingEngineTemplate();
+         if (!allRets.contains(ret))
+         {
+            continue;
+         }
+         try
+         {
+            ret.render(fid, r);
+            allRets.remove(ret);
+         }
+         catch (Exception e)
+         {
+            Utils.addErrorMessage("error regenerating rendition using " + ret.getName() + 
+                                  ": " + e.getMessage(),
+                                  e);
+         }
+      }
+
+      // render all renditions for newly added templates
+      for (final RenderingEngineTemplate ret : allRets)
       {
          try
          {
-            ret.render(fid);
+            final String path = ret.getOutputPathForRendition(fid, originalParentAvmPath);
+            ret.render(fid, path);
          }
          catch (Exception e)
          {

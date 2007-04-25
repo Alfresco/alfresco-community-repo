@@ -178,9 +178,12 @@ public class RenderingEngineTemplateImpl
     * Generates an output path for the rendition by compiling the output path pattern
     * as a freemarker template.
     *
+    * @param formInstanceData the form instance data to use for the rendition path.
+    * @param currentAVMPath the current path in which the form is being created.
+    *
     * @return the output path to use for renditions.
     */
-   public String getOutputPathForRendition(final FormInstanceData formInstanceData /*,final String parentAVMPath */)
+   public String getOutputPathForRendition(final FormInstanceData formInstanceData, final String currentAVMPath)
    {
       final ServiceRegistry sr = this.getServiceRegistry();
       final NodeService nodeService = sr.getNodeService();
@@ -212,11 +215,12 @@ public class RenderingEngineTemplateImpl
          LOGGER.error(e);
          throw new AlfrescoRuntimeException(e.getMessage(), e);
       }
+      final String parentAVMPath = AVMNodeConverter.SplitBase(formInstanceDataAVMPath)[0];
 
       root.put("xml", NodeModel.wrap(formInstanceDataDocument));
       root.put("node", new TemplateNode(((FormInstanceDataImpl)formInstanceData).getNodeRef(), sr, null));
       root.put("date", new SimpleDate(new Date(), SimpleDate.DATETIME));
-
+      root.put("cwd", AVMConstants.getWebappRelativePath(currentAVMPath));
       final TemplateService templateService = sr.getTemplateService();
       final String outputPathPattern = (FreeMarkerUtil.buildNamespaceDeclaration(formInstanceDataDocument) +
                                         this.getOutputPathPattern());
@@ -236,7 +240,7 @@ public class RenderingEngineTemplateImpl
                                             ":\n" + te.getMessage(), 
                                             te);
       }
-      final String parentAVMPath = AVMNodeConverter.SplitBase(formInstanceDataAVMPath)[0];
+
       result = AVMConstants.buildPath(parentAVMPath, 
                                       result,
                                       AVMConstants.PathRelation.SANDBOX_RELATIVE);
@@ -251,13 +255,13 @@ public class RenderingEngineTemplateImpl
                                              WCMAppModel.PROP_MIMETYPE_FOR_RENDITION);
    }
 
-   public Rendition render(final FormInstanceData formInstanceData)
+   public Rendition render(final FormInstanceData formInstanceData, 
+                           final String renditionAvmPath)
       throws IOException,
       SAXException,
       RenderingEngine.RenderingException
    {
       final AVMService avmService = this.getServiceRegistry().getAVMService();
-      final String renditionAvmPath = this.getOutputPathForRendition(formInstanceData);
       final boolean isRegenerate = avmService.lookup(-1, renditionAvmPath) != null;
       if (!isRegenerate)
       {
@@ -558,6 +562,11 @@ public class RenderingEngineTemplateImpl
    {
       final FacesContext fc = FacesContext.getCurrentInstance();
       return Repository.getServiceRegistry(fc);
+   }
+
+   public int hashCode()
+   {
+      return this.getName().hashCode();
    }
 }
 

@@ -104,6 +104,7 @@ public interface WCMAppModel
     static final QName ASPECT_FORM_INSTANCE_DATA = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "forminstancedata");
     static final QName PROP_PARENT_FORM_NAME = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "parentformname");
     static final QName PROP_RENDITIONS = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "renditions");
+    static final QName PROP_ORIGINAL_PARENT_PATH = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "orginalparentpath");
     
     static final QName ASPECT_RENDITION = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "rendition");
     static final QName PROP_PARENT_RENDERING_ENGINE_TEMPLATE = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "parentrenderingenginetemplate");

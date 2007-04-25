@@ -216,8 +216,10 @@ public class MLPropertyInterceptor implements MethodInterceptor
             NodeRef nodeRef = (NodeRef) args[0];
             QName propertyQName = (QName) args[1];
             Serializable inboundValue = (Serializable) args[2];
+            
             // Convert the property
             inboundValue = convertInboundProperty(contentLocale, nodeRef, propertyQName, inboundValue, null);
+            
             // Pass this through to the node service
             directNodeService.setProperty(nodeRef, propertyQName, inboundValue);
             // Done
@@ -261,21 +263,18 @@ public class MLPropertyInterceptor implements MethodInterceptor
                 {
                     currentValue = directNodeService.getProperty(nodeRef, propertyQName);
                 }
-                MLText currentMLValue = null;
-                if (currentValue == null)
+                MLText returnMLValue = new MLText();
+                if (currentValue != null)
                 {
-                    currentMLValue = new MLText();
-                }
-                else
-                {
-                    currentMLValue = DefaultTypeConverter.INSTANCE.convert(MLText.class, currentValue);
+                    MLText currentMLValue = DefaultTypeConverter.INSTANCE.convert(MLText.class, currentValue);
+                    returnMLValue.putAll(currentMLValue);                   
                 }
                 // Force the inbound value to be a String (it isn't MLText)
                 String inboundValueStr = DefaultTypeConverter.INSTANCE.convert(String.class, inboundValue);
                 // Add it to the current MLValue
-                currentMLValue.put(contentLocale, inboundValueStr);
+                returnMLValue.put(contentLocale, inboundValueStr);
                 // Done
-                ret = currentMLValue;
+                ret = returnMLValue;
             }
         }
         else            // It is not defined as d:mltext in the dictionary

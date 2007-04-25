@@ -352,6 +352,12 @@
                <type>d:text</type>
                <mandatory>true</mandatory>
             </property>
+            <property name="wca:originalparentpath">
+              <title>The original parent path when this form instance data was created - used for regenerating accurately.</title>
+              <type>d:text</type>
+              <mandatory>false</mandatory>
+            </property>
+
          	<property name="wca:renditions">
                <title>Renditions of this form instance data</title>
                <type>d:text</type>

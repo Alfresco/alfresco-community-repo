@@ -87,8 +87,8 @@ class CoreProtocolHandler extends ProtocolHandler
 
     // Invalid file name characters
     
-    private static final String InvalidFileNameChars 		= "\"/[]:+|<>=;,*?";
-    private static final String InvalidFileNameCharsSearch	= "\"/[]:+|<>=;,";
+    private static final String InvalidFileNameChars 		= "\"/:|<>*?";
+    private static final String InvalidFileNameCharsSearch	= "\"/:|<>";
     
     // SMB packet class
 

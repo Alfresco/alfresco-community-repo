@@ -1751,4 +1751,58 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         setComplete();
         endTransaction();
     }
+        
+    public static boolean behaviourExecuted = false;
+    
+    public void testAR1303() throws Exception
+    {	
+    	Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+    	props.put(ContentModel.PROP_NAME, "test.txt");
+    	
+    	NodeRef nodeRef = this.nodeService.createNode(
+    			this.rootNodeRef, 
+    			ContentModel.ASSOC_CHILDREN, 
+    			ContentModel.ASSOC_CHILDREN, 
+    			ContentModel.TYPE_CONTENT, 
+    			props).getChildRef();
+    	
+    	this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
+    	
+    	this.nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, "my description");
+    	this.nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "my title");
+    	
+    	JavaBehaviour behaviour = new JavaBehaviour(this, "onUpdateProperties");    	
+    	PolicyComponent policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");
+    	policyComponent.bindClassBehaviour(
+    			QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
+    			ContentModel.ASPECT_TITLED, 
+    			behaviour);    	
+    	
+    	behaviourExecuted = false;
+    	
+    	// Update the title property and check that the behaviour has been fired
+    	this.nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "changed title");
+    	assertTrue("The onUpdateProperties behaviour has not been fired.", behaviourExecuted);
+    }
+    
+    public void onUpdateProperties(
+            NodeRef nodeRef,
+            Map<QName, Serializable> before,
+            Map<QName, Serializable> after)
+    {
+    	behaviourExecuted = true;    	
+    	assertFalse(before.get(ContentModel.PROP_TITLE).toString().equals(after.get(ContentModel.PROP_TITLE).toString()));
+    	
+    	System.out.print("Before values: ");
+    	for (Map.Entry<QName, Serializable> entry : before.entrySet()) 
+    	{
+    		System.out.println(entry.getKey().toString() + " : " + entry.getValue().toString());
+		}
+    	System.out.print("\nAfter values: ");
+    	for (Map.Entry<QName, Serializable> entry : after.entrySet()) 
+    	{
+    		System.out.println(entry.getKey().toString() + " : " + entry.getValue().toString());
+		}
+    }
+    
 }

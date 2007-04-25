@@ -56,8 +56,10 @@ import org.alfresco.filesys.server.auth.ntlm.TargetInfo;
 import org.alfresco.filesys.server.auth.ntlm.Type1NTLMMessage;
 import org.alfresco.filesys.server.auth.ntlm.Type2NTLMMessage;
 import org.alfresco.filesys.server.auth.ntlm.Type3NTLMMessage;
+import org.alfresco.filesys.server.auth.passthru.DomainMapping;
 import org.alfresco.filesys.server.config.ServerConfiguration;
 import org.alfresco.filesys.util.DataPacker;
+import org.alfresco.filesys.util.IPAddress;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -506,9 +508,15 @@ public class NTLMAuthenticationFilter extends AbstractAuthenticationFilter imple
             }
             else
             {
+            	// Get the client domain
+            	
+            	String domain = type1Msg.getDomain();
+            	if ( domain == null || domain.length() == 0)
+            		domain = mapClientAddressToDomain( req.getRemoteAddr());
+            	
                 // Create an authentication token for the new logon
                 
-                authToken = new NTLMPassthruToken();
+           		authToken = new NTLMPassthruToken( domain);
                 
                 // Run the first stage of the passthru authentication to get the challenge
                 
@@ -726,6 +734,15 @@ public class NTLMAuthenticationFilter extends AbstractAuthenticationFilter imple
                     
                     m_authComponent.authenticate(authToken);
                     authenticated = true;
+                    
+                    // Check if the user has been logged on as guest
+                    
+                    if ( authToken.isGuestLogon())
+                    	userName = m_authComponent.getGuestUserName();
+                    
+                    // Set the authentication context
+                    
+                    m_authComponent.setCurrentUser( userName);
                 }
                 catch (BadCredentialsException ex)
                 {
@@ -761,9 +778,11 @@ public class NTLMAuthenticationFilter extends AbstractAuthenticationFilter imple
                     tx.begin();
                     
                     // Setup User object and Home space ID etc.
+                    
                     NodeRef personNodeRef = m_personService.getPerson(userName);
                     
                     // User name should match the uid in the person entry found
+                    
                     userName = (String) m_nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
                     m_authComponent.setCurrentUser(userName);
                     String currentTicket = m_authService.getCurrentTicket();
@@ -774,7 +793,8 @@ public class NTLMAuthenticationFilter extends AbstractAuthenticationFilter imple
                             ContentModel.PROP_HOMEFOLDER);
                     user.setHomeSpaceId(homeSpaceRef.getId());
                     
-                    // commit
+                    // Commit
+                    
                     tx.commit();
                 }
                 catch (Throwable ex)
@@ -914,5 +934,44 @@ public class NTLMAuthenticationFilter extends AbstractAuthenticationFilter imple
                 }
             }
         }
+    }
+    
+    /**
+     * Map a client IP address to a domain
+     * 
+     * @param clientIP String
+     * @return String
+     */
+    protected final String mapClientAddressToDomain( String clientIP)
+    {
+    	// Check if there are any domain mappings
+    	
+    	if ( m_srvConfig.hasDomainMappings() == false)
+    		return null;
+
+    	// convert the client IP address to an integer value
+    	
+    	int clientAddr = IPAddress.parseNumericAddress( clientIP);
+    	for ( DomainMapping domainMap : m_srvConfig.getDomainMappings())
+    	{
+    		if ( domainMap.isMemberOfDomain( clientAddr))
+    		{
+    			// DEBUG
+    		
+    			if ( logger.isDebugEnabled())
+    				logger.debug( "Mapped client IP " + clientIP + " to domain " + domainMap.getDomain());
+    		
+    			return domainMap.getDomain();
+    		}
+    	}
+    	
+    	// DEBUG
+    	
+    	if ( logger.isDebugEnabled())
+    		logger.debug( "Failed to map client IP " + clientIP + " to a domain");
+    	
+    	// No domain mapping for the client address
+    	
+    	return null;
     }
 }

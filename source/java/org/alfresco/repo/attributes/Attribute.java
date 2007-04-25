@@ -27,6 +27,7 @@ package org.alfresco.repo.attributes;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,7 +37,7 @@ import org.alfresco.repo.domain.DbAccessControlList;
  * Interface for polymorphic attributes.
  * @author britt
  */
-public interface Attribute extends Serializable
+public interface Attribute extends Serializable, Iterable<Attribute>
 {
     public static enum Type implements Serializable
     {
@@ -49,7 +50,8 @@ public interface Attribute extends Serializable
         DOUBLE,
         STRING,
         SERIALIZABLE,
-        MAP
+        MAP,
+        LIST
     };
     
     /**
@@ -232,4 +234,42 @@ public interface Attribute extends Serializable
      * @return The values.
      */
     public Collection<Attribute> values();
+    
+    /**
+     * Add an attribute to a list attribute.
+     * @param attr
+     */
+    public void add(Attribute attr);
+    
+    /**
+     * Add an attribute to a list attribute at a given position.
+     * @param index The offset.
+     * @param attr The attribute.
+     */
+    public void add(int index, Attribute attr);
+    
+    /**
+     * Get the size of a List of a Map.
+     * @return
+     */
+    public int size();
+    
+    /**
+     * Get an iterator over a list's entries.
+     * @return
+     */
+    public Iterator<Attribute> iterator();
+    
+    /**
+     * Get an Attribute from a List.
+     * @param index The offset.
+     * @return The Attribute or null.
+     */
+    public Attribute get(int index);
+    
+    /**
+     * Remove an entry from a list.
+     * @param index The entry to remove.
+     */
+    public void remove(int index);
 }

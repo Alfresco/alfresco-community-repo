@@ -108,6 +108,11 @@ public class MapAttributeValue extends AttributeValue implements MapAttribute
                     newAttr = new MapAttributeValue((MapAttribute)value);
                     break;
                 }
+                case LIST :
+                {
+                    newAttr = new ListAttributeValue((ListAttribute)value);
+                    break;
+                }
                 default :
                 {
                     throw new AlfrescoRuntimeException("Unknown Attribute Type: " + value.getType());

@@ -1,0 +1,75 @@
+/*
+ * Copyright (C) 2005-2007 Alfresco Software Limited.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have recieved a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
+ * http://www.alfresco.com/legal/licensing
+ */
+
+package org.alfresco.repo.attributes;
+
+import java.util.List;
+
+/**
+ * DAO interface for ListEntries.
+ * @author britt
+ */
+public interface ListEntryDAO
+{
+    /**
+     * Save a new Entry.
+     * @param entry
+     */
+    public void save(ListEntry entry);
+    
+    /**
+     * Get the entry for the give list and index.
+     * @param list The ListAttribute.
+     * @param index The index.
+     * @return The ListEntry.
+     */
+    public ListEntry get(ListAttribute list, int index);
+    
+    /**
+     * Get all entries for a given list.
+     * @param list The ListAttribute.
+     * @return The entries.
+     */
+    public List<ListEntry> get(ListAttribute list);
+    
+    /**
+     * Delete a list entry.
+     * @param entry
+     */
+    public void delete(ListEntry entry);
+    
+    /**
+     * Delete all entries from a list.
+     * @param list
+     */
+    public void delete(ListAttribute list);
+    
+    /**
+     * Get the size of the entries.
+     * @param list The list.
+     * @return The count of entries.
+     */
+    public int size(ListAttribute list);
+}

@@ -33,6 +33,8 @@ import java.util.Map;
 import org.alfresco.repo.attributes.AttrQueryHelperImpl;
 import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.repo.attributes.AttributeDAO;
+import org.alfresco.repo.attributes.ListAttribute;
+import org.alfresco.repo.attributes.ListEntryDAO;
 import org.alfresco.repo.attributes.MapAttribute;
 import org.alfresco.repo.attributes.MapEntry;
 import org.alfresco.repo.attributes.MapEntryDAO;
@@ -52,6 +54,8 @@ public class AttributeDAOHibernate extends HibernateDaoSupport implements
 {
     private MapEntryDAO fMapEntryDAO;
     
+    private ListEntryDAO fListEntryDAO;
+    
     public AttributeDAOHibernate()
     {
     }
@@ -59,6 +63,11 @@ public class AttributeDAOHibernate extends HibernateDaoSupport implements
     public void setMapEntryDao(MapEntryDAO dao)
     {
         fMapEntryDAO = dao;
+    }
+    
+    public void setListEntryDao(ListEntryDAO dao)
+    {
+        fListEntryDAO = dao;
     }
     
     /* (non-Javadoc)
@@ -74,6 +83,19 @@ public class AttributeDAOHibernate extends HibernateDaoSupport implements
             for (Attribute subAttr : attrs)
             {
                 delete(subAttr);
+            }
+        }
+        if (attr.getType() == Type.LIST)
+        {
+            List<Attribute> children = new ArrayList<Attribute>();
+            for (Attribute child : attr)
+            {
+                children.add(child);
+            }
+            fListEntryDAO.delete((ListAttribute)attr);
+            for (Attribute child : children)
+            {
+                delete(child);
             }
         }
         getSession().delete(attr);

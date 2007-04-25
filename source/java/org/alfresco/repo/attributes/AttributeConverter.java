@@ -83,6 +83,10 @@ public class AttributeConverter
             {
                 return new MapAttributeImpl((MapAttribute)from);
             }
+            case LIST :
+            {
+                return new ListAttributeImpl((ListAttribute)from);
+            }
             default :
             {
                 throw new AlfrescoRuntimeException("Invalid Attribute Type: " + from.getType());
@@ -133,6 +137,10 @@ public class AttributeConverter
             case MAP :
             {
                 return new MapAttributeValue((MapAttribute)from);
+            }
+            case LIST :
+            {
+                return new ListAttributeValue((ListAttribute)from);
             }
             default :
             {

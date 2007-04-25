@@ -87,7 +87,7 @@
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
-	
+		
 	<bean id="avmDAOs" class="org.alfresco.repo.avm.AVMDAOs">
 		<property name="issuerDAO">
 			<ref bean="issuerDAO"/>
@@ -124,6 +124,9 @@
 		</property>
 		<property name="mapEntryDAO">
 		    <ref bean="mapEntryDAO"/>
+		</property>
+		<property name="listEntryDAO">
+		    <ref bean="listEntryDAO"/>
 		</property>
 	</bean>
 	
@@ -254,8 +257,7 @@
 
 	<!-- AVM Locking. -->
 	
-	<bean id="avmLockingService" class="org.alfresco.repo.avm.locking.AVMLockingServiceImpl"
-	      init-method="init">
+	<bean id="avmLockingService" class="org.alfresco.repo.avm.locking.AVMLockingServiceImpl">
 	    <property name="attributeService">
 	        <ref bean="attributeService"/>
 	    </property>

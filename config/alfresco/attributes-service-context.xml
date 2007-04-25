@@ -25,6 +25,9 @@
         <property name="mapEntryDao">
             <ref bean="mapEntryDAO"/>
         </property>
+        <property name="listEntryDao">
+            <ref bean="listEntryDAO"/>
+        </property>
     </bean>
 
     <bean id="globalAttributeEntryDAO" class="org.alfresco.repo.attributes.hibernate.GlobalAttributeEntryDAOHibernate">
@@ -42,4 +45,9 @@
 	    </property>
 	</bean>
 
+	<bean id="listEntryDAO" class="org.alfresco.repo.attributes.hibernate.ListEntryDAOHibernate">
+	    <property name="sessionFactory">
+	        <ref bean="sessionFactory"/>
+	    </property>
+    </bean>
 </beans>

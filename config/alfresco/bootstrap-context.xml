@@ -67,6 +67,13 @@
       </property>
    </bean>
 
+	<!-- Bootstrap AVM Locking Service. -->
+	<bean id="avmLockingBootstrap" class="org.alfresco.repo.avm.locking.AVMLockingBootstrap">
+	    <property name="avmLockingService">
+	        <ref bean="avmLockingService"/>
+	    </property>
+	</bean>
+
 	<!-- Bootstrap Files -->
 
     <bean id="systemInfoBootstrap" parent="systemInfoImporter">

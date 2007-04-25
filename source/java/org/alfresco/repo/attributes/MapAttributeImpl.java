@@ -110,6 +110,11 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
                     newAttr = new MapAttributeImpl((MapAttribute)value);
                     break;
                 }
+                case LIST :
+                {
+                    newAttr = new ListAttributeImpl((ListAttribute)value);
+                    break;
+                }
                 default :
                 {
                     throw new AlfrescoRuntimeException("Unknown Attribute Type: " + value.getType());
@@ -247,5 +252,14 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
         }
         builder.append('}');
         return builder.toString();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.AttributeImpl#size()
+     */
+    @Override
+    public int size()
+    {
+        return AVMDAOs.Instance().fMapEntryDAO.size(this);
     }
 }

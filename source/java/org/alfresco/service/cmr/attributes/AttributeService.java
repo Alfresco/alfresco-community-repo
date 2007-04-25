@@ -50,7 +50,6 @@ public interface AttributeService
      */
     public Attribute getAttribute(List<String> keys);
     
-    
     /**
      * Set an attribute. Overwrites if it exists.
      * @param name The name of the Attribute.

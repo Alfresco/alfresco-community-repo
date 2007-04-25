@@ -103,7 +103,8 @@ public class AttributeServiceTest extends TestCase
             assertNotNull(fService.getAttribute("boolean"));
             assertEquals(42, (int)fService.getAttribute("short").getShortValue());
             assertEquals("I sneeze.", fService.getAttribute("map/funky").getStringValue());
-            assertEquals(10, fService.getKeys("").size());
+            // This is 11 because of the AVMLockingService.
+            assertEquals(11, fService.getKeys("").size());
             assertEquals(5, fService.getKeys("map").size());
             List<String> keys = fService.getKeys("");
             for (String key : keys)
@@ -276,4 +277,28 @@ public class AttributeServiceTest extends TestCase
         }
     }
     
+    /**
+     * Test ListAttributes
+     */
+    public void testList()
+    {
+        try
+        {
+            ListAttribute list = new ListAttributeValue();
+            list.add(new IntAttributeValue(0));
+            list.add(new IntAttributeValue(1));
+            list.add(new IntAttributeValue(2));
+            list.add(new IntAttributeValue(3));
+            list.add(new IntAttributeValue(4));
+            fService.setAttribute("", "dummy", list);
+            Attribute found = fService.getAttribute("dummy");
+            assertNotNull(found);
+            assertEquals(5, found.size());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+    }
 }

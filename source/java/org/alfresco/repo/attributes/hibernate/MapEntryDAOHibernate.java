@@ -87,4 +87,14 @@ public class MapEntryDAOHibernate extends HibernateDaoSupport implements
     {
         getSession().save(entry);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.MapEntryDAO#size(org.alfresco.repo.attributes.MapAttribute)
+     */
+    public int size(MapAttribute mapAttr)
+    {
+        Query query = getSession().createQuery("select count() from MapEntryImpl me where me.map = :map");
+        query.setEntity("map", mapAttr);
+        return (Integer)query.uniqueResult();
+    }
 }

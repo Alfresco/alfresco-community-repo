@@ -27,6 +27,7 @@ package org.alfresco.repo.attributes;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.Map.Entry;
 
@@ -110,7 +111,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public Attribute get(String key) 
     {
-        throw new AttributeMethodNotImplemented("Not MapValue");
+        throw new AttributeMethodNotImplemented("Not Map or List");
     }
 
     /* (non-Javadoc)
@@ -174,7 +175,7 @@ public abstract class AttributeImpl implements Attribute
      */
     public void put(String key, Attribute value) 
     {
-        throw new AttributeMethodNotImplemented("Not MapValue");
+        throw new AttributeMethodNotImplemented("Not Map or List.");
     }
 
     /* (non-Javadoc)
@@ -345,5 +346,53 @@ public abstract class AttributeImpl implements Attribute
     public void setAcl(DbAccessControlList acl)
     {
         fACL = acl;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.Attribute#add(org.alfresco.repo.attributes.Attribute)
+     */
+    public void add(Attribute attr)
+    {
+        throw new AttributeMethodNotImplemented("Not a List.");
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.Attribute#add(int, org.alfresco.repo.attributes.Attribute)
+     */
+    public void add(int index, Attribute attr)
+    {
+        throw new AttributeMethodNotImplemented("Not a List.");
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.Attribute#iterator()
+     */
+    public Iterator<Attribute> iterator()
+    {
+        throw new AttributeMethodNotImplemented("Not a List.");
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.Attribute#size()
+     */
+    public int size()
+    {
+        throw new AttributeMethodNotImplemented("Not a List or Map.");
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.Attribute#get(int)
+     */
+    public Attribute get(int index)
+    {
+        throw new AttributeMethodNotImplemented("Not a List.");
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.Attribute#remove(int)
+     */
+    public void remove(int index)
+    {
+        throw new AttributeMethodNotImplemented("Not a List.");
     }
 }

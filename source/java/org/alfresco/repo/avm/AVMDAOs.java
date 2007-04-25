@@ -5,6 +5,7 @@ package org.alfresco.repo.avm;
 
 import org.alfresco.repo.attributes.AttributeDAO;
 import org.alfresco.repo.attributes.GlobalAttributeEntryDAO;
+import org.alfresco.repo.attributes.ListEntryDAO;
 import org.alfresco.repo.attributes.MapEntryDAO;
 
 /**
@@ -88,6 +89,8 @@ public class AVMDAOs
     public MapEntryDAO fMapEntryDAO;
     
     public GlobalAttributeEntryDAO fGlobalAttributeEntryDAO;
+    
+    public ListEntryDAO fListEntryDAO;
     
     /**
      * @param nodeDAO the fAVMNodeDAO to set
@@ -173,5 +176,10 @@ public class AVMDAOs
     public void setGlobalAttributeEntryDAO(GlobalAttributeEntryDAO dao)
     {
         fGlobalAttributeEntryDAO = dao;
+    }
+    
+    public void setListEntryDAO(ListEntryDAO dao)
+    {
+        fListEntryDAO = dao;
     }
 }

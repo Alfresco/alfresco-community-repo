@@ -8,6 +8,8 @@
 <script type="text/javascript" src="/alfresco/scripts/ajax/yahoo/dragdrop/dragdrop-min.js"></script>
 <script type="text/javascript" src="/alfresco/scripts/ajax/common.js"></script>
 <script type="text/javascript" src="/alfresco/scripts/ajax/summary-info.js"></script>
+<script type="text/javascript" src="/alfresco/scripts/ajax/mootools.js"></script>
+<script type="text/javascript" src="/alfresco/scripts/ajax/mytasks.js"></script>
 <script type="text/javascript">setContextPath('${url.context}');</script>
 
 <script>
@@ -51,7 +53,7 @@
    <td width=4 class="paperEdgeRight"><td>
 </tr>
 <tr><td bgcolor="#F9F3B0">&nbsp;</td><td>
-   <div class="taskPanel">
+   <div id="taskPanel">
       <#assign weekms=1000*60*60*24*7>
       <#assign count=0>
       <#list workflow.assignedTasks?sort_by('startDate') as t>
@@ -66,28 +68,40 @@
               (filter=2 && hasDue && (dateCompare(due?date, date?date) == 1 && dateCompare(date?date, due?date, weekms) == 1)) ||
               (filter=4 && hasDue && (dateCompare(date?date, due?date) == 1))>
          <#assign count=count+1>
-         <div class="taskRow" onmouseover="taskMouseOver(this)" onmouseout="taskMouseOut(this)">
-            <div class="taskIndicator">
-            <#if hasDue>
-               <#-- items due today? -->
-               <#if (filter=0 || filter=1) && (dateCompare(date?date, due?date, 0, "==") == 1)>
-                  <img src="${url.context}/images/icons/task_today.gif"></div><div class="taskItem taskItemToday">
-               <#-- items overdue? -->
-               <#elseif (filter=0 || filter=4) && (dateCompare(date?date, due?date) == 1)>
-                  <img src="${url.context}/images/icons/task_overdue.gif"></div><div class="taskItem taskItemOverdue">
+         <div class="taskRow">
+            <div class="taskTitle">
+               <div class="taskIndicator">
+               <#if hasDue>
+                  <#-- items due today? -->
+                  <#if (filter=0 || filter=1) && (dateCompare(date?date, due?date, 0, "==") == 1)>
+                     <img src="${url.context}/images/icons/task_today.gif"></div><div class="taskItem taskItemToday">
+                  <#-- items overdue? -->
+                  <#elseif (filter=0 || filter=4) && (dateCompare(date?date, due?date) == 1)>
+                     <img src="${url.context}/images/icons/task_overdue.gif"></div><div class="taskItem taskItemOverdue">
+                  <#else>
+                     </div><div class="taskItem">
+                  </#if>
                <#else>
                   </div><div class="taskItem">
                </#if>
-            <#else>
-               </div><div class="taskItem">
-            </#if>
-               ${t.description?html} [${t.name?html}]
-               <#if hasDue>
-                  (Due: ${due?date})
-               </#if>
-               <div style="display:inline" onclick="TaskInfoMgr.toggle('${t.id}',this);">
-                  <img src="${url.context}/images/icons/popup.gif" styleClass="popupImage" width="16" height="16" />
+                  ${t.description?html} [${t.name?html}]
+                  <#if hasDue>
+                     (Due: ${due?date})
+                  </#if>
+                  <span class="taskInfo" onclick="TaskInfoMgr.toggle('${t.id}',this);">
+                     <img src="${url.context}/images/icons/popup.gif" class="popupImage" width="16" height="16" />
+                  </span>
                </div>
+            </div>
+            <div class="taskDetail">
+               <table cellpadding='2' cellspacing='0' style="margin-left:32px;">
+   	            <tr><td>Type:</td><td>${t.type?html}</td></tr>
+   	            <tr><td>Name:</td><td>${t.name?html}</td></tr>
+   	            <tr><td>Start Date:</td><td>${t.startDate?date}</td></tr>
+   	            <tr><td>Priority:</td><td>${t.properties["bpm:priority"]}</td>
+                  <tr><td>Status:</td><td>${t.properties["bpm:status"]}</td>
+                  <tr><td>Completed:</td><td>${t.isCompleted?string("Yes", "No")}</td>
+   	         </table>
             </div>
          </div>
          </#if>
@@ -146,7 +160,7 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    background-position: 72 64;
 }
 
-.taskPanel
+#taskPanel
 {
    height: 300px;
    width: 716px;
@@ -158,9 +172,6 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
 .taskRow
 {
    padding-top: 4px;
-   padding-left: 8px;
-   padding-right: 8px;
-   padding-bottom: 4px;
    border-bottom: 1px solid #EBE398;
    border-top: 1px solid #FEF8BC;
 }
@@ -184,6 +195,7 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    font-size: 14px;
    color: #5A5741;
    margin: 0 0 0 24;
+   padding: 0px 8px 6px 8px;
 }
 
 .taskItemOverdue
@@ -201,7 +213,25 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
 {
    float: left;
    padding-top:6px;
-   padding-left:4px;
+   padding-left:8px;
+}
+
+.taskDetail
+{
+   background-color: #CFB540;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 12px;
+   color: #000000;
+   margin: 0px;
+   display: none;
+   overflow: hidden;
+}
+
+.taskItemSelected
+{
+   background-color: #FFE500 !important;
+   border-bottom: 1px solid #82770B !important;
+   border-top: 1px solid #82770B !important;
 }
 
 .paperEdgeRight

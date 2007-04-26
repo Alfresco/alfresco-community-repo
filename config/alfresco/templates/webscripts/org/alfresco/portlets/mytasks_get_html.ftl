@@ -48,10 +48,12 @@
          </tr>
       </table>
    </td>
+   <td width=4 class="paperEdgeRight"><td>
 </tr>
 <tr><td bgcolor="#F9F3B0">&nbsp;</td><td>
    <div class="taskPanel">
       <#assign weekms=1000*60*60*24*7>
+      <#assign count=0>
       <#list workflow.assignedTasks?sort_by('startDate') as t>
          <#-- TODO: is it better to use a js script to pre-filter the list? -->
          <#assign hasDue=t.properties["bpm:dueDate"]?exists>
@@ -63,6 +65,7 @@
               (filter=1 && hasDue && (dateCompare(date?date, due?date, 0, "==") == 1)) ||
               (filter=2 && hasDue && (dateCompare(due?date, date?date) == 1 && dateCompare(date?date, due?date, weekms) == 1)) ||
               (filter=4 && hasDue && (dateCompare(date?date, due?date) == 1))>
+         <#assign count=count+1>
          <div class="taskRow" onmouseover="taskMouseOver(this)" onmouseout="taskMouseOut(this)">
             <div class="taskIndicator">
             <#if hasDue>
@@ -90,7 +93,23 @@
          </#if>
       </#list>
    </div>
-</td></tr>
+</td>
+<td width=4 class="paperEdgeRight"><td>
+</tr>
+<tr>
+<td bgcolor="#F9F3B0">&nbsp;</td>
+<td>
+   <div class="taskFooter">
+      Showing ${count} <#if filter=4>overdue</#if> task(s)<#if filter=1> due today</#if><#if filter=2> due next week</#if><#if filter=3> with no due date set</#if>.
+   </div>
+</td>
+<td class="paperEdgeRight"><td>
+</tr>
+<tr>
+<td class="paperLeftCorner"><div style="height:6px"></div></td>
+<td class="paperBottomEdge"></td>
+<td class="paperRightCorner"></td>
+</tr>
 </table>
 
 <STYLE type="text/css">
@@ -120,19 +139,20 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
 .taskTable
 {
    background-color: #FEF8BC;
-   border: 1px solid #EBE398;
+   border-top: 1px solid #EBE398;
+   border-left: 1px solid #EBE398;
+   background-image: url(../images/logo/alf_task_bg.png);
+   background-repeat: no-repeat;
+   background-position: 72 64;
 }
 
 .taskPanel
 {
    height: 300px;
-   width: 700px;
+   width: 716px;
    overflow: auto;
    border-top: 1px solid #EBE398;
    border-left: 1px solid #F6DEA0;
-   background-image: url(../images/logo/alf_task_bg.png);
-   background-repeat: no-repeat;
-   background-position: 0 0;
 }
 
 .taskRow
@@ -143,6 +163,19 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    padding-bottom: 4px;
    border-bottom: 1px solid #EBE398;
    border-top: 1px solid #FEF8BC;
+}
+
+.taskFooter
+{
+   width: 700px;
+   padding: 8px;
+   border-top: 1px solid #EBE398;
+   border-left: 1px solid #F6DEA0;
+   text-align: right;
+   color: #5A5741;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 13px;
+   font-weight: bold;
 }
 
 .taskItem
@@ -169,5 +202,26 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    float: left;
    padding-top:6px;
    padding-left:4px;
+}
+
+.paperEdgeRight
+{
+   background-image: url(../images/parts/paper_rightedge.png);
+}
+
+.paperLeftCorner
+{
+   background-image: url(../images/parts/paper_leftcorner.png);
+}
+
+.paperBottomEdge
+{
+   background-image: url(../images/parts/paper_bottomedge.png);
+}
+
+.paperRightCorner
+{
+   background-color: white;
+   background-image: url(../images/parts/paper_rightcorner.gif);
 }
 </STYLE>

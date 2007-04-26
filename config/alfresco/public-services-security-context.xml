@@ -349,6 +349,7 @@
                org.alfresco.service.cmr.repository.NodeService.getProperty=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.setProperties=ACL_NODE.0.sys:base.WriteProperties
                org.alfresco.service.cmr.repository.NodeService.setProperty=ACL_NODE.0.sys:base.WriteProperties
+               org.alfresco.service.cmr.repository.NodeService.removeProperty=ACL_NODE.0.sys:base.WriteProperties
                org.alfresco.service.cmr.repository.NodeService.getParentAssocs=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_PARENT.sys:base.Read
                org.alfresco.service.cmr.repository.NodeService.getChildAssocs=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.Read
                org.alfresco.service.cmr.repository.NodeService.getChildByName=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.Read

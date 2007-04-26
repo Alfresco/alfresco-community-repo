@@ -983,6 +983,11 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertNotNull("Property value not set", valueCheck);
         assertEquals("Property value incorrect", "VALUE2", valueCheck);
         
+        // Remove a property
+        nodeService.removeProperty(nodeRef, qnameProperty2);
+        valueCheck = nodeService.getProperty(nodeRef, qnameProperty2);
+        assertNull("Property not removed", valueCheck);
+        
         // set the property value to null
         try
         {

@@ -377,6 +377,15 @@ public class NodeServiceImpl implements NodeService, VersionModel
     }
     
     /**
+     * @throws UnsupportedOperationException always
+     */
+    public void removeProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
+    {
+        // This operation is not supported for a version store
+        throw new UnsupportedOperationException(MSG_UNSUPPORTED);
+    }
+
+    /**
      * The node will appear to be attached to the root of the version store
      * 
      * @see NodeService#getParentAssocs(NodeRef)

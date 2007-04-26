@@ -372,18 +372,26 @@ public interface NodeService
     
     /**
      * Sets the value of a property to be any <code>Serializable</code> instance.
-     * To remove a property value, use {@link #getProperties(NodeRef)}, remove the
-     * value and call {@link #setProperties(NodeRef, Map<QName,Serializable>)}.
      * <p>
      * <b>NOTE:</b> Null values <u>are</u> allowed.
      * 
-     * @param nodeRef
+     * @param nodeRef   a reference to an existing node
      * @param qname the fully qualified name of the property
      * @param propertyValue the value of the property - never null
      * @throws InvalidNodeRefException if the node could not be found
      */
     @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "qname", "value"})
     public void setProperty(NodeRef nodeRef, QName qname, Serializable value) throws InvalidNodeRefException;
+    
+    /**
+     * Removes a property value completely.
+     * 
+     * @param nodeRef   a reference to an existing node
+     * @param qname     the fully qualified name of the property
+     * @throws InvalidNodeRefException if the node could not be found
+     */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "qname"})
+    public void removeProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException;
     
     /**
      * @param nodeRef the child node

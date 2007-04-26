@@ -1047,7 +1047,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * @return              the values of the properties after the set operation is complete
      * @throws InvalidNodeRefException
      */
-    public Map<QName, Serializable> setPropertyImpl(Node node, QName qname, Serializable value) throws InvalidNodeRefException
+    private Map<QName, Serializable> setPropertyImpl(Node node, QName qname, Serializable value) throws InvalidNodeRefException
     {
         NodeRef nodeRef = node.getNodeRef();
         
@@ -1063,6 +1063,32 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return getPropertiesImpl(node);    
     }
     
+    public void removeProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
+    {
+        if (qname.equals(ContentModel.PROP_NAME))
+        {
+            throw new UnsupportedOperationException("The property " + qname + " may not be removed individually");
+        }
+        
+        // Invoke policy behaviours
+        invokeBeforeUpdateNode(nodeRef);
+        
+        // Get the node
+        Node node = getNodeNotNull(nodeRef);
+        
+        // Get the values before
+        Map<QName, Serializable> propertiesBefore = getPropertiesImpl(node);
+        // Remove the property
+        Map<QName, PropertyValue> properties = node.getProperties();
+        properties.remove(qname);
+        // Get the values afterwards
+        Map<QName, Serializable> propertiesAfter = getPropertiesImpl(node);
+        
+        // Invoke policy behaviours
+        invokeOnUpdateNode(nodeRef);
+        invokeOnUpdateProperties(nodeRef, propertiesBefore, propertiesAfter);
+    }
+
     /**
      * Transforms {@link Node#getParentAssocs()} to a new collection
      */

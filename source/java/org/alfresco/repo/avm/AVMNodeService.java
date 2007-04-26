@@ -1023,6 +1023,27 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     }
     
     /**
+     * @inheritDoc
+     */
+    public void removeProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
+    {
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        if (isBuiltInProperty(qname))
+        {
+            // Ignore
+            return;
+        }
+        try
+        {
+            fAVMService.deleteNodeProperty(avmVersionPath.getSecond(), qname);
+        }
+        catch (AVMNotFoundException e)
+        {
+            throw new InvalidNodeRefException(avmVersionPath.getSecond() + " not found.", nodeRef);
+        }
+    }
+
+    /**
      * A Helper to spoof built in properties.
      * @param avmVersionPath The broken out version and path from a NodeRef.
      * @param qName The name of the property to retrieve.

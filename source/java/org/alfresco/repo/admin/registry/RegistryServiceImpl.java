@@ -28,7 +28,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -43,6 +46,7 @@ import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.PropertyMap;
@@ -168,8 +172,11 @@ public class RegistryServiceImpl implements RegistryService
     }
     
     /**
+     * Get the node-qname pair for the key.  If the key doesn't have a value element,
+     * i.e. if it is purely path-based, then the QName will be null.
+     * 
      * @return Returns the node and property name represented by the key or <tt>null</tt>
-     *      if it doesn't exist and was not allowed to be created
+     *      if it doesn't exist and was not allowed to be created.
      */
     private Pair<NodeRef, QName> getPath(RegistryKey key, boolean create)
     {
@@ -234,10 +241,15 @@ public class RegistryServiceImpl implements RegistryService
                 currentNodeRef = childAssocRefs.get(0).getChildRef();
             }
         }
+        // Cater for null properties, i.e. path-based keys
+        QName propertyQName = null;
+        if (property != null)
+        {
+            propertyQName = QName.createQName(
+                    namespaceUri,
+                    QName.createValidLocalName(property));
+        }
         // Create the result
-        QName propertyQName = QName.createQName(
-                namespaceUri,
-                QName.createValidLocalName(property));
         Pair<NodeRef, QName> resultPair = new Pair<NodeRef, QName>(currentNodeRef, propertyQName);
         // done
         if (logger.isDebugEnabled())
@@ -259,8 +271,12 @@ public class RegistryServiceImpl implements RegistryService
     /**
      * @inheritDoc
      */
-    public void addValue(RegistryKey key, Serializable value)
+    public void addProperty(RegistryKey key, Serializable value)
     {
+        if (key.getProperty() == null)
+        {
+            throw new IllegalArgumentException("Registry values must be added using paths that contain property names: " + key);
+        }
         // Check the namespace being used in the key
         String namespaceUri = key.getNamespaceUri();
         if (!namespaceService.getURIs().contains(namespaceUri))
@@ -281,23 +297,27 @@ public class RegistryServiceImpl implements RegistryService
         }
     }
 
-    public Serializable getValue(RegistryKey key)
+    public Serializable getProperty(RegistryKey key)
     {
+        if (key.getProperty() == null)
+        {
+            throw new IllegalArgumentException("Registry values must be fetched using paths that contain property names: " + key);
+        }
         // Get the path, without creating
         Pair<NodeRef, QName> keyPair = getPath(key, false);
-        Serializable value = null;
+        Serializable property = null;
         if (keyPair != null)
         {
-            value = nodeService.getProperty(keyPair.getFirst(), keyPair.getSecond());
+            property = nodeService.getProperty(keyPair.getFirst(), keyPair.getSecond());
         }
         // Done
         if (logger.isDebugEnabled())
         {
-            logger.debug("Retrieved value from registry: \n" +
+            logger.debug("Retrieved property from registry: \n" +
                     "   Key:   " + key + "\n" +
-                    "   Value: " + value);
+                    "   Value: " + property);
         }
-        return value;
+        return property;
     }
 
     public Collection<String> getChildElements(RegistryKey key)
@@ -329,5 +349,176 @@ public class RegistryServiceImpl implements RegistryService
                     "   Elements: " + results);
         }
         return results;
+    }
+
+    public void copy(RegistryKey sourceKey, RegistryKey targetKey)
+    {
+        if ((sourceKey.getProperty() == null) && !(targetKey.getProperty() == null))
+        {
+            throw new AlfrescoRuntimeException(
+                    "Registry keys must both be path specific for a copy: \n" +
+                    "   Source: " + sourceKey + "\n" +
+                    "   Target: " + targetKey);
+        }
+        else if ((sourceKey.getProperty() != null) && (targetKey.getProperty() == null))
+        {
+            throw new AlfrescoRuntimeException(
+                    "Registry keys must both be value specific for a copy: \n" +
+                    "   Source: " + sourceKey + "\n" +
+                    "   Target: " + targetKey);
+        }
+        // If the source is missing, then do nothing
+        Pair<NodeRef, QName> sourceKeyPair = getPath(sourceKey, false);
+        if (sourceKeyPair == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Nothing copied from non-existent registry source key: \n" +
+                        "   Source: " + sourceKey + "\n" +
+                        "   Target: " + targetKey);
+            }
+            return;
+        }
+        // Move based on the path or property
+        Pair<NodeRef, QName> targetKeyPair = getPath(targetKey, true);
+        if (sourceKeyPair.getSecond() != null)
+        {
+            // It is property-based so we just need to copy the value
+            Serializable value = nodeService.getProperty(sourceKeyPair.getFirst(), sourceKeyPair.getSecond());
+            nodeService.setProperty(targetKeyPair.getFirst(), targetKeyPair.getSecond(), value);
+        }
+        else
+        {
+            // It is path based so we need to copy all registry entries
+            // We have an existing target, but we need to recurse
+            Set<NodeRef> processedNodeRefs = new HashSet<NodeRef>(20);
+            copyRecursive(sourceKey, targetKey, processedNodeRefs);
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Copied registry keys: \n" +
+                    "   Source: " + sourceKey + "\n" +
+                    "   Target: " + targetKey);
+        }
+    }
+    
+    /**
+     * @param sourceKey             the source path that must exist
+     * @param targetKey             the target path that will be created
+     * @param processedNodeRefs     a set to help avoid infinite loops
+     */
+    private void copyRecursive(RegistryKey sourceKey, RegistryKey targetKey, Set<NodeRef> processedNodeRefs)
+    {
+        String sourceNamespaceUri = sourceKey.getNamespaceUri();
+        String targetNamespaceUri = targetKey.getNamespaceUri();
+        // The source just exist
+        Pair<NodeRef, QName> sourceKeyPair = getPath(sourceKey, false);
+        if (sourceKeyPair == null)
+        {
+            // It has disappeared
+            return;
+        }
+        NodeRef sourceNodeRef = sourceKeyPair.getFirst();
+        // Check that we don't have a circular reference
+        if (processedNodeRefs.contains(sourceNodeRef))
+        {
+            // This is very serious, but it can be worked around
+            logger.error("Circular paths detected in registry entries: \n" +
+                    "   Current Source Key: " + sourceKey + "\n" +
+                    "   Current Target Key: " + targetKey + "\n" +
+                    "   Source Node:        " + sourceNodeRef);
+            logger.error("Bypassing circular registry entry");
+            return;
+        }
+
+        // Make sure that the target exists
+        Pair<NodeRef, QName> targetKeyPair = getPath(targetKey, true);
+        NodeRef targetNodeRef = targetKeyPair.getFirst();
+        
+        // Copy properties of the source namespace
+        Map<QName, Serializable> sourceProperties = nodeService.getProperties(sourceNodeRef);
+        Map<QName, Serializable> targetProperties = nodeService.getProperties(targetNodeRef);
+        boolean changed = false;
+        for (Map.Entry<QName, Serializable> entry : sourceProperties.entrySet())
+        {
+            QName sourcePropertyQName = entry.getKey();
+            if (!EqualsHelper.nullSafeEquals(sourcePropertyQName.getNamespaceURI(), sourceNamespaceUri))
+            {
+                // Wrong namespace
+                continue;
+            }
+            // Copy the value over
+            Serializable value = entry.getValue();
+            QName targetPropertyQName = QName.createQName(targetNamespaceUri, sourcePropertyQName.getLocalName());
+            targetProperties.put(targetPropertyQName, value);
+            changed = true;
+        }
+        if (changed)
+        {
+            nodeService.setProperties(targetNodeRef, targetProperties);
+        }
+        // We have processed the source node
+        processedNodeRefs.add(sourceNodeRef);
+        
+        // Now get the child elements of the source
+        Collection<String> sourceChildElements = getChildElements(sourceKey);
+        String[] sourcePath = sourceKey.getPath();
+        String[] childSourcePath = new String[sourcePath.length + 1];   //
+        System.arraycopy(sourcePath, 0, childSourcePath, 0, sourcePath.length);
+        String[] targetPath = targetKey.getPath();
+        String[] childTargetPath = new String[targetPath.length + 1];   //
+        System.arraycopy(targetPath, 0, childTargetPath, 0, targetPath.length);
+        for (String sourceChildElement : sourceChildElements)
+        {
+            // Make the source child key using the current source namespace
+            childSourcePath[sourcePath.length] = sourceChildElement;
+            RegistryKey sourceChildKey = new RegistryKey(sourceNamespaceUri, childSourcePath, null);
+            // Make the target child key using the current target namespace
+            childTargetPath[targetPath.length] = sourceChildElement;
+            RegistryKey targetChildKey = new RegistryKey(targetNamespaceUri, childTargetPath, null);
+            // Recurse
+            copyRecursive(sourceChildKey, targetChildKey, processedNodeRefs);
+        }
+    }
+
+    public void delete(RegistryKey key)
+    {
+        Pair<NodeRef, QName> keyPair = getPath(key, false);
+        if (keyPair == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Nothing to delete for registry key: \n" +
+                        "   Key: " + key);
+            }
+            return;
+        }
+        NodeRef pathNodeRef = keyPair.getFirst();
+        QName propertyQName = keyPair.getSecond();
+        if (propertyQName == null)
+        {
+            // This is a path-based deletion
+            nodeService.deleteNode(pathNodeRef);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Performed path-based delete: \n" +
+                        "   Key:  " + key + "\n" +
+                        "   Node: " + pathNodeRef);
+            }
+        }
+        else
+        {
+            // This is a value-based deletion
+            nodeService.removeProperty(pathNodeRef, propertyQName);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Performed value-based delete: \n" +
+                        "   Key:      " + key + "\n" +
+                        "   Node:     " + pathNodeRef + "\n" +
+                        "   Property: " + propertyQName);
+            }
+        }
+        // Done
     }
 }

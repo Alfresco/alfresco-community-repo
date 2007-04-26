@@ -87,6 +87,29 @@ public class RegistryKey implements Serializable
         this.path = new String[length - 1];
         System.arraycopy(key, 0, path, 0, length - 1);
     }
+    
+    /**
+     * A constructor to specifically declare the path and property portions of the key.
+     * 
+     * @param namespaceUri the key namespace to use.  If left <tt>null</tt> then the
+     *      {@link #REGISTRY_1_0_URI default} will be used.
+     * @param path          the path part of the key
+     * @param property      the property name for the key.  This may be <tt>null</tt>.
+     */
+    public RegistryKey(String namespaceUri, String[] path, String property)
+    {
+        if (namespaceUri == null)
+        {
+            namespaceUri = REGISTRY_1_0_URI;
+        }
+        this.namespaceUri = namespaceUri;
+        if ((path == null || path.length == 0) && property == null)
+        {
+            throw new IllegalArgumentException("No path or property supplied for the RegistryKey");
+        }
+        this.property = property;
+        this.path = path;
+    }
 
     @Override
     public String toString()

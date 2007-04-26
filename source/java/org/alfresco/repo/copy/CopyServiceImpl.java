@@ -213,9 +213,6 @@ public class CopyServiceImpl implements CopyService
 				new JavaBehaviour(this, "onCopyComplete"));	
 	}
 	
-    /**
-     * @see com.activiti.repo.node.copy.NodeCopyService#copy(com.activiti.repo.ref.NodeRef, com.activiti.repo.ref.NodeRef, com.activiti.repo.ref.QName, QName, boolean)
-     */
     public NodeRef copy(
             NodeRef sourceNodeRef,
             NodeRef destinationParentRef, 
@@ -864,8 +861,6 @@ public class CopyServiceImpl implements CopyService
 
 	/**
 	 * Defer to the standard implementation with copyChildren set to false
-	 * 
-     * @see com.activiti.repo.node.copy.NodeCopyService#copy(com.activiti.repo.ref.NodeRef, com.activiti.repo.ref.NodeRef, com.activiti.repo.ref.QName)
      */
     public NodeRef copy(
             NodeRef sourceNodeRef,
@@ -881,9 +876,6 @@ public class CopyServiceImpl implements CopyService
 				false);
     }
 
-    /**
-     * @see com.activiti.repo.node.copy.NodeCopyService#copy(com.activiti.repo.ref.NodeRef, com.activiti.repo.ref.NodeRef)
-     */
     public void copy(
             NodeRef sourceNodeRef, 
             NodeRef destinationNodeRef)

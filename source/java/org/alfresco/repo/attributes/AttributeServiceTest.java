@@ -111,6 +111,8 @@ public class AttributeServiceTest extends TestCase
             {
                 System.out.println(key + " => " + fService.getAttribute(key));
             }
+            fService.setAttribute("", "string", new StringAttributeValue("This is another string."));
+            assertEquals("This is another string.", fService.getAttribute("string").getStringValue());
         }
         catch (Exception e)
         {
@@ -294,6 +296,16 @@ public class AttributeServiceTest extends TestCase
             Attribute found = fService.getAttribute("dummy");
             assertNotNull(found);
             assertEquals(5, found.size());
+            Attribute add = new IntAttributeValue(6);
+            fService.addAttribute("dummy", add);
+            assertEquals(6, fService.getAttribute("dummy").size());
+            fService.removeAttribute("dummy", 2);
+            found = fService.getAttribute("dummy");
+            assertEquals(5, found.size());
+            assertEquals(3, found.get(2).getIntValue());
+            Attribute replace = new StringAttributeValue("String");
+            fService.setAttribute("dummy", 2, replace);
+            assertEquals("String", fService.getAttribute("dummy/2").getStringValue());
         }
         catch (Exception e)
         {

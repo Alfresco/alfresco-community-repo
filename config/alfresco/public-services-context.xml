@@ -915,6 +915,7 @@
             <list>
             	<value>setAttribute</value>
             	<value>removeAttribute</value>
+            	<value>addAttribute</value>
             </list>
         </property>
     </bean>

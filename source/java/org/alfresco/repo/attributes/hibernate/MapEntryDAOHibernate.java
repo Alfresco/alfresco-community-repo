@@ -93,8 +93,8 @@ public class MapEntryDAOHibernate extends HibernateDaoSupport implements
      */
     public int size(MapAttribute mapAttr)
     {
-        Query query = getSession().createQuery("select count() from MapEntryImpl me where me.map = :map");
+        Query query = getSession().createQuery("select count(me) from MapEntryImpl me where me.map = :map");
         query.setEntity("map", mapAttr);
-        return (Integer)query.uniqueResult();
+        return ((Long)query.uniqueResult()).intValue();
     }
 }

@@ -1170,7 +1170,6 @@ public interface AVMService
      * @throws     AVMNotFoundException
      */
     public AVMNodeDescriptor forceCopy(String path);
-    
 
     /**
      * Perform a non-virtual (heavy-weight), and potentially recursive

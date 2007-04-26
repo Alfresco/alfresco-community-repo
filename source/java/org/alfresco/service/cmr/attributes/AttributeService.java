@@ -66,6 +66,36 @@ public interface AttributeService
     public void setAttribute(List<String> keys, String name, Attribute value);
     
     /**
+     * Set an attribute in a list.
+     * @param path The path to the list.
+     * @param index The list index.
+     * @param value The Attribute to set.
+     */
+    public void setAttribute(String path, int index, Attribute value);
+    
+    /**
+     * Set an attribute in a list.
+     * @param keys The path components to the list.
+     * @param index The list index.
+     * @param value The Attribute to set.
+     */
+    public void setAttribute(List<String> keys, int index, Attribute value);
+    
+    /**
+     * Add an attribute to a List Attribute
+     * @param path The path to the list.
+     * @param value The Attribute to add.
+     */
+    public void addAttribute(String path, Attribute value);
+    
+    /**
+     * Add an attribute to a List Attribute.
+     * @param keys The path components to the list.
+     * @param value The Attribute to add.
+     */
+    public void addAttribute(List<String> keys, Attribute value);
+    
+    /**
      * Remove an Attribute.
      * @param name The name of the Attribute.
      */
@@ -77,7 +107,21 @@ public interface AttributeService
      * @param name The name of the attribute to remove.
      */
     public void removeAttribute(List<String> keys, String name);
+    
+    /**
+     * Remove an attribute from a list.
+     * @param path The path to the list.
+     * @param index The index to remove.
+     */
+    public void removeAttribute(String path, int index);
 
+    /**
+     * Remove an attribute from a list.
+     * @param keys The components of the path to the list.
+     * @param index The index to remove.
+     */
+    public void removeAttribute(List<String> keys, int index);
+    
     /**
      * Query for a list of attributes which are contained in the map
      * defined by the given path and meet the query criteria.

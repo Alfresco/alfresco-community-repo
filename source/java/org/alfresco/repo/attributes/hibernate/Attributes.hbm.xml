@@ -90,13 +90,10 @@
     </class>       
     <class name="ListEntryImpl" proxy="ListEntry" lazy="false" table="alf_list_attribute_entries">
         <cache usage="read-write"/>
-        <id name="id" column="id" type="long">
-            <generator class="native"/>
-        </id>
-        <natural-id>
-            <many-to-one class="ListAttributeImpl" name="list" column="list_id"/>
-            <property name="index" type="int" column="mindex" index="list_index_index"/>
-        </natural-id>
+        <composite-id name="key" class="ListEntryKey">
+            <key-many-to-one class="ListAttributeImpl" name="list" column="list_id"/>
+            <key-property name="index" type="int" column="mindex"/>
+        </composite-id>
         <many-to-one class="AttributeImpl" name="attribute" column="attribute_id"/>
     </class>
 </hibernate-mapping>

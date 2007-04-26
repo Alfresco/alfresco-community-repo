@@ -28,26 +28,54 @@ package org.alfresco.repo.attributes;
 import java.io.Serializable;
 
 /**
- * Interface for list entries.
+ * Key class for the ListEntry entity.
  * @author britt
  */
-public interface ListEntry extends Serializable
+public class ListEntryKey implements Serializable
 {
-    /**
-     * Get the key.
-     * @return The key.
-     */
-    public ListEntryKey getKey();
+    private ListAttribute fList;
     
-    /**
-     * Get the Attribute for this entry.
-     * @return The Attribute
-     */
-    public Attribute getAttribute();
+    private int fIndex;
     
+    public ListEntryKey()
+    {
+    }
+    
+    public ListEntryKey(ListAttribute list, int index)
+    {
+        fList = list;
+        fIndex = index;
+    }
+
     /**
-     * Set the Attribute.
-     * @param attr The attribute to set.
+     * @return the Index
      */
-    public void setAttribute(Attribute attr);
+    public int getIndex()
+    {
+        return fIndex;
+    }
+
+    /**
+     * @param index the fIndex to set
+     */
+    public void setIndex(int index)
+    {
+        fIndex = index;
+    }
+
+    /**
+     * @return the fList
+     */
+    public ListAttribute getList()
+    {
+        return fList;
+    }
+
+    /**
+     * @param list the fList to set
+     */
+    public void setList(ListAttribute list)
+    {
+        fList = list;
+    }
 }

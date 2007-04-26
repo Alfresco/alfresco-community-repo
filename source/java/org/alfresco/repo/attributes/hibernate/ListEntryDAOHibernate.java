@@ -30,6 +30,8 @@ import java.util.List;
 import org.alfresco.repo.attributes.ListAttribute;
 import org.alfresco.repo.attributes.ListEntry;
 import org.alfresco.repo.attributes.ListEntryDAO;
+import org.alfresco.repo.attributes.ListEntryImpl;
+import org.alfresco.repo.attributes.ListEntryKey;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -53,7 +55,7 @@ public class ListEntryDAOHibernate extends HibernateDaoSupport implements
      */
     public void delete(ListAttribute list)
     {
-        Query query = getSession().createQuery("delete from ListEntryImpl le where le.list = :list");
+        Query query = getSession().createQuery("delete from ListEntryImpl le where le.key.list = :list");
         query.setEntity("list", list);
         query.executeUpdate();
     }
@@ -61,12 +63,9 @@ public class ListEntryDAOHibernate extends HibernateDaoSupport implements
     /* (non-Javadoc)
      * @see org.alfresco.repo.attributes.ListEntryDAO#get(org.alfresco.repo.attributes.ListAttribute, int)
      */
-    public ListEntry get(ListAttribute list, int index)
+    public ListEntry get(ListEntryKey key)
     {
-        Query query = getSession().createQuery("from ListEntryImpl le where le.list = :list and le.index = :index");
-        query.setEntity("list", list);
-        query.setInteger("index", index);
-        return (ListEntry)query.uniqueResult();
+        return (ListEntry)getSession().get(ListEntryImpl.class, key);
     }
 
     /* (non-Javadoc)
@@ -75,7 +74,7 @@ public class ListEntryDAOHibernate extends HibernateDaoSupport implements
     @SuppressWarnings("unchecked")
     public List<ListEntry> get(ListAttribute list)
     {
-        Query query = getSession().createQuery("from ListEntryImpl le where le.list = :list");
+        Query query = getSession().createQuery("from ListEntryImpl le where le.key.list = :list");
         query.setEntity("list", list);
         return (List<ListEntry>)query.list();
     }
@@ -93,8 +92,8 @@ public class ListEntryDAOHibernate extends HibernateDaoSupport implements
      */
     public int size(ListAttribute list)
     {
-        Query query = getSession().createQuery("select count() from ListEntryImpl le where le.list = :list");
+        Query query = getSession().createQuery("select count(*) from ListEntryImpl le where le.key.list = :list");
         query.setEntity("list", list);
-        return (Integer)query.uniqueResult();
+        return ((Long)query.uniqueResult()).intValue();
     }
 }

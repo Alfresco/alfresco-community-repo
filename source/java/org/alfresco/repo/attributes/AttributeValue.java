@@ -335,4 +335,12 @@ public abstract class AttributeValue implements Attribute
     {
         throw new AttributeMethodNotImplemented("Not a List.");
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.Attribute#set(int, org.alfresco.repo.attributes.Attribute)
+     */
+    public void set(int index, Attribute value)
+    {
+        throw new AttributeMethodNotImplemented("Not a List.");
+    }
 }

@@ -45,7 +45,7 @@ public interface ListEntryDAO
      * @param index The index.
      * @return The ListEntry.
      */
-    public ListEntry get(ListAttribute list, int index);
+    public ListEntry get(ListEntryKey key);
     
     /**
      * Get all entries for a given list.

@@ -33,11 +33,7 @@ public class ListEntryImpl implements ListEntry
 {
     private static final long serialVersionUID = 1573391734169157835L;
 
-    private long fID;
-    
-    private ListAttribute fList;
-    
-    private int fIndex;
+    private ListEntryKey fKey;
     
     private Attribute fAttribute;
 
@@ -48,21 +44,20 @@ public class ListEntryImpl implements ListEntry
     {
     }
     
-    public ListEntryImpl(ListAttribute list, int index, Attribute attr)
+    public ListEntryImpl(ListEntryKey key, Attribute attr)
     {
-        fList = list;
-        fIndex = index;
+        fKey = key;
         fAttribute = attr;
     }
     
-    public void setId(long id)
+    public void setKey(ListEntryKey key)
     {
-        fID = id;
+        fKey = key;
     }
     
-    public long getId()
+    public ListEntryKey getKey()
     {
-        return fID;
+        return fKey;
     }
     
     /* (non-Javadoc)
@@ -76,31 +71,5 @@ public class ListEntryImpl implements ListEntry
     public void setAttribute(Attribute attr)
     {
         fAttribute = attr;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.ListEntry#getIndex()
-     */
-    public int getIndex()
-    {
-        return fIndex;
-    }
-    
-    public void setIndex(int index)
-    {
-        fIndex = index;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.ListEntry#getList()
-     */
-    public ListAttribute getList()
-    {
-        return fList;
-    }
-    
-    public void setList(ListAttribute list)
-    {
-        fList = list;
     }
 }

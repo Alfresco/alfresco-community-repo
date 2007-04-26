@@ -272,4 +272,11 @@ public interface Attribute extends Serializable, Iterable<Attribute>
      * @param index The entry to remove.
      */
     public void remove(int index);
+    
+    /**
+     * Set an attribute in a list.
+     * @param index The index to set.
+     * @param value The attribute to set.
+     */
+    public void set(int index, Attribute value);
 }

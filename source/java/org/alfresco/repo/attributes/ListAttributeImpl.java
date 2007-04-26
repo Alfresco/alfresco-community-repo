@@ -47,6 +47,7 @@ public class ListAttributeImpl extends AttributeImpl implements ListAttribute
     
     public ListAttributeImpl(ListAttribute other)
     {
+        super(other.getAcl());
         int index = 0;
         AVMDAOs.Instance().fAttributeDAO.save(this);
         for (Attribute entry : other)
@@ -114,7 +115,8 @@ public class ListAttributeImpl extends AttributeImpl implements ListAttribute
                     throw new AlfrescoRuntimeException("Unknown Attribute Type: " + entry.getType());
                 }
             }
-            ListEntry listEntry = new ListEntryImpl(this, index++, newEntry);
+            ListEntryKey key = new ListEntryKey(this, index++);
+            ListEntry listEntry = new ListEntryImpl(key, newEntry);
             AVMDAOs.Instance().fListEntryDAO.save(listEntry);
         }
     }
@@ -134,7 +136,8 @@ public class ListAttributeImpl extends AttributeImpl implements ListAttribute
     public void add(Attribute attr)
     {
         int size = AVMDAOs.Instance().fListEntryDAO.size(this);
-        ListEntry entry = new ListEntryImpl(this, size, attr);
+        ListEntryKey key = new ListEntryKey(this, size);
+        ListEntry entry = new ListEntryImpl(key, attr);
         AVMDAOs.Instance().fListEntryDAO.save(entry);
     }
 
@@ -152,12 +155,15 @@ public class ListAttributeImpl extends AttributeImpl implements ListAttribute
         }
         for (int i = size; i > index; i--)
         {
-            ListEntry entry = dao.get(this, i - 1);
-            ListEntry newEntry = new ListEntryImpl(this, i, entry.getAttribute());
+            ListEntryKey key = new ListEntryKey(this, i - 1);
+            ListEntry entry = dao.get(key);
+            key = new ListEntryKey(this, i);
+            ListEntry newEntry = new ListEntryImpl(key, entry.getAttribute());
             dao.delete(entry);
             dao.save(newEntry);
         }
-        ListEntry newEntry = new ListEntryImpl(this, index, attr);
+        ListEntryKey key = new ListEntryKey(this, index);
+        ListEntry newEntry = new ListEntryImpl(key, attr);
         dao.save(newEntry);
     }
 
@@ -176,7 +182,8 @@ public class ListAttributeImpl extends AttributeImpl implements ListAttribute
     @Override
     public Attribute get(int index)
     {
-        ListEntry entry = AVMDAOs.Instance().fListEntryDAO.get(this, index);
+        ListEntryKey key = new ListEntryKey(this, index);
+        ListEntry entry = AVMDAOs.Instance().fListEntryDAO.get(key);
         if (entry == null)
         {
             return null;
@@ -215,7 +222,8 @@ public class ListAttributeImpl extends AttributeImpl implements ListAttribute
     public void remove(int index)
     {
         ListEntryDAO dao = AVMDAOs.Instance().fListEntryDAO;
-        ListEntry entry = dao.get(this, index);
+        ListEntryKey key = new ListEntryKey(this, index);
+        ListEntry entry = dao.get(key);
         if (entry == null)
         {
             throw new AVMBadArgumentException("Index out of bounds: " + index);
@@ -225,8 +233,10 @@ public class ListAttributeImpl extends AttributeImpl implements ListAttribute
         AVMDAOs.Instance().fAttributeDAO.delete(entry.getAttribute());
         for (int i = index; i < size - 1; i++)
         {
-            entry = dao.get(this, i + 1);
-            ListEntry newEntry = new ListEntryImpl(this, i, entry.getAttribute());
+            key = new ListEntryKey(this, i + 1);
+            entry = dao.get(key);
+            key = new ListEntryKey(this, i);
+            ListEntry newEntry = new ListEntryImpl(key, entry.getAttribute());
             dao.delete(entry);
             dao.save(newEntry);
         }
@@ -247,5 +257,22 @@ public class ListAttributeImpl extends AttributeImpl implements ListAttribute
         }
         builder.append(']');
         return builder.toString();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.AttributeImpl#set(int, org.alfresco.repo.attributes.Attribute)
+     */
+    @Override
+    public void set(int index, Attribute value)
+    {
+        ListEntryKey key = new ListEntryKey(this, index);
+        ListEntry entry = AVMDAOs.Instance().fListEntryDAO.get(key);
+        if (entry == null)
+        {
+            throw new AVMBadArgumentException("Index out of bounds: " + index);
+        }
+        Attribute oldAttr = entry.getAttribute();
+        entry.setAttribute(value);
+        AVMDAOs.Instance().fAttributeDAO.delete(oldAttr);
     }
 }

@@ -186,25 +186,12 @@ public class AttributeServiceImpl implements AttributeService
         {
             throw new AVMBadArgumentException("Bad Attribute Path List.");
         }
-        GlobalAttributeEntry entry = fGlobalAttributeEntryDAO.get(keys.get(0));
-        if (entry == null)
+        Attribute found = getAttributeFromPath(keys);
+        if (found == null)
         {
             return null;
         }
-        Attribute current = entry.getAttribute();
-        for (int i = 1; i < keys.size(); i++)
-        {
-            if (current.getType() != Type.MAP)
-            {
-                return null;
-            }
-            current = current.get(keys.get(i));
-            if (current == null)
-            {
-                return null;
-            }
-        }
-        return fAttributeConverter.toValue(current);
+        return fAttributeConverter.toValue(found);
     }
 
     /* (non-Javadoc)
@@ -220,29 +207,16 @@ public class AttributeServiceImpl implements AttributeService
         {
             return fGlobalAttributeEntryDAO.getKeys();
         }
-        GlobalAttributeEntry entry = fGlobalAttributeEntryDAO.get(keys.get(0));
-        if (entry == null)
+        Attribute found = getAttributeFromPath(keys);
+        if (found == null)
         {
-            throw new AVMNotFoundException("Attribute Not Found: " + keys.get(0));
+            throw new AVMNotFoundException("Attribute Not Found: " + keys);
         }
-        Attribute current = entry.getAttribute();
-        if (current.getType() != Type.MAP)
+        if (found.getType() != Type.MAP)
         {
-            throw new AVMWrongTypeException("Attribute Not Map: " + keys.get(0));
+            throw new AVMWrongTypeException("Not a Map: " + keys.get(keys.size() - 1));
         }
-        for (int i = 1; i < keys.size(); i++)
-        {
-            current = current.get(keys.get(i));
-            if (current == null)
-            {
-                throw new AVMNotFoundException("Attribute Not Found: " + keys.get(i));
-            }
-            if (current.getType() != Type.MAP)
-            {
-                throw new AVMWrongTypeException("Attribute Not Map: " + keys.get(i));
-            }
-        }
-        return new ArrayList<String>(current.keySet());
+        return new ArrayList<String>(found.keySet());
     }
 
     /* (non-Javadoc)
@@ -254,9 +228,9 @@ public class AttributeServiceImpl implements AttributeService
         {
             throw new AVMBadArgumentException("Null argument.");
         }
-        Attribute toSave = fAttributeConverter.toPersistent(value);
         if (keys.size() == 0)
         {
+            Attribute toSave = fAttributeConverter.toPersistent(value);
             GlobalAttributeEntry found = fGlobalAttributeEntryDAO.get(name);
             if (found == null)
             {
@@ -267,30 +241,16 @@ public class AttributeServiceImpl implements AttributeService
             found.setAttribute(toSave);
             return;
         }
-        GlobalAttributeEntry gEntry = fGlobalAttributeEntryDAO.get(keys.get(0));
-        if (gEntry == null)
+        Attribute found = getAttributeFromPath(keys);
+        if (found == null)
         {
-            throw new AVMNotFoundException("Global Attribute Not Found: " + keys.get(0));
+            throw new AVMNotFoundException("Attribute Not Found: " + keys);
         }
-        Attribute current = gEntry.getAttribute();
-        if (current.getType() != Type.MAP)
+        if (found.getType() != Type.MAP)
         {
-            throw new AVMWrongTypeException("Global Attribute Not Map: " + keys.get(0)); 
+            throw new AVMWrongTypeException("Not a Map: " + keys);
         }
-        for (int i = 1; i < keys.size(); i++)
-        {
-            Attribute child = current.get(keys.get(i));
-            if (child == null)
-            {
-                throw new AVMNotFoundException("Attribute Not Found: " + keys.get(i));
-            }
-            if (child.getType() != Type.MAP)
-            {
-                throw new AVMWrongTypeException("Attribute Not Map: " + keys.get(i));
-            }
-            current = child;
-        }
-        current.put(name, toSave);   
+        found.put(name, fAttributeConverter.toPersistent(value));   
     }
 
     /* (non-Javadoc)
@@ -306,30 +266,17 @@ public class AttributeServiceImpl implements AttributeService
         {
             throw new AVMBadArgumentException("Cannot query top level Attributes.");
         }
-        GlobalAttributeEntry entry = fGlobalAttributeEntryDAO.get(keys.get(0));
-        if (entry == null)
+        Attribute found = getAttributeFromPath(keys);
+        if (found == null)
         {
-            throw new AVMNotFoundException("Attribute Not Found: " + keys.get(0));
+            throw new AVMNotFoundException("Attribute Not Found: " + keys);
         }
-        Attribute current = entry.getAttribute();
-        if (current.getType() != Type.MAP)
+        if (found.getType() != Type.MAP)
         {
-            throw new AVMWrongTypeException("Attribute Not Map: " + keys.get(0));
-        }
-        for (int i = 1; i < keys.size(); i++)
-        {
-            current = current.get(keys.get(i));
-            if (current == null)
-            {
-                throw new AVMNotFoundException("Attribute Not Found: " + keys.get(i));
-            }
-            if (current.getType() != Type.MAP)
-            {
-                throw new AVMWrongTypeException("Attribute Not Map: " + keys.get(i));
-            }
+            throw new AVMWrongTypeException("Not a Map: " + keys);
         }
         List<Pair<String, Attribute>> rawResult =
-            fAttributeDAO.find((MapAttribute)current, query);
+            fAttributeDAO.find((MapAttribute)found, query);
         List<Pair<String, Attribute>> result = 
             new ArrayList<Pair<String, Attribute>>();
         for (Pair<String, Attribute> raw : rawResult)
@@ -354,29 +301,160 @@ public class AttributeServiceImpl implements AttributeService
             fGlobalAttributeEntryDAO.delete(name);
             return;
         }
+        Attribute found = getAttributeFromPath(keys);
+        if (found == null)
+        {
+            throw new AVMNotFoundException("Attribute Not Found: " + keys);
+        }
+        if (found.getType() != Type.MAP)
+        {
+            throw new AVMWrongTypeException("Attribute Not Map: " + keys);
+        }
+        found.remove(name);
+    }
+    
+    private Attribute getAttributeFromPath(List<String> keys)
+    {
         GlobalAttributeEntry entry = fGlobalAttributeEntryDAO.get(keys.get(0));
         if (entry == null)
         {
-            throw new AVMNotFoundException("Attribute Not Found: " + keys.get(0));
+            return null;
         }
         Attribute current = entry.getAttribute();
-        if (current.getType() != Type.MAP)
-        {
-            throw new AVMWrongTypeException("Attribute Not Map: " + keys.get(0));
-        }
         for (int i = 1; i < keys.size(); i++)
         {
-            current = current.get(keys.get(i));
+            if (current.getType() == Type.MAP)
+            {
+                current = current.get(keys.get(i));
+            }
+            else if (current.getType() == Type.LIST)
+            {
+                current = current.get(Integer.parseInt(keys.get(i)));
+            }
+            else
+            {
+                throw new AVMWrongTypeException("Not a Map or List: " + keys.get(i - 1));
+            }
             if (current == null)
             {
-                throw new AVMNotFoundException("Attribute Not Found: " + keys.get(i));
-            }
-            if (current.getType() != Type.MAP)
-            {
-                throw new AVMWrongTypeException("Attribute Not Map: " + keys.get(i));
+                return null;
             }
         }
-        current.remove(name);
+        return current;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#addAttribute(java.util.List, org.alfresco.repo.attributes.Attribute)
+     */
+    public void addAttribute(List<String> keys, Attribute value)
+    {
+        if (keys == null || value == null)
+        {
+            throw new AVMBadArgumentException("Illegal Null Argument.");
+        }
+        if (keys.size() < 1)
+        {
+            throw new AVMBadArgumentException("Path too short: " + keys);
+        }
+        Attribute found = getAttributeFromPath(keys);
+        if (found == null)
+        {
+            throw new AVMNotFoundException("Attribute Not Found: " + keys);
+        }
+        if (found.getType() != Type.LIST)
+        {
+            throw new AVMWrongTypeException("Attribute Not List: " + keys);
+        }
+        found.add(fAttributeConverter.toPersistent(value));
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#addAttribute(java.lang.String, org.alfresco.repo.attributes.Attribute)
+     */
+    public void addAttribute(String path, Attribute value)
+    {
+        if (path == null || value == null)
+        {
+            throw new AVMBadArgumentException("Illegal null arguments.");
+        }
+        List<String> keys = parsePath(path);
+        addAttribute(keys, value);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#removeAttribute(java.util.List, int)
+     */
+    public void removeAttribute(List<String> keys, int index)
+    {
+        if (keys == null)
+        {
+            throw new AVMBadArgumentException("Illegal Null Keys.");
+        }
+        if (keys.size() < 1)
+        {
+            throw new AVMBadArgumentException("Keys too short: " + keys);
+        }
+        Attribute found = getAttributeFromPath(keys);
+        if (found == null)
+        {
+            throw new AVMNotFoundException("Attribute Not Found: " + keys);
+        }
+        if (found.getType() != Type.LIST)
+        {
+            throw new AVMWrongTypeException("Attribute Not List: " + keys);
+        }
+        found.remove(index);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#removeAttribute(java.lang.String, int)
+     */
+    public void removeAttribute(String path, int index)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Illegal null path.");
+        }
+        List<String> keys = parsePath(path);
+        removeAttribute(keys, index);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#setAttribute(java.util.List, int, org.alfresco.repo.attributes.Attribute)
+     */
+    public void setAttribute(List<String> keys, int index, Attribute value)
+    {
+        if (keys == null || value == null)
+        {
+            throw new AVMBadArgumentException("Illegal Null Argument.");
+        }
+        if (keys.size() < 1)
+        {
+            throw new AVMBadArgumentException("Keys too short.");
+        }
+        Attribute found = getAttributeFromPath(keys);
+        if (found == null)
+        {
+            throw new AVMNotFoundException("Attribute Not Found: " + keys);
+        }
+        if (found.getType() != Type.LIST)
+        {
+            throw new AVMWrongTypeException("Attribute Not List: " + keys);
+        }
+        found.set(index, fAttributeConverter.toPersistent(value));
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#setAttribute(java.lang.String, int, org.alfresco.repo.attributes.Attribute)
+     */
+    public void setAttribute(String path, int index, Attribute value)
+    {
+        if (path == null || value == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        List<String> keys = parsePath(path);
+        setAttribute(keys, index, value);
     }
 }
 

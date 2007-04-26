@@ -195,4 +195,13 @@ public class ListAttributeValue extends AttributeValue implements ListAttribute
         builder.append(']');
         return builder.toString();
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.AttributeValue#set(int, org.alfresco.repo.attributes.Attribute)
+     */
+    @Override
+    public void set(int index, Attribute value)
+    {
+        fData.set(index, value);
+    }
 }

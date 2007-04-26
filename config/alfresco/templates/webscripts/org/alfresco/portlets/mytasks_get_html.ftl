@@ -95,12 +95,11 @@
             </div>
             <div class="taskDetail">
                <table cellpadding='2' cellspacing='0' style="margin-left:32px;">
-   	            <tr><td>Type:</td><td>${t.type?html}</td></tr>
-   	            <tr><td>Name:</td><td>${t.name?html}</td></tr>
-   	            <tr><td>Start Date:</td><td>${t.startDate?date}</td></tr>
-   	            <tr><td>Priority:</td><td>${t.properties["bpm:priority"]}</td>
-                  <tr><td>Status:</td><td>${t.properties["bpm:status"]}</td>
-                  <tr><td>Completed:</td><td>${t.isCompleted?string("Yes", "No")}</td>
+   	            <tr><td class="taskMetadata">Type:</td><td class="taskMetadata">${t.type?html}</td></tr>
+   	            <tr><td class="taskMetadata">Start Date:</td><td class="taskMetadata">${t.startDate?date}</td></tr>
+   	            <tr><td class="taskMetadata">Priority:</td><td class="taskMetadata">${t.properties["bpm:priority"]}</td>
+                  <tr><td class="taskMetadata">Status:</td><td class="taskMetadata">${t.properties["bpm:status"]}</td>
+                  <tr><td class="taskMetadata">Percent Complete:</td><td class="taskMetadata">${t.properties["bpm:percentComplete"]}%</td>
    	         </table>
             </div>
          </div>
@@ -218,7 +217,7 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
 
 .taskDetail
 {
-   background-color: #CFB540;
+   background-color: #DFC900;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 12px;
    color: #000000;
@@ -232,6 +231,12 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    background-color: #FFE500 !important;
    border-bottom: 1px solid #82770B !important;
    border-top: 1px solid #82770B !important;
+}
+
+.taskMetadata
+{
+   color: #5A5741;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
 }
 
 .paperEdgeRight

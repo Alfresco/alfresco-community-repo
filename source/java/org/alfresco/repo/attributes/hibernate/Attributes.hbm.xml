@@ -55,7 +55,7 @@
         <subclass name="StringAttributeImpl" proxy="StringAttribute" lazy="false"
                   discriminator-value="S">
             <property name="stringValue" column="string_value" type="string"
-                      length="512"/>
+                      length="1024"/>
         </subclass>
         <!-- A serializable attribute -->
         <subclass name="SerializableAttributeImpl" proxy="SerializableAttribute" lazy="false"

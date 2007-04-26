@@ -30,7 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.attributes.Attribute;
-import org.alfresco.repo.attributes.BooleanAttributeValue;
+import org.alfresco.repo.attributes.ListAttribute;
+import org.alfresco.repo.attributes.ListAttributeValue;
 import org.alfresco.repo.attributes.MapAttribute;
 import org.alfresco.repo.attributes.MapAttributeValue;
 import org.alfresco.repo.attributes.StringAttributeValue;
@@ -83,6 +84,15 @@ public class AVMLock implements Serializable
         fWebProject = webProject;
         fStore = store;
         fPath = path;
+        while (fPath.startsWith("/"))
+        {
+            fPath = fPath.substring(1);
+        }
+        while (fPath.endsWith("/"))
+        {
+            fPath = fPath.substring(0, fPath.length() - 1);
+        }
+        fPath = fPath.replaceAll("/+", "/");
         fType = type;
         fOwners = owners;
     }
@@ -92,7 +102,11 @@ public class AVMLock implements Serializable
     {
         fPath = lockData.get(PATH).getStringValue();
         fStore = lockData.get(STORE).getStringValue();
-        fOwners = new ArrayList<String>(lockData.get(OWNERS).keySet());
+        fOwners = new ArrayList<String>();
+        for (Attribute owner : lockData.get(OWNERS))
+        {
+            fOwners.add(owner.getStringValue());
+        }
         fType = AVMLockingService.Type.valueOf(lockData.get(TYPE).getStringValue());
         fWebProject = lockData.get(WEBPROJECT).getStringValue();
     }
@@ -104,11 +118,11 @@ public class AVMLock implements Serializable
         lockData.put(STORE, new StringAttributeValue(fStore));
         lockData.put(TYPE, new StringAttributeValue(fType.name()));
         lockData.put(WEBPROJECT, new StringAttributeValue(fWebProject));
-        MapAttribute owners = new MapAttributeValue();
+        ListAttribute owners = new ListAttributeValue();
         for (String owner : fOwners)
         {
             // The value is a dummy.
-            owners.put(owner, new BooleanAttributeValue(true));
+            owners.add(new StringAttributeValue(owner));
         }
         lockData.put(OWNERS, owners);
         return lockData;

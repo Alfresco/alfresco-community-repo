@@ -110,6 +110,7 @@ public class AVMLockingServiceTest extends TestCase
             assertEquals(1, fService.getUsersLocks("Buffy").size());
             assertEquals(1, fService.getWebProjectLocks("alfresco").size());
             fService.removeWebProject("alfresco");
+            System.out.println(fAttributeService.getAttribute(".avm_lock_table"));
             assertEquals(0, fService.getUsersLocks("Spike").size());
             assertEquals(0, fService.getUsersLocks("Buffy").size());
             assertEquals(0, fService.getUsersLocks("Willow").size());

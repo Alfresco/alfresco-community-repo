@@ -20,35 +20,64 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 
-package org.alfresco.service.cmr.attributes;
+package org.alfresco.repo.attributes;
+
+import java.io.Serializable;
 
 /**
- * Not equals query.
+ * Key class for MapEntries.
  * @author britt
  */
-public class AttrQueryNE extends AttrQuery 
+public class MapEntryKey implements Serializable
 {
-    private static final long serialVersionUID = 103038173214972590L;
+    private static final long serialVersionUID = 1637682889407656800L;
 
-    /**
-     * @param name
-     */
-    public AttrQueryNE(String name) 
+    private MapAttribute fMap;
+    
+    private String fKey;
+    
+    public MapEntryKey()
     {
-        super(name);
+    }
+    
+    public MapEntryKey(MapAttribute map, String key)
+    {
+        fMap = map;
+        fKey = key;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttrQuery#getPredicate()
+    /**
+     * @return the Key
      */
-    @Override
-    public String getPredicate(AttrQueryHelper helper) 
+    public String getKey()
     {
-        String name = "name" + helper.getNextSuffix();
-        helper.setParameter(name, fValue);
-        return "me.key.key <> :" + name;
+        return fKey;
+    }
+
+    /**
+     * @param key the Key to set
+     */
+    public void setKey(String key)
+    {
+        fKey = key;
+    }
+
+    /**
+     * @return the Map
+     */
+    public MapAttribute getMap()
+    {
+        return fMap;
+    }
+
+    /**
+     * @param map the Map to set
+     */
+    public void setMap(MapAttribute map)
+    {
+        fMap = map;
     }
 }

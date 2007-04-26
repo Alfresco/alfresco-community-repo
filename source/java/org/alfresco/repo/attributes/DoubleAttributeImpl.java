@@ -31,7 +31,7 @@ import org.alfresco.repo.avm.AVMDAOs;
  * Persistent double attribute implementation.
  * @author britt
  */
-public class DoubleAttributeImpl extends AttributeImpl implements Attribute
+public class DoubleAttributeImpl extends AttributeImpl implements DoubleAttribute
 {
     private static final long serialVersionUID = 6615023606094278263L;
 

@@ -120,7 +120,8 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
                     throw new AlfrescoRuntimeException("Unknown Attribute Type: " + value.getType());
                 }
             }
-            MapEntry mapEntry = new MapEntryImpl(this, entry.getKey(), newAttr);
+            MapEntryKey key = new MapEntryKey(this, entry.getKey());
+            MapEntry mapEntry = new MapEntryImpl(key, newAttr);
             AVMDAOs.Instance().fMapEntryDAO.save(mapEntry);
         }
     }
@@ -152,7 +153,7 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
         Map<String, Attribute> map = new HashMap<String, Attribute>();
         for (MapEntry entry : entries)
         {
-            map.put(entry.getKey(), entry.getAttribute());
+            map.put(entry.getKey().getKey(), entry.getAttribute());
         }
         return map.entrySet();
     }
@@ -163,7 +164,8 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
     @Override
     public Attribute get(String key)
     {
-        MapEntry entry = AVMDAOs.Instance().fMapEntryDAO.get(this, key);
+        MapEntryKey entryKey = new MapEntryKey(this, key);
+        MapEntry entry = AVMDAOs.Instance().fMapEntryDAO.get(entryKey);
         if (entry == null)
         {
             return null;
@@ -181,7 +183,7 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
         Set<String> keys = new HashSet<String>();
         for (MapEntry entry : entries)
         {
-            keys.add(entry.getKey());
+            keys.add(entry.getKey().getKey());
         }
         return keys;
     }
@@ -192,7 +194,8 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
     @Override
     public void put(String key, Attribute value)
     {
-        MapEntry entry = AVMDAOs.Instance().fMapEntryDAO.get(this, key);
+        MapEntryKey entryKey = new MapEntryKey(this, key);
+        MapEntry entry = AVMDAOs.Instance().fMapEntryDAO.get(entryKey);
         if (entry != null)
         {
             Attribute oldAttr = entry.getAttribute();
@@ -200,7 +203,7 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
             AVMDAOs.Instance().fAttributeDAO.delete(oldAttr);
             return;
         }
-        entry = new MapEntryImpl(this, key, value);
+        entry = new MapEntryImpl(entryKey, value);
         AVMDAOs.Instance().fMapEntryDAO.save(entry);
     }
 
@@ -210,7 +213,8 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
     @Override
     public void remove(String key)
     {
-        MapEntry entry = AVMDAOs.Instance().fMapEntryDAO.get(this, key);
+        MapEntryKey entryKey = new MapEntryKey(this, key);
+        MapEntry entry = AVMDAOs.Instance().fMapEntryDAO.get(entryKey);
         if (entry == null)
         {
             throw new AVMNotFoundException("Attribute Not Found: " + key);

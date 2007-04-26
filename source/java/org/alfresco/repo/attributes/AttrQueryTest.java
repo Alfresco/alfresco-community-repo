@@ -65,7 +65,7 @@ public class AttrQueryTest extends TestCase
         String predicate = query.getPredicate(fHelper);
         System.out.println(predicate);
         System.out.println(fHelper.getParameters());
-        assertEquals("((me.key > :name0 and me.key < :name1) or (not me.key like :name2))",
+        assertEquals("((me.key.key > :name0 and me.key.key < :name1) or (not me.key.key like :name2))",
                      predicate);
         assertEquals("cat", fHelper.getParameters().get("name0"));
         assertEquals("hat", fHelper.getParameters().get("name1"));

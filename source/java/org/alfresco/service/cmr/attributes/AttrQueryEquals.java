@@ -46,6 +46,6 @@ public class AttrQueryEquals extends AttrQuery
     {
         String name = "name" + helper.getNextSuffix();
         helper.setParameter(name, fValue);
-        return "me.key = :" + name;
+        return "me.key.key = :" + name;
     }
 }

@@ -33,6 +33,8 @@ import java.io.Serializable;
  */
 public class ListEntryKey implements Serializable
 {
+    private static final long serialVersionUID = 7314576560198411815L;
+
     private ListAttribute fList;
     
     private int fIndex;

@@ -28,11 +28,10 @@ public interface MapEntryDAO
     
     /**
      * Get an entry by name.
-     * @param mapAttr The map to get the entry from.
      * @param key The key of the entry.
      * @return A MapEntry or null.
      */
-    public MapEntry get(MapAttribute mapAttr, String key);
+    public MapEntry get(MapEntryKey key);
     
     /**
      * Retrieve all the entries in a map.

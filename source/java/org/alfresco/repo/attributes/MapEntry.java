@@ -35,19 +35,7 @@ public interface MapEntry
      * Get the primary key.
      * @return The key.
      */
-    public long getId();
-    
-    /**
-     * Get the map attribute that this entry belongs to.
-     * @return The map attribute.
-     */
-    public MapAttribute getMap();
-    
-    /**
-     * Get the lookup key for this entry.
-     * @return The key.
-     */
-    public String getKey();
+    public MapEntryKey getKey();
     
     /**
      * Get the value attribute.

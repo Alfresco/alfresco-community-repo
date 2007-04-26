@@ -306,6 +306,15 @@ public class AttributeServiceTest extends TestCase
             Attribute replace = new StringAttributeValue("String");
             fService.setAttribute("dummy", 2, replace);
             assertEquals("String", fService.getAttribute("dummy/2").getStringValue());
+            MapAttribute map = new MapAttributeValue();
+            map.put("list", list);
+            MapAttribute subMap = new MapAttributeValue();
+            subMap.put("a", new StringAttributeValue("polyester"));
+            subMap.put("b", new StringAttributeValue("donuts"));
+            subMap.put("c", new StringAttributeValue("brutality"));
+            list.add(subMap);
+            fService.setAttribute("", "map", map);
+            assertEquals("donuts", fService.getAttribute("map/list/5/b").getStringValue());
         }
         catch (Exception e)
         {

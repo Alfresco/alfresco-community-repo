@@ -50,6 +50,6 @@ public class AttrQueryLike extends AttrQuery
     {
         String name = "name" + helper.getNextSuffix();
         helper.setParameter(name, fValue);
-        return "me.key like :" + name;
+        return "me.key.key like :" + name;
     }
 }

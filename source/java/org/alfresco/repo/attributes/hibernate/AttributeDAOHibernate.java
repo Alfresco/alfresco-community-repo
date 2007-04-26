@@ -109,7 +109,7 @@ public class AttributeDAOHibernate extends HibernateDaoSupport implements
     {
         AttrQueryHelper helper = new AttrQueryHelperImpl();
         String predicate = query.getPredicate(helper);
-        String fullQuery = "from MapEntryImpl me where me.map = :map and " + predicate;
+        String fullQuery = "from MapEntryImpl me where me.key.map = :map and " + predicate;
         Query hQuery = getSession().createQuery(fullQuery);
         hQuery.setEntity("map", map);
         for (Map.Entry<String, String> param : helper.getParameters().entrySet())
@@ -120,7 +120,7 @@ public class AttributeDAOHibernate extends HibernateDaoSupport implements
         List<Pair<String, Attribute>> result = new ArrayList<Pair<String, Attribute>>();
         for (MapEntry entry : hits)
         {
-            result.add(new Pair<String, Attribute>(entry.getKey(), entry.getAttribute()));
+            result.add(new Pair<String, Attribute>(entry.getKey().getKey(), entry.getAttribute()));
         }
         return result;
     }

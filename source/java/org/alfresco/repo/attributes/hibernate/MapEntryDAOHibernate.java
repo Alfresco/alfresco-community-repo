@@ -30,6 +30,8 @@ import java.util.List;
 import org.alfresco.repo.attributes.MapAttribute;
 import org.alfresco.repo.attributes.MapEntry;
 import org.alfresco.repo.attributes.MapEntryDAO;
+import org.alfresco.repo.attributes.MapEntryImpl;
+import org.alfresco.repo.attributes.MapEntryKey;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -53,7 +55,7 @@ public class MapEntryDAOHibernate extends HibernateDaoSupport implements
      */
     public void delete(MapAttribute mapAttr)
     {
-        Query query = getSession().createQuery("delete from MapEntryImpl me where me.map = :map");
+        Query query = getSession().createQuery("delete from MapEntryImpl me where me.key.map = :map");
         query.setEntity("map", mapAttr);
         query.executeUpdate();
     }
@@ -61,12 +63,9 @@ public class MapEntryDAOHibernate extends HibernateDaoSupport implements
     /* (non-Javadoc)
      * @see org.alfresco.repo.attributes.MapEntryDAO#get(org.alfresco.repo.attributes.MapAttribute, java.lang.String)
      */
-    public MapEntry get(MapAttribute mapAttr, String key)
+    public MapEntry get(MapEntryKey key)
     {
-        Query query = getSession().createQuery("from MapEntryImpl me where me.map = :map and me.key = :key");
-        query.setEntity("map", mapAttr);
-        query.setParameter("key", key);
-        return (MapEntry)query.uniqueResult();
+        return (MapEntry)getSession().get(MapEntryImpl.class, key);
     }
 
     /* (non-Javadoc)
@@ -75,7 +74,7 @@ public class MapEntryDAOHibernate extends HibernateDaoSupport implements
     @SuppressWarnings("unchecked")
     public List<MapEntry> get(MapAttribute mapAttr)
     {
-        Query query = getSession().createQuery("from MapEntryImpl me where me.map = :map");
+        Query query = getSession().createQuery("from MapEntryImpl me where me.key.map = :map");
         query.setEntity("map", mapAttr);
         return (List<MapEntry>)query.list();
     }
@@ -93,7 +92,7 @@ public class MapEntryDAOHibernate extends HibernateDaoSupport implements
      */
     public int size(MapAttribute mapAttr)
     {
-        Query query = getSession().createQuery("select count(me) from MapEntryImpl me where me.map = :map");
+        Query query = getSession().createQuery("select count(*) from MapEntryImpl me where me.key.map = :map");
         query.setEntity("map", mapAttr);
         return ((Long)query.uniqueResult()).intValue();
     }

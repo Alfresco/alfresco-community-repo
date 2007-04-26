@@ -31,11 +31,7 @@ package org.alfresco.repo.attributes;
  */
 public class MapEntryImpl implements MapEntry
 {
-    private long fID;
-    
-    private MapAttribute fMap;
-    
-    private String fKey;
+    private MapEntryKey fKey;
     
     private Attribute fAttribute;
     
@@ -43,11 +39,9 @@ public class MapEntryImpl implements MapEntry
     {
     }
     
-    public MapEntryImpl(MapAttribute map,
-                        String key,
+    public MapEntryImpl(MapEntryKey key,
                         Attribute attribute)
     {
-        fMap = map;
         fKey = key;
         fAttribute = attribute;
     }
@@ -70,25 +64,9 @@ public class MapEntryImpl implements MapEntry
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.MapEntry#getId()
-     */
-    public long getId()
-    {
-        return fID;
-    }
-
-    /**
-     * Setter.
-     */
-    public void setId(long id)
-    {
-        fID = id;
-    }
-    
-    /* (non-Javadoc)
      * @see org.alfresco.repo.attributes.MapEntry#getKey()
      */
-    public String getKey()
+    public MapEntryKey getKey()
     {
         return fKey;
     }
@@ -96,24 +74,8 @@ public class MapEntryImpl implements MapEntry
     /**
      * Setter.
      */
-    public void setKey(String key)
+    public void setKey(MapEntryKey key)
     {
         fKey = key;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.MapEntry#getMap()
-     */
-    public MapAttribute getMap()
-    {
-        return fMap;
-    }
-    
-    /**
-     * Setter.
-     */
-    public void setMap(MapAttribute map)
-    {
-        fMap = map;
     }
 }

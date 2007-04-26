@@ -720,7 +720,11 @@ public class AdminNodeBrowseBean
                 {
                     if (value != null)
                     {
-                        datatype = dictionaryService.getDataType(value.getClass()).getName().toString();
+                        DataTypeDefinition dataTypeDefinition = dictionaryService.getDataType(value.getClass());
+                        if (dataTypeDefinition != null)
+                        {
+                            datatype = dictionaryService.getDataType(value.getClass()).getName().toString();
+                        }
                     }
                 }
                 return datatype;

@@ -108,6 +108,11 @@
          <java-class>java.util.Locale</java-class>
       </data-type>
 
+      <data-type name="d:version">
+         <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser</analyser-class>
+         <java-class>org.alfresco.util.VersionNumber</java-class>
+      </data-type>
+
    </data-types>
 
 

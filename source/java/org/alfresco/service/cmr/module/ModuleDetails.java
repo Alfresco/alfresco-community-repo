@@ -25,6 +25,7 @@
 package org.alfresco.service.cmr.module;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import org.alfresco.util.VersionNumber;
@@ -38,6 +39,7 @@ import org.alfresco.util.VersionNumber;
 public interface ModuleDetails
 {
     static final String PROP_ID = "module.id";
+    static final String PROP_ALIASES = "module.aliases";
     static final String PROP_VERSION = "module.version";
     static final String PROP_TITLE = "module.title";
     static final String PROP_DESCRIPTION = "module.description";
@@ -45,6 +47,8 @@ public interface ModuleDetails
     static final String PROP_REPO_VERSION_MAX = "module.repo.version.max";
     static final String PROP_INSTALL_DATE = "module.installDate";
     static final String PROP_INSTALL_STATE = "module.installState";
+    
+    static final String INVALID_ID_REGEX = ".*[^\\w.-].*";
     
     /**
      * Get all defined properties.
@@ -59,6 +63,11 @@ public interface ModuleDetails
      * @return  module id
      */
     String getId();
+    
+    /**
+     * @return  Returns a list of IDs by which this module may once have been known
+     */
+    List<String> getAliases();
     
     /**
      * Get the version number of the module

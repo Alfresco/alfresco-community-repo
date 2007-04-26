@@ -148,9 +148,17 @@ public class InstalledFiles
      * 
      * @return  the file location
      */
-    private String getFileLocation()
+    public String getFileLocation()
     {
-        return this.warLocation + ModuleManagementTool.MODULE_DIR + "/" + this.moduleId + "/modifications.install";
+        return this.warLocation + getFilePathInWar();
+    }
+    
+    /**
+     * @return      Returns the path of the install file within the WAR
+     */
+    public String getFilePathInWar()
+    {
+        return ModuleManagementTool.MODULE_DIR + "/" + this.moduleId + "/modifications.install";
     }
     
     /**

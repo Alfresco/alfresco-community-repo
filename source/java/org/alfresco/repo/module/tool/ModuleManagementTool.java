@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -229,7 +230,7 @@ public class ModuleManagementTool
                     backUpDir.mkdir();
                 }
                 
-                // Make a backup of the war we are oging to modify
+                // Make a backup of the war we are going to modify
                 if (backupWAR == true)
                 {
                     java.io.File warFile = new java.io.File(warFileLocation);
@@ -255,8 +256,28 @@ public class ModuleManagementTool
             String installingId = installingModuleDetails.getId();
             VersionNumber installingVersion = installingModuleDetails.getVersion();
             
-            // Get the detail of the installed module
-            ModuleDetails installedModuleDetails = ModuleDetailsHelper.createModuleDetailsFromWarAndId(warFileLocation, installingModuleDetails.getId());
+            // Try to find an installed module by the ID
+            ModuleDetails installedModuleDetails = ModuleDetailsHelper.createModuleDetailsFromWarAndId(warFileLocation, installingId);
+            if (installedModuleDetails == null)
+            {
+                // It might be there as one of the aliases
+                List<String> installingAliases = installingModuleDetails.getAliases();
+                for (String installingAlias : installingAliases)
+                {
+                    ModuleDetails installedAliasModuleDetails = ModuleDetailsHelper.createModuleDetailsFromWarAndId(warFileLocation, installingAlias);
+                    if (installedAliasModuleDetails == null)
+                    {
+                        // There is nothing by that alias
+                        continue;
+                    }
+                    // We found an alias and will treat it as the same module
+                    installedModuleDetails = installedAliasModuleDetails;
+                    outputMessage("Module '" + installingAlias + "' is installed and is an alias of '" + installingId + "'");
+                    break;
+                }
+            }
+            
+            // Now clean up the old instance
             if (installedModuleDetails != null)
             {
                 String installedId = installedModuleDetails.getId();
@@ -453,6 +474,12 @@ public class ModuleManagementTool
             
             outputMessage("Recovering file '" + update.getKey() + "' from backup '" + update.getValue() + "'", true);
         }
+        // Now remove the installed files list
+        String installedFilesPathInWar = installedFiles.getFilePathInWar();
+        removeFile(warFileLocation, installedFilesPathInWar, preview);
+        // Remove the module properties
+        String modulePropertiesFileLocationInWar = ModuleDetailsHelper.getModulePropertiesFilePathInWar(moduleId);
+        removeFile(warFileLocation, modulePropertiesFileLocationInWar, preview);
     }
     
     /**
@@ -478,7 +505,7 @@ public class ModuleManagementTool
             outputMessage("The file '" + filePath + "' was expected for removal but was not present in the war", true);
         }
     }
-
+    
     /**
      * Copies a file from the AMP location to the correct location in the WAR, interating on directories where appropraite.
      * 

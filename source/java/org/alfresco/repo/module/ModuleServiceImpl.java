@@ -74,7 +74,6 @@ public class ModuleServiceImpl implements ModuleService
     private static Log logger = LogFactory.getLog(ModuleServiceImpl.class);
 
     private ServiceRegistry serviceRegistry;
-    private DescriptorService descriptorService;
     private AuthenticationComponent authenticationComponent;
     private ModuleComponentHelper moduleComponentHelper;
     /** A cache of module details by module ID */
@@ -95,7 +94,6 @@ public class ModuleServiceImpl implements ModuleService
 
     public void setDescriptorService(DescriptorService descriptorService)
     {
-        this.descriptorService = descriptorService;
         this.moduleComponentHelper.setDescriptorService(descriptorService);
     }
 

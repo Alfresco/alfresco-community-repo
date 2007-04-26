@@ -27,7 +27,9 @@ package org.alfresco.repo.module;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.module.ModuleDetails;
@@ -48,6 +50,7 @@ import org.alfresco.util.VersionNumber;
 public class ModuleDetailsImpl implements ModuleDetails
 {
     private String id;
+    private List<String> aliases;
     private VersionNumber version;
     private String title;
     private String description;
@@ -56,53 +59,102 @@ public class ModuleDetailsImpl implements ModuleDetails
     private Date installDate;
     private ModuleInstallState installState;
     
-    /** 
+    /**
+     * Private constructor to set default values.
+     */
+    private ModuleDetailsImpl()
+    {
+        aliases = new ArrayList<String>(0);
+        repoVersionMin = new VersionNumber("0.0.0");
+        repoVersionMax = new VersionNumber("999.999.999");
+        this.installState = ModuleInstallState.UNKNOWN;
+    }
+    
+    /**
+     * Creates the instance from a set of properties.  All the property values are trimmed
+     * and empty string values are removed from the set.  In other words, zero length or
+     * whitespace strings are not supported.
+     * 
      * @param properties        the set of properties
      */
     public ModuleDetailsImpl(Properties properties)
     {
+        // Set defaults
+        this();
+        // Copy the properties so they don't get modified
+        Properties trimmedProperties = new Properties();
+        // Trim all the property values
+        for (Map.Entry entry : properties.entrySet())
+        {
+            String key = (String) entry.getKey();
+            String value = (String) entry.getValue();
+            if (value == null)
+            {
+                // Don't copy nulls over
+                continue;
+            }
+            String trimmedValue = value.trim();
+            if (trimmedValue.length() == 0)
+            {
+                // Don't copy empty strings over
+                continue;
+            }
+            // It is a real value
+            trimmedProperties.setProperty(key, trimmedValue);
+        }
+        
         // Check that the required properties are present
         List<String> missingProperties = new ArrayList<String>(1);
         // ID
-        id = properties.getProperty(PROP_ID);
-        if (id == null) { missingProperties.add(PROP_ID); }
+        id = trimmedProperties.getProperty(PROP_ID);
+        if (id == null)
+        {
+            missingProperties.add(PROP_ID);
+        }
+        // ALIASES
+        String aliasesStr = trimmedProperties.getProperty(PROP_ALIASES);
+        if (aliasesStr != null)
+        {
+            StringTokenizer st = new StringTokenizer(aliasesStr, ",");
+            while (st.hasMoreTokens())
+            {
+                String alias = st.nextToken().trim();
+                if (alias.length() == 0)
+                {
+                    continue;
+                }
+                aliases.add(alias);
+            }
+        }
         // VERSION
-        if (properties.getProperty(PROP_VERSION) == null)
+        if (trimmedProperties.getProperty(PROP_VERSION) == null)
         {
             missingProperties.add(PROP_VERSION);
         }
         else
         {
-            version = new VersionNumber(properties.getProperty(PROP_VERSION));
+            version = new VersionNumber(trimmedProperties.getProperty(PROP_VERSION));
         }
         // TITLE
-        title = properties.getProperty(PROP_TITLE);
+        title = trimmedProperties.getProperty(PROP_TITLE);
         if (title == null) { missingProperties.add(PROP_TITLE); }
         // DESCRIPTION
-        description = properties.getProperty(PROP_DESCRIPTION);
+        description = trimmedProperties.getProperty(PROP_DESCRIPTION);
         if (description == null) { missingProperties.add(PROP_DESCRIPTION); }
         // REPO MIN
-        if (properties.getProperty(PROP_REPO_VERSION_MIN) == null)
+        if (trimmedProperties.getProperty(PROP_REPO_VERSION_MIN) != null)
         {
-            repoVersionMin = new VersionNumber("0.0.0");
-        }
-        else
-        {
-            repoVersionMin = new VersionNumber(properties.getProperty(PROP_REPO_VERSION_MIN));
+            repoVersionMin = new VersionNumber(trimmedProperties.getProperty(PROP_REPO_VERSION_MIN));
         }
         // REPO MAX
-        if (properties.getProperty(PROP_REPO_VERSION_MAX) == null)
+        if (trimmedProperties.getProperty(PROP_REPO_VERSION_MAX) != null)
         {
-            repoVersionMax = new VersionNumber("999.999.999");
-        }
-        else
-        {
-            repoVersionMax = new VersionNumber(properties.getProperty(PROP_REPO_VERSION_MAX));
+            repoVersionMax = new VersionNumber(trimmedProperties.getProperty(PROP_REPO_VERSION_MAX));
         }
         // INSTALL DATE
-        if (properties.getProperty(PROP_INSTALL_DATE) != null)
+        if (trimmedProperties.getProperty(PROP_INSTALL_DATE) != null)
         {
-            String installDateStr = properties.getProperty(PROP_INSTALL_DATE);
+            String installDateStr = trimmedProperties.getProperty(PROP_INSTALL_DATE);
             try
             {
                 installDate = ISO8601DateFormat.parse(installDateStr);
@@ -110,6 +162,19 @@ public class ModuleDetailsImpl implements ModuleDetails
             catch (Throwable e)
             {
                 throw new AlfrescoRuntimeException("Unable to parse install date: " + installDateStr, e);
+            }
+        }
+        // INSTALL STATE
+        if (trimmedProperties.getProperty(PROP_INSTALL_STATE) != null)
+        {
+            String installStateStr = trimmedProperties.getProperty(PROP_INSTALL_STATE);
+            try
+            {
+                installState = ModuleInstallState.valueOf(installStateStr);
+            }
+            catch (Throwable e)
+            {
+                throw new AlfrescoRuntimeException("Unable to parse install state: " + installStateStr, e);
             }
         }
         // Check
@@ -124,9 +189,11 @@ public class ModuleDetailsImpl implements ModuleDetails
                     "   Min repo version: " + repoVersionMin + "\n" +
                     "   Max repo version: " + repoVersionMax);
         }
-        
-        // Set other defaults
-        installState = ModuleInstallState.INSTALLED;
+        if (id.matches(INVALID_ID_REGEX))
+        {
+            throw new AlfrescoRuntimeException(
+                    "The module ID '" + id + "' is invalid.  It may consist of valid characters, numbers, '.', '_' and '-'");
+        }
     }
     
     /**
@@ -137,6 +204,9 @@ public class ModuleDetailsImpl implements ModuleDetails
      */
     public ModuleDetailsImpl(String id, VersionNumber versionNumber, String title, String description)
     {
+        // Set defaults
+        this();
+        
         this.id = id;
         this.version = versionNumber;
         this.title = title;
@@ -170,6 +240,21 @@ public class ModuleDetailsImpl implements ModuleDetails
             String installStateStr = installState.toString();
             properties.setProperty(PROP_INSTALL_STATE, installStateStr);
         }
+        if (aliases.size() > 0)
+        {
+            StringBuilder sb = new StringBuilder();
+            boolean first = true;
+            for (String oldId : aliases)
+            {
+                if (!first)
+                {
+                    sb.append(", ");
+                }
+                sb.append(oldId);
+                first = false;
+            }
+            properties.setProperty(PROP_ALIASES, sb.toString());
+        }
         // Done
         return properties;
     }
@@ -185,6 +270,11 @@ public class ModuleDetailsImpl implements ModuleDetails
         return id;
     }
     
+    public List<String> getAliases()
+    {
+        return aliases;
+    }
+
     public VersionNumber getVersion()
     {
         return version;

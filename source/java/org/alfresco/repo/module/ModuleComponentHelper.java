@@ -66,7 +66,6 @@ public class ModuleComponentHelper
     private static final String REGISTRY_PROPERTY_CURRENT_VERSION = "currentVersion";
     private static final String REGISTRY_PATH_COMPONENTS = "components";
     private static final String REGISTRY_PROPERTY_EXECUTION_DATE = "executionDate";
-    private static final String REGISTRY_PROPERTY_DUMMY = "dummy";
     
     private static final String MSG_FOUND_MODULES = "module.msg.found_modules";
     private static final String MSG_STARTING = "module.msg.starting";
@@ -248,7 +247,7 @@ public class ModuleComponentHelper
         // Get the IDs of all modules from the registry
         RegistryKey moduleKeyAllIds = new RegistryKey(
                 ModuleComponentHelper.URI_MODULES_1_0,
-                REGISTRY_PATH_MODULES, REGISTRY_PROPERTY_DUMMY);
+                REGISTRY_PATH_MODULES, null);
         Collection<String> moduleIds = registryService.getChildElements(moduleKeyAllIds);
         
         // Check that each module is present in the distribution
@@ -268,10 +267,62 @@ public class ModuleComponentHelper
                 RegistryKey moduleKeyCurrentVersion = new RegistryKey(
                         ModuleComponentHelper.URI_MODULES_1_0,
                         REGISTRY_PATH_MODULES, moduleId, REGISTRY_PROPERTY_CURRENT_VERSION);
-                VersionNumber versionCurrent = (VersionNumber) registryService.getValue(moduleKeyCurrentVersion);
+                VersionNumber versionCurrent = (VersionNumber) registryService.getProperty(moduleKeyCurrentVersion);
                 // The module is missing, so warn
                 loggerService.warn(I18NUtil.getMessage(MSG_MISSING, moduleId, versionCurrent));
             }
+        }
+    }
+    
+    /**
+     * Copies, where necessary, the module registry details from the alias details
+     * and removes the alias details.
+     */
+    private void renameModule(ModuleDetails module)
+    {
+        String moduleId = module.getId();
+        List<String> moduleAliases = module.getAliases();
+        
+        // Get the IDs of all modules from the registry
+        RegistryKey moduleKeyAllIds = new RegistryKey(
+                ModuleComponentHelper.URI_MODULES_1_0,
+                REGISTRY_PATH_MODULES, null);
+        Collection<String> registeredModuleIds = registryService.getChildElements(moduleKeyAllIds);
+        
+        // Firstly, is the module installed?
+        if (registeredModuleIds.contains(moduleId))
+        {
+            // It is there, so we do nothing
+            return;
+        }
+        // Check if any of the registered modules are on the alias list
+        for (String moduleAlias : moduleAliases)
+        {
+            // Is this alias registered?
+            if (!registeredModuleIds.contains(moduleAlias))
+            {
+                // No alias registered
+                continue;
+            }
+            // We found an alias and have to rename it to the new module ID
+            RegistryKey moduleKeyNew = new RegistryKey(
+                    ModuleComponentHelper.URI_MODULES_1_0,
+                    REGISTRY_PATH_MODULES, moduleId, null);
+            RegistryKey moduleKeyOld = new RegistryKey(
+                    ModuleComponentHelper.URI_MODULES_1_0,
+                    REGISTRY_PATH_MODULES, moduleAlias, null);
+            // Copy it all
+            registryService.copy(moduleKeyOld, moduleKeyNew);
+            // Remove the source
+            registryService.delete(moduleKeyOld);
+            // Done
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Moved old module alias to new module ID: \n" +
+                        "   Alias:  " + moduleAlias + "\n" +
+                        "   Module: " + moduleId);
+            }
+            break;
         }
     }
     
@@ -283,7 +334,10 @@ public class ModuleComponentHelper
         String moduleId = module.getId();
         VersionNumber moduleVersion = module.getVersion();
         
-        // First check that the module version is fundamentall compatible with the repository
+        // Check if the module needs a rename first
+        renameModule(module);
+        
+        // First check that the module version is fundamentally compatible with the repository
         VersionNumber repoVersionNumber = descriptorService.getServerDescriptor().getVersionNumber();
         VersionNumber minRepoVersionNumber = module.getRepoVersionMin();
         VersionNumber maxRepoVersionNumber = module.getRepoVersionMax();
@@ -303,13 +357,13 @@ public class ModuleComponentHelper
         RegistryKey moduleKeyCurrentVersion = new RegistryKey(
                 ModuleComponentHelper.URI_MODULES_1_0,
                 REGISTRY_PATH_MODULES, moduleId, REGISTRY_PROPERTY_CURRENT_VERSION);
-        VersionNumber versionCurrent = (VersionNumber) registryService.getValue(moduleKeyCurrentVersion);
+        VersionNumber versionCurrent = (VersionNumber) registryService.getProperty(moduleKeyCurrentVersion);
         String msg = null;
         if (versionCurrent == null)             // There is no current version
         {
             msg = I18NUtil.getMessage(MSG_INSTALLING, moduleId, moduleVersion);
             // Record the install version
-            registryService.addValue(moduleKeyInstalledVersion, moduleVersion);
+            registryService.addProperty(moduleKeyInstalledVersion, moduleVersion);
         }
         else                                    // It is an upgrade or is the same
         {
@@ -328,7 +382,7 @@ public class ModuleComponentHelper
         }
         loggerService.info(msg);
         // Record the current version
-        registryService.addValue(moduleKeyCurrentVersion, moduleVersion);
+        registryService.addProperty(moduleKeyCurrentVersion, moduleVersion);
         
         Map<String, ModuleComponent> componentsByName = getComponents(moduleId);
         for (ModuleComponent component : componentsByName.values())
@@ -387,7 +441,7 @@ public class ModuleComponentHelper
                 REGISTRY_PATH_MODULES, moduleId, REGISTRY_PATH_COMPONENTS, name, REGISTRY_PROPERTY_EXECUTION_DATE);
         
         // Check if the component has been executed
-        Date executionDate = (Date) registryService.getValue(executionDateKey);
+        Date executionDate = (Date) registryService.getProperty(executionDateKey);
         if (executionDate != null && component.isExecuteOnceOnly())
         {
             // It has been executed and is scheduled for a single execution - leave it
@@ -410,7 +464,7 @@ public class ModuleComponentHelper
         component.execute();
         // Keep track of it in the registry and in this run
         executedComponents.add(component);
-        registryService.addValue(executionDateKey, new Date());
+        registryService.addProperty(executionDateKey, new Date());
         // Done
         if (logger.isDebugEnabled())
         {

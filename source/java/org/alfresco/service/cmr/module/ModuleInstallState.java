@@ -32,7 +32,7 @@ package org.alfresco.service.cmr.module;
 public enum ModuleInstallState
 {
     /** The state of the module is unknown */
-    UKNOWN,
+    UNKNOWN,
     /** The module is installed */
     INSTALLED,
     /** The module is disabled */

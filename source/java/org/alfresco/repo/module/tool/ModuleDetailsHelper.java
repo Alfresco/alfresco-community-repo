@@ -75,7 +75,7 @@ public class ModuleDetailsHelper
         try
         {
             File file = new File(location, ModuleManagementTool.DETECTOR_AMP_AND_WAR);
-            if (file.exists() == true)
+            if (file.exists())
             {
                 InputStream is = new FileInputStream(file);
                 result = createModuleDetailsFromPropertiesStream(is);
@@ -103,15 +103,37 @@ public class ModuleDetailsHelper
     }
     
     /**
+     * @param warLocation   the location of the WAR file
+     * @param moduleId      the module ID within the WAR
+     * @return              Returns a file handle to the module properties file within the given WAR.
+     *                      The file may or may not exist.
+     */
+    public static File getModuleDetailsFileFromWarAndId(String warLocation, String moduleId)
+    {
+        String location = ModuleDetailsHelper.getModulePropertiesFileLocation(warLocation, moduleId);
+        File file = new File(location, ModuleManagementTool.DETECTOR_AMP_AND_WAR);
+        return file;
+    }
+    
+    /**
      * Gets the file location
      * 
      * @param warLocation   the war location
      * @param moduleId      the module id
      * @return              the file location
      */
-    private static String getModulePropertiesFileLocation(String warLocation, String moduleId)
+    public static String getModulePropertiesFileLocation(String warLocation, String moduleId)
     {
-        return warLocation + ModuleManagementTool.MODULE_DIR + "/" + moduleId + "/" + "module.properties";
+        return warLocation + getModulePropertiesFilePathInWar(moduleId);
+    }
+    
+    /**
+     * @param moduleId      the module ID
+     * @return              Returns the path of the module file within a WAR
+     */
+    public static String getModulePropertiesFilePathInWar(String moduleId)
+    {
+        return ModuleManagementTool.MODULE_DIR + "/" + moduleId + "/" + "module.properties";
     }
     
     /**

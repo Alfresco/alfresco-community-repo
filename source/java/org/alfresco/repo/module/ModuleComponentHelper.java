@@ -71,6 +71,7 @@ public class ModuleComponentHelper
     private static final String MSG_STARTING = "module.msg.starting";
     private static final String MSG_INSTALLING = "module.msg.installing";
     private static final String MSG_UPGRADING = "module.msg.upgrading";
+    private static final String WARN_NO_INSTALL_VERSION = "module.warn.no_install_version";
     private static final String ERR_UNSUPPORTED_REPO_VERSION = "module.err.unsupported_repo_version";
     private static final String ERR_NO_DOWNGRADE = "module.err.downgrading_not_supported";
     private static final String ERR_COMPONENT_ALREADY_REGISTERED = "module.err.component_already_registered";
@@ -332,7 +333,7 @@ public class ModuleComponentHelper
     private void startModule(ModuleDetails module, Set<ModuleComponent> executedComponents)
     {
         String moduleId = module.getId();
-        VersionNumber moduleVersion = module.getVersion();
+        VersionNumber moduleNewVersion = module.getVersion();
         
         // Check if the module needs a rename first
         renameModule(module);
@@ -347,7 +348,7 @@ public class ModuleComponentHelper
             // The current repo version is not supported
             throw AlfrescoRuntimeException.create(
                     ERR_UNSUPPORTED_REPO_VERSION,
-                    moduleId, moduleVersion, repoVersionNumber, minRepoVersionNumber, maxRepoVersionNumber);
+                    moduleId, moduleNewVersion, repoVersionNumber, minRepoVersionNumber, maxRepoVersionNumber);
         }
         
         // Get the module details from the registry
@@ -357,37 +358,50 @@ public class ModuleComponentHelper
         RegistryKey moduleKeyCurrentVersion = new RegistryKey(
                 ModuleComponentHelper.URI_MODULES_1_0,
                 REGISTRY_PATH_MODULES, moduleId, REGISTRY_PROPERTY_CURRENT_VERSION);
-        VersionNumber versionCurrent = (VersionNumber) registryService.getProperty(moduleKeyCurrentVersion);
+        VersionNumber moduleInstallVersion = (VersionNumber) registryService.getProperty(moduleKeyInstalledVersion);
+        VersionNumber moduleCurrentVersion = (VersionNumber) registryService.getProperty(moduleKeyCurrentVersion);
         String msg = null;
-        if (versionCurrent == null)             // There is no current version
+        if (moduleCurrentVersion == null)                                 // No previous record of it
         {
-            msg = I18NUtil.getMessage(MSG_INSTALLING, moduleId, moduleVersion);
+            msg = I18NUtil.getMessage(MSG_INSTALLING, moduleId, moduleNewVersion);
             // Record the install version
-            registryService.addProperty(moduleKeyInstalledVersion, moduleVersion);
+            registryService.addProperty(moduleKeyInstalledVersion, moduleNewVersion);
+            moduleInstallVersion = moduleNewVersion;
+            moduleCurrentVersion = moduleNewVersion;
         }
         else                                    // It is an upgrade or is the same
         {
-            if (versionCurrent.compareTo(moduleVersion) == 0)       // The current version is the same
+            // Check that we have an installed version
+            if (moduleInstallVersion == null)
             {
-                msg = I18NUtil.getMessage(MSG_STARTING, moduleId, moduleVersion);
+                // A current version, but no installed version
+                logger.warn(I18NUtil.getMessage(WARN_NO_INSTALL_VERSION, moduleId, moduleCurrentVersion));
+                // Record the install version
+                registryService.addProperty(moduleKeyInstalledVersion, moduleCurrentVersion);
+                moduleInstallVersion = moduleCurrentVersion;
             }
-            else if (versionCurrent.compareTo(moduleVersion) > 0)   // Downgrading not supported
+            
+            if (moduleCurrentVersion.compareTo(moduleNewVersion) == 0)       // The current version is the same
             {
-                throw AlfrescoRuntimeException.create(ERR_NO_DOWNGRADE, moduleId, versionCurrent, moduleVersion);
+                msg = I18NUtil.getMessage(MSG_STARTING, moduleId, moduleNewVersion);
+            }
+            else if (moduleCurrentVersion.compareTo(moduleNewVersion) > 0)   // Downgrading not supported
+            {
+                throw AlfrescoRuntimeException.create(ERR_NO_DOWNGRADE, moduleId, moduleCurrentVersion, moduleNewVersion);
             }
             else                                                    // This is an upgrade
             {
-                msg = I18NUtil.getMessage(MSG_UPGRADING, moduleId, moduleVersion, versionCurrent);
+                msg = I18NUtil.getMessage(MSG_UPGRADING, moduleId, moduleNewVersion, moduleCurrentVersion);
             }
         }
         loggerService.info(msg);
         // Record the current version
-        registryService.addProperty(moduleKeyCurrentVersion, moduleVersion);
+        registryService.addProperty(moduleKeyCurrentVersion, moduleNewVersion);
         
         Map<String, ModuleComponent> componentsByName = getComponents(moduleId);
         for (ModuleComponent component : componentsByName.values())
         {
-            executeComponent(module, component, executedComponents);
+            executeComponent(moduleId, moduleInstallVersion, component, executedComponents);
         }
         
         // Done
@@ -400,7 +414,11 @@ public class ModuleComponentHelper
     /**
      * Execute the component, respecting dependencies.
      */
-    private void executeComponent(ModuleDetails module, ModuleComponent component, Set<ModuleComponent> executedComponents)
+    private void executeComponent(
+            String moduleId,
+            VersionNumber moduleInstallVersion,
+            ModuleComponent component,
+            Set<ModuleComponent> executedComponents)
     {
         // Ignore if it has been executed in this run already
         if (executedComponents.contains(component))
@@ -415,26 +433,24 @@ public class ModuleComponentHelper
         }
         
         // Check the version applicability
-        VersionNumber moduleVersion = module.getVersion();
         VersionNumber minVersion = component.getAppliesFromVersionNumber();
         VersionNumber maxVersion = component.getAppliesToVersionNumber();
-        if (moduleVersion.compareTo(minVersion) < 0 || moduleVersion.compareTo(maxVersion) > 0)
+        if (moduleInstallVersion.compareTo(minVersion) < 0 || moduleInstallVersion.compareTo(maxVersion) > 0)
         {
             // It is out of the allowable range for execution so we just ignore it
             if (logger.isDebugEnabled())
             {
-                logger.debug("Skipping component that doesn't apply to the current version: \n" +
-                        "   Component:     " + component + "\n" +
-                        "   Module:        " + module + "\n" +
-                        "   Version:       " + moduleVersion + "\n" +
-                        "   Applies From : " + minVersion + "\n" +
-                        "   Applies To   : " + maxVersion);
+                logger.debug("Skipping component that doesn't apply to the module installation version: \n" +
+                        "   Component:       " + component + "\n" +
+                        "   Module:          " + moduleId + "\n" +
+                        "   Install Version: " + moduleInstallVersion + "\n" +
+                        "   Applies From :   " + minVersion + "\n" +
+                        "   Applies To   :   " + maxVersion);
             }
             return;
         }
         
         // Construct the registry key to store the execution date
-        String moduleId = component.getModuleId();
         String name = component.getName();
         RegistryKey executionDateKey = new RegistryKey(
                 ModuleComponentHelper.URI_MODULES_1_0,
@@ -458,7 +474,7 @@ public class ModuleComponentHelper
         List<ModuleComponent> dependencies = component.getDependsOn();
         for (ModuleComponent dependency : dependencies)
         {
-            executeComponent(module, dependency, executedComponents);
+            executeComponent(moduleId, moduleInstallVersion, dependency, executedComponents);
         }
         // Execute the component itself
         component.execute();

@@ -65,8 +65,8 @@ public class ModuleDetailsImpl implements ModuleDetails
     private ModuleDetailsImpl()
     {
         aliases = new ArrayList<String>(0);
-        repoVersionMin = new VersionNumber("0.0.0");
-        repoVersionMax = new VersionNumber("999.999.999");
+        repoVersionMin = VersionNumber.VERSION_ZERO;
+        repoVersionMax = VersionNumber.VERSION_BIG;
         this.installState = ModuleInstallState.UNKNOWN;
     }
     

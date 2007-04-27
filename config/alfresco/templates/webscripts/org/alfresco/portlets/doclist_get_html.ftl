@@ -22,9 +22,16 @@
 <#if args.f?exists><#assign filter=args.f?number><#else><#assign filter=0></#if>
 
 <#-- get the path location from the passed in args -->
-<#if args.p?exists>
-   <#-- TODO: resolve the path (from Company Home) into a node or fall back to userhome-->
-   <#assign home=userhome>
+<#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
+<#-- resolve the path (from Company Home) into a node or fall back to userhome-->
+<#if path?starts_with("/Company Home")>
+   <#if path?length=13>
+      <#assign home=companyhome>
+   <#elseif companyhome.childByNamePath[args.p[14..]]?exists>
+      <#assign home=companyhome.childByNamePath[args.p[14..]]>
+   <#else>
+      <#assign home=userhome>
+   </#if>
 <#else>
    <#assign home=userhome>
 </#if>
@@ -34,11 +41,11 @@
    <td align=center height=40>
       <table border=0 cellspacing=8 cellpadding=0>
          <tr>
-            <th><a class="filterLink <#if filter=0>filterLinkSelected</#if>" href="${url.service}?f=0">All Items</a></th>
-            <th><a class="filterLink <#if filter=1>filterLinkSelected</#if>" href="${url.service}?f=1">Word Documents</a></th>
-            <th><a class="filterLink <#if filter=2>filterLinkSelected</#if>" href="${url.service}?f=2">HTML Documents</a></th>
-            <th><a class="filterLink <#if filter=3>filterLinkSelected</#if>" href="${url.service}?f=3">PDF Documents</a></th>
-            <th><a class="filterLink <#if filter=4>filterLinkSelected</#if>" href="${url.service}?f=4">Recently Modified</a></th>
+            <th><a class="filterLink <#if filter=0>filterLinkSelected</#if>" href="${url.service}?f=0&p=${path}">All Items</a></th>
+            <th><a class="filterLink <#if filter=1>filterLinkSelected</#if>" href="${url.service}?f=1&p=${path}">Word Documents</a></th>
+            <th><a class="filterLink <#if filter=2>filterLinkSelected</#if>" href="${url.service}?f=2&p=${path}">HTML Documents</a></th>
+            <th><a class="filterLink <#if filter=3>filterLinkSelected</#if>" href="${url.service}?f=3&p=${path}">PDF Documents</a></th>
+            <th><a class="filterLink <#if filter=4>filterLinkSelected</#if>" href="${url.service}?f=4&p=${path}">Recently Modified</a></th>
          </tr>
       </table>
    </td>

@@ -5,6 +5,15 @@
         clear: both;
 }
 
+.xformsItemRequiredImage
+{
+        vertical-align: middle;
+        margin: 0px 5px;
+        left: 0px;
+        position: relative;
+        top: 0px;
+}
+
 .xformsItemLabelSubmitError
 {
         color: red;
@@ -229,3 +238,4 @@
 {
         color: grey;
 }
+

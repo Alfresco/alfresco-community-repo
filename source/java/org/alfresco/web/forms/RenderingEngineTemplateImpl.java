@@ -19,27 +19,22 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's
  * FLOSS exception.  You should have recieved a copy of the text describing
  * the FLOSS exception, and it is also available here:
- * http://www.alfresco.com/legal/licensing" */
+ * http://www.alfresco.com/legal/licensing */
 package org.alfresco.web.forms;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
+import freemarker.ext.dom.NodeModel;
+import freemarker.template.SimpleDate;
+import freemarker.template.SimpleHash;
+import freemarker.template.SimpleScalar;
+import freemarker.template.TemplateHashModel;
+import freemarker.template.TemplateModel;
+import freemarker.template.TemplateModelException;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
-
+import java.util.*;
 import javax.faces.context.FacesContext;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
@@ -49,16 +44,16 @@ import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.remote.AVMRemote;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateService;
-import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.*;
+import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMConstants;
@@ -66,14 +61,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.jsf.FacesContextUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
-
-import freemarker.ext.dom.NodeModel;
-import freemarker.template.SimpleDate;
-import freemarker.template.SimpleHash;
 
 
 /**

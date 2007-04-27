@@ -2320,6 +2320,10 @@ public class Schema2XForms
                       ", maxInc: " + controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXINCLUSIVE) +
                       ", minExc: " +  controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MINEXCLUSIVE) +
                       ", maxExc: " +  controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE) +
+                      ", totalDigits: " + controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_TOTALDIGITS) +
+                      ", length: " + controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_LENGTH) +
+                      ", minLength: " + controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MINLENGTH) +
+                      ", maxLength: " + controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXLENGTH) +
                       ", fractionDigits: " +  controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_FRACTIONDIGITS) +
                       ", builtInTypeName: " + SchemaUtil.getBuiltInTypeName(controlType) +
                       ", builtInType: " + SchemaUtil.getBuiltInType(controlType) +
@@ -2362,32 +2366,49 @@ public class Schema2XForms
                           NamespaceConstants.XFORMS_PREFIX + ":ref",
                           ".");
       }
-      else if (controlType.getBounded() &&
-               controlType.getNumeric() &&
-               controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXINCLUSIVE) != null &&
-               controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MININCLUSIVE) != null)
+      else if (controlType.getNumeric())
       {
-         result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                 NamespaceConstants.XFORMS_PREFIX + ":range");
-         result.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                               NamespaceConstants.XFORMS_PREFIX + ":start",
-                               controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MININCLUSIVE));
-         result.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                               NamespaceConstants.XFORMS_PREFIX + ":end",
-                               controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXINCLUSIVE));
-         String fractionDigits = controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_FRACTIONDIGITS);
-         if (fractionDigits == null || fractionDigits.length() == 0)
+         if (controlType.getBounded() &&
+             controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXINCLUSIVE) != null &&
+             controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MININCLUSIVE) != null)
          {
-            final short builtInType = SchemaUtil.getBuiltInType(controlType);
-            fractionDigits = (builtInType >= XSConstants.INTEGER_DT && builtInType <= XSConstants.POSITIVEINTEGER_DT
-                              ? "0"
-                              : null);
+            result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                    NamespaceConstants.XFORMS_PREFIX + ":range");
+            result.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                                  NamespaceConstants.XFORMS_PREFIX + ":start",
+                                  controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MININCLUSIVE));
+            result.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                                  NamespaceConstants.XFORMS_PREFIX + ":end",
+                                  controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXINCLUSIVE));
          }
-         if (fractionDigits != null)
+         else
+         {
+            result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS, 
+                                                    NamespaceConstants.XFORMS_PREFIX + ":input");
+         }
+         if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_FRACTIONDIGITS))
+         {
+            String fractionDigits = controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_FRACTIONDIGITS);
+            if (fractionDigits == null || fractionDigits.length() == 0)
+            {
+               final short builtInType = SchemaUtil.getBuiltInType(controlType);
+               fractionDigits = (builtInType >= XSConstants.INTEGER_DT && builtInType <= XSConstants.POSITIVEINTEGER_DT
+                                 ? "0"
+                                 : null);
+            }
+            if (fractionDigits != null)
+            {
+               result.setAttributeNS(NamespaceService.ALFRESCO_URI,
+                                     NamespaceService.ALFRESCO_PREFIX + ":fractionDigits",
+                                     fractionDigits);
+            }
+         }
+         if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_TOTALDIGITS))
          {
             result.setAttributeNS(NamespaceService.ALFRESCO_URI,
-                                  NamespaceService.ALFRESCO_PREFIX + ":fractionDigits",
-                                  fractionDigits);
+                                  NamespaceService.ALFRESCO_PREFIX + ":totalDigits",
+                                  controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_TOTALDIGITS));
+            
          }
       }
       else
@@ -2399,14 +2420,27 @@ public class Schema2XForms
          {
             appearance = "full";
          }
-         if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXLENGTH) ||
-             controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_LENGTH))
+         if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_LENGTH))
          {
             result.setAttributeNS(NamespaceService.ALFRESCO_URI,
-                                  NamespaceService.ALFRESCO_PREFIX + ":maxLength",
-                                  (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXLENGTH)
-                                   ? controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXLENGTH) 
-                                   : controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXLENGTH)));
+                                  NamespaceService.ALFRESCO_PREFIX + ":length",
+                                  controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_LENGTH));
+         }
+         else if(controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MINLENGTH) ||
+                 controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXLENGTH))
+         {
+            if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MINLENGTH))
+            {
+               result.setAttributeNS(NamespaceService.ALFRESCO_URI,
+                                     NamespaceService.ALFRESCO_PREFIX + ":minlength",
+                                     controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MINLENGTH));
+            }
+            if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXLENGTH))
+            {
+               result.setAttributeNS(NamespaceService.ALFRESCO_URI,
+                                     NamespaceService.ALFRESCO_PREFIX + ":maxlength",
+                                     controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXLENGTH));
+            }
          }
       }
       this.setXFormsId(result);

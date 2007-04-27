@@ -231,7 +231,7 @@ public class SchemaUtil
          final XSImplementation xsImpl = (XSImplementation)
             registry.getDOMImplementation("XS-Loader");
          final XSLoader schemaLoader = xsImpl.createXSLoader(null);
-         final DOMConfiguration config = schemaLoader.getConfig();
+         final DOMConfiguration config = (DOMConfiguration)schemaLoader.getConfig();
          final LinkedList<DOMError> errors = new LinkedList<DOMError>();
          config.setParameter("error-handler", new DOMErrorHandler()
          {

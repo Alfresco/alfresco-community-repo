@@ -45,7 +45,12 @@ alfresco.AjaxHelper.createRequest = function(target, serverMethod, methodArgs, l
   result.target = target;
   result.content = methodArgs;
   result.method = "POST";
-  result.load = load;
+  result._baseLoadHandler = load;
+  result.load = function(type, data, event, kwArgs) 
+  { 
+    // escape from dojo's watchInFlight errors so we get real javascript errors thrown
+    setTimeout(function() { result._baseLoadHandler(type, data, event, kwArgs); }, 10);
+  }
   dojo.event.connect(result, "load", function(type, data, evt)
                      {
                        alfresco.AjaxHelper._loadHandler(result);

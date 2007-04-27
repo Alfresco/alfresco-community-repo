@@ -20,7 +20,7 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.web.bean.wcm;
 
@@ -657,7 +657,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    }
    
    /**
-    * @param formName Sets the currently selected form
+    * @param form Sets the currently selected form
     */
    public void setFormName(final String formName)
    {

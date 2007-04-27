@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   xmlns:alf="http://www.alfresco.org"
+	   elementFormDefault="qualified">
+  <xs:complexType name="fields">
+    <xs:sequence>
+      <xs:element name="unbounded_string" type="xs:normalizedString" default="unbounded string value"/>
+      <xs:element name="one_char" default="A">
+        <xs:simpleType>
+          <xs:restriction base="xs:normalizedString">
+            <xs:length value="1"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="five_digits" default="12345">
+        <xs:simpleType>
+          <xs:restriction base="xs:integer">
+            <xs:totalDigits value="5"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="root_group">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="full_group" type="fields">
+          <xs:annotation><xs:appinfo><alf:appearance>full</alf:appearance></xs:appinfo></xs:annotation>
+        </xs:element>
+        <xs:element name="compact_group" type="fields">
+          <xs:annotation><xs:appinfo><alf:appearance>compact</alf:appearance></xs:appinfo></xs:annotation>
+        </xs:element>
+        <xs:element name="minimal_group" type="fields">
+          <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

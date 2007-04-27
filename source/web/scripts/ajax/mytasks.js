@@ -14,8 +14,8 @@ var MyTasks = {
       var items = $$('#taskPanel .taskItem');
       var infos = $$('#taskPanel .taskInfo');
       var details = $$('#taskPanel .taskDetail');
-      var fxDetail = new Fx.Elements(details, {wait: false, duration: 500, transition: Fx.Transitions.linear});
       var fxInfo = new Fx.Elements(infos, {wait: false, duration: 500, transition: Fx.Transitions.linear});
+      var fxDetail = new Fx.Elements(details, {wait: false, duration: 500, transition: Fx.Transitions.linear});
       tasks.each(function(task, i)
       {
          var item = items[i];
@@ -23,6 +23,7 @@ var MyTasks = {
          var detail = details[i];
 
          // animated elements defaults
+         task.isOpen = false;
          item.defBColor = (item.getStyle('background-color') == 'transparent') ? '' : item.getStyle('background-color');
          detail.defHeight = 0;
          detail.setStyle('opacity', 0);
@@ -30,46 +31,146 @@ var MyTasks = {
          detail.setStyle('height', 0);
          info.setStyle('opacity', 0);
 
-         // register 'mouseenter' (subclassed mouseover) event for each task
+         // register 'mouseenter' event for each task
          task.addEvent('mouseenter', function(e)
          {
-            var animInfo = {},
-            animDetail = {};
+            if (task.isOpen)
+               return;
+
             // highlight the item title
             task.addClass('taskItemSelected');
-            // fade in the info button
-            animInfo[i] = {'opacity': [0, 1]};
-            // slide and fade in the details panel
-            animDetail[i] = {
-               'height': [detail.getStyle('height').toInt(), detail.defHeight + 100],
-               'opacity': [detail.getStyle('opacity'), 1]};
 
-            // reset styles on all other tasks
+            // fade in info button
+            var animInfo = {};
+            var infoOpacity = info.getStyle('opacity');
+            if (infoOpacity != 1)
+            {
+               animInfo[i] = {'opacity': [infoOpacity, 1]};
+            }
+
+            // reset styles on all closed tasks
             tasks.each(function(otherTask, j)
             {
-               var otherItem = items[j];
                var otherInfo = infos[j];
-               var otherDetail = details[j];
-               if (otherTask != task)
+               
+               if ((otherTask != task) && (!otherTask.isOpen))
                {
-                  // reset selected class?
+                  // reset selected class
                   otherTask.removeClass('taskItemSelected');
-                  // does this task detail panel need resetting back to it's default height?
-                  var h = otherDetail.getStyle('height').toInt();
-                  if (h != otherDetail.defHeight)
-                  {
-                     animDetail[j] = {
-                        'height': [h, otherDetail.defHeight],
-                        'opacity': [otherDetail.getStyle('opacity'), 0]};
-                  }
                   // does the info button need fading out
-                  var o = otherInfo.getStyle('opacity');
-                  if (o != 0)
+                  var otherOpacity = otherInfo.getStyle('opacity');
+                  if (otherOpacity != 0)
                   {
-                     animInfo[j] = {'opacity': [o, 0]};
+                     animInfo[j] = {'opacity': [otherOpacity, 0]};
                   }
                }
             });
+            fxInfo.start(animInfo);
+         });
+
+         // register 'mouseleave' event for each task
+         task.addEvent('mouseleave', function(e)
+         {
+            if (task.isOpen)
+               return;
+
+            // unhighlight the item title
+            task.removeClass('taskItemSelected');
+
+            // fade out info button
+            var animInfo = {};
+            var infoOpacity = info.getStyle('opacity');
+            if (infoOpacity != 0)
+            {
+               animInfo[i] = {'opacity': [infoOpacity, 0]};
+            }
+
+            // reset styles on all closed tasks - needed in case any element is mid-animation
+            tasks.each(function(otherTask, j)
+            {
+               var otherInfo = infos[j];
+               
+               if ((otherTask != task) && (!otherTask.isOpen))
+               {
+                  // does the info button need fading out
+                  var otherOpacity = otherInfo.getStyle('opacity');
+                  if (otherOpacity != 0)
+                  {
+                     animInfo[j] = {'opacity': [otherOpacity, 0]};
+                  }
+               }
+            });
+            fxInfo.start(animInfo);
+         });
+
+         // register 'click' event for each task
+         task.addEvent('click', function(e)
+         {
+            var animInfo = {},
+               animDetail = {},
+               detailHeight = detail.getStyle('height').toInt(),
+               infoOpacity = info.getStyle('opacity');
+            
+            if (!task.isOpen)
+            {
+               // open up this task
+               // flag this task as open
+               task.isOpen = true;
+               
+               // fade in info button
+               animInfo[i] = {'opacity': [infoOpacity, 1]};
+
+               // slide and fade in the details panel
+               animDetail[i] = {
+                  'height': [detailHeight, detail.defHeight + 100],
+                  'opacity': [detail.getStyle('opacity'), 1]};
+
+               // close other open tasks and toggle this one if it's already open
+               tasks.each(function(otherTask, j)
+               {
+                  var otherItem = items[j],
+                     otherInfo = infos[j],
+                     otherDetail = details[j];
+                     
+                  if (otherTask != task)
+                  {
+                     // close any other open tasks
+                     otherTask.isOpen = false;
+
+                     // unhighlight the item title
+                     otherTask.removeClass('taskItemSelected');
+
+                     // does this task detail panel need resetting back to it's default height?
+                     var otherHeight = otherDetail.getStyle('height').toInt();
+                     if (otherHeight != otherDetail.defHeight)
+                     {
+                        animDetail[j] = {
+                           'height': [otherHeight, otherDetail.defHeight],
+                           'opacity': [otherDetail.getStyle('opacity'), 0]};
+                     }
+                     // does the info button need fading out?
+                     var otherOpacity = otherInfo.getStyle('opacity');
+                     if (otherOpacity != 0)
+                     {
+                        animInfo[j] = {'opacity': [otherOpacity, 0]};
+                     }
+                  }
+               });
+            }
+            else
+            {
+               // close this task
+               // flag this task as closed
+               task.isOpen = false;
+               
+               // fade in info button
+               animInfo[i] = {'opacity': [infoOpacity, 1]};
+
+               // reset task back to it's default height
+               animDetail[i] = {
+                  'height': [detailHeight, detail.defHeight],
+                  'opacity': [detail.getStyle('opacity'), 0]};
+            }
             fxInfo.start(animInfo);
             fxDetail.start(animDetail);
          });
@@ -77,23 +178,21 @@ var MyTasks = {
 
       $('taskPanel').addEvent('mouseleave', function(e)
       {
+         var animInfo = {};
          // handler for mouse leaving the entire task panel
-         var animInfo = {},
-         animDetail = {};
-
          tasks.each(function(task, i)
          {
-            var item = items[i];
-            var detail = details[i];
-
-            task.removeClass('taskItemSelected');
-            animDetail[i] = {
-               'height': [detail.getStyle('height').toInt(), detail.defHeight],
-               'opacity': [detail.getStyle('opacity'), 0]};
-            animInfo[i] = {'opacity': [infos[i].getStyle('opacity'), 0]};
+            if (!task.isOpen)
+            {
+               task.removeClass('taskItemSelected');
+               animInfo[i] = {'opacity': [infos[i].getStyle('opacity'), 0]};
+            }
+            else
+            {
+               animInfo[i] = {'opacity': [infos[i].getStyle('opacity'), 1]};
+            }
          });
          fxInfo.start(animInfo);
-         fxDetail.start(animDetail);
       });
    }
 };

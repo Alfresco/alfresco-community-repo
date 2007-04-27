@@ -42,11 +42,11 @@ import org.alfresco.repo.attributes.StringAttributeValue;
  */
 public class AVMLock implements Serializable
 {
-    public static String PATH = "path";
-    public static String STORE = "store";
-    public static String OWNERS = "owners";
-    public static String WEBPROJECT = "webproject";
-    public static String TYPE = "type";
+    public static final String PATH = "path";
+    public static final String STORE = "store";
+    public static final String OWNERS = "owners";
+    public static final String WEBPROJECT = "webproject";
+    public static final String TYPE = "type";
     
     private static final long serialVersionUID = -8026344276097527239L;
 
@@ -121,7 +121,6 @@ public class AVMLock implements Serializable
         ListAttribute owners = new ListAttributeValue();
         for (String owner : fOwners)
         {
-            // The value is a dummy.
             owners.add(new StringAttributeValue(owner));
         }
         lockData.put(OWNERS, owners);

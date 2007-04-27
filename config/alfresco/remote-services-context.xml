@@ -57,6 +57,31 @@
         </property>
     </bean>
     
+    <!-- Remote export of AttributeService -->    
+    <bean id="attributeServiceTransport" class="org.alfresco.repo.attributes.AttributeServiceTransportService">
+        <property name="authenticationService">
+            <ref bean="AuthenticationService"/>
+        </property>
+        <property name="attributeService">
+            <ref bean="AttributeService"/>
+        </property>
+    </bean>
+    
+    <bean id="attributeServiceTransportRMI" class="org.springframework.remoting.rmi.RmiServiceExporter">
+        <property name="service">
+            <ref bean="attributeServiceTransport"/>
+        </property>
+        <property name="serviceInterface">
+            <value>org.alfresco.service.cmr.remote.AttributeServiceTransport</value>
+        </property>
+        <property name="serviceName">
+            <value>attributes</value>
+        </property>
+        <property name="registryPort">
+            <value>${avm.remote.port}</value>
+        </property>
+    </bean>
+
     <!-- The AuthenticationService exported as an RMI service. -->
 	<bean id="rmiAuthenticationService" class="org.springframework.remoting.rmi.RmiServiceExporter">
 		<property name="service">
@@ -139,17 +164,4 @@
             <value>${avm.remote.port}</value>
         </property>
     </bean>	
-    
-    <!-- The RMI export of the AttributeService. -->
-    <bean id="attributeServiceRMI" class="org.springframework.remoting.rmi.RmiServiceExporter">
-        <property name="service">
-            <ref bean="AttributeService"/>
-        </property>
-        <property name="serviceInterface">
-            <value>org.alfresco.service.cmr.attributes.AttributeService</value>
-        </property>
-        <property name="serviceName">
-            <value>${avm.remote.port}</value>
-        </property>
-    </bean>
 </beans>

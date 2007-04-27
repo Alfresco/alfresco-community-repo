@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -360,5 +361,13 @@ public class ServiceDescriptorRegistry
     public AttributeService getAttributeService()
     {
         return (AttributeService)getService(ATTRIBUTE_SERVICE);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getAVMLockingService()
+     */
+    public AVMLockingService getAVMLockingService()
+    {
+        return (AVMLockingService)getService(AVM_LOCKING_SERVICE);
     }
 }

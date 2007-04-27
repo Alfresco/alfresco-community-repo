@@ -30,6 +30,7 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -106,7 +107,8 @@ public interface ServiceRegistry
     static final QName AVM_SYNC_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMSyncService");
     static final QName CROSS_REPO_COPY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CrossRepositoryCopyService");
     static final QName ATTRIBUTE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AttributeService");
-    
+    static final QName AVM_LOCKING_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMLockingService");
+
     /**
      * Get the list of services provided by the Repository
      *
@@ -324,4 +326,11 @@ public interface ServiceRegistry
      */
     @NotAuditable
     AttributeService getAttributeService();
+    
+    /**
+     * Get the AVM locking service (or null if one is not provided)
+     * @return
+     */
+    @NotAuditable
+    AVMLockingService getAVMLockingService();
 }

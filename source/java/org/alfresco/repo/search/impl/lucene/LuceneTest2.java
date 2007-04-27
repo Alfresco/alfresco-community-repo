@@ -385,6 +385,7 @@ public class LuceneTest2 extends TestCase
         // this.getClass().getClassLoader().getResourceAsStream("test.doc");
         // writer.putContent(is);
         writer.putContent("The quick brown fox jumped over the lazy dog  \u00E0\u00EA\u00EE\u00F0\u00F1\u00F6\u00FB\u00FF");
+        //System.out.println("Size is "+writer.getSize());
 
         nodeService.addChild(rootNodeRef, n8, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}eight-0"));
         nodeService.addChild(n1, n8, ASSOC_TYPE_QNAME, QName.createQName("{namespace}eight-1"));
@@ -490,7 +491,7 @@ public class LuceneTest2 extends TestCase
     }
 
     
-    public void xtestDeleteSecondaryAssocToContainer() throws Exception
+    public void testDeleteSecondaryAssocToContainer() throws Exception
     {
         luceneFTS.pause();
 
@@ -739,7 +740,7 @@ public class LuceneTest2 extends TestCase
     }
 
     
-    public void xtestDeleteSecondaryAssocToLeaf() throws Exception
+    public void testDeleteSecondaryAssocToLeaf() throws Exception
     {
         luceneFTS.pause();
 
@@ -978,7 +979,7 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
-    public void xtestDeleteIssue() throws Exception
+    public void testDeleteIssue() throws Exception
     {
 
         testTX.commit();
@@ -1143,7 +1144,7 @@ public class LuceneTest2 extends TestCase
 
     }
 
-    public void xtestDeltaIssue() throws Exception
+    public void testDeltaIssue() throws Exception
     {
         luceneFTS.pause();
         final NodeService pns = (NodeService) ctx.getBean("NodeService");
@@ -1316,7 +1317,7 @@ public class LuceneTest2 extends TestCase
         }
     }
 
-    public void xtestSort() throws Exception
+    public void testSort() throws Exception
     {
         luceneFTS.pause();
         buildBaseIndex();
@@ -2727,7 +2728,7 @@ public class LuceneTest2 extends TestCase
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@"
-                + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".size:\"110\"", null, null);
+                + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".size:\"62\"", null, null);
         assertEquals(1, results.length());
         results.close();
 

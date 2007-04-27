@@ -35,18 +35,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
-import javax.transaction.Status;
-import javax.transaction.xa.XAResource;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -54,7 +48,6 @@ import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.impl.lucene.fts.FTSIndexerAware;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
-import org.alfresco.repo.search.impl.lucene.index.TransactionStatus;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -66,7 +59,6 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -74,8 +66,6 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ISO9075;
@@ -98,25 +88,9 @@ import org.apache.lucene.search.BooleanClause.Occur;
  * 
  * @author andyh
  */
-public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
+public class LuceneIndexerImpl2 extends AbstractLuceneIndexerImpl2<NodeRef> implements LuceneIndexer2
 {
-    public static final String NOT_INDEXED_NO_TRANSFORMATION = "nint";
-
-    public static final String NOT_INDEXED_TRANSFORMATION_FAILED = "nitf";
-
-    public static final String NOT_INDEXED_CONTENT_MISSING = "nicm";
-
-    public static final String NOT_INDEXED_NO_TYPE_CONVERSION = "nintc";
-
     private static Logger s_logger = Logger.getLogger(LuceneIndexerImpl2.class);
-
-    /**
-     * Enum for indexing actions against a node
-     */
-    private enum Action
-    {
-        INDEX, REINDEX, DELETE, CASCADEREINDEX
-    };
 
     /**
      * The node service we use to get information about nodes
@@ -128,49 +102,15 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
      */
     private ContentService contentService;
 
-    /** the maximum transformation time to allow atomically, defaulting to 20ms */
-    private long maxAtomicTransformationTime = 20;
-
-    /**
-     * A list of all deletions we have made - at merge these deletions need to be made against the main index. TODO: Consider if this information needs to be persisted for recovery
-     */
-    private Set<NodeRef> deletions = new LinkedHashSet<NodeRef>();
-
-    private long docs;
-
-    /**
-     * The status of this index - follows javax.transaction.Status
-     */
-
-    private int status = Status.STATUS_UNKNOWN;
-
-    /**
-     * Has this index been modified?
-     */
-
-    private boolean isModified = false;
-
-    /**
-     * Flag to indicte if we are doing an in transactional delta or a batch update to the index. If true, we are just fixing up non atomically indexed things from one or more other
-     * updates.
-     */
-
-    private Boolean isFTSUpdate = null;
-
-    /**
-     * List of pending indexing commands.
-     */
-    private List<Command> commandList = new ArrayList<Command>(10000);
-
     /**
      * Call back to make after doing non atomic indexing
      */
-    private FTSIndexerAware callBack;
+    FTSIndexerAware callBack;
 
     /**
      * Count of remaining items to index non atomically
      */
-    private int remainingCount = 0;
+    int remainingCount = 0;
 
     /**
      * A list of stuff that requires non atomic indexing
@@ -215,89 +155,6 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         this.contentService = contentService;
     }
 
-    public void setMaxAtomicTransformationTime(long maxAtomicTransformationTime)
-    {
-        this.maxAtomicTransformationTime = maxAtomicTransformationTime;
-    }
-
-    /*
-     * =========================== Indexer Implementation ============================
-     */
-
-    /**
-     * Utility method to check we are in the correct state to do work Also keeps track of the dirty flag.
-     */
-
-    private void checkAbleToDoWork(boolean isFTS, boolean isModified)
-    {
-        if (isFTSUpdate == null)
-        {
-            isFTSUpdate = Boolean.valueOf(isFTS);
-        }
-        else
-        {
-            if (isFTS != isFTSUpdate.booleanValue())
-            {
-                throw new IndexerException("Can not mix FTS and transactional updates");
-            }
-        }
-
-        switch (status)
-        {
-        case Status.STATUS_UNKNOWN:
-            status = Status.STATUS_ACTIVE;
-            break;
-        case Status.STATUS_ACTIVE:
-            // OK
-            break;
-        default:
-            // All other states are a problem
-            throw new IndexerException(buildErrorString());
-        }
-        this.isModified = isModified;
-    }
-
-    /**
-     * Utility method to report errors about invalid state.
-     * 
-     * @return
-     */
-    private String buildErrorString()
-    {
-        StringBuilder buffer = new StringBuilder(128);
-        buffer.append("The indexer is unable to accept more work: ");
-        switch (status)
-        {
-        case Status.STATUS_COMMITTED:
-            buffer.append("The indexer has been committed");
-            break;
-        case Status.STATUS_COMMITTING:
-            buffer.append("The indexer is committing");
-            break;
-        case Status.STATUS_MARKED_ROLLBACK:
-            buffer.append("The indexer is marked for rollback");
-            break;
-        case Status.STATUS_PREPARED:
-            buffer.append("The indexer is prepared to commit");
-            break;
-        case Status.STATUS_PREPARING:
-            buffer.append("The indexer is preparing to commit");
-            break;
-        case Status.STATUS_ROLLEDBACK:
-            buffer.append("The indexer has been rolled back");
-            break;
-        case Status.STATUS_ROLLING_BACK:
-            buffer.append("The indexer is rolling back");
-            break;
-        case Status.STATUS_UNKNOWN:
-            buffer.append("The indexer is in an unknown state");
-            break;
-        default:
-            break;
-        }
-        return buffer.toString();
-    }
-
     /*
      * Indexer Implementation
      */
@@ -308,7 +165,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         {
             s_logger.debug("Create node " + relationshipRef.getChildRef());
         }
-        checkAbleToDoWork(false, true);
+        checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
         {
             NodeRef childRef = relationshipRef.getChildRef();
@@ -343,7 +200,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                     Document document = mainReader.document(doc);
                     String id = document.get("ID");
                     NodeRef ref = new NodeRef(id);
-                    deleteImpl(ref, false, true, mainReader);
+                    deleteImpl(ref.toString(), false, true, mainReader);
                 }
             }
             catch (IOException e)
@@ -373,7 +230,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         {
             s_logger.debug("Update node " + nodeRef);
         }
-        checkAbleToDoWork(false, true);
+        checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
         {
             reindex(nodeRef, false);
@@ -391,7 +248,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         {
             s_logger.debug("Delete node " + relationshipRef.getChildRef());
         }
-        checkAbleToDoWork(false, true);
+        checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
         {
             // The requires a reindex - a delete may remove too much from under this node - that also lives under
@@ -412,7 +269,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         {
             s_logger.debug("Create child " + relationshipRef);
         }
-        checkAbleToDoWork(false, true);
+        checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
         {
             // TODO: Optimise
@@ -433,7 +290,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         {
             s_logger.debug("Update child " + relationshipBeforeRef + " to " + relationshipAfterRef);
         }
-        checkAbleToDoWork(false, true);
+        checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
         {
             // TODO: Optimise
@@ -456,7 +313,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         {
             s_logger.debug("Delete child " + relationshipRef);
         }
-        checkAbleToDoWork(false, true);
+        checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
         {
             // TODO: Optimise
@@ -478,7 +335,9 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
      * 
      * @param storeRef
      * @param deltaId
-     * @return
+     * @param config 
+     * @return - the indexer instance
+     * @throws LuceneIndexException 
      */
     public static LuceneIndexerImpl2 getUpdateIndexer(StoreRef storeRef, String deltaId, LuceneConfig config)
             throws LuceneIndexException
@@ -497,89 +356,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
      * Transactional support Used by the resource manager for indexers.
      */
 
-    /**
-     * Commit this index
-     */
-
-    public void commit() throws LuceneIndexException
-    {
-        switch (status)
-        {
-        case Status.STATUS_COMMITTING:
-            throw new LuceneIndexException("Unable to commit: Transaction is committing");
-        case Status.STATUS_COMMITTED:
-            throw new LuceneIndexException("Unable to commit: Transaction is commited ");
-        case Status.STATUS_ROLLING_BACK:
-            throw new LuceneIndexException("Unable to commit: Transaction is rolling back");
-        case Status.STATUS_ROLLEDBACK:
-            throw new LuceneIndexException("Unable to commit: Transaction is aleady rolled back");
-        case Status.STATUS_MARKED_ROLLBACK:
-            throw new LuceneIndexException("Unable to commit: Transaction is marked for roll back");
-        case Status.STATUS_PREPARING:
-            throw new LuceneIndexException("Unable to commit: Transaction is preparing");
-        case Status.STATUS_ACTIVE:
-            // special case - commit from active
-            prepare();
-            // drop through to do the commit;
-        default:
-            if (status != Status.STATUS_PREPARED)
-            {
-                throw new LuceneIndexException("Index must be prepared to commit");
-            }
-            status = Status.STATUS_COMMITTING;
-            try
-            {
-                setStatus(TransactionStatus.COMMITTING);
-                if (isModified())
-                {
-                    if (isFTSUpdate.booleanValue())
-                    {
-                        doFTSIndexCommit();
-                        // FTS does not trigger indexing request
-                    }
-                    else
-                    {
-                        // Build the deletion terms
-                        // Set<Term> terms = new LinkedHashSet<Term>();
-                        // for (NodeRef nodeRef : deletions)
-                        // {
-                        // terms.add(new Term("ID", nodeRef.toString()));
-                        // }
-                        // Merge
-                        // mergeDeltaIntoMain(terms);
-                        setInfo(docs, getDeletions(), false);
-                        luceneFullTextSearchIndexer.requiresIndex(store);
-                    }
-                }
-                status = Status.STATUS_COMMITTED;
-                if (callBack != null)
-                {
-                    callBack.indexCompleted(store, remainingCount, null);
-                }
-                setStatus(TransactionStatus.COMMITTED);
-            }
-            catch (IOException e)
-            {
-                // If anything goes wrong we try and do a roll back
-                rollback();
-                throw new LuceneIndexException("Commit failed", e);
-            }
-            catch (LuceneIndexException e)
-            {
-                // If anything goes wrong we try and do a roll back
-                rollback();
-                throw new LuceneIndexException("Commit failed", e);
-            }
-            finally
-            {
-                // Make sure we tidy up
-                // deleteDelta();
-            }
-            break;
-        }
-    }
-
-    private void doFTSIndexCommit() throws LuceneIndexException
+    void doFTSIndexCommit() throws LuceneIndexException
     {
         IndexReader mainReader = null;
         IndexReader deltaReader = null;
@@ -597,36 +374,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
 
                 for (Helper helper : toFTSIndex)
                 {
-                    // BooleanQuery query = new BooleanQuery();
-                    // query.add(new TermQuery(new Term("ID", helper.nodeRef.toString())), true, false);
-                    // query.add(new TermQuery(new Term("TX", helper.tx)), true, false);
-                    // query.add(new TermQuery(new Term("ISNODE", "T")), false, false);
-
-                    deletions.add(helper.nodeRef);
-
-                    // try
-                    // {
-                    // Hits hits = mainSearcher.search(query);
-                    // if (hits.length() > 0)
-                    // {
-                    // for (int i = 0; i < hits.length(); i++)
-                    // {
-                    // mainReader.delete(hits.id(i));
-                    // }
-                    // }
-                    // else
-                    // {
-                    // hits = deltaSearcher.search(query);
-                    // for (int i = 0; i < hits.length(); i++)
-                    // {
-                    // deltaReader.delete(hits.id(i));
-                    // }
-                    // }
-                    // }
-                    // catch (IOException e)
-                    // {
-                    // throw new LuceneIndexException("Failed to delete an FTS update from the original index", e);
-                    // }
+                    deletions.add(helper.ref);
                 }
 
             }
@@ -698,498 +446,9 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
 
     }
 
-    /**
-     * Prepare to commit At the moment this makes sure we have all the locks TODO: This is not doing proper serialisation against the index as would a data base transaction.
-     * 
-     * @return
-     */
-    public int prepare() throws LuceneIndexException
-    {
+    
 
-        switch (status)
-        {
-        case Status.STATUS_COMMITTING:
-            throw new IndexerException("Unable to prepare: Transaction is committing");
-        case Status.STATUS_COMMITTED:
-            throw new IndexerException("Unable to prepare: Transaction is commited ");
-        case Status.STATUS_ROLLING_BACK:
-            throw new IndexerException("Unable to prepare: Transaction is rolling back");
-        case Status.STATUS_ROLLEDBACK:
-            throw new IndexerException("Unable to prepare: Transaction is aleady rolled back");
-        case Status.STATUS_MARKED_ROLLBACK:
-            throw new IndexerException("Unable to prepare: Transaction is marked for roll back");
-        case Status.STATUS_PREPARING:
-            throw new IndexerException("Unable to prepare: Transaction is already preparing");
-        case Status.STATUS_PREPARED:
-            throw new IndexerException("Unable to prepare: Transaction is already prepared");
-        default:
-            status = Status.STATUS_PREPARING;
-            try
-            {
-                setStatus(TransactionStatus.PREPARING);
-                if (isModified())
-                {
-                    saveDelta();
-                    flushPending();
-                    // prepareToMergeIntoMain();
-                }
-                status = Status.STATUS_PREPARED;
-                setStatus(TransactionStatus.PREPARED);
-                return isModified ? XAResource.XA_OK : XAResource.XA_RDONLY;
-            }
-            catch (IOException e)
-            {
-                // If anything goes wrong we try and do a roll back
-                rollback();
-                throw new LuceneIndexException("Commit failed", e);
-            }
-            catch (LuceneIndexException e)
-            {
-                setRollbackOnly();
-                throw new LuceneIndexException("Index failed to prepare", e);
-            }
-        }
-    }
-
-    /**
-     * Has this index been modified?
-     * 
-     * @return
-     */
-    public boolean isModified()
-    {
-        return isModified;
-    }
-
-    /**
-     * Return the javax.transaction.Status integer status code
-     * 
-     * @return
-     */
-    public int getStatus()
-    {
-        return status;
-    }
-
-    /**
-     * Roll back the index changes (this just means they are never added)
-     */
-
-    public void rollback() throws LuceneIndexException
-    {
-        switch (status)
-        {
-
-        case Status.STATUS_COMMITTED:
-            throw new IndexerException("Unable to roll back: Transaction is committed ");
-        case Status.STATUS_ROLLING_BACK:
-            throw new IndexerException("Unable to roll back: Transaction is rolling back");
-        case Status.STATUS_ROLLEDBACK:
-            throw new IndexerException("Unable to roll back: Transaction is already rolled back");
-        case Status.STATUS_COMMITTING:
-            // Can roll back during commit
-        default:
-            status = Status.STATUS_ROLLING_BACK;
-            // if (isModified())
-            // {
-            // deleteDelta();
-            // }
-            try
-            {
-                setStatus(TransactionStatus.ROLLINGBACK);
-                setStatus(TransactionStatus.ROLLEDBACK);
-            }
-            catch (IOException e)
-            {
-                throw new LuceneIndexException("roolback failed ", e);
-            }
-
-            if (callBack != null)
-            {
-                callBack.indexCompleted(store, 0, null);
-            }
-            break;
-        }
-    }
-
-    /**
-     * Mark this index for roll back only. This action can not be reversed. It will reject all other work and only allow roll back.
-     */
-
-    public void setRollbackOnly()
-    {
-        switch (status)
-        {
-        case Status.STATUS_COMMITTING:
-            throw new IndexerException("Unable to mark for rollback: Transaction is committing");
-        case Status.STATUS_COMMITTED:
-            throw new IndexerException("Unable to mark for rollback: Transaction is committed");
-        default:
-            status = Status.STATUS_MARKED_ROLLBACK;
-            break;
-        }
-    }
-
-    /*
-     * Implementation
-     */
-
-    private void index(NodeRef nodeRef) throws LuceneIndexException
-    {
-        addCommand(new Command(nodeRef, Action.INDEX));
-    }
-
-    private void reindex(NodeRef nodeRef, boolean cascadeReindexDirectories) throws LuceneIndexException
-    {
-        addCommand(new Command(nodeRef, cascadeReindexDirectories ? Action.CASCADEREINDEX : Action.REINDEX));
-    }
-
-    private void delete(NodeRef nodeRef) throws LuceneIndexException
-    {
-        addCommand(new Command(nodeRef, Action.DELETE));
-    }
-
-    private void addCommand(Command command)
-    {
-        if (commandList.size() > 0)
-        {
-            Command last = commandList.get(commandList.size() - 1);
-            if ((last.action == command.action) && (last.nodeRef.equals(command.nodeRef)))
-            {
-                return;
-            }
-        }
-        purgeCommandList(command);
-        commandList.add(command);
-
-        if (commandList.size() > getLuceneConfig().getIndexerBatchSize())
-        {
-            flushPending();
-        }
-    }
-
-    private void purgeCommandList(Command command)
-    {
-        if (command.action == Action.DELETE)
-        {
-            removeFromCommandList(command, false);
-        }
-        else if (command.action == Action.REINDEX)
-        {
-            removeFromCommandList(command, true);
-        }
-        else if (command.action == Action.INDEX)
-        {
-            removeFromCommandList(command, true);
-        }
-        else if (command.action == Action.CASCADEREINDEX)
-        {
-            removeFromCommandList(command, true);
-        }
-    }
-
-    private void removeFromCommandList(Command command, boolean matchExact)
-    {
-        for (ListIterator<Command> it = commandList.listIterator(commandList.size()); it.hasPrevious(); /**/)
-        {
-            Command current = it.previous();
-            if (matchExact)
-            {
-                if ((current.action == command.action) && (current.nodeRef.equals(command.nodeRef)))
-                {
-                    it.remove();
-                    return;
-                }
-            }
-            else
-            {
-                if (current.nodeRef.equals(command.nodeRef))
-                {
-                    it.remove();
-                }
-            }
-        }
-    }
-
-    public void flushPending() throws LuceneIndexException
-    {
-        IndexReader mainReader = null;
-        try
-        {
-            mainReader = getReader();
-            Set<NodeRef> forIndex = new LinkedHashSet<NodeRef>();
-
-            for (Command command : commandList)
-            {
-                if (command.action == Action.INDEX)
-                {
-                    // Indexing just requires the node to be added to the list
-                    forIndex.add(command.nodeRef);
-                }
-                else if (command.action == Action.REINDEX)
-                {
-                    // Reindex is a delete and then and index
-                    Set<NodeRef> set = deleteImpl(command.nodeRef, true, false, mainReader);
-
-                    // Deleting any pending index actions
-                    // - make sure we only do at most one index
-                    forIndex.removeAll(set);
-                    // Add the nodes for index
-                    forIndex.addAll(set);
-                }
-                else if (command.action == Action.CASCADEREINDEX)
-                {
-                    // Reindex is a delete and then and index
-                    Set<NodeRef> set = deleteImpl(command.nodeRef, true, true, mainReader);
-
-                    // Deleting any pending index actions
-                    // - make sure we only do at most one index
-                    forIndex.removeAll(set);
-                    // Add the nodes for index
-                    forIndex.addAll(set);
-                }
-                else if (command.action == Action.DELETE)
-                {
-                    // Delete the nodes
-                    Set<NodeRef> set = deleteImpl(command.nodeRef, false, true, mainReader);
-                    // Remove any pending indexes
-                    forIndex.removeAll(set);
-                    // Add the leaf nodes for reindex
-                    forIndex.addAll(set);
-                }
-            }
-            commandList.clear();
-            indexImpl(forIndex, false);
-            docs = getDeltaWriter().docCount();
-        }
-        catch (IOException e)
-        {
-            // If anything goes wrong we try and do a roll back
-            throw new LuceneIndexException("Failed to flush index", e);
-        }
-        finally
-        {
-            if (mainReader != null)
-            {
-                try
-                {
-                    mainReader.close();
-                }
-                catch (IOException e)
-                {
-                    throw new LuceneIndexException("Filed to close main reader", e);
-                }
-            }
-            // Make sure deletes are sent
-            try
-            {
-                closeDeltaReader();
-            }
-            catch (IOException e)
-            {
-
-            }
-            // Make sure writes and updates are sent.
-            try
-            {
-                closeDeltaWriter();
-            }
-            catch (IOException e)
-            {
-
-            }
-        }
-    }
-
-    private Set<NodeRef> deleteImpl(NodeRef nodeRef, boolean forReindex, boolean cascade, IndexReader mainReader)
-            throws LuceneIndexException, IOException
-
-    {
-        // startTimer();
-        getDeltaReader();
-        // outputTime("Delete "+nodeRef+" size = "+getDeltaWriter().docCount());
-        Set<NodeRef> refs = new LinkedHashSet<NodeRef>();
-        Set<NodeRef> temp = null;
-
-        if (forReindex)
-        {
-            temp = deleteContainerAndBelow(nodeRef, getDeltaReader(), true, cascade);
-            refs.addAll(temp);
-            deletions.addAll(temp);
-            temp = deleteContainerAndBelow(nodeRef, mainReader, false, cascade);
-            refs.addAll(temp);
-            deletions.addAll(temp);
-        }
-        else
-        {
-            // Delete all and reindex as they could be secondary links we have deleted and they need to be updated.
-            // Most will skip any indexing as they will really have gone.
-            temp = deleteContainerAndBelow(nodeRef, getDeltaReader(), true, cascade);
-            deletions.addAll(temp);
-            refs.addAll(temp);
-            temp = deleteContainerAndBelow(nodeRef, mainReader, false, cascade);
-            deletions.addAll(temp);
-            refs.addAll(temp);
-
-            Set<NodeRef> leafrefs = new LinkedHashSet<NodeRef>();
-            leafrefs.addAll(deletePrimary(deletions, getDeltaReader(), true));
-            leafrefs.addAll(deletePrimary(deletions, mainReader, false));
-            // May not have to delete references
-            leafrefs.addAll(deleteReference(deletions, getDeltaReader(), true));
-            leafrefs.addAll(deleteReference(deletions, mainReader, false));
-            refs.addAll(leafrefs);
-            deletions.addAll(leafrefs);
-
-        }
-
-        return refs;
-
-    }
-
-    private Set<NodeRef> deletePrimary(Collection<NodeRef> nodeRefs, IndexReader reader, boolean delete)
-            throws LuceneIndexException
-    {
-
-        Set<NodeRef> refs = new LinkedHashSet<NodeRef>();
-
-        for (NodeRef nodeRef : nodeRefs)
-        {
-
-            try
-            {
-                TermDocs td = reader.termDocs(new Term("PRIMARYPARENT", nodeRef.toString()));
-                while (td.next())
-                {
-                    int doc = td.doc();
-                    Document document = reader.document(doc);
-                    String id = document.get("ID");
-                    NodeRef ref = new NodeRef(id);
-                    refs.add(ref);
-                    if (delete)
-                    {
-                        reader.deleteDocument(doc);
-                    }
-                }
-            }
-            catch (IOException e)
-            {
-                throw new LuceneIndexException("Failed to delete node by primary parent for " + nodeRef.toString(), e);
-            }
-        }
-
-        return refs;
-
-    }
-
-    private Set<NodeRef> deleteReference(Collection<NodeRef> nodeRefs, IndexReader reader, boolean delete)
-            throws LuceneIndexException
-    {
-
-        Set<NodeRef> refs = new LinkedHashSet<NodeRef>();
-
-        for (NodeRef nodeRef : nodeRefs)
-        {
-
-            try
-            {
-                TermDocs td = reader.termDocs(new Term("PARENT", nodeRef.toString()));
-                while (td.next())
-                {
-                    int doc = td.doc();
-                    Document document = reader.document(doc);
-                    String id = document.get("ID");
-                    NodeRef ref = new NodeRef(id);
-                    refs.add(ref);
-                    if (delete)
-                    {
-                        reader.deleteDocument(doc);
-                    }
-                }
-            }
-            catch (IOException e)
-            {
-                throw new LuceneIndexException("Failed to delete node by parent for " + nodeRef.toString(), e);
-            }
-        }
-
-        return refs;
-
-    }
-
-    private Set<NodeRef> deleteContainerAndBelow(NodeRef nodeRef, IndexReader reader, boolean delete, boolean cascade)
-            throws LuceneIndexException
-    {
-        Set<NodeRef> refs = new LinkedHashSet<NodeRef>();
-
-        try
-        {
-            if (delete)
-            {
-                reader.deleteDocuments(new Term("ID", nodeRef.toString()));
-            }
-            refs.add(nodeRef);
-            if (cascade)
-            {
-                TermDocs td = reader.termDocs(new Term("ANCESTOR", nodeRef.toString()));
-                while (td.next())
-                {
-                    int doc = td.doc();
-                    Document document = reader.document(doc);
-                    String id = document.get("ID");
-                    NodeRef ref = new NodeRef(id);
-                    refs.add(ref);
-                    if (delete)
-                    {
-                        reader.deleteDocument(doc);
-                    }
-                }
-            }
-        }
-        catch (IOException e)
-        {
-            throw new LuceneIndexException("Failed to delete container and below for " + nodeRef.toString(), e);
-        }
-        return refs;
-    }
-
-    private void indexImpl(Set<NodeRef> nodeRefs, boolean isNew) throws LuceneIndexException, IOException
-    {
-        for (NodeRef ref : nodeRefs)
-        {
-            indexImpl(ref, isNew);
-        }
-    }
-
-    private void indexImpl(NodeRef nodeRef, boolean isNew) throws LuceneIndexException, IOException
-    {
-        IndexWriter writer = getDeltaWriter();
-
-        // avoid attempting to index nodes that don't exist
-
-        try
-        {
-            List<Document> docs = createDocuments(nodeRef, isNew, false, true);
-            for (Document doc : docs)
-            {
-                try
-                {
-                    writer.addDocument(doc /*
-                                             * TODO: Select the language based analyser
-                                             */);
-                }
-                catch (IOException e)
-                {
-                    throw new LuceneIndexException("Failed to add document to index", e);
-                }
-            }
-        }
-        catch (InvalidNodeRefException e)
-        {
-            // The node does not exist
-            return;
-        }
-
-    }
+    
 
     static class Counter
     {
@@ -1242,9 +501,12 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         }
     }
 
-    private List<Document> createDocuments(NodeRef nodeRef, boolean isNew, boolean indexAllProperties,
+    public List<Document> createDocuments(String stringNodeRef, boolean isNew, boolean indexAllProperties,
             boolean includeDirectoryDocuments)
     {
+        NodeRef nodeRef = new NodeRef(stringNodeRef);
+        
+        
         Map<ChildAssociationRef, Counter> nodeCounts = getNodeCounts(nodeRef);
         List<Document> docs = new ArrayList<Document>();
         ChildAssociationRef qNameRef = null;
@@ -1439,7 +701,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
      * Does the node type or any applied aspect allow this node to have child associations?
      * 
      * @param nodeRef
-     * @return
+     * @return true if the node may have children
      */
     private boolean mayHaveChildren(NodeRef nodeRef)
     {
@@ -1750,7 +1012,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                         {
                             doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
                         }
-                        
+
                         // TODO: Use the node locale in preferanced to the system locale
                         Locale locale = null;
 
@@ -1924,7 +1186,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
 
     public int updateFullTextSearch(int size) throws LuceneIndexException
     {
-        checkAbleToDoWork(true, false);
+        checkAbleToDoWork(IndexUpdateStatus.ASYNCHRONOUS);
         // if (!mainIndexExists())
         // {
         // remainingCount = size;
@@ -1941,7 +1203,6 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
 
             int count = 0;
             Searcher searcher = null;
-            LuceneResultSet results = null;
             try
             {
                 searcher = getSearcher(null);
@@ -1961,27 +1222,23 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                     throw new LuceneIndexException(
                             "Failed to execute query to find content which needs updating in the index", e);
                 }
-                results = new LuceneResultSet(hits, searcher, nodeService, null, new SearchParameters());
 
-                for (ResultSetRow row : results)
+                for(int i = 0; i < hits.length(); i++)
                 {
-                    LuceneResultSetRow lrow = (LuceneResultSetRow) row;
-                    Helper helper = new Helper(lrow.getNodeRef(), lrow.getDocument().getField("TX").stringValue());
+                    Document doc = hits.doc(i);
+                    Helper helper = new Helper(doc.getField("ID").stringValue(), doc.getField("TX").stringValue());
                     toFTSIndex.add(helper);
                     if (++count >= size)
                     {
                         break;
                     }
                 }
-                count = results.length();
+
+                count = hits.length();
             }
             finally
             {
-                if (results != null)
-                {
-                    results.close(); // closes the searcher
-                }
-                else if (searcher != null)
+                if (searcher != null)
                 {
                     try
                     {
@@ -1996,7 +1253,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
 
             if (toFTSIndex.size() > 0)
             {
-                checkAbleToDoWork(true, true);
+                checkAbleToDoWork(IndexUpdateStatus.ASYNCHRONOUS);
 
                 IndexWriter writer = null;
                 try
@@ -2005,14 +1262,14 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                     for (Helper helper : toFTSIndex)
                     {
                         // Document document = helper.document;
-                        NodeRef ref = helper.nodeRef;
-                        // bypass nodes that have disappeared
+                        NodeRef ref = new NodeRef(helper.ref);
+//                      bypass nodes that have disappeared
                         if (!nodeService.exists(ref))
                         {
                             continue;
                         }
 
-                        List<Document> docs = createDocuments(ref, false, true, false);
+                        List<Document> docs = createDocuments(ref.toString(), false, true, false);
                         for (Document doc : docs)
                         {
                             try
@@ -2080,81 +1337,70 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
 
     private static class Helper
     {
-        NodeRef nodeRef;
+        String ref;
 
         String tx;
 
-        Helper(NodeRef nodeRef, String tx)
+        Helper(String ref, String tx)
         {
-            this.nodeRef = nodeRef;
+            this.ref = ref;
             this.tx = tx;
         }
     }
 
-    private static class Command
-    {
-        NodeRef nodeRef;
-
-        Action action;
-
-        Command(NodeRef nodeRef, Action action)
-        {
-            this.nodeRef = nodeRef;
-            this.action = action;
-        }
-
-        public String toString()
-        {
-            StringBuffer buffer = new StringBuffer();
-            if (action == Action.INDEX)
-            {
-                buffer.append("Index ");
-            }
-            else if (action == Action.DELETE)
-            {
-                buffer.append("Delete ");
-            }
-            else if (action == Action.REINDEX)
-            {
-                buffer.append("Reindex ");
-            }
-            else
-            {
-                buffer.append("Unknown ... ");
-            }
-            buffer.append(nodeRef);
-            return buffer.toString();
-        }
-
-    }
-
-    private FullTextSearchIndexer luceneFullTextSearchIndexer;
+    FullTextSearchIndexer luceneFullTextSearchIndexer;
 
     public void setLuceneFullTextSearchIndexer(FullTextSearchIndexer luceneFullTextSearchIndexer)
     {
         this.luceneFullTextSearchIndexer = luceneFullTextSearchIndexer;
     }
 
-    public Set<String> getDeletions()
-    {
-        HashSet<String> deletedRefAsString = new HashSet<String>(deletions.size());
-        for(NodeRef ref : deletions)
-        {
-            deletedRefAsString.add(ref.toString());
-        }
-        return deletedRefAsString;
-    }
-
     public boolean getDeleteOnlyNodes()
     {
-        if (isFTSUpdate != null)
+        return indexUpdateStatus == IndexUpdateStatus.ASYNCHRONOUS;
+    }
+
+    public Set<String> getDeletions()
+    {
+        return Collections.unmodifiableSet(deletions);
+    }
+    
+    protected void doPrepare() throws IOException
+    {
+        saveDelta();
+        flushPending();
+        // prepareToMergeIntoMain();
+    }
+    
+    protected void doCommit() throws IOException
+    {
+        if (indexUpdateStatus == IndexUpdateStatus.ASYNCHRONOUS)
         {
-            return isFTSUpdate.booleanValue();
+            doFTSIndexCommit();
+            // FTS does not trigger indexing request
         }
         else
         {
-            return false;
+            setInfo(docs, getDeletions(), false);
+            luceneFullTextSearchIndexer.requiresIndex(store);
         }
+        if (callBack != null)
+        {
+            callBack.indexCompleted(store, remainingCount, null);
+        }
+    }
+    
+    protected void doRollBack() throws IOException
+    {
+        if (callBack != null)
+        {
+            callBack.indexCompleted(store, 0, null);
+        }   
+    }
+    
+    protected void doSetRollbackOnly() throws IOException
+    {
+        
     }
 
 }

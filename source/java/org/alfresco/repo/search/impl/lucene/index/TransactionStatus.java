@@ -1,5 +1,7 @@
 package org.alfresco.repo.search.impl.lucene.index;
 
+import javax.transaction.Status;
+
 
 /**
  * Status of indexes that make up the whole index. This starts with the value from javax.transaction.Status.
@@ -22,7 +24,9 @@ package org.alfresco.repo.search.impl.lucene.index;
 public enum TransactionStatus
 {
     
-    // Match the order in javax.transaction.Status so ordinal values are correct
+    /**
+     * Active TX
+     */
     ACTIVE
     {
         public boolean isCommitted()
@@ -44,8 +48,16 @@ public enum TransactionStatus
         {
             return previous == null;
         }
+        
+        public int getStatus()
+        {
+            return Status.STATUS_ACTIVE;
+        }
     },
 
+    /**
+     * TX marked for rollback
+     */
     MARKED_ROLLBACK
     {
         public boolean isCommitted()
@@ -67,8 +79,16 @@ public enum TransactionStatus
         {
             return previous.allowsRollbackOrMark(previous);
         }
+        
+        public int getStatus()
+        {
+            return Status.STATUS_MARKED_ROLLBACK;
+        }
     },
 
+    /**
+     * TX prepared
+     */
     PREPARED
     {
         public boolean isCommitted()
@@ -90,8 +110,16 @@ public enum TransactionStatus
         {
             return previous == TransactionStatus.PREPARING;
         }
+        
+        public int getStatus()
+        {
+            return Status.STATUS_PREPARED;
+        }
     },
 
+    /**
+     * TX Committed
+     */
     COMMITTED
     {
         public boolean isCommitted()
@@ -113,8 +141,16 @@ public enum TransactionStatus
         {
             return previous == TransactionStatus.COMMITTING;
         }
+        
+        public int getStatus()
+        {
+            return Status.STATUS_COMMITTED;
+        }
     },
 
+    /**
+     * TX rolled back
+     */
     ROLLEDBACK
     {
         public boolean isCommitted()
@@ -136,8 +172,16 @@ public enum TransactionStatus
         {
             return previous == TransactionStatus.ROLLINGBACK;
         }
+        
+        public int getStatus()
+        {
+            return Status.STATUS_ROLLEDBACK;
+        }
     },
 
+    /**
+     * TX state is unknown
+     */
     UNKNOWN
     {
         public boolean isCommitted()
@@ -159,8 +203,16 @@ public enum TransactionStatus
         {
             return false;
         }
+        
+        public int getStatus()
+        {
+            return Status.STATUS_UNKNOWN;
+        }
     },
 
+    /**
+     * No transaction
+     */
     NO_TRANSACTION
     {
         public boolean isCommitted()
@@ -182,8 +234,16 @@ public enum TransactionStatus
         {
             return false;
         }
+        
+        public int getStatus()
+        {
+            return Status.STATUS_NO_TRANSACTION;
+        }
     },
 
+    /**
+     * TX is preparing
+     */
     PREPARING
     {
         public boolean isCommitted()
@@ -205,8 +265,16 @@ public enum TransactionStatus
         {
             return previous == TransactionStatus.ACTIVE;
         }
+        
+        public int getStatus()
+        {
+            return Status.STATUS_PREPARING;
+        }
     },
 
+    /**
+     * TX is committing
+     */
     COMMITTING
     {
         public boolean isCommitted()
@@ -228,8 +296,16 @@ public enum TransactionStatus
         {
             return previous == TransactionStatus.PREPARED;
         }
+        
+        public int getStatus()
+        {
+            return Status.STATUS_COMMITTING;
+        }
     },
 
+    /**
+     * TX rolling back
+     */
     ROLLINGBACK
     {
         public boolean isCommitted()
@@ -251,9 +327,14 @@ public enum TransactionStatus
         {
             return previous.allowsRollbackOrMark(previous);
         }
+        
+        public int getStatus()
+        {
+            return Status.STATUS_ROLLING_BACK;
+        }
     },
 
-    /*
+    /**
      * This entry is the source for an active merge. The result will be in a new index.
      */
     MERGE
@@ -277,9 +358,14 @@ public enum TransactionStatus
         {
             return false;
         }
+        
+        public int getStatus()
+        {
+            return Status.STATUS_COMMITTED;
+        }
     },
 
-    /*
+    /**
      * A new index element that is being made by a merge.
      */
     MERGE_TARGET
@@ -303,115 +389,15 @@ public enum TransactionStatus
         {
             return false;
         }
+        
+        public int getStatus()
+        {
+            return Status.STATUS_ACTIVE;
+        }
     },
 
-    /*
-     * These index overlays require reindexing
-     */
-//    COMMITTED_REQUIRES_REINDEX
-//    {
-//        public boolean isCommitted()
-//        {
-//            return true;
-//        }
-//
-//        public boolean isTransient()
-//        {
-//            return false;
-//        }
-//        
-//        public boolean canBeReordered()
-//        {
-//            return false;
-//        }
-//        
-//        public boolean follows(TransactionStatus previous)
-//        {
-//            return false;
-//        }
-//    },
 
-    /*
-     * These index overlays are reindexing
-     */
-//    COMMITTED_REINDEXING
-//    {
-//        public boolean isCommitted()
-//        {
-//            return true;
-//        }
-//
-//        
-//        public boolean canBeReordered()
-//        {
-//            return false;
-//        }
-//        
-//        public boolean isTransient()
-//        {
-//            return false;
-//        }
-//        
-//        public boolean follows(TransactionStatus previous)
-//        {
-//            return false;
-//        }
-//    },
-
-    /*
-     * These index overlays have ben reindexed.
-     */
-//    COMMITTED_REINDEXED
-//    {
-//        public boolean isCommitted()
-//        {
-//            return true;
-//        }
-//
-//        public boolean isTransient()
-//        {
-//            return false;
-//        }
-//        
-//        public boolean canBeReordered()
-//        {
-//            return false;
-//        }
-//        
-//        public boolean follows(TransactionStatus previous)
-//        {
-//            return false;
-//        }
-//    },
-
-    /*
-     * Committed but the index still has deletions
-     */
-
-//    COMMITTED_WITH_DELETIONS
-//    {
-//        public boolean isCommitted()
-//        {
-//            return true;
-//        }
-//
-//        public boolean isTransient()
-//        {
-//            return false;
-//        }
-//        
-//        public boolean canBeReordered()
-//        {
-//            return false;
-//        }
-//        
-//        public boolean follows(TransactionStatus previous)
-//        {
-//            return false;
-//        }
-//    },
-
-    /*
+    /**
      * Pending deleted are being committed to for the delta.
      */
     COMMITTED_DELETING
@@ -435,9 +421,14 @@ public enum TransactionStatus
         {
             return false;
         }
+        
+        public int getStatus()
+        {
+            return Status.STATUS_COMMITTED;
+        }
     },
 
-    /*
+    /**
      * An entry that may be deleted
      */
     DELETABLE
@@ -461,15 +452,44 @@ public enum TransactionStatus
         {
             return true;
         }
+        
+        public int getStatus()
+        {
+            return Status.STATUS_UNKNOWN;
+        }
     };
 
+    /**
+     * Is this a commited inex entry?
+     * @return - true if committed
+     */
     public abstract boolean isCommitted();
     
+    /**
+     * Is this transient 
+     * @return - true if no information needs to be persisted
+     */
     public abstract boolean isTransient();
     
+    /**
+     * Can this be reordered with respect to other TXs
+     * @return - true if this can be reordered (fixed after prepare)
+     */
     public abstract boolean canBeReordered();
 
+    /**
+     * Can this state follow the one given?
+     * @param previous state
+     * @return - true if transition to this state is allowed
+     */
     public abstract boolean follows(TransactionStatus previous);
+    
+    /**
+     * Get the javax.transaction.Status best matching this state
+     * 
+     * @return - the int TX state
+     */
+    public abstract int getStatus();
 
     private boolean allowsRollbackOrMark(TransactionStatus previous)
     {

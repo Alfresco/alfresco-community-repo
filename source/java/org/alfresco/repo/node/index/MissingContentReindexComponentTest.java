@@ -31,7 +31,7 @@ import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.search.Indexer;
-import org.alfresco.repo.search.impl.lucene.LuceneIndexerImpl2;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneIndexerImpl2;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.TransactionComponent;
@@ -134,7 +134,7 @@ public class MissingContentReindexComponentTest extends TestCase
         SearchParameters sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("TEXT:" + LuceneIndexerImpl2.NOT_INDEXED_CONTENT_MISSING);
+        sp.setQuery("TEXT:" + AbstractLuceneIndexerImpl2.NOT_INDEXED_CONTENT_MISSING);
         sp.addSort(SearchParameters.SORT_IN_DOCUMENT_ORDER_DESCENDING);
         ResultSet results = null;
         try

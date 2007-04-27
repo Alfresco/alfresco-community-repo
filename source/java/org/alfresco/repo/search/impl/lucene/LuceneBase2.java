@@ -84,6 +84,8 @@ public abstract class LuceneBase2
 
     private LuceneConfig config;
 
+    private TransactionStatus status = TransactionStatus.UNKNOWN;
+
     // "lucene-indexes";
 
     /**
@@ -254,8 +256,16 @@ public abstract class LuceneBase2
     protected void setStatus(TransactionStatus status) throws IOException
     {
         indexInfo.setStatus(deltaId, status, null, null);
+        this.status = status;
+    }
+    
+    protected TransactionStatus getStatus()
+    {
+        return status;
     }
 
+    
+    
     private DictionaryService dictionaryService;
 
     protected IndexReader getReader() throws LuceneIndexException, IOException
@@ -293,5 +303,7 @@ public abstract class LuceneBase2
     {
         return indexInfo.doWithWriteLock(lockWork);
     }
+
+   
 
 }

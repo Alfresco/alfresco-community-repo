@@ -13,7 +13,7 @@
 	   
 	   <tr>
 	      <td valign='top'>
-	         <table cellpadding='2' cellspacing='0'>
+	         <table cellpadding='2' cellspacing='0' class='taskPopupData'>
 	            <tr><td>Type:</td><td>${task.type?html}</td></tr>
 	            <tr><td>Name:</td><td>${task.name?html}</td></tr>
 	            <tr><td>Start Date:</td><td>${task.startDate?date}</td></tr>
@@ -44,5 +44,10 @@
       padding: 4px;
       max-width: 700px;
       margin: 0px 0px 0px 0px;
+   }
+   
+   .taskPopupData td
+   {
+      font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    }
 </STYLE>

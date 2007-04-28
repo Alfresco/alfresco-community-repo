@@ -7,12 +7,51 @@
       <xs:sequence>
 	<xs:element name="datetime" type="xs:dateTime" minOccurs="1" maxOccurs="1"/>
 	<xs:element name="date" type="xs:date" minOccurs="1" maxOccurs="1"/>
+	<xs:element name="restricted_date_inclusive" minOccurs="1" maxOccurs="1">
+          <xs:simpleType>
+            <xs:restriction base="xs:date">
+              <xs:minInclusive value="2005-05-05"/>
+              <xs:maxInclusive value="2006-06-06"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="restricted_date_exclusive" minOccurs="1" maxOccurs="1">
+          <xs:simpleType>
+            <xs:restriction base="xs:date">
+              <xs:minExclusive value="2005-05-04"/>
+              <xs:maxExclusive value="2006-06-07"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
 	<xs:element name="time" type="xs:time" minOccurs="1" maxOccurs="1"/>
-	<xs:element name="day" type="xs:gDay" minOccurs="1" maxOccurs="1"/>
-	<xs:element name="month" type="xs:gMonth" minOccurs="1" maxOccurs="1"/>
-	<xs:element name="year" type="xs:gYear" minOccurs="1" maxOccurs="1"/>
-	<xs:element name="month_day" type="xs:gMonthDay" minOccurs="1" maxOccurs="1"/>
-	<xs:element name="year_month" type="xs:gYearMonth" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="date_and_time_in_minimal_group">
+          <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="date_with_default" type="xs:date" minOccurs="1" maxOccurs="1" default="1978-08-08"/>
+              <xs:element name="time_with_default" type="xs:time" minOccurs="1" maxOccurs="1" default="09:30:00"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="individual_pickers">
+          <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="day" type="xs:gDay" minOccurs="1" maxOccurs="1"/>
+              <xs:element name="month" type="xs:gMonth" minOccurs="1" maxOccurs="1"/>
+              <xs:element name="year" type="xs:gYear" minOccurs="1" maxOccurs="1"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="combination_pickers">
+          <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="month_day" type="xs:gMonthDay" minOccurs="1" maxOccurs="1"/>
+              <xs:element name="year_month" type="xs:gYearMonth" minOccurs="1" maxOccurs="1"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
 	<!-- not supported by chiba -->
 	<!-- xs:element name="duration" type="xs:duration" minOccurs="1" maxOccurs="1"/ -->
       </xs:sequence>

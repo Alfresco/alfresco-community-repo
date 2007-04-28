@@ -590,7 +590,7 @@ dojo.declare("alfresco.xforms.TextField",
                                   : -1);
                this._length = (_hasAttribute(this.xformsNode, alfresco.xforms.constants.ALFRESCO_PREFIX + ":length")
                                   ? Number(this.xformsNode.getAttribute(alfresco.xforms.constants.ALFRESCO_PREFIX + ":length"))
-                                  : -1)
+                               : -1);
 
              },
              {
@@ -1455,6 +1455,14 @@ dojo.declare("alfresco.xforms.DatePicker",
              function(xform, xformsNode) 
              {
                dojo.require("dojo.widget.DatePicker");
+               this._minInclusive = (_hasAttribute(this.xformsNode, alfresco.xforms.constants.ALFRESCO_PREFIX + ":minInclusive")
+                                     ? this.xformsNode.getAttribute(alfresco.xforms.constants.ALFRESCO_PREFIX + ":minInclusive")
+                                     : null);
+               this._maxInclusive = (_hasAttribute(this.xformsNode, alfresco.xforms.constants.ALFRESCO_PREFIX + ":maxInclusive")
+                                     ? this.xformsNode.getAttribute(alfresco.xforms.constants.ALFRESCO_PREFIX + ":maxInclusive")
+                                     : null);
+
+               // XXXarielb - change to a static
                this._noValueSet = (alfresco.xforms.constants.resources["eg"] + " " + 
                                    dojo.date.format(new Date(), 
                                                     {datePattern: alfresco.xforms.constants.DATE_FORMAT, 
@@ -1466,11 +1474,19 @@ dojo.declare("alfresco.xforms.DatePicker",
                  var datePickerDiv = document.createElement("div");
                  this.domNode.parentNode.appendChild(datePickerDiv);
                    
-                 var dp_initial_value = this.getValue() || dojo.date.toRfc3339(new Date());
+                 var dp_initial_value = this.getValue() || null; //dojo.date.toRfc3339(new Date());
+                 var datePickerProperties = { value: dp_initial_value };
+                 if (this._minInclusive)
+                 {
+                   datePickerProperties.startDate = this._minInclusive;
+                 }
+                 if (this._maxInclusive)
+                 {
+                   datePickerProperties.endDate = this._maxInclusive;
+                 }
+                 
                  this.widget.picker = dojo.widget.createWidget("DatePicker", 
-                                                               { 
-                                                                 value: dp_initial_value
-                                                               }, 
+                                                               datePickerProperties,
                                                                datePickerDiv);
                  this.domContainer.style.height = 
                    Math.max(this.widget.picker.domNode.offsetHeight +

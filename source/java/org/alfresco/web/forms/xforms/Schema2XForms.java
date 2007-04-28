@@ -25,6 +25,8 @@ package org.alfresco.web.forms.xforms;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.xml.transform.*;
 import org.alfresco.service.namespace.NamespaceService;
@@ -2440,6 +2442,63 @@ public class Schema2XForms
                result.setAttributeNS(NamespaceService.ALFRESCO_URI,
                                      NamespaceService.ALFRESCO_PREFIX + ":maxlength",
                                      controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXLENGTH));
+            }
+         }
+         if (SchemaUtil.getBuiltInType(controlType) == XSConstants.DATE_DT)
+         {
+            String minInclusive = null;
+            String maxInclusive = null;
+            final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            final Calendar calendar = Calendar.getInstance();
+            if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE))
+            {
+               minInclusive = controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MINEXCLUSIVE);
+               try
+               {
+                  final Date d = sdf.parse(minInclusive);
+                  calendar.setTime(d);
+               }
+               catch (ParseException pe)
+               {
+                  LOGGER.error(pe);
+               }
+               calendar.roll(Calendar.DATE, true);
+               minInclusive = sdf.format(calendar.getTime());
+            }
+            else if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MININCLUSIVE))
+            {
+               minInclusive = controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MININCLUSIVE);
+            }
+            if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE))
+            {
+               maxInclusive = controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE);
+               try
+               {
+                  final Date d = sdf.parse(maxInclusive);
+                  calendar.setTime(d);
+               }
+               catch (ParseException pe)
+               {
+                  LOGGER.error(pe);
+               }
+               calendar.roll(Calendar.DATE, false);
+               maxInclusive = sdf.format(calendar.getTime());
+            }
+            else if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXINCLUSIVE))
+            {
+               maxInclusive = controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXINCLUSIVE);
+            }
+            if (minInclusive != null)
+            {
+               result.setAttributeNS(NamespaceService.ALFRESCO_URI,
+                                     NamespaceService.ALFRESCO_PREFIX + ":minInclusive",
+                                     minInclusive);
+            }
+            if (maxInclusive != null)
+            {
+               result.setAttributeNS(NamespaceService.ALFRESCO_URI,
+                                     NamespaceService.ALFRESCO_PREFIX + ":maxInclusive",
+                                     maxInclusive);
             }
          }
       }

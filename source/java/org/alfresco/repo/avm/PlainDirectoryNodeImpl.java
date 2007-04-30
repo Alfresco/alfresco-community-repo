@@ -162,7 +162,8 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             result.put(child.getKey().getName(), 
                        child.getChild().getDescriptor(dir.getPath(), 
                                                       child.getKey().getName(), 
-                                                      dir.getIndirection()));
+                                                      dir.getIndirection(),
+                                                      dir.getIndirectionVersion()));
         }
         return result;
     }
@@ -217,7 +218,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         {
             return null;
         }
-        return entry.getChild().getDescriptor(mine.getPath(), name, (String)null);
+        return entry.getChild().getDescriptor(mine.getPath(), name, (String)null, -1);
     }
 
     /**
@@ -378,6 +379,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                                      getGuid(),
                                      getVersionID(),
                                      null,
+                                     -1,
                                      false,
                                      -1,
                                      false,
@@ -407,6 +409,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                                      getGuid(),
                                      getVersionID(),
                                      null,
+                                     -1,
                                      false,
                                      -1,
                                      false,
@@ -421,7 +424,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      * @param parentIndirection The parent indirection.
      * @return This node's node descriptor
      */
-    public AVMNodeDescriptor getDescriptor(String parentPath, String name, String parentIndirection)
+    public AVMNodeDescriptor getDescriptor(String parentPath, String name, String parentIndirection, int parentIndirectionVersion)
     {
         BasicAttributes attrs = getBasicAttributes();
         String path = parentPath.endsWith("/") ? parentPath + name : parentPath + "/" + name;
@@ -438,6 +441,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                                      getGuid(),
                                      getVersionID(),
                                      null,
+                                     -1,
                                      false,
                                      -1,
                                      false,

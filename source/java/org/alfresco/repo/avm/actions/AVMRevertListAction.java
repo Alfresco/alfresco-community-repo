@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
  */
 public class AVMRevertListAction extends ActionExecuterAbstractBase 
 {
+    @SuppressWarnings("unused")
     private static Logger fgLogger = Logger.getLogger(AVMRevertListAction.class);
     
     public static final String NAME = "avm-revert-list";

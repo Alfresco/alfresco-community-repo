@@ -23,54 +23,63 @@
  * http://www.alfresco.com/legal/licensing
  */
 
-package org.alfresco.repo.attributes;
+package org.alfresco.repo.avm;
+
+import java.io.Serializable;
+
+import org.alfresco.util.MD5;
 
 /**
- * Implementation of ListEntry
+ * Implementation of entry for tracking layered nodes which were 
+ * snapshotted in a particular Version.
  * @author britt
  */
-public class ListEntryImpl implements ListEntry
+public class VersionLayeredNodeEntryImpl implements VersionLayeredNodeEntry, Serializable
 {
-    private static final long serialVersionUID = 1573391734169157835L;
+    private static final long serialVersionUID = -5222079271680056311L;
 
-    private ListEntryKey fKey;
+    private VersionRoot fVersion;
     
-    private Attribute fAttribute;
+    private String fMD5Sum;
+    
+    private String fPath;
+    
+    public VersionLayeredNodeEntryImpl()
+    {
+    }
 
-    /**
-     * Default constructor.
-     */
-    public ListEntryImpl()
+    public VersionLayeredNodeEntryImpl(VersionRoot version,
+                                       String path)
     {
+        fVersion = version;
+        fMD5Sum = MD5.Digest(path.getBytes());
+        fPath = path;
     }
     
-    public ListEntryImpl(ListEntryKey key, Attribute attr)
+    public void setPath(String path)
     {
-        fKey = key;
-        fAttribute = attr;
-    }
-    
-    public void setKey(ListEntryKey key)
-    {
-        fKey = key;
-    }
-    
-    public ListEntryKey getKey()
-    {
-        return fKey;
+        fPath = path;
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.ListEntry#getAttribute()
+     * @see org.alfresco.repo.avm.VersionLayeredNodeEntry#getPath()
      */
-    public Attribute getAttribute()
+    public String getPath()
     {
-        return fAttribute;
+        return fPath;
+    }
+
+    public void setVersion(VersionRoot version)
+    {
+        fVersion = version;
     }
     
-    public void setAttribute(Attribute attr)
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.VersionLayeredNodeEntry#getVersion()
+     */
+    public VersionRoot getVersion()
     {
-        fAttribute = attr;
+        return fVersion;
     }
 
     /* (non-Javadoc)
@@ -83,11 +92,13 @@ public class ListEntryImpl implements ListEntry
         {
             return true;
         }
-        if (!(obj instanceof ListEntry))
+        if (!(obj instanceof VersionLayeredNodeEntry))
         {
             return false;
         }
-        return fKey.equals(((ListEntry)obj).getKey());
+        VersionLayeredNodeEntry other = (VersionLayeredNodeEntry)obj;
+        return fVersion.equals(other.getVersion()) && 
+               fMD5Sum.equals(other.getMd5Sum());
     }
 
     /* (non-Javadoc)
@@ -96,7 +107,7 @@ public class ListEntryImpl implements ListEntry
     @Override
     public int hashCode()
     {
-        return fKey.hashCode();
+        return fVersion.hashCode() + fMD5Sum.hashCode();
     }
 
     /* (non-Javadoc)
@@ -106,11 +117,24 @@ public class ListEntryImpl implements ListEntry
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
-        builder.append("[ListEntry:");
-        builder.append(fKey.toString());
+        builder.append("[VersionLayeredNodeEntry:");
+        builder.append(fVersion.toString());
         builder.append(':');
-        builder.append(fAttribute.toString());
+        builder.append(fPath);
         builder.append(']');
         return builder.toString();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.VersionLayeredNodeEntry#getMd5Sum()
+     */
+    public String getMd5Sum()
+    {
+        return fMD5Sum;
+    }
+    
+    public void setMd5Sum(String sum)
+    {
+        fMD5Sum = sum;
     }
 }

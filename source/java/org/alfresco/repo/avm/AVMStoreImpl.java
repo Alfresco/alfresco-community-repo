@@ -177,19 +177,104 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * @return The version id of the new snapshot.
      */
     @SuppressWarnings("unchecked")
-    public int createSnapshot(String tag, String description)
+    public int createSnapshot(String tag, String description, Map<String, Integer> snapShotMap)
     {
         // If the root isn't new, we can't take a snapshot since nothing has changed.
         if (!fRoot.getIsNew())
         {
-            // So we just return the most recent snapshot.
-            return AVMDAOs.Instance().fVersionRootDAO.getMaxVersionID(this);
+            // So, we set the tag and description fields of the latest version.
+            VersionRoot versionRoot = AVMDAOs.Instance().fVersionRootDAO.getMaxVersion(this);
+            if (tag != null || description != null)
+            {
+                versionRoot.setTag(tag);
+                versionRoot.setDescription(description);
+            }
+            snapShotMap.put(fName, versionRoot.getVersionID());
+            return versionRoot.getVersionID();
         }
+        snapShotMap.put(fName, fNextVersionID);
+        // Get all the layered nodes that were snapshotted last time
+        // and force copies on them.
+        VersionRoot lastVersion = AVMDAOs.Instance().fVersionRootDAO.getMaxVersion(this);
+        List<VersionLayeredNodeEntry> layeredEntries =
+            AVMDAOs.Instance().fVersionLayeredNodeEntryDAO.get(lastVersion);
+        for (VersionLayeredNodeEntry entry : layeredEntries)
+        {
+            String path = entry.getPath();
+            path = path.substring(path.indexOf(':') + 1);
+            Lookup lookup = lookup(-1, path, false, false);
+            if (lookup == null)
+            {
+                continue;
+            }
+            if (lookup.getCurrentNode().getType() != AVMNodeType.LAYERED_DIRECTORY &&
+                lookup.getCurrentNode().getType() != AVMNodeType.LAYERED_FILE)
+            {
+                continue;
+            }
+            if (lookup.getCurrentNode().getIsNew())
+            {
+                continue;
+            }
+            String parentName[] = AVMNodeConverter.SplitBase(entry.getPath());
+            parentName[0] = parentName[0].substring(parentName[0].indexOf(':') + 1);
+            lookup = lookupDirectory(-1, parentName[0], true);
+            DirectoryNode parent = (DirectoryNode)lookup.getCurrentNode();
+            AVMNode child = parent.lookupChild(lookup, parentName[1], false);
+            // TODO This is funky. Need to look carefully to see that this call
+            // does exactly what's needed.
+            lookup.add(child, parentName[1], false);
+            AVMNode newChild = null;
+            if (child.getType() == AVMNodeType.LAYERED_DIRECTORY)
+            {
+                newChild = child.copy(lookup);
+            }
+            else
+            {
+                newChild = ((LayeredFileNode)child).copyLiterally(lookup);
+            }
+            parent.putChild(parentName[1], newChild);
+        }
+        AVMDAOs.Instance().fVersionLayeredNodeEntryDAO.delete(lastVersion);
         // Clear out the new nodes.
         List<AVMNode> newInRep = AVMDAOs.Instance().fAVMNodeDAO.getNewInStore(this);
+        List<AVMNode> layeredNodes = new ArrayList<AVMNode>();
         for (AVMNode newGuy : newInRep)
         {
             newGuy.setStoreNew(null);
+            Layered layered = null;
+            if (newGuy.getType() == AVMNodeType.LAYERED_DIRECTORY &&
+                ((LayeredDirectoryNode)newGuy).getPrimaryIndirection())
+            {
+                layered = (Layered)AVMNodeUnwrapper.Unwrap(newGuy);
+            }
+            if (newGuy.getType() == AVMNodeType.LAYERED_FILE)
+            {
+                layered = (Layered)AVMNodeUnwrapper.Unwrap(newGuy);
+            }
+            if (layered != null)
+            {
+                layeredNodes.add(newGuy);
+                String indirection = layered.getIndirection();
+                String storeName = indirection.substring(0, indirection.indexOf(':'));
+                if (!snapShotMap.containsKey(storeName))
+                {
+                    AVMStore store = AVMDAOs.Instance().fAVMStoreDAO.getByName(storeName);
+                    if (store == null)
+                    {
+                        layered.setIndirectionVersion(-1);
+                    }
+                    else
+                    {
+                        store.createSnapshot(null, null, snapShotMap);
+                        layered.setIndirectionVersion(snapShotMap.get(storeName));
+                    }
+                }
+                else
+                {
+                    layered.setIndirectionVersion(snapShotMap.get(storeName));
+                }
+            }
         }
         // Make up a new version record.
         String user = RawServices.Instance().getAuthenticationComponent().getCurrentUserName();
@@ -205,6 +290,16 @@ public class AVMStoreImpl implements AVMStore, Serializable
                                                       tag,
                                                       description);
         AVMDAOs.Instance().fVersionRootDAO.save(versionRoot);
+        for (AVMNode node : layeredNodes)
+        {
+            List<String> paths = fAVMRepository.getVersionPaths(versionRoot, node);
+            for (String path : paths)
+            {
+                VersionLayeredNodeEntry entry = 
+                    new VersionLayeredNodeEntryImpl(versionRoot, path);
+                AVMDAOs.Instance().fVersionLayeredNodeEntryDAO.save(entry);
+            }
+        }
         // Increment the version id.
         fNextVersionID++;
         return fNextVersionID - 1;
@@ -662,7 +757,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             root = AVMDAOs.Instance().fAVMNodeDAO.getAVMStoreRoot(this, version);
         }            
-        return root.getDescriptor("main:", "", null);
+        return root.getDescriptor("main:", "", null, -1);
     }
 
     /**
@@ -886,6 +981,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMNotFoundException("Version not found.");
         }
+        AVMDAOs.Instance().fVersionLayeredNodeEntryDAO.delete(vRoot);
         AVMNode root = vRoot.getRoot();
         root.setIsRoot(false);
         AVMDAOs.Instance().fAVMNodeDAO.update(root);

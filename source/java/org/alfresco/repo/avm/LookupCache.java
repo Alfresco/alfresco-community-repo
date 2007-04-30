@@ -3,10 +3,8 @@
  */
 package org.alfresco.repo.avm;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -136,7 +134,7 @@ public class LookupCache
         {
             return null;
         }        
-        Lookup result = new Lookup(store, store.getName());
+        Lookup result = new Lookup(store, store.getName(), version);
         // Grab the root node to start the lookup.
         DirectoryNode dir = null;
         // Versions less than 0 mean get current.

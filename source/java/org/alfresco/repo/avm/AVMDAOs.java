@@ -92,6 +92,8 @@ public class AVMDAOs
     
     public ListEntryDAO fListEntryDAO;
     
+    public VersionLayeredNodeEntryDAO fVersionLayeredNodeEntryDAO;
+    
     /**
      * @param nodeDAO the fAVMNodeDAO to set
      */
@@ -181,5 +183,10 @@ public class AVMDAOs
     public void setListEntryDAO(ListEntryDAO dao)
     {
         fListEntryDAO = dao;
+    }
+    
+    public void setVersionLayeredNodeEntryDAO(VersionLayeredNodeEntryDAO dao)
+    {
+        fVersionLayeredNodeEntryDAO = dao;
     }
 }

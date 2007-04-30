@@ -124,6 +124,7 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
                                      getGuid(),
                                      getVersionID(),
                                      null,
+                                     -1,
                                      false,
                                      -1,
                                      false,
@@ -153,6 +154,7 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
                                      getGuid(),
                                      getVersionID(),
                                      null,
+                                     -1,
                                      false,
                                      -1,
                                      false,
@@ -167,7 +169,7 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
      * @param parentIndirection Ignored.
      * @return An AVMNodeDescriptor.
      */
-    public AVMNodeDescriptor getDescriptor(String parentPath, String name, String parentIndirection)
+    public AVMNodeDescriptor getDescriptor(String parentPath, String name, String parentIndirection, int parentIndirectionVersion)
     {
         BasicAttributes attrs = getBasicAttributes();
         String path = parentPath.endsWith("/") ? parentPath + name : parentPath + "/" + name;
@@ -184,6 +186,7 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
                                      getGuid(),
                                      getVersionID(),
                                      null,
+                                     -1,
                                      false,
                                      -1,
                                      false,

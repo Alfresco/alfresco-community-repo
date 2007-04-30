@@ -101,4 +101,16 @@ public interface VersionRoot
      * @return The thick description.
      */
     public String getDescription();
+    
+    /**
+     * Set the tag.
+     * @param tag
+     */
+    public void setTag(String tag);
+    
+    /**
+     * Set the description.
+     * @param description
+     */
+    public void setDescription(String description);
 }

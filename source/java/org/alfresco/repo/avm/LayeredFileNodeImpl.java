@@ -41,6 +41,11 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
     private String fIndirection;
     
     /**
+     * The indirection version.
+     */
+    private int fIndirectionVersion;
+    
+    /**
      * Anonymous constructor.
      */
     protected LayeredFileNodeImpl()
@@ -57,6 +62,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
     {
         super(store.getAVMRepository().issueID(), store);
         fIndirection = other.getIndirection();
+        fIndirectionVersion = -1;
         setVersionID(other.getVersionID() + 1);
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
@@ -74,6 +80,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
     {
         super(store.getAVMRepository().issueID(), store);
         fIndirection = indirection;
+        fIndirectionVersion = -1;
         setVersionID(1);
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
@@ -168,6 +175,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
                                      getGuid(),
                                      getVersionID(),
                                      getUnderlying(lPath),
+                                     getUnderlyingVersion(lPath),
                                      false,
                                      -1,
                                      false,
@@ -197,6 +205,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
                                      getGuid(),
                                      getVersionID(),
                                      getUnderlying(lPath),
+                                     getUnderlyingVersion(lPath),
                                      false,
                                      -1,
                                      false,
@@ -211,7 +220,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      * @param parentIndirection The parent indirection.
      * @return The descriptor.
      */
-    public AVMNodeDescriptor getDescriptor(String parentPath, String name, String parentIndirection)
+    public AVMNodeDescriptor getDescriptor(String parentPath, String name, String parentIndirection, int parentIndirectionVersion)
     {
         BasicAttributes attrs = getBasicAttributes();
         String path = parentPath.endsWith("/") ? parentPath + name : parentPath + "/" + name;
@@ -228,6 +237,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
                                      getGuid(),
                                      getVersionID(),
                                      fIndirection,
+                                     fIndirectionVersion,
                                      false,
                                      -1,
                                      false,
@@ -269,7 +279,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      */
     public ContentData getContentData(Lookup lPath)
     {
-        Lookup lookup = lPath.getAVMStore().getAVMRepository().lookup(-1, getIndirection(), false);
+        Lookup lookup = lPath.getAVMStore().getAVMRepository().lookup(getUnderlyingVersion(lPath), getIndirection(), false);
         if (lookup == null)
         {
             throw new AVMException("Invalid target.");
@@ -281,5 +291,41 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
         }
         FileNode file = (FileNode)node;
         return file.getContentData(lookup);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.Layered#getUnderlyingVersion(org.alfresco.repo.avm.Lookup)
+     */
+    public int getUnderlyingVersion(Lookup lookup)
+    {
+        if (lookup.getVersion() == -1)
+        {
+            return -1;
+        }
+        return fIndirectionVersion;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.LayeredFileNode#getIndirectionVersion()
+     */
+    public int getIndirectionVersion()
+    {
+        return fIndirectionVersion;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.LayeredFileNode#setIndirectionVersion(int)
+     */
+    public void setIndirectionVersion(int version)
+    {
+        fIndirectionVersion = version;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.LayeredFileNode#copyLiterally(org.alfresco.repo.avm.Lookup)
+     */
+    public LayeredFileNode copyLiterally(Lookup lookup)
+    {
+        return new LayeredFileNodeImpl(this, lookup.getAVMStore());
     }
 }

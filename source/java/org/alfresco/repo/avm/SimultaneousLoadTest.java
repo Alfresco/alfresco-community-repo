@@ -65,6 +65,7 @@ public class SimultaneousLoadTest extends AVMServiceTestBase
 //        }
     }
     
+    @SuppressWarnings("unused")
     private class Loader implements Runnable
     {
         /**

@@ -69,6 +69,11 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     private boolean fOpacity;
     
     /**
+     * The indirection version.
+     */
+    private int fIndirectionVersion;
+    
+    /**
      * Default constructor. Called by Hibernate.
      */
     protected LayeredDirectoryNodeImpl()
@@ -85,6 +90,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         super(store.getAVMRepository().issueID(), store);
         fLayerID = -1;
         fIndirection = indirection;
+        fIndirectionVersion = -1;
         fPrimaryIndirection = true;
         fOpacity = false;
         if (toCopy != null)
@@ -115,8 +121,9 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                                     AVMStore repos)
     {
         super(repos.getAVMRepository().issueID(), repos);
-        fIndirection = other.getUnderlying();
+        fIndirection = other.getIndirection();
         fPrimaryIndirection = other.getPrimaryIndirection();
+        fIndirectionVersion = -1;
         fLayerID = -1;
         fOpacity = false;
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
@@ -150,6 +157,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         super(store.getAVMRepository().issueID(), store);
         fIndirection = null;
         fPrimaryIndirection = false;
+        fIndirectionVersion = -1;
         fLayerID = -1;
         fOpacity = false;
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
@@ -186,6 +194,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         super(store.getAVMRepository().issueID(), store);
         fIndirection = srcLookup.getIndirectionPath() + "/" + name;
         fPrimaryIndirection = true;
+        fIndirectionVersion = -1;
         fLayerID = -1;
         fOpacity = false;
         setVersionID(dir.getVersionID() + 1);
@@ -223,11 +232,6 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         return fIndirection;
     }
     
-    public String getUnderlying()
-    {
-        return fIndirection;
-    }
-    
     /**
      * Get the underlying path in the Lookup's context.
      * @param lPath The Lookup.
@@ -240,6 +244,24 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             return fIndirection;
         }
         return lPath.getCurrentIndirection();
+    }
+
+    /**
+     * Get the underlying version in the lookup path context.
+     * @param lPath The Lookup.
+     * @return The effective underlying version.
+     */
+    public int getUnderlyingVersion(Lookup lPath)
+    {
+        if (lPath.getVersion() == -1)
+        {
+            return -1;
+        }
+        if (fPrimaryIndirection)
+        {
+            return fIndirectionVersion;
+        }
+        return lPath.getCurrentIndirectionVersion();
     }
     
     /**
@@ -339,7 +361,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
         else
         {
-            Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
+            Lookup lookup = AVMRepository.GetInstance().lookupDirectory(getUnderlyingVersion(lPath), getUnderlying(lPath));
             if (lookup != null)
             {
                 DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
@@ -402,7 +424,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                 continue;
             }
             AVMNodeDescriptor childDesc =
-                childNode.getDescriptor(dir.getPath(), child.getKey().getName(), dir.getIndirection());
+                childNode.getDescriptor(dir.getPath(), child.getKey().getName(), dir.getIndirection(), dir.getIndirectionVersion());
             listing.put(child.getKey().getName(), childDesc);
         }
         return listing;
@@ -434,7 +456,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                 {
                     baseListing.put(name,
                                     listing.get(name).getDescriptor(dir.getPath(), name,
-                                                                    lookup.getCurrentIndirection()));
+                                                                    lookup.getCurrentIndirection(),
+                                                                    lookup.getCurrentIndirectionVersion()));
                 }
             }
         }
@@ -450,7 +473,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                 baseListing.put(child.getKey().getName(),
                         child.getChild().getDescriptor(dir.getPath(),
                                 child.getKey().getName(),
-                                dir.getIndirection()));
+                                dir.getIndirection(),
+                                dir.getIndirectionVersion()));
             }
         }
         return baseListing;
@@ -501,7 +525,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             return null;
         }
         // Not here so check our indirection.
-        Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
+        Lookup lookup = AVMRepository.GetInstance().lookupDirectory(getUnderlyingVersion(lPath), getUnderlying(lPath));
         if (lookup != null)
         {
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
@@ -537,14 +561,15 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             }
             return entry.getChild().getDescriptor(mine.getPath(),
                                                   name,
-                                                  mine.getIndirection());
+                                                  mine.getIndirection(),
+                                                  mine.getIndirectionVersion());
         }
         // If we are opaque don't check underneath.
         if (fOpacity)
         {
             return null;
         }
-        Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, mine.getIndirection());
+        Lookup lookup = AVMRepository.GetInstance().lookupDirectory(mine.getIndirectionVersion(), mine.getIndirection());
         if (lookup != null)
         {
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
@@ -701,13 +726,16 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         String path = lPath.getRepresentedPath();
         path = AVMNodeConverter.ExtendAVMPath(path, name);
         String indirect = null;
+        int indirectionVersion = -1;
         if (fPrimaryIndirection)
         {
             indirect = fIndirection;
+            indirectionVersion = fIndirectionVersion;
         }
         else
         {
             indirect = AVMNodeConverter.ExtendAVMPath(lPath.getCurrentIndirection(), name);
+            indirectionVersion = lPath.getCurrentIndirectionVersion();
         }
         return new AVMNodeDescriptor(path,
                                      name,
@@ -722,6 +750,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                                      getGuid(),
                                      getVersionID(),
                                      indirect,
+                                     indirectionVersion,
                                      fPrimaryIndirection,
                                      fLayerID,
                                      fOpacity,
@@ -752,6 +781,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                                      getGuid(),
                                      getVersionID(),
                                      getUnderlying(lPath),
+                                     getUnderlyingVersion(lPath),
                                      fPrimaryIndirection,
                                      fLayerID,
                                      fOpacity,
@@ -766,19 +796,22 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @param parentIndirection The indirection of the parent.
      * @return The descriptor.
      */
-    public AVMNodeDescriptor getDescriptor(String parentPath, String name, String parentIndirection)
+    public AVMNodeDescriptor getDescriptor(String parentPath, String name, String parentIndirection, int parentIndirectionVersion)
     {
         BasicAttributes attrs = getBasicAttributes();
         String path = parentPath.endsWith("/") ? parentPath + name : parentPath + "/" + name;
         String indirection = null;
+        int indirectionVersion = -1;
         if (fPrimaryIndirection)
         {
             indirection = fIndirection;
+            indirectionVersion = fIndirectionVersion;
         }
         else
         {
             indirection = parentIndirection.endsWith("/") ? parentIndirection + name : 
                 parentIndirection + "/" + name;
+            indirectionVersion = parentIndirectionVersion;
         }
         return new AVMNodeDescriptor(path,
                                      name,
@@ -793,6 +826,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                                      getGuid(),
                                      getVersionID(),
                                      indirection,
+                                     indirectionVersion,
                                      fPrimaryIndirection,
                                      fLayerID,
                                      fOpacity,
@@ -898,5 +932,22 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             AVMDAOs.Instance().fChildEntryDAO.delete(entry);
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.LayeredDirectoryNode#setIndirectionVersion(int)
+     */
+    public void setIndirectionVersion(int version)
+    {
+        fIndirectionVersion = version;
+    }
+    
+    /**
+     * Get the indirection version.
+     * @return The indirection version.
+     */
+    public int getIndirectionVersion()
+    {
+        return fIndirectionVersion;
     }
 }

@@ -139,7 +139,7 @@
 	<!-- The server side repo remote transport, to be exported via RMI, etc. -->
     <bean id="repoRemoteTransport" class="org.alfresco.repo.remote.RepoRemoteTransportService">
         <property name="authenticationService">
-            <ref bean="authenticationService"/>
+            <ref bean="AuthenticationService"/>
         </property>
         <property name="repoRemote">
             <ref bean="RepoRemoteService"/>

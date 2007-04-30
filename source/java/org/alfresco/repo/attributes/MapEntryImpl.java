@@ -78,4 +78,43 @@ public class MapEntryImpl implements MapEntry
     {
         fKey = key;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (!(obj instanceof MapEntry))
+        {
+            return false;
+        }
+        return fKey.equals(((MapEntry)obj).getKey());
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode()
+    {
+        return fKey.hashCode();
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("[MapEntry:");
+        builder.append(fKey.toString());
+        builder.append(']');
+        return builder.toString();
+    }
 }

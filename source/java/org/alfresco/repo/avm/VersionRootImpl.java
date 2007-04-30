@@ -240,5 +240,20 @@ class VersionRootImpl implements VersionRoot, Serializable
     {
         fDescription = description;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("[VersionRoot:");
+        builder.append(fAVMStore.getName());
+        builder.append(':');
+        builder.append(fVersionID);
+        builder.append(']');
+        return builder.toString();
+    }
 }
 

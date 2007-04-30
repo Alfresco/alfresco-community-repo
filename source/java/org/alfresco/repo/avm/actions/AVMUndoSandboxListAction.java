@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
  */
 public class AVMUndoSandboxListAction extends ActionExecuterAbstractBase 
 {
+    @SuppressWarnings("unused")
     private static Logger fgLogger = Logger.getLogger(AVMUndoSandboxListAction.class);
     
     public static final String NAME = "avm-undo-list";

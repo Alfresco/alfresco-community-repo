@@ -64,6 +64,7 @@ public class AVMServiceImpl implements AVMService
 {
     public static final String SYSTEM = "system";
     
+    @SuppressWarnings("unused")
     private static Logger fgLogger = Logger.getLogger(AVMServiceImpl.class);
     
     /**
@@ -615,6 +616,7 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Store is null.");
         }
+        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         return fAVMRepository.createSnapshot(store, tag, description);
     }
 

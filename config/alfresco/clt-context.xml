@@ -10,6 +10,9 @@
         <property name="avmRemoteTransport">
             <ref bean="avmRemoteTransport"/>
         </property>
+        <property name="clientTicketHolder">
+            <ref bean="clientTicketHolder"/>
+        </property>
     </bean>
     
     <bean id="avmRemoteTransport" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
@@ -27,6 +30,9 @@
 	<bean id="avmSyncService" class="org.alfresco.repo.remote.AVMSyncServiceClient">
 	    <property name="avmSyncServiceTransport">
 	    	<ref bean="avmSyncServiceTransport"/>
+	    </property>
+	    <property name="clientTicketHolder">
+	        <ref bean="clientTicketHolder"/>
 	    </property>
 	</bean>
 
@@ -69,6 +75,9 @@
     <bean id="repoRemote" class="org.alfresco.repo.remote.RepoRemoteImpl">
         <property name="repoRemoteTransport">
             <ref bean="repoRemoteTransport"/>
+        </property>
+        <property name="clientTicketHolder">
+            <ref bean="clientTicketHolder"/>
         </property>
     </bean>
 </beans>

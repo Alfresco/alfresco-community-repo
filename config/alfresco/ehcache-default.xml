@@ -180,6 +180,31 @@
         eternal="true"
         overflowToDisk="false"
         />
+	<!-- Attribute Service Caches. -->
+	<cache
+	    name="org.alfresco.repo.attributes.AttributeImpl"
+	    maxElementsInMemory="5000"
+	    eternal="true"
+	    overflowToDisk="false"
+	    />
+	<cache
+	    name="org.alfresco.repo.attributes.ListEntryImpl"
+	    maxElementsInMemory="2000"
+	    eternal="true"
+	    overflowToDisk="false"
+	    />
+	<cache
+		name="org.alfresco.repo.attributes.MapEntryImpl"
+		maxElementsInMemory="2000"
+		eternal="true"
+		overflowToDisk="false"
+		/>
+	<cache
+	    name="org.alfresco.repo.attributes.GlobalAttributeEntryImpl"
+	    maxElementsInMemory="1000"
+	    eternal="true"
+	    overflowToDisk="false"
+	    />
 
     <!-- AVM caches -->
      <cache

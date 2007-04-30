@@ -109,9 +109,10 @@ public interface AVMNode
      * @param parentPath The parent path.
      * @param name The name looked up as.
      * @param parentIndirection The indirection of the parent.
+     * @param parentIndirectionVersion The indirection version of the parent.
      * @return The descriptor for this node.
      */
-    public AVMNodeDescriptor getDescriptor(String parentPath, String name, String parentIndirection);
+    public AVMNodeDescriptor getDescriptor(String parentPath, String name, String parentIndirection, int parentIndirectionVersion);
     
     /**
      * Get the object id.

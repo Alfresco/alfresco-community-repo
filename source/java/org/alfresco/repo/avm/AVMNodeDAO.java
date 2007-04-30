@@ -22,7 +22,6 @@
  * http://www.alfresco.com/legal/licensing" */
 package org.alfresco.repo.avm;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**

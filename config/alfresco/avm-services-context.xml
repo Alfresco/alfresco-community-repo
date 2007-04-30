@@ -88,6 +88,12 @@
 		</property>
 	</bean>
 		
+	<bean id="versionLayeredNodeEntryDAO" class="org.alfresco.repo.avm.hibernate.VersionLayeredNodeEntryDAOHibernate">
+	    <property name="sessionFactory">
+	        <ref bean="sessionFactory"/>
+	    </property>
+	</bean>
+		
 	<bean id="avmDAOs" class="org.alfresco.repo.avm.AVMDAOs">
 		<property name="issuerDAO">
 			<ref bean="issuerDAO"/>
@@ -127,6 +133,9 @@
 		</property>
 		<property name="listEntryDAO">
 		    <ref bean="listEntryDAO"/>
+		</property>
+		<property name="versionLayeredNodeEntryDAO">
+		    <ref bean="versionLayeredNodeEntryDAO"/>
 		</property>
 	</bean>
 	

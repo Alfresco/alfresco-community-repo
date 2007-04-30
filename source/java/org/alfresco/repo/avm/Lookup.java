@@ -26,6 +26,8 @@ package org.alfresco.repo.avm;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.util.Pair;
+
 /**
  * This holds all the information necessary to perform operations
  * on AVMNodes, and is structured internally as a list of path components
@@ -95,10 +97,16 @@ class Lookup
      */
     private boolean fNeedsCopying;
     
+    /**
+     * The version that is being looked up.
+     */
+    private int fVersion;
+    
     public Lookup(Lookup other, AVMNodeDAO nodeDAO, AVMStoreDAO storeDAO)
     {
         fValid = true;
         fAVMStore = storeDAO.getByID(other.fAVMStore.getId());
+        fVersion = other.fVersion;
         if (fAVMStore == null)
         {
             fValid = false;
@@ -128,6 +136,7 @@ class Lookup
                 LookupComponent newComp = new LookupComponent();
                 newComp.setName(comp.getName());
                 newComp.setIndirection(comp.getIndirection());
+                newComp.setIndirectionVersion(comp.getIndirectionVersion());
                 newComp.setNode(nodeDAO.getByID(comp.getNode().getId()));
                 if (newComp.getNode() == null)
                 {
@@ -173,11 +182,12 @@ class Lookup
      * @param store The AVMStore that's being looked in.
      * @param storeName The name of that AVMStore.
      */
-    public Lookup(AVMStore store, String storeName)
+    public Lookup(AVMStore store, String storeName, int version)
     {
         fValid = true;
         fAVMStore = store;
         fStoreName = storeName;
+        fVersion = version;
         fComponents = new ArrayList<LookupComponent>();
         fLayeredYet = false;
         fTopLayer = null;
@@ -222,11 +232,14 @@ class Lookup
                 LayeredDirectoryNode oNode = (LayeredDirectoryNode)node;
                 if (oNode.getPrimaryIndirection())
                 {
-                    comp.setIndirection(oNode.getUnderlying());
+                    comp.setIndirection(oNode.getIndirection());
+                    comp.setIndirectionVersion(oNode.getIndirectionVersion());
                 }
                 else
                 {
-                    comp.setIndirection(computeIndirection(name));
+                    Pair<String, Integer> ind = computeIndirection(name);
+                    comp.setIndirection(ind.getFirst());
+                    comp.setIndirectionVersion(ind.getSecond());
                 }
                 fLayeredYet = true;
                 // Record the first layer seen.
@@ -259,11 +272,14 @@ class Lookup
             // Record the indirection path that should be used.
             if (oNode.getPrimaryIndirection())
             {
-                comp.setIndirection(oNode.getUnderlying());
+                comp.setIndirection(oNode.getIndirection());
+                comp.setIndirectionVersion(-1);
             }
             else
             {
-                comp.setIndirection(computeIndirection(name));
+                Pair<String, Integer> ind = computeIndirection(name);
+                comp.setIndirection(ind.getFirst());
+                comp.setIndirectionVersion(-1);
             }
             fLayeredYet = true;
             // Record the first layer seen.
@@ -278,7 +294,9 @@ class Lookup
         // be copied so we will need to compute an indirection path.
         else if (fLayeredYet)
         {
-            comp.setIndirection(computeIndirection(name));
+            Pair<String, Integer> ind = computeIndirection(name);
+            comp.setIndirection(ind.getFirst());
+            comp.setIndirectionVersion(-1);
         }
         fComponents.add(comp);
         fPosition++;
@@ -309,16 +327,17 @@ class Lookup
      * @param name The name of the being added node.
      * @return The indirection for the being added node.
      */
-    private String computeIndirection(String name)
+    private Pair<String, Integer> computeIndirection(String name)
     {
         String parentIndirection = fComponents.get(fPosition).getIndirection();
+        int parentIndirectionVersion = fComponents.get(fPosition).getIndirectionVersion();
         if (parentIndirection.endsWith("/"))
         {
-            return parentIndirection + name;
+            return new Pair<String, Integer>(parentIndirection + name, parentIndirectionVersion);
         }
         else
         {
-            return parentIndirection + "/" + name;
+            return new Pair<String, Integer>(parentIndirection + "/" + name, parentIndirectionVersion);
         }
     }
     
@@ -379,7 +398,7 @@ class Lookup
         oNode = (LayeredDirectoryNode)node;
         // We've found it.
         StringBuilder builder = new StringBuilder();
-        builder.append(oNode.getUnderlying());
+        builder.append(oNode.getIndirection());
         for (int i = pos + 1; i <= fPosition; i++)
         {
             builder.append("/");
@@ -396,6 +415,15 @@ class Lookup
     {
         String value = fComponents.get(fPosition).getIndirection();
         return value;
+    }
+    
+    /**
+     * Get the computed indirection version for the current node.
+     * @return The indirection version.
+     */
+    public int getCurrentIndirectionVersion()
+    {
+        return fComponents.get(fPosition).getIndirectionVersion();
     }
     
     /**
@@ -474,5 +502,14 @@ class Lookup
     public boolean getDirectlyContained()
     {
         return fDirectlyContained;
+    }
+    
+    /**
+     * Get the version id that this is a lookup for.
+     * @return The version id.
+     */
+    public int getVersion()
+    {
+        return fVersion;
     }
 }

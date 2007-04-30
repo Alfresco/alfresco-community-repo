@@ -75,9 +75,11 @@ public interface AVMStore
      * a new version root.
      * @param tag The short description.
      * @param description The long description.
+     * @param snapShotMap Keeps track of snapshot ids for all stores that 
+     * end up snapshotted, possibly recursively.
      * @return The version id of the newly created snapshot.
      */
-    public int createSnapshot(String tag, String Description);
+    public int createSnapshot(String tag, String Description, Map<String, Integer> snapShotMap);
 
     /**
      * Create a new directory.

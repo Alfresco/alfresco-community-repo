@@ -28,7 +28,6 @@ import java.io.OutputStream;
 import java.util.List;
 
 import org.alfresco.repo.remote.ClientTicketHolder;
-import org.alfresco.repo.remote.ClientTicketHolderGlobal;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;

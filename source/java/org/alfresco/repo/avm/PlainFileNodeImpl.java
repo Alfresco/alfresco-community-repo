@@ -203,6 +203,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      getGuid(),
                                      getVersionID(),
                                      null,
+                                     -1,
                                      false,
                                      -1,
                                      false,
@@ -232,6 +233,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      getGuid(),
                                      getVersionID(),
                                      null,
+                                     -1,
                                      false,
                                      -1,
                                      false,
@@ -246,7 +248,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
      * @param parentIndirection The parent indirection.
      * @return The descriptor for this.
      */
-    public AVMNodeDescriptor getDescriptor(String parentPath, String name, String parentIndirection)
+    public AVMNodeDescriptor getDescriptor(String parentPath, String name, String parentIndirection, int parentIndirectionVersion)
     {
         BasicAttributes attrs = getBasicAttributes();
         String path = parentPath.endsWith("/") ? parentPath + name : parentPath + "/" + name;
@@ -263,6 +265,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      getGuid(),
                                      getVersionID(),
                                      null,
+                                     -1,
                                      false,
                                      -1,
                                      false,

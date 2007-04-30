@@ -68,6 +68,7 @@
 		    	<!-- The is the moral equivalent of the value of a symlink. -->
 		    	<property name="indirection" column="indirection"
 		    		type="string" length="511" />
+		        <property name="indirectionVersion" type="int" column="indirection_version"/>
 		    	<!-- This marks a layered directory as either knowing itself what
 		    		it points at (true) or inheriting what it points at from its
 		    		container (false). -->
@@ -99,6 +100,7 @@
 				discriminator-value="layeredfile" proxy="LayeredFileNode" lazy="true">
 				<property name="indirection" type="string" length="511"
 					column="indirection" />
+			    <property name="indirectionVersion" type="int" column="indirection_version"/>
 			</subclass>
 		</subclass>
 	</class>
@@ -203,6 +205,17 @@
 		</id>
 		<many-to-one name="node" class="AVMNodeImpl" column="node_id" foreign-key="fk_avm_asp_node"/>
 		<property name="name" column="qname" type="QName" length="200"/>
+	</class>
+	<!-- When a snapshot is created we stow away all of the layered
+	     nodes that were frozen by the snapshot so that subsequent 
+	     snapshots can find them and force copies. -->
+	<class name="VersionLayeredNodeEntryImpl" proxy="VersionLayeredNodeEntry"
+	       table="avm_version_layered_node_entries">
+	    <composite-id>
+	        <key-many-to-one name="version" class="VersionRootImpl" column="version_root_id"/>
+	        <key-property name="md5Sum" type="string" length="32" column="md5sum"/>
+	    </composite-id>
+	    <property name="path" type="string" length="512" column="path"/>
 	</class>
     <query name="ChildEntry.DeleteByParent">
     <![CDATA[

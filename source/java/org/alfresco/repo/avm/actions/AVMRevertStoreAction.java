@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
  */
 public class AVMRevertStoreAction extends ActionExecuterAbstractBase 
 {
+    @SuppressWarnings("unused")
     private static Logger fgLogger = Logger.getLogger(AVMRevertStoreAction.class);
     
     public static final String NAME = "avm-revert-store";

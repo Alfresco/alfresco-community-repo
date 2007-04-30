@@ -80,4 +80,41 @@ public class ListEntryKey implements Serializable
     {
         fList = list;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (!(obj instanceof ListEntryKey))
+        {
+            return false;
+        }
+        ListEntryKey other = (ListEntryKey)obj;
+        return fIndex == other.getIndex() &&
+               fList.equals(other.getList());
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode()
+    {
+        return fIndex + fList.hashCode();
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        return "[ListEntryKey:" + fIndex + ']';
+    }
 }

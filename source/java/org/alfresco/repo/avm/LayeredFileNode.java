@@ -28,4 +28,22 @@ package org.alfresco.repo.avm;
  */
 interface LayeredFileNode extends FileNode, Layered
 {
+    /**
+     * Set the indirection version.
+     * @param version The version to set.
+     */
+    public void setIndirectionVersion(int version);
+    
+    /**
+     * Get the indirection version.
+     * @return The indirection version.
+     */
+    public int getIndirectionVersion();
+    
+    /**
+     * Make a copy of this node that is a LayeredFileNode.
+     * @param lookup The context.
+     * @return The copy.
+     */
+    public LayeredFileNode copyLiterally(Lookup lookup);
 }

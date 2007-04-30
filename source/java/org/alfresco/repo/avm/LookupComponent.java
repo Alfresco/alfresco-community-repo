@@ -45,6 +45,11 @@ class LookupComponent
     private String fIndirection;
     
     /**
+     * The indirection version for this node (if any).
+     */
+    private int fIndirectionVersion;
+    
+    /**
      * Create a new empty lookup component.
      */
     public LookupComponent()
@@ -61,6 +66,15 @@ class LookupComponent
     }
 
     /**
+     * Get the indirection version for this component.
+     * @return The indirection version.
+     */
+    public int getIndirectionVersion()
+    {
+        return fIndirectionVersion;
+    }
+    
+    /**
      * Set the indirection.
      * @param indirection the indirection to set
      */
@@ -69,6 +83,15 @@ class LookupComponent
         fIndirection = indirection;
     }
 
+    /**
+     * Set the indirection version for this component.
+     * @param version The version to set.
+     */
+    public void setIndirectionVersion(int version)
+    {
+        fIndirectionVersion = version;
+    }
+    
     /**
      * Get the path component name.
      * @return the name

@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
  */
 public class AVMRevertToVersionAction extends ActionExecuterAbstractBase 
 {
+    @SuppressWarnings("unused")
     private static Logger fgLogger = Logger.getLogger(AVMRevertToVersionAction.class);
     
     public static final String NAME = "avm-revert-to-version";

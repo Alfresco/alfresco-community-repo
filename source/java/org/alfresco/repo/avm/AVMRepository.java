@@ -51,7 +51,6 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.log4j.Logger;
 
@@ -62,6 +61,7 @@ import org.apache.log4j.Logger;
  */
 public class AVMRepository
 {
+    @SuppressWarnings("unused")
     private static Logger fgLogger = Logger.getLogger(AVMRepository.class);
     
     /**
@@ -295,7 +295,7 @@ public class AVMRepository
         }
         dir.putChild(name, child);
         fLookupCache.onWrite(pathParts[0]);
-        return child.getDescriptor(parent.getPath(), name, parent.getIndirection());
+        return child.getDescriptor(parent.getPath(), name, parent.getIndirection(), parent.getIndirectionVersion());
     }
     
     /**
@@ -402,7 +402,7 @@ public class AVMRepository
             if (version < 0)
             {
                 fLookupCache.onSnapshot(pathParts[0]);
-                version = srcRepo.createSnapshot("Branch Snapshot", null);
+                version = srcRepo.createSnapshot("Branch Snapshot", null, new HashMap<String, Integer>());
             }
             sPath = srcRepo.lookup(version, pathParts[1], false, false);
             if (sPath == null)
@@ -748,7 +748,7 @@ public class AVMRepository
             throw new AVMNotFoundException("Store not found.");
         }
         fLookupCache.onSnapshot(storeName);
-        int result = store.createSnapshot(tag, description);
+        int result = store.createSnapshot(tag, description, new HashMap<String, Integer>());
         fCreateVersionTxnListener.versionCreated(storeName, result);
         return result;
     }
@@ -801,6 +801,7 @@ public class AVMRepository
         {
             AVMNode node = vr.getRoot();
             node.setIsRoot(false);
+            AVMDAOs.Instance().fVersionLayeredNodeEntryDAO.delete(vr);
             vrDAO.delete(vr);
         }
         List<AVMNode> newGuys = AVMDAOs.Instance().fAVMNodeDAO.getNewInStore(store);
@@ -1294,7 +1295,47 @@ public class AVMRepository
         recursiveGetHeadPaths(node, components, paths);
         return paths;
     }
-    
+
+    /**
+     * Gets all the pass from to the given node starting from the give version root.
+     * @param version The version root.
+     * @param node The node to get the paths of.
+     * @return A list of all paths in the given version to the node.
+     */
+    public List<String> getVersionPaths(VersionRoot version, AVMNode node)
+    {
+        List<String> paths = new ArrayList<String>();   
+        List<String> components = new ArrayList<String>();
+        recursiveGetVersionPaths(node, components, paths, version.getRoot(), version.getAvmStore().getName());
+        return paths;
+    }
+
+    /**
+     * Helper to get all version paths.
+     * @param node The current node we are examining.
+     * @param components The current path components.
+     * @param paths The list to contain found paths.
+     * @param root The root node of the version.
+     * @param storeName The name of the store.
+     */    
+    private void recursiveGetVersionPaths(AVMNode node, List<String> components, List<String> paths, DirectoryNode root, String storeName)
+    {
+        if (node.equals(root))
+        {
+            paths.add(this.makePath(components, storeName));
+            return;
+        }
+        List<ChildEntry> entries = AVMDAOs.Instance().fChildEntryDAO.getByChild(node);
+        for (ChildEntry entry : entries)
+        {
+            String name = entry.getKey().getName();
+            components.add(name);
+            AVMNode parent = entry.getKey().getParent();
+            recursiveGetVersionPaths(parent, components, paths, root, storeName);
+            components.remove(components.size() - 1);
+        }
+    }
+
     /**
      * Get all paths in a particular store in the head version for
      * a particular node.
@@ -1628,7 +1669,7 @@ public class AVMRepository
             {
                 break;
             }
-            history.add(node.getDescriptor("UNKNOWN", "UNKNOWN", "UNKNOWN"));
+            history.add(node.getDescriptor("UNKNOWN", "UNKNOWN", "UNKNOWN", -1));
         }
         return history;
     }
@@ -1991,7 +2032,7 @@ public class AVMRepository
                 {
                     if (node.equals(check))
                     {
-                        return node.getDescriptor("", "", "");
+                        return node.getDescriptor("", "", "", -1);
                     }
                 }
             }
@@ -2002,7 +2043,7 @@ public class AVMRepository
                 {
                     if (node.equals(check))
                     {
-                        return node.getDescriptor("", "", "");
+                        return node.getDescriptor("", "", "", -1);
                     }
                 }
             }

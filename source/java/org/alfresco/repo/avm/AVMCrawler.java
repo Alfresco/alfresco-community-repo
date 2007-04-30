@@ -126,7 +126,7 @@ class AVMCrawler implements Runnable
         {
             List<AVMStoreDescriptor> reps = fService.getStores();
             fOpCount++;
-            AVMStoreDescriptor repDesc = reps.get(fRandom.nextInt(12));
+            AVMStoreDescriptor repDesc = reps.get(fRandom.nextInt(reps.size()));
             Map<String, AVMNodeDescriptor> rootListing = fService.getDirectoryListing(-1, repDesc.getName() + ":/");
             fOpCount++;
             // Get all the directories in the root.
@@ -188,6 +188,10 @@ class AVMCrawler implements Runnable
                     for (int i = 0; i < 1; i++)
                     {
                         String name = randomName();
+                        if (listing.containsKey(name))
+                        {
+                            break;
+                        }
                         System.out.println("Creating File: " + name);
                         fService.createFile(dir.getPath(), name, 
                             new ByteArrayInputStream(("I am " + name).getBytes()));
@@ -198,6 +202,10 @@ class AVMCrawler implements Runnable
                 if (fRandom.nextInt(100) == 0)
                 {
                     String name = randomName();
+                    if (listing.containsKey(name))
+                    {
+                        break;
+                    }
                     System.out.println("Creating Directory: " + name);
                     fService.createDirectory(dir.getPath(), name);
                     fOpCount++;

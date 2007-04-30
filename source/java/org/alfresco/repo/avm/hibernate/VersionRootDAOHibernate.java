@@ -157,8 +157,9 @@ class VersionRootDAOHibernate extends HibernateDaoSupport implements
     public VersionRoot getMaxVersion(AVMStore rep)
     {
         Query query = getSession().createQuery("from VersionRootImpl vr " +
-                                               "where vr.versionID = " +
-                                               "(select max(v.versionID) from VersionRootImpl v)");
+                                               "where vr.avmStore = :store and vr.versionID = " +
+                                               "(select max(v.versionID) from VersionRootImpl v where v.avmStore = :store)");
+        query.setEntity("store", rep);
         return (VersionRoot)query.uniqueResult();
     }
     

@@ -99,6 +99,11 @@ public class AVMNodeDescriptor implements Serializable
     private String fIndirection;
     
     /**
+     * The indirection version if this is a layer.
+     */
+    private int fIndirectionVersion;
+    
+    /**
      * Is this a primary indirection node.
      */
     private boolean fIsPrimary;
@@ -143,6 +148,7 @@ public class AVMNodeDescriptor implements Serializable
      * @param versionID The version id.
      * @param guid The GUID.
      * @param indirection The indirection.
+     * @param indirectionVersion The indirection version.
      * @param isPrimary Whether this is a primary indirection.
      * @param layerID The layer id.
      * @param length The file length.
@@ -161,6 +167,7 @@ public class AVMNodeDescriptor implements Serializable
                              String guid,
                              int versionID,
                              String indirection,
+                             int indirectionVersion,
                              boolean isPrimary,
                              long layerID,
                              boolean opacity,
@@ -180,6 +187,7 @@ public class AVMNodeDescriptor implements Serializable
         fGuid = guid;
         fVersionID = versionID;
         fIndirection = indirection;
+        fIndirectionVersion = indirectionVersion;
         fIsPrimary = isPrimary;
         fLayerID = layerID;
         fLength = length;
@@ -223,6 +231,15 @@ public class AVMNodeDescriptor implements Serializable
         return fIndirection;
     }
 
+    /**
+     * Get the indirection version.
+     * @return The indirection version.
+     */
+    public int getIndirectionVersion()
+    {
+        return fIndirectionVersion;
+    }
+    
     /**
      * Is this a primary indirection node.  Will always
      * be false for non-layered nodes.

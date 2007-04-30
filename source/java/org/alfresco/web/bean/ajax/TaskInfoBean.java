@@ -58,7 +58,7 @@ public class TaskInfoBean
    private WorkflowService workflowService;
    
    /**
-    * Returns information on the node identified by the 'taskId'
+    * Returns information for the workflow task identified by the 'taskId'
     * parameter found in the ExternalContext.
     * <p>
     * The result is the formatted HTML to show on the client.
@@ -79,6 +79,35 @@ public class TaskInfoBean
       {
          Repository.getServiceRegistry(context).getTemplateService().processTemplate(
                "/alfresco/templates/client/task_summary_panel.ftl", getModel(task), out);
+      }
+      else
+      {
+         out.write("<span class='errorMessage'>Task could not be found.</span>");
+      }
+   }
+   
+   /**
+    * Returns the resource list for the workflow task identified by the 'taskId'
+    * parameter found in the ExternalContext.
+    * <p>
+    * The result is the formatted HTML to show on the client.
+    */
+   public void sendTaskResources() throws IOException
+   {
+      FacesContext context = FacesContext.getCurrentInstance();
+      ResponseWriter out = context.getResponseWriter();
+      
+      String taskId = (String)context.getExternalContext().getRequestParameterMap().get("taskId");
+      if (taskId == null || taskId.length() == 0)
+      {
+         throw new IllegalArgumentException("'taskId' parameter is missing");
+      }
+      
+      WorkflowTask task = this.workflowService.getTaskById(taskId);
+      if (task != null)
+      {
+         Repository.getServiceRegistry(context).getTemplateService().processTemplate(
+               "/alfresco/templates/client/task_resource_panel.ftl", getModel(task), out);
       }
       else
       {

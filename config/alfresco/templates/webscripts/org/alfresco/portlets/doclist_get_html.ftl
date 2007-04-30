@@ -19,7 +19,7 @@
 
 <#-- get the filter mode from the passed in args -->
 <#-- filters: 0=all, 1=word, 2=html, 3=pdf, 4=recent -->
-<#if args.f?exists><#assign filter=args.f?number><#else><#assign filter=0></#if>
+<#if args.f?exists && args.f?length!=0><#assign filter=args.f?number><#else><#assign filter=0></#if>
 
 <#-- get the path location from the passed in args -->
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>

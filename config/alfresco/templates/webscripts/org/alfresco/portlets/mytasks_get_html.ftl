@@ -34,7 +34,7 @@
 
 <#-- get the filter mode from the passed in args -->
 <#-- filters: 0=all, 1=today, 2=next week, 3=no due date, 4=overdue -->
-<#if args.f?exists><#assign filter=args.f?number><#else><#assign filter=0></#if>
+<#if args.f?exists && args.f?length!=0><#assign filter=args.f?number><#else><#assign filter=0></#if>
 
 <table border=0 cellspacing=0 cellpadding=0 class="taskTable">
 <tr>
@@ -68,7 +68,7 @@
               (filter=2 && hasDue && (dateCompare(due?date, date?date) == 1 && dateCompare(date?date, due?date, weekms) == 1)) ||
               (filter=4 && hasDue && (dateCompare(date?date, due?date) == 1))>
          <#assign count=count+1>
-         <div class="taskRow">
+         <div class="taskRow" id="${t.id}">
             <div class="taskTitle">
                <div class="taskIndicator">
                <#if hasDue>
@@ -94,13 +94,22 @@
                </div>
             </div>
             <div class="taskDetail">
-               <table cellpadding='2' cellspacing='0' style="margin-left:32px;">
-   	            <tr><td class="taskMetadata">Type:</td><td class="taskMetadata">${t.type?html}</td></tr>
-   	            <tr><td class="taskMetadata">Start Date:</td><td class="taskMetadata">${t.startDate?date}</td></tr>
-   	            <tr><td class="taskMetadata">Priority:</td><td class="taskMetadata">${t.properties["bpm:priority"]}</td>
-                  <tr><td class="taskMetadata">Status:</td><td class="taskMetadata">${t.properties["bpm:status"]}</td>
-                  <tr><td class="taskMetadata">Percent Complete:</td><td class="taskMetadata">${t.properties["bpm:percentComplete"]}%</td>
-   	         </table>
+               <div style="float:left">
+                  <table cellpadding='2' cellspacing='0' style="margin-left:32px;margin-top:20px">
+                     <tr><td class="taskMetaprop">Status:</td><td class="taskMetadata">${t.properties["bpm:status"]}</td>
+                     <tr><td class="taskMetaprop">Priority:</td><td class="taskMetadata">${t.properties["bpm:priority"]}</td>
+                     <tr><td class="taskMetaprop">Start Date:</td><td class="taskMetadata">${t.startDate?date}</td></tr>
+      	            <tr><td class="taskMetaprop">Type:</td><td class="taskMetadata">${t.type?html}</td></tr>
+                     <tr><td class="taskMetaprop">Complete:</td><td class="taskMetadata">${t.properties["bpm:percentComplete"]}%</td>
+      	         </table>
+   	         </div>
+   	         <div class="taskResourceHeader">Resources:</div>
+   	         <div class="taskResources"></div>
+   	         <div>
+      	         <table class="taskActions" style="padding-left:16px">
+      	            <tr><td>Approve</td><td style="padding-left:64px">Reject</td></tr>
+      	         </table>
+      	      </div>
             </div>
          </div>
          </#if>
@@ -217,10 +226,10 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
 
 .taskDetail
 {
+   color: #5A5741;
    background-color: #DFC900;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 12px;
-   color: #000000;
    margin: 0px;
    display: none;
    overflow: hidden;
@@ -233,10 +242,53 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    border-top: 1px solid #82770B !important;
 }
 
+.taskResources
+{
+   border-left: 1px solid #0092DD;
+   border-top: 1px solid #0092DD;
+   border-bottom: 1px solid #CCD4DB;
+   border-right: 1px solid #CCD4DB;
+   background-color: #F8FCFD;
+   margin: 4px 0px 0px 16px;
+   width: 400px;
+   height: 80px;
+   overflow: hidden;
+}
+
+.taskResourceHeader
+{
+   color: #5A5741;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   padding: 0px 0px 0px 16px;
+   font-weight: bold;
+   display: inline;
+}
+
+.taskResources td
+{
+   color: #5A5741;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+}
+
+.taskActions td
+{
+   color: #5A5741;
+   font-size: 14px;
+   font-weight: bold;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+}
+
 .taskMetadata
 {
    color: #5A5741;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+}
+
+.taskMetaprop
+{
+   color: #5A5741;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-weight: bold;
 }
 
 .paperEdgeRight

@@ -14,16 +14,31 @@ var MyTasks = {
       var items = $$('#taskPanel .taskItem');
       var infos = $$('#taskPanel .taskInfo');
       var details = $$('#taskPanel .taskDetail');
+      var resources = $$('#taskPanel .taskResources');
       var fxInfo = new Fx.Elements(infos, {wait: false, duration: 500, transition: Fx.Transitions.linear});
-      var fxDetail = new Fx.Elements(details, {wait: false, duration: 500, transition: Fx.Transitions.linear});
+      var fxDetail = new Fx.Elements(details, {wait: false, duration: 500, transition: Fx.Transitions.linear,
+         onComplete: function()
+         {
+            // event handler to ensure 
+            this.elements.each(function(detail, i)
+            {
+               if (detail.parentNode.isOpen == true)
+               {
+                  detail.getElementsByTagName("div")[2].setStyle('overflow', 'auto');
+               }
+            });
+         }
+      });
       tasks.each(function(task, i)
       {
          var item = items[i];
          var info = infos[i];
          var detail = details[i];
+         var resource = resources[i];
 
          // animated elements defaults
          task.isOpen = false;
+         task.loadingResources = false;
          item.defBColor = (item.getStyle('background-color') == 'transparent') ? '' : item.getStyle('background-color');
          detail.defHeight = 0;
          detail.setStyle('opacity', 0);
@@ -117,21 +132,41 @@ var MyTasks = {
                // flag this task as open
                task.isOpen = true;
                
+               if (task.loadingResources == false)
+               {
+                  // ajax call to populate the task resource list
+                  task.loadingResources = true;
+                  YAHOO.util.Connect.asyncRequest(
+                     "POST",
+                     getContextPath() + '/ajax/invoke/TaskInfoBean.sendTaskResources',
+                     { 
+                        success: function(response)
+                        {
+                           // set the resource list panel html
+                           var resource = response.argument[0];
+                           resource.innerHTML = response.responseText;
+                        },
+                        failure: handleErrorYahoo,    // global error handler
+                        argument: [resource]
+                     },
+                     "taskId=" + task.id);
+               }
+               
                // fade in info button
                animInfo[i] = {'opacity': [infoOpacity, 1]};
 
                // slide and fade in the details panel
                animDetail[i] = {
-                  'height': [detailHeight, detail.defHeight + 100],
+                  'height': [detailHeight, detail.defHeight + 140],
                   'opacity': [detail.getStyle('opacity'), 1]};
 
                // close other open tasks and toggle this one if it's already open
                tasks.each(function(otherTask, j)
                {
                   var otherItem = items[j],
-                     otherInfo = infos[j],
-                     otherDetail = details[j];
-                     
+                      otherInfo = infos[j],
+                      otherDetail = details[j];
+                  
                   if (otherTask != task)
                   {
                      // close any other open tasks
@@ -154,6 +189,8 @@ var MyTasks = {
                      {
                         animInfo[j] = {'opacity': [otherOpacity, 0]};
                      }
+                     
+                     otherDetail.getElementsByTagName("div")[2].setStyle('overflow', 'hidden');
                   }
                });
             }
@@ -170,6 +207,8 @@ var MyTasks = {
                animDetail[i] = {
                   'height': [detailHeight, detail.defHeight],
                   'opacity': [detail.getStyle('opacity'), 0]};
+               
+               detail.getElementsByTagName("div")[2].setStyle('overflow', 'hidden');
             }
             fxInfo.start(animInfo);
             fxDetail.start(animDetail);

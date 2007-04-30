@@ -214,6 +214,24 @@
 	    <property name="purgeVersionTxnListener">
 		    <ref bean="purgeVersionTxnListener"/>
 		</property>
+		<property name="avmStoreDAO">
+		    <ref bean="avmStoreDAO"/>
+		</property>
+		<property name="avmNodeDAO">
+		    <ref bean="avmNodeDAO"/>
+		</property>
+		<property name="versionRootDAO">
+		    <ref bean="versionRootDAO"/>
+		</property>
+		<property name="versionLayeredNodeEntryDAO">
+		    <ref bean="versionLayeredNodeEntryDAO"/>
+		</property>
+		<property name="avmStorePropertyDAO">
+		    <ref bean="avmStorePropertyDAO"/>
+		</property>
+		<property name="childEntryDAO">
+		    <ref bean="childEntryDAO"/>
+		</property>
 	</bean>
 
 	<!-- A Local implementation of the Remote AVM interface. -->

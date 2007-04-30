@@ -235,7 +235,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             }
             parent.putChild(parentName[1], newChild);
         }
-        AVMDAOs.Instance().fVersionLayeredNodeEntryDAO.delete(lastVersion);
+        // AVMDAOs.Instance().fVersionLayeredNodeEntryDAO.delete(lastVersion);
         // Clear out the new nodes.
         List<AVMNode> newInRep = AVMDAOs.Instance().fAVMNodeDAO.getNewInStore(this);
         List<AVMNode> layeredNodes = new ArrayList<AVMNode>();

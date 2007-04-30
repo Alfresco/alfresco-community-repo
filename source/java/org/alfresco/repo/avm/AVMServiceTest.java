@@ -83,6 +83,34 @@ import org.alfresco.util.Pair;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
+    public void testBranchLayerSnapshot()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createStore("layer");
+            fService.createDirectory("layer:/", "root");
+            fService.createLayeredDirectory("main:/a", "layer:/root", "layer");
+            fService.createSnapshot("layer", null, null);
+            fService.createFile("main:/a", "dummy").close();
+            fService.createFile("layer:/root/layer", "pygmy");
+            fService.createSnapshot("layer", null, null);
+            fService.createStore("branch");
+            fService.createBranch(1, "layer:/root", "branch:/", "branch");
+            fService.createSnapshot("branch", null, null);
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            assertEquals(fService.lookup(1, "main:/a/b/c/foo").getId(),
+                         fService.lookup(1, "branch:/branch/layer/b/c/foo").getId());
+            assertEquals(fService.lookup(-1, "main:/a/b/c/foo").getId(),
+                         fService.lookup(-1, "branch:/branch/layer/b/c/foo").getId());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+    }
+    
     /**
      * Test Deployment.
      */

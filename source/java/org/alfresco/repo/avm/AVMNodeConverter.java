@@ -141,4 +141,16 @@ public class AVMNodeConverter
         decomposed[1] = path.substring(off + 1);
         return decomposed;
     }
+    
+    /**
+     * Normalize an AVM path.
+     * @param path The incoming path.
+     * @return The normalized path.
+     */
+    public static String NormalizePath(String path)
+    {
+        path = path.replaceAll("/+", "/");
+        path = path.replaceAll("/$", "");
+        return path;
+    }
 }

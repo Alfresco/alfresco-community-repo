@@ -377,8 +377,12 @@ public class DeclarativeWebScriptRegistry implements WebScriptRegistry, Applicat
             String shortName = shortNameElement.getTextTrim();
 
             // retrieve description
+            String description = null;
             Element descriptionElement = rootElement.element("description");
-            String description = descriptionElement.getTextTrim();
+            if (descriptionElement != null)
+            {
+                description = descriptionElement.getTextTrim();
+            }
             
             // retrieve urls
             List urlElements = rootElement.elements("url");

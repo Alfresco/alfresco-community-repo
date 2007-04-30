@@ -13,6 +13,7 @@
   <node-type element="milestone-node" class="org.jbpm.graph.node.MilestoneNode" />
   <node-type element="interleave-start" class="org.jbpm.graph.node.InterleaveStart" />
   <node-type element="interleave-end" class="org.jbpm.graph.node.InterleaveEnd" />
+  <node-type element="mail-node" class="org.jbpm.graph.node.MailNode" />
   <node-type element="page" class="org.jboss.seam.pageflow.Page" />
   <node-type element="start-page" class="org.jboss.seam.pageflow.Page" />
 </node-types>

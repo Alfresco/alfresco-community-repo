@@ -101,7 +101,7 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         while (iter.hasNext())
         {
            Element element = iter.next();
-           if (element.getNodeType() == Element.ELEMENT_NODE)
+           if (element.getNodeType() == org.dom4j.Node.ELEMENT_NODE)
            {
               isTextOnly = false;
            }

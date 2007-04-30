@@ -600,6 +600,10 @@ public class WorkflowInterpreter
                 currentPath = null;
                 out.print(executeCommand("show definitions"));
             }
+            else
+            {
+                return "Syntax Error.\n";
+            }
         }
         
         else if (command[0].equals("use"))

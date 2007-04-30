@@ -1,0 +1,7 @@
+<action-types>
+  <action-type element="action" class="org.jbpm.graph.def.Action" />
+  <action-type element="create-timer" class="org.alfresco.repo.workflow.jbpm.CreateTimerAction" />
+  <action-type element="cancel-timer" class="org.jbpm.scheduler.def.CancelTimerAction" />
+  <action-type element="script" class="org.jbpm.graph.action.Script" />
+  <action-type element="mail" class="org.jbpm.graph.action.MailAction" />
+</action-types>

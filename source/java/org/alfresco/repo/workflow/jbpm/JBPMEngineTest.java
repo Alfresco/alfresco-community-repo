@@ -87,10 +87,10 @@ public class JBPMEngineTest extends BaseSpringTest
         packageComponent = (WorkflowPackageComponent)applicationContext.getBean("workflowPackageImpl"); 
         
         // deploy test process messages
-        I18NUtil.registerResourceBundle("org/alfresco/repo/workflow/jbpm/test-messages");
+        I18NUtil.registerResourceBundle("jbpmresources/test-messages");
         
         // deploy test process definition
-        ClassPathResource processDef = new ClassPathResource("org/alfresco/repo/workflow/jbpm/test_processdefinition.xml");
+        ClassPathResource processDef = new ClassPathResource("jbpmresources/test_processdefinition.xml");
         assertFalse(workflowComponent.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
         WorkflowDeployment deployment = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML); 
         testWorkflowDef = deployment.definition; 
@@ -123,7 +123,7 @@ public class JBPMEngineTest extends BaseSpringTest
     
     public void testDeployWorkflow() throws Exception
     {
-        ClassPathResource processDef = new ClassPathResource("org/alfresco/repo/workflow/jbpm/test_processdefinition.xml");
+        ClassPathResource processDef = new ClassPathResource("jbpmresources/test_processdefinition.xml");
         WorkflowDeployment deployment = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML); 
         testWorkflowDef = deployment.definition; 
         assertNotNull(testWorkflowDef);
@@ -472,7 +472,7 @@ public class JBPMEngineTest extends BaseSpringTest
         throws IOException
     {
         // deploy test script definition
-        ClassPathResource processDef = new ClassPathResource("org/alfresco/repo/workflow/jbpm/test_script.xml");
+        ClassPathResource processDef = new ClassPathResource("jbpmresources/test_script.xml");
         assertFalse(workflowComponent.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
         WorkflowDeployment deployment = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML); 
         assertNotNull(deployment);

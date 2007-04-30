@@ -1,0 +1,4 @@
+<parsers>
+  <parser class="org.alfresco.repo.workflow.jbpm.JBPMJpdlArchiveParser" />
+  <parser class="org.jbpm.jpdl.par.FileArchiveParser" />
+</parsers>

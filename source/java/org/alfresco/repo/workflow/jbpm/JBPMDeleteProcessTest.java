@@ -57,8 +57,8 @@ public class JBPMDeleteProcessTest extends TestCase {
       jbpmConfiguration = JbpmConfiguration.parseXmlString(
         "<jbpm-configuration>" +
         "  <jbpm-context>" +
-        "    <service name='persistence' " +
-        "             factory='org.jbpm.persistence.db.DbPersistenceServiceFactory' />" + 
+        "    <service name='persistence' factory='org.jbpm.persistence.db.DbPersistenceServiceFactory' />" + 
+        "    <service name='tx' factory='org.jbpm.tx.TxServiceFactory' />" +
         "  </jbpm-context>" +
         "  <string name='resource.hibernate.cfg.xml' " +
         "          value='jbpmresources/hibernate.cfg.xml' />" +
@@ -164,7 +164,7 @@ public class JBPMDeleteProcessTest extends TestCase {
           //
           // Uncomment the following line to force constraint violation
           //
-          // taskInstance.setVariableLocally("var1", "var1TaskValue");
+          taskInstance.setVariableLocally("var1", "var1TaskValue");
           
           taskInstance.setVariableLocally("var2", "var2UpdatedValue");
           taskInstance.end();
@@ -185,7 +185,7 @@ public class JBPMDeleteProcessTest extends TestCase {
 
           GraphSession graphSession = jbpmContext.getGraphSession();
           ProcessInstance processInstance = graphSession.loadProcessInstance(processId);
-          graphSession.deleteProcessInstance(processInstance, true, true, true);
+          graphSession.deleteProcessInstance(processInstance, true, true);
         } finally {
           jbpmContext.close();
         }

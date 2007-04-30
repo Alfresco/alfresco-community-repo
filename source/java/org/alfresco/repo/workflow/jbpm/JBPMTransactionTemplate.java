@@ -84,6 +84,7 @@ public class JBPMTransactionTemplate extends JbpmTemplate
     /* (non-Javadoc)
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
+    @SuppressWarnings("synthetic-access")
     @Override
     public void afterPropertiesSet() throws Exception
     {

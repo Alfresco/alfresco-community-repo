@@ -89,7 +89,6 @@ import org.jbpm.graph.def.Transition;
 import org.jbpm.graph.exe.ProcessInstance;
 import org.jbpm.graph.exe.Token;
 import org.jbpm.jpdl.par.ProcessArchive;
-import org.jbpm.jpdl.xml.JpdlXmlReader;
 import org.jbpm.jpdl.xml.Problem;
 import org.jbpm.taskmgmt.def.Task;
 import org.jbpm.taskmgmt.exe.PooledActor;
@@ -97,7 +96,6 @@ import org.jbpm.taskmgmt.exe.TaskInstance;
 import org.springframework.util.StringUtils;
 import org.springmodules.workflow.jbpm31.JbpmCallback;
 import org.springmodules.workflow.jbpm31.JbpmTemplate;
-import org.xml.sax.InputSource;
 
 
 /**
@@ -437,7 +435,7 @@ public class JBPMEngine extends BPMEngine
      * @param workflowDefinitionId  workflow definition id
      * @return  process definition
      */
-    private ProcessDefinition getProcessDefinition(GraphSession graphSession, String workflowDefinitionId)
+    protected ProcessDefinition getProcessDefinition(GraphSession graphSession, String workflowDefinitionId)
     {
         ProcessDefinition processDefinition = graphSession.getProcessDefinition(getJbpmId(workflowDefinitionId));
         if (processDefinition == null)
@@ -576,7 +574,7 @@ public class JBPMEngine extends BPMEngine
      * @param workflowId  workflow id
      * @return  process instance
      */
-    private ProcessInstance getProcessInstance(GraphSession graphSession, String workflowId)
+    protected ProcessInstance getProcessInstance(GraphSession graphSession, String workflowId)
     {
         ProcessInstance processInstance = graphSession.getProcessInstance(getJbpmId(workflowId));
         if (processInstance == null)
@@ -646,7 +644,7 @@ public class JBPMEngine extends BPMEngine
                     WorkflowInstance workflowInstance = createWorkflowInstance(processInstance);
                     
                     // delete the process instance
-                    graphSession.deleteProcessInstance(processInstance, true, true, true);
+                    graphSession.deleteProcessInstance(processInstance, true, true);
                     return workflowInstance; 
                 }
             });
@@ -675,7 +673,7 @@ public class JBPMEngine extends BPMEngine
                     WorkflowInstance workflowInstance = createWorkflowInstance(processInstance);
                     
                     // delete the process instance
-                    graphSession.deleteProcessInstance(processInstance, true, true, true);
+                    graphSession.deleteProcessInstance(processInstance, true, true);
                     workflowInstance.active = false;
                     workflowInstance.endDate = new Date();
                     return workflowInstance; 
@@ -877,7 +875,7 @@ public class JBPMEngine extends BPMEngine
      * @param taskId  task id
      * @return  task instance
      */
-    private TaskInstance getTaskInstance(TaskMgmtSession taskSession, String taskId)
+    protected TaskInstance getTaskInstance(TaskMgmtSession taskSession, String taskId)
     {
         TaskInstance taskInstance = taskSession.getTaskInstance(getJbpmId(taskId));
         if (taskInstance == null)
@@ -1114,32 +1112,8 @@ public class JBPMEngine extends BPMEngine
         protected ProcessDefinition def;
         protected String[] problems;
     }
-
-    /**
-     * JpdlXmlReader with access to problems encountered during compile.
-     * 
-     * @author davidc
-     */
-    private static class JBPMEngineJpdlXmlReader extends JpdlXmlReader
-    {
-        private static final long serialVersionUID = -753730152120696221L;
-
-        public JBPMEngineJpdlXmlReader(InputStream inputStream)
-        {
-            super(new InputSource(inputStream));
-        }
-
-        /**
-         * Gets the problems
-         * 
-         * @return  problems
-         */
-        public List getProblems()
-        {
-            return problems;
-        }
-    }
     
+
     /**
      * Construct a Process Definition from the provided Process Definition stream
      * 
@@ -1184,7 +1158,7 @@ public class JBPMEngine extends BPMEngine
         {
             try
             {
-                JBPMEngineJpdlXmlReader jpdlReader = new JBPMEngineJpdlXmlReader(definitionStream); 
+                JBPMJpdlXmlReader jpdlReader = new JBPMJpdlXmlReader(definitionStream); 
                 ProcessDefinition def = jpdlReader.readProcessDefinition();
                 compiledDef = new CompiledProcessDefinition(def, jpdlReader.getProblems());
             }

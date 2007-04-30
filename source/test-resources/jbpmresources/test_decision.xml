@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="test_decision_patch">
+
+    <swimlane name="initiator" />
+
+    <start-state name="start">
+        <task name="wf:submitTask" swimlane="initiator" />
+        <transition name="" to="decide" />
+        <event type="node-leave">
+           <script>
+              <variable name="value" access="write"/>
+              <expression>value = false</expression>
+           </script>
+        </event>
+    </start-state>
+
+    <swimlane name="assignee">
+        <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
+           <actor>#{bpm_assignee}</actor>
+        </assignment>
+    </swimlane>
+
+    <decision name="decide">
+        <event type="node-enter">
+           <script>System.out.println("Value = " + value);</script>
+        </event>
+        <transition name="true" to="true">
+           <condition>#{value == true}</condition>
+        </transition>
+        <transition name="false" to="false">
+           <condition>#{value == false}</condition>
+        </transition>
+    </decision>
+
+    <node name="true">
+      <event type="node-enter">
+         <script>System.out.println("TRUE");</script>
+      </event>
+      <transition name="" to="end" />
+    </node>
+
+    <node name="false">
+      <event type="node-enter">
+         <script>System.out.println("FALSE");</script>
+      </event>
+      <transition name="" to="end" />
+    </node>
+
+    <end-state name="end" />
+
+</process-definition>

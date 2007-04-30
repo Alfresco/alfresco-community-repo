@@ -53,6 +53,7 @@
          <list>
             <ref bean="patch.db-V2.0-ExplicitIndexes" />
             <ref bean="patch.db-V2.0-AVMFKIndexes" />
+            <ref bean="patch.db-V2.1-JBPMData" />
          </list>
       </property>
    </bean>
@@ -360,4 +361,9 @@
        </property>
 	</bean>
 	
+    <!-- Workflow Scheduler -->
+    <bean id="workflowScheduler" class="org.alfresco.repo.workflow.jbpm.JBPMScheduler">
+       <property name="JBPMTemplate" ref="jbpm_template" />
+    </bean>
+   
 </beans>

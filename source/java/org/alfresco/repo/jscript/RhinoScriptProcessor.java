@@ -27,6 +27,7 @@ package org.alfresco.repo.jscript;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -69,6 +70,9 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     private static final String IMPORT_RESOURCE = "resource=\"";
     private static final String PATH_CLASSPATH = "classpath:";
     private static final String SCRIPT_ROOT = "_root";
+
+    /** Base Value Converter */
+    private ValueConverter valueConverter = new ReturnValueConverter();
     
     /** Store into which to resolve cm:name based script paths */
     private StoreRef storeRef;
@@ -506,7 +510,11 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             Object result = cx.evaluateString(scope, script, "AlfrescoScript", 1, null);
             
             // extract java object result if wrapped by Rhino 
-            if (result instanceof Wrapper)
+            if (result instanceof Serializable)
+            {
+                result = valueConverter.convertValueForRepo((Serializable)result);
+            }
+            else if (result instanceof Wrapper)
             {
                 result = ((Wrapper)result).unwrap();
             }
@@ -556,4 +564,30 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         }
         return newModel;
     }
+    
+    /**
+     * Value conversion for handling Javascript return values.
+     */
+    public class ReturnValueConverter extends ValueConverter
+    {
+        /**
+         * Convert an object from any script wrapper value to a valid repository serializable value.
+         * This includes converting JavaScript Array objects to Lists of valid objects.
+         * 
+         * @param value     Value to convert from script wrapper object to repo serializable value
+         * 
+         * @return valid repo value
+         */
+        public Serializable convertValueForRepo(Serializable value)
+        {
+            if (value instanceof Wrapper ||
+                value instanceof ScriptableObject ||
+                value instanceof Serializable[])
+            {
+                value = super.convertValueForRepo(value);
+            }
+            return value;
+        }
+    }
+    
 }

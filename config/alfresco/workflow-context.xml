@@ -74,7 +74,7 @@
    <!-- jBPM Implementation -->
    <!--                     -->
 
-   <bean id="jbpm_configuration" class="org.springmodules.workflow.jbpm31.LocalJbpmConfigurationFactoryBean">
+   <bean id="jbpm_configuration" class="org.alfresco.repo.workflow.jbpm.AlfrescoJbpmConfigurationFactoryBean">
       <property name="sessionFactory" ref="sessionFactory"/>
       <property name="configuration" value="classpath:org/alfresco/repo/workflow/jbpm/jbpm.cfg.xml"/>
    </bean>

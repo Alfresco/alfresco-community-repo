@@ -151,6 +151,22 @@
       <converter class="org.jbpm.context.exe.converter.BytesToByteArrayConverter" />
       <variable-instance class="org.jbpm.context.exe.variableinstance.ByteArrayInstance" />
     </jbpm-type>
+
+    <!-- hibernatable long id types -->
+    <jbpm-type>
+      <matcher>
+        <bean class="org.jbpm.context.exe.matcher.HibernateLongIdMatcher" />
+      </matcher>
+      <variable-instance class="org.jbpm.context.exe.variableinstance.HibernateLongInstance" />
+    </jbpm-type>
+
+    <!-- hibernatable string id types -->
+    <jbpm-type>
+      <matcher>
+        <bean class="org.jbpm.context.exe.matcher.HibernateStringIdMatcher" />
+      </matcher>
+      <variable-instance class="org.jbpm.context.exe.variableinstance.HibernateStringInstance" />
+    </jbpm-type>
   
     <!-- java.io.Serializable -->
     <jbpm-type>
@@ -161,22 +177,6 @@
       <variable-instance class="org.jbpm.context.exe.variableinstance.ByteArrayInstance" />
     </jbpm-type>
   
-    <!-- hibernatable long id types -->
-    <jbpm-type>
-      <matcher>
-        <bean class="org.jbpm.context.exe.matcher.HibernateLongIdMatcher" />
-      </matcher>
-      <variable-instance class="org.jbpm.context.exe.variableinstance.HibernateLongInstance" />
-    </jbpm-type>
-  
-    <!-- hibernatable string id types -->
-    <jbpm-type>
-      <matcher>
-        <bean class="org.jbpm.context.exe.matcher.HibernateStringIdMatcher" />
-      </matcher>
-      <variable-instance class="org.jbpm.context.exe.variableinstance.HibernateStringInstance" />
-    </jbpm-type>
-  
     <!-- hibernatable ejb3 types -->
     <jbpm-type>
       <matcher>
@@ -185,6 +185,14 @@
       <variable-instance class="org.jbpm.context.exe.variableinstance.Ejb3Instance" />
     </jbpm-type>
     
+    <!-- JSR 170 JCR Node -->
+    <jbpm-type>
+      <matcher>
+        <bean class="org.jbpm.context.exe.matcher.JcrNodeMatcher" />
+      </matcher>
+      <variable-instance class="org.jbpm.context.exe.variableinstance.JcrNodeInstance" />
+    </jbpm-type>
+        
   </list>
 
 </jbpm-types>

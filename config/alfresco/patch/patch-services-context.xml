@@ -669,6 +669,17 @@
             <value>classpath:alfresco/dbscripts/upgrade/2.0/${db.script.dialect}/AlfrescoSchemaUpdate-2.0-AVMFKIndexes.sql</value>
         </property>
     </bean>
+
+    <bean id="patch.db-V2.1-JBPMData" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.1-JBPMUpdate</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>51</value></property>
+        <property name="targetSchema"><value>52</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.1/${db.script.dialect}/AlfrescoSchemaUpdate-2.1-JBPMData.sql</value>
+        </property>
+    </bean>
 	
     <bean id="patch.groupNamesAsIdentifiers" class="org.alfresco.repo.admin.patch.impl.GroupTokenisationPatch" parent="basePatch" >
         <property name="id"><value>patch.groupNamesAsIdentifiers</value></property>

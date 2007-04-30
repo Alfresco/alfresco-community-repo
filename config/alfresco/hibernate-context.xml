@@ -73,7 +73,7 @@
                 <value>org/jbpm/graph/node/ProcessState.hbm.xml</value>
                 <value>org/jbpm/graph/node/Decision.hbm.xml</value>
                 <value>org/jbpm/graph/node/Fork.hbm.xml</value>
-                <value>org/alfresco/repo/workflow/jbpm/Join.hbm.xml</value>
+                <value>org/alfresco/repo/workflow/jbpm/jbpm.Join.hbm.xml</value>
                 <value>org/jbpm/graph/node/State.hbm.xml</value>
                 <value>org/jbpm/graph/node/TaskNode.hbm.xml</value>
                 <value>org/jbpm/context/def/ContextDefinition.hbm.xml</value>
@@ -85,7 +85,7 @@
                 <value>org/jbpm/module/def/ModuleDefinition.hbm.xml</value>
                 <value>org/jbpm/bytes/ByteArray.hbm.xml</value>
                 <value>org/jbpm/file/def/FileDefinition.hbm.xml</value>
-                <value>org/jbpm/scheduler/def/CreateTimerAction.hbm.xml</value>
+                <value>org/alfresco/repo/workflow/jbpm/jbpm.CreateTimerAction.hbm.xml</value>
                 <value>org/jbpm/scheduler/def/CancelTimerAction.hbm.xml</value>
                 <value>org/jbpm/graph/exe/Comment.hbm.xml</value>
                 <value>org/jbpm/graph/exe/ProcessInstance.hbm.xml</value>
@@ -103,17 +103,16 @@
                 <value>org/jbpm/context/exe/variableinstance/LongInstance.hbm.xml</value>
                 <value>org/jbpm/context/exe/variableinstance/NullInstance.hbm.xml</value>
                 <value>org/jbpm/context/exe/variableinstance/StringInstance.hbm.xml</value>
-                <value>org/jbpm/msg/Message.hbm.xml</value>
-                <value>org/jbpm/msg/db/TextMessage.hbm.xml</value>
-                <value>org/jbpm/command/ExecuteActionCommand.hbm.xml</value>
-                <value>org/jbpm/command/ExecuteNodeCommand.hbm.xml</value>
-                <value>org/jbpm/command/SignalCommand.hbm.xml</value>
-                <value>org/jbpm/command/TaskInstanceEndCommand.hbm.xml</value>
+                <value>org/jbpm/job/Job.hbm.xml</value>
+                <value>org/jbpm/job/Timer.hbm.xml</value>
+                <value>org/alfresco/repo/workflow/jbpm/jbpm.Timer.hbm.xml</value>
+                <value>org/jbpm/job/ExecuteNodeJob.hbm.xml</value>
+                <value>org/jbpm/job/ExecuteActionJob.hbm.xml</value>
                 <value>org/jbpm/taskmgmt/exe/TaskMgmtInstance.hbm.xml</value>
                 <value>org/jbpm/taskmgmt/exe/TaskInstance.hbm.xml</value>
+                <value>org/alfresco/repo/workflow/jbpm/WorkflowTaskInstance.hbm.xml</value>           
                 <value>org/jbpm/taskmgmt/exe/PooledActor.hbm.xml</value>
                 <value>org/jbpm/taskmgmt/exe/SwimlaneInstance.hbm.xml</value>
-                <value>org/jbpm/scheduler/exe/Timer.hbm.xml</value>
                 <value>org/jbpm/logging/log/ProcessLog.hbm.xml</value>
                 <value>org/jbpm/logging/log/MessageLog.hbm.xml</value>
                 <value>org/jbpm/logging/log/CompositeLog.hbm.xml</value>
@@ -121,6 +120,7 @@
                 <value>org/jbpm/graph/log/NodeLog.hbm.xml</value>
                 <value>org/jbpm/graph/log/ProcessInstanceCreateLog.hbm.xml</value>
                 <value>org/jbpm/graph/log/ProcessInstanceEndLog.hbm.xml</value>
+                <value>org/jbpm/graph/log/ProcessStateLog.hbm.xml</value>
                 <value>org/jbpm/graph/log/SignalLog.hbm.xml</value>
                 <value>org/jbpm/graph/log/TokenCreateLog.hbm.xml</value>
                 <value>org/jbpm/graph/log/TokenEndLog.hbm.xml</value>
@@ -142,10 +142,7 @@
                 <value>org/jbpm/taskmgmt/log/TaskEndLog.hbm.xml</value>
                 <value>org/jbpm/taskmgmt/log/SwimlaneLog.hbm.xml</value>
                 <value>org/jbpm/taskmgmt/log/SwimlaneCreateLog.hbm.xml</value>
-                <value>org/jbpm/taskmgmt/log/SwimlaneAssignLog.hbm.xml</value>     
-                
-                <!--  Alfresco TaskInstance sub-type -->
-                <value>org/alfresco/repo/workflow/jbpm/WorkflowTaskInstance.hbm.xml</value>           
+                <value>org/jbpm/taskmgmt/log/SwimlaneAssignLog.hbm.xml</value>
             </list>
         </property>
         <property name="hibernateProperties" ref="hibernateConfigProperties" />

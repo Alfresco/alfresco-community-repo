@@ -88,7 +88,7 @@
                   <#if hasDue>
                      (Due: ${due?date})
                   </#if>
-                  <span class="taskInfo" onclick="TaskInfoMgr.toggle('${t.id}',this);">
+                  <span class="taskInfo" onclick="event.cancelBubble=true; TaskInfoMgr.toggle('${t.id}',this);">
                      <img src="${url.context}/images/icons/popup.gif" class="popupImage" width="16" height="16" />
                   </span>
                </div>

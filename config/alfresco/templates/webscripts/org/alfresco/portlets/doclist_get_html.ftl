@@ -64,32 +64,34 @@
             <#assign count=count+1>
             <div class="docRow">
                <div class="docIcon">
-                  <a href="${url.context}${d.url}" target="new"><img src="${url.context}${d.icon16}" border=0></a>
+                  <a href="${url.context}${d.url}" target="new"><img class="docIconImage" alt="document" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border=0></a>
                </div>
                <div class="docRowTitle">
                   <div class="docItem">
                      ${d.name?html}
-                     <span class="docInfo" onclick="AlfNodeInfoMgr.toggle('${d.nodeRef}',this);">
+                     <span class="docInfo" onclick="event.cancelBubble=true; AlfNodeInfoMgr.toggle('${d.nodeRef}',this);">
                         <img src="${url.context}/images/icons/popup.gif" class="popupImage" width="16" height="16" />
                      </span>
                   </div>
                </div>
                <div class="docDetail">
-                  <table width=100% cellpadding='2' cellspacing='0' style="margin-left:48px;">
+                  <table cellpadding="2" cellspacing="0" border="0">
       	            <tr>
-      	               <td class="docMetaprop">Description:</td><td class="docMetadata"><#if d.properties.description?exists>${d.properties.description?html}</#if></td>
-      	               <td class="docMetaprop">Created:</td><td class="docMetadata">${d.properties.created?datetime}</td>
-      	            </tr>
-      	            <tr>
-      	               <td class="docMetaprop">Modified:</td><td class="docMetadata">${d.properties.modified?datetime}</td>
-      	               <td class="docMetaprop">Created By:</td><td class="docMetadata">${d.properties.creator}</td>
-      	            </tr>
-      	            <tr>
-      	               <td class="docMetaprop">Modified By:</td><td class="docMetadata">${d.properties.modifier}</td>
-      	               <td class="docMetaprop">Size:</td><td class="docMetadata">${(d.size/1000)?string("0.##")} KB</td>
+      	               <td>
+      	                  <span class="docMetaprop">Description:</span>&nbsp;<span class="docMetadata"><#if d.properties.description?exists>${d.properties.description?html}<#else>&nbsp;</#if></span><br />
+         	               <span class="docMetaprop">Modified:</span>&nbsp;<span class="docMetadata">${d.properties.modified?datetime}</span><br />
+         	               <span class="docMetaprop">Modified By:</span>&nbsp;<span class="docMetadata">${d.properties.modifier}</span>
+      	               </td>
+      	               <td width="24">&nbsp;</td>
+      	               <td>
+      	                  <span class="docMetaprop">Created:</span>&nbsp;<span class="docMetadata">${d.properties.created?datetime}</span><br />
+         	               <span class="docMetaprop">Created By:</span>&nbsp;<span class="docMetadata">${d.properties.creator}</span><br />
+      	                  <span class="docMetaprop">Size:</span>&nbsp;<span class="docMetadata">${(d.size/1000)?string("0.##")} KB</span>
+      	               </td>
       	            </tr>
       	         </table>
                </div>
+               <div class="docResource doclistAjaxWait" id="${d.nodeRef}"></div>
             </div>
             </#if>
          </#if>
@@ -143,6 +145,7 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    overflow: auto;
    border-top: 1px solid #CCD4DB;
    border-bottom: 1px solid #CCD4DB;
+   visibility: hidden;
 }
 
 .docRow
@@ -177,7 +180,7 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 14px;
    color: #515D6B;
-   margin: 0 0 0 24;
+   margin: 0px 0px 0px 24px;
    padding: 0px 8px 6px 8px;
 }
 
@@ -189,13 +192,17 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    padding-top: 4px;
 }
 
+.docInfo
+{
+   visibility: hidden;
+}
+
 .docDetail
 {
-   background-color: #CCE7F3;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 12px;
    color: #000000;
-   margin: 0px;
+   margin: 0px 0px 0px 48px;
    display: none;
    overflow: hidden;
 }
@@ -205,6 +212,18 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    background-color: #CCE7F3 !important;
    border-bottom: 1px solid #0092DD !important;
    border-top: 1px solid #0092DD !important;
+}
+
+.docResource
+{
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 12px;
+   background-color: #bad7e4;
+   color: #000000;
+   margin: 0px 0px 0px 0px;
+   border-top: 1px dotted #0092dd;
+   visibility: hidden;
+   overflow: hidden;
 }
 
 .docMetadata
@@ -217,6 +236,79 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
 {
    color: #515D6B;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
-   font-weight: bold;
+   font-weight: bolder;
 }
+
+.docMetaPreview
+{
+   color: #515D6B;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   overflow: hidden;
+   height: 140px;
+   width: 410px;
+   border: 1px solid #0092dd;
+}
+
+.docAction
+{
+   color: #515D6B;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 9pt;
+   font-weight: bolder;
+   background-color: #c3dce7;
+   background-repeat: no-repeat;
+   background-position: left;
+   width: 87px;
+   height: 28px;
+   border: 1px solid #fff;
+   float: left;
+   display: block;
+   padding: 10px 0px 0px 36px;
+   cursor: pointer;
+}
+
+.docActionCheckout
+{
+   background-image: url(../images/icons/doclist_action_checkout.png);
+   border-bottom: none;
+   border-right: none;
+}
+.docActionEditDetails
+{
+   background-image: url(../images/icons/doclist_action_edit.png);
+   border-bottom: none;
+}
+.docActionUpdate
+{
+   background-image: url(../images/icons/doclist_action_update.png);
+   border-bottom: none;
+   border-right: none;
+}
+.docActionViewContent
+{
+   background-image: url(../images/icons/doclist_action_view.png);
+   border-bottom: none;
+}
+.docActionDelete
+{
+   background-image: url(../images/icons/doclist_action_delete.png);
+   border-right: none;
+}
+.docActionMoreActions
+{
+   padding-left: 20px;
+   padding-right: 16px;
+}
+
+.docListAjaxWait
+{
+   background-image: url(../images/icons/ajax_anim.gif);
+   background-position: center;
+   background-repeat: no-repeat;
+   width: 699px;
+   height: 150px;
+   overflow: hidden;
+}
+ 
+
 </STYLE>

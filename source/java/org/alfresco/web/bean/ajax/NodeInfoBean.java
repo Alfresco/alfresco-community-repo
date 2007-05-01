@@ -73,12 +73,18 @@ public class NodeInfoBean
       {
          throw new IllegalArgumentException("'noderef' parameter is missing");
       }
+
+      String strTemplate = (String)context.getExternalContext().getRequestParameterMap().get("template");
+      if (strTemplate == null || strTemplate.length() == 0)
+      {
+         strTemplate = "node_summary_panel.ftl";
+      }
       
       NodeRef nodeRef = new NodeRef(strNodeRef);
       if (this.nodeService.exists(nodeRef))
       {
          Repository.getServiceRegistry(context).getTemplateService().processTemplate(
-               "/alfresco/templates/client/node_summary_panel.ftl", getModel(nodeRef), out);
+               "/alfresco/templates/client/" + strTemplate, getModel(nodeRef), out);
       }
       else
       {

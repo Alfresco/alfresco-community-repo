@@ -26,19 +26,13 @@ package org.alfresco.repo.avm;
  * Interface for a layered file node.
  * @author britt
  */
-interface LayeredFileNode extends FileNode, Layered
+public interface LayeredFileNode extends FileNode, Layered
 {
-    /**
-     * Set the indirection version.
-     * @param version The version to set.
-     */
-    public void setIndirectionVersion(int version);
-    
     /**
      * Get the indirection version.
      * @return The indirection version.
      */
-    public int getIndirectionVersion();
+    public Integer getIndirectionVersion();
     
     /**
      * Make a copy of this node that is a LayeredFileNode.

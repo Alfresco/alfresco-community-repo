@@ -36,5 +36,5 @@ interface Layered
      * Set the indirection version for this layered node.
      * @param version The indirection version to set.
      */
-    public void setIndirectionVersion(int version);
+    public void setIndirectionVersion(Integer version);
 }

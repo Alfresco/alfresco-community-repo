@@ -72,16 +72,10 @@ public interface LayeredDirectoryNode extends DirectoryNode, Layered
     public void setIndirection(String indirection);
     
     /**
-     * Set the indirection version.
-     * @param version The version to set.
-     */
-    public void setIndirectionVersion(int version);
-    
-    /**
      * Get the indirection version.
      * @return The indirection version.
      */
-    public int getIndirectionVersion();
+    public Integer getIndirectionVersion();
     
     /**
      * Set the opacity of this.

@@ -105,4 +105,18 @@ public interface AVMNodeDAO
      * @return An iterator over all nodes.
      */
     List<AVMNode> getEmptyGUIDS(int count);
+    
+    /**
+     * Get a batch of LayeredDirectories which have null indirectionVersions.
+     * @param count
+     * @return
+     */
+    List<LayeredDirectoryNode> getNullVersionLayeredDirectories(int count);
+    
+    /**
+     * Get a batch of LayeredFiles which have null indirectionVersions.
+     * @param count
+     * @return
+     */
+    List<LayeredFileNode> getNullVersionLayeredFiles(int count);
 }

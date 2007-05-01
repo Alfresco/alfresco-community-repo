@@ -937,16 +937,23 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.LayeredDirectoryNode#setIndirectionVersion(int)
      */
-    public void setIndirectionVersion(int version)
+    public void setIndirectionVersion(Integer version)
     {
-        fIndirectionVersion = version;
+        if (version == null)
+        {
+            fIndirectionVersion = -1;
+        }
+        else
+        {
+            fIndirectionVersion = version;
+        }
     }
     
     /**
      * Get the indirection version.
      * @return The indirection version.
      */
-    public int getIndirectionVersion()
+    public Integer getIndirectionVersion()
     {
         return fIndirectionVersion;
     }

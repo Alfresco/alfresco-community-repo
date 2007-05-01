@@ -743,4 +743,14 @@
         </property>
     </bean>
 
+	<bean id="patch.AVMLayeredSnapshotPatch" class="org.alfresco.repo.admin.patch.impl.AVMLayeredSnapshotPatch" parent="basePatch">
+	    <property name="id"><value>patch.AVMLayeredSnapshotPatch</value></property>
+	    <property name="description"><value>patch.AVMLayeredSnapshotPatch.description</value></property>
+	    <property name="fixesFromSchema"><value>0</value></property>
+	    <property name="fixesToSchema"><value>51</value></property>
+	    <property name="targetSchema"><value>52</value></property>
+	    <property name="avmNodeDAO">
+	        <ref bean="avmNodeDAO"/>
+	    </property>
+	</bean>
 </beans>

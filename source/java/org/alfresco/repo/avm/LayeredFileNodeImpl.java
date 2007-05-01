@@ -308,7 +308,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.LayeredFileNode#getIndirectionVersion()
      */
-    public int getIndirectionVersion()
+    public Integer getIndirectionVersion()
     {
         return fIndirectionVersion;
     }
@@ -316,9 +316,16 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.LayeredFileNode#setIndirectionVersion(int)
      */
-    public void setIndirectionVersion(int version)
+    public void setIndirectionVersion(Integer version)
     {
-        fIndirectionVersion = version;
+        if (version == null)
+        {
+            fIndirectionVersion = -1;
+        }
+        else
+        {
+            fIndirectionVersion = version;
+        }
     }
 
     /* (non-Javadoc)

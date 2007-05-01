@@ -31,6 +31,8 @@ import org.alfresco.repo.avm.AVMNodeImpl;
 import org.alfresco.repo.avm.AVMNodeUnwrapper;
 import org.alfresco.repo.avm.AVMStore;
 import org.alfresco.repo.avm.DirectoryNode;
+import org.alfresco.repo.avm.LayeredDirectoryNode;
+import org.alfresco.repo.avm.LayeredFileNode;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -182,5 +184,29 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
         Query query = getSession().createQuery("from AVMNodeImpl an where an.guid is null");
         query.setMaxResults(count);
         return (List<AVMNode>)query.list();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNodeDAO#getNullVersionLayeredDirectories(int)
+     */
+    @SuppressWarnings("unchecked")
+    public List<LayeredDirectoryNode> getNullVersionLayeredDirectories(int count)
+    {
+        Query query = getSession().createQuery("from LayeredDirectoryNodeImpl ldn " +
+                                               "where ldn.indirectionVersion is null");
+        query.setMaxResults(count);
+        return (List<LayeredDirectoryNode>)query.list();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNodeDAO#getNullVersionLayeredFiles(int)
+     */
+    @SuppressWarnings("unchecked")
+    public List<LayeredFileNode> getNullVersionLayeredFiles(int count)
+    {
+        Query query = getSession().createQuery("from LayeredFileNodeImpl lfn " +
+                                               "where lfn.indirectionVersion is null");
+        query.setMaxResults(count);
+        return (List<LayeredFileNode>)query.list();
     }
 }

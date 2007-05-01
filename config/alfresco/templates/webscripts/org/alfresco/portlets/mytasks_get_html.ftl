@@ -15,21 +15,6 @@
 <script>
    // create manager object for the pop-up summary panels
    var TaskInfoMgr = new Alfresco.PanelManager("TaskInfoBean.sendTaskInfo", "taskId");
-   
-   function taskMouseOver(el)
-   {
-      el._prevbg = el.style.backgroundColor;
-      el.style.backgroundColor = "#FFE500";
-      el.style.borderBottom = "1px solid #82770B";
-      el.style.borderTop = "1px solid #82770B";
-   }
-   
-   function taskMouseOut(el)
-   {
-      el.style.backgroundColor = el._prevbg;
-      el.style.borderBottom = "1px solid #EBE398";
-      el.style.borderTop = "1px solid #FEF8BC";
-   }
 </script>
 
 <#-- get the filter mode from the passed in args -->

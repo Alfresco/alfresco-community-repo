@@ -15,8 +15,8 @@ var MyTasks = {
       var infos = $$('#taskPanel .taskInfo');
       var details = $$('#taskPanel .taskDetail');
       var resources = $$('#taskPanel .taskResources');
-      var fxInfo = new Fx.Elements(infos, {wait: false, duration: 500, transition: Fx.Transitions.linear});
-      var fxDetail = new Fx.Elements(details, {wait: false, duration: 500, transition: Fx.Transitions.linear,
+      var fxInfo = new Fx.Elements(infos, {wait: false, duration: 300, transition: Fx.Transitions.linear});
+      var fxDetail = new Fx.Elements(details, {wait: false, duration: 300, transition: Fx.Transitions.linear,
          onComplete: function()
          {
             // event handler to ensure 

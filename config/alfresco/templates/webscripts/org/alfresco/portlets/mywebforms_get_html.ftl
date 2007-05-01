@@ -8,24 +8,49 @@
 <table cellspacing=0 cellpadding=0 border=0 class="formsTable">
 <tr><td>
 <div id="formsPanel">
+   <#assign formcount=0>
+   <#assign projectcount=0>
    <#assign search="TYPE:\"{http://www.alfresco.org/model/wcmappmodel/1.0}webfolder\"">
    <#list companyhome.childrenByLuceneSearch[search] as wp>
       <#list wp.childAssocs["wca:webuser"] as user>
          <#if user.properties["wca:username"] = person.properties.userName>
-            <div class="webProjectRow"><a class="webProjectLink" href="${url.context}${wp.url}">${wp.name}</a></div>
+            <#assign projectcount=projectcount+1>
+            <div class="webProjectRow">
+               <div class="webProjectTitle">
+                  <#-- TEMP: ${url.context}/navigate/wizard/createWebsite -->
+                  <a class="webProjectLink" href="${url.context}${wp.url}" target="new"><img src="${url.context}/images/icons/website_large.gif" width=32 height=32 border=0><span class="websiteLink">${wp.name}</span></a>
+                  <#if wp.properties.description?exists && wp.properties.description?length!=0>
+                  <br>
+                  <span class="webprojectDesc">${wp.properties.description}</span>
+                  </#if>
+               </div>
+               <div class="webProjectForms"> <#-- marker class for rollover script -->
                <#if wp.childAssocs["wca:webform"]?exists>
+                  <div class="formsRowSeparator"></div>
                   <#list wp.childAssocs["wca:webform"] as form>
+                     <#assign formcount=formcount+1>
                      <div class="formsRow">
-                        ${form.properties["wca:formname"]}
+                        <img src="${url.context}/images/icons/webform_large.gif" width=32 height=32 border=0>
+                        <span class="webformLink">${form.properties["wca:formname"]}</span>
+                        <#--<span>${form.properties.description}</span>-->
                      </div>
                   </#list>
                </#if>
+               </div>
             </div>
          </#if>
       </#list>
    </#list>
 </div>
-</td></tr>
+</td>
+</tr>
+<tr>
+<td>
+   <div class="formsFooter">
+      Showing ${formcount} form(s) in ${projectcount} web project(s)
+   </div>
+</td>
+</tr>
 </table>
 
 <STYLE type="text/css">
@@ -37,6 +62,7 @@
 
 #formsPanel
 {
+   height: 480px;
    width: 716px;
    overflow: auto;
 }
@@ -51,18 +77,35 @@ a.webProjectLink:link, a.webProjectLink:visited, a.webProjectLink:hover
 
 .webProjectRow
 {
+   background-color: #EEF7FB;
+   border-bottom: 1px solid #CCD4DB;
+}
+
+.webprojectDesc
+{
+   color: #5A5741;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   padding-left: 40px;
+}
+
+.webProjectTitle
+{
    padding: 8px;
-   border-top: 1px solid #CCD4DB;
+}
+
+.formsRowSeparator
+{
+   border-bottom: 1px dotted #CCD4DB;
 }
 
 .formsRow, a.formsRow:link, a.formsRow:visited, a.formsRow:hover
 {
+   background-color: #F8FCFD;
    color: #5A5741;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 13px;
-   padding-left: 32px;
+   padding-left: 44px;
    padding-top: 4px;
-   padding-bottom: 4px;
    border-bottom: 1px solid #F8FCFD;
 }
 
@@ -70,12 +113,23 @@ a.webProjectLink:link, a.webProjectLink:visited, a.webProjectLink:hover
 {
 }
 
+span.websiteLink
+{
+   padding-left:8px;
+   vertical-align:60%;
+}
+
+span.webformLink
+{
+   vertical-align:50%;
+}
+
 .formsFooter
 {
    width: 700px;
    padding: 8px;
    border: 1px solid #F8FCFD;
-   background-image: url();
+   background-image: url(../images/parts/doclist_footerbg.png);
    text-align: center;
    color: #515D6B;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
@@ -90,14 +144,6 @@ a.webProjectLink:link, a.webProjectLink:visited, a.webProjectLink:hover
    color: #515D6B;
    margin: 0 0 0 24;
    padding: 0px 8px 6px 8px;
-}
-
-.formsIcon
-{
-   width: 32px;
-   float: left;
-   padding-left: 16px;
-   padding-top: 4px;
 }
 
 .formsDetail

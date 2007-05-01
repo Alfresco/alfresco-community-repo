@@ -75,6 +75,8 @@ public class ExternalAccessServlet extends BaseServlet
    public final static String OUTCOME_BROWSE       = "browse";
    public final static String OUTCOME_MYALFRESCO   = "myalfresco";
    public final static String OUTCOME_LOGOUT       = "logout";
+   public final static String OUTCOME_DIALOG       = "dialog";
+   public final static String OUTCOME_WIZARD       = "wizard";
    
    private static final String ARG_TEMPLATE  = "template";
    private static final String ARG_PAGE = "page";
@@ -247,6 +249,14 @@ public class ExternalAccessServlet extends BaseServlet
          // perform the appropriate JSF navigation outcome
          NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
          navigationHandler.handleNavigation(fc, null, outcome);
+      }
+      else if (OUTCOME_DIALOG.equals(outcome) || OUTCOME_WIZARD.equals(outcome))
+      {
+         if (args.length != 0)
+         {
+            NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
+            navigationHandler.handleNavigation(fc, null, outcome + ':' + args[0]);
+         }
       }
       else if (OUTCOME_LOGOUT.equals(outcome))
       {

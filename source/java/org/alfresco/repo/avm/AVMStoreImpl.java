@@ -179,25 +179,23 @@ public class AVMStoreImpl implements AVMStore, Serializable
     @SuppressWarnings("unchecked")
     public int createSnapshot(String tag, String description, Map<String, Integer> snapShotMap)
     {
-        // If the root isn't new, we can't take a snapshot since nothing has changed.
-        if (!fRoot.getIsNew())
-        {
-            // So, we set the tag and description fields of the latest version.
-            VersionRoot versionRoot = AVMDAOs.Instance().fVersionRootDAO.getMaxVersion(this);
-            if (tag != null || description != null)
-            {
-                versionRoot.setTag(tag);
-                versionRoot.setDescription(description);
-            }
-            snapShotMap.put(fName, versionRoot.getVersionID());
-            return versionRoot.getVersionID();
-        }
-        snapShotMap.put(fName, fNextVersionID);
-        // Get all the layered nodes that were snapshotted last time
-        // and force copies on them.
         VersionRoot lastVersion = AVMDAOs.Instance().fVersionRootDAO.getMaxVersion(this);
         List<VersionLayeredNodeEntry> layeredEntries =
             AVMDAOs.Instance().fVersionLayeredNodeEntryDAO.get(lastVersion);
+        // Is there no need for a snapshot?
+        if (!fRoot.getIsNew() && layeredEntries.size() == 0)
+        {
+            // So, we set the tag and description fields of the latest version.
+            if (tag != null || description != null)
+            {
+                lastVersion.setTag(tag);
+                lastVersion.setDescription(description);
+            }
+            snapShotMap.put(fName, lastVersion.getVersionID());
+            return lastVersion.getVersionID();
+        }
+        snapShotMap.put(fName, fNextVersionID);
+        // Force copies on all the layered nodes from last snapshot.
         for (VersionLayeredNodeEntry entry : layeredEntries)
         {
             String path = entry.getPath();

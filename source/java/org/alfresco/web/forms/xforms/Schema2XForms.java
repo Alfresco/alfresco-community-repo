@@ -1868,12 +1868,6 @@ public class Schema2XForms
       //NamespaceConstants.XFORMS_PREFIX + ":ref",
       //".");
 
-      Element hint = this.createHint(xformsDocument, owner, resourceBundle);
-      if (hint != null)
-      {
-         formControl.appendChild(hint);
-      }
-
       //add selector if repeat
       //if (repeatSection != formSection)
       //this.addSelector(xformsDocument, (Element) formControl.getParentNode());
@@ -1992,10 +1986,23 @@ public class Schema2XForms
          alert = ("Please provide a valid value for '" + caption + "'." +
                   " '" + caption +
                   "' is " + (o.minimum == 0 ? "an optional" : "a required") + " '" +
-                  createCaption(this.getXFormsTypeName(xformsDocument, schema, controlType)) +
+                  this.createCaption(this.getXFormsTypeName(xformsDocument, schema, controlType)) +
                   "' value.");
       }
       alertElement.appendChild(xformsDocument.createTextNode(alert));
+
+      final String hint = Schema2XForms.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
+                                                                      "hint",
+                                                                      this.getAnnotation(owner),
+                                                                      resourceBundle);
+      if (hint != null)
+      {
+         final Element hintElement = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                                    NamespaceConstants.XFORMS_PREFIX + ":hint");
+         formControl.appendChild(hintElement);
+         this.setXFormsId(hintElement);
+         hintElement.appendChild(xformsDocument.createTextNode(hint));
+      }
       return formControl;
    }
 
@@ -2704,45 +2711,6 @@ public class Schema2XForms
       control.appendChild(choices);
       this.addChoicesForSelectControl(xformsDocument, choices, enumValues, resourceBundle);
       return control;
-   }
-
-   /**
-    * Creates a hint XML Schema annotated node (AttributeDecl or ElementDecl).
-    * The implementation is responsible for providing an xforms:hint element for the
-    * specified schemaNode suitable to be dsipalayed to users of the XForm. The caller
-    * is responsible for adding the returned element to the form.
-    * This typically includes extracting documentation from the element/attribute's
-    * annotation/documentation elements and/or extracting the same information from the
-    * element/attribute's type annotation/documentation.
-    *
-    * @param xformsDocument
-    * @param node
-    * @param resourceBundle
-    * @return The xforms:hint element. If a null value is returned a hint is not added.
-    */
-   public Element createHint(final Document xformsDocument,
-                             final XSObject node,
-                             final ResourceBundle resourceBundle)
-   {
-      final XSAnnotation annotation = this.getAnnotation(node);
-      if (annotation == null)
-      {
-         return null;
-      }
-      final String s = this.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
-                                                          "hint",
-                                                          annotation,
-                                                          resourceBundle);
-      if (s == null)
-      {
-         return null;
-      }
-      final Element hintElement =
-         xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                        NamespaceConstants.XFORMS_PREFIX + ":hint");
-      this.setXFormsId(hintElement);
-      hintElement.appendChild(xformsDocument.createTextNode(s));
-      return hintElement;
    }
 
    private XSAnnotation getAnnotation(final XSObject o)

@@ -386,18 +386,6 @@ dojo.declare("alfresco.xforms.Widget",
                  return xpath;
                },
 
-               /** Returns the label node for this widget from the xforms document. */
-               _getLabelNode: function()
-               {
-                 return this._getChildXFormsNode("label");
-               },
-
-               /** Returns the alert node for this widget from the xforms document. */
-               _getAlertNode: function()
-               {
-                 return this._getChildXFormsNode("alert");
-               },
-
                /** Returns a child node by name within the xform. */
                _getChildXFormsNode: function(nodeName)
                {
@@ -418,7 +406,7 @@ dojo.declare("alfresco.xforms.Widget",
                /** Returns the widget's label. */
                getLabel: function()
                {
-                 var node = this._getLabelNode();
+                 var node = this._getChildXFormsNode("label");
                  var result = node ? dojo.dom.textContent(node) : "";
                  if (djConfig.isDebug)
                  {
@@ -430,8 +418,15 @@ dojo.declare("alfresco.xforms.Widget",
                /** Returns the widget's alert text. */
                getAlert: function()
                {
-                 var node = this._getAlertNode();
+                 var node = this._getChildXFormsNode("alert");
                  return node ? dojo.dom.textContent(node) : "";
+               },
+
+               /** Returns the widget's alert text. */
+               getHint: function()
+               {
+                 var node = this._getChildXFormsNode("hint");
+                 return node ? dojo.dom.textContent(node) : null;
                },
                
                /** Makes the label red. */
@@ -816,24 +811,44 @@ dojo.declare("alfresco.xforms.PlainTextEditor",
 /** The textfield widget which handle xforms widget xf:textarea. with appearance full or compact */
 dojo.declare("alfresco.xforms.RichTextEditor",
              alfresco.xforms.Widget,
-             function(xform, xformsNode) 
+             function(xform, xformsNode, params) 
              {
-               this.focused = false;
+               this._focused = false;
+               this._tinyMCE_buttons = params;
+               if (!this.statics.tinyMCEInitialized)
+               {
+                 this.statics.tinyMCEInitialized = true;
+               }
              },
              {
 
                /////////////////////////////////////////////////////////////////
-               // methods
+               // methods & properties
                /////////////////////////////////////////////////////////////////
+               
+               statics: { currentInstance: null, tinyMCEInitialized: false },
 
                _removeTinyMCE: function()
                {
                  var value = tinyMCE.getContent(this.id);
+                 this._commitValueChange();
                  tinyMCE.removeMCEControl(this.id);
+                 this._focused = false;
                },
 
                _createTinyMCE:function()
                {
+                 if (this.statics.currentInstance &&
+                     this.statics.currentInstance != this)
+                 {
+                   this.statics.currentInstance._removeTinyMCE();
+                 }
+
+                 this.statics.currentInstance = this;
+
+                 tinyMCE.settings.theme_advanced_buttons1 = this._tinyMCE_buttons[0];
+                 tinyMCE.settings.theme_advanced_buttons2 = this._tinyMCE_buttons[1];
+                 tinyMCE.settings.theme_advanced_buttons3 = this._tinyMCE_buttons[2];
                  tinyMCE.addMCEControl(this.widget, this.id);
                  
                  var editorDocument = tinyMCE.getInstanceById(this.id).getDoc();
@@ -856,6 +871,8 @@ dojo.declare("alfresco.xforms.RichTextEditor",
                  this.widget = document.createElement("div");
                  this.domNode.appendChild(this.widget);
                  dojo.html.prependClass(this.widget, "xformsTextArea");
+                 this.widget.style.border = "1px solid black";
+                 this.widget.style.overflow = "auto";
                  this.widget.innerHTML = this.getInitialValue() || "";
                  var images = this.widget.getElementsByTagName("img");
                  for (var i = 0; i < images.length; i++)
@@ -868,17 +885,18 @@ dojo.declare("alfresco.xforms.RichTextEditor",
                  }
                  if (!this.isReadonly())
                  {
-                   this._createTinyMCE();
+//                   this._createTinyMCE();
+                   var me = this;
+                   dojo.event.browser.addListener(this.widget, 
+                                                  "onmouseover", 
+                                                  function(event) { me._div_mouseoverHandler(event) },
+                                                  true);
                  }
                },
 
                setValue: function(value)
                {
-                 if (this.isReadonly())
-                 {
-                   this.widget.innerHTML = value;
-                 }
-                 else
+                 if (this.statics.currentInstance == this)
                  {
                    tinyMCE.selectedInstance = tinyMCE.getInstanceById(this.id);
                    try
@@ -891,11 +909,15 @@ dojo.declare("alfresco.xforms.RichTextEditor",
                      dojo.debug(e);
                    }
                  }
+                 else
+                 {
+                   this.widget.innerHTML = value;
+                 }
                },
 
                getValue: function()
                {
-                 var result = this.isReadonly() ? this.widget.innerHTML : tinyMCE.getContent(this.id);
+                 var result = this.statics.currentInstance == this ? tinyMCE.getContent(this.id) : this.widget.innerHTML;
                  result = result.replace(new RegExp(alfresco.constants.AVM_WEBAPP_URL, "g"), "");
                  return result;
                },
@@ -903,14 +925,9 @@ dojo.declare("alfresco.xforms.RichTextEditor",
                setReadonly: function(readonly)
                {
                  alfresco.xforms.RichTextEditor.superclass.setReadonly.call(this, readonly);
-                 var mce = tinyMCE.getInstanceById(this.id);
-                 if (readonly && mce)
+                 if (readonly && this.statics.currentInstance == this)
                  {
                    this._removeTinyMCE();
-                 }
-                 else if (!readonly && !mce && this.widget)
-                 {
-                   this._createTinyMCE();
                  }
                },
 
@@ -936,14 +953,14 @@ dojo.declare("alfresco.xforms.RichTextEditor",
                  }
                  var widget = event.target.widget;
                  widget._commitValueChange();
-                 this.focused = false;
+                 this._focused = false;
                },
 
                _tinyMCE_focusHandler: function(event)
                {
                  var widget = event.target.widget;
                  var repeatIndices = widget.getRepeatIndices();
-                 if (repeatIndices.length != 0 && !this.focused)
+                 if (repeatIndices.length != 0 && !this._focused)
                  {
                    var r = repeatIndices[repeatIndices.length - 1].repeat;
                    var p = widget;
@@ -962,7 +979,49 @@ dojo.declare("alfresco.xforms.RichTextEditor",
                    }
                    repeatIndices[repeatIndices.length - 1].repeat.setFocusedChild(p);
                  }
-                 this.focused = true;
+                 this._focused = true;
+               },
+
+               _div_mouseoverHandler: function(event)
+               {
+                 if (!this.hoverLayer)
+                 {
+                   this.hoverLayer = document.createElement("div");
+                   dojo.html.setClass(this.hoverLayer, "xformsRichTextEditorHoverLayer");
+                   this.hoverLayer.appendChild(document.createTextNode(alfresco.xforms.constants.resources["click_to_edit"]));
+                 }
+                 if (!this.hoverLayer.parentNode)
+                 {
+                   this.widget.appendChild(this.hoverLayer);
+                   this.hoverLayer.style.lineHeight = this.hoverLayer.offsetHeight + "px";
+                   var me = this;
+                   dojo.event.browser.addListener(this.hoverLayer, 
+                                                  "onmouseout", 
+                                                  function(event) { me._hoverLayer_mouseoutHandler(event) },
+                                                  true);
+
+                   dojo.event.browser.addListener(this.hoverLayer,
+                                                  "onclick",
+                                                  function(event) { me._hoverLayer_clickHandler(event); },
+                                                  true);
+                 }
+               },
+
+               _hoverLayer_mouseoutHandler: function(event)
+               {
+                 if (this.hoverLayer.parentNode)
+                 {
+                   this.widget.removeChild(this.hoverLayer);
+                 }
+               },
+
+               _hoverLayer_clickHandler: function(event)
+               {
+                 if (this.hoverLayer.parentNode)
+                 {
+                   this.widget.removeChild(this.hoverLayer);
+                   this._createTinyMCE();
+                 }
                }
              });
 
@@ -2325,7 +2384,15 @@ dojo.declare("alfresco.xforms.AbstractGroup",
                    child.labelNode.style.marginRight = "5px";
                    labelNode.appendChild(child.labelNode);
                    child.labelNode.appendChild(document.createTextNode(label));
+
                  }
+                 var hint = child.getHint();
+                 if (hint)
+                 {
+                   labelNode.setAttribute("title", hint);
+                   requiredImage.setAttribute("alt", hint);
+                 }
+
                  return labelNode;
                },
 
@@ -3943,7 +4010,7 @@ dojo.declare("alfresco.xforms.XForm",
                  {
                    return null;
                  }
-                 var result = new x(this, xformsNode);
+                 var result = new x.className(this, xformsNode, x.params);
                  if (result instanceof alfresco.xforms.Widget)
                  {
                    return result;
@@ -4568,7 +4635,6 @@ dojo.html.toCamelCase = function(str)
 ////////////////////////////////////////////////////////////////////////////////
 // tiny mce integration
 ////////////////////////////////////////////////////////////////////////////////
-
 tinyMCE.init({
   theme: "advanced",
   mode: "exact",
@@ -4582,8 +4648,8 @@ tinyMCE.init({
   execcommand_callback: "alfresco_TinyMCE_execcommand_callback",
   theme_advanced_toolbar_location: "top",
   theme_advanced_toolbar_align: "left",
-  theme_advanced_buttons1: "bold,italic,underline,strikethrough,separator,fontselect,fontsizeselect",
-  theme_advanced_buttons2: "link,unlink,image,separator,justifyleft,justifycenter,justifyright,justifyfull,separator,bullist,numlist,separator,undo,redo,separator,forecolor,backcolor",
+  theme_advanced_buttons1: "",
+  theme_advanced_buttons2: "",
   theme_advanced_buttons3: "",
   urlconverter_callback: "alfresco_TinyMCE_urlconverter_callback"
 });
@@ -4791,62 +4857,64 @@ alfresco.xforms.widgetConfig =
 {
   "xf:group": 
   {
-    "*": { "minimal": alfresco.xforms.HGroup, "*": alfresco.xforms.VGroup }
+    "*": { "minimal": { "className": alfresco.xforms.HGroup }, "*": { "className": alfresco.xforms.VGroup }}
   },
   "xf:repeat": 
   {
-    "*": { "*": alfresco.xforms.Repeat }
+    "*": { "*": { "className": alfresco.xforms.Repeat } }
   },
   "xf:textarea":
   {
-    "*": { "minimal": alfresco.xforms.PlainTextEditor, "*": alfresco.xforms.RichTextEditor },
+    "*": { "minimal": { "className": alfresco.xforms.PlainTextEditor }, 
+           "*": { "className": alfresco.xforms.RichTextEditor, params: [ "bold,italic,underline,separator,forecolor,backcolor,separator,link,unlink,image", "", "" ] },
+           "full": { "className": alfresco.xforms.RichTextEditor, params: ["bold,italic,underline,strikethrough,separator,fontselect,fontsizeselect", "link,unlink,image,separator,justifyleft,justifycenter,justifyright,justifyfull,separator,bullist,numlist,separator,undo,redo,separator,forecolor,backcolor", "" ] }},
   },
   "xf:upload":
   {
-    "*": { "*": alfresco.xforms.FilePicker }
+    "*": { "*": { "className": alfresco.xforms.FilePicker } }
   },
   "xf:range":
   {
-    "*": { "*": alfresco.xforms.NumericalRange }
+    "*": { "*": { "className": alfresco.xforms.NumericalRange } }
   },
   "xf:input":
   {
-    "date": { "*": alfresco.xforms.DatePicker },
-    "time": { "*": alfresco.xforms.TimePicker },
-    "gDay": { "*": alfresco.xforms.DayPicker },
-    "gMonth": { "*": alfresco.xforms.MonthPicker },
-    "gYear": { "*": alfresco.xforms.YearPicker },
-    "gMonthDay": { "*": alfresco.xforms.MonthDayPicker },
-    "gYearMonth": { "*": alfresco.xforms.YearMonthPicker },
-    "dateTime": { "*": alfresco.xforms.DateTimePicker },
-    "*": { "*": alfresco.xforms.TextField }
+    "date": { "*": { "className": alfresco.xforms.DatePicker }},
+    "time": { "*": { "className": alfresco.xforms.TimePicker }},
+    "gDay": { "*": { "className": alfresco.xforms.DayPicker }},
+    "gMonth": { "*": { "className": alfresco.xforms.MonthPicker }},
+    "gYear": { "*": { "className": alfresco.xforms.YearPicker }},
+    "gMonthDay": { "*": { "className": alfresco.xforms.MonthDayPicker }},
+    "gYearMonth": { "*": { "className": alfresco.xforms.YearMonthPicker }},
+    "dateTime": { "*": { "className": alfresco.xforms.DateTimePicker }},
+    "*": { "*": { "className": alfresco.xforms.TextField }}
   },
   "xf:select1":
   {
-    "boolean": { "*": alfresco.xforms.Checkbox },
-    "*": { "full": alfresco.xforms.RadioSelect1,
-           "*": alfresco.xforms.ComboboxSelect1 }
+    "boolean": { "*": { "className": alfresco.xforms.Checkbox }},
+    "*": { "full": { "className": alfresco.xforms.RadioSelect1},
+           "*": { "className": alfresco.xforms.ComboboxSelect1 }}
   },
   "xf:select":
   {
-    "*": { "full": alfresco.xforms.CheckboxSelect,
-           "*": alfresco.xforms.ListSelect }
+    "*": { "full": { "className": alfresco.xforms.CheckboxSelect},
+           "*": { "className": alfresco.xforms.ListSelect }}
   },
   "xf:submit":
   {
-    "*": { "*": alfresco.xforms.Submit }
+    "*": { "*": { "className": alfresco.xforms.Submit } }
   },
   "xf:trigger":
   {
-    "*": { "*": alfresco.xforms.Trigger }
+    "*": { "*": { "className": alfresco.xforms.Trigger }}
   },
   "xf:switch":
   {
-    "*": { "*": alfresco.xforms.SwitchGroup }
+    "*": { "*": { "className": alfresco.xforms.SwitchGroup } }
   },
   "xf:case":
   {
-    "*": { "*": alfresco.xforms.CaseGroup }
+    "*": { "*": { "className": alfresco.xforms.CaseGroup }}
   },
   "chiba:data": { "*": { "*": null } },
   "xf:label": { "*": { "*": null } },

@@ -46,6 +46,10 @@ public class XFormsProcessor
 
    private static final Log LOGGER = LogFactory.getLog(XFormsProcessor.class); 
 
+   /**
+    * A triple of js variable name, namespace uri, and namespace prefix which
+    * will form javascript variables within alfresco.constants.
+    */
    private final static String[][] JS_NAMESPACES = 
    {
       { "xforms", NamespaceConstants.XFORMS_NS, NamespaceConstants.XFORMS_PREFIX },
@@ -54,6 +58,7 @@ public class XFormsProcessor
       { "alfresco", NamespaceService.ALFRESCO_URI, NamespaceService.ALFRESCO_PREFIX }
    };
    
+   /** Scripts needed to initialize the xforms client. */
    private final static String[] JS_SCRIPTS = 
    {
       "/scripts/tiny_mce/" + (LOGGER.isDebugEnabled() 
@@ -68,18 +73,19 @@ public class XFormsProcessor
       "/scripts/upload_helper.js",
    };
 
-
+   /** Localized strings needed by the xforms client. */
    private final static String[] BUNDLE_KEYS =
    {
-      "validation_provide_values_for_required_fields",
+      "add_content",
+      "cancel",
+      "click_to_edit",
+      "eg",
+      "go_up",
       "idle",
       "loading",
-      "add_content",
-      "go_up",
-      "cancel",
-      "upload",
       "path",
-      "eg"
+      "upload",
+      "validation_provide_values_for_required_fields"
    };
 
    public XFormsProcessor()

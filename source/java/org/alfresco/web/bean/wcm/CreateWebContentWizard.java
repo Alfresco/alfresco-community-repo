@@ -26,6 +26,7 @@ package org.alfresco.web.bean.wcm;
 
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,6 +49,7 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.wf.AVMSubmittedAspect;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
@@ -469,7 +471,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       final Form form = (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) 
                          ? this.getForm()
                          : null);
-      String path = null;
+      String path = cwd;
       if (form != null)
       {
          path = form.getOutputPathForFormInstanceData(this.instanceDataDocument,
@@ -491,9 +493,18 @@ public class CreateWebContentWizard extends BaseContentWizard
          LOGGER.debug("creating file " + fileName + " in " + path);
 
       // put the content of the file into the AVM store
-      avmService.createFile(path, 
-                            fileName, 
-                            new ByteArrayInputStream((this.content == null ? "" : this.content).getBytes("UTF-8")));
+      try
+      {
+         avmService.createFile(path, 
+                               fileName, 
+                               new ByteArrayInputStream((this.content == null ? "" : this.content).getBytes("UTF-8")));
+      }
+      catch (AVMExistsException avmee)
+      {
+         String msg = Application.getMessage(FacesContext.getCurrentInstance(), "error_exists");
+         msg = MessageFormat.format(msg, fileName);
+         throw new AlfrescoRuntimeException(msg, avmee);
+      }
       
       // remember the created path
       this.createdPath = AVMNodeConverter.ExtendAVMPath(path, fileName);

@@ -154,13 +154,19 @@
       <xs:sequence>
 	<xs:element name="radio" type="five_string_values">
           <xs:annotation>
-            <xs:appinfo><alf:appearance>full</alf:appearance></xs:appinfo>
+            <xs:appinfo>
+              <alf:appearance>full</alf:appearance>
+              <alf:hint>this control should appear as radio buttons.</alf:hint>
+            </xs:appinfo>
           </xs:annotation>
         </xs:element>
 	<xs:element name="combobox" type="ten_string_values"/>
 	<xs:element name="list_of_five" type="five_number_list">
           <xs:annotation>
-            <xs:appinfo><alf:appearance>full</alf:appearance></xs:appinfo>
+            <xs:appinfo>
+              <alf:appearance>full</alf:appearance>
+              <alf:hint>Please select some of these numbers.  This control should appear as a list.</alf:hint>
+            </xs:appinfo>
           </xs:annotation>
         </xs:element>
 	<xs:element name="list_of_ten" type="ten_number_list"/>
@@ -169,6 +175,7 @@
 	    <xs:appinfo>
 	      <alf:label>${components-test.list_of_ten_select_three.label}</alf:label>
 	      <alf:alert>${components-test.list_of_ten_select_three.alert}</alf:alert>
+	      <alf:hint>Please select exactly three elements from this list.</alf:hint>
 	    </xs:appinfo>
 	  </xs:annotation>
 	</xs:element>

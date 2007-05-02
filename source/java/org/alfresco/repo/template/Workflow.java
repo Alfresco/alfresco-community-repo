@@ -27,12 +27,22 @@ package org.alfresco.repo.template;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ApplicationModel;
+import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -40,6 +50,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
+import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * Workflow and task support in FreeMarker templates.
@@ -48,6 +59,9 @@ import org.alfresco.service.namespace.QNameMap;
  */
 public class Workflow extends BaseTemplateProcessorExtension
 {
+    private static final String WCM_WF_MODEL_1_0_URI = "http://www.alfresco.org/model/wcmworkflow/1.0";
+    private static final QName PROP_FROM_PATH = QName.createQName(WCM_WF_MODEL_1_0_URI, "fromPath");
+    
     private ServiceRegistry services;
 
     /**
@@ -175,21 +189,96 @@ public class Workflow extends BaseTemplateProcessorExtension
             return this.task.path.instance.startDate;
         }
         
+        public Map<String, String>[] getTransitions()
+        {
+           Map<String, String>[] tranMaps = null;
+           WorkflowTransition[] transitions = this.task.definition.node.transitions;
+           if (transitions != null)
+           {
+              tranMaps = new HashMap[transitions.length];
+              for (int i=0; i<transitions.length; i++)
+              {
+                 tranMaps[i] = new HashMap<String, String>(2, 1.0f);
+                 tranMaps[i].put("label", transitions[i].title);
+                 tranMaps[i].put("id", transitions[i].id);
+              }
+           }
+           return (tranMaps != null ? tranMaps : new HashMap[0]);
+        }
+        
         /**
          * @return A TemplateNode representing the initiator (person) of the workflow
          */
         public TemplateNode getInitiator()
         {
-            return new TemplateNode(this.task.path.instance.initiator, services, resolver);
+            return new TemplateNode(this.task.path.instance.initiator, this.services, this.resolver);
         }
         
         /**
-         * @return A TemplateNode representing the workflow package object
+         * @return The workflow package ref
          */
-        public TemplateNode getPackage()
+        public NodeRef getPackage()
         {
-            NodeRef packageRef = (NodeRef)this.task.properties.get(WorkflowModel.ASSOC_PACKAGE);
-            return new TemplateNode(packageRef, services, resolver);
+            return (NodeRef)this.task.properties.get(WorkflowModel.ASSOC_PACKAGE);
+        }
+        
+        /**
+         * @return the resources from the package attached to this workflow task
+         */
+        public List<TemplateContent> getPackageResources()
+        {
+            List<TemplateContent> resources = new ArrayList<TemplateContent>();
+            if (this.task.properties.get(PROP_FROM_PATH) != null)
+            {
+                AVMService avmService = this.services.getAVMService();
+                NodeRef workflowPackage = getPackage();
+                NodeRef stagingNodeRef = (NodeRef)this.services.getNodeService().getProperty(
+                        workflowPackage, WCMModel.PROP_AVM_DIR_INDIRECTION);
+                String stagingAvmPath = AVMNodeConverter.ToAVMVersionPath(stagingNodeRef).getSecond();
+                String packageAvmPath = AVMNodeConverter.ToAVMVersionPath(workflowPackage).getSecond();
+                for (AVMDifference d : this.services.getAVMSyncService().compare(
+                        -1, packageAvmPath, -1, stagingAvmPath, null))
+                {
+                    if (d.getDifferenceCode() == AVMDifference.NEWER ||
+                            d.getDifferenceCode() == AVMDifference.CONFLICT)
+                    {
+                        resources.add(new AVMTemplateNode(
+                                d.getSourcePath(), d.getSourceVersion(), this.services, this.resolver));
+                    }
+                }
+            }
+            else
+            {
+                // get existing workflow package items
+                NodeService nodeService = this.services.getNodeService();
+                DictionaryService ddService = this.services.getDictionaryService();
+                List<ChildAssociationRef> childRefs = nodeService.getChildAssocs(
+                        getPackage(), ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);   
+
+                for (ChildAssociationRef ref: childRefs)
+                {
+                    // create our Node representation from the NodeRef
+                    NodeRef nodeRef = ref.getChildRef();
+                    if (nodeService.exists(nodeRef))
+                    {
+                        // find it's type so we can see if it's a node we are interested in
+                        QName type = nodeService.getType(nodeRef);
+
+                        // make sure the type is defined in the data dictionary
+                        if (ddService.getType(type) != null)
+                        {
+                            // look for content nodes or links to content
+                            // NOTE: folders within workflow packages are ignored for now
+                            if (ddService.isSubClass(type, ContentModel.TYPE_CONTENT) || 
+                                    ApplicationModel.TYPE_FILELINK.equals(type))
+                            {
+                                resources.add(new TemplateNode(nodeRef, this.services, this.resolver));
+                            }
+                        }
+                    }
+                }
+            }
+            return resources;
         }
         
         /**
@@ -204,7 +293,7 @@ public class Workflow extends BaseTemplateProcessorExtension
                 String transition = (String)task.properties.get(WorkflowModel.PROP_OUTCOME);
                 if (transition != null)
                 {
-                    WorkflowTransition[] transitions = task.definition.node.transitions;
+                    WorkflowTransition[] transitions = this.task.definition.node.transitions;
                     for (WorkflowTransition trans : transitions)
                     {
                         if (trans.id.equals(transition))
@@ -227,11 +316,11 @@ public class Workflow extends BaseTemplateProcessorExtension
             {
                 // convert properties to a QName accessable Map with TemplateNode objects as required
                 PropertyConverter converter = new PropertyConverter();
-                this.properties = new QNameMap<String, Serializable>(services.getNamespaceService());
+                this.properties = new QNameMap<String, Serializable>(this.services.getNamespaceService());
                 for (QName qname : this.task.properties.keySet())
                 {
                     Serializable value = converter.convertProperty(
-                        this.task.properties.get(qname), qname, services, resolver);
+                        this.task.properties.get(qname), qname, this.services, this.resolver);
                     this.properties.put(qname.toString(), value);
                 }
             }

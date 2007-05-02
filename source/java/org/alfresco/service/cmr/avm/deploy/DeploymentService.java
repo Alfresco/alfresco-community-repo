@@ -41,7 +41,7 @@ public interface DeploymentService
      * @param port The port to connect to.
      * @param userName The username for authentication 
      * @param password The password for authentication
-     * @param dstPath The destination path.
+     * @param dstTarget The target on the deployment receiver.
      * @param createDst Flag for whether a missing destination should be created.
      * @param dontDelete Don't delete deleted nodes from destination.
      * @param dontDo If this is set, this is a dry run.
@@ -50,7 +50,7 @@ public interface DeploymentService
     public DeploymentReport deployDifferenceFS(int version, String srcPath,
                                                String hostName, int port,
                                                String userName, String password,
-                                               String dstPath,
+                                               String dstTarget,
                                                boolean createDst,
                                                boolean dontDelete, 
                                                boolean dontDo,

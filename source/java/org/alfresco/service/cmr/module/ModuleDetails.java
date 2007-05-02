@@ -24,6 +24,7 @@
  */
 package org.alfresco.service.cmr.module;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -36,7 +37,7 @@ import org.alfresco.util.VersionNumber;
  * @author Roy Wetherall
  * @since 2.0
  */
-public interface ModuleDetails
+public interface ModuleDetails extends Serializable
 {
     static final String PROP_ID = "module.id";
     static final String PROP_ALIASES = "module.aliases";
@@ -45,6 +46,7 @@ public interface ModuleDetails
     static final String PROP_DESCRIPTION = "module.description";
     static final String PROP_REPO_VERSION_MIN = "module.repo.version.min";
     static final String PROP_REPO_VERSION_MAX = "module.repo.version.max";
+    static final String PROP_DEPENDS_PREFIX = "module.depends.";
     static final String PROP_INSTALL_DATE = "module.installDate";
     static final String PROP_INSTALL_STATE = "module.installState";
     
@@ -109,6 +111,11 @@ public interface ModuleDetails
      * @param repoVersionMax the maximum version of the repository in which the module may be acitve
      */
     void setRepoVersionMax(VersionNumber repoVersionMax);
+    
+    /**
+     * @return  Returns a list of module dependencies that must be present for this module
+     */
+    List<ModuleDependency> getDependencies();
     
     /**
      * Get the modules install date

@@ -24,9 +24,11 @@
  */
 package org.alfresco.repo.module;
 
+import java.util.List;
 import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.module.ModuleDependency;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleInstallState;
 import org.alfresco.util.VersionNumber;
@@ -53,6 +55,14 @@ public class ModuleDetailsImplTest extends TestCase
         defaultProperties.setProperty(ModuleDetails.PROP_VERSION, "1.0.0");
         defaultProperties.setProperty(ModuleDetails.PROP_REPO_VERSION_MIN, new VersionNumber("1.2").toString());
         defaultProperties.setProperty(ModuleDetails.PROP_REPO_VERSION_MAX, new VersionNumber("1.4.3").toString());
+        defaultProperties.setProperty(ModuleDetails.PROP_DEPENDS_PREFIX + "a", "1.2.3");
+        defaultProperties.setProperty(ModuleDetails.PROP_DEPENDS_PREFIX + "b", "*");
+        defaultProperties.setProperty(ModuleDetails.PROP_DEPENDS_PREFIX + "c", "- 1.2");
+        defaultProperties.setProperty(ModuleDetails.PROP_DEPENDS_PREFIX + "d", "1.2 -");
+        defaultProperties.setProperty(ModuleDetails.PROP_DEPENDS_PREFIX + "e", "* - 1.2");
+        defaultProperties.setProperty(ModuleDetails.PROP_DEPENDS_PREFIX + "f", "1.2 - *");
+        defaultProperties.setProperty(ModuleDetails.PROP_DEPENDS_PREFIX + "g", "0.5, 0.6");
+        defaultProperties.setProperty(ModuleDetails.PROP_DEPENDS_PREFIX + "h", "0.5 - 0.6, 0.9 - *");
         defaultProperties.setProperty(ModuleDetails.PROP_INSTALL_STATE, ModuleInstallState.INSTALLED.toString());
     }
 
@@ -69,6 +79,29 @@ public class ModuleDetailsImplTest extends TestCase
         Properties processedProperties = details.getProperties();
         assertEquals("The number of properties changed", defaultProperties.size(), processedProperties.size());
         assertEquals("The properties are different", defaultProperties, processedProperties);
+    }
+    
+    public void testDependencyChecks()
+    {
+        ModuleDetails details = new ModuleDetailsImpl(defaultProperties);
+        
+        Properties tempProperties = new Properties();
+        tempProperties.setProperty(ModuleDetails.PROP_ID, "a");
+        tempProperties.setProperty(ModuleDetails.PROP_TITLE, "A");
+        tempProperties.setProperty(ModuleDetails.PROP_DESCRIPTION, "A description");
+        tempProperties.setProperty(ModuleDetails.PROP_VERSION, "1.0.0");
+        ModuleDetails tempDetails = new ModuleDetailsImpl(tempProperties);
+        
+        List<ModuleDependency> dependencies = details.getDependencies();
+        assertEquals("Incorrect number of dependencies", 8, dependencies.size());
+        for (ModuleDependency dependency : dependencies)
+        {
+            if (dependency.getDependencyId().equals(tempDetails.getId()))
+            {
+                // It should not match
+                assertFalse("No match expected", dependency.isValidDependency(tempDetails));
+            }
+        }
     }
     
     public void testTrimming() throws Exception

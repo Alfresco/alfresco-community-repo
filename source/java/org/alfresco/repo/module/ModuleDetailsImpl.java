@@ -32,9 +32,11 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.module.ModuleDependency;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleInstallState;
 import org.alfresco.util.ISO8601DateFormat;
+import org.alfresco.util.Pair;
 import org.alfresco.util.VersionNumber;
 
 /**
@@ -49,6 +51,8 @@ import org.alfresco.util.VersionNumber;
  */
 public class ModuleDetailsImpl implements ModuleDetails
 {
+    private static final long serialVersionUID = 5782747774317351424L;
+
     private String id;
     private List<String> aliases;
     private VersionNumber version;
@@ -56,6 +60,7 @@ public class ModuleDetailsImpl implements ModuleDetails
     private String description;
     private VersionNumber repoVersionMin;
     private VersionNumber repoVersionMax;
+    private List<ModuleDependency> dependencies;
     private Date installDate;
     private ModuleInstallState installState;
     
@@ -67,6 +72,7 @@ public class ModuleDetailsImpl implements ModuleDetails
         aliases = new ArrayList<String>(0);
         repoVersionMin = VersionNumber.VERSION_ZERO;
         repoVersionMax = VersionNumber.VERSION_BIG;
+        dependencies = new ArrayList<ModuleDependency>(0);
         this.installState = ModuleInstallState.UNKNOWN;
     }
     
@@ -151,6 +157,8 @@ public class ModuleDetailsImpl implements ModuleDetails
         {
             repoVersionMax = new VersionNumber(trimmedProperties.getProperty(PROP_REPO_VERSION_MAX));
         }
+        // DEPENDENCIES
+        this.dependencies = extractDependencies(trimmedProperties);
         // INSTALL DATE
         if (trimmedProperties.getProperty(PROP_INSTALL_DATE) != null)
         {
@@ -212,6 +220,34 @@ public class ModuleDetailsImpl implements ModuleDetails
         this.title = title;
         this.description = description;
     }
+    
+    private static List<ModuleDependency> extractDependencies(Properties properties)
+    {
+        int prefixLength = PROP_DEPENDS_PREFIX.length();
+        
+        List<ModuleDependency> dependencies = new ArrayList<ModuleDependency>(2);
+        for (Map.Entry entry : properties.entrySet())
+        {
+            String key = (String) entry.getKey();
+            String value = (String) entry.getValue();
+            if (!key.startsWith(PROP_DEPENDS_PREFIX))
+            {
+                continue;
+            }
+            if (key.length() == prefixLength)
+            {
+                // Just ignore it
+                continue;
+            }
+            String dependencyId = key.substring(prefixLength);
+            // Build the dependency
+            ModuleDependency dependency = new ModuleDependencyImpl(dependencyId, value);
+            // Add it
+            dependencies.add(dependency);
+        }
+        // Done
+        return dependencies;
+    }
 
     public Properties getProperties()
     {
@@ -229,6 +265,15 @@ public class ModuleDetailsImpl implements ModuleDetails
         if (repoVersionMax != null)
         {
             properties.setProperty(PROP_REPO_VERSION_MAX, repoVersionMax.toString());
+        }
+        if (dependencies.size() > 0)
+        {
+            for (ModuleDependency dependency : dependencies)
+            {
+                String key = PROP_DEPENDS_PREFIX + dependency.getDependencyId();
+                String value = dependency.getVersionString();
+                properties.setProperty(key, value);
+            }
         }
         if (installDate != null)
         {
@@ -310,6 +355,11 @@ public class ModuleDetailsImpl implements ModuleDetails
         this.repoVersionMax = repoVersionMax;
     }
 
+    public List<ModuleDependency> getDependencies()
+    {
+        return dependencies;
+    }
+
     public Date getInstallDate()
     {
         return installDate;
@@ -328,5 +378,165 @@ public class ModuleDetailsImpl implements ModuleDetails
     public void setInstallState(ModuleInstallState installState)
     {
         this.installState = installState;
+    }
+    
+    /**
+     * @author Derek Hulley
+     */
+    public static final class ModuleDependencyImpl implements ModuleDependency
+    {
+        private static final long serialVersionUID = -6850832632316987487L;
+
+        private String dependencyId;
+        private String versionStr;
+        private List<Pair<VersionNumber, VersionNumber>> versionRanges;
+        
+        private ModuleDependencyImpl(String dependencyId, String versionStr)
+        {
+            this.dependencyId = dependencyId;
+            this.versionStr = versionStr;
+            try
+            {
+                versionRanges = buildVersionRanges(versionStr);
+            }
+            catch (Throwable e)
+            {
+                throw new AlfrescoRuntimeException("Unable to interpret the module version ranges: " + versionStr, e);
+            }
+        }
+        
+        @Override
+        public String toString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append(dependencyId).append(":").append(versionStr);
+            return sb.toString();
+        }
+
+        private static List<Pair<VersionNumber, VersionNumber>> buildVersionRanges(String versionStr)
+        {
+            List<Pair<VersionNumber, VersionNumber>> versionRanges = new ArrayList<Pair<VersionNumber, VersionNumber>>(1);
+            StringTokenizer rangesTokenizer = new StringTokenizer(versionStr, ",");
+            while (rangesTokenizer.hasMoreTokens())
+            {
+                String range = rangesTokenizer.nextToken().trim();
+                // Handle the * special case
+                if (range.equals("*"))
+                {
+                    range = "*-*";
+                }
+                if (range.startsWith("-"))
+                {
+                    range = "*" + range;
+                }
+                if (range.endsWith("-"))
+                {
+                    range = range + "*";
+                }
+                // The range must have at least one version in it
+                StringTokenizer rangeTokenizer = new StringTokenizer(range, "-", false);
+                VersionNumber versionLower = null;
+                VersionNumber versionUpper = null;
+                while (rangeTokenizer.hasMoreTokens())
+                {
+                    String version = rangeTokenizer.nextToken();
+                    version = version.trim();
+                    if (versionLower == null)
+                    {
+                        if (version.equals("*"))
+                        {
+                            // Unbounded lower version
+                            versionLower = VersionNumber.VERSION_ZERO;
+                        }
+                        else
+                        {
+                            // Explicit lower bound
+                            versionLower = new VersionNumber(version);
+                        }
+                    }
+                    else if (versionUpper == null)
+                    {
+                        if (version.equals("*"))
+                        {
+                            // Unbounded upper version
+                            versionUpper = VersionNumber.VERSION_BIG;
+                        }
+                        else
+                        {
+                            // Explicit upper bound
+                            versionUpper = new VersionNumber(version);
+                        }
+                    }
+                }
+                // Check
+                if (versionUpper == null && versionLower == null)
+                {
+                    throw new AlfrescoRuntimeException(
+                            "Valid dependency version ranges are: \n" +
+                            "   LOW  - HIGH \n" +
+                            "   *    - HIGH \n" +
+                            "   LOW  - *    \n" +
+                            "   *       ");
+                }
+                else if (versionUpper == null && versionLower != null)
+                {
+                    versionUpper = versionLower;
+                }
+                else if (versionLower == null && versionUpper != null)
+                {
+                    versionLower = versionUpper;
+                }
+                // Create the range pair
+                Pair<VersionNumber, VersionNumber> rangePair = new Pair<VersionNumber, VersionNumber>(versionLower, versionUpper);
+                versionRanges.add(rangePair);
+            }
+            return versionRanges;
+        }
+        
+        public String getDependencyId()
+        {
+            return dependencyId;
+        }
+
+        public String getVersionString()
+        {
+            return versionStr;
+        }
+
+        public boolean isValidDependency(ModuleDetails moduleDetails)
+        {
+            // Nothing to compare to
+            if (moduleDetails == null)
+            {
+                return false;
+            }
+            // Check the ID
+            if (!moduleDetails.getId().equals(dependencyId))
+            {
+                return false;
+            }
+            // Check the version number
+            VersionNumber checkVersion = moduleDetails.getVersion();
+            boolean matched = false;
+            for (Pair<VersionNumber, VersionNumber> versionRange : versionRanges)
+            {
+                VersionNumber versionLower = versionRange.getFirst();
+                VersionNumber versionUpper = versionRange.getSecond();
+                if (checkVersion.compareTo(versionLower) < 0)
+                {
+                    // The version is too low
+                    continue; 
+                }
+                if (checkVersion.compareTo(versionUpper) > 0)
+                {
+                    // The version is too high
+                    continue;
+                }
+                // It is a match
+                matched = true;
+                break;
+            }
+            return matched;
+        }
     }
 }

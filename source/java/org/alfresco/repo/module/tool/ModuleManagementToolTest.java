@@ -45,9 +45,10 @@ import de.schlichtherle.io.FileOutputStream;
 import de.schlichtherle.io.ZipDetector;
 
 /**
- * Module management tool unit test
+ * @see org.alfresco.repo.module.tool.ModuleManagementTool
  * 
  * @author Roy Wetherall
+ * @author Derek Hulley
  */
 public class ModuleManagementToolTest extends TestCase
 {
@@ -61,10 +62,8 @@ public class ModuleManagementToolTest extends TestCase
         manager.setVerbose(true);
         
         String warLocation = getFileLocation(".war", "module/test.war");
-        String ampLocation = getFileLocation(".amp", "module/test.amp");
+        String ampLocation = getFileLocation(".amp", "module/test_v1.amp");
         String ampV2Location = getFileLocation(".amp", "module/test_v2.amp");
-        
-        System.out.println(warLocation);
         
         // Initial install of module
         this.manager.installModule(ampLocation, warLocation);
@@ -161,15 +160,47 @@ public class ModuleManagementToolTest extends TestCase
         }        
     }
     
+    public void testDependencySuccess() throws Exception
+    {
+        manager.setVerbose(true);
+        
+        String warLocation = getFileLocation(".war", "module/test.war");
+        String testAmpV1Location = getFileLocation(".amp", "module/test_v1.amp");
+        String testAmpV2Location = getFileLocation(".amp", "module/test_v2.amp");
+        String testAmpDepV1Location = getFileLocation(".amp", "module/dependent_on_test_v1.amp");
+        String testAmpDepV2Location = getFileLocation(".amp", "module/dependent_on_test_v2.amp");
+        
+        // Install V1
+        this.manager.installModule(testAmpV1Location, warLocation, false, false, false);
+        
+        // Install the module dependent on test_v1
+        this.manager.installModule(testAmpDepV1Location, warLocation, false, false, false);
+        
+        try
+        {
+            // Attempt to upgrade the dependent module
+            this.manager.installModule(testAmpDepV2Location, warLocation, false, false, false);
+            fail("Failed to detect inadequate dependency on the test amp");
+        }
+        catch (ModuleManagementToolException e)
+        {
+            System.out.println("Expected: " + e.getMessage());
+        }
+        
+        // Install the test_v2
+        this.manager.installModule(testAmpV2Location, warLocation, false, false, false);
+        
+        // The dependent module should now go in
+        this.manager.installModule(testAmpDepV2Location, warLocation, false, false, false);
+    }
+
     public void testPreviewInstall()
         throws Exception
     {
         manager.setVerbose(true);
         
         String warLocation = getFileLocation(".war", "module/test.war");
-        String ampLocation = getFileLocation(".amp", "module/test.amp");
-        
-        System.out.println(warLocation);
+        String ampLocation = getFileLocation(".amp", "module/test_v1.amp");
         
         // Initial install of module
         this.manager.installModule(ampLocation, warLocation, true, false, true);
@@ -183,9 +214,7 @@ public class ModuleManagementToolTest extends TestCase
         manager.setVerbose(true);
         
         String warLocation = getFileLocation(".war", "module/test.war");
-        String ampLocation = getFileLocation(".amp", "module/test.amp");
-        
-        System.out.println(warLocation);
+        String ampLocation = getFileLocation(".amp", "module/test_v1.amp");
         
         // Initial install of module
         this.manager.installModule(ampLocation, warLocation, false, false, false);
@@ -198,15 +227,13 @@ public class ModuleManagementToolTest extends TestCase
         manager.setVerbose(true);
         
         String warLocation = getFileLocation(".war", "module/test.war");
-        String ampLocation = getFileLocation(".amp", "module/test.amp");
+        String ampLocation = getFileLocation(".amp", "module/test_v1.amp");
         String ampV2Location = getFileLocation(".amp", "module/test_v2.amp");
 
         int index = ampV2Location.lastIndexOf(File.separator);
         System.out.println(index);
         String directoryLocation = ampV2Location.substring(0, index);
         
-        System.out.println(warLocation);
-        System.out.println(directoryLocation);
         try
         {
             this.manager.installModules(directoryLocation, warLocation);
@@ -222,7 +249,7 @@ public class ModuleManagementToolTest extends TestCase
         throws Exception
     {
         String warLocation = getFileLocation(".war", "module/test.war");
-        String ampLocation = getFileLocation(".amp", "module/test.amp");
+        String ampLocation = getFileLocation(".amp", "module/test_v1.amp");
         
         this.manager.listModules(warLocation);
         
@@ -230,7 +257,7 @@ public class ModuleManagementToolTest extends TestCase
         
         this.manager.listModules(warLocation);        
     }
-
+    
     private String getFileLocation(String extension, String location)
         throws IOException
     {

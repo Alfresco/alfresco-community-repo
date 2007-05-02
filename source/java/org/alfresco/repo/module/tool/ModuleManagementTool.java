@@ -30,12 +30,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.module.ModuleDependency;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleInstallState;
 import org.alfresco.util.VersionNumber;
@@ -127,25 +129,17 @@ public class ModuleManagementTool
     {
         this.verbose = verbose;
     }
-    
+
     /**
+     * Installs all modules within a folder into the given WAR file.
      * 
-     * @param directory
-     * @param warFileLocation
+     * @see #installModule(String, String, boolean, boolean, boolean)
      */
     public void installModules(String directory, String warFileLocation)
     {
         installModules(directory, warFileLocation, false, false, true);
     }
     
-    /**
-     * 
-     * @param directoryLocation
-     * @param warFileLocation
-     * @param preview
-     * @param forceInstall
-     * @param backupWAR
-     */
     public void installModules(String directoryLocation, String warFileLocation, boolean preview, boolean forceInstall, boolean backupWAR)
     {
         java.io.File dir = new java.io.File(directoryLocation);
@@ -159,14 +153,6 @@ public class ModuleManagementTool
         }
     }
     
-    /**
-     * 
-     * @param dir
-     * @param warFileLocation
-     * @param preview
-     * @param forceInstall
-     * @param backupWAR
-     */
     private void installModules(java.io.File dir, String warFileLocation, boolean preview, boolean forceInstall, boolean backupWAR)
     {
         java.io.File[] children =  dir.listFiles();
@@ -255,6 +241,25 @@ public class ModuleManagementTool
             }
             String installingId = installingModuleDetails.getId();
             VersionNumber installingVersion = installingModuleDetails.getVersion();
+            
+            // Check that the target war has the necessary dependencies for this install
+            List<ModuleDependency> installingModuleDependencies = installingModuleDetails.getDependencies();
+            List<ModuleDependency> missingDependencies = new ArrayList<ModuleDependency>(0);
+            for (ModuleDependency dependency : installingModuleDependencies)
+            {
+                String dependencyId = dependency.getDependencyId();
+                ModuleDetails dependencyModuleDetails = ModuleDetailsHelper.createModuleDetailsFromWarAndId(warFileLocation, dependencyId);
+                // Check the dependency.  The API specifies that a null returns false, so no null check is required
+                if (!dependency.isValidDependency(dependencyModuleDetails))
+                {
+                    missingDependencies.add(dependency);
+                    continue;
+                }
+            }
+            if (missingDependencies.size() > 0)
+            {
+                throw new ModuleManagementToolException("The following modules must first be installed: " + missingDependencies);
+            }
             
             // Try to find an installed module by the ID
             ModuleDetails installedModuleDetails = ModuleDetailsHelper.createModuleDetailsFromWarAndId(warFileLocation, installingId);
@@ -716,70 +721,68 @@ public class ModuleManagementTool
      */
     public static void main(String[] args)
     {
-        if (args.length >= 1)
+        if (args.length <= 1)
         {
-            ModuleManagementTool manager = new ModuleManagementTool();
+            outputUsage();
+            return;
+        }
+        ModuleManagementTool manager = new ModuleManagementTool();
+        
+        String operation = args[0];
+        if (operation.equals(OP_INSTALL) == true && args.length >= 3)
+        {            
+            String aepFileLocation = args[1];
+            String warFileLocation = args[2];
+            boolean forceInstall = false;
+            boolean previewInstall = false;
+            boolean backup = true;
+            boolean directory = false;
             
-            String operation = args[0];
-            if (operation.equals(OP_INSTALL) == true && args.length >= 3)
-            {            
-                String aepFileLocation = args[1];
-                String warFileLocation = args[2];
-                boolean forceInstall = false;
-                boolean previewInstall = false;
-                boolean backup = true;
-                boolean directory = false;
-                
-                if (args.length > 3)
+            if (args.length > 3)
+            {
+                for (int i = 3; i < args.length; i++)
                 {
-                    for (int i = 3; i < args.length; i++)
+                    String option = args[i];
+                    if (OPTION_VERBOSE.equals(option) == true)
                     {
-                        String option = args[i];
-                        if (OPTION_VERBOSE.equals(option) == true)
-                        {
-                            manager.setVerbose(true);
-                        }
-                        else if (OPTION_FORCE.equals(option) == true)
-                        {
-                            forceInstall = true;
-                        }
-                        else if (OPTION_PREVIEW.equals(option) == true)
-                        {
-                            previewInstall = true;
-                            manager.setVerbose(true);
-                        }
-                        else if (OPTION_NOBACKUP.equals(option) == true)
-                        {
-                            backup = false;
-                        }
-                        else if (OPTION_DIRECTORY.equals(option) == true)
-                        {
-                            directory = true;
-                        }
+                        manager.setVerbose(true);
+                    }
+                    else if (OPTION_FORCE.equals(option) == true)
+                    {
+                        forceInstall = true;
+                    }
+                    else if (OPTION_PREVIEW.equals(option) == true)
+                    {
+                        previewInstall = true;
+                        manager.setVerbose(true);
+                    }
+                    else if (OPTION_NOBACKUP.equals(option) == true)
+                    {
+                        backup = false;
+                    }
+                    else if (OPTION_DIRECTORY.equals(option) == true)
+                    {
+                        directory = true;
                     }
                 }
-                      
-                if (directory == false)
-                {
-                    // Install the module
-                    manager.installModule(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
-                }
-                else
-                {
-                    // Install the modules from the directory
-                    manager.installModules(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
-                }
             }
-            else if (OP_LIST.equals(operation) == true && args.length == 2)
+                  
+            if (directory == false)
             {
-                // List the installed modules
-                String warFileLocation = args[1];
-                manager.listModules(warFileLocation);                
+                // Install the module
+                manager.installModule(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
             }
             else
             {
-                outputUsage();
+                // Install the modules from the directory
+                manager.installModules(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
             }
+        }
+        else if (OP_LIST.equals(operation) == true && args.length == 2)
+        {
+            // List the installed modules
+            String warFileLocation = args[1];
+            manager.listModules(warFileLocation);                
         }
         else
         {

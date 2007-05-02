@@ -83,7 +83,7 @@ var MyDocs = {
          detail.setStyle('height', detail.defHeight);
          info.setStyle('opacity', 0);
          img.defSrc = img.src;
-         img.bigSrc = img.src.replace(/filetypes\//, 'filetypes64/').replace(/.gif/, '.png');
+         img.bigSrc = img.src.replace(/filetypes\//, 'filetypes64/').replace(/.gif$/, '.png');
          resource.defHeight = 1;
          resource.setStyle('height', resource.defHeight);
 

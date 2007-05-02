@@ -16,6 +16,7 @@
       <#list wp.childAssocs["wca:webuser"] as user>
          <#if user.properties["wca:username"] = person.properties.userName>
             <#assign projectcount=projectcount+1>
+            <#-- construct the sandbox name based on the webproject and current username -->
             <#assign sandbox=wp.properties["wca:avmstore"] + "--" + person.properties.userName>
             <div class="webProjectRow">
                <div class="webProjectTitle">

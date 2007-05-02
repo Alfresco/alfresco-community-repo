@@ -1,27 +1,14 @@
 <table cellpadding='2' cellspacing='0'>
+   <#list task.packageResources as res>
    <tr>
-      <td>ICON</td>
-      <td>Document NAME</td>
-      <td>Something</td>
+      <td><a href="${url.context}${res.url}" target="new"><img src="${url.context}${res.icon16}" border=0></a></td>
+      <td>
+         <#if res.isDocument>
+            <a class="resourceLink" href="${url.context}${res.url}" target="new">${res.name}</a>
+         <#else>
+            <span class="resourceLink">${res.name}</span>
+         </#if>
+      </td>
    </tr>
-   <tr>
-      <td>ICON</td>
-      <td>Document NAME</td>
-      <td>Something</td>
-   </tr>
-   <tr>
-      <td>ICON</td>
-      <td>Document NAME</td>
-      <td>Something</td>
-   </tr>
-   <tr>
-      <td>ICON</td>
-      <td>Document NAME</td>
-      <td>Something</td>
-   </tr>
-   <tr>
-      <td>ICON</td>
-      <td>Document NAME</td>
-      <td>Something</td>
-   </tr>
+   </#list>
 </table>

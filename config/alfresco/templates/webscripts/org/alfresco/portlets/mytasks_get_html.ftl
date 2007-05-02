@@ -80,7 +80,7 @@
             </div>
             <div class="taskDetail">
                <div style="float:left">
-                  <table cellpadding='2' cellspacing='0' style="margin-left:32px;margin-top:20px">
+                  <table cellpadding='2' cellspacing='0' style="margin-left:32px;margin-top:16px">
                      <tr><td class="taskMetaprop">Status:</td><td class="taskMetadata">${t.properties["bpm:status"]}</td>
                      <tr><td class="taskMetaprop">Priority:</td><td class="taskMetadata">${t.properties["bpm:priority"]}</td>
                      <tr><td class="taskMetaprop">Start Date:</td><td class="taskMetadata">${t.startDate?date}</td></tr>
@@ -92,7 +92,11 @@
    	         <div class="taskResources"></div>
    	         <div>
       	         <table class="taskActions" style="padding-left:16px">
-      	            <tr><td>Approve</td><td style="padding-left:64px">Reject</td></tr>
+      	            <tr>
+      	               <#list t.transitions as wt>
+      	               <td><a class="taskAction" href="${url.context}/command/task/end/${t.id}/${wt.id}">${wt.label}</a></td>
+      	               </#list>
+      	            </tr>
       	         </table>
       	      </div>
             </div>
@@ -233,7 +237,7 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    border-top: 1px solid #0092DD;
    border-bottom: 1px solid #CCD4DB;
    border-right: 1px solid #CCD4DB;
-   background-color: #F8FCFD;
+   background-color: #FEF8BC;
    margin: 4px 0px 0px 16px;
    width: 400px;
    height: 80px;
@@ -249,7 +253,13 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    display: inline;
 }
 
-.taskResources td
+a.resourceLink:link, a.resourceLink:visited
+{
+   color: #5A5741;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+}
+
+.resourceLink
 {
    color: #5A5741;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
@@ -257,10 +267,31 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
 
 .taskActions td
 {
+   padding: 4px;
+}
+
+a.taskAction:link, a.taskAction:visited
+{
    color: #5A5741;
-   font-size: 14px;
+   font-size: 13px;
    font-weight: bold;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   border: 1px solid #F6F1BA;
+   padding-left: 4px;
+   padding-right: 4px;
+}
+
+a.taskAction:hover
+{
+   font-size: 13px;
+   font-weight: bold;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   border: 1px solid #F6F1BA;
+   padding-left: 4px;
+   padding-right: 4px;
+   color: #FFFFFF;
+   background-color: #FDB64F;
+   text-decoration: none;
 }
 
 .taskMetadata

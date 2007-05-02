@@ -157,7 +157,7 @@ var MyTasks = {
 
                // slide and fade in the details panel
                animDetail[i] = {
-                  'height': [detailHeight, detail.defHeight + 140],
+                  'height': [detailHeight, detail.defHeight + 132],
                   'opacity': [detail.getStyle('opacity'), 1]};
 
                // close other open tasks and toggle this one if it's already open

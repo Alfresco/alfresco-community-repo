@@ -270,7 +270,7 @@ public abstract class BaseTemplateContentServlet extends BaseServlet
     * The model includes the usual template root objects such as 'companyhome', 'userhome',
     * 'person' and also includes the node specified on the servlet URL as 'space' and 'document'
     *  
-    * @param services      ServiceRegistry required for TemplateNode construction
+    * @param services      ServiceRegistry 
     * @param req           Http request - for accessing Session and url args
     * @param templateRef   NodeRef of the template itself 
     * @param nodeRef       NodeRef of the space/document to process template against
@@ -295,7 +295,10 @@ public abstract class BaseTemplateContentServlet extends BaseServlet
          String name = (String)names.nextElement();
          args.put(name, req.getParameter(name));
       }
-      root.put("args", args);
+      root.put("args", args);    
+      
+      // Add the image resolver
+      root.put(TemplateService.KEY_IMAGE_RESOLVER, imageResolver);
       
       // method to allow client urls to be generated
       root.put("url", new URLHelper(req.getContextPath()));

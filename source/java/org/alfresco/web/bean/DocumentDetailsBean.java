@@ -40,11 +40,11 @@ import javax.transaction.UserTransaction;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
@@ -615,13 +615,9 @@ public class DocumentDetailsBean extends BaseDetailsBean
    {
       Map<String, Object> model = new HashMap<String, Object>(2, 1.0f);
       
-      FacesContext fc = FacesContext.getCurrentInstance();
-      TemplateNode documentNode = new TemplateNode(getDocument().getNodeRef(),
-              Repository.getServiceRegistry(fc), imageResolver);
-      model.put("document", documentNode);
-      TemplateNode spaceNode = new TemplateNode(this.navigator.getCurrentNode().getNodeRef(),
-              Repository.getServiceRegistry(fc), imageResolver);
-      model.put("space", spaceNode);
+      model.put("document", getDocument().getNodeRef());
+      model.put("space", this.navigator.getCurrentNode().getNodeRef());
+      model.put(TemplateService.KEY_IMAGE_RESOLVER, imageResolver);
       
       return model;
    }

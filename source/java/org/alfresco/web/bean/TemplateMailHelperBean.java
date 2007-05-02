@@ -33,7 +33,6 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -123,7 +122,7 @@ public class TemplateMailHelperBean
             Map<String, Object> model = DefaultModelHelper.buildDefaultModel(
                   services, Application.getCurrentUser(fc), templateRef);
             model.put("role", roleText);
-            model.put("space", new TemplateNode(node, Repository.getServiceRegistry(fc), null));
+            model.put("space", node);
             
             body = services.getTemplateService().processTemplate("freemarker", templateRef.toString(), model);
          }

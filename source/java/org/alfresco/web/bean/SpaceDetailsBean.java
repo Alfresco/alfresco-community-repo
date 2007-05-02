@@ -37,14 +37,13 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.GuestTemplateContentServlet;
-import org.alfresco.web.app.servlet.TemplateContentServlet;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
@@ -159,11 +158,9 @@ public class SpaceDetailsBean extends BaseDetailsBean
    public Map getTemplateModel()
    {
       HashMap model = new HashMap(1, 1.0f);
-      
-      FacesContext fc = FacesContext.getCurrentInstance();
-      TemplateNode spaceNode = new TemplateNode(getSpace().getNodeRef(),
-              Repository.getServiceRegistry(fc), imageResolver);
-      model.put("space", spaceNode);
+
+      model.put("space", getSpace().getNodeRef());
+      model.put(TemplateService.KEY_IMAGE_RESOLVER, imageResolver);
       
       return model;
    }

@@ -24,33 +24,11 @@
  */
 package org.alfresco.web.bean.preview;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
-import javax.faces.model.SelectItem;
-
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.template.TemplateNode;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.TemplateImageResolver;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.BrowseBean;
-import org.alfresco.web.bean.NavigationBean;
+import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.data.IDataContainer;
-import org.alfresco.web.data.QuickSort;
-import org.alfresco.web.ui.common.Utils;
-import org.alfresco.web.ui.common.component.UIActionLink;
 
 /**
  * Backing bean for the Preview Space in Template action page
@@ -74,14 +52,13 @@ public class SpacePreviewBean extends BasePreviewBean
     * 
     * @return model containing current document and current space info.
     */
+   @SuppressWarnings("unchecked")
    public Map getTemplateModel()
    {
       HashMap model = new HashMap(3, 1.0f);
       
-      FacesContext fc = FacesContext.getCurrentInstance();
-      TemplateNode spaceNode = new TemplateNode(getNode().getNodeRef(),
-              Repository.getServiceRegistry(fc), imageResolver);
-      model.put("space", spaceNode);
+      model.put("space", getNode().getNodeRef());
+      model.put(TemplateService.KEY_IMAGE_RESOLVER, imageResolver);
       
       return model;
    }

@@ -24,7 +24,6 @@
  */
 package org.alfresco.web.ui.repo.tag;
 
-import javax.faces.component.UICommand;
 import javax.faces.component.UIComponent;
 
 import org.alfresco.web.ui.common.tag.BaseComponentTag;
@@ -58,7 +57,6 @@ public class TemplateTag extends BaseComponentTag
    {
       super.setProperties(component);
       
-      setStringProperty(component, "engine", this.engine);
       setStringProperty(component, "template", this.template);
       setStringProperty(component, "templatePath", this.templatePath);
       setStringBindingProperty(component, "model", this.model);
@@ -71,20 +69,9 @@ public class TemplateTag extends BaseComponentTag
    {
       super.release();
       
-      this.engine = null;
       this.template = null;
       this.templatePath = null;
       this.model = null;
-   }
-   
-   /**
-    * Set the engine name
-    *
-    * @param engine     the engine
-    */
-   public void setEngine(String engine)
-   {
-      this.engine = engine;
    }
 
    /**
@@ -120,9 +107,6 @@ public class TemplateTag extends BaseComponentTag
 
    /** the template name based path */
    private String templatePath;
-
-   /** the engine name */
-   private String engine;
 
    /** the template */
    private String template;

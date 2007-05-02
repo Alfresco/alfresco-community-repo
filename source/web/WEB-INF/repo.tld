@@ -1361,12 +1361,6 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
-      <attribute>
-         <name>engine</name>
-         <required>false</required>
-         <rtexprvalue>true</rtexprvalue>
-      </attribute>
 
       <attribute>
          <name>template</name>

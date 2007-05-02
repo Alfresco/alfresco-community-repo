@@ -40,12 +40,12 @@ import org.alfresco.filesys.smb.server.repo.ContentContext;
 import org.alfresco.filesys.smb.server.repo.ContentDiskInterface;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -486,15 +486,16 @@ public class NavigationBean
    public Map getTemplateModel()
    {
       HashMap model = new HashMap(1, 1.0f);
-      
-      FacesContext fc = FacesContext.getCurrentInstance();
-      TemplateNode spaceNode = new TemplateNode(getCurrentNode().getNodeRef(), Repository.getServiceRegistry(fc),
-            new TemplateImageResolver() {
-               public String resolveImagePathForName(String filename, boolean small) {
-                  return Utils.getFileTypeImage(filename, small);
-               }
-            });
-      model.put("space", spaceNode);
+
+      model.put("space", getCurrentNode().getNodeRef());
+      model.put(TemplateService.KEY_IMAGE_RESOLVER, 
+              new TemplateImageResolver() 
+              {
+                  public String resolveImagePathForName(String filename, boolean small) 
+                  {
+                     return Utils.getFileTypeImage(filename, small);
+                  }
+               });
       
       return model;
    }

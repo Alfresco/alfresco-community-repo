@@ -77,15 +77,15 @@ var MyDocs = {
          item.defMarginLeft = item.getStyle('margin-left').toInt();
          item.defFontSize = item.getStyle('font-size').toInt();;
          item.defBColor = (item.getStyle('background-color') == 'transparent') ? '' : item.getStyle('background-color');
-         detail.defHeight = 0;
+         detail.defHeight = 1;
          detail.setStyle('opacity', 0);
          detail.setStyle('display', 'block');
-         detail.setStyle('height', 0);
+         detail.setStyle('height', detail.defHeight);
          info.setStyle('opacity', 0);
          img.defSrc = img.src;
          img.bigSrc = img.src.replace(/filetypes\//, 'filetypes64/').replace(/.gif/, '.png');
-         resource.defHeight = 0;
-         resource.setStyle('height', 0);
+         resource.defHeight = 1;
+         resource.setStyle('height', resource.defHeight);
 
          // register 'mouseenter' (subclassed mouseover) event for each doc
          doc.addEvent('mouseenter', function(e)

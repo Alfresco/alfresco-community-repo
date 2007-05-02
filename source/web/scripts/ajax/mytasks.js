@@ -40,10 +40,10 @@ var MyTasks = {
          task.isOpen = false;
          task.loadingResources = false;
          item.defBColor = (item.getStyle('background-color') == 'transparent') ? '' : item.getStyle('background-color');
-         detail.defHeight = 0;
+         detail.defHeight = 1;
          detail.setStyle('opacity', 0);
          detail.setStyle('display', 'block');
-         detail.setStyle('height', 0);
+         detail.setStyle('height', detail.defHeight);
          info.setStyle('opacity', 0);
 
          // register 'mouseenter' event for each task

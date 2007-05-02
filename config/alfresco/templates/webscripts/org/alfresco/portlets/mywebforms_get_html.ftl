@@ -2,6 +2,7 @@
 
 <script type="text/javascript" src="/alfresco/scripts/ajax/common.js"></script>
 <script type="text/javascript" src="/alfresco/scripts/ajax/mootools.js"></script>
+<script type="text/javascript" src="/alfresco/scripts/ajax/myforms.js"></script>
 <script type="text/javascript">setContextPath('${url.context}');</script>
 
 <#-- List the available web form objects in all web projects the user is assigned to -->
@@ -79,6 +80,11 @@ a.webProjectLink:link, a.webProjectLink:visited, a.webProjectLink:hover
 {
    background-color: #EEF7FB;
    border-bottom: 1px solid #CCD4DB;
+}
+
+.webProjectForms
+{
+   overflow: hidden;
 }
 
 .webprojectDesc

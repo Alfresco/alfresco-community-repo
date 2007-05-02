@@ -36,7 +36,11 @@ var MyDocs = {
                   if (resource.isLoaded)
                   {
                      resource.needsOverflow = false;
-                     $E('.docMetapreview', resource).setStyle('overflow', 'auto');
+                     var elePrev = $E('.docMetapreview', resource)
+                     if (elePrev)
+                     {
+                        elePrev.setStyle('overflow', 'auto');
+                     }
                   }
                   else
                   {
@@ -191,7 +195,11 @@ var MyDocs = {
                            // deferred from transition complete event
                            if (resource.needsOverflow)
                            {
-                              $E('.docMetapreview', resource).setStyle('overflow', 'auto');
+                              var elePrev = $E('.docMetapreview', resource)
+                              if (elePrev)
+                              {
+                                 elePrev.setStyle('overflow', 'auto');
+                              }
                            }
                         },
                         failure: function(response)
@@ -311,7 +319,11 @@ var MyDocs = {
                   'height': [resourceHeight, resource.defHeight],
                   'opacity': [resource.getStyle('opacity'), 0]};
                
-               $E('.docMetapreview', resource).setStyle('overflow', 'hidden');
+               var elePrev = $E('.docMetapreview', resource)
+               if (elePrev)
+               {
+                 elePrev.setStyle('overflow', 'hidden');
+               }
             }
             fxResource.start(animResource);
             fxItem.start(animItem);

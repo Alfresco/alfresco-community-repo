@@ -47,6 +47,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DashboardManager
 {
+   public static final String BEAN_NAME = "DashboardManager";
+   
    private static Log logger = LogFactory.getLog(DashboardManager.class);
    
    private static final String PREF_DASHBOARD = "dashboard";

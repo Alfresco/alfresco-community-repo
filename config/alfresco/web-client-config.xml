@@ -157,6 +157,7 @@
          <command-processor name="workflow" class="org.alfresco.web.app.servlet.command.WorkflowCommandProcessor" />
          <command-processor name="task" class="org.alfresco.web.app.servlet.command.TaskCommandProcessor" />
          <command-processor name="script" class="org.alfresco.web.app.servlet.command.ScriptCommandProcessor" />
+         <command-processor name="ui" class="org.alfresco.web.app.servlet.command.UIActionCommandProcessor" />
       </command-servlet>
    </config>
    

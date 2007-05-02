@@ -11,13 +11,13 @@
    <#assign formcount=0>
    <#assign projectcount=0>
    <#assign search="TYPE:\"{http://www.alfresco.org/model/wcmappmodel/1.0}webfolder\"">
-   <#list companyhome.childrenByLuceneSearch[search] as wp>
+   <#list companyhome.childrenByLuceneSearch[search]?sort_by('name') as wp>
       <#list wp.childAssocs["wca:webuser"] as user>
          <#if user.properties["wca:username"] = person.properties.userName>
             <#assign projectcount=projectcount+1>
+            <#assign sandbox=wp.properties["wca:avmstore"] + "--" + person.properties.userName>
             <div class="webProjectRow">
                <div class="webProjectTitle">
-                  <#-- TEMP: ${url.context}/navigate/wizard/createWebsite -->
                   <a class="webProjectLink" href="${url.context}${wp.url}" target="new"><img src="${url.context}/images/icons/website_large.gif" width=32 height=32 border=0><span class="websiteLink">${wp.name}</span></a>
                   <#if wp.properties.description?exists && wp.properties.description?length!=0>
                   <br>
@@ -31,7 +31,7 @@
                      <#assign formcount=formcount+1>
                      <div class="formsRow">
                         <img src="${url.context}/images/icons/webform_large.gif" width=32 height=32 border=0>
-                        <span class="webformLink">${form.properties["wca:formname"]}</span>
+                        <a class="webformLink" href="${url.context}/command/ui/createwebcontent?sandbox=${sandbox}&webproject=${wp.id}&form=${form.properties["wca:formname"]}" target="new">${form.properties.title}</a>
                         <#--<span>${form.properties.description}</span>-->
                      </div>
                   </#list>
@@ -119,8 +119,11 @@ span.websiteLink
    vertical-align:60%;
 }
 
-span.webformLink
+a.webformLink:link, a.webformLink:visited, a.webformLink:hover
 {
+   color: #5A5741;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 13px;
    vertical-align:50%;
 }
 

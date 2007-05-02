@@ -189,7 +189,7 @@ public class Application
     */
    public static DialogManager getDialogManager()
    {
-      return (DialogManager)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "DialogManager");
+      return (DialogManager)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), DialogManager.BEAN_NAME);
    }
    
    /**
@@ -199,7 +199,7 @@ public class Application
     */
    public static WizardManager getWizardManager()
    {
-      return (WizardManager)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "WizardManager");
+      return (WizardManager)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), WizardManager.BEAN_NAME);
    }
    
    /**
@@ -209,7 +209,7 @@ public class Application
     */
    public static DashboardManager getDashboardManager()
    {
-      return (DashboardManager)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "DashboardManager");
+      return (DashboardManager)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), DashboardManager.BEAN_NAME);
    }
    
    /**

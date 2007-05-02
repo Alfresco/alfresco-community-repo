@@ -273,27 +273,32 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    border-bottom: none;
    border-right: none;
 }
+
 .docActionEditDetails
 {
    background-image: url(../images/icons/doclist_action_edit.png);
    border-bottom: none;
 }
+
 .docActionUpdate
 {
    background-image: url(../images/icons/doclist_action_update.png);
    border-bottom: none;
    border-right: none;
 }
+
 .docActionViewContent
 {
    background-image: url(../images/icons/doclist_action_view.png);
    border-bottom: none;
 }
+
 .docActionDelete
 {
    background-image: url(../images/icons/doclist_action_delete.png);
    border-right: none;
 }
+
 .docActionMoreActions
 {
    padding-left: 20px;
@@ -305,10 +310,9 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    background-image: url(../images/icons/ajax_anim.gif);
    background-position: center;
    background-repeat: no-repeat;
-   width: 699px;
+   width: 696px;
    height: 150px;
    overflow: hidden;
 }
- 
 
 </STYLE>

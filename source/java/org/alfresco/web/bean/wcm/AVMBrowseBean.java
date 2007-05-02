@@ -1066,7 +1066,7 @@ public class AVMBrowseBean implements IContextListener
       
       // pass form ID to the wizard - to be picked up in init()
       FacesContext fc = FacesContext.getCurrentInstance();
-      WizardManager manager = (WizardManager)FacesHelper.getManagedBean(fc, "WizardManager");
+      WizardManager manager = (WizardManager)FacesHelper.getManagedBean(fc, WizardManager.BEAN_NAME);
       manager.setupParameters(event);
       fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "wizard:createWebContent");
    }

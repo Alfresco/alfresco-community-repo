@@ -52,6 +52,9 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class WizardManager
 {
+   /** public JSF bean name */
+   public final static String BEAN_NAME = "WizardManager";
+   
    private static Log logger = LogFactory.getLog(WizardManager.class);
    
    private WizardState currentWizardState; 

@@ -46,6 +46,8 @@ import org.alfresco.web.ui.common.component.UIActionLink;
  */
 public final class DialogManager
 {
+   public final static String BEAN_NAME = "DialogManager";
+   
    private DialogState currentDialogState;
    private Map<String, String> paramsToApply;
    

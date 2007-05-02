@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.BrowseBean;
+import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.dashboard.DashboardManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -242,7 +243,7 @@ public class ExternalAccessServlet extends BaseServlet
          // setup the Dashboard Manager ready for the page we want to display
          if (req.getParameter(ARG_PAGE) != null)
          {
-            DashboardManager manager = (DashboardManager)FacesHelper.getManagedBean(fc, "DashboardManager");
+            DashboardManager manager = (DashboardManager)FacesHelper.getManagedBean(fc, DashboardManager.BEAN_NAME);
             manager.getPageConfig().setCurrentPage(req.getParameter(ARG_PAGE));
          }
          
@@ -254,6 +255,12 @@ public class ExternalAccessServlet extends BaseServlet
       {
          if (args.length != 0)
          {
+            if (args.length > 1)
+            {
+               // if a GUID was passed, use it to init the NavigationBean current context
+               NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
+               navigator.setCurrentNodeId(args[1]);
+            }
             NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
             navigationHandler.handleNavigation(fc, null, outcome + ':' + args[0]);
          }

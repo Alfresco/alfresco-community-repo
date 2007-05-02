@@ -42,6 +42,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.command.CommandFactory;
 import org.alfresco.web.app.servlet.command.CommandProcessor;
+import org.alfresco.web.app.servlet.command.ExtCommandProcessor;
 import org.alfresco.web.config.CommandServletConfigElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -147,7 +148,14 @@ public class CommandServlet extends BaseServlet
             txn.begin();
             
             // inform the processor to execute the specified command
-            processor.process(serviceRegistry, req, command);
+            if (processor instanceof ExtCommandProcessor)
+            {
+               ((ExtCommandProcessor)processor).process(serviceRegistry, req, res, command);
+            }
+            else
+            {
+               processor.process(serviceRegistry, req, command);
+            }
             
             // commit the transaction
             txn.commit();

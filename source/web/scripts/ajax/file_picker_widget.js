@@ -329,7 +329,7 @@ _showPicker: function(data)
   addContentImage.setAttribute("src", alfresco.constants.WEBAPP_CONTEXT + "/images/icons/add.gif");
   addContentLink.appendChild(addContentImage);
 
-  addContentLink.appendChild(d.createTextNode(alfresco.xforms.constants.resources["add_content"]));
+  addContentLink.appendChild(d.createTextNode(alfresco.resources["add_content"]));
 
   var navigateToParentLink = d.createElement("a");
   headerRightDiv.appendChild(navigateToParentLink);
@@ -358,7 +358,7 @@ _showPicker: function(data)
   navigateToParentNodeImage.align = "absmiddle";
   navigateToParentNodeImage.setAttribute("src", alfresco.constants.WEBAPP_CONTEXT + "/images/icons/up.gif");
   navigateToParentLink.appendChild(navigateToParentNodeImage);
-  navigateToParentLink.appendChild(d.createTextNode(alfresco.xforms.constants.resources["go_up"]));
+  navigateToParentLink.appendChild(d.createTextNode(alfresco.resources["go_up"]));
 
   headerRightDiv.style.position = "absolute";
   headerRightDiv.style.height = headerDiv.style.height;
@@ -380,7 +380,7 @@ _showPicker: function(data)
   cancelButton.type = "button";
   cancelButton.filePickerWidget = this;
 
-  cancelButton.value = alfresco.xforms.constants.resources["cancel"];
+  cancelButton.value = alfresco.resources["cancel"];
   footerDiv.appendChild(cancelButton);
 
   cancelButton.style.margin = ((.5 * footerDiv.offsetHeight) - 
@@ -547,7 +547,7 @@ _showAddContent: function(currentPath)
                          dojo.dom.removeChildren(w.addContentDiv);
 
                          var fileName = event.target.value.replace(/.*[\/\\]([^\/\\]+)/, "$1");
-                         w.addContentDiv.appendChild(d.createTextNode(alfresco.xforms.constants.resources["upload"] + ": " + fileName));
+                         w.addContentDiv.appendChild(d.createTextNode(alfresco.resources["upload"] + ": " + fileName));
                          var img = d.createElement("img");
                          img.setAttribute("src", alfresco.constants.WEBAPP_CONTEXT + 
                                           "/images/icons/process_animation.gif");
@@ -661,7 +661,7 @@ _openParentPathMenu: function(target, path)
   pathTextDiv.style.fontWeight = "bold";
   pathTextDiv.style.paddingLeft = "5px";
 
-  pathTextDiv.appendChild(d.createTextNode(alfresco.xforms.constants.resources["path"]));
+  pathTextDiv.appendChild(d.createTextNode(alfresco.resources["path"]));
   this.parentPathMenu.appendChild(pathTextDiv);
   var currentPathNodes = [];
   for (var i = 0; i < parentNodes.length; i++)

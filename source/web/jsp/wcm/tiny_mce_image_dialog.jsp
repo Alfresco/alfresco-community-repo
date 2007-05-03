@@ -41,9 +41,6 @@
       <script language="javascript" type="text/javascript" src="${pageContext.request.contextPath}/scripts/tiny_mce/utils/mctabs.js">&#160;</script>
       <script language="javascript" type="text/javascript" src="${pageContext.request.contextPath}/scripts/tiny_mce/utils/form_utils.js">&#160;</script>
       <script language="javascript" type="text/javascript" src="${pageContext.request.contextPath}/scripts/tiny_mce/themes/advanced/jscripts/image.js">&#160;</script>
-      <script language="javascript" type="text/javascript" src="${pageContext.request.contextPath}/scripts/ajax/dojo/dojo.js">&#160;</script>
-      <script language="javascript" type="text/javascript" src="${pageContext.request.contextPath}/scripts/ajax/ajax_helper.js">&#160;</script>
-      <script language="javascript" type="text/javascript" src="${pageContext.request.contextPath}/scripts/ajax/file_picker_widget.js">&#160;</script>
       <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/xforms.css">&#160;</link>
       <script type="text/javascript">
         alfresco = tinyMCEPopup.windowOpener.alfresco;

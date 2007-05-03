@@ -68,6 +68,7 @@ public class XFormsProcessor
                                ? "dojo.js.uncompressed.js" 
                                : "dojo.js"),
       "/scripts/ajax/ajax_helper.js",
+      "/scripts/ajax/tiny_mce_wcm_extensions.js",
       "/scripts/ajax/xforms.js",
       "/scripts/ajax/file_picker_widget.js",
       "/scripts/upload_helper.js",
@@ -211,7 +212,7 @@ public class XFormsProcessor
       }
 
       final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
-      js.append("alfresco.xforms.constants.resources = {\n");
+      js.append("alfresco.resources = {\n");
       for (String k : BUNDLE_KEYS)
       {
          js.append(k).

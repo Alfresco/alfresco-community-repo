@@ -787,6 +787,16 @@ public class CreateWebContentWizard extends BaseContentWizard
    {
       return this.startWorkflow;
    }
+
+   /**
+    * Provides the url to the preview sandbox containing the asset currently
+    * being edited.
+    */
+   public String getPreviewSandboxUrl()
+   {
+      return AVMConstants.buildWebappUrl(AVMConstants.getCorrespondingPreviewStoreName(this.avmBrowseBean.getSandbox()), 
+                                         this.avmBrowseBean.getWebapp());
+   }
    
    public String getSummary()
    {

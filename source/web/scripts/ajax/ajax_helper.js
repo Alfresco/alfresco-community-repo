@@ -105,8 +105,8 @@ alfresco.AjaxHelper._updateLoaderDisplay = function()
 {
   var ajaxLoader = alfresco.AjaxHelper._getLoaderElement();
   ajaxLoader.innerHTML = (alfresco.AjaxHelper._requests.length == 0
-                          ? alfresco.xforms.constants.resources["idle"]
-                          : (alfresco.xforms.constants.resources["loading"] + 
+                          ? alfresco.resources["idle"]
+                          : (alfresco.resources["loading"] + 
                              (alfresco.AjaxHelper._requests.length > 1
                               ? " (" + alfresco.AjaxHelper._requests.length + ")"
                               : "...")));

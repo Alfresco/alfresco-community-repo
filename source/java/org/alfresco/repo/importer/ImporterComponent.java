@@ -74,6 +74,8 @@ import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -89,6 +91,9 @@ import org.xml.sax.ContentHandler;
 public class ImporterComponent
     implements ImporterService
 {
+    // Logger
+    private static final Log logger = LogFactory.getLog(ImporterComponent.class);
+    
     // default importer
     // TODO: Allow registration of plug-in parsers (by namespace)
     private Parser viewParser;
@@ -296,6 +301,9 @@ public class ImporterComponent
                 
                 String key = value.substring(iStartBinding + START_BINDING_MARKER.length(), iEndBinding);
                 String keyValue = binding.getValue(key);
+                if (keyValue == null) {
+                    logger.warn("No binding value for placeholder (will default to empty string): " + value);
+                }
                 value = StringUtils.replace(value, START_BINDING_MARKER + key + END_BINDING_MARKER, keyValue == null ? "" : keyValue);
                 iStartBinding = value.indexOf(START_BINDING_MARKER);
             }

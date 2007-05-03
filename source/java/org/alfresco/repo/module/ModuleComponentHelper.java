@@ -43,6 +43,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.module.ModuleDependency;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.descriptor.DescriptorService;
@@ -71,11 +72,15 @@ public class ModuleComponentHelper
     private static final String MSG_STARTING = "module.msg.starting";
     private static final String MSG_INSTALLING = "module.msg.installing";
     private static final String MSG_UPGRADING = "module.msg.upgrading";
+    private static final String MSG_DEPENDENCIES = "module.msg.dependencies";
+    private static final String MSG_MISSING = "module.msg.missing";
     private static final String WARN_NO_INSTALL_VERSION = "module.warn.no_install_version";
+    private static final String ERR_MISSING_DEPENDENCY = "module.err.missing_dependency";
     private static final String ERR_UNSUPPORTED_REPO_VERSION = "module.err.unsupported_repo_version";
     private static final String ERR_NO_DOWNGRADE = "module.err.downgrading_not_supported";
     private static final String ERR_COMPONENT_ALREADY_REGISTERED = "module.err.component_already_registered";
-    private static final String MSG_MISSING = "module.msg.missing";
+    private static final String ERR_COMPONENT_IN_MISSING_MODULE = "module.err.component_in_missing_module";
+    private static final String ERR_ORPHANED_COMPONENTS = "module.err.orphaned_components";
     
     private static Log logger = LogFactory.getLog(ModuleComponentHelper.class);
     private static Log loggerService = LogFactory.getLog(ModuleServiceImpl.class);
@@ -207,26 +212,25 @@ public class ModuleComponentHelper
             loggerService.info(I18NUtil.getMessage(MSG_FOUND_MODULES, modules.size()));
             // Process each module in turn.  Ordering is not important.
             final Set<ModuleComponent> executedComponents = new HashSet<ModuleComponent>(10);
+            final Set<String> startedModules = new HashSet<String>(2);
             for (final ModuleDetails module : modules)
             {
                 TransactionWork<Object> startModuleWork = new TransactionWork<Object>()
                 {
                     public Object doWork() throws Exception
                     {
-                        startModule(module, executedComponents);
+                        startModule(module, startedModules, executedComponents);
                         return null;
                     }
                 };
                 TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, startModuleWork);
             }
-            // We have finished executing any components
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Executed " + executedComponents.size() + " components");
-            }
             
             // Check for missing modules.
             checkForMissingModules();
+            
+            // Check that all components where executed, or considered for execution
+            checkForOrphanComponents(executedComponents);
 
             // Restore the original authentication
             authenticationComponent.setCurrentAuthentication(authentication);
@@ -234,6 +238,46 @@ public class ModuleComponentHelper
         catch (Throwable e)
         {
             throw new AlfrescoRuntimeException("Failed to start modules", e);
+        }
+    }
+    
+    /**
+     * Checks that all components have been executed or considered for execution.
+     * @param executedComponents
+     */
+    private void checkForOrphanComponents(Set<ModuleComponent> executedComponents)
+    {
+        Set<ModuleComponent> missedComponents = new HashSet<ModuleComponent>(executedComponents);
+        
+        // Iterate over each module registered by components
+        for (Map.Entry<String, Map<String, ModuleComponent>> entry : componentsByNameByModule.entrySet())
+        {
+            String moduleId = entry.getKey();
+            Map<String, ModuleComponent> componentsByName = entry.getValue();
+            // Iterate over each component registered against the module ID
+            for (Map.Entry<String, ModuleComponent> entryInner : componentsByName.entrySet())
+            {
+                String componentName = entryInner.getKey();
+                ModuleComponent component = entryInner.getValue();
+                // Check if it has been executed
+                if (executedComponents.contains(component))
+                {
+                    // It was executed, so remove it from the missed components set
+                    missedComponents.remove(component);
+                }
+                else
+                {
+                    String msg = I18NUtil.getMessage(
+                            ERR_COMPONENT_IN_MISSING_MODULE,
+                            componentName, moduleId);
+                    logger.error(msg);
+                }
+            }
+        }
+        // Dump if there were orphans
+        if (missedComponents.size() > 0)
+        {
+            throw AlfrescoRuntimeException.create(ERR_ORPHANED_COMPONENTS, missedComponents.size());
         }
     }
     
@@ -329,11 +373,61 @@ public class ModuleComponentHelper
     
     /**
      * Does the actual work without fussing about transactions and authentication.
+     * Module dependencies will be started first, but a module will only be started
+     * once.
+     * 
+     * @param module                the module to start
+     * @param startedModules        the IDs of modules that have already started
+     * @param executedComponents    keep track of the executed components
      */
-    private void startModule(ModuleDetails module, Set<ModuleComponent> executedComponents)
+    private void startModule(ModuleDetails module, Set<String> startedModules, Set<ModuleComponent> executedComponents)
     {
         String moduleId = module.getId();
         VersionNumber moduleNewVersion = module.getVersion();
+        
+        // Double check whether we have done this module already
+        if (startedModules.contains(moduleId))
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Module '" + module + "' already started");
+            }
+            return;
+        }
+        
+        // Start dependencies
+        List<ModuleDependency> moduleDependencies = module.getDependencies();
+        for (ModuleDependency moduleDependency : moduleDependencies)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Module '" + module + "' depends on: " + moduleDependency);
+            }
+            // Get the dependency
+            String moduleDependencyId = moduleDependency.getDependencyId();
+            ModuleDetails moduleDependencyDetails = moduleService.getModule(moduleDependencyId);
+            // Check that it is there
+            if (moduleDependencyDetails == null)
+            {
+                // The dependency is not there
+                // List required dependencies
+                StringBuilder sb = new StringBuilder(128);
+                for (ModuleDependency dependency : moduleDependencies)
+                {
+                    sb.append("\n").append(dependency);
+                }
+                String msg = I18NUtil.getMessage(
+                        MSG_DEPENDENCIES,
+                        moduleId, moduleNewVersion, sb.toString());
+                logger.info(msg);
+                // Now fail
+                throw AlfrescoRuntimeException.create(
+                        ERR_MISSING_DEPENDENCY,
+                        moduleId, moduleNewVersion, moduleDependency);
+            }
+            // The dependency is installed, so start it
+            startModule(moduleDependencyDetails, startedModules, executedComponents);
+        }
         
         // Check if the module needs a rename first
         renameModule(module);
@@ -404,10 +498,13 @@ public class ModuleComponentHelper
             executeComponent(moduleId, moduleInstallVersion, component, executedComponents);
         }
         
+        // Keep track of the ID as it started successfully
+        startedModules.add(moduleId);
+        
         // Done
         if (logger.isDebugEnabled())
         {
-            logger.debug("Started module: " + module);
+            logger.debug("Started module '" + module + "' including " + executedComponents.size() + "components.");
         }
     }
     
@@ -431,6 +528,8 @@ public class ModuleComponentHelper
             }
             return;
         }
+        // Keep track of the fact that we considered it for execution
+        executedComponents.add(component);
         
         // Check the version applicability
         VersionNumber minVersion = component.getAppliesFromVersionNumber();
@@ -478,8 +577,7 @@ public class ModuleComponentHelper
         }
         // Execute the component itself
         component.execute();
-        // Keep track of it in the registry and in this run
-        executedComponents.add(component);
+        // Keep track of it in the registry
         registryService.addProperty(executionDateKey, new Date());
         // Done
         if (logger.isDebugEnabled())

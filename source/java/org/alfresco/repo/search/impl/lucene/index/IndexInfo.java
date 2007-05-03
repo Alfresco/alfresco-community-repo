@@ -289,8 +289,6 @@ public class IndexInfo
 
     private long writeLockTimeout = IndexWriter.WRITE_LOCK_TIMEOUT;
 
-    private long commitLockTimeout = IndexWriter.COMMIT_LOCK_TIMEOUT;
-
     private int maxFieldLength = IndexWriter.DEFAULT_MAX_FIELD_LENGTH;
 
     private int termIndexInterval = IndexWriter.DEFAULT_TERM_INDEX_INTERVAL;
@@ -370,7 +368,6 @@ public class IndexInfo
             writer.setMaxBufferedDocs(writerMinMergeDocs);
             writer.setMergeFactor(writerMergeFactor);
             writer.setMaxMergeDocs(writerMaxMergeDocs);
-            writer.setCommitLockTimeout(commitLockTimeout);
             writer.setWriteLockTimeout(writeLockTimeout);
             writer.setMaxFieldLength(maxFieldLength);
             writer.setTermIndexInterval(termIndexInterval);
@@ -436,7 +433,6 @@ public class IndexInfo
                                 writer.setMaxBufferedDocs(writerMinMergeDocs);
                                 writer.setMergeFactor(writerMergeFactor);
                                 writer.setMaxMergeDocs(writerMaxMergeDocs);
-                                writer.setCommitLockTimeout(commitLockTimeout);
                                 writer.setWriteLockTimeout(writeLockTimeout);
                                 writer.setMaxFieldLength(maxFieldLength);
                                 writer.setTermIndexInterval(termIndexInterval);
@@ -715,7 +711,6 @@ public class IndexInfo
         writer.setMaxBufferedDocs(writerMinMergeDocs);
         writer.setMergeFactor(writerMergeFactor);
         writer.setMaxMergeDocs(writerMaxMergeDocs);
-        writer.setCommitLockTimeout(commitLockTimeout);
         writer.setWriteLockTimeout(writeLockTimeout);
         writer.setMaxFieldLength(maxFieldLength);
         writer.setTermIndexInterval(termIndexInterval);
@@ -2930,7 +2925,6 @@ public class IndexInfo
                             writer.setMaxBufferedDocs(mergerMinMergeDocs);
                             writer.setMergeFactor(mergerMergeFactor);
                             writer.setMaxMergeDocs(mergerMaxMergeDocs);
-                            writer.setCommitLockTimeout(commitLockTimeout);
                             writer.setWriteLockTimeout(writeLockTimeout);
                         }
                     }

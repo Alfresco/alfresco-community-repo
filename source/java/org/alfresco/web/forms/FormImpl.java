@@ -203,6 +203,13 @@ public class FormImpl
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       final NodeRef schemaNodeRef = (NodeRef)
          nodeService.getProperty(folderNodeRef, WCMAppModel.PROP_XML_SCHEMA);
+      if (schemaNodeRef == null)
+      {
+         throw new NullPointerException("expected property " + WCMAppModel.PROP_XML_SCHEMA +
+                                        " of " + folderNodeRef + 
+                                        " for form " + this.getName() +
+                                        " not to be null.");
+      }
       return XMLUtil.parse(schemaNodeRef,
                            this.getServiceRegistry().getContentService());
    }

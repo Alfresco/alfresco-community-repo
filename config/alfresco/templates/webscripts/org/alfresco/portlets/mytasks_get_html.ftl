@@ -94,7 +94,7 @@
       	         <table class="taskActions" style="padding-left:16px">
       	            <tr>
       	               <#list t.transitions as wt>
-      	               <td><a class="taskAction" href="#" onclick="MyTasks.transitionTask('/command/task/end/${t.id}/${wt.id}', '${url.service}?f=${filter}', 'Workflow action \'${t.type?html}\' completed.');">${wt.label}</a></td>
+      	               <td><a class="taskAction" href="#" onclick="MyTasks.transitionTask('/command/task/end/${t.id}/${wt.id}', '${url.service}?f=${filter}', 'Workflow action \'${wt.label?html}\' completed.');">${wt.label?html}</a></td>
       	               </#list>
       	            </tr>
       	         </table>

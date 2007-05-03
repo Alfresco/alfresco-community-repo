@@ -69,7 +69,7 @@
                <#else>
                   </div><div class="taskItem">
                </#if>
-                  ${t.description?html} [${t.name?html}]
+                  ${t.description?html} (${t.type?html})
                   <#if hasDue>
                      (Due: ${due?date})
                   </#if>
@@ -88,13 +88,13 @@
                      <tr><td class="taskMetaprop">Complete:</td><td class="taskMetadata">${t.properties["bpm:percentComplete"]}%</td>
       	         </table>
    	         </div>
-   	         <div class="taskResourceHeader">Resources:</div>
+   	         <div class="taskResourceHeader">${t.name?html}:</div>
    	         <div class="taskResources"></div>
    	         <div>
       	         <table class="taskActions" style="padding-left:16px">
       	            <tr>
       	               <#list t.transitions as wt>
-      	               <td><a class="taskAction" href="${url.context}/command/task/end/${t.id}/${wt.id}">${wt.label}</a></td>
+      	               <td><a class="taskAction" href="#" onclick="MyTasks.transitionTask('/command/task/end/${t.id}/${wt.id}', '${url.service}?f=${filter}', 'Workflow action \'${t.type?html}\' completed.');">${wt.label}</a></td>
       	               </#list>
       	            </tr>
       	         </table>
@@ -110,7 +110,7 @@
 <tr>
 <td bgcolor="#F9F3B0">&nbsp;</td>
 <td>
-   <div class="taskFooter">
+   <div id="taskFooter">
       Showing ${count} <#if filter=4>overdue</#if> task(s)<#if filter=1> due today</#if><#if filter=2> due next week</#if><#if filter=3> with no due date set</#if>.
    </div>
 </td>
@@ -122,6 +122,9 @@
 <td class="paperRightCorner"></td>
 </tr>
 </table>
+
+<#-- display status message if provided -->
+<#if args.m?exists><script>window.addEvent('load', MyTasks.displayMessage("${args.m}"));</script></#if>
 
 <STYLE type="text/css">
 a.filterLink:link, a.filterLink:visited
@@ -173,7 +176,7 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    border-top: 1px solid #FEF8BC;
 }
 
-.taskFooter
+#taskFooter
 {
    width: 700px;
    padding: 8px;

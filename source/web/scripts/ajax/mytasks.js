@@ -233,6 +233,32 @@ var MyTasks = {
          });
          fxInfo.start(animInfo);
       });
+   },
+   
+   transitionTask: function(tUrl, rUrl, successMessage)
+   {
+      YAHOO.util.Connect.asyncRequest(
+         "GET",
+         getContextPath() + tUrl,
+         { 
+            success: function(response)
+            {
+               window.location.href = rUrl + "&_rand=" + Math.floor(Math.random()*99999) +
+                                      "&" + "m=" + successMessage;
+            },
+            failure: function(e)
+            {
+               alert(e.status + " : ERROR failed to transition task.");
+               window.location.href = rUrl + "&_rand=" + Math.floor(Math.random()*99999);
+            }
+         }
+      );
+   },
+   
+   displayMessage: function(message)
+   {
+      var footer = $('taskFooter');
+      footer.innerHTML = message + ' ' + footer.innerHTML
    }
 };
 

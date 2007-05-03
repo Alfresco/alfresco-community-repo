@@ -13,7 +13,7 @@ var MyWebForms = {
    {
       var projects = $$('#formsPanel .webProjectRow');
       var frms = $$('#formsPanel .webProjectForms');
-      var fxForm = new Fx.Elements(frms, {wait: false, duration: 300, transition: Fx.Transitions.linear});
+      var fxForm = new Fx.Elements(frms, {wait: false, duration: 300, transition: Fx.Transitions.sineInOut});
 
       projects.each(function(project, i)
       {
@@ -22,7 +22,7 @@ var MyWebForms = {
          // animated elements defaults
          frm.maxHeight = frm.getStyle('height').toInt();
          frm.defHeight = 1;
-         frm.setStyle('height', 0);
+         frm.setStyle('height', frm.defHeight);
          frm.setStyle('opacity', 0);
 
          // register 'mouseenter' (subclassed mouseover) event for each project

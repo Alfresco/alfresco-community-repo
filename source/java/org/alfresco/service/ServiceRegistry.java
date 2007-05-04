@@ -26,6 +26,7 @@ package org.alfresco.service;
 
 import java.util.Collection;
 
+import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.audit.AuditService;
@@ -108,6 +109,7 @@ public interface ServiceRegistry
     static final QName CROSS_REPO_COPY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CrossRepositoryCopyService");
     static final QName ATTRIBUTE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AttributeService");
     static final QName AVM_LOCKING_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMLockingService");
+    static final QName VIRT_SERVER_REGISTRY = QName.createQName(NamespaceService.ALFRESCO_URI, "VirtServerRegistry");
 
     /**
      * Get the list of services provided by the Repository
@@ -333,4 +335,11 @@ public interface ServiceRegistry
      */
     @NotAuditable
     AVMLockingService getAVMLockingService();
+    
+    /**
+     * Get the Virtualisation Server registry service bean
+     * @return
+     */
+    @NotAuditable
+    VirtServerRegistry getVirtServerRegistry();
 }

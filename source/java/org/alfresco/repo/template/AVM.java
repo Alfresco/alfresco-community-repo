@@ -24,10 +24,16 @@
  */
 package org.alfresco.repo.template;
 
+import java.text.MessageFormat;
+import java.util.Map;
+
 import org.alfresco.config.JNDIConstants;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ParameterCheck;
 
 /**
  * AVM root object access for a template model.
@@ -109,6 +115,121 @@ public class AVM extends BaseTemplateProcessorExtension
     }
     
     /**
+     * @param storeId   Store ID to build staging store name for
+     * 
+     * @return the Staging Store name for the given store ID
+     */
+    public String stagingStore(String storeId)
+    {
+        return storeId;
+    }
+    
+    /**
+     * @param storeId   Store ID to build sandbox store name for
+     * @param username  Username of the sandbox user
+     * 
+     * @return the Sandbox Store name for the given store ID and username
+     */
+    public String userSandboxStore(String storeId, String username)
+    {
+        ParameterCheck.mandatoryString("Store ID", storeId);
+        ParameterCheck.mandatoryString("Username", username);
+        return storeId + "--" + username;
+    }
+    
+    /**
+     * @param storeId   Store ID to build preview URL for
+     * 
+     * @return the preview URL to the staging store for the specified store ID
+     */
+    public String websiteStagingUrl(String storeId)
+    {
+        return MessageFormat.format(JNDIConstants.PREVIEW_SANDBOX_URL,
+                lookupStoreDNS(storeId), getVServerDomain(), getVServerPort());
+    }
+    
+    /**
+     * @param storeId   Store ID to build preview URL for
+     * @param username  Username to build sandbox preview URL for
+     * 
+     * @return the preview URL to the user sandbox for the specified store ID and username
+     */
+    public String websiteUserSandboxUrl(String storeId, String username)
+    {
+        return websiteStagingUrl(userSandboxStore(storeId, username));
+    }
+    
+    /**
+     * @param store     Store ID of the asset
+     * @param assetPath Store relative path to the asset
+     * 
+     * @return the preview URL to the specified store asset
+     */
+    public String assetUrl(String store, String assetPath)
+    {
+        ParameterCheck.mandatoryString("Store", store);
+        ParameterCheck.mandatoryString("Asset Path", assetPath);
+        if (assetPath.startsWith('/' + JNDIConstants.DIR_DEFAULT_WWW + 
+                                 '/' + JNDIConstants.DIR_DEFAULT_APPBASE))
+        {
+            assetPath = assetPath.substring(('/' + JNDIConstants.DIR_DEFAULT_WWW + 
+                                             '/' + JNDIConstants.DIR_DEFAULT_APPBASE).length());
+        }
+        if (assetPath.startsWith("/ROOT"))
+        {
+            assetPath = assetPath.substring(("/ROOT").length());
+        }
+        if (assetPath.length() == 0 || assetPath.charAt(0) != '/')
+        {
+            assetPath = '/' + assetPath;
+        }
+        return MessageFormat.format(JNDIConstants.PREVIEW_ASSET_URL,
+                lookupStoreDNS(store), getVServerDomain(), getVServerPort(), assetPath);
+    }
+
+    /**
+     * @param avmPath   Fully qualified AVM path of the asset
+     * 
+     * @return the preview URL to the specified asset
+     */
+    public String assetUrl(String avmPath)
+    {
+        ParameterCheck.mandatoryString("AVM Path", avmPath);
+        String[] s = avmPath.split(":");
+        if (s.length != 2)
+        {
+            throw new IllegalArgumentException("Expected exactly one ':' in " + avmPath);
+        }
+        return assetUrl(s[0], s[1]);
+    }
+    
+    /**
+     * @return VServer Port
+     */
+    private String getVServerPort()
+    {
+        Integer port = this.services.getVirtServerRegistry().getVirtServerHttpPort();
+        if (port == null)
+        {
+            port = JNDIConstants.DEFAULT_VSERVER_PORT;
+        }
+        return port.toString();
+    }
+
+    /**
+     * @return VServer Domain
+     */
+    private String getVServerDomain()
+    {
+        String domain = this.services.getVirtServerRegistry().getVirtServerFQDN();
+        if (domain == null)
+        {
+            domain = JNDIConstants.DEFAULT_VSERVER_IP;
+        }
+        return domain;
+    }
+    
+    /**
      * @return the path to the webapps folder in a standard web store.
      */
     public static String getWebappsFolderPath()
@@ -116,4 +237,14 @@ public class AVM extends BaseTemplateProcessorExtension
         return '/' + JNDIConstants.DIR_DEFAULT_WWW +
                '/' + JNDIConstants.DIR_DEFAULT_APPBASE;
     }
+    
+    private String lookupStoreDNS(String store)
+    {
+        Map<QName, PropertyValue> props = 
+            this.services.getAVMService().queryStorePropertyKey(store, QName.createQName(null, PROP_DNS + '%'));
+        return (props.size() == 1
+                ? props.keySet().iterator().next().getLocalName().substring(PROP_DNS.length()) : null);
+    }
+    
+    private final static String PROP_DNS = ".dns.";
 }

@@ -26,6 +26,7 @@ package org.alfresco.repo.service;
 
 import java.util.Collection;
 
+import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -369,5 +370,13 @@ public class ServiceDescriptorRegistry
     public AVMLockingService getAVMLockingService()
     {
         return (AVMLockingService)getService(AVM_LOCKING_SERVICE);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getVirtServerRegistry()
+     */
+    public VirtServerRegistry getVirtServerRegistry()
+    {
+        return (VirtServerRegistry)getService(VIRT_SERVER_REGISTRY);
     }
 }

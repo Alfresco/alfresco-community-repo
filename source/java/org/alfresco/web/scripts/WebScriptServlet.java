@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -49,8 +50,11 @@ public class WebScriptServlet extends HttpServlet
     // Logger
     private static final Log logger = LogFactory.getLog(WebScriptServlet.class);
 
-    // Web Scripts
+    // Component Dependencies
     private DeclarativeWebScriptRegistry registry;
+    private TransactionService transactionService;
+    private WebScriptServletAuthenticator authenticator;
+    
     
     
     @Override
@@ -59,13 +63,22 @@ public class WebScriptServlet extends HttpServlet
         super.init();
         ApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
         registry = (DeclarativeWebScriptRegistry)context.getBean("webscripts.registry");
-        registry.initWebScripts();
+        transactionService = (TransactionService)context.getBean("transactionComponent");
+
+        // retrieve authenticator via servlet initialisation parameter
+        String authenticatorId = getInitParameter("authenticator");
+        if (authenticatorId == null || authenticatorId.length() == 0)
+        {
+            authenticatorId = "webscripts.authenticator.webclient";
+        }
+        Object bean = context.getBean(authenticatorId);
+        if (bean == null || !(bean instanceof WebScriptServletAuthenticator))
+        {
+            throw new ServletException("Initialisation parameter 'authenticator' does not refer to a Web Script authenticator (" + authenticatorId + ")");
+        }
+        authenticator = (WebScriptServletAuthenticator)bean;
     }
 
-
-// TODO:
-// - authentication (as suggested in http://www.xml.com/pub/a/2003/12/17/dive.html)
-              
 
     /*
      * (non-Javadoc)
@@ -75,48 +88,17 @@ public class WebScriptServlet extends HttpServlet
      */
     protected void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException
     {
-        long start = System.currentTimeMillis();
+        if (logger.isDebugEnabled())
+            logger.debug("Processing request ("  + req.getMethod() + ") " + req.getRequestURL() + (req.getQueryString() != null ? "?" + req.getQueryString() : ""));
 
         try
         {
-            //
-            // Execute appropriate web scripy
-            //
-            // TODO: Handle errors (with appropriate HTTP error responses) 
-    
-            String uri = req.getPathInfo();
-    
-            if (logger.isDebugEnabled())
-                logger.debug("Processing request ("  + req.getMethod() + ") " + req.getRequestURL() + (req.getQueryString() != null ? "?" + req.getQueryString() : ""));
-  
-            WebScriptMatch match = registry.findWebScript(req.getMethod(), uri);
-            if (match != null)
-            {
-                // setup web script context
-                WebScriptRequest apiReq = new WebScriptRequest(req, match);
-                WebScriptResponse apiRes = new WebScriptResponse(res);
-                
-                if (logger.isDebugEnabled())
-                    logger.debug("Agent: " + apiReq.getAgent());
-                
-                // execute service
-                match.getWebScript().execute(apiReq, apiRes);
-            }
-            else
-            {
-                if (logger.isDebugEnabled())
-                    logger.debug("Request does not map to service.");
-    
-                res.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                // TODO: add appropriate error detail 
-            }
+            WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, authenticator, req, res);
+            runtime.executeScript();
         }
-        // TODO: exception handling
-        finally
+        catch(Throwable e)
         {
-            long end = System.currentTimeMillis();
-            if (logger.isDebugEnabled())
-                logger.debug("Processed request (" + req.getMethod() + ") " + req.getRequestURL() + (req.getQueryString() != null ? "?" + req.getQueryString() : "") + " in " + (end - start) + "ms");
+            res.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
     

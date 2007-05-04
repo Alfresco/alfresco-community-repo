@@ -63,36 +63,24 @@
 
    <bean id="webscripts.registry" class="org.alfresco.web.scripts.DeclarativeWebScriptRegistry">
       <property name="storage" ref="webscripts.storage" />
-      <property name="authenticator" ref="webscripts.authenticator.webclient" />
-      <property name="serviceLogger" ref="webscripts.logger" />
-      <property name="serviceTransaction" ref="webscripts.transaction" />
       <property name="formatRegistry" ref="webscripts.formatregistry" />
       <property name="defaultWebScript"><value>webscript_default</value></property>
    </bean>
 
-   <!--  Service Logger -->
-   <bean id="webscripts.logger" class="org.alfresco.web.scripts.WebScriptLogger" />
-
-   <!--  Service Transaction -->
-   <bean id="webscripts.transaction" class="org.alfresco.web.scripts.WebScriptTransaction">
-      <property name="transactionService" ref="transactionComponent" />
+   <!--  Alfresco Web Client Authenticator (Servlet based) -->
+   <bean id="webscripts.authenticator.webclient" class="org.alfresco.web.scripts.WebClientAuthenticator" />
+   
+   <!--  HTTP Basic Authenticator (Servlet based) -->
+   <bean id="webscripts.authenticator.basic" class="org.alfresco.web.scripts.BasicHttpAuthenticator">
+      <property name="authenticationService" ref="AuthenticationService" />
    </bean>
 
-   <!--  Alfresco Web Client Authenticator -->
-   <bean id="webscripts.authenticator.webclient" class="org.alfresco.web.scripts.WebClientAuthenticator">
+   <!--  JSR-168 Authenticator (Portal based) -->
+   <bean id="webscripts.authenticator.jsr168" class="org.alfresco.web.scripts.portlet.WebClientPortletAuthenticator">
+      <property name="scriptContext" ref="webscripts.context" />
       <property name="authenticationService" ref="AuthenticationService" />
    </bean>
    
-   <!--  HTTP Basic Authenticator -->
-   <bean id="webscripts.authenticator.basic" class="org.alfresco.web.scripts.BasicAuthenticator">
-      <property name="authenticationService" ref="AuthenticationService" />
-   </bean>
-
-   <!--  System Authenticator -->
-   <bean id="webscripts.authenticator.system" class="org.alfresco.web.scripts.SystemAuthenticator" />
-
-   <!--  Trusted Authenticator -->
-   <bean id="webscripts.authenticator.trusted" class="org.alfresco.web.scripts.TrustedAuthenticator" />
 
 
    <!--  -->
@@ -119,6 +107,7 @@
             <prop key="json">application/json</prop>
             <prop key="opensearchdescription">application/opensearchdescription+xml</prop>
             <prop key="wiki">text/plain</prop>
+            <prop key="portlet">text/html</prop>
          </props>
       </property>
    </bean>

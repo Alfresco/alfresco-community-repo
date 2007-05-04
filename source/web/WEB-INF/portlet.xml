@@ -21,4 +21,68 @@
             <short-title>alfresco-client-portlet</short-title>
         </portlet-info>
     </portlet>
+
+    <portlet>
+        <description>My Tasks</description>
+        <portlet-name>AlfrescoMyTasks</portlet-name>
+        <portlet-class>org.alfresco.web.scripts.portlet.WebScriptPortlet</portlet-class>
+        
+        <init-param>
+           <name>scriptUrl</name>
+           <value>/alfresco/service/mytasks</value>
+        </init-param>
+
+        <supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>VIEW</portlet-mode>
+        </supports>
+
+        <portlet-info>
+            <title>My Tasks</title>
+            <short-title>My Tasks</short-title>
+        </portlet-info>
+    </portlet>
+
+    <portlet>
+        <description>Document List</description>
+        <portlet-name>AlfrescoDocList</portlet-name>
+        <portlet-class>org.alfresco.web.scripts.portlet.WebScriptPortlet</portlet-class>
+        
+        <init-param>
+           <name>scriptUrl</name>
+           <value>/alfresco/service/doclist?p=/Company Home/Guest Home</value>
+        </init-param>
+
+        <supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>VIEW</portlet-mode>
+        </supports>
+        
+        <portlet-info>
+            <title>Document List</title>
+            <short-title>Document List</short-title>
+        </portlet-info>
+    </portlet>
+
+    <portlet>
+        <description>My Web Forms</description>
+        <portlet-name>AlfrescoMyWebForms</portlet-name>
+        <portlet-class>org.alfresco.web.scripts.portlet.WebScriptPortlet</portlet-class>
+        
+        <init-param>
+           <name>scriptUrl</name>
+           <value>/alfresco/service/mywebforms</value>
+        </init-param>
+
+        <supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>VIEW</portlet-mode>
+        </supports>
+        
+        <portlet-info>
+            <title>My Web Forms</title>
+            <short-title>My Web Forms</short-title>
+        </portlet-info>
+    </portlet>
+    
 </portlet-app>

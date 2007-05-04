@@ -88,6 +88,7 @@ public class TestWebScriptServer
         this.registry = registry;
     }
     
+    
     /**
      * Sets the Messages resource bundle
      * 
@@ -162,15 +163,9 @@ public class TestWebScriptServer
         MockHttpServletRequest req = createRequest("get", uri);
         MockHttpServletResponse res = new MockHttpServletResponse();
         
-        WebScriptMatch match = registry.findWebScript(req.getMethod(), uri);
-        if (match == null)
-        {
-            throw new WebScriptException("No service bound to uri '" + uri + "'");
-        }
-    
-        WebScriptRequest apiReq = new WebScriptRequest(req, match);
-        WebScriptResponse apiRes = new WebScriptResponse(res);
-        match.getWebScript().execute(apiReq, apiRes);
+        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, null, req, res);
+        runtime.executeScript();
+
         return res;
     }
     
@@ -346,5 +341,5 @@ public class TestWebScriptServer
         
         return req;
     }
-    
+        
 }

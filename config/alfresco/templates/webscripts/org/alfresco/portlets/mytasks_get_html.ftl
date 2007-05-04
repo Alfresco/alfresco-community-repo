@@ -27,11 +27,11 @@
    <td align=center height=40 style="border-left: 1px solid #EBE398;">
       <table border=0 cellspacing=8 cellpadding=0>
          <tr>
-            <th><a class="filterLink <#if filter=0>filterLinkSelected</#if>" href="${url.service}?f=0">Tasks to do</a></th>
-            <th><a class="filterLink <#if filter=1>filterLinkSelected</#if>" href="${url.service}?f=1">Due Today</a></th>
-            <th><a class="filterLink <#if filter=2>filterLinkSelected</#if>" href="${url.service}?f=2">Next 7 days</a></th>
-            <th><a class="filterLink <#if filter=3>filterLinkSelected</#if>" href="${url.service}?f=3">No due date</a></th>
-            <th><a class="filterLink <#if filter=4>filterLinkSelected</#if>" href="${url.service}?f=4">Overdue</a></th>
+            <th><a class="filterLink <#if filter=0>filterLinkSelected</#if>" href="${scripturl("?f=0")}">Tasks to do</a></th>
+            <th><a class="filterLink <#if filter=1>filterLinkSelected</#if>" href="${scripturl("?f=1")}">Due Today</a></th>
+            <th><a class="filterLink <#if filter=2>filterLinkSelected</#if>" href="${scripturl("?f=2")}">Next 7 days</a></th>
+            <th><a class="filterLink <#if filter=3>filterLinkSelected</#if>" href="${scripturl("?f=3")}">No due date</a></th>
+            <th><a class="filterLink <#if filter=4>filterLinkSelected</#if>" href="${scripturl("?f=4")}">Overdue</a></th>
          </tr>
       </table>
    </td>
@@ -94,7 +94,7 @@
       	         <table class="taskActions" style="padding-left:16px">
       	            <tr>
       	               <#list t.transitions as wt>
-      	               <td><a class="taskAction" href="#" onclick="MyTasks.transitionTask('/command/task/end/${t.id}/${wt.id}', '${url.service}?f=${filter}', 'Workflow action \'${wt.label?html}\' completed.');">${wt.label?html}</a></td>
+      	               <td><a class="taskAction" href="#" onclick="MyTasks.transitionTask('/command/task/end/${t.id}/${wt.id}', '${scripturl("?f=${filter}")}', 'Workflow action \'${wt.label?html}\' completed.');">${wt.label?html}</a></td>
       	               </#list>
       	            </tr>
       	         </table>

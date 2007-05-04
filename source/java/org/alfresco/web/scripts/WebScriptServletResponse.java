@@ -24,33 +24,72 @@
  */
 package org.alfresco.web.scripts;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
 
 /**
- * API Service Response
+ * HTTP Servlet Web Script Response
  * 
  * @author davidc
  */
-public class WebScriptResponse extends HttpServletResponseWrapper
+public class WebScriptServletResponse implements WebScriptResponse
 {
-    // API Formats
-    public static final String HTML_FORMAT = "html";
-    public static final String ATOM_FORMAT = "atom";
-    public static final String RSS_FORMAT = "rss";
-    public static final String XML_FORMAT = "xml";
-    public static final String JSON_FORMAT = "json";
-    public static final String OPENSEARCH_DESCRIPTION_FORMAT = "opensearchdescription";
-    
+    private HttpServletResponse res;
     
     /**
      * Construct
      * 
      * @param res
      */
-    WebScriptResponse(HttpServletResponse res)
+    WebScriptServletResponse(HttpServletResponse res)
     {
-        super(res);
+        this.res = res;
     }
 
+    /**
+     * Gets the HTTP Servlet Response
+     * 
+     * @return  HTTP Servlet Response
+     */
+    public HttpServletResponse getHttpServletResponse()
+    {
+        return res;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptResponse#setContentType(java.lang.String)
+     */
+    public void setContentType(String contentType)
+    {
+        res.setContentType(contentType);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptResponse#getWriter()
+     */
+    public Writer getWriter() throws IOException
+    {
+        return res.getWriter();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptResponse#getOutputStream()
+     */
+    public OutputStream getOutputStream() throws IOException
+    {
+        return res.getOutputStream();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptResponse#encodeScriptUrl(java.lang.String)
+     */
+    public String encodeScriptUrl(String url)
+    {
+        return url;
+    }
+    
 }

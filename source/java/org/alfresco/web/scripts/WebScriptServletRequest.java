@@ -24,17 +24,21 @@
  */
 package org.alfresco.web.scripts;
 
+import java.util.Set;
+
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 
 
 /**
- * Web Script Request
+ * HTTP Servlet Web Script Request
  * 
  * @author davidc
  */
-public class WebScriptRequest extends HttpServletRequestWrapper
+public class WebScriptServletRequest implements WebScriptRequest
 {
+    /** HTTP Request */
+    private HttpServletRequest req;
+    
     /** Service bound to this request */
     private WebScriptMatch serviceMatch;
     
@@ -45,12 +49,22 @@ public class WebScriptRequest extends HttpServletRequestWrapper
      * @param req
      * @param serviceMatch
      */
-    WebScriptRequest(HttpServletRequest req, WebScriptMatch serviceMatch)
+    WebScriptServletRequest(HttpServletRequest req, WebScriptMatch serviceMatch)
     {
-        super(req);
+        this.req = req;
         this.serviceMatch = serviceMatch;
     }
 
+    /**
+     * Gets the HTTP Servlet Request
+     * 
+     * @return  HTTP Servlet Request
+     */
+    public HttpServletRequest getHttpServletRequest()
+    {
+        return req;
+    }
+    
     /**
      * Gets the matching API Service for this request
      * 
@@ -70,7 +84,15 @@ public class WebScriptRequest extends HttpServletRequestWrapper
      */
     public String getServerPath()
     {
-        return getScheme() + "://" + getServerName() + ":" + getServerPort();
+        return req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequest#getContextPath()
+     */
+    public String getContextPath()
+    {
+        return req.getContextPath();
     }
     
     /**
@@ -80,7 +102,7 @@ public class WebScriptRequest extends HttpServletRequestWrapper
      */
     public String getServiceContextPath()
     {
-        return getContextPath() + getServletPath();
+        return req.getContextPath() + req.getServletPath();
     }
 
     /**
@@ -90,7 +112,7 @@ public class WebScriptRequest extends HttpServletRequestWrapper
      */
     public String getServicePath()
     {
-        return getServiceContextPath() + getPathInfo();
+        return getServiceContextPath() + req.getPathInfo();
     }
 
     /**
@@ -100,7 +122,34 @@ public class WebScriptRequest extends HttpServletRequestWrapper
      */
     public String getURL()
     {
-        return getServicePath() + (getQueryString() != null ? "?" + getQueryString() : "");
+        return getServicePath() + (req.getQueryString() != null ? "?" + req.getQueryString() : "");
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequest#getQueryString()
+     */
+    public String getQueryString()
+    {
+        return req.getQueryString();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequest#getParameterNames()
+     */
+    public String[] getParameterNames()
+    {
+        Set<String> keys = req.getParameterMap().keySet();
+        String[] names = new String[keys.size()];
+        keys.toArray(names);
+        return names;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequest#getParameter(java.lang.String)
+     */
+    public String getParameter(String name)
+    {
+        return req.getParameter(name);
     }
     
     /**
@@ -117,7 +166,7 @@ public class WebScriptRequest extends HttpServletRequestWrapper
     public String getExtensionPath()
     {
         String servicePath = serviceMatch.getPath();
-        String extensionPath = getPathInfo();
+        String extensionPath = req.getPathInfo();
         int extIdx = extensionPath.indexOf(servicePath);
         if (extIdx != -1)
         {
@@ -157,7 +206,7 @@ public class WebScriptRequest extends HttpServletRequestWrapper
      */
     public String getAgent()
     {
-        String userAgent = getHeader("user-agent");
+        String userAgent = req.getHeader("user-agent");
         if (userAgent != null)
         {
             if (userAgent.indexOf("Firefox/") != -1)
@@ -171,4 +220,5 @@ public class WebScriptRequest extends HttpServletRequestWrapper
         }
         return null;
     }
+
 }

@@ -8,11 +8,7 @@
    <!--  -->   
 
    <bean id="webscripts.test" class="org.alfresco.web.scripts.TestWebScriptServer">
-      <property name="registry">
-         <bean parent="webscripts.registry">
-            <property name="authenticator" ref="webscripts.authenticator.trusted" />
-         </bean>
-      </property>
+      <property name="registry" ref="webscripts.registry" />
       <property name="transactionService" ref="transactionComponent" />
       <property name="messages">
          <bean class="org.springframework.context.support.ResourceBundleMessageSource">

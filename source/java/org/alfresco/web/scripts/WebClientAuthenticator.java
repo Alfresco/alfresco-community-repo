@@ -24,16 +24,16 @@
  */
 package org.alfresco.web.scripts;
 
-import javax.servlet.ServletContext;
+import java.io.IOException;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.app.servlet.AuthenticationStatus;
 import org.alfresco.web.app.servlet.BaseServlet;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.ServletContextAware;
@@ -44,14 +44,13 @@ import org.springframework.web.context.ServletContextAware;
  * 
  * @author davidc
  */
-public class WebClientAuthenticator implements MethodInterceptor, ServletContextAware
+public class WebClientAuthenticator implements WebScriptServletAuthenticator, ServletContextAware
 {
     // Logger
     private static final Log logger = LogFactory.getLog(WebClientAuthenticator.class);
 
     // dependencies
     private ServletContext context;
-    private AuthenticationService authenticationService;
 
 
     /* (non-Javadoc)
@@ -62,112 +61,69 @@ public class WebClientAuthenticator implements MethodInterceptor, ServletContext
         this.context = context;
     }
     
-    /**
-     * @param authenticationService
-     */
-    public void setAuthenticationService(AuthenticationService authenticationService)
-    {
-        this.authenticationService = authenticationService;
-    }
-    
     /* (non-Javadoc)
-     * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
+     * @see org.alfresco.web.scripts.WebScriptServletAuthenticator#authenticate(org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication, boolean, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
-    public Object invoke(MethodInvocation invocation)
-        throws Throwable
+    public void authenticate(RequiredAuthentication required, boolean isGuest, HttpServletRequest req, HttpServletResponse res)
     {
-        String currentUser = null;
-        Object retVal = null;
-        Object[] args = invocation.getArguments();
-        WebScriptRequest request = (WebScriptRequest)args[0];
-        WebScriptResponse response = (WebScriptResponse)args[1];
-        WebScript service = (WebScript)invocation.getThis();
-        WebScriptDescription description = service.getDescription();
         AuthenticationStatus status = null;
 
         try
         {
             
             //
-            // Determine if user already authenticated
-            //
-            
-            currentUser = AuthenticationUtil.getCurrentUserName();
-            if (logger.isDebugEnabled())
-                logger.debug("Current authentication: " + (currentUser == null ? "unauthenticated" : "authenticated as " + currentUser));
-    
-            //
             // validate credentials
             // 
     
-            String ticket = request.getParameter("ticket");
-            boolean isGuest = request.isGuest();
+            String ticket = req.getParameter("ticket");
             
             if (logger.isDebugEnabled())
             {
-                logger.debug("Web Script authentication required: " + description.getRequiredAuthentication());
-                logger.debug("Guest login: " + isGuest);
-                logger.debug("Ticket provided: " + (ticket != null && ticket.length() > 0));
+                logger.debug("Alfresco ticket provided: " + (ticket != null && ticket.length() > 0));
             }
         
             if (ticket != null && ticket.length() > 0)
             {
                 if (logger.isDebugEnabled())
                     logger.debug("Authenticating ticket " + ticket);
-
-                status = AuthenticationHelper.authenticate(context, request, response, ticket);
+    
+                status = AuthenticationHelper.authenticate(context, req, res, ticket);
             }
             else
             {
-                if (isGuest && description.getRequiredAuthentication() == RequiredAuthentication.guest)
+                if (isGuest)
                 {
                     if (logger.isDebugEnabled())
                         logger.debug("Authenticating as Guest");
-
-                    status = AuthenticationHelper.authenticate(context, request, response, true);
+    
+                    status = AuthenticationHelper.authenticate(context, req, res, true);
                 }
                 else
                 {
                     if (logger.isDebugEnabled())
                         logger.debug("Authenticating session");
-
-                    status = AuthenticationHelper.authenticate(context, request, response, false);
+    
+                    status = AuthenticationHelper.authenticate(context, req, res, false);
                 }
             }
-
+    
             //
-            // execute web script or request authorization
+            // if not authorized, redirect to login page
             //
             
-            if (status != null && status != AuthenticationStatus.Failure)
-            {
-                retVal = invocation.proceed();
-            }
-            else
+            if (status == null || status == AuthenticationStatus.Failure)
             {
                 // authentication failed - now need to display the login page to the user, if asked to
                 if (logger.isDebugEnabled())
                     logger.debug("Redirecting to Alfresco Login");
-
-                BaseServlet.redirectToLoginPage(request, response, context);
+    
+                BaseServlet.redirectToLoginPage(req, res, context);
             }
         }
-        finally
+        catch(IOException e)
         {
-            if (status != null && status != AuthenticationStatus.Failure)
-            {
-                authenticationService.clearCurrentSecurityContext();
-                if (currentUser != null)
-                {
-                    AuthenticationUtil.setCurrentUser(currentUser);
-                }
-                
-                if (logger.isDebugEnabled())
-                    logger.debug("Authentication reset: " + (currentUser == null ? "unauthenticated" : "authenticated as " + currentUser));
-            }
+            throw new WebScriptException("Failed to authenticate", e);
         }
-        
-        return retVal;        
     }
 
 }

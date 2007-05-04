@@ -41,11 +41,11 @@
    <td align=center height=40>
       <table border=0 cellspacing=8 cellpadding=0>
          <tr>
-            <th><a class="filterLink <#if filter=0>filterLinkSelected</#if>" href="${url.service}?f=0&p=${path}">All Items</a></th>
-            <th><a class="filterLink <#if filter=1>filterLinkSelected</#if>" href="${url.service}?f=1&p=${path}">Word Documents</a></th>
-            <th><a class="filterLink <#if filter=2>filterLinkSelected</#if>" href="${url.service}?f=2&p=${path}">HTML Documents</a></th>
-            <th><a class="filterLink <#if filter=3>filterLinkSelected</#if>" href="${url.service}?f=3&p=${path}">PDF Documents</a></th>
-            <th><a class="filterLink <#if filter=4>filterLinkSelected</#if>" href="${url.service}?f=4&p=${path}">Recently Modified</a></th>
+            <th><a class="filterLink <#if filter=0>filterLinkSelected</#if>" href="${scripturl("?f=0&p=${path}")}">All Items</a></th>
+            <th><a class="filterLink <#if filter=1>filterLinkSelected</#if>" href="${scripturl("?f=1&p=${path}")}">Word Documents</a></th>
+            <th><a class="filterLink <#if filter=2>filterLinkSelected</#if>" href="${scripturl("?f=2&p=${path}")}">HTML Documents</a></th>
+            <th><a class="filterLink <#if filter=3>filterLinkSelected</#if>" href="${scripturl("?f=3&p=${path}")}">PDF Documents</a></th>
+            <th><a class="filterLink <#if filter=4>filterLinkSelected</#if>" href="${scripturl("?f=4&p=${path}")}">Recently Modified</a></th>
          </tr>
       </table>
    </td>

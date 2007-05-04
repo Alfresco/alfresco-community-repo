@@ -250,6 +250,10 @@
    <servlet>
       <servlet-name>apiServlet</servlet-name>
       <servlet-class>org.alfresco.web.scripts.WebScriptServlet</servlet-class>
+      <init-param>
+         <param-name>authenticator</param-name>
+         <param-value>webscripts.authenticator.webclient</param-value>
+      </init-param>
    </servlet>
 
    <servlet>

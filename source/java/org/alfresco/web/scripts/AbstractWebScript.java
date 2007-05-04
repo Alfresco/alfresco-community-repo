@@ -26,7 +26,6 @@ package org.alfresco.web.scripts;
 
 import java.io.Writer;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,7 +35,6 @@ import org.alfresco.repo.template.AbsoluteUrlMethod;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptLocation;
-import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
@@ -174,10 +172,9 @@ public abstract class AbstractWebScript implements WebScript
     final protected Map<String, String> createArgModel(WebScriptRequest req)
     {
         Map<String, String> args = new ScriptableHashMap<String, String>();
-        Enumeration names = req.getParameterNames();
-        while (names.hasMoreElements())
+        String[] names = req.getParameterNames();
+        for (String name : names)
         {
-           String name = (String)names.nextElement();
            args.put(name, req.getParameter(name));
         }
         return args;
@@ -269,6 +266,7 @@ public abstract class AbstractWebScript implements WebScript
         
         // add template support
         model.put("absurl", new AbsoluteUrlMethod(req.getServerPath()));
+        model.put("scripturl", new ScriptUrlMethod(req, res));
         model.put("date", new Date());
         model.put(TemplateService.KEY_IMAGE_RESOLVER, getWebScriptRegistry().getTemplateImageResolver());
         

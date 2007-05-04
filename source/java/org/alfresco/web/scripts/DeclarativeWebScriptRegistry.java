@@ -37,23 +37,20 @@ import java.util.TreeMap;
 import javax.servlet.ServletContext;
 
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredTransaction;
 import org.alfresco.web.scripts.WebScriptDescription.URI;
 import org.alfresco.web.ui.common.Utils;
-import org.aopalliance.intercept.MethodInterceptor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
-import org.springframework.aop.framework.ProxyFactory;
-import org.springframework.aop.support.RegexpMethodPointcutAdvisor;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.web.context.ServletContextAware;
 
 
@@ -62,17 +59,14 @@ import org.springframework.web.context.ServletContextAware;
  * 
  * @author davidc
  */
-public class DeclarativeWebScriptRegistry implements WebScriptRegistry, ApplicationContextAware, ServletContextAware, InitializingBean
+public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean 
+    implements WebScriptRegistry, ServletContextAware, InitializingBean
 {
     // Logger
     private static final Log logger = LogFactory.getLog(DeclarativeWebScriptRegistry.class);
 
-    private ApplicationContext applicationContext;
     private ServletContext servletContext;
     private String defaultWebScript;
-    private MethodInterceptor authenticator;
-    private MethodInterceptor serviceLogger;
-    private MethodInterceptor serviceTransaction;
     private FormatRegistry formatRegistry;
     private WebScriptStorage storage;
     private TemplateImageResolver imageResolver;
@@ -102,36 +96,6 @@ public class DeclarativeWebScriptRegistry implements WebScriptRegistry, Applicat
     }
 
     /**
-     * Sets the web script authenticator
-     * 
-     * @param authenticator
-     */
-    public void setAuthenticator(MethodInterceptor authenticator)
-    {
-        this.authenticator = authenticator;
-    }
-
-    /**
-     * Sets the web script logger
-     * 
-     * @param serviceLogger
-     */
-    public void setServiceLogger(MethodInterceptor serviceLogger)
-    {
-        this.serviceLogger = serviceLogger;
-    }
-    
-    /**
-     * Sets the service transaction
-     * 
-     * @param serviceTransaction
-     */
-    public void setServiceTransaction(MethodInterceptor serviceTransaction)
-    {
-        this.serviceTransaction = serviceTransaction;
-    }
-    
-    /**
      * Sets the default service implementation bean
      * 
      * @param defaultWebScript
@@ -160,14 +124,6 @@ public class DeclarativeWebScriptRegistry implements WebScriptRegistry, Applicat
     }
 
     /* (non-Javadoc)
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
-    }
-
-    /* (non-Javadoc)
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
     public void afterPropertiesSet() throws Exception
@@ -179,6 +135,33 @@ public class DeclarativeWebScriptRegistry implements WebScriptRegistry, Applicat
                 return Utils.getFileTypeImage(getContext(), filename, small);
             }
         };        
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRegistry#reset()
+     */
+    public void reset()
+    {
+        getTemplateProcessor().resetCache();
+        getScriptProcessor().resetCache();
+        initWebScripts();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+     */
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
+    {
+        initWebScripts();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+     */
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
     }
     
     /**
@@ -245,56 +228,17 @@ public class DeclarativeWebScriptRegistry implements WebScriptRegistry, Applicat
                 }
                 
                 // construct service implementation
+                ApplicationContext applicationContext = getApplicationContext();
                 String serviceImplName = (applicationContext.containsBean("webscript." + id)) ? "webscript." + id : defaultWebScript;
                 AbstractWebScript serviceImpl = (AbstractWebScript)applicationContext.getBean(serviceImplName);
                 serviceImpl.setDescription(serviceDesc);
                 serviceImpl.init(this);
                 
-                // wrap service implementation in appropriate interceptors (e.g. authentication)
-                WebScript serviceImplIF = (WebScript)serviceImpl;
-                if (serviceLogger != null && serviceTransaction != null && authenticator != null)
-                {
-                    ProxyFactory authFactory = new ProxyFactory();
-                    authFactory.addInterface(WebScript.class);
-                    authFactory.setTarget(serviceImplIF);
-
-                    // logging interceptor
-                    if (serviceLogger != null)
-                    {
-                        RegexpMethodPointcutAdvisor advisor = new RegexpMethodPointcutAdvisor(".*execute", serviceLogger);
-                        authFactory.addAdvisor(advisor);
-                    }
-                
-                    // transaction interceptor
-                    if (serviceDesc.getRequiredTransaction() != RequiredTransaction.none)
-                    {
-                        if (serviceTransaction == null)
-                        {
-                            throw new WebScriptException("Web Script Transaction not specified");
-                        }
-                        RegexpMethodPointcutAdvisor advisor = new RegexpMethodPointcutAdvisor(".*execute", serviceTransaction);
-                        authFactory.addAdvisor(advisor);
-                    }
-                    
-                    // authentication interceptor
-                    if (serviceDesc.getRequiredAuthentication() != RequiredAuthentication.none)
-                    {
-                        if (authenticator == null)
-                        {
-                            throw new WebScriptException("Web Script Authenticator not specified");
-                        }
-                        RegexpMethodPointcutAdvisor advisor = new RegexpMethodPointcutAdvisor(".*execute", authenticator);
-                        authFactory.addAdvisor(advisor);
-                    }
-
-                    serviceImplIF = (WebScript)authFactory.getProxy();
-                }
-                
                 if (logger.isDebugEnabled())
                     logger.debug("Found Web Script " + serviceDescPath + " (id: " + id + ", impl: " + serviceImplName + ", auth: " + serviceDesc.getRequiredAuthentication() + ", trx: " + serviceDesc.getRequiredTransaction() + ")");
                 
                 // register service and its urls
-                webscriptsById.put(id, serviceImplIF);
+                webscriptsById.put(id, serviceImpl);
                 for (URI uri : serviceDesc.getURIs())
                 {
                     // establish static part of url template
@@ -323,7 +267,7 @@ public class DeclarativeWebScriptRegistry implements WebScriptRegistry, Applicat
                     }
                     else
                     {
-                        webscriptsByURL.put(uriIdx, serviceImplIF);
+                        webscriptsByURL.put(uriIdx, serviceImpl);
                         
                         if (logger.isDebugEnabled())
                             logger.debug("Registered Web Script URL '" + uriIdx + "'");
@@ -476,7 +420,6 @@ public class DeclarativeWebScriptRegistry implements WebScriptRegistry, Applicat
         }
     }
 
-
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptRegistry#getWebScripts()
      */
@@ -553,18 +496,7 @@ public class DeclarativeWebScriptRegistry implements WebScriptRegistry, Applicat
     {
         return this.storage.getScriptProcessor();
     }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptRegistry#reset()
-     */
-    public void reset()
-    {
-        getTemplateProcessor().resetCache();
-        getScriptProcessor().resetCache();
-        initWebScripts();
-    }
     
-
     /**
      * Web Script Match
      * 

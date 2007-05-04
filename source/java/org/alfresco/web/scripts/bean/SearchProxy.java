@@ -47,6 +47,7 @@ import org.alfresco.web.scripts.FormatRegistry;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
+import org.alfresco.web.scripts.WebScriptServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Attribute;
@@ -164,7 +165,13 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
             logger.debug("Mapping engine '" + engine + "' (mimetype '" + mimetype + "') to url '" + engineUrl + "'");        
         
         // issue request against search engine
-        SearchEngineHttpProxy proxy = new SearchEngineHttpProxy(req.getServicePath() + "/" + req.getContextPath(), engine, engineUrl, res);
+        // NOTE: This web script must be executed in a HTTP servlet environment
+        if (!(res instanceof WebScriptServletResponse))
+        {
+            throw new WebScriptException("Search Proxy must be executed in HTTP Servlet environment");
+        }
+        HttpServletResponse servletRes = ((WebScriptServletResponse)req).getHttpServletResponse();
+        SearchEngineHttpProxy proxy = new SearchEngineHttpProxy(req.getServicePath() + "/" + req.getContextPath(), engine, engineUrl, servletRes);
         proxy.service();
     }
     

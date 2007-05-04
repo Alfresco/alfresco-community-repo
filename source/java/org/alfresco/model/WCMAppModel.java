@@ -90,7 +90,7 @@ public interface WCMAppModel
     // The XForms data capture form aspect.
     static final QName TYPE_FORMFOLDER = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "formfolder");
     static final QName ASPECT_FORM = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "form");
-    static final QName PROP_XML_SCHEMA = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "schema");
+    static final QName PROP_XML_SCHEMA = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "xmlschema");
     static final QName PROP_XML_SCHEMA_ROOT_ELEMENT_NAME = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "xmlschemarootelementname");
     static final QName ASSOC_RENDERING_ENGINE_TEMPLATES = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "renderingenginetemplates");
     static final QName ASSOC_FORM_WORKFLOW_DEFAULTS = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "formworkflowdefaults");

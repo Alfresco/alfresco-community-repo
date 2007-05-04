@@ -1,9 +1,21 @@
 <link rel="stylesheet" href="${url.context}/css/main.css" TYPE="text/css">
 
+<script type="text/javascript" src="/alfresco/scripts/ajax/yahoo/yahoo/yahoo-min.js"></script>
+<script type="text/javascript" src="/alfresco/scripts/ajax/yahoo/connection/connection-min.js"></script>
+<script type="text/javascript" src="/alfresco/scripts/ajax/yahoo/dom/dom-min.js"></script>
+<script type="text/javascript" src="/alfresco/scripts/ajax/yahoo/event/event-min.js"></script>
+<script type="text/javascript" src="/alfresco/scripts/ajax/yahoo/animation/animation-min.js"></script>
+<script type="text/javascript" src="/alfresco/scripts/ajax/yahoo/dragdrop/dragdrop-min.js"></script>
 <script type="text/javascript" src="/alfresco/scripts/ajax/common.js"></script>
+<script type="text/javascript" src="/alfresco/scripts/ajax/summary-info.js"></script>
 <script type="text/javascript" src="/alfresco/scripts/ajax/mootools.js"></script>
 <script type="text/javascript" src="/alfresco/scripts/ajax/myforms.js"></script>
 <script type="text/javascript">setContextPath('${url.context}');</script>
+
+<script>
+   // create manager object for the pop-up summary panels
+   var AlfNodeInfoMgr = new Alfresco.PanelManager("NodeInfoBean.sendNodeInfo", "noderef");
+</script>
 
 <#-- List the available web form objects in all web projects the user is assigned to -->
 <table cellspacing=0 cellpadding=0 border=0 class="formsTable">
@@ -23,7 +35,10 @@
             <div class="webProjectRow">
                <div class="webProjectTitle">
                   <a class="webPreviewLink" href="${avm.websiteUserSandboxUrl(storeId, username)}" target="new"><img src="${url.context}/images/icons/website_large.gif" width=32 height=32 border=0><span class="websiteLink">${wp.name}</span></a>
-                  <a class="webProjectLink" href="${url.context}${wp.url}" target="new">View Web Project</span></a>
+                  <a class="webProjectLink" href="${url.context}${wp.url}" target="new">View Web Project</a>
+                  <span class="webProjectInfo" onclick="event.cancelBubble=true; AlfNodeInfoMgr.toggle('${wp.nodeRef}',this);">
+                     <img src="${url.context}/images/icons/popup.gif" class="popupImage" width="16" height="16" />
+                  </span>
                   <#if wp.properties.description?exists && wp.properties.description?length!=0>
                   <br>
                   <span class="webprojectDesc">${wp.properties.description}</span>
@@ -86,6 +101,11 @@ a.webProjectLink:link, a.webProjectLink:visited, a.webProjectLink:hover
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 11px;
    padding-left: 16px;
+   vertical-align: 60%;
+}
+
+span.webProjectInfo
+{
    vertical-align: 60%;
 }
 

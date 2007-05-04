@@ -27,12 +27,13 @@ package org.alfresco.web.config;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.config.ConfigElement;
+import org.alfresco.config.JNDIConstants;
 import org.alfresco.config.element.ConfigElementAdapter;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.cache.ExpiringValueCache;
+import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Custom config element that represents config values for the client
@@ -45,9 +46,6 @@ public class ClientConfigElement extends ConfigElementAdapter
    
    public static final String CONFIG_ELEMENT_ID = "client";
    
-   private static final String BEAN_VIRT_SERVER_REGISTRY = "VirtServerRegistry";
-   private static final String DEFAULT_VSERVER_IP = "127-0-0-1.ip.alfrescodemo.net";
-   private static final int DEFAULT_VSERVER_PORT = 8180;
    private static final String DEFAULT_FROM_ADDRESS = "alfresco@alfresco.org";
    
    private String fromEmailAddress = DEFAULT_FROM_ADDRESS;   
@@ -505,12 +503,12 @@ public class ClientConfigElement extends ConfigElementAdapter
       String value = this.wcmDomain.get();
       if (value == null)
       {
-         VirtServerRegistry vServerRegistry = (VirtServerRegistry)FacesContextUtils.getRequiredWebApplicationContext(
-               FacesContext.getCurrentInstance()).getBean(BEAN_VIRT_SERVER_REGISTRY);
+         VirtServerRegistry vServerRegistry = Repository.getServiceRegistry(
+                 FacesContext.getCurrentInstance()).getVirtServerRegistry();
          value = vServerRegistry.getVirtServerFQDN();
          if (value == null)
          {
-            value = DEFAULT_VSERVER_IP;
+            value = JNDIConstants.DEFAULT_VSERVER_IP;
             logger.warn("Virtualisation Server not started - reverting to default IP: " + value);
          }
          this.wcmDomain.put(value);
@@ -526,12 +524,12 @@ public class ClientConfigElement extends ConfigElementAdapter
       String value = this.wcmPort.get();
       if (value == null)
       {
-         VirtServerRegistry vServerRegistry = (VirtServerRegistry)FacesContextUtils.getRequiredWebApplicationContext(
-               FacesContext.getCurrentInstance()).getBean(BEAN_VIRT_SERVER_REGISTRY);
+         VirtServerRegistry vServerRegistry = Repository.getServiceRegistry(
+                 FacesContext.getCurrentInstance()).getVirtServerRegistry();
          Integer iValue = vServerRegistry.getVirtServerHttpPort();
          if (iValue == null)
          {
-            iValue = DEFAULT_VSERVER_PORT;
+            iValue = JNDIConstants.DEFAULT_VSERVER_PORT;
             logger.warn("Virtualisation Server not started - reverting to default port: " + iValue);
          }
          value = iValue.toString();

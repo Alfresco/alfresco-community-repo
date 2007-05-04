@@ -49,8 +49,6 @@ import org.alfresco.util.VirtServerUtils;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.ClientConfigElement;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.jsf.FacesContextUtils;
 
 
 /**
@@ -597,7 +595,7 @@ public final class AVMConstants
          store = store.substring(0, store.indexOf(':'));
       }
       ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
-      return MessageFormat.format(PREVIEW_SANDBOX_URL, 
+      return MessageFormat.format(JNDIConstants.PREVIEW_SANDBOX_URL, 
                                   lookupStoreDNS(store), 
                                   config.getWCMDomain(), 
                                   config.getWCMPort());
@@ -677,7 +675,7 @@ public final class AVMConstants
          assetPath = '/' + assetPath;
       }
       
-      return MessageFormat.format(PREVIEW_ASSET_URL, dns, domain, port, assetPath);
+      return MessageFormat.format(JNDIConstants.PREVIEW_ASSET_URL, dns, domain, port, assetPath);
    }
    
    public static String lookupStoreDNS(String store)
@@ -952,9 +950,7 @@ public final class AVMConstants
    
    private static VirtServerRegistry getVirtServerRegistry()
    {
-      final FacesContext fc = FacesContext.getCurrentInstance();
-      final WebApplicationContext ac = FacesContextUtils.getRequiredWebApplicationContext(fc);
-      return (VirtServerRegistry)ac.getBean(BEAN_VIRT_SERVER_REGISTRY);
+      return Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getVirtServerRegistry();
    }
    
    private static ConfigElement getDeploymentConfig()
@@ -1003,13 +999,6 @@ public final class AVMConstants
    // web user role permissions
    public final static String ROLE_CONTENT_MANAGER    = "ContentManager";
    public final static String ROLE_CONTENT_PUBLISHER  = "ContentPublisher";
-   
-   // virtualisation server MBean registry
-   private static final String BEAN_VIRT_SERVER_REGISTRY = "VirtServerRegistry";
-   
-   // URLs for preview of sandboxes and assets
-   private final static String PREVIEW_SANDBOX_URL = "http://{0}.www--sandbox.{1}:{2}";
-   private final static String PREVIEW_ASSET_URL = "http://{0}.www--sandbox.{1}:{2}{3}";
    
    // pattern for absolute AVM Path
    private final static Pattern STORE_RELATIVE_PATH_PATTERN = 

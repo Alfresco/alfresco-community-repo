@@ -17,10 +17,13 @@
          <#if user.properties["wca:username"] = person.properties.userName>
             <#assign projectcount=projectcount+1>
             <#-- construct the sandbox name based on the webproject and current username -->
-            <#assign sandbox=wp.properties["wca:avmstore"] + "--" + person.properties.userName>
+            <#assign storeId=wp.properties["wca:avmstore"]>
+            <#assign username=person.properties.userName>
+            <#assign sandbox=avm.userSandboxStore(storeId, username)>
             <div class="webProjectRow">
                <div class="webProjectTitle">
-                  <a class="webProjectLink" href="${url.context}${wp.url}" target="new"><img src="${url.context}/images/icons/website_large.gif" width=32 height=32 border=0><span class="websiteLink">${wp.name}</span></a>
+                  <a class="webPreviewLink" href="${avm.websiteUserSandboxUrl(storeId, username)}" target="new"><img src="${url.context}/images/icons/website_large.gif" width=32 height=32 border=0><span class="websiteLink">${wp.name}</span></a>
+                  <a class="webProjectLink" href="${url.context}${wp.url}" target="new">View Web Project</span></a>
                   <#if wp.properties.description?exists && wp.properties.description?length!=0>
                   <br>
                   <span class="webprojectDesc">${wp.properties.description}</span>
@@ -69,12 +72,21 @@
    overflow: auto;
 }
 
-a.webProjectLink:link, a.webProjectLink:visited, a.webProjectLink:hover
+a.webPreviewLink:link, a.webPreviewLink:visited, a.webPreviewLink:hover
 {
    color: #5A5741;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 13px;
    font-weight: bold;
+}
+
+a.webProjectLink:link, a.webProjectLink:visited, a.webProjectLink:hover
+{
+   color: #5A5741;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   padding-left: 16px;
+   vertical-align: 60%;
 }
 
 .webProjectRow

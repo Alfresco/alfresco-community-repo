@@ -112,7 +112,7 @@ public final class FacesHelper
       InnerFacesContext.setFacesContextAsCurrent(facesContext);
       
       // set a new viewRoot, otherwise context.getViewRoot returns null
-      UIViewRoot view = facesContext.getApplication().getViewHandler().createView(facesContext, "/jsp/root");
+      UIViewRoot view = facesContext.getApplication().getViewHandler().createView(facesContext, "/jsp/close.jsp");
       facesContext.setViewRoot(view);
       
       return facesContext;

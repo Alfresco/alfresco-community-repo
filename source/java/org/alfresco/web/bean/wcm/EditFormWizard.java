@@ -89,8 +89,26 @@ public class EditFormWizard
       this.setFormTitle(form.getTitle());
       this.setFormDescription(form.getDescription());
       this.setSchemaRootElementName(form.getSchemaRootElementName());
-      final NodeRef schemaNodeRef = (NodeRef)
+      NodeRef schemaNodeRef = (NodeRef)
          this.nodeService.getProperty(formNodeRef, WCMAppModel.PROP_XML_SCHEMA);
+      if (schemaNodeRef == null)
+      {
+         LOGGER.debug(WCMAppModel.PROP_XML_SCHEMA + " not set on " + formNodeRef +
+                      ", checking " + WCMAppModel.PROP_XML_SCHEMA_OLD);
+         schemaNodeRef = (NodeRef)
+            nodeService.getProperty(formNodeRef, WCMAppModel.PROP_XML_SCHEMA_OLD);
+         if (schemaNodeRef != null)
+         {
+            nodeService.setProperty(formNodeRef, WCMAppModel.PROP_XML_SCHEMA, schemaNodeRef);
+         }
+      }
+      if (schemaNodeRef == null)
+      {
+         throw new NullPointerException("expected property " + WCMAppModel.PROP_XML_SCHEMA +
+                                        " of " + formNodeRef + 
+                                        " for form " + form.getName() +
+                                        " not to be null.");
+      }
       this.setSchemaFileName((String)this.nodeService.getProperty(schemaNodeRef, 
                                                                   ContentModel.PROP_NAME));
       try

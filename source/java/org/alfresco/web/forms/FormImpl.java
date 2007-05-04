@@ -201,8 +201,19 @@ public class FormImpl
       SAXException
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      final NodeRef schemaNodeRef = (NodeRef)
+      NodeRef schemaNodeRef = (NodeRef)
          nodeService.getProperty(folderNodeRef, WCMAppModel.PROP_XML_SCHEMA);
+      if (schemaNodeRef == null)
+      {
+         LOGGER.debug(WCMAppModel.PROP_XML_SCHEMA + " not set on " + folderNodeRef +
+                      ", checking " + WCMAppModel.PROP_XML_SCHEMA_OLD);
+         schemaNodeRef = (NodeRef)
+            nodeService.getProperty(folderNodeRef, WCMAppModel.PROP_XML_SCHEMA_OLD);
+         if (schemaNodeRef != null)
+         {
+            nodeService.setProperty(folderNodeRef, WCMAppModel.PROP_XML_SCHEMA, schemaNodeRef);
+         }
+      }
       if (schemaNodeRef == null)
       {
          throw new NullPointerException("expected property " + WCMAppModel.PROP_XML_SCHEMA +

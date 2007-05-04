@@ -75,6 +75,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -123,6 +124,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      */
     private Node getNodeNotNull(NodeRef nodeRef) throws InvalidNodeRefException
     {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        
         Node unchecked = nodeDaoService.getNode(nodeRef);
         if (unchecked == null)
         {
@@ -139,6 +142,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      */
     public NodeStatus getNodeStatusNotNull(NodeRef nodeRef) throws InvalidNodeRefException
     {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        
         NodeStatus nodeStatus = nodeDaoService.getNodeStatus(nodeRef, false);
         if (nodeStatus == null || nodeStatus.getNode() == null)
         {
@@ -157,6 +162,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     
     public boolean exists(NodeRef nodeRef)
     {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        
         Node node = nodeDaoService.getNode(nodeRef);
         boolean exists = (node != null);
         // done
@@ -165,6 +172,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     
     public Status getNodeStatus(NodeRef nodeRef)
     {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        
         NodeStatus nodeStatus = nodeDaoService.getNodeStatus(nodeRef, false);
         if (nodeStatus == null)     // node never existed
         {

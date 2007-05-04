@@ -583,11 +583,13 @@ public class CreateFormWizard
     */
    public String removeUploadedSchemaFile()
    {
+      LOGGER.debug("removing uploaded rendering engine template file " + 
+                   this.getRenderingEngineTemplateFileName());
       this.clearUpload(FILE_SCHEMA);
       this.schemaRootElementNameChoices = null;
       this.schema = null;
       this.schemaFileName = null;
-      
+      assert this.getSchemaFileName() == null;
       // refresh the current page
       return null;
    }
@@ -597,8 +599,11 @@ public class CreateFormWizard
     */
    public String removeUploadedRenderingEngineTemplateFile()
    {
-      clearUpload(FILE_RENDERING_ENGINE_TEMPLATE);
-      
+      LOGGER.debug("removing uploaded rendering engine template file " + 
+                   this.getRenderingEngineTemplateFileName());
+      this.clearUpload(FILE_RENDERING_ENGINE_TEMPLATE);
+      this.renderingEngineTemplateFileName = null;
+      assert this.getRenderingEngineTemplateFileName() == null;
       // refresh the current page
       return null;
    }

@@ -149,10 +149,15 @@ public class XMLUtil
       throws SAXException,
       IOException
    {
-      final DocumentBuilder db = XMLUtil.getDocumentBuilder();
-      final Document result = db.parse(source);
-      source.close();
-      return result;
+      try
+      {
+         final DocumentBuilder db = XMLUtil.getDocumentBuilder();
+         return db.parse(source);
+      }
+      finally
+      {
+         source.close();
+      }
    }
 
    /** provides a document builder that is namespace aware but not validating by default */

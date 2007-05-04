@@ -32,6 +32,7 @@ import freemarker.template.TemplateModelException;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.faces.context.FacesContext;
@@ -57,6 +58,7 @@ import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMConstants;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
@@ -378,10 +380,15 @@ public class RenderingEngineTemplateImpl
                          }
                       }
 
-                      URI uri = null;
                       try
                       {
-                         uri = new URI(webappUrl + (name.charAt(0) == '/' ? name : '/' + name));
+                         final String[] path = (name.startsWith("/") ? name.substring(1) : name).split("/");
+                         for (int i = 0; i < path.length; i++)
+                         {
+                            path[i] = URLEncoder.encode(path[i], "utf-8").replace("+", "%20");
+                         }
+                         
+                         final URI uri = new URI(webappUrl + '/' + StringUtils.join(path, '/'));
                          if (LOGGER.isDebugEnabled())
                             LOGGER.debug("loading " + uri);
                          return uri.toURL().openStream();

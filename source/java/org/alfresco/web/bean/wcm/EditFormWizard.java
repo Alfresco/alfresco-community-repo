@@ -137,6 +137,7 @@ public class EditFormWizard
             this.new RenderingEngineTemplateData(ret);
          this.renderingEngineTemplates.add(data);
       }
+      this.removedRenderingEngineTemplates = null;
    }
    
    /**
@@ -192,7 +193,7 @@ public class EditFormWizard
 
       if (this.getSchemaFile() != null)
       {
-         FileInfo fileInfo = 
+         final FileInfo fileInfo = 
             this.fileFolderService.create(formNodeRef,
                                           this.getSchemaFileName(),
                                           ContentModel.TYPE_CONTENT);
@@ -211,13 +212,16 @@ public class EditFormWizard
 
       if (this.removedRenderingEngineTemplates != null)
       {
-         for (RenderingEngineTemplateData retd : this.removedRenderingEngineTemplates)
+         for (final RenderingEngineTemplateData retd : this.removedRenderingEngineTemplates)
          {
+            LOGGER.debug("removing rendering engine template " + retd);
+            assert retd != null;
+            assert retd.getNodeRef() != null;
             this.nodeService.removeChild(formNodeRef, retd.getNodeRef());
          }
       }
 
-      for (RenderingEngineTemplateData retd : this.renderingEngineTemplates)
+      for (final RenderingEngineTemplateData retd : this.renderingEngineTemplates)
       {
          if (retd.getFile() != null)
          {

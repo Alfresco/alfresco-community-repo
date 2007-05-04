@@ -25,7 +25,6 @@
 <jsp:root version="1.2"
           xmlns:jsp="http://java.sun.com/JSP/Page"
  	  xmlns:c="http://java.sun.com/jsp/jstl/core"
-	  xmlns:pr="http://www.alfresco.org/alfresco/pr"
           xmlns:fmt="http://java.sun.com/jsp/jstl/fmt"
           xmlns:f="http://java.sun.com/jsf/core"
           xmlns:h="http://java.sun.com/jsf/html">

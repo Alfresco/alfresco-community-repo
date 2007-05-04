@@ -14,7 +14,7 @@
 
 <script>
    // create manager object for the pop-up summary panels
-   var AlfNodeInfoMgr = new Alfresco.PanelManager("NodeInfoBean.sendNodeInfo", "noderef");
+   var AlfNodeInfoMgr = new Alfresco.PanelManager("NodeInfoBean.sendNodeInfo", "noderef", "portlet_node_summary_panel.ftl");
 </script>
 
 <#-- List the available web form objects in all web projects the user is assigned to -->

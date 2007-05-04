@@ -13,10 +13,11 @@ var _zIndex = 99;
  * @param serverCall    Server call to make on display e.g. NodeInfoBean.sendNodeInfo
  * @param argName       Argument name to pass panel ID object as e.g. nodeRef
  */
-Alfresco.PanelManager = function(serverCall, argName)
+Alfresco.PanelManager = function(serverCall, argName, template)
 {
    this.serverCall = serverCall;
    this.argName = argName;
+   this.template = template;
 }
 
 /**
@@ -29,6 +30,7 @@ Alfresco.PanelManager.prototype =
    displayed: [],
    serverCall: null,
    argName: null,
+   template: null,
    
    /**
     * Request toggle of the open/close state of an info panel
@@ -122,7 +124,8 @@ Alfresco.InfoPanel.prototype =
                   failure: handleErrorYahoo,    // global error handler
                   argument: [this]
                }, 
-               this.manager.argName + "=" + this.id);
+               this.manager.argName + "=" + this.id +
+               (this.manager.template != null ? ("&template=" + this.manager.template) : ""));
          }
          else
          {

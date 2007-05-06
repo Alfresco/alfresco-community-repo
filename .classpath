@@ -7,5 +7,6 @@
 	<classpathentry kind="src" path="/Core"/>
 	<classpathentry kind="src" path="/3rd Party"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MBean"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Deployment"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

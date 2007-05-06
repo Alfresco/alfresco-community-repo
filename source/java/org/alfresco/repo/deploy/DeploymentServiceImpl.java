@@ -28,10 +28,16 @@ package org.alfresco.repo.deploy;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
+import org.alfresco.deployment.DeploymentReceiverService;
+import org.alfresco.deployment.DeploymentReceiverTransport;
+import org.alfresco.deployment.FileDescriptor;
+import org.alfresco.deployment.FileType;
+import org.alfresco.deployment.impl.client.DeploymentReceiverServiceClient;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.domain.PropertyValue;
@@ -509,6 +515,26 @@ public class DeploymentServiceImpl implements DeploymentService
             throw new AVMException("Could not Initialize Remote Connection to " + hostName, e);
         }
     }
+    
+    private DeploymentReceiverService getReceiver(String hostName, int port)
+    {
+        try
+        {
+            RmiProxyFactoryBean factory = new RmiProxyFactoryBean();
+            factory.setRefreshStubOnConnectFailure(true);
+            factory.setServiceInterface(DeploymentReceiverTransport.class);
+            factory.setServiceUrl("rmi://" + hostName + ":" + port + "/deployment");
+            factory.afterPropertiesSet();
+            DeploymentReceiverTransport transport = (DeploymentReceiverTransport)factory.getObject();
+            DeploymentReceiverServiceClient service = new DeploymentReceiverServiceClient();
+            service.setDeploymentReceiverTransport(transport);
+            return service;
+        }
+        catch (Exception e)
+        {
+            throw new AVMException("Could not connect to " + hostName + " at " + port, e);
+        }
+    }
 
     /**
      * Utility to get the sync service for rolling back after a failed deployment.
@@ -570,8 +596,207 @@ public class DeploymentServiceImpl implements DeploymentService
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.deploy.DeploymentService#deployDifferenceFS(int, java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, java.lang.String, boolean, boolean)
      */
-    public DeploymentReport deployDifferenceFS(int version, String srcPath, String hostName, int port, String userName, String password, String dstPath, boolean createDst, boolean dontDelete, boolean dontDo, DeploymentCallback callback)
+    public DeploymentReport deployDifferenceFS(int version, String srcPath, String hostName, int port, String userName, String password, String target, boolean createDst, boolean dontDelete, boolean dontDo, DeploymentCallback callback)
     {
-        return null;
+        DeploymentReport report = new DeploymentReport();
+        DeploymentReceiverService service = getReceiver(hostName, port);
+        DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.START,
+                                                    new Pair<Integer, String>(version, srcPath),
+                                                    target);
+        if (callback != null)
+        {
+            callback.eventOccurred(event);
+        }
+        report.add(event);
+        String ticket = service.begin(target, userName, password);
+        
+        deployDirectoryPush(service, ticket, report, callback, version, srcPath, "/");
+        service.commit(ticket);
+        event = new DeploymentEvent(DeploymentEvent.Type.END,
+                                    new Pair<Integer, String>(version, srcPath),
+                                    target);
+        if (callback != null)
+        {
+            callback.eventOccurred(event);
+        }
+        report.add(event);
+        return report;
+    }
+    
+    private void deployDirectoryPush(DeploymentReceiverService service, String ticket,
+                                     DeploymentReport report, DeploymentCallback callback,
+                                     int version,
+                                     String srcPath, String dstPath)
+    {
+        Map<String, AVMNodeDescriptor> srcListing = fAVMService.getDirectoryListing(version, srcPath);
+        List<FileDescriptor> dstListing = service.getListing(ticket, dstPath);
+        Iterator<AVMNodeDescriptor> srcIter = srcListing.values().iterator();
+        Iterator<FileDescriptor> dstIter = dstListing.iterator();
+        AVMNodeDescriptor src = null;
+        FileDescriptor dst = null;
+        while (srcIter.hasNext() || dstIter.hasNext())
+        {
+            if (src == null)
+            {
+                if (srcIter.hasNext())
+                {
+                    src = srcIter.next();
+                }
+            }
+            if (dst == null)
+            {
+                if (dstIter.hasNext())
+                {
+                    dst = dstIter.next();
+                }
+            }
+            // This means no entry on src so delete.
+            if (src == null)
+            {
+                String newDstPath = dstPath + '/' + dst.getName();
+                service.delete(ticket, newDstPath);
+                DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.DELETED, 
+                                                            new Pair<Integer, String>(version, srcPath + '/' + dst.getName()),
+                                                            newDstPath);
+                if (callback != null)
+                {
+                    callback.eventOccurred(event);
+                }
+                report.add(event);
+                dst = null;
+                continue;
+            }
+            // Nothing on the destination so copy over.
+            if (dst == null)
+            {
+                copy(service, ticket, report, callback, version, src, dstPath);
+                src = null;
+                continue;
+            }
+            int diff = src.getName().compareTo(dst.getName());
+            if (diff < 0)
+            {
+                // No corresponding destination.
+                copy(service, ticket, report, callback, version, src, dstPath);
+                src = null;
+                continue;
+            }
+            if (diff == 0)
+            {
+                if (src.isFile() && dst.getType() == FileType.FILE &&
+                    src.getGuid().equals(dst.getGUID()))
+                {
+                    src = null;
+                    dst = null;
+                    continue;
+                }
+                if (src.isFile())
+                {
+                    copyFile(service, ticket, report, callback, version, src,
+                             dstPath + '/' + dst.getName());
+                    src = null;
+                    dst = null;
+                    continue;
+                }
+                // Source is a directory.
+                if (dst.getType() == FileType.DIR)
+                {
+                    deployDirectoryPush(service, ticket, report, callback, version, src.getPath(), dstPath + '/' + dst.getName());
+                    src = null;
+                    dst = null;
+                    continue;
+                }
+                copy(service, ticket, report, callback, version, src, dstPath);
+                src = null;
+                dst = null;
+                continue;
+            }
+            // diff > 0
+            // Destination is missing in source, delete it.
+            String newDstPath = dstPath + '/' + dst.getName();
+            service.delete(ticket, newDstPath);
+            DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.DELETED,
+                                                        new Pair<Integer, String>(version, srcPath + '/' + dst.getName()),
+                                                        newDstPath);
+            if (callback != null) 
+            {
+                callback.eventOccurred(event);
+            }
+            report.add(event);
+            dst = null;
+        }
+    }
+    
+    /**
+     * Copy or overwrite a single file.
+     * @param service
+     * @param ticket
+     * @param report
+     * @param callback
+     * @param version
+     * @param src
+     * @param dstPath
+     */
+    private void copyFile(DeploymentReceiverService service, String ticket, 
+                          DeploymentReport report, DeploymentCallback callback, int version,
+                          AVMNodeDescriptor src, String dstPath)
+    {
+        InputStream in = fAVMService.getFileInputStream(src);
+        OutputStream out = service.send(ticket, dstPath, src.getGuid());
+        try
+        {
+            copyStream(in, out);
+            service.finishSend(ticket, out);
+            DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
+                                                        new Pair<Integer, String>(version, src.getPath()),
+                                                        dstPath);
+            if (callback != null)
+            {
+                callback.eventOccurred(event);
+            }
+            report.add(event);
+        }
+        catch (Exception e)
+        {
+            service.abort(ticket);
+            throw new AVMException("Failed to copy " + src + ". Deployment aborted.", e);
+        }
+    }
+    
+    /**
+     * Copy a file or directory to an empty destination.
+     * @param service
+     * @param ticket
+     * @param report
+     * @param callback
+     * @param version
+     * @param src
+     * @param parentPath
+     */
+    private void copy(DeploymentReceiverService service, String ticket,
+                      DeploymentReport report, DeploymentCallback callback, 
+                      int version, AVMNodeDescriptor src, String parentPath)
+    {
+        String dstPath = parentPath + '/' + src.getName();
+        if (src.isFile())
+        {
+            copyFile(service, ticket, report, callback, version, src, dstPath);
+            return;
+        }
+        // src is a directory.
+        service.mkdir(ticket, dstPath, src.getGuid());
+        DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
+                                                    new Pair<Integer, String>(version, src.getPath()),
+                                                    dstPath);
+        if (callback != null)
+        {
+            callback.eventOccurred(event);
+        }
+        report.add(event);
+        Map<String, AVMNodeDescriptor> listing = fAVMService.getDirectoryListing(src);
+        for (AVMNodeDescriptor child : listing.values())
+        {
+            copy(service, ticket, report, callback, version, child, dstPath);
+        }
     }
 }

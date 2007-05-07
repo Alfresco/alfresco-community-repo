@@ -112,6 +112,11 @@ public class DeploymentServiceImpl implements DeploymentService
                                                             dstPath);
                 callback.eventOccurred(event);
             }
+            if (version < 0)
+            {
+                String storeName = srcPath.substring(0, srcPath.indexOf(":"));
+                version = fAVMService.createSnapshot(storeName, null, null);
+            }
             // Get the root of the deployment from this server.
             AVMNodeDescriptor srcRoot = fAVMService.lookup(version, srcPath);
             if (srcRoot == null)
@@ -143,6 +148,7 @@ public class DeploymentServiceImpl implements DeploymentService
                     }
                 }
                 snapshot = remote.createSnapshot(storePath[0], "PreDeploy", "Pre Deployment Snapshot");
+                
             }
             // Get the root of the deployment on the destination server.
             AVMNodeDescriptor dstRoot = remote.lookup(-1, dstPath);
@@ -163,6 +169,7 @@ public class DeploymentServiceImpl implements DeploymentService
                     return report;
                 }
                 copyDirectory(version, srcRoot, dstParent, remote);
+                remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
                 if (callback != null)
                 {
                     event = new DeploymentEvent(DeploymentEvent.Type.END, 
@@ -180,6 +187,7 @@ public class DeploymentServiceImpl implements DeploymentService
             try
             {
                 deployDirectoryPush(version, srcRoot, dstRoot, remote, dontDelete, dontDo, report, callback);
+                remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
                 if (callback != null)
                 {
                     DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.END, 
@@ -197,7 +205,7 @@ public class DeploymentServiceImpl implements DeploymentService
                     {
                         AVMSyncService syncService = getSyncService(hostName, port);
                         List<AVMDifference> diffs = syncService.compare(snapshot, dstPath, -1, dstPath, null);
-                        syncService.update(diffs, null, false, false, true, true, "Abortd Deployment", "Aborted Deployment");
+                        syncService.update(diffs, null, false, false, true, true, "Aborted Deployment", "Aborted Deployment");
                     }
                 }
                 catch (Exception ee)
@@ -227,6 +235,14 @@ public class DeploymentServiceImpl implements DeploymentService
                                      DeploymentReport report,
                                      DeploymentCallback callback)
     {
+        if (src.getGuid().equals(dst.getGuid()))
+        {
+            return;
+        }
+        if (!dontDo && !dontDelete)
+        {
+            copyMetadata(version, src, dst, remote);
+        }
         // Get the listing for the source.
         SortedMap<String, AVMNodeDescriptor> srcList = fAVMService.getDirectoryListing(src);
         // Get the listing for the destination.

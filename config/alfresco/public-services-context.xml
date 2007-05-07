@@ -945,6 +945,7 @@
         </property>
 	 </bean>
 
+    <!--
     <bean id="deploymentServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
             <ref bean="retryingReadTxnAdvice"/>
@@ -955,7 +956,8 @@
             </list>
         </property>
     </bean>
-
+	-->
+	
 	<bean id="deploymentServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
 	    <property name="advice">
 	        <ref bean="retryingWriteTxnAdvice"/>
@@ -963,6 +965,7 @@
 	    <property name="mappedNames">
 	        <list>
 	            <value>deployDifferenceFS</value>
+	            <value>deployDifference</value>
 	        </list>
 	    </property>
 	</bean>
@@ -979,7 +982,6 @@
         <property name="interceptorNames">
             <list>
                 <value>deploymentServiceWriteTxnAdvisor</value>
-                <value>deploymentServiceReadTxnAdvisor</value>
             </list>
         </property>
     </bean>

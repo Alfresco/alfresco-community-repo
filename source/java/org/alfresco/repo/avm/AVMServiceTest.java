@@ -143,35 +143,36 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             DeploymentService depService = (DeploymentService)fContext.getBean("DeploymentService");
             setupBasicTree();
-            TestDeploymentCallback callback = new TestDeploymentCallback();
+            // TestDeploymentCallback callback = new TestDeploymentCallback();
             fService.createStore("target");
-            DeploymentReport report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, false, false, callback);
+            DeploymentReport report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, false, false, null);
             System.out.println(report);
             assertEquals(fService.lookup(-1, "main:/a/b/c/foo").getGuid(),
                     fService.lookup(-1, "target:/a/b/c/foo").getGuid());
             assertEquals(fService.lookup(-1, "main:/a/b/c/bar").getGuid(),
                     fService.lookup(-1, "target:/a/b/c/bar").getGuid());
             fService.createFile("main:/a/b", "biz").close();
-            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, false, true, callback);
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, false, true, null);
             System.out.println(report);
             System.out.println(recursiveList("target", -1, true));
             assertNull(fService.lookup(-1, "target:/a/b/biz"));
-            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, false, false, callback);
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, false, false, null);
             System.out.println(report);
             assertEquals(fService.lookup(-1, "main:/a/b/biz").getGuid(),
                          fService.lookup(-1, "target:/a/b/biz").getGuid());
             fService.removeNode("main:/a/b/c/foo");
-            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, true, false, callback);
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, true, false, null);
             System.out.println(report);
             assertNotNull(fService.lookup(-1, "target:/a/b/c/foo"));
-            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, false, false, callback);
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, false, false, null);
             System.out.println(report);
             assertNull(fService.lookup(-1, "target:/a/b/c/foo"));
             fService.removeNode("main:/a/b/c/bar");
             fService.createDirectory("main:/a/b/c", "bar");
-            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, false, false, callback);
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, false, false, null);
             System.out.println(report);
-            depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target2:/wiggly/diggly", true, false, false, callback);
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, false, false, null);
+            depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target2:/wiggly/diggly", true, false, false, null);
             System.out.println(report);
         }
         catch (Exception e)

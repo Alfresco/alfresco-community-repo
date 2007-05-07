@@ -125,17 +125,19 @@
 		<id column="id" type="long">
 			<generator class="native"></generator>
 		</id>
-		<property name="versionID" type="int" not-null="true"
-			column="version_id" index="idx_avm_vr_version">
-		</property>
+		<natural-id>
+			<property name="versionID" type="int" not-null="true"
+				column="version_id" index="idx_avm_vr_version">
+			</property>
+			<many-to-one name="avmStore" column="avm_store_id"
+				class="AVMStoreImpl" not-null="true" foreign-key="fk_avm_vr_store">
+			</many-to-one>
+		</natural-id>
 		<property name="createDate" type="long" not-null="true" column="create_date">
 		</property>
 		<property name="creator" type="string" column="creator"
 			not-null="true">
 		</property>
-		<many-to-one name="avmStore" column="avm_store_id"
-			class="AVMStoreImpl" not-null="true" foreign-key="fk_avm_vr_store">
-		</many-to-one>
 		<many-to-one name="root" class="DirectoryNodeImpl"
 			column="root_id" not-null="true" foreign-key="fk_avm_vr_root">
 		</many-to-one>

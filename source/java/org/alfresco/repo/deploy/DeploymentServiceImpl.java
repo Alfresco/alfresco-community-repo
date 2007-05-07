@@ -608,8 +608,13 @@ public class DeploymentServiceImpl implements DeploymentService
             callback.eventOccurred(event);
         }
         report.add(event);
+        String storeName = srcPath.substring(0, srcPath.indexOf(':'));
+        System.out.println(storeName);
+        if (version < 0)
+        {
+            version = fAVMService.createSnapshot(storeName, null, null);
+        }
         String ticket = service.begin(target, userName, password);
-        
         deployDirectoryPush(service, ticket, report, callback, version, srcPath, "/");
         service.commit(ticket);
         event = new DeploymentEvent(DeploymentEvent.Type.END,
@@ -683,8 +688,7 @@ public class DeploymentServiceImpl implements DeploymentService
             }
             if (diff == 0)
             {
-                if (src.isFile() && dst.getType() == FileType.FILE &&
-                    src.getGuid().equals(dst.getGUID()))
+                if (src.getGuid().equals(dst.getGUID()))
                 {
                     src = null;
                     dst = null;
@@ -701,6 +705,10 @@ public class DeploymentServiceImpl implements DeploymentService
                 // Source is a directory.
                 if (dst.getType() == FileType.DIR)
                 {
+                    if (!dstPath.equals("/"))
+                    {
+                        service.setGuid(ticket, dstPath, src.getGuid());
+                    }
                     deployDirectoryPush(service, ticket, report, callback, version, src.getPath(), dstPath + '/' + dst.getName());
                     src = null;
                     dst = null;

@@ -171,7 +171,7 @@ a.webformLink:link, a.webformLink:visited, a.webformLink:hover
    width: 700px;
    padding: 8px;
    border: 1px solid #F8FCFD;
-   background-image: url(../images/parts/doclist_footerbg.png);
+   background-image: url(${url.context}/images/parts/doclist_footerbg.png);
    text-align: center;
    color: #515D6B;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;

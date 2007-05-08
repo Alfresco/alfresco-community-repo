@@ -27,11 +27,11 @@
    <td align=center height=40 style="border-left: 1px solid #EBE398;">
       <table border=0 cellspacing=8 cellpadding=0>
          <tr>
-            <th><a class="filterLink <#if filter=0>filterLinkSelected</#if>" href="${scripturl("?f=0")}">Tasks to do</a></th>
-            <th><a class="filterLink <#if filter=1>filterLinkSelected</#if>" href="${scripturl("?f=1")}">Due Today</a></th>
-            <th><a class="filterLink <#if filter=2>filterLinkSelected</#if>" href="${scripturl("?f=2")}">Next 7 days</a></th>
-            <th><a class="filterLink <#if filter=3>filterLinkSelected</#if>" href="${scripturl("?f=3")}">No due date</a></th>
-            <th><a class="filterLink <#if filter=4>filterLinkSelected</#if>" href="${scripturl("?f=4")}">Overdue</a></th>
+            <th><a class="taskfilterLink <#if filter=0>taskfilterLinkSelected</#if>" href="${scripturl("?f=0")}">Tasks to do</a></th>
+            <th><a class="taskfilterLink <#if filter=1>taskfilterLinkSelected</#if>" href="${scripturl("?f=1")}">Due Today</a></th>
+            <th><a class="taskfilterLink <#if filter=2>taskfilterLinkSelected</#if>" href="${scripturl("?f=2")}">Next 7 days</a></th>
+            <th><a class="taskfilterLink <#if filter=3>taskfilterLinkSelected</#if>" href="${scripturl("?f=3")}">No due date</a></th>
+            <th><a class="taskfilterLink <#if filter=4>taskfilterLinkSelected</#if>" href="${scripturl("?f=4")}">Overdue</a></th>
          </tr>
       </table>
    </td>
@@ -127,7 +127,7 @@
 <#if args.m?exists><script>window.addEvent('load', MyTasks.displayMessage("${args.m}"));</script></#if>
 
 <STYLE type="text/css">
-a.filterLink:link, a.filterLink:visited
+a.taskfilterLink:link, a.taskfilterLink:visited
 {
    color: #5A5741;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
@@ -138,13 +138,13 @@ a.filterLink:link, a.filterLink:visited
    padding-right: 4px;
 }
 
-a.filterLink:hover
+a.taskfilterLink:hover
 {
    color: #FFFFFF;
    background-color: #FDB64F;
 }
 
-a.filterLinkSelected:link, a.filterLinkSelected:visited
+a.taskfilterLinkSelected:link, a.taskfilterLinkSelected:visited
 {
    color: #FFFFFF;
    background-color: #FDB64F;
@@ -155,7 +155,7 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    background-color: #FEF8BC;
    border-top: 1px solid #EBE398;
    border-left: 1px solid #EBE398;
-   background-image: url(../images/logo/alf_task_bg.png);
+   background-image: url(${url.context}/images/logo/alf_task_bg.png);
    background-repeat: no-repeat;
    background-position: 72 64;
 }
@@ -312,22 +312,22 @@ a.taskAction:hover
 
 .paperEdgeRight
 {
-   background-image: url(../images/parts/paper_rightedge.png);
+   background-image: url(${url.context}/images/parts/paper_rightedge.png);
 }
 
 .paperLeftCorner
 {
-   background-image: url(../images/parts/paper_leftcorner.png);
+   background-image: url(${url.context}/images/parts/paper_leftcorner.png);
 }
 
 .paperBottomEdge
 {
-   background-image: url(../images/parts/paper_bottomedge.png);
+   background-image: url(${url.context}/images/parts/paper_bottomedge.png);
 }
 
 .paperRightCorner
 {
    background-color: white;
-   background-image: url(../images/parts/paper_rightcorner.gif);
+   background-image: url(${url.context}/images/parts/paper_rightcorner.gif);
 }
 </STYLE>

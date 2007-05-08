@@ -41,11 +41,11 @@
    <td align=center height=40>
       <table border=0 cellspacing=8 cellpadding=0>
          <tr>
-            <th><a class="filterLink <#if filter=0>filterLinkSelected</#if>" href="${scripturl("?f=0&p=${path}")}">All Items</a></th>
-            <th><a class="filterLink <#if filter=1>filterLinkSelected</#if>" href="${scripturl("?f=1&p=${path}")}">Word Documents</a></th>
-            <th><a class="filterLink <#if filter=2>filterLinkSelected</#if>" href="${scripturl("?f=2&p=${path}")}">HTML Documents</a></th>
-            <th><a class="filterLink <#if filter=3>filterLinkSelected</#if>" href="${scripturl("?f=3&p=${path}")}">PDF Documents</a></th>
-            <th><a class="filterLink <#if filter=4>filterLinkSelected</#if>" href="${scripturl("?f=4&p=${path}")}">Recently Modified</a></th>
+            <th><a class="docfilterLink <#if filter=0>docfilterLinkSelected</#if>" href="${scripturl("?f=0&p=${path}")}">All Items</a></th>
+            <th><a class="docfilterLink <#if filter=1>docfilterLinkSelected</#if>" href="${scripturl("?f=1&p=${path}")}">Word Documents</a></th>
+            <th><a class="docfilterLink <#if filter=2>docfilterLinkSelected</#if>" href="${scripturl("?f=2&p=${path}")}">HTML Documents</a></th>
+            <th><a class="docfilterLink <#if filter=3>docfilterLinkSelected</#if>" href="${scripturl("?f=3&p=${path}")}">PDF Documents</a></th>
+            <th><a class="docfilterLink <#if filter=4>docfilterLinkSelected</#if>" href="${scripturl("?f=4&p=${path}")}">Recently Modified</a></th>
          </tr>
       </table>
    </td>
@@ -109,7 +109,7 @@
 </table>
 
 <STYLE type="text/css">
-a.filterLink:link, a.filterLink:visited
+a.docfilterLink:link, a.docfilterLink:visited
 {
    color: #8EA1B3;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
@@ -120,13 +120,13 @@ a.filterLink:link, a.filterLink:visited
    padding-right: 4px;
 }
 
-a.filterLink:hover
+a.docfilterLink:hover
 {
    color: #168ECE;
    background-color: #EEF7FB;
 }
 
-a.filterLinkSelected:link, a.filterLinkSelected:visited
+a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
 {
    color: #168ECE;
    background-color: #EEF7FB;
@@ -167,7 +167,7 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    width: 700px;
    padding: 8px;
    border: 1px solid #F8FCFD;
-   background-image: url(../images/parts/doclist_footerbg.png);
+   background-image: url(${url.context}/images/parts/doclist_footerbg.png);
    text-align: center;
    color: #515D6B;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
@@ -239,7 +239,7 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
    font-weight: bolder;
 }
 
-.docMetaPreview
+.docMetapreview
 {
    color: #515D6B;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
@@ -269,33 +269,33 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
 
 .docActionCheckout
 {
-   background-image: url(../images/icons/doclist_action_checkout.png);
+   background-image: url(${url.context}/images/icons/doclist_action_checkout.png);
    border-bottom: none;
    border-right: none;
 }
 
 .docActionEditDetails
 {
-   background-image: url(../images/icons/doclist_action_edit.png);
+   background-image: url(${url.context}/images/icons/doclist_action_edit.png);
    border-bottom: none;
 }
 
 .docActionUpdate
 {
-   background-image: url(../images/icons/doclist_action_update.png);
+   background-image: url(${url.context}/images/icons/doclist_action_update.png);
    border-bottom: none;
    border-right: none;
 }
 
 .docActionViewContent
 {
-   background-image: url(../images/icons/doclist_action_view.png);
+   background-image: url(${url.context}/images/icons/doclist_action_view.png);
    border-bottom: none;
 }
 
 .docActionDelete
 {
-   background-image: url(../images/icons/doclist_action_delete.png);
+   background-image: url(${url.context}/images/icons/doclist_action_delete.png);
    border-right: none;
 }
 
@@ -307,7 +307,7 @@ a.filterLinkSelected:link, a.filterLinkSelected:visited
 
 .docListAjaxWait
 {
-   background-image: url(../images/icons/ajax_anim.gif);
+   background-image: url(${url.context}/images/icons/ajax_anim.gif);
    background-position: center;
    background-repeat: no-repeat;
    width: 696px;

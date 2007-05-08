@@ -50,7 +50,7 @@
         
         <init-param>
            <name>scriptUrl</name>
-           <value>/alfresco/service/doclist?p=/Company Home/Guest Home</value>
+           <value>/alfresco/service/doclist</value>
         </init-param>
 
         <supports>

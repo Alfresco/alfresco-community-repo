@@ -36,7 +36,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.*;
@@ -79,12 +79,12 @@ public class FormInstanceDataImpl
 
    public String getWebappRelativePath()
    {
-      return AVMConstants.getWebappRelativePath(this.getPath());
+      return AVMUtil.getWebappRelativePath(this.getPath());
    }
 
    public String getSandboxRelativePath()
    {
-      return AVMConstants.getSandboxRelativePath(this.getPath());
+      return AVMUtil.getSandboxRelativePath(this.getPath());
    }
 
    public String getPath()
@@ -116,7 +116,7 @@ public class FormInstanceDataImpl
 
    public String getUrl()
    {
-      return AVMConstants.buildAssetUrl(this.getPath());
+      return AVMUtil.buildAssetUrl(this.getPath());
    }
 
    public List<Rendition> getRenditions()
@@ -127,7 +127,7 @@ public class FormInstanceDataImpl
       final Collection<Serializable> renditionPaths = (pv == null 
                                                        ? Collections.EMPTY_LIST
                                                        : pv.getCollection(DataTypeDefinition.TEXT));
-      final String storeName = AVMConstants.getStoreName(this.getPath());
+      final String storeName = AVMUtil.getStoreName(this.getPath());
       final List<Rendition> result = new ArrayList<Rendition>(renditionPaths.size());
       for (Serializable path : renditionPaths)
       {

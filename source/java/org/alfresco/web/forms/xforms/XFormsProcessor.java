@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.bean.wcm.AVMBrowseBean;
-import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.forms.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -173,7 +173,7 @@ public class XFormsProcessor
          append(JavaScriptUtils.javaScriptEscape(avmBrowseBean.getWebapp())).
          append("';\n");
       js.append("alfresco.constants.AVM_WEBAPP_URL = '").
-         append(JavaScriptUtils.javaScriptEscape(AVMConstants.buildWebappUrl(AVMConstants.getCorrespondingPreviewStoreName(avmBrowseBean.getSandbox()), 
+         append(JavaScriptUtils.javaScriptEscape(AVMUtil.buildWebappUrl(AVMUtil.getCorrespondingPreviewStoreName(avmBrowseBean.getSandbox()), 
                                                                              avmBrowseBean.getWebapp()))).
          append("';\n");
       js.append("alfresco.xforms.constants.XFORMS_UI_DIV_ID = '").

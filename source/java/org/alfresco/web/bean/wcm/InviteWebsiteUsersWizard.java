@@ -125,7 +125,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
                {
                   foundCurrentUser = true;
                }
-               if (AVMConstants.ROLE_CONTENT_MANAGER.equals(userRole.getRole()))
+               if (AVMUtil.ROLE_CONTENT_MANAGER.equals(userRole.getRole()))
                {
                   this.managers.add(userAuth);
                }
@@ -134,7 +134,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
          
          if (foundCurrentUser == false)
          {
-            this.userGroupRoles.add(new UserGroupRole(currentUser, AVMConstants.ROLE_CONTENT_MANAGER, null));
+            this.userGroupRoles.add(new UserGroupRole(currentUser, AVMUtil.ROLE_CONTENT_MANAGER, null));
             this.managers.add(currentUser);
          }
       }
@@ -146,7 +146,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
          {
             for (String userAuth : findNestedUserAuthorities(userRole.getAuthority()))
             {
-               if (AVMConstants.ROLE_CONTENT_MANAGER.equals(userRole.getRole()))
+               if (AVMUtil.ROLE_CONTENT_MANAGER.equals(userRole.getRole()))
                {
                   this.managers.add(userAuth);
                }
@@ -161,7 +161,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
             String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
             String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
             
-            if (AVMConstants.ROLE_CONTENT_MANAGER.equals(userrole) &&
+            if (AVMUtil.ROLE_CONTENT_MANAGER.equals(userrole) &&
                 this.managers.contains(username) == false)
             {
                this.managers.add(username);
@@ -201,7 +201,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
                
                // if this new user is a manager, we'll need to update the manager permissions applied
                // to each existing user sandbox - to ensure that new managers have access to them
-               managersUpdateRequired |= (AVMConstants.ROLE_CONTENT_MANAGER.equals(userRole.getRole()));
+               managersUpdateRequired |= (AVMUtil.ROLE_CONTENT_MANAGER.equals(userRole.getRole()));
             }
          }
       }
@@ -238,13 +238,13 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
       {
          for (SandboxInfo sandboxInfo : this.sandboxInfoList)
          {
-            String newlyInvitedStoreName = AVMConstants.buildStagingStoreName(
+            String newlyInvitedStoreName = AVMUtil.buildStagingStoreName(
                   sandboxInfo.getMainStoreName());
             
-            String path = AVMConstants.buildStoreWebappPath(
+            String path = AVMUtil.buildStoreWebappPath(
                      newlyInvitedStoreName, this.avmBrowseBean.getWebapp());
             
-            AVMConstants.updateVServerWebapp(path, true);
+            AVMUtil.updateVServerWebapp(path, true);
          }
       }
       return outcome;
@@ -314,7 +314,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
       if (isStandalone() == false && foundCurrentUser == false)
       {
          buf.append(buildLabelForUserAuthorityRole(
-               currentUser, AVMConstants.ROLE_CONTENT_MANAGER));
+               currentUser, AVMUtil.ROLE_CONTENT_MANAGER));
       }
       
       return buildSummary(

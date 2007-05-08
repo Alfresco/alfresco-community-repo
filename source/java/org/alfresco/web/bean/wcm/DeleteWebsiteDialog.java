@@ -93,9 +93,9 @@ public class DeleteWebsiteDialog extends DeleteSpaceDialog
       //     It does not matter what webapp name we give here, so "/ROOT"
       //     is as sensible as anything else.  It's all going away.
 
-      String sandbox = AVMConstants.buildStagingStoreName(storeRoot);
-      String path    =  AVMConstants.buildStoreWebappPath(sandbox, "/ROOT");
-      AVMConstants.removeVServerWebapp(path, true);
+      String sandbox = AVMUtil.buildStagingStoreName(storeRoot);
+      String path    =  AVMUtil.buildStoreWebappPath(sandbox, "/ROOT");
+      AVMUtil.removeVServerWebapp(path, true);
 
       
       // get the list of users who have a sandbox in the website
@@ -106,15 +106,15 @@ public class DeleteWebsiteDialog extends DeleteSpaceDialog
          String username = (String)nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_WEBUSERNAME);
          
          // delete the preview store for this user
-         deleteStore(AVMConstants.buildUserPreviewStoreName(storeRoot, username));
+         deleteStore(AVMUtil.buildUserPreviewStoreName(storeRoot, username));
          
          // delete the main store for this user
-         deleteStore(AVMConstants.buildUserMainStoreName(storeRoot, username));
+         deleteStore(AVMUtil.buildUserMainStoreName(storeRoot, username));
       }
       
       // remove the main staging and preview stores
-      deleteStore(AVMConstants.buildStagingPreviewStoreName(storeRoot));
-      deleteStore(AVMConstants.buildStagingStoreName(storeRoot));
+      deleteStore(AVMUtil.buildStagingPreviewStoreName(storeRoot));
+      deleteStore(AVMUtil.buildStagingStoreName(storeRoot));
       
       // use the super implementation to delete the node itself
       return super.finishImpl(context, outcome);

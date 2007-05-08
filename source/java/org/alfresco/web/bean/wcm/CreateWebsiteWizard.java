@@ -53,6 +53,7 @@ import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.DNSNameMangler;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -178,7 +179,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       
       // apply the uifacets aspect - icon, title and description props
       Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(4);
-      uiFacetsProps.put(ApplicationModel.PROP_ICON, AVMConstants.SPACE_ICON_WEBSITE);
+      uiFacetsProps.put(ApplicationModel.PROP_ICON, AVMUtil.SPACE_ICON_WEBSITE);
       uiFacetsProps.put(ContentModel.PROP_TITLE, this.title);
       uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, this.description);
       this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
@@ -204,8 +205,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
          this.sandboxInfo =  SandboxFactory.createStagingSandbox(avmStore, nodeRef);
          
          // create the default webapp folder under the hidden system folders
-         final String stagingStore = AVMConstants.buildStagingStoreName(avmStore);
-         final String stagingStoreRoot = AVMConstants.buildSandboxRootPath(stagingStore);
+         final String stagingStore = AVMUtil.buildStagingStoreName(avmStore);
+         final String stagingStoreRoot = AVMUtil.buildSandboxRootPath(stagingStore);
          this.avmService.createDirectory(stagingStoreRoot, webapp);
          this.avmService.addAspect(AVMNodeConverter.ExtendAVMPath(stagingStoreRoot, webapp),
                                    WCMAppModel.ASPECT_WEBAPP);
@@ -234,11 +235,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
       {
          // update the virtualisation server with the default ROOT webapp path
          // performed after the main txn has committed successfully
-         String newStoreName = AVMConstants.buildStagingStoreName(sandboxInfo.getMainStoreName());
+         String newStoreName = AVMUtil.buildStagingStoreName(sandboxInfo.getMainStoreName());
          
-         String path = AVMConstants.buildStoreWebappPath(newStoreName, WEBAPP_DEFAULT);
+         String path = AVMUtil.buildStoreWebappPath(newStoreName, WEBAPP_DEFAULT);
          
-         AVMConstants.updateVServerWebapp(path, true);
+         AVMUtil.updateVServerWebapp(path, true);
       }
       return outcome;
    }
@@ -497,7 +498,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    {
       String pattern = Application.getMessage(FacesContext.getCurrentInstance(), 
                "deploy_to_help");
-      String defaultPort = Integer.toString(AVMConstants.getRemoteRMIRegistryPort());
+      String defaultPort = Integer.toString(AVMUtil.getRemoteRMIRegistryPort());
       return MessageFormat.format(pattern, new Object[] {defaultPort});
    }
    
@@ -527,7 +528,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       if (foundCurrentUser == false)
       {
          buf.append(getInviteUsersWizard().buildLabelForUserAuthorityRole(
-               currentUser, AVMConstants.ROLE_CONTENT_MANAGER));
+               currentUser, AVMUtil.ROLE_CONTENT_MANAGER));
       }
       
       return buildSummary(
@@ -557,7 +558,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
       if (foundCurrentUser == false)
       {
-         result.add(new UserWrapper(currentUser, AVMConstants.ROLE_CONTENT_MANAGER));
+         result.add(new UserWrapper(currentUser, AVMUtil.ROLE_CONTENT_MANAGER));
       }
       return result;      
    }

@@ -74,7 +74,7 @@ public class DeploySnapshotDialog extends BaseDialogBean
       this.versionToDeploy = Integer.parseInt(parameters.get("version"));
       this.avmBrowseBean.getDeploymentMonitorIds().clear();
       this.webProjectRef = this.avmBrowseBean.getWebsite().getNodeRef();
-      String stagingStore = AVMConstants.buildSandboxRootPath(this.avmBrowseBean.getStagingStore());
+      String stagingStore = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getStagingStore());
       this.websiteRef = AVMNodeConverter.ToNodeRef(this.versionToDeploy, stagingStore);
       
       if (logger.isDebugEnabled())
@@ -152,14 +152,14 @@ public class DeploySnapshotDialog extends BaseDialogBean
                args.put(AVMDeploySnapshotAction.PARAM_WEBSITE, webProjectRef);
                args.put(AVMDeploySnapshotAction.PARAM_TARGET_SERVER, targetServer);
                args.put(AVMDeploySnapshotAction.PARAM_DEFAULT_RMI_PORT, 
-                        AVMConstants.getRemoteRMIRegistryPort());
+                        AVMUtil.getRemoteRMIRegistryPort());
                args.put(AVMDeploySnapshotAction.PARAM_REMOTE_USERNAME, 
-                        AVMConstants.getRemoteDeploymentUsername());
+                        AVMUtil.getRemoteDeploymentUsername());
                args.put(AVMDeploySnapshotAction.PARAM_REMOTE_PASSWORD, 
-                        AVMConstants.getRemoteDeploymentPassword());
+                        AVMUtil.getRemoteDeploymentPassword());
                args.put(AVMDeploySnapshotAction.PARAM_CALLBACK, monitor);
                args.put(AVMDeploySnapshotAction.PARAM_DELAY,
-                        AVMConstants.getRemoteDeploymentDelay());
+                        AVMUtil.getRemoteDeploymentDelay());
                Action action = this.actionService.createAction(AVMDeploySnapshotAction.NAME, args);
                this.actionService.executeAction(action, this.websiteRef, false, true);
             }

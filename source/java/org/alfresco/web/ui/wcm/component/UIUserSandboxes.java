@@ -62,7 +62,7 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
-import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.bean.wcm.WebProject;
 import org.alfresco.web.config.ClientConfigElement;
@@ -325,7 +325,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
             this.rowToUserLookup.put(username, index);
             
             // build the name of the main store for this user
-            String mainStore = AVMConstants.buildUserMainStoreName(storeRoot, username);
+            String mainStore = AVMUtil.buildUserMainStoreName(storeRoot, username);
             
             // check it exists before we render the view
             if (avmService.getStore(mainStore) != null)
@@ -334,8 +334,8 @@ public class UIUserSandboxes extends SelfRenderingComponent
                if (logger.isDebugEnabled())
                      logger.debug("Checking user role to view store: " + mainStore);
                if (currentUserName.equals(username) ||
-                   AVMConstants.ROLE_CONTENT_MANAGER.equals(currentUserRole) ||
-                   AVMConstants.ROLE_CONTENT_PUBLISHER.equals(currentUserRole))
+                   AVMUtil.ROLE_CONTENT_MANAGER.equals(currentUserRole) ||
+                   AVMUtil.ROLE_CONTENT_PUBLISHER.equals(currentUserRole))
                {
                   if (logger.isDebugEnabled())
                      logger.debug("Building sandbox view for user store: " + mainStore);
@@ -381,7 +381,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write("&nbsp;&nbsp;");
                   
                   // Preview Website
-                  String websiteUrl = AVMConstants.buildWebappUrl(mainStore, getWebapp());
+                  String websiteUrl = AVMUtil.buildWebappUrl(mainStore, getWebapp());
                   Map requestMap = context.getExternalContext().getRequestMap();
                   requestMap.put(REQUEST_PREVIEW_REF, websiteUrl);
                   Utils.encodeRecursive(context, aquireAction(
@@ -410,7 +410,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write("&nbsp;&nbsp;");
                   
                   // Delete Sandbox
-                  if (AVMConstants.ROLE_CONTENT_MANAGER.equals(currentUserRole))
+                  if (AVMUtil.ROLE_CONTENT_MANAGER.equals(currentUserRole))
                   {
                      Utils.encodeRecursive(context, aquireAction(
                            context, mainStore, username, ACT_REMOVE_SANDBOX, "/images/icons/delete_sandbox.gif",
@@ -442,7 +442,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   
                   // content forms panel
                   if (permissionService.hasPermission(
-                       AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildSandboxRootPath(mainStore)),
+                       AVMNodeConverter.ToNodeRef(-1, AVMUtil.buildSandboxRootPath(mainStore)),
                        PermissionService.ADD_CHILDREN) == AccessStatus.ALLOWED)
                   {
                       out.write("<tr style='padding-top:4px'><td></td><td colspan=2>");
@@ -545,7 +545,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
       if (currentUser.isAdmin())
       {
          // fake the Content Manager role for an admin user
-         userrole = AVMConstants.ROLE_CONTENT_MANAGER;
+         userrole = AVMUtil.ROLE_CONTENT_MANAGER;
       }
       else
       {
@@ -588,10 +588,10 @@ public class UIUserSandboxes extends SelfRenderingComponent
       ResourceBundle bundle = Application.getBundle(fc);
       
       // build the paths to the stores to compare - filter by current webapp
-      String userStore = AVMConstants.buildUserMainStoreName(storeRoot, username);
-      String userStorePath = AVMConstants.buildStoreWebappPath(userStore, getWebapp());
-      String stagingStore = AVMConstants.buildStagingStoreName(storeRoot);
-      String stagingStorePath = AVMConstants.buildStoreWebappPath(stagingStore, getWebapp());
+      String userStore = AVMUtil.buildUserMainStoreName(storeRoot, username);
+      String userStorePath = AVMUtil.buildStoreWebappPath(userStore, getWebapp());
+      String stagingStore = AVMUtil.buildStagingStoreName(storeRoot);
+      String stagingStorePath = AVMUtil.buildStoreWebappPath(stagingStore, getWebapp());
       
       // use the sync service to get the list of diffs between the stores
       NameMatcher matcher = (NameMatcher)FacesContextUtils.getRequiredWebApplicationContext(fc).getBean(
@@ -600,8 +600,8 @@ public class UIUserSandboxes extends SelfRenderingComponent
       if (diffs.size() != 0)
       {
          // info we need to calculate preview paths for assets
-         String dns = AVMConstants.lookupStoreDNS(userStore);
-         int rootPathIndex = AVMConstants.buildSandboxRootPath(userStore).length();
+         String dns = AVMUtil.lookupStoreDNS(userStore);
+         int rootPathIndex = AVMUtil.buildSandboxRootPath(userStore).length();
          ClientConfigElement config = Application.getClientConfig(fc);
          
          // get the UIActions component responsible for rendering context related user actions
@@ -624,7 +624,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
          out.write("<tr><td colspan=8>");
          out.write(bundle.getString(MSG_SELECTED));
          out.write(":&nbsp;&nbsp;");
-         NodeRef userStoreRef = AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildSandboxRootPath(userStore));
+         NodeRef userStoreRef = AVMNodeConverter.ToNodeRef(-1, AVMUtil.buildSandboxRootPath(userStore));
          if (permissionService.hasPermission(userStoreRef, PermissionService.WRITE) == AccessStatus.ALLOWED ||
              permissionService.hasPermission(userStoreRef, PermissionService.ADD_CHILDREN) == AccessStatus.ALLOWED)
          {
@@ -729,7 +729,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                // build node context required for actions
                AVMNode avmNode = new AVMNode(node);
                String assetPath = sourcePath.substring(rootPathIndex);
-               String previewUrl = AVMConstants.buildAssetUrl(
+               String previewUrl = AVMUtil.buildAssetUrl(
                      assetPath, config.getWCMDomain(), config.getWCMPort(), dns);
                avmNode.getProperties().put("previewUrl", previewUrl);
                
@@ -820,7 +820,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    {
       NodeService nodeService = getNodeService(fc);
       Map requestMap = fc.getExternalContext().getRequestMap();
-      String userStorePrefix = AVMConstants.buildUserMainStoreName(storeRoot, username);
+      String userStorePrefix = AVMUtil.buildUserMainStoreName(storeRoot, username);
       
       // only need to collect the list of forms once per render
       // TODO: execute permission evaluations on a per user basis against each form?

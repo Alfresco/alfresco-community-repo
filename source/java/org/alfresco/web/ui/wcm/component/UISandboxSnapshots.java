@@ -50,7 +50,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.ConstantMethodBinding;
 import org.alfresco.web.ui.common.Utils;
@@ -227,7 +227,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
          
          // determine whether the deploy action should be shown
          boolean showDeployAction = false;
-         NodeRef webProjectRef = AVMConstants.getWebProjectNodeFromStore(sandbox);
+         NodeRef webProjectRef = AVMUtil.getWebProjectNodeFromStore(sandbox);
          NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
          List<String> deployToServers = (List<String>)nodeService.getProperty(webProjectRef, 
                WCMAppModel.PROP_DEPLOYTO);

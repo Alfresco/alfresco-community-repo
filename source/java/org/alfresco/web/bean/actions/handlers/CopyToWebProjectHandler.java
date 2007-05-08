@@ -37,7 +37,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.WebProject;
 import org.alfresco.web.bean.wizard.IWizardBean;
 
@@ -64,10 +64,10 @@ public class CopyToWebProjectHandler extends BaseActionHandler
       if (destNodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_WORKSPACE))
       {
          WebProject webProject = new WebProject(destNodeRef);
-         String storeName = AVMConstants.buildUserMainStoreName(webProject.getStoreId(), 
+         String storeName = AVMUtil.buildUserMainStoreName(webProject.getStoreId(), 
                   Application.getCurrentUser(FacesContext.getCurrentInstance()).getUserName());
          
-         String rootPath = AVMConstants.buildStoreWebappPath(storeName, AVMConstants.DIR_ROOT);
+         String rootPath = AVMUtil.buildStoreWebappPath(storeName, AVMUtil.DIR_ROOT);
          destNodeRef = AVMNodeConverter.ToNodeRef(-1, rootPath);
       }
       
@@ -95,10 +95,10 @@ public class CopyToWebProjectHandler extends BaseActionHandler
          // get the destination path
          Pair<Integer, String> avmNode = AVMNodeConverter.ToAVMVersionPath(dest);
          String avmPath = avmNode.getSecond();
-         folder = avmPath.substring(avmPath.indexOf(AVMConstants.DIR_ROOT)+4);
+         folder = avmPath.substring(avmPath.indexOf(AVMUtil.DIR_ROOT)+4);
          
          // get the destination web project name
-         NodeRef webProjectNode = AVMConstants.getWebProjectNodeFromPath(avmPath);
+         NodeRef webProjectNode = AVMUtil.getWebProjectNodeFromPath(avmPath);
          webProject = Repository.getNameForNode(
                   Repository.getServiceRegistry(context).getNodeService(), webProjectNode);
       }

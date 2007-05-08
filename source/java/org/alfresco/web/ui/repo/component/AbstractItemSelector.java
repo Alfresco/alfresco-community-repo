@@ -49,7 +49,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.WebResources;
 import org.springframework.web.jsf.FacesContextUtils;
@@ -382,7 +382,7 @@ public abstract class AbstractItemSelector extends UIInput
                      {
                         Pair<Integer, String> avmNode = AVMNodeConverter.ToAVMVersionPath(value);
                         String avmPath = avmNode.getSecond();
-                        label = avmPath.substring(avmPath.indexOf(AVMConstants.DIR_ROOT)+4);
+                        label = avmPath.substring(avmPath.indexOf(AVMUtil.DIR_ROOT)+4);
                      }
                      else
                      {

@@ -173,11 +173,11 @@ public class WebProject
 
    public WebProject(final String avmPath)
    {
-      String stagingStore = AVMConstants.buildStagingStoreName(AVMConstants.getStoreId(AVMConstants.getStoreName(avmPath)));
+      String stagingStore = AVMUtil.buildStagingStoreName(AVMUtil.getStoreId(AVMUtil.getStoreName(avmPath)));
       final AVMService avmService = this.getServiceRegistry().getAVMService();
       this.nodeRef = (NodeRef)
          avmService.getStoreProperty(stagingStore, 
-                                     AVMConstants.PROP_WEB_PROJECT_NODE_REF).getValue(DataTypeDefinition.NODE_REF);
+                                     AVMUtil.PROP_WEB_PROJECT_NODE_REF).getValue(DataTypeDefinition.NODE_REF);
    }
 
    /**
@@ -211,7 +211,7 @@ public class WebProject
     */
    public String getStagingStore()
    {
-      return AVMConstants.buildStagingStoreName(this.getStoreId());
+      return AVMUtil.buildStagingStoreName(this.getStoreId());
    }
 
    /**
@@ -269,7 +269,7 @@ public class WebProject
          final NodeRef userInfoRef = ref.getChildRef();
          final String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
          final String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
-         if (currentUser.equals(username) && AVMConstants.ROLE_CONTENT_MANAGER.equals(userrole))
+         if (currentUser.equals(username) && AVMUtil.ROLE_CONTENT_MANAGER.equals(userrole))
          {
             return true;
          }

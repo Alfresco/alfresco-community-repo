@@ -97,13 +97,13 @@ public class AVMWorkflowUtil extends WorkflowUtil
    {
       // create package paths (layered to user sandbox area as target)
       final String workflowMainStoreName = sandboxInfo.getMainStoreName();
-      final String packagesPath = AVMConstants.buildStoreRootPath(workflowMainStoreName);
+      final String packagesPath = AVMUtil.buildStoreRootPath(workflowMainStoreName);
                     
       final List<AVMDifference> diffs = new ArrayList<AVMDifference>(srcPaths.size());
       for (final String srcPath : srcPaths)
       {
          diffs.add(new AVMDifference(-1, srcPath, 
-                                     -1, AVMConstants.getCorrespondingPath(srcPath, workflowMainStoreName),
+                                     -1, AVMUtil.getCorrespondingPath(srcPath, workflowMainStoreName),
                                      AVMDifference.NEWER));
          avmSubmittedAspect.markSubmitted(-1, srcPath, path.instance.id);
       }

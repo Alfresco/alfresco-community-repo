@@ -306,7 +306,7 @@ public class SubmitDialog extends BaseDialogBean
                      // add submission parameters
                      params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, getComment());
                      params.put(AVMWorkflowUtil.PROP_LABEL, getLabel());
-                     params.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildStoreRootPath(this.avmBrowseBean.getSandbox()));
+                     params.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMUtil.buildStoreRootPath(this.avmBrowseBean.getSandbox()));
                       
                      // update start task with submit parameters
                      this.workflowService.updateTask(startTask.id, params, null, null);
@@ -332,8 +332,8 @@ public class SubmitDialog extends BaseDialogBean
          List<ItemWrapper> items = getSubmitItems();
          
          // construct diffs for selected items for submission
-         String sandboxPath = AVMConstants.buildSandboxRootPath(this.avmBrowseBean.getSandbox());
-         String stagingPath = AVMConstants.buildSandboxRootPath(this.avmBrowseBean.getStagingStore());
+         String sandboxPath = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getSandbox());
+         String stagingPath = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getStagingStore());
          List<AVMDifference> diffs = new ArrayList<AVMDifference>(items.size());
 
          for (ItemWrapper wrapper : items)
@@ -379,7 +379,7 @@ public class SubmitDialog extends BaseDialogBean
          //
          //     mysite:/www/avm_webapps/ROOT/WEB-INF/web.xml
          //     mysite:/www/avm_webapps/ROOT/WEB-INF/lib/moo.jar
-         AVMConstants.updateVServerWebapp(this.virtUpdatePath, true);
+         AVMUtil.updateVServerWebapp(this.virtUpdatePath, true);
       }
       return outcome;
    }
@@ -582,8 +582,8 @@ public class SubmitDialog extends BaseDialogBean
          if (this.avmBrowseBean.getAllItemsAction())
          {
             String webapp = this.avmBrowseBean.getWebapp();
-            String userStore = AVMConstants.buildStoreWebappPath(this.avmBrowseBean.getSandbox(), webapp);
-            String stagingStore = AVMConstants.buildStoreWebappPath(this.avmBrowseBean.getStagingStore(), webapp);
+            String userStore = AVMUtil.buildStoreWebappPath(this.avmBrowseBean.getSandbox(), webapp);
+            String stagingStore = AVMUtil.buildStoreWebappPath(this.avmBrowseBean.getStagingStore(), webapp);
             List<AVMDifference> diffs = this.avmSyncService.compare(-1, userStore, -1, stagingStore, nameMatcher);
             selected = new ArrayList<AVMNodeDescriptor>(diffs.size());
             for (AVMDifference diff : diffs)
@@ -894,8 +894,8 @@ public class SubmitDialog extends BaseDialogBean
       public String getPreviewUrl()
       {
          ClientConfigElement config =  Application.getClientConfig(FacesContext.getCurrentInstance());
-         String dns = AVMConstants.lookupStoreDNS(AVMConstants.getStoreName(descriptor.getPath()));
-         return AVMConstants.buildAssetUrl(AVMConstants.getSandboxRelativePath(descriptor.getPath()),
+         String dns = AVMUtil.lookupStoreDNS(AVMUtil.getStoreName(descriptor.getPath()));
+         return AVMUtil.buildAssetUrl(AVMUtil.getSandboxRelativePath(descriptor.getPath()),
                                            config.getWCMDomain(),
                                            config.getWCMPort(),
                                            dns);

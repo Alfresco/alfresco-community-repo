@@ -49,7 +49,7 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.AVMWorkflowUtil;
 import org.alfresco.web.forms.xforms.XFormsProcessor;
 import org.apache.commons.logging.Log;
@@ -154,7 +154,7 @@ public class FormImpl
       root.put("xml", NodeModel.wrap(formInstanceData));
       root.put("name", formInstanceDataName);
       root.put("date", new SimpleDate(new Date(), SimpleDate.DATETIME));
-      root.put("cwd", AVMConstants.getWebappRelativePath(parentAVMPath));
+      root.put("cwd", AVMUtil.getWebappRelativePath(parentAVMPath));
 
       final TemplateService templateService = this.getServiceRegistry().getTemplateService();
 
@@ -182,9 +182,9 @@ public class FormImpl
                                             ":\n" + te.getMessage(), 
                                             te);
       }
-      result = AVMConstants.buildPath(parentAVMPath, 
+      result = AVMUtil.buildPath(parentAVMPath, 
                                       result,
-                                      AVMConstants.PathRelation.SANDBOX_RELATIVE);
+                                      AVMUtil.PathRelation.SANDBOX_RELATIVE);
       LOGGER.debug("processed pattern " + outputPathPattern + " as " + result);
       return result;
    }

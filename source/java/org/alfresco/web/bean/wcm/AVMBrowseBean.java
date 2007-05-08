@@ -46,6 +46,7 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.actions.AVMRevertStoreAction;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -277,7 +278,7 @@ public class AVMBrowseBean implements IContextListener
          summary.append(msg.getString(MSG_CREATED_BY)).append(": ")
                 .append(store.getCreator())
                 .append("<p>");
-         final int numUsers = this.getRelatedStoreNames(storeId, AVMConstants.PROP_SANDBOX_AUTHOR_MAIN).size();
+         final int numUsers = this.getRelatedStoreNames(storeId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN).size();
          summary.append(MessageFormat.format(msg.getString(MSG_WORKING_USERS), numUsers));
       }
       
@@ -295,7 +296,7 @@ public class AVMBrowseBean implements IContextListener
     */
    private List<String> getRelatedStoreNames(final String storeId, final QName... types)
    {
-      QName qn = QName.createQName(null, AVMConstants.PROP_SANDBOX_STORE_PREFIX + storeId + "%");
+      QName qn = QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + storeId + "%");
       final Map<String, Map<QName, PropertyValue>> relatedSandboxes =
          avmService.queryStoresPropertyKeys(qn);
       final List<String> result = new LinkedList<String>();
@@ -326,7 +327,7 @@ public class AVMBrowseBean implements IContextListener
     */
    public String getStagingPreviewUrl()
    {
-      return AVMConstants.buildWebappUrl(getStagingStore(), getWebapp());
+      return AVMUtil.buildWebappUrl(getStagingStore(), getWebapp());
    }
    
    /**
@@ -334,7 +335,7 @@ public class AVMBrowseBean implements IContextListener
     */
    public String getSandboxPreviewUrl()
    {
-      return AVMConstants.buildWebappUrl(getSandbox(), getWebapp());
+      return AVMUtil.buildWebappUrl(getSandbox(), getWebapp());
    }
    
    /**
@@ -460,7 +461,7 @@ public class AVMBrowseBean implements IContextListener
    {
       if (this.webapps == null)
       {
-         String path = AVMConstants.buildSandboxRootPath(getStagingStore());
+         String path = AVMUtil.buildSandboxRootPath(getStagingStore());
          Map<String, AVMNodeDescriptor> folders = this.avmService.getDirectoryListing(-1, path);
          List<SelectItem> webapps = new ArrayList<SelectItem>(folders.size());
          for (AVMNodeDescriptor node : folders.values())
@@ -597,7 +598,7 @@ public class AVMBrowseBean implements IContextListener
    {
       if (this.currentPath == null)
       {
-         this.currentPath = AVMConstants.buildStoreWebappPath(getSandbox(), getWebapp());
+         this.currentPath = AVMUtil.buildStoreWebappPath(getSandbox(), getWebapp());
       }
       return this.currentPath;
    }
@@ -890,21 +891,21 @@ public class AVMBrowseBean implements IContextListener
       else
       {
          // calculate username and store name from specified path
-         String storeName = AVMConstants.getStoreName(path);
-         final String storeId = AVMConstants.getStoreId(storeName);
-         final String username = AVMConstants.getUserName(storeName);
+         String storeName = AVMUtil.getStoreName(path);
+         final String storeId = AVMUtil.getStoreId(storeName);
+         final String username = AVMUtil.getUserName(storeName);
          if (username == null)
          {
-            storeName = (AVMConstants.isPreviewStore(storeName)
-                         ? AVMConstants.buildStagingPreviewStoreName(storeId)
-                         : AVMConstants.buildStagingStoreName(storeId));
+            storeName = (AVMUtil.isPreviewStore(storeName)
+                         ? AVMUtil.buildStagingPreviewStoreName(storeId)
+                         : AVMUtil.buildStagingStoreName(storeId));
             setupSandboxActionImpl(storeName, null, false);
          }
          else
          {
-            storeName = (AVMConstants.isPreviewStore(storeName)
-                         ? AVMConstants.buildUserPreviewStoreName(storeId, username)
-                         : AVMConstants.buildUserMainStoreName(storeId, username));
+            storeName = (AVMUtil.isPreviewStore(storeName)
+                         ? AVMUtil.buildUserPreviewStoreName(storeId, username)
+                         : AVMUtil.buildUserMainStoreName(storeId, username));
             setupSandboxActionImpl(storeName, username, false);
          }
          
@@ -943,8 +944,8 @@ public class AVMBrowseBean implements IContextListener
       }
       
       // update the specified webapp in the store
-      String webappPath = AVMConstants.buildStoreWebappPath(store, getWebapp());
-      AVMConstants.updateVServerWebapp(webappPath, true);
+      String webappPath = AVMUtil.buildStoreWebappPath(store, getWebapp());
+      AVMUtil.updateVServerWebapp(webappPath, true);
    }
    
    /**
@@ -979,7 +980,7 @@ public class AVMBrowseBean implements IContextListener
 
          if ( VirtServerUtils.requiresUpdateNotification( path ) )
          {
-             AVMConstants.updateVServerWebapp(path, true);
+             AVMUtil.updateVServerWebapp(path, true);
          }
 
          
@@ -1015,7 +1016,7 @@ public class AVMBrowseBean implements IContextListener
             tx = Repository.getUserTransaction(context, false);
             tx.begin();
 
-            String sandboxPath = AVMConstants.buildSandboxRootPath( sandbox );
+            String sandboxPath = AVMUtil.buildSandboxRootPath( sandbox );
 
             List<AVMDifference> diffs = 
                 this.avmSyncService.compare(
@@ -1036,7 +1037,7 @@ public class AVMBrowseBean implements IContextListener
             {
                 if ( VirtServerUtils.requiresUpdateNotification( diff.getSourcePath()) )
                 {
-                    AVMConstants.updateVServerWebapp(diff.getSourcePath() , true);
+                    AVMUtil.updateVServerWebapp(diff.getSourcePath() , true);
                     break;
                 }
             }
@@ -1180,7 +1181,7 @@ public class AVMBrowseBean implements IContextListener
       @Override
       public String toString()
       {
-         if (AVMConstants.buildSandboxRootPath(getSandbox()).equals(path))
+         if (AVMUtil.buildSandboxRootPath(getSandbox()).equals(path))
          {
             // don't display the 'root' webapps path as this will confuse users
             // instead display which sandbox we are in

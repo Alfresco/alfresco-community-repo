@@ -109,8 +109,8 @@ public class RevertAllDialog extends BaseDialogBean
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       String webapp = this.avmBrowseBean.getWebapp();
-      String userStore = AVMConstants.buildStoreWebappPath(this.avmBrowseBean.getSandbox(), webapp);
-      String stagingStore = AVMConstants.buildStoreWebappPath(this.avmBrowseBean.getStagingStore(), webapp);
+      String userStore = AVMUtil.buildStoreWebappPath(this.avmBrowseBean.getSandbox(), webapp);
+      String stagingStore = AVMUtil.buildStoreWebappPath(this.avmBrowseBean.getStagingStore(), webapp);
       
       // calcluate the list of differences between the user store and the staging area
       List<AVMDifference> diffs = this.avmSyncService.compare(
@@ -155,7 +155,7 @@ public class RevertAllDialog extends BaseDialogBean
       // that update_path requires virt server notification.
       if (this.virtUpdatePath != null)
       {
-         AVMConstants.updateVServerWebapp(this.virtUpdatePath, true);
+         AVMUtil.updateVServerWebapp(this.virtUpdatePath, true);
       }
       return outcome;
    }

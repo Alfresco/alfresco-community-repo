@@ -42,7 +42,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.DeploymentMonitor;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
@@ -343,7 +343,7 @@ public class UIDeployWebsite extends UIInput
       }
       
       // determine the polling frequency value
-      int pollFreq = AVMConstants.getRemoteDeploymentPollingFrequency() * 1000;
+      int pollFreq = AVMUtil.getRemoteDeploymentPollingFrequency() * 1000;
 
       // render the script to handle the progress monitoring
       out.write("<script type='text/javascript'>\n");

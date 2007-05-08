@@ -98,8 +98,8 @@ public class DeleteSandboxDialog extends BaseDialogBean
             {
                // found the sandbox to remove
                String storeRoot = (String)website.getProperties().get(WCMAppModel.PROP_AVMSTORE);
-               String sandbox   = AVMConstants.buildUserMainStoreName(storeRoot, username);
-               String path      = AVMConstants.buildStoreWebappPath(sandbox, this.avmBrowseBean.getWebapp());
+               String sandbox   = AVMUtil.buildUserMainStoreName(storeRoot, username);
+               String path      = AVMUtil.buildStoreWebappPath(sandbox, this.avmBrowseBean.getWebapp());
 
                // Notify virtualisation server about removing this sandbox.
                //
@@ -117,7 +117,7 @@ public class DeleteSandboxDialog extends BaseDialogBean
                //     dependent order, so clients don't have to worry about
                //     accessing a preview layer whose main layer has been torn
                //     out from under it.
-               AVMConstants.removeVServerWebapp(path, true);
+               AVMUtil.removeVServerWebapp(path, true);
 
                // TODO: Use the .sandbox-id.  property to delete all sandboxes,
                //       rather than assume a sandbox always had a single preview
@@ -127,7 +127,7 @@ public class DeleteSandboxDialog extends BaseDialogBean
                this.avmService.purgeStore(sandbox);
 
                // purge the user preview sandbox store from the system
-               sandbox = AVMConstants.buildUserPreviewStoreName(storeRoot, username);
+               sandbox = AVMUtil.buildUserPreviewStoreName(storeRoot, username);
                this.avmService.purgeStore(sandbox);
                
                // remove the association to this web project user meta-data

@@ -354,9 +354,9 @@ public class AVMEditBean
       if (this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
       {
          // reset the preview layer
-         String storeName = AVMConstants.getStoreName(avmPath);
-         storeName = AVMConstants.getCorrespondingPreviewStoreName(storeName);
-         final String path = AVMConstants.buildStoreRootPath(storeName);
+         String storeName = AVMUtil.getStoreName(avmPath);
+         storeName = AVMUtil.getCorrespondingPreviewStoreName(storeName);
+         final String path = AVMUtil.buildStoreRootPath(storeName);
 
          if (LOGGER.isDebugEnabled())
              LOGGER.debug("reseting layer " + path);
@@ -407,7 +407,7 @@ public class AVMEditBean
       if (node != null)
       {
          // Possibly notify virt server
-         AVMConstants.updateVServerWebapp(node.getPath(), false);
+         AVMUtil.updateVServerWebapp(node.getPath(), false);
 
          resetState();
          outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
@@ -463,14 +463,14 @@ public class AVMEditBean
             {
                final String path = AVMNodeConverter.ToAVMVersionPath(uploadedFile).getSecond();
                diffList.add(new AVMDifference(-1, path,
-                                              -1, AVMConstants.getCorrespondingPathInMainStore(path),
+                                              -1, AVMUtil.getCorrespondingPathInMainStore(path),
                                               AVMDifference.NEWER));
             }
             this.avmSyncService.update(diffList, null, true, true, true, true, null, null);
          }
             
          // Possibly notify virt server
-         AVMConstants.updateVServerWebapp(avmNode.getPath(), false);
+         AVMUtil.updateVServerWebapp(avmNode.getPath(), false);
          
          resetState();
          
@@ -520,7 +520,7 @@ public class AVMEditBean
                this.regenerateRenditions();
             }
             // Possibly notify virt server
-            AVMConstants.updateVServerWebapp(node.getPath(), false);
+            AVMUtil.updateVServerWebapp(node.getPath(), false);
             
             // clear action context
             resetState();

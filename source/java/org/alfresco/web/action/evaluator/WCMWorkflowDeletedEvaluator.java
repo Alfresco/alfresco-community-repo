@@ -33,7 +33,7 @@ import org.alfresco.util.Pair;
 import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.bean.wcm.AVMUtil;
 
 /**
  * UI Action Evaluator - return true if the node is not part of an in-progress WCM workflow.
@@ -56,7 +56,7 @@ public class WCMWorkflowDeletedEvaluator implements ActionEvaluator
       
       // evaluate to true if we are within a workflow store (i.e. list of resources in the task
       // dialog) or not part of an already in-progress workflow
-      return (AVMConstants.isWorkflowStore(AVMConstants.getStoreName(path)) ||
+      return (AVMUtil.isWorkflowStore(AVMUtil.getStoreName(path)) ||
               avmService.hasAspect(version, path, AVMSubmittedAspect.ASPECT) == false);
    }
 }

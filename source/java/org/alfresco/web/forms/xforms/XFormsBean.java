@@ -49,7 +49,7 @@ import org.alfresco.web.app.servlet.ajax.InvokeCommand;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMBrowseBean;
-import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.forms.*;
 import org.alfresco.web.ui.common.Utils;
@@ -462,10 +462,10 @@ public class XFormsBean
       else
       {
          final String previewStorePath = 
-            AVMConstants.getCorrespondingPathInPreviewStore(this.getCurrentAVMPath());
-         currentPath = AVMConstants.buildPath(previewStorePath,
+            AVMUtil.getCorrespondingPathInPreviewStore(this.getCurrentAVMPath());
+         currentPath = AVMUtil.buildPath(previewStorePath,
                                               currentPath,
-                                              AVMConstants.PathRelation.WEBAPP_RELATIVE);
+                                              AVMUtil.PathRelation.WEBAPP_RELATIVE);
       }
       LOGGER.debug(this + ".getFilePickerData(" + currentPath + ")");
 
@@ -490,7 +490,7 @@ public class XFormsBean
       Element e = result.createElement("current-node");
       e.setAttribute("avmPath", currentPath);
       e.setAttribute("webappRelativePath", 
-                     AVMConstants.getWebappRelativePath(currentPath));
+                     AVMUtil.getWebappRelativePath(currentPath));
       e.setAttribute("type", "directory");
       e.setAttribute("image", "/images/icons/space_small.gif");
       filePickerDataElement.appendChild(e);
@@ -501,7 +501,7 @@ public class XFormsBean
          e = result.createElement("child-node");
          e.setAttribute("avmPath", entry.getValue().getPath());
          e.setAttribute("webappRelativePath", 
-                        AVMConstants.getWebappRelativePath(entry.getValue().getPath()));
+                        AVMUtil.getWebappRelativePath(entry.getValue().getPath()));
          e.setAttribute("type", entry.getValue().isDirectory() ? "directory" : "file");
          e.setAttribute("image", (entry.getValue().isDirectory()
                                   ? "/images/icons/space_small.gif"
@@ -552,10 +552,10 @@ public class XFormsBean
          else if (item.isFormField() && item.getFieldName().equals("currentPath"))
          {
             final String previewStorePath = 
-               AVMConstants.getCorrespondingPathInPreviewStore(this.getCurrentAVMPath());
-            currentPath = AVMConstants.buildPath(previewStorePath,
+               AVMUtil.getCorrespondingPathInPreviewStore(this.getCurrentAVMPath());
+            currentPath = AVMUtil.buildPath(previewStorePath,
                                                  item.getString(),
-                                                 AVMConstants.PathRelation.WEBAPP_RELATIVE);
+                                                 AVMUtil.PathRelation.WEBAPP_RELATIVE);
             LOGGER.debug("currentPath is " + currentPath);
          }
          else
@@ -692,8 +692,8 @@ public class XFormsBean
             }
 
             final String baseURI = (uri.charAt(0) == '/'
-                                    ? AVMConstants.buildStoreUrl(cwdAvmPath)
-                                    : AVMConstants.buildAssetUrl(cwdAvmPath));
+                                    ? AVMUtil.buildStoreUrl(cwdAvmPath)
+                                    : AVMUtil.buildAssetUrl(cwdAvmPath));
             
             LOGGER.debug("rewriting " + uri + " as " + (baseURI + uri));
             includeEl.setAttribute("schemaLocation", baseURI + uri);

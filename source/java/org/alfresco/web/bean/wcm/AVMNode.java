@@ -67,8 +67,8 @@ public class AVMNode extends Node implements Map<String, Object>
             final ClientConfigElement config = 
                Application.getClientConfig(FacesContext.getCurrentInstance());
             final String dns = 
-               AVMConstants.lookupStoreDNS(AVMConstants.getStoreName(node.getPath()));
-            return AVMConstants.buildAssetUrl(AVMConstants.getSandboxRelativePath(node.getPath()),
+               AVMUtil.lookupStoreDNS(AVMUtil.getStoreName(node.getPath()));
+            return AVMUtil.buildAssetUrl(AVMUtil.getSandboxRelativePath(node.getPath()),
                                               config.getWCMDomain(),
                                               config.getWCMPort(),
                                               dns);
@@ -85,7 +85,7 @@ public class AVMNode extends Node implements Map<String, Object>
                return null;
             }
             String s = node.getPath();
-            s = AVMConstants.getSandboxRelativePath(s);
+            s = AVMUtil.getSandboxRelativePath(s);
             final Path result = new Path();
             final String[] parts = s.split("/");
             for (int i = 1; i < parts.length; i++)

@@ -61,7 +61,7 @@ public class FolderDetailsBean extends AVMDetailsBean
     */
    public String getPreviewUrl()
    {
-      return AVMConstants.buildAssetUrl(getAvmNode().getPath());
+      return AVMUtil.buildAssetUrl(getAvmNode().getPath());
    }
 
    /**

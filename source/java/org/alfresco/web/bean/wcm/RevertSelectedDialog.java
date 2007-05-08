@@ -132,7 +132,7 @@ public class RevertSelectedDialog extends BaseDialogBean
       // that update_path requires virt server notification.
       if (this.virtUpdatePath != null)
       {
-         AVMConstants.updateVServerWebapp(this.virtUpdatePath, true);
+         AVMUtil.updateVServerWebapp(this.virtUpdatePath, true);
       }
       return outcome;
    }

@@ -44,7 +44,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.WebProject;
 import org.alfresco.web.ui.repo.WebResources;
 import org.apache.commons.logging.Log;
@@ -79,7 +79,7 @@ public class UIWebProjectFolderSelector extends AbstractItemSelector
       if (this.navigationId != null && this.navigationId.startsWith("-1;"))
       {
          String rootPath = "-1;" + JNDIConstants.DIR_DEFAULT_WWW + ";" + JNDIConstants.DIR_DEFAULT_APPBASE +
-               ";" + AVMConstants.DIR_ROOT;
+               ";" + AVMUtil.DIR_ROOT;
          
          if (this.navigationId.equals(rootPath) == false)
          {
@@ -123,13 +123,13 @@ public class UIWebProjectFolderSelector extends AbstractItemSelector
       {
          // get the root children for the sandbox of the current user
          WebProject webProject = new WebProject(new NodeRef(Repository.getStoreRef(), this.navigationId));
-         this.avmStore = AVMConstants.buildUserMainStoreName(webProject.getStoreId(), 
+         this.avmStore = AVMUtil.buildUserMainStoreName(webProject.getStoreId(), 
                   Application.getCurrentUser(context).getUserName());
          
          if (logger.isDebugEnabled())
             logger.debug("Getting children for store: " + this.avmStore);
             
-         String rootPath = AVMConstants.buildStoreWebappPath(this.avmStore, AVMConstants.DIR_ROOT);
+         String rootPath = AVMUtil.buildStoreWebappPath(this.avmStore, AVMUtil.DIR_ROOT);
          
          if (logger.isDebugEnabled())
             logger.debug("Root path for store: "+ rootPath);
@@ -163,7 +163,7 @@ public class UIWebProjectFolderSelector extends AbstractItemSelector
             // if they have AddChildren there is probably a sandbox but check to make
             // sure as it could have been deleted
             WebProject webProject = new WebProject(node);
-            String storeName = AVMConstants.buildUserMainStoreName(webProject.getStoreId(), 
+            String storeName = AVMUtil.buildUserMainStoreName(webProject.getStoreId(), 
                      currentUserName);
             AVMStoreDescriptor storeDesc = avmService.getStore(storeName);
             if (storeDesc != null)

@@ -212,13 +212,13 @@ public class ImportWebsiteDialog
             
             // After a bulk import it's a good idea to snapshot the store
             this.avmService.createSnapshot(
-                  AVMConstants.getStoreName(rootPath),
+                  AVMUtil.getStoreName(rootPath),
                   "Import of file: " + this.fileName, null);
             
             tx.commit();
 
             // Reload virtualisation server as required
-            AVMConstants.updateVServerWebapp(rootPath, true);
+            AVMUtil.updateVServerWebapp(rootPath, true);
             
             UIContextService.getInstance(context).notifyBeans();
             

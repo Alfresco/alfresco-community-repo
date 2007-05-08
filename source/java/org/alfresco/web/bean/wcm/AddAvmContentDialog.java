@@ -137,7 +137,7 @@ public class AddAvmContentDialog extends AddContentDialog
          logger.debug("Reloading virtualisation server on path: " + this.path);
       }
 
-      AVMConstants.updateVServerWebapp(this.path, false);
+      AVMUtil.updateVServerWebapp(this.path, false);
       
       return outcome;
    }

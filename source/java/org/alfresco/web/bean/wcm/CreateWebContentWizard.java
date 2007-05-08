@@ -200,9 +200,9 @@ public class CreateWebContentWizard extends BaseContentWizard
       }
       
       // reset the preview layer
-      String storeName = AVMConstants.getStoreName(this.avmBrowseBean.getCurrentPath());
-      storeName = AVMConstants.getCorrespondingPreviewStoreName(storeName);
-      final String path = AVMConstants.buildStoreRootPath(storeName);
+      String storeName = AVMUtil.getStoreName(this.avmBrowseBean.getCurrentPath());
+      storeName = AVMUtil.getCorrespondingPreviewStoreName(storeName);
+      final String path = AVMUtil.buildStoreRootPath(storeName);
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("reseting layer " + path);
       this.avmSyncService.resetLayer(path);
@@ -285,13 +285,13 @@ public class CreateWebContentWizard extends BaseContentWizard
       final List<AVMDifference> diffList = 
          new ArrayList<AVMDifference>(1 + this.renditions.size() + uploadedFiles.length);
       diffList.add(new AVMDifference(-1, this.createdPath, 
-                                     -1, AVMConstants.getCorrespondingPathInMainStore(this.createdPath),
+                                     -1, AVMUtil.getCorrespondingPathInMainStore(this.createdPath),
                                      AVMDifference.NEWER));
       for (Rendition rendition : this.renditions)
       {
          final String path = rendition.getPath();
          diffList.add(new AVMDifference(-1, path, 
-                                        -1, AVMConstants.getCorrespondingPathInMainStore(path),
+                                        -1, AVMUtil.getCorrespondingPathInMainStore(path),
                                         AVMDifference.NEWER));
       }
 
@@ -299,7 +299,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       {
          final String path = AVMNodeConverter.ToAVMVersionPath(uploadedFile).getSecond();
          diffList.add(new AVMDifference(-1, path,
-                                        -1, AVMConstants.getCorrespondingPathInMainStore(path),
+                                        -1, AVMUtil.getCorrespondingPathInMainStore(path),
                                         AVMDifference.NEWER));
       }
 
@@ -354,20 +354,20 @@ public class CreateWebContentWizard extends BaseContentWizard
                      // collect diffs for form data instance and all renditions
                      for (Rendition rendition : this.getRenditions())
                      {
-                        srcPaths.add(AVMConstants.getCorrespondingPath(rendition.getPath(), sandboxName));
+                        srcPaths.add(AVMUtil.getCorrespondingPath(rendition.getPath(), sandboxName));
                      }
                      for (NodeRef uploadedFile : uploadedFiles)
                      {
                         final String uploadPath = AVMNodeConverter.ToAVMVersionPath(uploadedFile).getSecond();
-                        srcPaths.add(AVMConstants.getCorrespondingPath(uploadPath, sandboxName));
+                        srcPaths.add(AVMUtil.getCorrespondingPath(uploadPath, sandboxName));
                      }
 
-                     srcPaths.add(AVMConstants.getCorrespondingPath(this.formInstanceData.getPath(), sandboxName));
+                     srcPaths.add(AVMUtil.getCorrespondingPath(this.formInstanceData.getPath(), sandboxName));
                   }
                   else
                   {
                      // diff for txt or html content
-                     srcPaths.add(AVMConstants.getCorrespondingPath(this.createdPath, sandboxName));
+                     srcPaths.add(AVMUtil.getCorrespondingPath(this.createdPath, sandboxName));
                   }
 
                   if (LOGGER.isDebugEnabled())
@@ -399,7 +399,7 @@ public class CreateWebContentWizard extends BaseContentWizard
                                  MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null 
                                  ? this.formInstanceData.getName() 
                                  : this.getFileName());
-                  parameters.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildStoreRootPath(sandboxName));
+                  parameters.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMUtil.buildStoreRootPath(sandboxName));
                     
                   // update start task with submit parameters
                   this.workflowService.updateTask(startTask.id, parameters, null, null);
@@ -424,7 +424,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected String doPostCommitProcessing(final FacesContext facesContext, final String outcome)
    {
       // reset all paths and structures to the main store
-      this.createdPath = AVMConstants.getCorrespondingPathInMainStore(this.createdPath);
+      this.createdPath = AVMUtil.getCorrespondingPathInMainStore(this.createdPath);
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("reset path " + this.createdPath + " to main store");
 
@@ -467,7 +467,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("saving file content to " + fileName);
 
-      final String cwd = AVMConstants.getCorrespondingPathInPreviewStore(this.avmBrowseBean.getCurrentPath());
+      final String cwd = AVMUtil.getCorrespondingPathInPreviewStore(this.avmBrowseBean.getCurrentPath());
       final Form form = (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) 
                          ? this.getForm()
                          : null);
@@ -487,7 +487,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("creating all directories in path " + path);
 
-      AVMConstants.makeAllDirectories(path);
+      AVMUtil.makeAllDirectories(path);
 
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("creating file " + fileName + " in " + path);
@@ -794,7 +794,7 @@ public class CreateWebContentWizard extends BaseContentWizard
     */
    public String getPreviewSandboxUrl()
    {
-      return AVMConstants.buildWebappUrl(AVMConstants.getCorrespondingPreviewStoreName(this.avmBrowseBean.getSandbox()), 
+      return AVMUtil.buildWebappUrl(AVMUtil.getCorrespondingPreviewStoreName(this.avmBrowseBean.getSandbox()), 
                                          this.avmBrowseBean.getWebapp());
    }
    

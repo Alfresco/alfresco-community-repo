@@ -57,7 +57,7 @@ import org.alfresco.service.namespace.*;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -186,9 +186,9 @@ public class RenderingEngineTemplateImpl
       
       final String webappName =
          (avmService.hasAspect(-1,
-                               AVMConstants.getWebappPath(formInstanceDataAVMPath),
+                               AVMUtil.getWebappPath(formInstanceDataAVMPath),
                                WCMAppModel.ASPECT_WEBAPP)
-          ? AVMConstants.getWebapp(formInstanceDataAVMPath)
+          ? AVMUtil.getWebapp(formInstanceDataAVMPath)
           : null);
       root.put("webapp", webappName);
 
@@ -211,7 +211,7 @@ public class RenderingEngineTemplateImpl
       root.put("xml", NodeModel.wrap(formInstanceDataDocument));
       root.put("node", new TemplateNode(((FormInstanceDataImpl)formInstanceData).getNodeRef(), sr, null));
       root.put("date", new SimpleDate(new Date(), SimpleDate.DATETIME));
-      root.put("cwd", AVMConstants.getWebappRelativePath(currentAVMPath));
+      root.put("cwd", AVMUtil.getWebappRelativePath(currentAVMPath));
       final TemplateService templateService = sr.getTemplateService();
       final String outputPathPattern = (FreeMarkerUtil.buildNamespaceDeclaration(formInstanceDataDocument) +
                                         this.getOutputPathPattern());
@@ -232,9 +232,9 @@ public class RenderingEngineTemplateImpl
                                             te);
       }
 
-      result = AVMConstants.buildPath(parentAVMPath, 
+      result = AVMUtil.buildPath(parentAVMPath, 
                                       result,
-                                      AVMConstants.PathRelation.SANDBOX_RELATIVE);
+                                      AVMUtil.PathRelation.SANDBOX_RELATIVE);
       LOGGER.debug("processed pattern " + outputPathPattern + " as " + result);
       return result;
    }
@@ -257,7 +257,7 @@ public class RenderingEngineTemplateImpl
       if (!isRegenerate)
       {
          final String parentAVMPath = AVMNodeConverter.SplitBase(renditionAvmPath)[0];
-         AVMConstants.makeAllDirectories(parentAVMPath);
+         AVMUtil.makeAllDirectories(parentAVMPath);
          avmService.createFile(parentAVMPath,
                                AVMNodeConverter.SplitBase(renditionAvmPath)[1]);
          if (LOGGER.isDebugEnabled())
@@ -278,7 +278,7 @@ public class RenderingEngineTemplateImpl
          final Collection<Serializable> renditions = (pv == null 
                                                       ? new HashSet<Serializable>() 
                                                       : pv.getCollection(DataTypeDefinition.TEXT));
-         renditions.add(AVMConstants.getStoreRelativePath(renditionAvmPath));
+         renditions.add(AVMUtil.getStoreRelativePath(renditionAvmPath));
          avmService.setNodeProperty(formInstanceData.getPath(), 
                                     WCMAppModel.PROP_RENDITIONS,
                                     new PropertyValue(DataTypeDefinition.TEXT,
@@ -317,7 +317,7 @@ public class RenderingEngineTemplateImpl
                 new PropertyValue(DataTypeDefinition.TEXT,
                                   MessageFormat.format(bundle.getString("default_rendition_description"), 
                                                        this.getTitle(),
-                                                       AVMConstants.getSandboxRelativePath(rendition.getPath()))));
+                                                       AVMUtil.getSandboxRelativePath(rendition.getPath()))));
       props.put(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE,
                 new PropertyValue(DataTypeDefinition.NODE_REF,
                                   this.nodeRef));
@@ -327,7 +327,7 @@ public class RenderingEngineTemplateImpl
       // extract a store relative path for the primary form instance data
       props.put(WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA, 
                 new PropertyValue(DataTypeDefinition.TEXT,
-                                  AVMConstants.getStoreRelativePath(formInstanceData.getPath())));
+                                  AVMUtil.getStoreRelativePath(formInstanceData.getPath())));
 
       final AVMService avmService = this.getServiceRegistry().getAVMService();
       avmService.setNodeProperties(rendition.getPath(), props);
@@ -344,8 +344,8 @@ public class RenderingEngineTemplateImpl
       final String formInstanceDataAvmPath = formInstanceData.getPath();
       final String renditionAvmPath = rendition.getPath();
       final String parentPath = AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[0];
-      final String sandboxUrl = AVMConstants.buildStoreUrl(formInstanceDataAvmPath);
-      final String webappUrl = AVMConstants.buildWebappUrl(formInstanceDataAvmPath);
+      final String sandboxUrl = AVMUtil.buildStoreUrl(formInstanceDataAvmPath);
+      final String webappUrl = AVMUtil.buildWebappUrl(formInstanceDataAvmPath);
       final HashMap<QName, Object> model = new HashMap<QName, Object>();
       // add simple scalar parameters
       model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX,
@@ -441,9 +441,9 @@ public class RenderingEngineTemplateImpl
                                                       ".  got a " + arguments[0].getClass().getName() + ".");
                       }
                       String path = (String)arguments[0];
-                      path = AVMConstants.buildPath(parentPath,
+                      path = AVMUtil.buildPath(parentPath,
                                                     path,
-                                                    AVMConstants.PathRelation.WEBAPP_RELATIVE);
+                                                    AVMUtil.PathRelation.WEBAPP_RELATIVE);
                       LOGGER.debug("tpm_parseXMLDocument('" + path + 
                                    "'), parentPath = " + parentPath);
                       final Document d = fdf.parseXMLDocument(path);
@@ -477,9 +477,9 @@ public class RenderingEngineTemplateImpl
                       }
                       
                       String path = arguments.length == 2 ? (String)arguments[1] : "";
-                      path = AVMConstants.buildPath(parentPath,
+                      path = AVMUtil.buildPath(parentPath,
                                                     path,
-                                                    AVMConstants.PathRelation.WEBAPP_RELATIVE);
+                                                    AVMUtil.PathRelation.WEBAPP_RELATIVE);
                       final String formName = (String)arguments[0];
                       LOGGER.debug("tpm_parseXMLDocuments('" + formName + "','" + path + 
                                    "'), parentPath = " + parentPath);
@@ -535,9 +535,9 @@ public class RenderingEngineTemplateImpl
 
                       final String path = (String)arguments[0];
                       LOGGER.debug("tpm_getAVMPAth('" + path + "'), parentPath = " + parentPath);
-                      return AVMConstants.buildPath(parentPath,
+                      return AVMUtil.buildPath(parentPath,
                                                     path,
-                                                    AVMConstants.PathRelation.WEBAPP_RELATIVE);
+                                                    AVMUtil.PathRelation.WEBAPP_RELATIVE);
                    }
                 });
 

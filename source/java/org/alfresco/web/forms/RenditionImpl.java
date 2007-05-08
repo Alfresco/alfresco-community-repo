@@ -36,7 +36,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -83,12 +83,12 @@ public class RenditionImpl
 
    public String getWebappRelativePath()
    {
-      return AVMConstants.getWebappRelativePath(this.getPath());
+      return AVMUtil.getWebappRelativePath(this.getPath());
    }
 
    public String getSandboxRelativePath()
    {
-      return AVMConstants.getSandboxRelativePath(this.getPath());
+      return AVMUtil.getSandboxRelativePath(this.getPath());
    }
 
    public FormInstanceData getPrimaryFormInstanceData()
@@ -139,7 +139,7 @@ public class RenditionImpl
 
    public String getUrl()
    {
-      return AVMConstants.buildAssetUrl(this.getPath());
+      return AVMUtil.buildAssetUrl(this.getPath());
    }
 
    public String getFileTypeImage()

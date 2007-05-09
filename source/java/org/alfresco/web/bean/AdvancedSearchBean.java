@@ -420,7 +420,7 @@ public class AdvancedSearchBean
    }
 
    /**
-    * @param modifiedDate The modifiedDateFrom to set.
+    * @param modifiedDate The modifiedDate to set.
     */
    public void setModifiedDateFrom(Date modifiedDate)
    {
@@ -858,11 +858,24 @@ public class AdvancedSearchBean
             }
             else if (value != null)
             {
-               // by default use toString() value - this is for text fields and unknown types
-               String strVal = value.toString();
-               if (strVal != null && strVal.length() != 0)
+               Object item = this.customProperties.get(
+                     UISearchCustomProperties.PREFIX_LOV_ITEM + qname);
+               if (item != null)
                {
-                  search.addAttributeQuery(QName.createQName(qname), strVal);
+                  // ListOfValues
+                  if (((Boolean)value) == true)
+                  {
+                     search.addFixedValueQuery(QName.createQName(qname), item.toString());
+                  }
+               }
+               else
+               {
+                  // by default use toString() value - this is for text fields and unknown types
+                  String strVal = value.toString();
+                  if (strVal != null && strVal.length() != 0)
+                  {
+                     search.addAttributeQuery(QName.createQName(qname), strVal);
+                  }
                }
             }
          }

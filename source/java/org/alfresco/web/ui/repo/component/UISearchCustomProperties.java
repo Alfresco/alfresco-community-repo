@@ -25,6 +25,7 @@
 package org.alfresco.web.ui.repo.component;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.faces.component.NamingContainer;
@@ -33,12 +34,18 @@ import javax.faces.component.UIInput;
 import javax.faces.component.UIOutput;
 import javax.faces.component.UIPanel;
 import javax.faces.component.UISelectBoolean;
+import javax.faces.component.UISelectItems;
+import javax.faces.component.UISelectOne;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
+import javax.faces.model.SelectItem;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.Constraint;
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -46,6 +53,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.repository.DataDictionary;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.AdvancedSearchConfigElement;
 import org.alfresco.web.config.AdvancedSearchConfigElement.CustomProperty;
@@ -63,6 +71,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
 {
    public static final String PREFIX_DATE_TO    = "to_";
    public static final String PREFIX_DATE_FROM  = "from_";
+   public static final String PREFIX_LOV_ITEM   = "item_";
    
    private static final String VALUE = "value";
    
@@ -71,7 +80,8 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
    
    private static Log logger = LogFactory.getLog(UISearchCustomProperties.class);
    
-   
+   private DataDictionary dataDictionary;
+
    // ------------------------------------------------------------------------------
    // Component implementation
    
@@ -101,7 +111,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
          createComponentsFromConfig(context);
       }
       
-      // encode the components in a 2 column table
+      // encode the components in a 3 column table
       out.write("<table cellspacing=2 cellpadding=2 border=0");
       outputAttribute(out, getAttributes().get("styleClass"), "class");
       outputAttribute(out, getAttributes().get("style"), "style");
@@ -113,21 +123,21 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
          UIComponent component = children.get(i);
          if (component instanceof UIPanel)
          {
-            out.write("<tr><td colspan=2>");
+            out.write("<tr><td colspan=3>");
             Utils.encodeRecursive(context, component);
             out.write("</td></tr>");
-            colCounter += 2;
+            colCounter += 3;
          }
          else
          {
-            if ((colCounter & 1) == 0)
+            if ((colCounter % 3) == 0)
             {
                out.write("<tr>");
             }
             out.write("<td>");
             Utils.encodeRecursive(context, component);
             out.write("</td>");
-            if ((colCounter & 1) == 1)
+            if ((colCounter % 3 ) == 2)
             {
                out.write("</tr>");
             }
@@ -205,7 +215,19 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
                   }
                   else
                   {
-                     getChildren().add( generateLabel(context, label) );
+                     // add ListOfValues constraint components
+                     ListOfValuesConstraint constraint = getListOfValuesConstraint(propDef);
+                     if (constraint != null && propDef != null && propDef.isProtected() == false)
+                     {
+                        getChildren().add( generateCheck(context, propDef, beanBinding) );
+                        getChildren().add( generateLabel(context, label + ": ") );
+                     }
+                     else
+                     {
+                        getChildren().add( generateLabel(context, "" ) );
+                        getChildren().add( generateLabel(context, label + ": ") );
+                     }
+                     
                      getChildren().add( generateControl(context, propDef, null, beanBinding) );
                   }
                }
@@ -217,7 +239,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
          }
       }
    }
-   
+
    /**
     * Generates a JSF OutputText component/renderer
     * 
@@ -227,15 +249,36 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
     * 
     * @return UIComponent
     */
+   private UIComponent generateCheck(FacesContext context, PropertyDefinition propDef, String beanBinding)
+   {
+		// enabled state checkbox
+		UIInput checkbox = (UIInput)context.getApplication().createComponent(ComponentConstants.JAVAX_FACES_SELECT_BOOLEAN);
+		checkbox.setRendererType(ComponentConstants.JAVAX_FACES_CHECKBOX);
+		checkbox.setId(context.getViewRoot().createUniqueId());
+		ValueBinding vbCheckbox = context.getApplication().createValueBinding(
+		   "#{" + beanBinding + "[\"" + propDef.getName().toString() + "\"]}");
+		checkbox.setValueBinding(VALUE, vbCheckbox);
+
+		return checkbox;
+   }
+   
+   /**
+    * Generates a JSF OutputText component/renderer
+    * 
+    * @param context JSF context
+    * @param displayLabel The display label text
+    * 
+    * @return UIComponent
+    */
    private UIComponent generateLabel(FacesContext context, String displayLabel)
    {
       UIOutput label = (UIOutput)context.getApplication().createComponent(ComponentConstants.JAVAX_FACES_OUTPUT);
       label.setId(context.getViewRoot().createUniqueId());
       label.setRendererType(ComponentConstants.JAVAX_FACES_TEXT);
-      label.setValue(displayLabel + ": ");
+      label.setValue(displayLabel);
       return label;
    }
-   
+      
    /**
     * Generates an appropriate control for the given property
     * 
@@ -361,17 +404,73 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
       }
       else
       {
-         // any other type is represented as an input text field
-         control = (UIInput)facesApp.createComponent(ComponentConstants.JAVAX_FACES_INPUT);
-         control.setRendererType(ComponentConstants.JAVAX_FACES_TEXT);
-         control.setValueBinding("size", facesApp.createValueBinding("#{TextFieldGenerator.size}"));
-         control.setValueBinding("maxlength", facesApp.createValueBinding("#{TextFieldGenerator.maxLength}"));
-         control.setValueBinding(VALUE, vb);
+         ListOfValuesConstraint constraint = getListOfValuesConstraint(propDef);
+         if (constraint != null && propDef != null && propDef.isProtected() == false)
+         {
+            control = (UISelectOne)facesApp.createComponent(UISelectOne.COMPONENT_TYPE);
+            
+            UISelectItems itemsComponent = (UISelectItems)facesApp.
+            createComponent(ComponentConstants.JAVAX_FACES_SELECT_ITEMS);
+
+            List<SelectItem> items = new ArrayList<SelectItem>(3);
+            List<String> values = constraint.getAllowedValues();
+            for (String value : values)
+            {
+               items.add(new SelectItem(value, value));
+            }
+
+            itemsComponent.setValue(items);
+
+            // add the items as a child component
+            control.getChildren().add(itemsComponent);
+            ValueBinding vbItemList = facesApp.createValueBinding(
+                  "#{" + beanBinding + "[\"" + PREFIX_LOV_ITEM + propDef.getName().toString() + "\"]}");
+            control.setValueBinding(VALUE, vbItemList);
+         }
+         else
+         {
+            // any other type is represented as an input text field    	  
+            control = (UIInput)facesApp.createComponent(ComponentConstants.JAVAX_FACES_INPUT);
+            control.setRendererType(ComponentConstants.JAVAX_FACES_TEXT);
+            control.setValueBinding("size", facesApp.createValueBinding("#{TextFieldGenerator.size}"));
+            control.setValueBinding("maxlength", facesApp.createValueBinding("#{TextFieldGenerator.maxLength}"));
+            control.setValueBinding(VALUE, vb);
+         }
       }
-      
       // set up the common aspects of the control
       control.setId(context.getViewRoot().createUniqueId());
-      
+
       return control;
+   }
+
+   /**
+    * Retrieves the list of values constraint for the item, if it has one
+    * 
+    * @param PropertyDefinition The property definition for the constraint
+    * @return The constraint if the item has one, null otherwise
+    */
+   protected ListOfValuesConstraint getListOfValuesConstraint(PropertyDefinition propertyDef)
+   {
+      ListOfValuesConstraint lovConstraint = null;
+      
+      // get the property definition for the item
+      if (propertyDef != null)
+      {
+         // go through the constaints and see if it has the
+         // list of values constraint
+         List<ConstraintDefinition> constraints = propertyDef.getConstraints();
+         for (ConstraintDefinition constraintDef : constraints)
+         {
+            Constraint constraint = constraintDef.getConstraint();
+
+            if (constraint instanceof ListOfValuesConstraint)
+            {
+               lovConstraint = (ListOfValuesConstraint)constraint;
+               break;
+            }
+         }
+      }
+      
+      return lovConstraint;
    }
 }

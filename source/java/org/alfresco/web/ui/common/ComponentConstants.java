@@ -42,6 +42,8 @@ public final class ComponentConstants
    public static final String JAVAX_FACES_PARAMETER      = "javax.faces.Parameter";
    public static final String JAVAX_FACES_MENU           = "javax.faces.Menu";
    public static final String JAVAX_FACES_BUTTON         = "javax.faces.Button";
+   public static final String JAVAX_FACES_SELECT_ITEMS   = "javax.faces.SelectItems";
+   
 
    /**
     * Private constructor

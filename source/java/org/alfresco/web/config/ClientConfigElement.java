@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.config;
 
+import java.util.List;
+
 import javax.faces.context.FacesContext;
 
 import org.alfresco.config.ConfigElement;
@@ -31,6 +33,7 @@ import org.alfresco.config.JNDIConstants;
 import org.alfresco.config.element.ConfigElementAdapter;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.cache.ExpiringValueCache;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -68,6 +71,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private boolean clipboardStatusVisible = true;
    private boolean pasteAllAndClear = true;
    private boolean allowGuestConfig = false;
+   private List<QName> simpleSearchAdditionalAttributes = null;
    
    /**
     * Default Constructor
@@ -202,6 +206,12 @@ public class ClientConfigElement extends ConfigElementAdapter
       if (newElement.getAllowGuestConfig() != combinedElement.getAllowGuestConfig())
       {
          combinedElement.setAllowGuestConfig(newElement.getAllowGuestConfig());
+      }
+      
+      if (newElement.getSimpleSearchAdditionalAttributes() != null &&
+          newElement.getSimpleSearchAdditionalAttributes().equals(combinedElement.getSimpleSearchAdditionalAttributes()) == false)
+      {
+         combinedElement.setSimpleSearchAdditionalAttributes(newElement.getSimpleSearchAdditionalAttributes());
       }
       
       return combinedElement;
@@ -546,5 +556,21 @@ public class ClientConfigElement extends ConfigElementAdapter
    public boolean getAllowGuestConfig()
    {
       return this.allowGuestConfig;
+   }
+   
+   /**
+    * @return Returns the additional attributes to search on a simple search
+    */
+   public List<QName> getSimpleSearchAdditionalAttributes()
+   {
+      return this.simpleSearchAdditionalAttributes;
+   }
+
+   /**
+    * @param simpleSearchAdditionalAttributes  The additional simple search attributes
+    */
+   /*package*/ void setSimpleSearchAdditionalAttributes(List<QName> simpleSearchAdditionalAttributes)
+   {
+      this.simpleSearchAdditionalAttributes = simpleSearchAdditionalAttributes;
    }
 }

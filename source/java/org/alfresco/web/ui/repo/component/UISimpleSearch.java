@@ -42,6 +42,7 @@ import org.alfresco.web.bean.SearchContext;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 /**
  * @author Kevin Roast
  */
@@ -151,6 +152,7 @@ public class UISimpleSearch extends UICommand
          context.setText(searchEvent.SearchText);
          context.setMode(searchEvent.SearchMode);
          context.setForceAndTerms(Application.getClientConfig(fc).getForceAndTerms());
+         context.setSimpleSearchAdditionalAttributes(Application.getClientConfig(fc).getSimpleSearchAdditionalAttributes());
          this.search = context;
          
          super.broadcast(event);

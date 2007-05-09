@@ -123,6 +123,9 @@ public final class SearchContext implements Serializable
    /** content mimetype to restrict search against */
    private String mimeType = null;
    
+   /** any extra simple query attributes to add to the search */
+   protected List<QName> simpleSearchAdditionalAttrs = new ArrayList<QName>(4);
+   
    /** any extra query attributes to add to the search */
    private Map<QName, String> queryAttributes = new HashMap<QName, String>(5, 1.0f);
    
@@ -159,7 +162,17 @@ public final class SearchContext implements Serializable
       String text = this.text.trim();
       
       StringBuilder fullTextBuf = new StringBuilder(64);
-      StringBuilder nameAttrBuf = new StringBuilder(64);
+      StringBuilder nameAttrBuf = new StringBuilder(128);
+      StringBuilder additionalAttrsBuf = new StringBuilder(128);
+      
+      /*Map<QName, StringBuilder> simpleAdditionalAttrBufs = new HashMap<QName, StringBuilder>();
+      if (this.simpleSearchAdditionalAttrs != null)
+      {
+         for (QName qName : this.simpleSearchAdditionalAttrs)
+         {
+            simpleAdditionalAttrBufs.put(qName, new StringBuilder(64));
+         }
+      }*/
       
       if (text.length() != 0 && text.length() >= minimum)
       {
@@ -181,9 +194,14 @@ public final class SearchContext implements Serializable
                {
                   fullTextBuf.append(OP_NOT);
                   nameAttrBuf.append(OP_NOT);
+                  additionalAttrsBuf.append(OP_NOT);
                }
                
                processSearchTextAttribute(nameAttr, text, nameAttrBuf, fullTextBuf);
+               for (QName qname : this.simpleSearchAdditionalAttrs)
+               {
+                  processSearchAttribute(qname, text, additionalAttrsBuf, false);
+               }
             }
          }
          else
@@ -195,6 +213,11 @@ public final class SearchContext implements Serializable
                String quotedSafeText = '"' + QueryParser.escape(text.substring(1, text.length() - 1)) + '"';
                fullTextBuf.append("TEXT:").append(quotedSafeText);
                nameAttrBuf.append("@").append(nameAttr).append(":").append(quotedSafeText);
+               for (QName qname : this.simpleSearchAdditionalAttrs)
+               {
+                  additionalAttrsBuf.append(" @").append(
+                        Repository.escapeQName(qname)).append(":").append(quotedSafeText);
+               }
             }
             else
             {
@@ -203,6 +226,7 @@ public final class SearchContext implements Serializable
                
                fullTextBuf.append('(');
                nameAttrBuf.append('(');
+               additionalAttrsBuf.append('(');
                
                int termCount = 0;
                int tokenCount = t.countTokens();
@@ -233,6 +257,7 @@ public final class SearchContext implements Serializable
                      {
                         fullTextBuf.append("OR ");
                         nameAttrBuf.append("OR ");
+                        additionalAttrsBuf.append("OR ");
                      }
                      
                      // prepend NOT operator if supplied
@@ -240,24 +265,33 @@ public final class SearchContext implements Serializable
                      {
                         fullTextBuf.append(OP_NOT);
                         nameAttrBuf.append(OP_NOT);
+                        additionalAttrsBuf.append(OP_NOT);
                      }
+                     
                      // prepend AND operator if supplied
                      if (operatorAND)
                      {
                         fullTextBuf.append(OP_AND);
                         nameAttrBuf.append(OP_AND);
+                        additionalAttrsBuf.append(OP_AND);
                      }
                      
                      processSearchTextAttribute(nameAttr, term, nameAttrBuf, fullTextBuf);
+                     for (QName qname : this.simpleSearchAdditionalAttrs)
+                     {
+                        processSearchAttribute(qname, term, additionalAttrsBuf, false);
+                     }
                      
                      fullTextBuf.append(' ');
                      nameAttrBuf.append(' ');
+                     additionalAttrsBuf.append(' ');
                      
                      termCount++;
                   }
                }
                fullTextBuf.append(')');
                nameAttrBuf.append(')');
+               additionalAttrsBuf.append(')');
             }
          }
          
@@ -388,14 +422,16 @@ public final class SearchContext implements Serializable
       
       String fullTextQuery = fullTextBuf.toString();
       String nameAttrQuery = nameAttrBuf.toString();
+      String additionalAttrsQuery = additionalAttrsBuf.toString();
+      
       if (text.length() != 0 && text.length() >= minimum)
       {
          // text query for name and/or full text specified
          switch (mode)
          {
             case SearchContext.SEARCH_ALL:
-               query = '(' + fileTypeQuery + " AND " + '(' + nameAttrQuery + ' ' + fullTextQuery + ')' + ')' + " OR " +
-                       '(' + folderTypeQuery + " AND " + nameAttrQuery + ')';
+               query = '(' + fileTypeQuery + " AND " + '(' + nameAttrQuery + ' ' + additionalAttrsQuery + ' ' + fullTextQuery + ')' + ')' + " OR " +
+                       '(' + folderTypeQuery + " AND " + nameAttrQuery + ' ' + additionalAttrsQuery + ')';
                break;
             
             case SearchContext.SEARCH_FILE_NAMES:
@@ -473,6 +509,20 @@ public final class SearchContext implements Serializable
     */
    private static void processSearchAttribute(QName qname, String value, StringBuilder buf)
    {
+      processSearchAttribute(qname, value, buf, true);
+   }
+   
+   /**
+    * Build the lucene search terms required for the specified attribute and append to a buffer.
+    * Supports text values with a wildcard '*' character as the prefix and/or the suffix. 
+    * 
+    * @param qname      QName of the attribute
+    * @param value      Non-null value of the attribute
+    * @param buf        Buffer to append lucene terms to
+    * @param andOp      If true apply the '+' AND operator as the prefix to the attribute term
+    */
+   private static void processSearchAttribute(QName qname, String value, StringBuilder buf, boolean andOp)
+   {
       if (value.indexOf(' ') == -1)
       {
          String safeValue;
@@ -510,14 +560,16 @@ public final class SearchContext implements Serializable
             }
          }
          
-         buf.append(" +@").append(Repository.escapeQName(qname)).append(":")
-            .append(prefix).append(safeValue).append(suffix);
+         if (andOp) buf.append('+');
+         buf.append('@').append(Repository.escapeQName(qname)).append(":")
+            .append(prefix).append(safeValue).append(suffix).append(' ');
       }
       else
       {
          // phrase multi-word search
          String safeValue = QueryParser.escape(value);
-         buf.append(" +@").append(Repository.escapeQName(qname)).append(":\"").append(safeValue).append('"');
+         if (andOp) buf.append('+');
+         buf.append('@').append(Repository.escapeQName(qname)).append(":\"").append(safeValue).append('"').append(' ');
       }
    }
    
@@ -731,6 +783,27 @@ public final class SearchContext implements Serializable
    public void setMimeType(String mimeType)
    {
       this.mimeType = mimeType;
+   }
+   
+   /**
+    * Add an additional attribute to search against for simple searches
+    * 
+    * @param qname      QName of the attribute to search against
+    * @param value      Value of the attribute to use
+    */
+   public void addSimpleAttributeQuery(QName qname)
+   {
+      this.simpleSearchAdditionalAttrs.add(qname);
+   }
+   
+   /**
+    * Sets the additional attribute to search against for simple searches.
+    * 
+    * @param attrs      The list of attributes to search against
+    */
+   public void setSimpleSearchAdditionalAttributes(List<QName> attrs)
+   {
+	   this.simpleSearchAdditionalAttrs = attrs;
    }
    
    /**

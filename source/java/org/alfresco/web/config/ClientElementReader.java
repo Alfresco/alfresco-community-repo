@@ -24,9 +24,14 @@
  */
 package org.alfresco.web.config;
 
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigException;
 import org.alfresco.config.xml.elementreader.ConfigElementReader;
+import org.alfresco.service.namespace.QName;
 import org.dom4j.Element;
 
 /**
@@ -54,6 +59,8 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_CLIPBOARDSTATUS = "clipboard-status-visible";
    public static final String ELEMENT_PASTEALLANDCLEAR = "paste-all-and-clear";
    public static final String ELEMENT_GUESTCONFIG = "allow-guest-config";
+   public static final String ELEMENT_SIMPLESEARCHADDITIONALATTRS = "simple-search-additional-attributes";
+   public static final String ELEMENT_SIMPLESEARCHADDITIONALATTRSQNAME = "qname";
    
    /**
     * @see org.alfresco.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
@@ -160,7 +167,7 @@ public class ClientElementReader implements ConfigElementReader
             configElement.setLoginPage(loginPage.getTextTrim());
          }
          
-         // get the ajax enabled flag
+         // get the node summary popup enabled flag
          Element ajaxEnabled = element.element(ELEMENT_NODESUMMARY_ENABLED);
          if (ajaxEnabled != null)
          {
@@ -203,6 +210,23 @@ public class ClientElementReader implements ConfigElementReader
          {
             boolean allow = Boolean.parseBoolean(guestConfigElement.getTextTrim());
             configElement.setAllowGuestConfig(allow);
+         }
+         
+         // get the additional simple search attributes
+         Element simpleSearchAdditionalAttributesElement = element.element(ELEMENT_SIMPLESEARCHADDITIONALATTRS);
+         if (simpleSearchAdditionalAttributesElement != null)
+         {
+            List<Element> attrbElements = 
+               simpleSearchAdditionalAttributesElement.elements(ELEMENT_SIMPLESEARCHADDITIONALATTRSQNAME);
+            if (attrbElements != null && attrbElements.size() != 0)
+            {
+               List<QName> simpleSearchAddtlAttrb = new ArrayList<QName>(4);
+               for (Element elem : attrbElements)
+               {
+                  simpleSearchAddtlAttrb.add(QName.createQName(elem.getTextTrim()));
+               }
+               configElement.setSimpleSearchAdditionalAttributes(simpleSearchAddtlAttrb);
+            }
          }
       }
       

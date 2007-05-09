@@ -258,12 +258,17 @@ public class AuditableAspect
          */
         public Boolean doWork() throws Exception
         {
-            for (QName propertyQName : properties.keySet())
-            {
-                Serializable property = properties.get(propertyQName);
-                nodeService.setProperty(nodeRef, propertyQName, property);
-            }
-            return Boolean.TRUE;
+            // Set all the properties in one nodeService call to avoid multiple calls to onUpdateProperties 
+            Map<QName, Serializable> allProps = nodeService.getProperties(nodeRef); 
+            
+            for (QName propertyQName : properties.keySet()) 
+            { 
+                Serializable property = properties.get(propertyQName); 
+                allProps.put(propertyQName, property); 
+            } 
+            nodeService.setProperties(nodeRef, allProps); 
+            return Boolean.TRUE; 
+
         }
     }
     

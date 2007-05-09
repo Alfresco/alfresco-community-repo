@@ -226,6 +226,28 @@
                               </td>
                            </tr>
                            <tr>
+                              <td width=50% align=right>
+                                 Multilingual Document Management:
+                              </td>
+                              <td>&nbsp;&#8226;&nbsp;</td>
+                              <td width=50%>
+                                 CEC
+                              </td>
+                           </tr>
+                           <tr>
+                              <td width=50% align=right>
+                                 Fixes and improvements:
+                              </td>
+                              <td>&nbsp;&#8226;&nbsp;</td>
+                              <td width=50%>
+                                 Michael Kriske,
+                                 Carina Lansing,
+                                 Ray Gauss II,
+                                 DMC.de,
+                                 Optaros
+                              </td>
+                           </tr>
+                           <tr>
                               <td align=right width=50%>
                                  Language and translation packs:
                               </td>

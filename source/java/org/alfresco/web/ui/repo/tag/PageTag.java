@@ -67,7 +67,7 @@ public class PageTag extends TagSupport
         "<a class=footer href='http://www.alfresco.com'>Alfresco</a> or its " +
         "<a class=footer href='http://www.alfresco.com/partners/'>Certified Partners</a>. " +
         "<a class=footer href='http://www.alfresco.com/services/support/'>Click here for support</a>. " +
-        "Alfresco Software Inc. &copy; 2005-2006 All rights reserved.";
+        "Alfresco Software Inc. &copy; 2005-2007 All rights reserved.";
    
    private static Log logger = LogFactory.getLog(PageTag.class);
    private static String alfresco = null;

@@ -52,11 +52,14 @@ import de.schlichtherle.io.ZipWarningException;
 
 /**
  * Module management tool.
- * 
+ * <p>
  * Manages the modules installed in a war file.  Allows modules to be installed, updated, enabled, disabled and
  * uninstalled.  Information about the module installed is also available. 
  * 
+ * @since 2.0
+ * 
  * @author Roy Wetherall
+ * @author Derek Hulley
  */
 public class ModuleManagementTool
 {
@@ -313,7 +316,6 @@ public class ModuleManagementTool
                     outputMessage("WARNING: A later version of this module is already installed in the WAR");
                     throw new ModuleManagementToolException("A later version of this module is already installed.  You must first unistall the current version before installing this version of the module.");
                 }
-                
             }
             
             // Check if a custom mapping file has been defined
@@ -336,7 +338,7 @@ public class ModuleManagementTool
                 fileMappingProperties.remove(PROP_INHERIT_DEFAULT);
             }
             
-            // Copy the files from the AEP file into the WAR file
+            // Copy the files from the AMP file into the WAR file
             outputMessage("Adding files relating to version '" + installingVersion + "' of module '" + installingId + "'");
             InstalledFiles installedFiles = new InstalledFiles(warFileLocation, installingId);
             for (Map.Entry<Object, Object> entry : fileMappingProperties.entrySet())

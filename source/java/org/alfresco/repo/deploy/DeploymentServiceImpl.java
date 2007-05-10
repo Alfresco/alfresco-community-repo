@@ -674,10 +674,10 @@ public class DeploymentServiceImpl implements DeploymentService
             // This means no entry on src so delete.
             if (src == null)
             {
-                String newDstPath = dstPath + '/' + dst.getName();
+                String newDstPath = extendPath(dstPath, dst.getName());
                 service.delete(ticket, newDstPath);
                 DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.DELETED, 
-                                                            new Pair<Integer, String>(version, srcPath + '/' + dst.getName()),
+                                                            new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())),
                                                             newDstPath);
                 if (callback != null)
                 {
@@ -713,7 +713,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 if (src.isFile())
                 {
                     copyFile(service, ticket, report, callback, version, src,
-                             dstPath + '/' + dst.getName());
+                             extendPath(dstPath, dst.getName()));
                     src = null;
                     dst = null;
                     continue;
@@ -725,7 +725,7 @@ public class DeploymentServiceImpl implements DeploymentService
                     {
                         service.setGuid(ticket, dstPath, src.getGuid());
                     }
-                    deployDirectoryPush(service, ticket, report, callback, version, src.getPath(), dstPath + '/' + dst.getName());
+                    deployDirectoryPush(service, ticket, report, callback, version, src.getPath(), extendPath(dstPath, dst.getName()));
                     src = null;
                     dst = null;
                     continue;
@@ -737,10 +737,10 @@ public class DeploymentServiceImpl implements DeploymentService
             }
             // diff > 0
             // Destination is missing in source, delete it.
-            String newDstPath = dstPath + '/' + dst.getName();
+            String newDstPath = extendPath(dstPath, dst.getName());
             service.delete(ticket, newDstPath);
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.DELETED,
-                                                        new Pair<Integer, String>(version, srcPath + '/' + dst.getName()),
+                                                        new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())),
                                                         newDstPath);
             if (callback != null) 
             {
@@ -801,7 +801,7 @@ public class DeploymentServiceImpl implements DeploymentService
                       DeploymentReport report, DeploymentCallback callback, 
                       int version, AVMNodeDescriptor src, String parentPath)
     {
-        String dstPath = parentPath + '/' + src.getName();
+        String dstPath = extendPath(parentPath, src.getName());
         if (src.isFile())
         {
             copyFile(service, ticket, report, callback, version, src, dstPath);
@@ -822,5 +822,20 @@ public class DeploymentServiceImpl implements DeploymentService
         {
             copy(service, ticket, report, callback, version, child, dstPath);
         }
+    }
+    
+    /**
+     * Extend a path.
+     * @param path
+     * @param name
+     * @return
+     */
+    private String extendPath(String path, String name)
+    {
+        if (path.endsWith("/"))
+        {
+            return path + name;
+        }
+        return path + '/' + name;
     }
 }

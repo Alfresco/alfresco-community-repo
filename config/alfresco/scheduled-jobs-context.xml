@@ -181,4 +181,29 @@
         </property>
     </bean>
     
+    <bean id="avmOrphanReaperJob" class="org.alfresco.util.TriggerBean">
+        <property name="jobDetail">
+            <bean id="avmOrphanReaperJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.avm.OrphanReaperJob</value>
+                </property>
+		        <property name="jobDataAsMap">
+            		<map>
+                		<entry key="orphanReaper">
+                    		<ref bean="orphanReaper"/>
+                		</entry>
+            		</map>
+        		</property>
+            </bean>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory"/>
+        </property>
+        <property name="startDelayMinutes">
+            <value>1</value>
+        </property>
+        <property name="repeatIntervalMinutes">
+            <value>1</value>
+        </property>
+    </bean>
 </beans>

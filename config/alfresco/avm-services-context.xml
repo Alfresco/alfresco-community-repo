@@ -160,10 +160,7 @@
 	<bean id="rawServices" class="org.alfresco.repo.avm.util.RawServices"/>
 	
 	<bean id="orphanReaper" class="org.alfresco.repo.avm.OrphanReaper"
-		init-method="init" destroy-method="shutDown" depends-on="AVMService">
-		<property name="inactiveBaseSleep">
-			<value>60000</value>
-		</property>
+		depends-on="AVMService" destroy-method="shutDown">
 		<property name="activeBaseSleep">
 			<value>1000</value>
 		</property>

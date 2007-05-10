@@ -38,8 +38,46 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
  * in the AVM repository.  These orphans arise from purge operations.
  * @author britt
  */
-public class OrphanReaper implements Runnable
+public class OrphanReaper
 {
+    public void execute()
+    {
+        synchronized (this)
+        {
+            if (fRunning)
+            {
+                return;
+            }
+            fRunning = true;
+        }
+        try
+        {
+            do
+            {
+                doBatch();
+                if (fDone)
+                {
+                    return;
+                }
+                try
+                {
+                    Thread.sleep(fActiveBaseSleep);
+                }
+                catch (InterruptedException e)
+                {
+                    // Do nothing.
+                }
+            } while (fActive);
+        }
+        finally
+        {
+            synchronized (this)
+            {
+                fRunning = false;
+            }
+        }
+    }
+
     private Logger fgLogger = Logger.getLogger(OrphanReaper.class);
 
     /**
@@ -51,11 +89,6 @@ public class OrphanReaper implements Runnable
      * The Session Factory
      */
     private SessionFactory fSessionFactory;
-    
-    /**
-     * Inactive base sleep interval.
-     */
-    private long fInactiveBaseSleep;
     
     /**
      * Active base sleep interval.
@@ -74,16 +107,6 @@ public class OrphanReaper implements Runnable
     private boolean fActive;
     
     /**
-     * Flag for shutting down this.
-     */
-    private boolean fDone;
-    
-    /**
-     * The thread for this.
-     */
-    private Thread fThread;
-    
-    /**
      * The maximum length of the queue.
      */
     private int fQueueLength;
@@ -93,29 +116,22 @@ public class OrphanReaper implements Runnable
      */
     private LinkedList<Long> fPurgeQueue;
     
+    private boolean fDone = false;
+    
+    private boolean fRunning = false;
+    
     /**
      * Create one with default parameters.
      */
     public OrphanReaper()
     {
-        fInactiveBaseSleep = 30000;
         fActiveBaseSleep = 1000;
         fBatchSize = 50;
         fQueueLength = 1000;
         fActive = false;
-        fDone = false;
     }
     
     // Setters for configuration.
-    
-    /**
-     * Set the Inactive Base Sleep interval.
-     * @param interval The interval to set in ms.
-     */
-    public void setInactiveBaseSleep(long interval)
-    {
-        fInactiveBaseSleep = interval;
-    }
     
     /**
      * Set the active base sleep interval.
@@ -165,11 +181,11 @@ public class OrphanReaper implements Runnable
     /**
      * Start things up after configuration is complete.
      */
-    public void init()
-    {
-        fThread = new Thread(this);
-        fThread.start();
-    }
+//    public void init()
+//    {
+//        fThread = new Thread(this);
+//        fThread.start();
+//    }
 
     /**
      * Shutdown the reaper. This needs to be called when 
@@ -177,43 +193,31 @@ public class OrphanReaper implements Runnable
      */
     public void shutDown()
     {
-        synchronized (this)
-        {
-            fDone = true;
-            notify();
-        }
-        try
-        {
-            fThread.join();
-        }
-        catch (InterruptedException ie)
-        {
-            // Do nothing.
-        }
+        fDone = true;
     }
     
     /**
      * Sit in a loop, periodically querying for orphans.  When orphans
      * are found, unhook them in bite sized batches.
      */
-    public void run()
-    {
-        while (!fDone)
-        {
-            synchronized (this)
-            {
-                try
-                {
-                    wait(fActive? fActiveBaseSleep : fInactiveBaseSleep);
-                }
-                catch (InterruptedException ie)
-                {
-                    // Do nothing.
-                }
-                doBatch();
-            }
-        }
-    }
+//    public void run()
+//    {
+//        while (!fDone)
+//        {
+//            synchronized (this)
+//            {
+//                try
+//                {
+//                    wait(fActive? fActiveBaseSleep : fInactiveBaseSleep);
+//                }
+//                catch (InterruptedException ie)
+//                {
+//                    // Do nothing.
+//                }
+//                doBatch();
+//            }
+//        }
+//    }
     
     /**
      * This is really for debugging and testing. Allows another thread to 

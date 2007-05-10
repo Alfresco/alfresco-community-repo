@@ -34,8 +34,6 @@ import org.alfresco.service.namespace.NamespaceException;
 
 /**
  * Simple in-memory namespace DAO
- * 
- * TODO: Remove the many to one mapping of prefixes to URIs
  */
 public class NamespaceDAOImpl implements NamespaceDAO
 {

@@ -47,4 +47,14 @@ public class ApplicationContextHelper
     {
         return new ClassPathXmlApplicationContext(CONFIG_LOCATIONS);
     }
+    
+    public static void main(String ... args)
+    {
+        ClassPathXmlApplicationContext ctx = (ClassPathXmlApplicationContext) getApplicationContext();
+        synchronized (ctx)
+        {
+            try { ctx.wait(10000L); } catch (Throwable e) {}
+        }
+        ctx.close();
+    }
 }

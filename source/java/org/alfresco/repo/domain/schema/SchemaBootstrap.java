@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.ServiceRegistry;
@@ -51,6 +50,7 @@ import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.LogUtil;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -83,9 +83,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String PLACEHOLDER_SCRIPT_DIALECT = "\\$\\{db\\.script\\.dialect\\}";
 
     private static final String MSG_BYPASSING_SCHEMA_UPDATE = "schema.update.msg.bypassing";
-    private static final String MSG_EXECUTING_SCRIPT = "schema.update.msg.executing_script";
+    private static final String MSG_NO_CHANGES = "schema.update.msg.no_changes";
+    private static final String MSG_ALL_STATEMENTS = "schema.update.msg.all_statements";
+    private static final String MSG_EXECUTING_GENERATED_SCRIPT = "schema.update.msg.executing_generated_script";
+    private static final String MSG_EXECUTING_COPIED_SCRIPT = "schema.update.msg.executing_copied_script";
+    private static final String MSG_EXECUTING_STATEMENT = "schema.update.msg.executing_statement";
     private static final String MSG_OPTIONAL_STATEMENT_FAILED = "schema.update.msg.optional_statement_failed";
-    private static final String MSG_DUMPING_SCHEMA_CREATE = "schema.update.msg.dumping_schema_create";
     private static final String ERR_STATEMENT_FAILED = "schema.update.err.statement_failed";
     private static final String ERR_UPDATE_FAILED = "schema.update.err.update_failed";
     private static final String ERR_VALIDATION_FAILED = "schema.update.err.validation_failed";
@@ -102,6 +105,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private List<SchemaUpgradeScriptPatch> validateUpdateScriptPatches;
     private List<SchemaUpgradeScriptPatch> preUpdateScriptPatches;
     private List<SchemaUpgradeScriptPatch> postUpdateScriptPatches;
+    
+    private ThreadLocal<StringBuilder> executedStatementsThreadLocal = new ThreadLocal<StringBuilder>();
 
     public SchemaBootstrap()
     {
@@ -192,13 +197,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * Helper method to generate a schema creation SQL script from the given Hibernate
      * configuration.
      */
-    public static void dumpSchemaCreate(Configuration cfg, File schemaOutputFile)
+    private static void dumpSchemaCreate(Configuration cfg, File schemaOutputFile)
     {
-        if (logger.isInfoEnabled())
-        {
-            String msg = I18NUtil.getMessage(MSG_DUMPING_SCHEMA_CREATE, schemaOutputFile);
-            logger.info(msg);
-        }
         // if the file exists, delete it
         if (schemaOutputFile.exists())
         {
@@ -357,8 +357,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // the applied patch table is missing - we assume that all other tables are missing
             // perform a full update using Hibernate-generated statements
             File tempFile = TempFileProvider.createTempFile("AlfrescoSchemaCreate-" + dialectStr + "-", ".sql");
-            dumpSchemaCreate(cfg, tempFile);
-            executeScriptFile(cfg, connection, tempFile, tempFile.getPath());
+            SchemaBootstrap.dumpSchemaCreate(cfg, tempFile);
+            executeScriptFile(cfg, connection, tempFile, null);
             // execute post-create scripts (not patches)
             for (String scriptUrl : this.postCreateScriptUrls)
             {
@@ -400,7 +400,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // execute if there were changes raised by Hibernate
             if (tempFile != null)
             {
-                executeScriptFile(cfg, connection, tempFile, tempFile.getPath());
+                executeScriptFile(cfg, connection, tempFile, null);
             }
             
             // Execute any post-auto-update scripts
@@ -473,7 +473,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             try { scriptInputStream.close(); } catch (Throwable e) {}  // usually a duplicate close
         }
         // now execute it
-        executeScriptFile(cfg, connection, tempFile, scriptUrl);
+        String dialectScriptUrl = scriptUrl.replaceAll(PLACEHOLDER_SCRIPT_DIALECT, dialect.getClass().getName());
+        // Replace the script placeholders
+        executeScriptFile(cfg, connection, tempFile, dialectScriptUrl);
     }
     
     /**
@@ -512,13 +514,27 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
     }
     
+    /**
+     * @param cfg           the Hibernate configuration
+     * @param connection    the DB connection to use
+     * @param scriptFile    the file containing the statements
+     * @param scriptUrl     the URL of the script to report.  If this is null, the script
+     *                      is assumed to have been auto-generated.
+     */
     private void executeScriptFile(
             Configuration cfg,
             Connection connection,
             File scriptFile,
             String scriptUrl) throws Exception
     {
-        logger.info(I18NUtil.getMessage(MSG_EXECUTING_SCRIPT, scriptUrl));
+        if (scriptUrl == null)
+        {
+            LogUtil.info(logger, MSG_EXECUTING_GENERATED_SCRIPT, scriptFile);
+        }
+        else
+        {
+            LogUtil.info(logger, MSG_EXECUTING_COPIED_SCRIPT, scriptFile, scriptUrl);
+        }
         
         InputStream scriptInputStream = new FileInputStream(scriptFile);
         BufferedReader reader = new BufferedReader(new InputStreamReader(scriptInputStream, "UTF8"));
@@ -597,22 +613,26 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("Executing statement: " + sql);
+                LogUtil.debug(logger, MSG_EXECUTING_STATEMENT, sql);
             }
             stmt.execute(sql);
+            // Write the statement to the file, if necessary
+            StringBuilder executedStatements = executedStatementsThreadLocal.get();
+            if (executedStatements != null)
+            {
+                executedStatements.append(sql).append(";\n");
+            }
         }
         catch (SQLException e)
         {
             if (optional)
             {
                 // it was marked as optional, so we just ignore it
-                String msg = I18NUtil.getMessage(MSG_OPTIONAL_STATEMENT_FAILED, sql, e.getMessage(), file.getAbsolutePath(), line);
-                logger.debug(msg);
+                LogUtil.debug(logger, MSG_OPTIONAL_STATEMENT_FAILED, sql, e.getMessage(), file.getAbsolutePath(), line);
             }
             else
             {
-                String err = I18NUtil.getMessage(ERR_STATEMENT_FAILED, sql, e.getMessage(), file.getAbsolutePath(), line);
-                logger.error(err);
+                LogUtil.error(logger, ERR_STATEMENT_FAILED, sql, e.getMessage(), file.getAbsolutePath(), line);
                 throw e;
             }
         }
@@ -640,17 +660,36 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             cfg.setProperty(Environment.CONNECTION_PROVIDER, SchemaBootstrapConnectionProvider.class.getName());
             SchemaBootstrapConnectionProvider.setBootstrapConnection(connection);
             
-            // dump the schema, if required
-            if (schemaOuputFilename != null)
-            {
-                File schemaOutputFile = new File(schemaOuputFilename);
-                dumpSchemaCreate(cfg, schemaOutputFile);
-            }
-            
             // update the schema, if required
             if (updateSchema)
             {
+                // Allocate buffer for executed statements
+                executedStatementsThreadLocal.set(new StringBuilder(1024));
+                
                 updateSchema(cfg, session, connection);
+                
+                // Copy the executed statements to the output file
+                File schemaOutputFile = null;
+                if (schemaOuputFilename != null)
+                {
+                    schemaOutputFile = new File(schemaOuputFilename);
+                }
+                else
+                {
+                    schemaOutputFile = TempFileProvider.createTempFile("AlfrescoSchemaUpdate-All_Statements-", ".sql");
+                }
+                String executedStatements = executedStatementsThreadLocal.get().toString();
+                if (executedStatements.length() == 0)
+                {
+                    LogUtil.info(logger, MSG_NO_CHANGES);
+                }
+                else
+                {
+                    FileContentWriter writer = new FileContentWriter(schemaOutputFile);
+                    writer.setEncoding("UTF-8");
+                    writer.putContent(executedStatements);
+                    LogUtil.info(logger, MSG_ALL_STATEMENTS, schemaOutputFile.getPath());
+                }
                 
                 // verify that all patches have been applied correctly 
                 checkSchemaPatchScripts(cfg, session, connection, validateUpdateScriptPatches, false);  // check scripts
@@ -659,7 +698,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             }
             else
             {
-                logger.info(I18NUtil.getMessage(MSG_BYPASSING_SCHEMA_UPDATE));
+                LogUtil.info(logger, MSG_BYPASSING_SCHEMA_UPDATE);
             }
 
             // Reset the configuration
@@ -670,6 +709,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         catch (Throwable e)
         {
+            LogUtil.error(logger, e, ERR_UPDATE_FAILED);
             try { transaction.rollback(); } catch (Throwable ee) {}
             if (updateSchema)
             {
@@ -776,7 +816,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         catch (Throwable e)
         {
-            logger.error("SchemaBootstrap script dump failed", e);
+            LogUtil.error(logger, e, "SchemaBootstrap script dump failed");
             exitCode = 1;
         }
         // We can exit

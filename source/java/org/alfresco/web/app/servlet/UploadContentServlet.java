@@ -241,5 +241,10 @@ public class UploadContentServlet extends BaseServlet
         // Set return status
         res.getWriter().write(writer.getContentData().toString());       
         res.flushBuffer();
+        
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug("UploadContentServlet done");
+        }
     }
 }

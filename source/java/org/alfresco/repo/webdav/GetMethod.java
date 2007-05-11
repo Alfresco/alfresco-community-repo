@@ -173,6 +173,7 @@ public class GetMethod extends WebDAVMethod
                 throw new WebDAVServerException(HttpServletResponse.SC_BAD_REQUEST);
             }
             // Generate a folder listing
+            m_response.setHeader(WebDAV.HEADER_CONTENT_TYPE, "text/html");
             generateDirectoryListing(nodeInfo);
         }
         else
@@ -455,11 +456,13 @@ public class GetMethod extends WebDAVMethod
                 writer.write("</td></tr>\n");
                 
                 // flush every few rows
-                if ((rowId & 7) == 0)
+                if ((rowId & 15) == 0)
                 {
                     writer.flush();
                 }
             }
+            
+            writer.write("</body></html>");
         }
         catch (Throwable e)
         {
@@ -471,7 +474,7 @@ public class GetMethod extends WebDAVMethod
                 {
                     writer.write("<table><tr><td style='color:red'>");
                     writer.write(I18NUtil.getMessage("webdav.err.dir"));
-                    writer.write("</td></tr></table>");
+                    writer.write("</td></tr></table></body></html>");
                     writer.flush();
                 }
                 catch (IOException ioe)

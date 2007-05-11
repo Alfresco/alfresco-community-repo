@@ -134,6 +134,11 @@
           <type>d:text</type>
           <mandatory>true</mandatory>
         </property>
+        <property name="wcmwf:launchDate">
+          <title>Launch Date</title>
+          <description>Date the content in the submission should be committed</description>
+          <type>d:datetime</type>
+        </property>
       </properties>
     </aspect>
 

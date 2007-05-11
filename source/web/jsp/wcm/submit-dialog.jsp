@@ -105,6 +105,18 @@
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top:16px;padding-bottom:4px;"
       width="100%" rowClasses="wizardSectionHeading">
+   <h:outputText value="&nbsp;#{msg.content_launch_date}" escape="false" />
+</h:panelGrid>
+
+<h:panelGrid columns="2" cellpadding="2" cellpadding="2" width="100%" style="margin-left:8px"
+             columnClasses=",rightHandColumn">
+   <h:outputText value="#{msg.date}:"/>
+   <a:inputDatePicker id="launch-date" value="#{DialogManager.bean.launchDate}" 
+                      initialiseIfNull="false" style="margin-right: 7px;" showTime="true" />
+</h:panelGrid>
+
+<h:panelGrid columns="1" cellpadding="2" style="padding-top:16px;padding-bottom:4px;"
+      width="100%" rowClasses="wizardSectionHeading">
    <h:outputText value="&nbsp;#{msg.modified_items}" escape="false" />
 </h:panelGrid>
 

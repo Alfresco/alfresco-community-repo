@@ -677,3 +677,13 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
    _background: url(../images/parts/spacer.gif) no-repeat bottom right !important;
    _padding: 0px 10px 10px 0px;
 }
+
+.rightHandColumn
+{
+   width: 100%;
+}
+
+.noBrColumn
+{
+   white-space: nowrap;
+}

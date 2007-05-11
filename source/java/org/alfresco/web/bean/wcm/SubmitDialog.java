@@ -91,6 +91,7 @@ public class SubmitDialog extends BaseDialogBean
    private String comment;
    private String label;
    private String[] workflowSelectedValue;
+   private Date launchDate;
    
    private List<ItemWrapper> submitItems;
    private List<ItemWrapper> warningItems;
@@ -181,6 +182,7 @@ public class SubmitDialog extends BaseDialogBean
       this.workflowItems = null;
       this.workflows = new HashSet<FormWorkflowWrapper>(4);
       this.workflowSelectedValue = null;
+      this.launchDate = null;
       
       // walk all the web forms attached the website, and lookup the workflow defaults for each
       NodeRef websiteRef = this.avmBrowseBean.getWebsite().getNodeRef();
@@ -307,6 +309,7 @@ public class SubmitDialog extends BaseDialogBean
                      params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, getComment());
                      params.put(AVMWorkflowUtil.PROP_LABEL, getLabel());
                      params.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMUtil.buildStoreRootPath(this.avmBrowseBean.getSandbox()));
+                     params.put(AVMWorkflowUtil.PROP_LAUNCH_DATE, this.launchDate);
                       
                      // update start task with submit parameters
                      this.workflowService.updateTask(startTask.id, params, null, null);
@@ -439,6 +442,22 @@ public class SubmitDialog extends BaseDialogBean
    public void setWorkflowSelectedValue(String[] workflowSelectedValue)
    {
       this.workflowSelectedValue = workflowSelectedValue;
+   }
+
+   /**
+    * @return Returns the content launch date
+    */
+   public Date getLaunchDate()
+   {
+      return this.launchDate;
+   }
+
+   /**
+    * @param launchDate The content launch date
+    */
+   public void setLaunchDate(Date launchDate)
+   {
+      this.launchDate = launchDate;
    }
 
    /**

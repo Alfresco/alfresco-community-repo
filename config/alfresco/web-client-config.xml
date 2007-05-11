@@ -210,17 +210,14 @@
                   jsp="/jsp/workflow/pooled-tasks-todo-dashlet.jsp" allow-narrow="false" />
             <dashlet id="tasks-completed" label-id="my_tasks_completed_title" description-id="my_tasks_completed_desc"
                   jsp="/jsp/workflow/tasks-completed-dashlet.jsp" allow-narrow="false" />
-            <dashlet id="my-docs-template" label-id="dashlet_mydocuments"
-                  description-id="dashlet_mydocuments_desc"
-                  jsp="/jsp/dashboards/dashlets/my-docs.jsp" allow-narrow="true" />
-            <dashlet id="content-checkedout" label-id="dashlet_checkedoutdocs"
-                  description-id="dashlet_checkedoutdocs_desc"
-                  jsp="/jsp/dashboards/dashlets/checkedout-docs.jsp" allow-narrow="false" />
-            <dashlet id="my-images" label-id="dashlet_myimages"
-                  description-id="dashlet_myimages_desc"
-                  jsp="/jsp/dashboards/dashlets/my-images.jsp" allow-narrow="false" />
             <dashlet id="opensearch" label-id="opensearch" description-id="opensearch_desc"
                   jsp="/jsp/dashboards/dashlets/opensearch.jsp" />
+            <dashlet id="doclist-webscript" label="Document List" description="Document List WebScript"
+                  jsp="/jsp/dashboards/dashlets/doclist-webscript.jsp" />
+            <dashlet id="mytasks-webscript" label="My Tasks" description="My Tasks WebScript"
+                  jsp="/jsp/dashboards/dashlets/mytasks-webscript.jsp" />
+            <dashlet id="mywebforms-webscript" label="My Web Forms" description="My Web Forms WebScript"
+                  jsp="/jsp/dashboards/dashlets/mywebforms-webscript.jsp" />                  
          </dashlets>
          <!-- set true allow the Guest user to configure the dashboard view - false by default -->
          <allow-guest-config>false</allow-guest-config>

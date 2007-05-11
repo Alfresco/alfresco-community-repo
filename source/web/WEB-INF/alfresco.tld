@@ -75,6 +75,13 @@
       </attribute>
       
       <attribute>
+         <name>showTime</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>Determines whether to show the time</description>
+      </attribute>
+      
+      <attribute>
          <name>initialiseIfNull</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>

@@ -107,22 +107,4 @@ public class WebScriptServletRuntime extends WebScriptRuntime
             authenticator.authenticate(required, isGuest, req, res);
         }
     }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptRuntime#preExecute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
-     */
-    @Override
-    protected boolean preExecute(WebScriptRequest scriptReq, WebScriptResponse scriptRes)
-    {
-        return true;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptRuntime#postExecute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
-     */
-    @Override
-    protected void postExecute(WebScriptRequest scriptReq, WebScriptResponse scriptRes)
-    {
-    }
-
 }

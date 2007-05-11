@@ -22,9 +22,6 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
 --%>
-<%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
-<%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
-<%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<h:graphicImage value="/jsp/dashboards/dashlets/my-tasks-todo.png" />
+<r:webScript scriptUrl="/alfresco/service/mytasks" />

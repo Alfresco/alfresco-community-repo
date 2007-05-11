@@ -273,15 +273,5 @@ public class WebScriptPortlet implements Portlet
             // Note: Do not render script if portlet window is minimized
             return !WindowState.MINIMIZED.equals(req.getWindowState());            
         }
-
-        /* (non-Javadoc)
-         * @see org.alfresco.web.scripts.WebScriptRuntime#postExecute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
-         */
-        @Override
-        protected void postExecute(WebScriptRequest scriptReq, WebScriptResponse scriptRes)
-        {
-        }
-        
     }
-
 }

@@ -303,7 +303,10 @@ public abstract class WebScriptRuntime
      * @param scriptRes  Web Script Response
      * @return  true => execute script, false => do not execute script
      */
-    protected abstract boolean preExecute(WebScriptRequest scriptReq, WebScriptResponse scriptRes);
+    protected boolean preExecute(WebScriptRequest scriptReq, WebScriptResponse scriptRes)
+    {
+       return true;
+    }
 
     /**
      * Post-execution hook
@@ -313,6 +316,7 @@ public abstract class WebScriptRuntime
      * @param scriptReq  Web Script Request
      * @param scriptRes  Web Script Response
      */
-    protected abstract void postExecute(WebScriptRequest scriptReq, WebScriptResponse scriptRes);
-
+    protected void postExecute(WebScriptRequest scriptReq, WebScriptResponse scriptRes)
+    {
+    }
 }

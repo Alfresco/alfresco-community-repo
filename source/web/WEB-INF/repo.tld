@@ -1973,4 +1973,32 @@
       </attribute>
    </tag>
    
+   <tag>
+      <name>webScript</name>
+      <tag-class>org.alfresco.web.scripts.jsf.WebScriptTag</tag-class>
+      <body-content>JSP</body-content>
+      
+      <description>
+         Executes a webscript within the context of a JSF component.
+      </description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>scriptUrl</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
 </taglib>

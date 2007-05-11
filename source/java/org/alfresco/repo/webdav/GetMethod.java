@@ -462,7 +462,7 @@ public class GetMethod extends WebDAVMethod
                 }
             }
             
-            writer.write("</body></html>");
+            writer.write("</table></body></html>");
         }
         catch (Throwable e)
         {
@@ -472,7 +472,7 @@ public class GetMethod extends WebDAVMethod
             {
                 try
                 {
-                    writer.write("<table><tr><td style='color:red'>");
+                    writer.write("</table><table><tr><td style='color:red'>");
                     writer.write(I18NUtil.getMessage("webdav.err.dir"));
                     writer.write("</td></tr></table></body></html>");
                     writer.flush();

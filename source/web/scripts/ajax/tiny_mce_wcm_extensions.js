@@ -106,7 +106,7 @@ function alfresco_TinyMCE_execcommand_callback(editor_id, elm, command, user_int
 
     var window_props = { file: alfresco.constants.WEBAPP_CONTEXT + "/jsp/wcm/tiny_mce_link_dialog.jsp",
                          width: 510 + tinyMCE.getLang('lang_insert_link_delta_width', 0),
-                         height: 400 + tinyMCE.getLang('lang_insert_link_delta_height', 0) };
+                         height: 265 + tinyMCE.getLang('lang_insert_link_delta_height', 0) };
     var dialog_props = { href: href, 
                          target: target, 
                          title: title, 
@@ -201,7 +201,7 @@ function alfresco_TinyMCE_execcommand_callback(editor_id, elm, command, user_int
 
     var window_props = { file: alfresco.constants.WEBAPP_CONTEXT + "/jsp/wcm/tiny_mce_image_dialog.jsp",
                          width: 510 + tinyMCE.getLang('lang_insert_image_delta_width', 0),
-                         height: 400 + (tinyMCE.isMSIE ? 25 : 0) + tinyMCE.getLang('lang_insert_image_delta_height', 0) };
+                         height: 265 + (tinyMCE.isMSIE ? 25 : 0) + tinyMCE.getLang('lang_insert_image_delta_height', 0) };
     var dialog_props = { src: src, 
                          alt: alt, 
                          border: border, 

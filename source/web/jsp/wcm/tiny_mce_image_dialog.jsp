@@ -36,49 +36,71 @@
   <jsp:directive.page isELIgnored="false"/>
   <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-	<title>{$lang_insert_image_title}</title>
-      <script language="javascript" type="text/javascript" src="${pageContext.request.contextPath}/scripts/tiny_mce/tiny_mce_popup.js">&#160;</script>
-      <script language="javascript" type="text/javascript" src="${pageContext.request.contextPath}/scripts/tiny_mce/utils/mctabs.js">&#160;</script>
-      <script language="javascript" type="text/javascript" src="${pageContext.request.contextPath}/scripts/tiny_mce/utils/form_utils.js">&#160;</script>
-      <script language="javascript" type="text/javascript" src="${pageContext.request.contextPath}/scripts/tiny_mce/themes/advanced/jscripts/image.js">&#160;</script>
-      <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/xforms.css">&#160;</link>
+      <title>{$lang_insert_image_title}</title>
+      <link rel="stylesheet" 
+            type="text/css" 
+            href="${pageContext.request.contextPath}/css/xforms.css">&#160;</link>
+      <script language="javascript" 
+              type="text/javascript" 
+              src="${pageContext.request.contextPath}/scripts/tiny_mce/tiny_mce_popup.js">&#160;</script>
+      <script language="javascript" 
+              type="text/javascript" 
+              src="${pageContext.request.contextPath}/scripts/tiny_mce/utils/mctabs.js">&#160;</script>
+      <script language="javascript" 
+              type="text/javascript" 
+              src="${pageContext.request.contextPath}/scripts/tiny_mce/utils/form_utils.js">&#160;</script>
+      <script language="javascript" 
+              type="text/javascript" 
+              src="${pageContext.request.contextPath}/scripts/tiny_mce/themes/advanced/jscripts/image.js">&#160;</script>
+      <script language="javascript" 
+              type="text/javascript" 
+              src="${pageContext.request.contextPath}/scripts/ajax/dojo/dojo.js">&#160;</script>      
       <script type="text/javascript">
-        alfresco = tinyMCEPopup.windowOpener.alfresco;
+        var alfresco = {};
+        alfresco.constants = tinyMCEPopup.windowOpener.alfresco.constants;
+        alfresco.resources = tinyMCEPopup.windowOpener.alfresco.resources;
+      </script>
+      <script language="javascript" 
+              type="text/javascript" 
+              src="${pageContext.request.contextPath}/scripts/ajax/common.js">&#160;</script>
+      <script language="javascript" 
+              type="text/javascript" 
+              src="${pageContext.request.contextPath}/scripts/ajax/ajax_helper.js">&#160;</script>
+      <script language="javascript" 
+              type="text/javascript" 
+              src="${pageContext.request.contextPath}/scripts/upload_helper.js">&#160;</script>
+      <script language="javascript" 
+              type="text/javascript" 
+              src="${pageContext.request.contextPath}/scripts/ajax/file_picker_widget.js">&#160;</script>
+      <script type="text/javascript">
         var alfFilePickerWidgetInstance;
+
         function loadPicker()
         {
-        var d = document.getElementById("alfFilePicker");
-        var pwOrigHeight = document.getElementById("panel_wrapper").offsetHeight;
-        function resizeHandler(event)
-        {
-        document.getElementById("panel_wrapper").style.height =
-        (d.offsetHeight >= 100 ? document.getElementById("panel_wrapper").offsetHeight + d.offsetHeight : pwOrigHeight) + "px";
-        };
-        function changeHandler(picker)
-        {
-        document.getElementById("src").value = picker.getValue();
-        picker.node.style.display = "none";
-        document.getElementById("src").style.display = "inline";
-        document.getElementById("alfPickerTrigger").style.display = "inline";
-        };
-        alfFilePickerWidgetInstance = new alfresco.FilePickerWidget("alfFilePicker", d, "", false, changeHandler, resizeHandler)
-        alfFilePickerWidgetInstance.render();
-        alfFilePickerWidgetInstance.node.style.display = "none";
-        //        widget._navigateToNode("/");
+          var d = document.getElementById("alfFilePicker");
+          var pwOrigHeight = document.getElementById("panel_wrapper").offsetHeight;
+          function resizeHandler(event)
+          {
+            document.getElementById("panel_wrapper").style.height =
+             (d.offsetHeight >= 100 
+              ? document.getElementById("panel_wrapper").offsetHeight + d.offsetHeight 
+              : pwOrigHeight) + "px";
+          };
+  
+          function changeHandler(picker)
+          {
+            document.getElementById("src").value = picker.getValue();
+          };
+          alfFilePickerWidgetInstance = new alfresco.FilePickerWidget("alfFilePicker", d, "", false, changeHandler, resizeHandler)
+          alfFilePickerWidgetInstance.setValue(document.getElementById("src").value);
+          alfFilePickerWidgetInstance.render();
         }
 
-        function showPicker()
-        {
-        alfFilePickerWidgetInstance.node.style.display = "block";
-        document.getElementById("src").style.display = "none";
-        document.getElementById("alfPickerTrigger").style.display = "none";
-        alfFilePickerWidgetInstance._navigateToNode("/");
-        }
-      </script>
-      
+        setTimeout("loadPicker();", 500);
+      </script>        
       <base target="_self" />
     </head>
-    <body id="image" onload="tinyMCEPopup.executeOnLoad('init(); loadPicker();');" style="display: none">
+    <body id="image" onload="tinyMCEPopup.executeOnLoad('init();');  " style="display: none">
       <form onsubmit="insertImage();return false;" action="#">
 	<div class="tabs">
 	  <ul>
@@ -91,29 +113,17 @@
             <table border="0" cellpadding="4" cellspacing="0" width="100%">
               <tr>
                 <td nowrap="nowrap"><label for="src">{$lang_insert_image_src}</label></td>
-                <td width="100%">
-                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                    <tr>
-                      <td width="100%" nowrap="nowrap">
-                        <input id="src" name="src" type="text" value="" style="width: 100%" onchange="getImageData();"/>
-                      </td>
-                      <td>
-                        <input id="alfPickerTrigger" type="button" onclick="showPicker()" value="Browse Repository"/>
-                      </td>
-                      <td id="srcbrowsercontainer">&#160;</td>
-                    </tr>
-                    <tr>
-                      <td colspan="3" width="100%">
-                        <div id="alfFilePicker" style="width:100%"/>
-                      </td>
-                    </tr>
-                  </table>
+                <td width="100%" nowrap="nowrap">
+                  <input id="src" name="src" type="hidden" value="" onchange="getImageData();"/>
+                  <div id="alfFilePicker" style="width: 100%; height: 100%;"/>
                 </td>
+                <td colspan="0" id="srcbrowsercontainer"/>
               </tr>
 	      <!-- Image list -->
 	      <script type="text/javascript">
-                <!--
-		if (typeof(tinyMCEImageList) != "undefined" && tinyMCEImageList.length > 0) {
+              <!--
+              if (typeof(tinyMCEImageList) != "undefined" && tinyMCEImageList.length > 0) 
+              {
 		var html = "";
 
 		html += '<tr><td><label for="image_list">{$lang_image_list}</label></td>';
@@ -126,8 +136,8 @@
                 html += '</select></td></tr>';
                       
                 document.write(html);
-                }
-                  -->
+              }
+              -->
               </script>
 	      <!-- /Image list -->
               <tr>

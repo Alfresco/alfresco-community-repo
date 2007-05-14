@@ -24,7 +24,20 @@
 // This script requires dojo.js, ajax_helper.js and upload_helper.js to be
 // loaded in advance.
 ////////////////////////////////////////////////////////////////////////////////
-alfresco = typeof alfresco == "undefined" ? {} : alfresco;
+if (typeof alfresco == "undefined")
+{
+  throw new Error("file_picker_widget requires alfresco be defined");
+}
+
+if (typeof alfresco.constants == "undefined")
+{
+  throw new Error("file_picker_widget requires alfresco.constants be defined");
+}
+
+if (typeof alfresco.resources == "undefined")
+{
+  throw new Error("file_picker_widget requires alfresco.resources be defined");
+}
 
 /**
  * The file picker widget.
@@ -55,7 +68,7 @@ alfresco.FilePickerWidget._handleUpload = function(id, fileInput, webappRelative
                        id,
                        alfresco.FilePickerWidget._upload_completeHandler,
                        alfresco.constants.WEBAPP_CONTEXT,
-                       "/ajax/invoke/XFormsBean.uploadFile",
+                       "/ajax/invoke/FilePickerBean.uploadFile",
                        { currentPath: webappRelativePath });
 }
 
@@ -182,19 +195,22 @@ _showSelectedValue: function()
   this._selectButton = d.createElement("input");
   this._selectButton.filePickerWidget = this;
   this._selectButton.type = "button";
-  this._selectButton.value = this.value == null ? "Select" : "Change";
+
+  this._selectButton.value = (this.value == null 
+                              ? alfresco.resources["select"] 
+                              : alfresco.resources["change"]);
   this._selectButton.disabled = this.readonly;
-  this._selectButton.style.margin = "0px 10px 0px 10px";
+  this._selectButton.style.margin = "0px 10px";
   this.node.appendChild(this._selectButton);
 
   this.selectedPathInput.style.width = (1 -
                                         ((this._selectButton.offsetWidth +
                                           dojo.html.getMargin(this._selectButton).width) /
                                          dojo.html.getContentBox(this.node).width)) * 100 + "%";
-  dojo.event.connect(this._selectButton, 
-                     "onclick", 
-                     this,
-                     this._selectButton_clickHandler);
+
+  dojo.event.browser.addListener(this._selectButton, 
+                                 "onclick", 
+                                 this._selectButton_clickHandler);
 },
 
 _selectButton_clickHandler: function(event)
@@ -211,7 +227,7 @@ _selectPathInput_changeHandler: function(event)
 _navigateToNode: function(path)
 {
   var req = alfresco.AjaxHelper.createRequest(this,
-                                              "getFilePickerData",
+                                              "FilePickerBean.getFilePickerData",
                                               {},
                                               function(type, data, evt)
                                               {
@@ -236,7 +252,6 @@ _showPicker: function(data)
                                 parseInt(this.statusDiv.style.marginTop) +
                                 parseInt(this.statusDiv.style.marginBottom))
                              : 0) + "px");
-
   this.resize_callback(this);
 
   var currentPath = data.getElementsByTagName("current-node")[0];
@@ -305,6 +320,7 @@ _showPicker: function(data)
   var addContentLink = d.createElement("a");
   headerRightDiv.appendChild(addContentLink);
   addContentLink.setAttribute("webappRelativePath", currentPath);
+  addContentLink.style.textDecoration = "none";
   addContentLink.filePickerWidget = this;
   addContentLink.setAttribute("href", "javascript:void(0)");
   dojo.event.connect(addContentLink, 
@@ -335,6 +351,7 @@ _showPicker: function(data)
   headerRightDiv.appendChild(navigateToParentLink);
   navigateToParentLink.setAttribute("webappRelativePath", currentPath);
   navigateToParentLink.filePickerWidget = this;
+  navigateToParentLink.style.textDecoration = "none";
   navigateToParentLink.setAttribute("href", "javascript:void(0)");
   if (currentPathName != "/")
   {
@@ -394,7 +411,6 @@ _showPicker: function(data)
                                   (this.statusDiv ? this.statusDiv.offsetHeight : 0) -
                                   footerDiv.offsetHeight -
                                   headerDiv.offsetHeight - 10) + "px";
-
   var childNodes = data.getElementsByTagName("child-node");
   for (var i = 0; i < childNodes.length; i++)
   {
@@ -455,6 +471,7 @@ _createRow: function(fileName, webappRelativePath,  isDirectory, fileTypeImage, 
   {
     e = d.createElement("a");
     e.filePickerWidget = this;
+    e.style.textDecoration = "none";
     e.setAttribute("href", "javascript:void(0)");
     e.setAttribute("webappRelativePath", webappRelativePath); 
     dojo.event.connect(e, "onclick", function(event)

@@ -98,7 +98,9 @@ public class AVMEditBean
    
    /** The NodeService bean reference */
    protected NodeService nodeService;
-   
+
+   /** The FilePickerBean reference */
+   protected FilePickerBean filePickerBean;
    
    // ------------------------------------------------------------------------------
    // Bean property getters and setters 
@@ -106,7 +108,7 @@ public class AVMEditBean
    /**
     * @param avmService       The AVMService to set.
     */
-   public void setAvmService(AVMService avmService)
+   public void setAvmService(final AVMService avmService)
    {
       this.avmService = avmService;
    }
@@ -114,7 +116,7 @@ public class AVMEditBean
    /**
     * @param avmSyncService       The AVMSyncService to set.
     */
-   public void setAvmSyncService(AVMSyncService avmSyncService)
+   public void setAvmSyncService(final AVMSyncService avmSyncService)
    {
       this.avmSyncService = avmSyncService;
    }
@@ -122,15 +124,23 @@ public class AVMEditBean
    /**
     * @param avmBrowseBean    The AVMBrowseBean to set.
     */
-   public void setAvmBrowseBean(AVMBrowseBean avmBrowseBean)
+   public void setAvmBrowseBean(final AVMBrowseBean avmBrowseBean)
    {
       this.avmBrowseBean = avmBrowseBean;
    }
 
    /**
+    * @param filePickerBean    The FilePickerBean to set.
+    */
+   public void setFilePickerBean(final FilePickerBean filePickerBean)
+   {
+      this.filePickerBean = filePickerBean;
+   }
+
+   /**
     * @param contentService   The ContentService to set.
     */
-   public void setContentService(ContentService contentService)
+   public void setContentService(final ContentService contentService)
    {
       this.contentService = contentService;
    }
@@ -138,7 +148,7 @@ public class AVMEditBean
    /**
     * @param nodeService      The nodeService to set.
     */
-   public void setNodeService(NodeService nodeService)
+   public void setNodeService(final NodeService nodeService)
    {
       this.nodeService = nodeService;
    }
@@ -364,6 +374,8 @@ public class AVMEditBean
          this.avmSyncService.resetLayer(path);
       }
 
+      this.filePickerBean.clearUploadedFiles();
+
       if (LOGGER.isDebugEnabled())
           LOGGER.debug("Editing AVM node: " + avmPath);
 
@@ -453,26 +465,26 @@ public class AVMEditBean
          if (this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
          {
             this.regenerateRenditions();
-            final NodeRef[] uploadedFiles = this.formProcessorSession.getUploadedFiles();
-
-            if (LOGGER.isDebugEnabled())
-                LOGGER.debug("updating " + uploadedFiles.length + " uploaded files");
-
-            final List<AVMDifference> diffList = new ArrayList<AVMDifference>(uploadedFiles.length);
-            for (NodeRef uploadedFile : uploadedFiles)
-            {
-               final String path = AVMNodeConverter.ToAVMVersionPath(uploadedFile).getSecond();
-               diffList.add(new AVMDifference(-1, path,
-                                              -1, AVMUtil.getCorrespondingPathInMainStore(path),
-                                              AVMDifference.NEWER));
-            }
-            this.avmSyncService.update(diffList, null, true, true, true, true, null, null);
          }
+         final NodeRef[] uploadedFiles = this.filePickerBean.getUploadedFiles();
+
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("updating " + uploadedFiles.length + " uploaded files");
+         
+         final List<AVMDifference> diffList = new ArrayList<AVMDifference>(uploadedFiles.length);
+         for (NodeRef uploadedFile : uploadedFiles)
+         {
+            final String path = AVMNodeConverter.ToAVMVersionPath(uploadedFile).getSecond();
+            diffList.add(new AVMDifference(-1, path,
+                                           -1, AVMUtil.getCorrespondingPathInMainStore(path),
+                                           AVMDifference.NEWER));
+         }
+         this.avmSyncService.update(diffList, null, true, true, true, true, null, null);
             
          // Possibly notify virt server
          AVMUtil.updateVServerWebapp(avmNode.getPath(), false);
          
-         resetState();
+         this.resetState();
          
          return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
       }
@@ -559,6 +571,7 @@ public class AVMEditBean
       this.setFormProcessorSession(null);
       this.instanceDataDocument = null;
       this.form = null;
+      this.filePickerBean.clearUploadedFiles();
    }
    
    /**

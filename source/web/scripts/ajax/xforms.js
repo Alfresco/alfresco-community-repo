@@ -3944,7 +3944,7 @@ dojo.declare("alfresco.xforms.XForm",
              function()
              {
                var req = alfresco.AjaxHelper.createRequest(this,
-                                                           "getXForm",
+                                                           "XFormsBean.getXForm",
                                                            {},
                                                            function(type, data, evt, kwArgs) 
                                                            {
@@ -4134,7 +4134,7 @@ dojo.declare("alfresco.xforms.XForm",
                  };
 
                  var req = alfresco.AjaxHelper.createRequest(this,
-                                                             "swapRepeatItems",
+                                                             "XFormsBean.swapRepeatItems",
                                                              params,
                                                              function(type, data, event)
                                                              {
@@ -4156,7 +4156,7 @@ dojo.declare("alfresco.xforms.XForm",
                  }
                  params.repeatIds = params.repeatIds.join(",");
                  var req = alfresco.AjaxHelper.createRequest(this,
-                                                             "setRepeatIndeces",
+                                                             "XFormsBean.setRepeatIndeces",
                                                              params,
                                                              function(type, data, evt)
                                                              {
@@ -4169,7 +4169,7 @@ dojo.declare("alfresco.xforms.XForm",
                fireAction: function(id)
                {
                  var req = alfresco.AjaxHelper.createRequest(this,
-                                                             "fireAction",
+                                                             "XFormsBean.fireAction",
                                                              { id: id },
                                                              function(type, data, evt)
                                                              {
@@ -4185,7 +4185,7 @@ dojo.declare("alfresco.xforms.XForm",
                  value = value == null ? "" : value;
                  dojo.debug("setting value " + id + " = " + value);
                  var req = alfresco.AjaxHelper.createRequest(this,
-                                                             "setXFormsValue",
+                                                             "XFormsBean.setXFormsValue",
                                                              { id: id, value: value },
                                                              function(type, data, evt)
                                                              {
@@ -4472,7 +4472,7 @@ function _show_error(msg)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DOM utilities
+// DOM utilities - XXXarielb should be merged into common.js
 ////////////////////////////////////////////////////////////////////////////////
 
 function _findElementById(node, id)
@@ -4595,36 +4595,6 @@ if (!XPathResult)
     BOOEAN_TYPE: 3,
     FIRST_ORDERED_NODE_TYPE: 9
   };
-}
-if (!String.prototype.startsWith)
-{
-  String.prototype.startsWith = function(s)
-  {
-    return this.indexOf(s) == 0;
-  }
-}
-
-if (!Array.prototype.indexOf)
-{
-  Array.prototype.indexOf = function(o)
-  {
-    for (var i = 0; i < this.length; i++)
-    {
-      if (this[i] == o)
-      {
-        return i;
-      }
-    }
-    return -1;
-  }
-}
-
-if (!Array.prototype.peek)
-{
-  Array.prototype.peek = function(o)
-  {
-    return this[this.length - 1];
-  }
 }
 
 dojo.html.toCamelCase = function(str)

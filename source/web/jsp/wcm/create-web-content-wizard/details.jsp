@@ -20,7 +20,7 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
 --%>
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
@@ -71,6 +71,10 @@
       }
    }
 
+   function mimeTypeChanged(event)
+   {
+     alert(event.target.id);
+   }
 </script>
 </f:verbatim>
 
@@ -96,7 +100,8 @@
    <h:outputText value=""/>
    <h:outputText value="#{msg.content_type}:"/>
    <h:selectOneMenu value="#{WizardManager.bean.mimeType}" 
-                    valueChangeListener="#{WizardManager.bean.createContentChanged}">
+                    valueChangeListener="#{WizardManager.bean.createContentChanged}"
+                    onchange="mimeTypeChanged">
       <f:selectItems value="#{WizardManager.bean.createMimeTypes}" />
    </h:selectOneMenu>
 

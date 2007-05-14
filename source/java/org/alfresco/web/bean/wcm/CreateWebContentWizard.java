@@ -118,6 +118,9 @@ public class CreateWebContentWizard extends BaseContentWizard
 
    /** Workflow service bean reference */
    protected WorkflowService workflowService;
+
+   /** The FilePickerBean reference */
+   protected FilePickerBean filePickerBean;
    
    /**
     * @param avmService       The AVMService to set.
@@ -159,6 +162,14 @@ public class CreateWebContentWizard extends BaseContentWizard
    {
       this.avmBrowseBean = avmBrowseBean;
    }
+
+   /**
+    * @param filePickerBean    The FilePickerBean to set.
+    */
+   public void setFilePickerBean(final FilePickerBean filePickerBean)
+   {
+      this.filePickerBean = filePickerBean;
+   }
    
    
    // ------------------------------------------------------------------------------
@@ -185,7 +196,8 @@ public class CreateWebContentWizard extends BaseContentWizard
       this.formSelectDisabled = false;
       this.createMimeTypes = null;
       this.formChoices = null;
-      
+      this.filePickerBean.clearUploadedFiles();
+
       // check for a form ID being passed in as a parameter
       if (this.parameters.get(UIUserSandboxes.PARAM_FORM_NAME) != null)
       {
@@ -279,9 +291,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected String finishImpl(final FacesContext context, final String outcome)
       throws Exception
    {
-      final NodeRef[] uploadedFiles = (this.formProcessorSession != null
-                                       ? this.formProcessorSession.getUploadedFiles()
-                                       : new NodeRef[0]);
+      final NodeRef[] uploadedFiles = this.filePickerBean.getUploadedFiles();
       final List<AVMDifference> diffList = 
          new ArrayList<AVMDifference>(1 + this.renditions.size() + uploadedFiles.length);
       diffList.add(new AVMDifference(-1, this.createdPath, 
@@ -415,6 +425,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       {
          this.formProcessorSession.destroy();
       }
+      this.filePickerBean.clearUploadedFiles();
       
       // return the default outcome
       return outcome;
@@ -741,7 +752,7 @@ public class CreateWebContentWizard extends BaseContentWizard
          return Collections.EMPTY_LIST;
       }
 
-      NodeRef[] uploadedFiles = this.formProcessorSession.getUploadedFiles();
+      final NodeRef[] uploadedFiles = this.filePickerBean.getUploadedFiles();
       final List<UIListItem> result = 
          new ArrayList<UIListItem>(uploadedFiles.length);
 

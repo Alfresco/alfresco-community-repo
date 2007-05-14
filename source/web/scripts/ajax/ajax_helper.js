@@ -36,11 +36,14 @@ alfresco.AjaxHelper = function()
 {
 }
 
+/** All pending ajax requests. */
+alfresco.AjaxHelper._requests = [];
+
 /** Creates an ajax request object. */
 alfresco.AjaxHelper.createRequest = function(target, serverMethod, methodArgs, load, error)
 {
   var result = new dojo.io.Request(alfresco.constants.WEBAPP_CONTEXT + 
-                                   "/ajax/invoke/XFormsBean." + serverMethod, 
+                                   "/ajax/invoke/" + serverMethod, 
                                    "text/xml");
   result.target = target;
   result.content = methodArgs;
@@ -96,9 +99,6 @@ alfresco.AjaxHelper._getLoaderElement = function()
   document.body.appendChild(result);
   return result;
 }
-
-/** All pending ajax requests. */
-alfresco.AjaxHelper._requests = [];
 
 /** Updates the loader message or hides it if nothing is being loaded. */
 alfresco.AjaxHelper._updateLoaderDisplay = function()

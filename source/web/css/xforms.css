@@ -219,6 +219,7 @@
 
 .xformsFilePickerFileList
 {
+        position: relative;
 	overflow-y: auto;
 	background-color: white;
 	border-left: 1px solid #67a4e6;

@@ -67,6 +67,7 @@ public class XFormsProcessor
       "/scripts/ajax/dojo/" + (LOGGER.isDebugEnabled() 
                                ? "dojo.js.uncompressed.js" 
                                : "dojo.js"),
+      "/scripts/ajax/common.js",
       "/scripts/ajax/ajax_helper.js",
       "/scripts/ajax/tiny_mce_wcm_extensions.js",
       "/scripts/ajax/xforms.js",
@@ -79,12 +80,14 @@ public class XFormsProcessor
    {
       "add_content",
       "cancel",
+      "change",
       "click_to_edit",
       "eg",
       "go_up",
       "idle",
       "loading",
       "path",
+      "select",
       "upload",
       "validation_provide_values_for_required_fields"
    };

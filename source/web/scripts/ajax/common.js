@@ -284,3 +284,34 @@ function log(message)
    logLine.appendChild(log.window_.document.createTextNode(message));
    log.window_.document.body.appendChild(logLine);
 }
+
+if (!String.prototype.startsWith)
+{
+  String.prototype.startsWith = function(s)
+  {
+    return this.indexOf(s) == 0;
+  }
+}
+
+if (!Array.prototype.indexOf)
+{
+  Array.prototype.indexOf = function(o)
+  {
+    for (var i = 0; i < this.length; i++)
+    {
+      if (this[i] == o)
+      {
+        return i;
+      }
+    }
+    return -1;
+  }
+}
+
+if (!Array.prototype.peek)
+{
+  Array.prototype.peek = function(o)
+  {
+    return this[this.length - 1];
+  }
+}

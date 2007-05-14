@@ -141,25 +141,31 @@ Alfresco.InfoPanel.prototype =
    {
       var panel = response.argument[0];
       
-      // create a 'div' to hold the summary table
-      var div = document.createElement("div");
+      // create a 'div' to hold the summary table - extend with mootools prototypes
+      var div = $(document.createElement("div"));
       
       // setup the div with the correct appearance
       div.innerHTML = response.responseText;
       div.setAttribute("class", "summaryDropShadow");
       // NOTE: use className for IE
       div.setAttribute("className", "summaryDropShadow");
-      div.style.position = "absolute";
-      div.style.display = "none";
-      div.style.left = 0;
-      div.style.top = 0;
+      div.setStyle('position', "absolute");
+      div.setStyle('display', "none");
+      div.setStyle('left', 0);
+      div.setStyle('top', 0);
       
       var body = document.getElementsByTagName("body")[0];
       body.appendChild(div);
       
+      // store a ref to this panel outer object
+      div.panel = panel;
+      panel.loading = false;
+      
+      // drag-drop object
+      new Drag.Move(div);
+      
       // keep track of the div element we created
       panel.popupElement = div;
-      panel.loading = false;
       
       // display the div for the first time
       panel.displayInfo();
@@ -181,20 +187,23 @@ Alfresco.InfoPanel.prototype =
          if (this.popupElement != null && this.visible == false)
          {
             // set opacity in browser independant way
-            YAHOO.util.Dom.setStyle(this.popupElement, "opacity", 0.0);
-            this.popupElement.style.display = "block";
-            this.popupElement.style.zIndex = _zIndex++;   // pop to front
+            this.popupElement.setStyle("opacity", 0);
+            this.popupElement.setStyle("display", "block");
+            this.popupElement.setStyle("zIndex", _zIndex++);   // pop to front
             
             Alfresco.Dom.smartAlignElement(this.popupElement, this.launchElement, 700);
             
-            var anim = new YAHOO.util.Anim(
-               this.popupElement, { opacity: { to: 1.0 } }, 0.333, YAHOO.util.Easing.easeOut);
-            anim.animate();
-            
-            // drag-drop object
-            new YAHOO.util.DD(this.popupElement);
-            
-            this.visible = true;
+            // animate the fade-in transition
+            var fxAnim = new Fx.Style(this.popupElement, 'opacity',
+            {
+               duration: 300,
+               transition: Fx.Transitions.linear,
+               onComplete: function()
+               {
+                  this.element.panel.visible = true;
+               }
+            });
+            fxAnim.start(0, 1);
          }
       }
    },
@@ -206,10 +215,17 @@ Alfresco.InfoPanel.prototype =
    {
       if (this.popupElement != null && this.visible == true)
       {
-         this.visible = false;
-         
-         YAHOO.util.Dom.setStyle(this.popupElement, "opacity", 0.0);
-         this.popupElement.style.display = "none";
+         // fade out and set the visiblilty flag on complete of the anim
+         var fxAnim = new Fx.Style(this.popupElement, 'opacity',
+         {
+            duration: 300,
+            transition: Fx.Transitions.linear,
+            onComplete: function()
+            {
+               this.element.panel.visible = false;
+            }
+         });
+         fxAnim.start(1, 0);
       }
    }
 }

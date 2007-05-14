@@ -221,39 +221,40 @@ function getContextPath()
        */
       smartAlignElement: function (el, destEl, maxwidth)
       {
+         // extend elements with useful mootools prototypes
+         el = $(el);
+         destEl = $(destEl);
+         
          // get the position of the element we are aligning against
-         var pos = YAHOO.util.Dom.getXY(destEl);
+         var pos = destEl.getPosition();
          
          // calculate display position for the element
-         var region = YAHOO.util.Dom.getRegion(el);
-         //log("DIV popup size: Width:" + (region.right-region.left) + ", Height:" + (region.bottom-region.top));
+         var region = el.getCoordinates();
+         
          var elHeight = region.bottom - region.top;
          var elWidth = region.right - region.left;
-         //log("elWidth:" + elWidth + " maxwidth:" + maxwidth);
          if (maxwidth != undefined && maxwidth != null)
          {
             if (elWidth > maxwidth) elWidth = maxwidth;
          }
-         var docWidth = YAHOO.util.Dom.getDocumentWidth();
-         //log(" Element X:" + pos[0] + " doc width:" + YAHOO.util.Dom.getDocumentWidth());
-         if (pos[0] + 20 + elWidth < docWidth)
+         var docWidth = Window.innerWidth + Window.scrollMaxX;
+         if (pos.x + 20 + elWidth < docWidth)
          {
-            el.style.left = (pos[0] + 20) + "px";
+            el.style.left = (pos.x + 20) + "px";
          }
          else
          {
-            //log(" Shifting X coord left - overflow");
-            el.style.left = (pos[0] + 20 - ((pos[0] + elWidth) - docWidth)) + "px";
+            // Shifting X coord left - overflow
+            el.style.left = (pos.x + 20 - ((pos.x + elWidth) - docWidth)) + "px";
          }
-         //log(" Element Y:" + pos[1] + " doc height:" + YAHOO.util.Dom.getDocumentHeight());
-         if (pos[1] + 12 + elHeight < YAHOO.util.Dom.getDocumentHeight())
+         if (pos.y + 12 + elHeight < (Window.innerHeight + Window.scrollMaxY))
          {
-            el.style.top = (pos[1] + 12) + "px";
+            el.style.top = (pos.y + 12) + "px";
          }
          else
          {
-            //log(" Shifting Y coord up - overflow");
-            el.style.top = (pos[1] - elHeight + 4) + "px";
+            // Shifting Y coord up - overflow
+            el.style.top = (pos.y - elHeight + 4) + "px";
          }
       }
    };

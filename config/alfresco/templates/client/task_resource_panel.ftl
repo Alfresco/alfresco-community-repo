@@ -4,7 +4,7 @@
       <td><a href="${url.context}${res.url}" target="new"><img src="${url.context}${res.icon16}" border=0></a></td>
       <td>
          <#if res.isDocument>
-            <a class="resourceLink" href="${url.context}${res.url}" target="new">${res.name}</a>
+            <a class="resourceLink" onclick="event.cancelBubble=true;" href="${url.context}${res.url}" target="new">${res.name}</a>
          <#else>
             <span class="resourceLink">${res.name}</span>
          </#if>

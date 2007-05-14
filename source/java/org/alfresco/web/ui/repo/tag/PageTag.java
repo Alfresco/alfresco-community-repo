@@ -174,25 +174,15 @@ public class PageTag extends TagSupport
          out.write(reqPath);
          out.write("/scripts/ajax/yahoo/connection/connection-min.js\"></script>");
          
-         // DOM handling
-         out.write("<script type=\"text/javascript\" src=\"");
-         out.write(reqPath);
-         out.write("/scripts/ajax/yahoo/dom/dom-min.js\"></script>");
-         
          // event handling
          out.write("<script type=\"text/javascript\" src=\"");
          out.write(reqPath);
          out.write("/scripts/ajax/yahoo/event/event-min.js\"></script>");
          
-         // animation
+         // mootools
          out.write("<script type=\"text/javascript\" src=\"");
          out.write(reqPath);
-         out.write("/scripts/ajax/yahoo/animation/animation-min.js\"></script>");
-         
-         // drag-drop
-         out.write("<script type=\"text/javascript\" src=\"");
-         out.write(reqPath);
-         out.write("/scripts/ajax/yahoo/dragdrop/dragdrop-min.js\"></script>");
+         out.write("/scripts/ajax/mootools.v1.1.js\"></script>");
          
          // common Alfresco util methods
          out.write("<script type=\"text/javascript\" src=\"");

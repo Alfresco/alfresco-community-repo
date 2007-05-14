@@ -301,7 +301,13 @@ public class DatePickerRenderer extends BaseRenderer
             {
                out.write(" color: #666666; font-style: italic;\">");
             }
-            out.write(Application.getMessage(context, "none"));
+            // work out which label to use
+            String noneLabel = (String)component.getAttributes().get("noneLabel");
+            if (noneLabel == null || noneLabel.length() == 0)
+            {
+               noneLabel = Application.getMessage(context, "none");
+            }
+            out.write(noneLabel);
             if (disabled.booleanValue() == false)
             {
                out.write("</a>");

@@ -144,6 +144,9 @@ public class AVMBrowseBean implements IContextListener
    /** list of the deployment monitor ids currently executing */
    private List<String> deploymentMonitorIds = new ArrayList<String>();
    
+   /** List of expired paths to submit */
+   private List<AVMNodeDescriptor> expiredNodes = Collections.<AVMNodeDescriptor>emptyList();
+   
    /* component references */
    private UIRichList foldersRichList;
    private UIRichList filesRichList;
@@ -452,6 +455,26 @@ public class AVMBrowseBean implements IContextListener
    public void setDeploymentMonitorIds(List<String> deploymentMonitorIds)
    {
       this.deploymentMonitorIds = deploymentMonitorIds;
+   }
+
+   /**
+    * Returns the list of expired nodes. Used by the submit dialog to retrieve
+    * nodes to potentially submit when a user completes a change request
+    * task dealing with content expiration.
+    * 
+    * @return The list of expired nodes
+    */
+   public List<AVMNodeDescriptor> getExpiredNodes()
+   {
+      return this.expiredNodes;
+   }
+
+   /**
+    * @param expiredNodes List of nodes in the users sandbox that have expired
+    */
+   public void setExpiredNodes(List<AVMNodeDescriptor> expiredNodes)
+   {
+      this.expiredNodes = expiredNodes;
    }
 
    /**
@@ -827,6 +850,17 @@ public class AVMBrowseBean implements IContextListener
       String store = params.get("store");
       String username = params.get("username");
       
+      setupSandboxActionImpl(store, username, true);
+   }
+   
+   /**
+    * Setup the context for a sandbox browse action
+    * 
+    * @param store The store name for the action
+    * @param username The authority pertinent to the action (null for staging store actions) 
+    */
+   public void setupSandboxAction(String store, String username)
+   {
       setupSandboxActionImpl(store, username, true);
    }
 

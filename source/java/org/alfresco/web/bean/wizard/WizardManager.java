@@ -61,7 +61,7 @@ public final class WizardManager
    private Map<String, String> paramsToApply;
    
    /**
-    * Action handler used to setup parameters for the wizard being launched
+    * Sets the parameters the next wizard will initialise with
     * 
     * @param params The parameters
     */

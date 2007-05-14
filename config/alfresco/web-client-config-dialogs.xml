@@ -185,6 +185,10 @@
          <dialog name="submitConfigureWorkflow" page="/jsp/wcm/submit-config-workflow.jsp" managed-bean="SubmitConfigureWorkflowDialog"
                  icon="/images/icons/manage_workflow_task_large.gif" title-id="submit_configure_workflow" 
                  description-id="submit_configure_workflow_desc" />
+                 
+         <dialog name="changeExpirationDate" page="/jsp/wcm/change-expiration-date.jsp" managed-bean="ChangeExpirationDateDialog"
+                 icon="/images/icons/change_expire_date_large.gif" title-id="change_expiration_date_title" 
+                 description-id="change_expiration_date_desc" />        
          
          <dialog name="createWebappFolder" page="/jsp/wcm/create-webapp.jsp" managed-bean="CreateWebappDialog"
                  icon="/images/icons/create_webapp_large.gif" title-id="create_webapp_title" 
@@ -252,6 +256,15 @@
          <dialog name="deleteSpace" page="/jsp/dialog/delete.jsp" managed-bean="DeleteWebsiteDialog"
                  icon="/images/icons/delete_website_large.gif" title-id="delete_website" 
                  description-id="delete_website_info" />
+      </dialogs>
+   </config>
+   
+   <config evaluator="node-type" condition="wcmwf:changeRequestTask">
+      <dialogs>
+         <dialog name="manageTask" page="/jsp/workflow/manage-task-dialog.jsp"
+                 managed-bean="ManageChangeRequestTaskDialog" 
+                 icon="/images/icons/manage_workflow_task_large.gif" 
+                 description-id="manage_task_desc" />
       </dialogs>
    </config>
 </alfresco-config>

@@ -675,6 +675,7 @@ public class StartWorkflowWizard extends BaseWizardBean
          ConfigElement config = Application.getConfigService(fc).getGlobalConfig().getConfigElement("wcm");
          if (config != null)
          {
+            // get the main WCM workflows
             ConfigElement workflowConfig = config.getChild("workflows");
             if (workflowConfig != null)
             {
@@ -690,6 +691,23 @@ public class StartWorkflowWizard extends BaseWizardBean
             {
                if (logger.isWarnEnabled())
                   logger.warn("WARNING: Unable to find WCM 'workflows' config element definition.");
+            }
+            
+            // get the admin WCM workflows
+            ConfigElement adminWorkflowConfig = config.getChild("admin-workflows");
+            if (adminWorkflowConfig != null)
+            {
+               StringTokenizer t = new StringTokenizer(adminWorkflowConfig.getValue().trim(), ", ");
+               while (t.hasMoreTokens())
+               {
+                  String wfName = "jbpm$" + t.nextToken();
+                  wcmWorkflows.put(wfName, wfName);
+               }
+            }
+            else
+            {
+               if (logger.isWarnEnabled())
+                  logger.warn("WARNING: Unable to find WCM 'admin-workflows' config element definition.");
             }
          }
          else

@@ -69,6 +69,7 @@ public class InputDatePickerTag extends HtmlComponentTag
       this.showTime = null;
       this.disabled = null;
       this.initIfNull = null;
+      this.noneLabel = null;
    }
    
    /**
@@ -82,6 +83,7 @@ public class InputDatePickerTag extends HtmlComponentTag
       setIntProperty(component, "startYear", this.startYear);
       setIntProperty(component, "yearCount", this.yearCount);
       setStringProperty(component, "value", this.value);
+      setStringProperty(component, "noneLabel", this.noneLabel);
       setBooleanProperty(component, "showTime", this.showTime);
       setBooleanProperty(component, "disabled", this.disabled);
       setBooleanProperty(component, "initialiseIfNull", this.initIfNull);
@@ -149,10 +151,21 @@ public class InputDatePickerTag extends HtmlComponentTag
       this.initIfNull = initialiseIfNull;
    }
    
+   /**
+    * Sets the explicit label to use when there is no date set
+    * 
+    * @param noneLabel 'None' label to use
+    */
+   public void setNoneLabel(String noneLabel)
+   {
+      this.noneLabel = noneLabel;
+   }
+   
    private String startYear = null;
    private String yearCount = null;
    private String value = null;
    private String showTime = null;
    private String disabled = null;
    private String initIfNull = null;
+   private String noneLabel = null;
 }

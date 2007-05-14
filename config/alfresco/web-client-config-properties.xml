@@ -401,9 +401,9 @@
    
    <config evaluator="node-type" condition="wcmwf:submitReviewTask" replace="true">
       <property-sheet>
-         <separator name="sep2" display-label-id="wf_review_options" component-generator="HeaderSeparatorGenerator" />
+         <separator name="sep1" display-label-id="wf_review_options" component-generator="HeaderSeparatorGenerator" />
          <show-property name="wcmwf:submitReviewType"/>
-         <separator name="sep3" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
+         <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
          <show-association name="bpm:assignees" display-label-id="wf_reviewers" />
       </property-sheet>
    </config>
@@ -445,14 +445,29 @@
          <show-property name="wcmwf:approveCnt" read-only="true"/>
       </property-sheet>
    </config>
+   
+   <config evaluator="node-type" condition="wcmwf:changeRequestTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" />
+         <show-property name="bpm:description" read-only="true"/>
+         <show-property name="bpm:status" />
+      </property-sheet>
+   </config>
 
-   <!-- Configuration for wcm types -->
+   <!-- Configuration for wcm types and aspects -->
    <config evaluator="node-type" condition="wca:webfolder">
       <property-sheet>
          <show-property name="wca:avmstore" read-only="true" />
          <show-property name="wca:defaultwebapp" read-only="true" />
          <show-property name="wca:deployto" read-only="true" />
          <show-property name="app:icon" show-in-view-mode="false" show-in-edit-mode="false" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="aspect-name" condition="wca:expires">
+      <property-sheet>
+         <show-property name="wca:expirationDate" read-only="true" />
       </property-sheet>
    </config>
    

@@ -9,6 +9,10 @@
             wcmwf:submit
          </workflows>
          
+         <admin-workflows>
+            wcmwf:changerequest
+         </admin-workflows>
+         
          <!-- default values for website deployment -->
          <deployment>
             <!-- username to login as on the remote machine -->

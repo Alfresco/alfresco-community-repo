@@ -45,11 +45,13 @@ import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.wf.AVMSubmittedAspect;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -74,8 +76,8 @@ import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.WebResources;
 import org.alfresco.util.VirtServerUtils;
-
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Submit items for WCM workflow dialog.
@@ -84,6 +86,7 @@ import org.alfresco.util.VirtServerUtils;
  */
 public class SubmitDialog extends BaseDialogBean
 {
+   public static final String PARAM_STARTED_FROM_WORKFLOW = "startedFromWorkflow";
    private static final String SPACE_ICON = "/images/icons/" + BrowseBean.SPACE_SMALL_DEFAULT + ".gif";
    private static final String MSG_DELETED_ITEM = "avm_node_deleted";
    private static final String MSG_ERR_WORKFLOW_CONFIG = "submit_workflow_config_error";
@@ -91,12 +94,16 @@ public class SubmitDialog extends BaseDialogBean
    private String comment;
    private String label;
    private String[] workflowSelectedValue;
+   private boolean enteringExpireDate = false;
+   private boolean startedFromWorkflow = false;
+   private Date defaultExpireDate;
    private Date launchDate;
    
    private List<ItemWrapper> submitItems;
    private List<ItemWrapper> warningItems;
    private HashSet<FormWorkflowWrapper> workflows;
    private Map<String, FormWorkflowWrapper> formWorkflowMap;
+   private Map<String, Date> expirationDates;
    private List<UIListItem> workflowItems;
 
    // The virtualization server might need to be notified 
@@ -118,6 +125,8 @@ public class SubmitDialog extends BaseDialogBean
    
    /** Current workflow for dialog context */
    protected WorkflowConfiguration actionWorkflow = null;
+   
+   private static Log logger = LogFactory.getLog(SubmitDialog.class);
    
    /**
     * @param avmService       The AVM Service to set.
@@ -181,8 +190,14 @@ public class SubmitDialog extends BaseDialogBean
       this.warningItems = null;
       this.workflowItems = null;
       this.workflows = new HashSet<FormWorkflowWrapper>(4);
+      this.expirationDates = new HashMap<String, Date>(8);
+      this.defaultExpireDate = new Date();
       this.workflowSelectedValue = null;
       this.launchDate = null;
+      
+      // determine if the dialog has been started from a workflow
+      Boolean bool = new Boolean(this.parameters.get(PARAM_STARTED_FROM_WORKFLOW));
+      this.startedFromWorkflow = bool;
       
       // walk all the web forms attached the website, and lookup the workflow defaults for each
       NodeRef websiteRef = this.avmBrowseBean.getWebsite().getNodeRef();
@@ -290,6 +305,9 @@ public class SubmitDialog extends BaseDialogBean
                               srcPath.substring(srcPath.indexOf(':'),srcPath.length());
                         }
                         
+                        // process the expiration date (if any)
+                        processExpirationDate(srcPath);
+                        
                         srcPaths.add(srcPath);
                      }
                      
@@ -297,7 +315,7 @@ public class SubmitDialog extends BaseDialogBean
                         AVMWorkflowUtil.createWorkflowPackage(srcPaths,
                               sandboxInfo,
                               path,
-                              avmSubmittedAspect,
+                              this.avmSubmittedAspect,
                               this.avmSyncService,
                               this.avmService,
                               this.workflowService,
@@ -356,6 +374,9 @@ public class SubmitDialog extends BaseDialogBean
             {
                this.virtUpdatePath = destPath;
             }
+            
+            // process the expiration date (if any)
+            processExpirationDate(srcPath);
          }
          
          // write changes to layer so files are marked as modified
@@ -427,7 +448,39 @@ public class SubmitDialog extends BaseDialogBean
    {
       this.label = label;
    }
-      
+   
+   /**
+    * @return The default expiration date
+    */   
+   public Date getDefaultExpireDate()
+   {
+      return this.defaultExpireDate;
+   }
+
+   /**
+    * @param defaultExpireDate The default expiration date
+    */
+   public void setDefaultExpireDate(Date defaultExpireDate)
+   {
+      this.defaultExpireDate = defaultExpireDate;
+   }
+   
+   /**
+    * @return true if a default expiration date is being entered
+    */
+   public boolean isEnteringExpireDate()
+   {
+      return this.enteringExpireDate;
+   }
+
+   /**
+    * @return Map of expiration dates for the modified items
+    */
+   public Map<String, Date> getExpiredDates()
+   {
+      return this.expirationDates;
+   }
+
    /**
     * @return Returns the workflow Selected Value.
     */
@@ -598,32 +651,43 @@ public class SubmitDialog extends BaseDialogBean
          tx.begin();
          
          List<AVMNodeDescriptor> selected;
-         if (this.avmBrowseBean.getAllItemsAction())
+         if (this.startedFromWorkflow)
          {
-            String webapp = this.avmBrowseBean.getWebapp();
-            String userStore = AVMUtil.buildStoreWebappPath(this.avmBrowseBean.getSandbox(), webapp);
-            String stagingStore = AVMUtil.buildStoreWebappPath(this.avmBrowseBean.getStagingStore(), webapp);
-            List<AVMDifference> diffs = this.avmSyncService.compare(-1, userStore, -1, stagingStore, nameMatcher);
-            selected = new ArrayList<AVMNodeDescriptor>(diffs.size());
-            for (AVMDifference diff : diffs)
-            {
-               AVMNodeDescriptor node = this.avmService.lookup(-1, diff.getSourcePath(), true);
-               selected.add(node);
-            }
-         }
-         else if (this.avmBrowseBean.getAvmActionNode() == null)
-         {
-            // multiple items selected
-            selected = this.avmBrowseBean.getSelectedSandboxItems();
+            // if the dialog was started from a workflow the AVM browse bean should
+            // have the list of nodes that need submitting
+            selected = this.avmBrowseBean.getExpiredNodes();
          }
          else
          {
-            // single item selected
-            AVMNodeDescriptor node =
-               this.avmService.lookup(-1, this.avmBrowseBean.getAvmActionNode().getPath(), true);
-            selected = new ArrayList<AVMNodeDescriptor>(1);
-            selected.add(node);
+            // if the dialog was started from the UI determine what nodes the user selected to submit
+            if (this.avmBrowseBean.getAllItemsAction())
+            {
+               String webapp = this.avmBrowseBean.getWebapp();
+               String userStore = AVMUtil.buildStoreWebappPath(this.avmBrowseBean.getSandbox(), webapp);
+               String stagingStore = AVMUtil.buildStoreWebappPath(this.avmBrowseBean.getStagingStore(), webapp);
+               List<AVMDifference> diffs = this.avmSyncService.compare(-1, userStore, -1, stagingStore, nameMatcher);
+               selected = new ArrayList<AVMNodeDescriptor>(diffs.size());
+               for (AVMDifference diff : diffs)
+               {
+                  AVMNodeDescriptor node = this.avmService.lookup(-1, diff.getSourcePath(), true);
+                  selected.add(node);
+               }
+            }
+            else if (this.avmBrowseBean.getAvmActionNode() == null)
+            {
+               // multiple items selected
+               selected = this.avmBrowseBean.getSelectedSandboxItems();
+            }
+            else
+            {
+               // single item selected
+               AVMNodeDescriptor node =
+                  this.avmService.lookup(-1, this.avmBrowseBean.getAvmActionNode().getPath(), true);
+               selected = new ArrayList<AVMNodeDescriptor>(1);
+               selected.add(node);
+            }
          }
+
          if (selected != null)
          {
             Set<String> submittedPaths = new HashSet<String>(selected.size());
@@ -724,6 +788,34 @@ public class SubmitDialog extends BaseDialogBean
    }
    
    /**
+    * Sets up the expiration date for the given source path
+    * 
+    * @param srcPath The path to set the expiration date for
+    */
+   private void processExpirationDate(String srcPath)
+   {
+      // if an expiration date has been set for this item we need to
+      // add the expires aspect and the date supplied
+      Date expirationDate = this.expirationDates.get(srcPath);
+      if (expirationDate != null)
+      {
+         // make sure the aspect is present
+         if (this.avmService.hasAspect(-1, srcPath, WCMAppModel.ASPECT_EXPIRES) == false)
+         {
+            this.avmService.addAspect(srcPath, WCMAppModel.ASPECT_EXPIRES);
+         }
+         
+         // set the expiration date
+         this.avmService.setNodeProperty(srcPath, WCMAppModel.PROP_EXPIRATIONDATE, 
+                  new PropertyValue(DataTypeDefinition.DATETIME, expirationDate));
+         
+         if (logger.isDebugEnabled())
+            logger.debug("Set expiration date of " + expirationDate + 
+                     " for " + srcPath);
+      }
+   }
+   
+   /**
     * Action method to setup a workflow for dialog context for the current row
     */
    public void setupConfigureWorkflow(ActionEvent event)
@@ -757,6 +849,37 @@ public class SubmitDialog extends BaseDialogBean
       this.actionWorkflow = actionWorkflow;
    }
    
+   /**
+    * Applies the entered default date to all modified items
+    * 
+    * @param event The event
+    */
+   public void applyDefaultExpireDateToAll(ActionEvent event)
+   {
+      if (logger.isDebugEnabled())
+         logger.debug("applying default expiration date of " + this.defaultExpireDate + " to all modified items");
+      
+      List<ItemWrapper> items = this.getSubmitItems();
+      for (ItemWrapper item : items)
+      {
+         if (item.descriptor.getType() == 0)
+         {
+            this.expirationDates.put(item.descriptor.getPath(), this.defaultExpireDate);
+         }
+      }
+
+      this.enteringExpireDate = false;
+   }
+   
+   /**
+    * Toggles the enteringExpireDate flag
+    * 
+    * @param event The event
+    */
+   public void enterExpireDate(ActionEvent event)
+   {
+      this.enteringExpireDate = true;
+   }
    
    /**
     * Simple structure class to wrap form workflow name and default parameter values
@@ -866,6 +989,11 @@ public class SubmitDialog extends BaseDialogBean
          this.descriptor = descriptor;
       }
       
+      public boolean getExpirable()
+      {
+         return this.descriptor.isFile() && (this.descriptor.isDeleted() == false);
+      }
+      
       public boolean getDeleted()
       {
          return descriptor.isDeleted();
@@ -886,6 +1014,19 @@ public class SubmitDialog extends BaseDialogBean
          return ISO8601DateFormat.format(new Date(descriptor.getModDate()));
       }
       
+      public String getExpirationDate()
+      {
+         String expireDate = null;
+         
+         Date date = expirationDates.get(this.descriptor.getPath());
+         if (date != null)
+         {
+            expireDate = ISO8601DateFormat.format(date);
+         }
+         
+         return expireDate;
+      }
+      
       public String getDescription()
       {
          if (descriptor.isDeleted() == false)
@@ -902,6 +1043,11 @@ public class SubmitDialog extends BaseDialogBean
       public String getPath()
       {
          return descriptor.getPath().substring(descriptor.getPath().indexOf(rootPath) + rootPath.length());
+      }
+      
+      public String getFullPath()
+      {
+         return descriptor.getPath();
       }
       
       public String getUrl()

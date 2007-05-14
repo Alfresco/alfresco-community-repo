@@ -51,6 +51,7 @@ public class DatePickerGenerator extends BaseComponentGenerator
    private boolean initialiseIfNull = false;
    private int yearCount = 30;
    private int startYear = Calendar.getInstance().get(Calendar.YEAR) + 2;
+   private String noneLabel = null;
    
    private static final String MSG_DATE = "date_pattern";
    
@@ -106,6 +107,27 @@ public class DatePickerGenerator extends BaseComponentGenerator
       this.initialiseIfNull = initialiseIfNull;
    }
 
+   /**
+    * Returns the label to use when there is no date set.
+    * 
+    * @return The 'None' label to use
+    */
+   public String getNoneLabel()
+   {
+      return this.noneLabel;
+   }
+
+   /**
+    * Sets the label to use when there is no date set.
+    * Setting this to null will use the default label.
+    * 
+    * @param noneLabel The 'None' label 
+    */
+   public void setNoneLabel(String noneLabel)
+   {
+      this.noneLabel = noneLabel;
+   }
+
    @SuppressWarnings("unchecked")
    public UIComponent generate(FacesContext context, String id)
    {
@@ -117,7 +139,11 @@ public class DatePickerGenerator extends BaseComponentGenerator
       component.getAttributes().put("yearCount", this.yearCount);
       component.getAttributes().put("initialiseIfNull", new Boolean(this.initialiseIfNull));
       component.getAttributes().put("style", "margin-right: 7px;");
-               
+      if (this.noneLabel != null)
+      {
+         component.getAttributes().put("noneLabel", this.noneLabel);
+      }
+      
       return component;
    }
 

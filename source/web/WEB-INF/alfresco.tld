@@ -91,6 +91,15 @@
             None button thus disallowing the user to set the date back to null.
          </description>
       </attribute>
+      
+      <attribute>
+         <name>noneLabel</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>
+            Label to use when there is no date currently set
+         </description>
+      </attribute>
    </tag>
    
    <tag>

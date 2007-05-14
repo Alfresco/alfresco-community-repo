@@ -52,6 +52,16 @@ public final class DialogManager
    private Map<String, String> paramsToApply;
    
    /**
+    * Sets the parameters the next dialog will initialise with
+    * 
+    * @param params The parameters
+    */
+   public void setupParameters(Map<String, String> params)
+   {
+      this.paramsToApply = params;
+   }
+   
+   /**
     * Action handler used to setup parameters for the dialog being launched
     * 
     * @param event The event containing the parameters

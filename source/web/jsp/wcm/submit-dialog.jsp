@@ -67,10 +67,13 @@
    <h:outputText value="&nbsp;#{msg.submit_submission_info}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellpadding="2" cellpadding="2" width="100%" style="margin-left:8px">
+<h:panelGrid columns="3" cellpadding="2" cellpadding="2" width="100%" style="margin-left:8px" 
+             columnClasses=",,rightHandColumn">
+   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.submit_comment}:"/>
    <h:inputText id="comment" value="#{DialogManager.bean.comment}" maxlength="1024" size="35"
         onkeyup="javascript:checkButtonState();" />
+   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.submit_snapshotlabel}:"/>
    <h:inputText id="label" value="#{DialogManager.bean.label}" maxlength="1024" size="35"
         onkeyup="javascript:checkButtonState();" />
@@ -103,16 +106,38 @@
    </h:panelGroup>
 </h:panelGrid>
 
-<h:panelGrid columns="1" cellpadding="2" style="padding-top:16px;padding-bottom:4px;"
+<h:panelGrid columns="1" cellpadding="2" style="padding-top:10px;padding-bottom:4px;"
       width="100%" rowClasses="wizardSectionHeading">
-   <h:outputText value="&nbsp;#{msg.content_launch_date}" escape="false" />
+   <h:outputText value="&nbsp;#{msg.content_launch}" escape="false" />
 </h:panelGrid>
 
 <h:panelGrid columns="2" cellpadding="2" cellpadding="2" width="100%" style="margin-left:8px"
-             columnClasses=",rightHandColumn">
-   <h:outputText value="#{msg.date}:"/>
+             columnClasses="noBrColumn,rightHandColumn">
+   <h:outputText value="#{msg.launch_date}:"/>
    <a:inputDatePicker id="launch-date" value="#{DialogManager.bean.launchDate}" 
                       initialiseIfNull="false" style="margin-right: 7px;" showTime="true" />
+</h:panelGrid>
+
+<h:panelGrid columns="1" cellpadding="2" style="padding-top:10px;padding-bottom:4px;"
+      width="100%" rowClasses="wizardSectionHeading">
+   <h:outputText value="&nbsp;#{msg.expiration_date_header}" escape="false" />
+</h:panelGrid>
+
+<h:panelGrid columns="2" cellpadding="2" cellpadding="2" width="100%" style="margin-left:8px"
+             columnClasses="noBrColumn,rightHandColumn" rendered="#{DialogManager.bean.enteringExpireDate}">
+   <a:inputDatePicker id="default-expire-date" value="#{DialogManager.bean.defaultExpireDate}" 
+                      initialiseIfNull="false" style="margin-right: 7px;" showTime="true" />
+   <h:commandButton id="apply-expire-to-all" value="#{msg.apply_to_all}" style="margin-left:10px;"
+                    actionListener="#{DialogManager.bean.applyDefaultExpireDateToAll}" />
+</h:panelGrid>
+
+<h:panelGrid columns="1" style="margin-left: 12px; margin-top: 6px;" cellpadding="0" cellspacing="0"
+             rendered="#{DialogManager.bean.enteringExpireDate == false}">
+	<h:commandLink value="#{msg.set_expiration_date}" actionListener="#{DialogManager.bean.enterExpireDate}" />
+</h:panelGrid>
+
+<h:panelGrid columns="1" style="margin-left: 12px; margin-top: 8px;" cellpadding="0" cellspacing="0">
+	<h:outputText value="#{msg.change_expiration_date_change}" />
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top:16px;padding-bottom:4px;"
@@ -228,15 +253,30 @@
             </h:outputText>
          </a:column>
          
-         <%-- Actions column --%>
-         <a:column id="col14" actions="true" style="text-align:left">
+         <%-- Expiration Date column --%>
+         <a:column id="col14" style="text-align:left; white-space:nowrap">
             <f:facet name="header">
-               <h:outputText id="col14-txt" value="#{msg.actions}"/>
+               <a:sortLink label="#{msg.expiration_date}" value="expirationDate" styleClass="header" />
             </f:facet>
-            
-            <a:actionLink value="#{msg.file_preview}" image="/images/icons/preview_website.gif" href="#{r.previewUrl}" target="new" />
+            <h:outputText id="col14-date" value="#{r.expirationDate}">
+               <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
+            </h:outputText>
          </a:column>
          
+         <%-- Actions column --%>
+         <a:column id="col15" actions="true" style="text-align:left">
+            <f:facet name="header">
+               <h:outputText id="col15-txt" value="#{msg.actions}"/>
+            </f:facet>
+            <a:actionLink value="#{msg.file_preview}" image="/images/icons/preview_website.gif" showLink="false"
+                          href="#{r.previewUrl}" target="new" />
+            <a:actionLink value="#{msg.change_expiration_date_title}" image="/images/icons/change_expire_date.gif" 
+                          showLink="false" style="padding-left: 4px;" rendered="#{r.expirable}"
+                          action="dialog:changeExpirationDate" actionListener="#{DialogManager.setupParameters}">
+            	<f:param name="avmpath" value="#{r.fullPath}" />
+            </a:actionLink> 
+         </a:column>
+
          <a:dataPager styleClass="pager" />
       </a:richList>
    </h:panelGroup>

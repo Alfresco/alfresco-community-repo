@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.DNSNameMangler;
 import org.alfresco.util.GUID;
 import org.alfresco.util.DNSNameMangler;
 import org.alfresco.web.bean.repository.Repository;
@@ -312,7 +313,7 @@ public final class SandboxFactory
     * Create a workflow sandbox for the named store.
     * 
     * Various store meta-data properties are set including:
-    * Identifier for store-types: .sandbox.author.main and .sandbox.author.preview
+    * Identifier for store-types: .sandbox.workflow.main and .sandbox.workflow.preview
     * Store-id: .sandbox-id.<guid> (unique across all stores in the sandbox)
     * DNS: .dns.<store> = <path-to-webapps-root>
     * Website Name: .website.name = website name
@@ -328,7 +329,7 @@ public final class SandboxFactory
       
       final String stagingStoreName = AVMUtil.buildStagingStoreName(storeId);
 
-      // create the user 'main' store
+      // create the workflow 'main' store
       final String packageName = AVMUtil.STORE_WORKFLOW + "-" + GUID.generate();
       final String mainStoreName = 
          AVMUtil.buildWorkflowMainStoreName(storeId, packageName);
@@ -368,14 +369,14 @@ public final class SandboxFactory
       // snapshot the store
       avmService.createSnapshot(mainStoreName, null, null);
          
-      // create the user 'preview' store
+      // create the workflow 'preview' store
       final String previewStoreName = 
          AVMUtil.buildWorkflowPreviewStoreName(storeId, packageName);
       avmService.createStore(previewStoreName);
       if (logger.isDebugEnabled())
-         logger.debug("Created user sandbox preview store: " + previewStoreName);
+         logger.debug("Created workflow sandbox preview store: " + previewStoreName);
          
-      // create a layered directory pointing to 'www' in the user 'main' store
+      // create a layered directory pointing to 'www' in the workflow 'main' store
       avmService.createLayeredDirectory(AVMUtil.buildStoreRootPath(mainStoreName), 
                                         previewStoreName + ":/", 
                                         JNDIConstants.DIR_DEFAULT_WWW);
@@ -398,7 +399,7 @@ public final class SandboxFactory
       // The preview worfkflow store depends on the main workflow store (dist=1)
       tagStoreBackgroundLayer(avmService,previewStoreName, mainStoreName,1);
 
-      // The preview user store depends on the main staging store (dist=2)
+      // The preview workflow store depends on the main staging store (dist=2)
       tagStoreBackgroundLayer(avmService,previewStoreName, stagingStoreName,2);
 
       

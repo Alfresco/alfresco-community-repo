@@ -205,13 +205,20 @@
 					<prop key="mimetype">text/xml</prop>
 					<prop key="redeploy">false</prop>
 				</props>
-			    <props>
-                    <!-- WCM workflow definition -->
+			   <props>
+               <!-- WCM workflow definition -->
 			    	<prop key="engineId">jbpm</prop>
 			    	<prop key="location">alfresco/workflow/submit_processdefinition.xml</prop>
 			    	<prop key="mimetype">text/xml</prop>
 			    	<prop key="redeploy">false</prop>
-			    </props>
+			   </props>
+            <props>
+               <!-- WCM workflow definition -->
+               <prop key="engineId">jbpm</prop>
+               <prop key="location">alfresco/workflow/changerequest_processdefinition.xml</prop>
+               <prop key="mimetype">text/xml</prop>
+               <prop key="redeploy">false</prop>
+            </props>
 			</list>
 		</property>
 		<property name="models">

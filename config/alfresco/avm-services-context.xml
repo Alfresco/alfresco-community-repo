@@ -278,6 +278,31 @@
             </list>
         </property>
     </bean>
+    
+    <!-- Bean used to process content that has expired in AVM staging areas -->
+    <bean id="avmExpiredContentProcessor" class="org.alfresco.repo.avm.AVMExpiredContentProcessor">
+        <property name="avmService">
+            <ref bean="AVMService" />
+        </property>
+        <property name="avmSyncService">
+            <ref bean="AVMSyncService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="workflowService">
+            <ref bean="WorkflowService" />
+        </property>
+        <property name="personService">
+            <ref bean="PersonService" />
+        </property>
+        <property name="permissionService">
+            <ref bean="PermissionService" />
+        </property>
+        <property name="transactionService">
+            <ref bean="TransactionService" />
+        </property>
+    </bean>
 
 	<!-- AVM Locking. -->
 	

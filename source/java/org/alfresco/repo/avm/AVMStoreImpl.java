@@ -754,7 +754,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             root = AVMDAOs.Instance().fAVMNodeDAO.getAVMStoreRoot(this, version);
         }            
-        return root.getDescriptor("main:", "", null, -1);
+        return root.getDescriptor(fName + ":", "", null, -1);
     }
 
     /**

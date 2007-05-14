@@ -386,6 +386,17 @@
             </property>
          </properties>
       </aspect>
+      
+      <aspect name="wca:expires">
+         <title>Content that has or can expire</title>
+         <properties>
+            <property name="wca:expirationDate">
+               <title>Expiration Date</title>
+               <type>d:datetime</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </aspect>
    </aspects>
 
 </model>

@@ -116,6 +116,32 @@
         <aspect>bpm:assignee</aspect>
       </mandatory-aspects>
     </type>
+    
+    <!--                       -->
+    <!--  Change Request Tasks -->               
+    <!--                       -->
+   
+    <type name="wcmwf:submitChangeRequestTask">
+      <parent>wcmwf:startTask</parent>
+      <mandatory-aspects>
+        <aspect>bpm:assignee</aspect>
+      </mandatory-aspects>
+    </type>
+   
+    <type name="wcmwf:changeRequestTask">
+      <parent>bpm:workflowTask</parent>
+      <overrides>
+        <property name="bpm:packageActionGroup">
+          <default></default>
+        </property>
+        <property name="bpm:packageItemActionGroup">
+          <default>edit_wcm_package_item_actions</default>
+        </property>
+      </overrides>
+      <mandatory-aspects>
+        <aspect>bpm:assignee</aspect>
+      </mandatory-aspects>
+    </type>
 
   </types>
 

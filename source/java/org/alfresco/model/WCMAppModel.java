@@ -119,4 +119,8 @@ public interface WCMAppModel
     
     static final QName TYPE_RENDITION_PROPERTIES = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "renditionproperties");
     static final QName PROP_MIMETYPE_FOR_RENDITION = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "mimetypeforrendition");
+    
+    // Aspect to track content that expires
+    static final QName ASPECT_EXPIRES = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "expires");
+    static final QName PROP_EXPIRATIONDATE = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "expirationDate");
 }

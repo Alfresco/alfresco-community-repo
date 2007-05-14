@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wcmwf:changerequest">
+
+   <swimlane name="initiator" />
+
+   <start-state name="start">
+      <task name="wcmwf:submitChangeRequestTask" swimlane="initiator" />
+      <transition name="" to="changeRequest" />
+   </start-state>
+
+   <swimlane name="assignee">
+      <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
+         <actor>#{bpm_assignee}</actor>
+      </assignment>
+   </swimlane>
+   
+   <task-node name="changeRequest">
+      <task name="wcmwf:changeRequestTask" swimlane="assignee" />
+      <transition name="" to="end" />
+   </task-node>
+      
+   <end-state name="end" />
+   
+   <event type="process-end">
+        <action class="org.alfresco.repo.avm.wf.AVMRemoveWFStoreHandler"/>
+    </event>
+   
+</process-definition>

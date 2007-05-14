@@ -163,8 +163,12 @@ public class PatchServiceImpl implements PatchService
         AppliedPatch appliedPatch = appliedPatchesById.get(id); 
         if (appliedPatch != null && appliedPatch.getSucceeded())
         {
-            // this has already been done
-            return true;
+            if (appliedPatch.getWasExecuted() && appliedPatch.getSucceeded())
+            {
+                // It was sucessfully executed
+                return true;
+            }
+            // We give the patch another chance
         }
         
         // ensure that dependencies have been done

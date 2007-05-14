@@ -521,8 +521,8 @@
         <property name="id"><value>patch.versionHistoryPerformance</value></property>
         <property name="description"><value>patch.versionHistoryPerformance.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>24</value></property>
-        <property name="targetSchema"><value>25</value></property>
+        <property name="fixesToSchema"><value>38</value></property>
+        <property name="targetSchema"><value>39</value></property>
         <property name="versionService">
             <ref bean="VersionService" />
         </property>
@@ -531,8 +531,8 @@
         <property name="id"><value>patch.db-V1.4-PostgresFKIndexes</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>21</value></property>
-        <property name="fixesToSchema"><value>24</value></property>
-        <property name="targetSchema"><value>25</value></property>
+        <property name="fixesToSchema"><value>51</value></property>
+        <property name="targetSchema"><value>52</value></property>
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/upgrade/1.4/${db.script.dialect}/AlfrescoSchemaUpdate-1.4-PostgresFKIndexes.sql</value>
         </property>
@@ -685,8 +685,8 @@
         <property name="id"><value>patch.groupNamesAsIdentifiers</value></property>
         <property name="description"><value>patch.groupNamesAsIdentifiers.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>38</value></property>
-        <property name="targetSchema"><value>39</value></property>
+        <property name="fixesToSchema"><value>51</value></property>
+        <property name="targetSchema"><value>52</value></property>
         <!-- bootstrap view -->
         <property name="userImporterBootstrap">
             <ref bean="userBootstrap" />
@@ -700,8 +700,8 @@
         <property name="id"><value>patch.invalidUserPersonAndGroup</value></property>
         <property name="description"><value>patch.invalidUserPersonAndGroup.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>39</value></property>
-        <property name="targetSchema"><value>40</value></property>
+        <property name="fixesToSchema"><value>51</value></property>
+        <property name="targetSchema"><value>52</value></property>
         <!-- bootstrap view -->
         <property name="userImporterBootstrap">
             <ref bean="userBootstrap" />
@@ -718,8 +718,8 @@
         <property name="id"><value>patch.AVMGuidPatch</value></property>
         <property name="description"><value>patch.AVMGuidPatch.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>50</value></property>
-        <property name="targetSchema"><value>51</value></property>
+        <property name="fixesToSchema"><value>51</value></property>
+        <property name="targetSchema"><value>52</value></property>
         <property name="avmNodeDao">
             <ref bean="avmNodeDAO"/>
         </property>

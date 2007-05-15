@@ -35,6 +35,7 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -175,9 +176,8 @@ public class WebProject
    {
       String stagingStore = AVMUtil.buildStagingStoreName(AVMUtil.getStoreId(AVMUtil.getStoreName(avmPath)));
       final AVMService avmService = this.getServiceRegistry().getAVMService();
-      this.nodeRef = (NodeRef)
-         avmService.getStoreProperty(stagingStore, 
-                                     AVMUtil.PROP_WEB_PROJECT_NODE_REF).getValue(DataTypeDefinition.NODE_REF);
+      this.nodeRef = (NodeRef)avmService.getStoreProperty(stagingStore, 
+               SandboxConstants.PROP_WEB_PROJECT_NODE_REF).getValue(DataTypeDefinition.NODE_REF);
    }
 
    /**

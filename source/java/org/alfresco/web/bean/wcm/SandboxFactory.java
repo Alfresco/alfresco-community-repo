@@ -41,7 +41,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.DNSNameMangler;
 import org.alfresco.util.GUID;
-import org.alfresco.util.DNSNameMangler;
 import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -104,7 +103,7 @@ public final class SandboxFactory
                                   SandboxConstants.PROP_SANDBOX_STAGING_MAIN,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
       avmService.setStoreProperty(stagingStoreName,
-                                  AVMUtil.PROP_WEB_PROJECT_NODE_REF,
+                                  SandboxConstants.PROP_WEB_PROJECT_NODE_REF,
                                   new PropertyValue(DataTypeDefinition.NODE_REF, webProjectNodeRef));
       
       // tag the store with the DNS name property
@@ -325,7 +324,6 @@ public final class SandboxFactory
    {
       final ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
       final AVMService avmService = services.getAVMService();
-      final PermissionService permissionService = services.getPermissionService();
       
       final String stagingStoreName = AVMUtil.buildStagingStoreName(storeId);
 

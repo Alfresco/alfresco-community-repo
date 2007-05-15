@@ -982,7 +982,6 @@ public final class AVMUtil
    public final static String DIR_ROOT = "ROOT";
    
    public final static String SPACE_ICON_WEBSITE       = "space-icon-website";
-   public final static QName PROP_WEB_PROJECT_NODE_REF = QName.createQName(null, ".web_project.noderef");
    
    // web user role permissions
    public final static String ROLE_CONTENT_MANAGER    = "ContentManager";

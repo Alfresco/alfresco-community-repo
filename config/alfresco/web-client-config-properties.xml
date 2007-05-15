@@ -425,7 +425,6 @@
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
          <show-property name="bpm:taskId" />
          <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true"/>
-         <show-property name="wcmwf:label" />
          <separator name="sep2" display-label-id="wf_review_status" component-generator="HeaderSeparatorGenerator" />
          <show-property name="wcmwf:reviewType" read-only="true"/>
          <show-association name="bpm:assignees" display-label-id="wf_reviewers" read-only="true"/>
@@ -438,7 +437,6 @@
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
          <show-property name="bpm:taskId" />
          <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true"/>
-         <show-property name="wcmwf:label" />
          <separator name="sep2" display-label-id="wf_review_status" component-generator="HeaderSeparatorGenerator" />
          <show-property name="wcmwf:reviewType" read-only="true"/>
          <show-association name="bpm:assignees" display-label-id="wf_reviewers" read-only="true"/>
@@ -450,7 +448,7 @@
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
          <show-property name="bpm:taskId" />
-         <show-property name="bpm:description" read-only="true"/>
+         <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true"/>
          <show-property name="bpm:status" />
       </property-sheet>
    </config>

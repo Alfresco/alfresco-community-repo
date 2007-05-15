@@ -281,6 +281,12 @@
     
     <!-- Bean used to process content that has expired in AVM staging areas -->
     <bean id="avmExpiredContentProcessor" class="org.alfresco.repo.avm.AVMExpiredContentProcessor">
+        <property name="adminUserName">
+            <value>admin</value>
+        </property>
+        <property name="workflowName">
+            <value>jbpm$wcmwf:changerequest</value>
+        </property>
         <property name="avmService">
             <ref bean="AVMService" />
         </property>

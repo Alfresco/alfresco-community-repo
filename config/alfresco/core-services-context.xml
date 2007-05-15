@@ -225,6 +225,7 @@
     			<value>alfresco.messages.schema-update</value>
     			<value>alfresco.messages.webdav-messages</value>
     			<value>alfresco.messages.copy-service</value>
+            <value>alfresco.messages.avm-messages</value>
     		</list>
     	</property>
     </bean>

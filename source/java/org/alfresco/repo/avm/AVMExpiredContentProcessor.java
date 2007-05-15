@@ -25,6 +25,7 @@
 package org.alfresco.repo.avm;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -34,6 +35,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.alfresco.config.JNDIConstants;
+import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -70,6 +73,10 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AVMExpiredContentProcessor
 {
+    // defaults in case these properties are not configured in Spring
+    protected String adminUserName = "admin";
+    protected String workflowName = "jbpm$wcmwf:changerequest";
+       
     protected Map<String, Map<String, List<String>>> expiredContent;
     protected AVMService avmService;
     protected AVMSyncService avmSyncService;
@@ -80,8 +87,7 @@ public class AVMExpiredContentProcessor
     protected TransactionService transactionService;
     
     private static Log logger = LogFactory.getLog(AVMExpiredContentProcessor.class);
-    
-    private static final String WORKFLOW_NAME                  = "jbpm$wcmwf:changerequest";
+
     private static final String STORE_SEPARATOR                = "--";
     private final static Pattern STORE_RELATIVE_PATH_PATTERN   = Pattern.compile("[^:]+:(.+)");
     
@@ -89,6 +95,16 @@ public class AVMExpiredContentProcessor
     {
     }
     
+    public void setAdminUserName(String adminUserName)
+    {
+        this.adminUserName = adminUserName;
+    }
+
+    public void setWorkflowName(String workflowName)
+    {
+        this.workflowName = workflowName;
+    }
+
     public void setAvmService(AVMService avmService)
     {
         this.avmService = avmService;
@@ -149,7 +165,7 @@ public class AVMExpiredContentProcessor
          };
          
          // perform the work as the system user
-         AuthenticationUtil.runAs(authorisedWork, "admin");
+         AuthenticationUtil.runAs(authorisedWork, this.adminUserName);
     }
     
     /**
@@ -198,11 +214,20 @@ public class AVMExpiredContentProcessor
         // a workflow assigned to them to review the expired content.
         for (String storeName: this.expiredContent.keySet())
         {
+           // get the name of the store and create the workflow title
+           // using it's name
+           NodeRef webProjectNodeRef = (NodeRef)avmService.getStoreProperty(storeName, 
+               SandboxConstants.PROP_WEB_PROJECT_NODE_REF).getValue(DataTypeDefinition.NODE_REF);
+           String webProjectName = (String)this.nodeService.getProperty(webProjectNodeRef, 
+                    ContentModel.PROP_NAME);
+           String pattern = I18NUtil.getMessage("expiredcontent.workflow.title");
+           String workflowTitle = MessageFormat.format(pattern, new Object[] {webProjectName});
+           
            Map<String, List<String>> users = this.expiredContent.get(storeName);
            for (String userName: users.keySet())
            {
               List<String> expiredContent = users.get(userName);
-              startWorkflow(userName, storeName, expiredContent);
+              startWorkflow(userName, storeName, expiredContent, workflowTitle);
            }
         }
     }
@@ -294,8 +319,7 @@ public class AVMExpiredContentProcessor
                         if (logger.isDebugEnabled())
                             logger.debug("Added " + nodePath + " to " + modifier + "'s list of expired content");
                       
-                        // change the expired flag on the expires aspect to true to indicate
-                        // that it is being dealt with
+                        // reset the expiration date
                         this.avmService.setNodeProperty(nodePath, WCMAppModel.PROP_EXPIRATIONDATE, 
                                  new PropertyValue(DataTypeDefinition.DATETIME, null));
                       
@@ -314,11 +338,13 @@ public class AVMExpiredContentProcessor
      * @param userName The user the expired content should be sent to
      * @param storeName The store the expired content is in
      * @param expiredContent List of paths to expired content
+     * @param workflowTitle The title to apply to the workflow
      */
-    private void startWorkflow(String userName, String storeName, List<String> expiredContent)
+    private void startWorkflow(String userName, String storeName, List<String> expiredContent,
+             String workflowTitle)
     {
         // find the 'Change Request' workflow
-        WorkflowDefinition wfDef = workflowService.getDefinitionByName(WORKFLOW_NAME);
+        WorkflowDefinition wfDef = workflowService.getDefinitionByName(this.workflowName);
         WorkflowPath path = this.workflowService.startWorkflow(wfDef.id, null);
         if (path != null)
         {
@@ -357,8 +383,7 @@ public class AVMExpiredContentProcessor
                     // create the workflow parameters map
                     Map<QName, Serializable> params = new HashMap<QName, Serializable>(5);
                     params.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
-                    // TODO: Externalise the following string - ask Dave best place to add this
-                    params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, "Expired Content");
+                    params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, workflowTitle);
                     params.put(WorkflowModel.ASSOC_ASSIGNEE, assignee);
                     
                     // transition the workflow to send it to the users inbox
@@ -366,7 +391,7 @@ public class AVMExpiredContentProcessor
                     this.workflowService.endTask(startTask.id, null);
                     
                     if (logger.isDebugEnabled())
-                       logger.debug("Started '" + WORKFLOW_NAME + "' workflow for user '" +
+                       logger.debug("Started '" + this.workflowName + "' workflow for user '" +
                                 userName + "' in store '" + storeName + "'");
                 }
             }
@@ -504,39 +529,17 @@ public class AVMExpiredContentProcessor
         // create package paths (layered to user sandbox area as target)
         String packagesPath = workflowStoreName + ":/" + JNDIConstants.DIR_DEFAULT_WWW;
         
-//        List<AVMDifference> diffs = new ArrayList<AVMDifference>(expiredContent.size());
         for (final String srcPath : expiredContent)
         {
             final Matcher m = STORE_RELATIVE_PATH_PATTERN.matcher(srcPath);
             String relPath = m.matches() && m.group(1).length() != 0 ? m.group(1) : null;
             String pathInWorkflowStore = workflowStoreName + ":" + relPath;
             
-            // TODO: check whether the path is already modified in the users
-            //       sandbox, if it is just create a new AVMDifference object
-            //       otherwise we need to force a copy on write operation
-//            diffs.add(new AVMDifference(-1, srcPath, 
-//                                     -1, pathInWorkflowStore,
-//                                     AVMDifference.NEWER));
-//            for (AVMDifference d : this.avmSyncService.compare(-1, packageAvmPath,
-//                                                                  -1, stagingAvmPath,
-//                                                                  null))
-//               {
-//                  if (LOGGER.isDebugEnabled())
-//                     LOGGER.debug("got difference " + d);
-//                  if (d.getDifferenceCode() == AVMDifference.NEWER ||
-//                      d.getDifferenceCode() == AVMDifference.CONFLICT)
-//                  {
-//                     this.addAVMNode(new AVMNode(this.avmService.lookup(d.getSourceVersion(),
-//                                                                        d.getSourcePath(),
-//                                                                        true)));
-//                  }
-//               }
-            
+            // call forceCopy to make sure the path appears modified in the workflow
+            // sandbox, if the item is already modified or deleted this call has no
+            // effect.
             this.avmService.forceCopy(pathInWorkflowStore);
         }
-        
-        // write changes to layer so files are marked as modified
-//        avmSyncService.update(diffs, null, true, true, false, false, null, null);
                     
         // convert package to workflow package
         AVMNodeDescriptor packageDesc = avmService.lookup(-1, packagesPath);

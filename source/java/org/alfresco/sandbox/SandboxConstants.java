@@ -49,4 +49,5 @@ public class  SandboxConstants
     public final static QName PROP_SANDBOX_AUTHOR_WORKFLOW_PREVIEW   = QName.createQName(null, ".sandbox.author.workflow.preview");
     public final static QName PROP_WEBSITE_NAME                      = QName.createQName(null, ".website.name");
     public final static QName PROP_AUTHOR_NAME                       = QName.createQName(null, ".author.name");
+    public final static QName PROP_WEB_PROJECT_NODE_REF              = QName.createQName(null, ".web_project.noderef");
 }

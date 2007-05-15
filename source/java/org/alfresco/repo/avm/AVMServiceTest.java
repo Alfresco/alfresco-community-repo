@@ -84,6 +84,23 @@ import org.alfresco.util.Pair;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
+    public void testForceCopyDeleted()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.removeNode("main:/a/b/c/foo");   
+            fService.createSnapshot("main", null, null);
+            AVMNodeDescriptor desc = fService.forceCopy("main:/a/b/c/foo");
+            assertTrue(desc.isDeleted());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+    }
+    
     public void testLayerSnapshots()
     {
         try

@@ -2469,7 +2469,7 @@ public class AVMRepository
             }
             fLookupCache.onWrite(pathParts[0]);
             // Just force a copy if needed by looking up in write mode.
-            Lookup lPath = store.lookup(-1, pathParts[1], true, false);
+            Lookup lPath = store.lookup(-1, pathParts[1], true, true);
             if (lPath == null)
             {
                 throw new AVMNotFoundException("Path not found.");

@@ -83,8 +83,9 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
         return fDeletedType;
     }
     
+    // TODO What happens when this is called? Does it muck anything up.
     /**
-     * This should never be called.
+     * This is only called rarely.
      */
     public AVMNode copy(Lookup lPath)
     {

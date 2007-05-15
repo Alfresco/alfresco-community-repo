@@ -89,6 +89,7 @@ public abstract class DesktopAction {
     public static final int StsNoSuchAction     = 6;
     public static final int StsLaunchURL		= 7;
     public static final int StsCommandLine		= 8;
+    public static final int StsAuthTicket		= 9;
     
     // Token name to substitute current servers DNS name or TCP/IP address into the webapp URL
 

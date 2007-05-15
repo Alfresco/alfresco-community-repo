@@ -283,6 +283,15 @@ public class ContentIOControlHandler implements IOControlHandler
 	        	retBuffer = procRunAction(sess, tree, dataBuf, folderNode, netFile);
 	        	break;
 
+	        // Return the authentication ticket
+	        	
+	        case IOControl.CmdGetAuthTicket:
+	        	
+	        	// Process the get auth ticket request
+	        	
+	        	retBuffer = procGetAuthTicket(sess, tree, dataBuf, folderNode, netFile);
+	        	break;
+	        	
 	        // Unknown I/O control code
 	            
 	        default:
@@ -671,6 +680,56 @@ public class ContentIOControlHandler implements IOControlHandler
         // Return the response
         
     	return respBuf;
+    }
+    
+    /**
+     * Process the get authentication ticket request
+     * 
+     * @param sess Server session
+     * @param tree Tree connection
+     * @param reqBuf Request buffer
+     * @param folderNode NodeRef of parent folder
+     * @param netFile NetworkFile for the folder
+     * @return DataBuffer
+     */
+    private final DataBuffer procGetAuthTicket( SrvSession sess, TreeConnection tree, DataBuffer reqBuf, NodeRef folderNode,
+            NetworkFile netFile)
+    {
+    	// DEBUG
+    	
+    	if ( logger.isDebugEnabled())
+    		logger.debug("  Get Auth Ticket");
+
+        // Create a response buffer
+        
+        DataBuffer respBuf = new DataBuffer(256);
+        respBuf.putFixedString(IOControl.Signature, IOControl.Signature.length());
+        
+        // Start a transaction
+        
+        sess.beginReadTransaction( getTransactionService());
+
+        // Get an authentication ticket for the client, or validate the existing ticket. The ticket can be used when
+        // generating URLs for the client-side application so that the user does not have to re-authenticate
+        
+        getTicketForClient( sess);
+
+        // Pack the response
+        
+        ClientInfo cInfo = sess.getClientInformation();
+        
+        if ( cInfo != null && cInfo.getAuthenticationTicket() != null) {
+            respBuf.putInt(DesktopAction.StsAuthTicket);
+        	respBuf.putString( cInfo.getAuthenticationTicket(), true);
+        }
+        else {
+            respBuf.putInt(DesktopAction.StsError);
+        	respBuf.putString( "Client information invalid", true);
+        }
+
+        // Return the response
+        
+        return respBuf;
     }
     
     /**

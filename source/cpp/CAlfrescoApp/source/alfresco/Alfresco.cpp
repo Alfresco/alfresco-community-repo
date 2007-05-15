@@ -1,26 +1,18 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
-
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
-
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * Licensed under the Mozilla Public License version 1.1 
+ * with a permitted attribution clause. You may obtain a
+ * copy of the License at
+ *
+ *   http://www.alfresco.org/legal/license.txt
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the
+ * License.
  */
 
 #include "alfresco\Alfresco.hpp"
@@ -280,6 +272,40 @@ DesktopResponse AlfrescoInterface::runAction(AlfrescoActionInfo& action, Desktop
 	sendIOControl( FSCTL_ALFRESCO_RUNACTION, reqbuf, respbuf);
 
 	// Unpack the run action response
+
+	unsigned int actionSts = respbuf.getInt();
+	String actionMsg = respbuf.getString();
+
+	// Return the desktop response
+
+	DesktopResponse response(actionSts, actionMsg);
+	return response;
+}
+
+/**
+ * Get the authentication ticket for this session
+ *
+ * @return DesktopResponse
+ */
+DesktopResponse AlfrescoInterface::getAuthenticationTicket( void) {
+
+	// Check if the folder handle is valid
+
+	if ( m_handle == INVALID_HANDLE_VALUE)
+		throw BadInterfaceException();
+
+	// Build the run action I/O control request
+
+	DataBuffer reqbuf( 32);
+	DataBuffer respbuf( 256);
+
+	reqbuf.putFixedString( IOSignature, IOSignatureLen);
+
+	// Send the get auth ticket request
+
+	sendIOControl( FSCTL_ALFRESCO_GETAUTHTICKET, reqbuf, respbuf);
+
+	// Unpack the get auth ticket response
 
 	unsigned int actionSts = respbuf.getInt();
 	String actionMsg = respbuf.getString();

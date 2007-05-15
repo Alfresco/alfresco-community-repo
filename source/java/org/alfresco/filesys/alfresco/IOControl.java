@@ -44,6 +44,7 @@ public class IOControl
     // Version 1 CmdCheckIn  = NTIOCtl.FsCtlCustom + 3
     public static final int CmdGetActionInfo	= NTIOCtl.FsCtlCustom + 4;
     public static final int CmdRunAction   		= NTIOCtl.FsCtlCustom + 5;
+    public static final int CmdGetAuthTicket	= NTIOCtl.FsCtlCustom + 6;
 
     // I/O control request/response signature
     

@@ -38,6 +38,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
+ * Support class for metadata extracters.
+ * 
+ * @deprecated Use the {@link org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter}
  * 
  * @author Jesper Steen Møller
  */
@@ -123,6 +126,18 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
             return 0.0;
     }
 
+    /**
+     * @inheritDoc
+     * 
+     * @return      Returns <tt>true</tt> if the {@link #getReliability(String) reliability}
+     *              is greater than 0
+     */
+    public boolean isSupported(String mimetype)
+    {
+        double reliability = getReliability(mimetype);
+        return reliability > 0.0;
+    }
+
     public long getExtractionTime()
     {
         return extractionTime;
@@ -147,7 +162,10 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
         }
     }
 
-    public final void extract(ContentReader reader, Map<QName, Serializable> destination) throws ContentIOException
+    /**
+     * @inheritDoc
+     */
+    public boolean extract(ContentReader reader, Map<QName, Serializable> destination) throws ContentIOException
     {
         // check the reliability
         checkReliability(reader);
@@ -180,14 +198,24 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
                     "   reader: " + reader + "\n" +
                     "   extracter: " + this);
         }
+        return true;
     }
 
-    public final void extract(
+    /**
+     * @inheritDoc
+     * 
+     * @param overwritePolicy       ignored
+     * @param propertyMapping       ignored
+     * 
+     * @see #extract(ContentReader, Map)
+     */
+    public final boolean extract(
             ContentReader reader,
+            OverwritePolicy overwritePolicy,
             Map<QName, Serializable> destination,
-            Map<String, QName> propertyMapping) throws ContentIOException
+            Map<String, Set<QName>> propertyMapping) throws ContentIOException
     {
-        throw new UnsupportedOperationException();
+        return extract(reader, destination);
     }
 
     /**
@@ -197,12 +225,13 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
      * @param reader the source of the content
      * @param destination the property map to fill
      * @throws Throwable an exception
+     * 
+     * @deprecated      Consider deriving from the more configurable {@link AbstractMappingMetadataExtracter}
      */
     protected abstract void extractInternal(ContentReader reader, Map<QName, Serializable> destination) throws Throwable;
     
     /**
-     * Examines a value or string for nulls and adds it to the map (if
-     * non-empty)
+     * Examines a value or string for nulls and adds it to the map (if non-empty)
      * 
      * @param prop Alfresco's <code>ContentModel.PROP_</code> to set.
      * @param value Value to set it to

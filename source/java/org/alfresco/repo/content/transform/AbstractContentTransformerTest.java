@@ -99,7 +99,7 @@ public abstract class AbstractContentTransformerTest extends BaseSpringTest
      * Helper method to load one of the "The quick brown fox" files from the
      * classpath.
      * 
-     * @param extension the extension of the file required
+     * @param extension the extension of the file required, e.g. <b>txt</b>
      * @return Returns a test resource loaded from the classpath or <tt>null</tt> if
      *      no resource could be found.
      * @throws IOException

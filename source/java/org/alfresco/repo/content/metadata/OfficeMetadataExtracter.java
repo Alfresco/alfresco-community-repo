@@ -28,14 +28,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.namespace.QName;
 import org.apache.poi.hpsf.PropertySet;
 import org.apache.poi.hpsf.PropertySetFactory;
 import org.apache.poi.hpsf.SummaryInformation;
@@ -47,9 +46,16 @@ import org.apache.poi.poifs.eventfilesystem.POIFSReaderListener;
  * Office file format Metadata Extracter
  * 
  * @author Jesper Steen Møller
+ * @author Derek Hulley
  */
-public class OfficeMetadataExtracter extends AbstractMetadataExtracter
+public class OfficeMetadataExtracter extends AbstractMappingMetadataExtracter
 {
+    public static final String PROP_AUTHOR = "author";
+    public static final String PROP_TITLE = "title";
+    public static final String PROP_SUBJECT = "subject";
+    public static final String PROP_CREATE_DATETIME = "createDateTime";
+    public static final String PROP_LAST_SAVE_DATETIME = "lastSaveDateTime";
+    
     public static String[] SUPPORTED_MIMETYPES = new String[] {
         MimetypeMap.MIMETYPE_WORD,
         MimetypeMap.MIMETYPE_EXCEL,
@@ -57,11 +63,14 @@ public class OfficeMetadataExtracter extends AbstractMetadataExtracter
 
     public OfficeMetadataExtracter()
     {
-        super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)), 1.0, 1000);
+        super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)));
     }
 
-    public void extractInternal(ContentReader reader, final Map<QName, Serializable> destination) throws Throwable
+    @Override
+    protected Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
     {
+        final Map<String, Serializable> rawProperties = new HashMap<String, Serializable>(17);
+        
         POIFSReaderListener readerListener = new POIFSReaderListener()
         {
             public void processPOIFSReaderEvent(final POIFSReaderEvent event)
@@ -73,14 +82,11 @@ public class OfficeMetadataExtracter extends AbstractMetadataExtracter
                     {
                         SummaryInformation si = (SummaryInformation) ps;
                         
-                        // Titled aspect
-                        trimPut(ContentModel.PROP_TITLE, si.getTitle(), destination);
-                        trimPut(ContentModel.PROP_DESCRIPTION, si.getSubject(), destination);
-
-                        // Auditable aspect
-                        trimPut(ContentModel.PROP_CREATED, si.getCreateDateTime(), destination);
-                        trimPut(ContentModel.PROP_MODIFIED, si.getLastSaveDateTime(), destination); 
-                        trimPut(ContentModel.PROP_AUTHOR, si.getAuthor(), destination);
+                        putSafeRawValue(PROP_AUTHOR, si.getAuthor(), rawProperties);
+                        putSafeRawValue(PROP_TITLE, si.getTitle(), rawProperties);
+                        putSafeRawValue(PROP_SUBJECT, si.getSubject(), rawProperties);
+                        putSafeRawValue(PROP_CREATE_DATETIME, si.getCreateDateTime(), rawProperties);
+                        putSafeRawValue(PROP_LAST_SAVE_DATETIME, si.getLastSaveDateTime(), rawProperties); 
                     }
                 }
                 catch (Exception ex)
@@ -105,5 +111,6 @@ public class OfficeMetadataExtracter extends AbstractMetadataExtracter
                 try { is.close(); } catch (IOException e) {}
             }
         }
+        return rawProperties;
     }
 }

@@ -26,6 +26,7 @@ package org.alfresco.repo.content.metadata;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -40,16 +41,171 @@ import org.alfresco.service.namespace.QName;
 public interface MetadataExtracter
 {
     /**
-     * Provides the approximate accuracy with which this extracter can extract
-     * metadata for the mimetype.
-     * <p>
+     * A enumeration of functional property overwrite policies.  These determine whether extracted properties are
+     * written into the property map or not.
      * 
-     * @param sourceMimetype the source mimetype
-     * @return Returns a score 0.0 to 1.0. 0.0 indicates that the extraction
-     *         cannot be performed at all. 1.0 indicates that the extraction can
-     *         be performed perfectly.
+     * @author Derek Hulley
      */
-    public double getReliability(String sourceMimetype);
+    public enum OverwritePolicy
+    {
+        /**
+         * This policy puts the new value if:
+         * <ul>
+         *   <li>the extracted property is not null</li>
+         * </ul>
+         */
+        EAGER
+        {
+            @Override
+            public boolean applyProperties(Map<QName, Serializable> extractedProperties, Map<QName, Serializable> targetProperties)
+            {
+                boolean modified = false;
+                for (Map.Entry<QName, Serializable> entry : extractedProperties.entrySet())
+                {
+                    QName propertyQName = entry.getKey();
+                    Serializable extractedValue = entry.getValue();
+                    // Ignore null extracted value
+                    if (extractedValue == null)
+                    {
+                        continue;
+                    }
+                    targetProperties.put(propertyQName, extractedValue);
+                    modified = true;
+                }
+                return modified;
+            }
+        },
+        /**
+         * This policy puts the new value if:
+         * <ul>
+         *   <li>the extracted property is not null</li>
+         *   <li>there is no target key for the property</li>
+         *   <li>the target value is null</li>
+         *   <li>the string representation of the target value is an empty string</li>
+         * </ul>
+         */
+        PRAGMATIC
+        {
+            @Override
+            public boolean applyProperties(Map<QName, Serializable> extractedProperties, Map<QName, Serializable> targetProperties)
+            {
+                /*
+                 * Negative and positive checks are mixed in the loop.
+                 */
+                boolean modified = false;
+                for (Map.Entry<QName, Serializable> entry : extractedProperties.entrySet())
+                {
+                    QName propertyQName = entry.getKey();
+                    Serializable extractedValue = entry.getValue();
+                    // Ignore null extracted value
+                    if (extractedValue == null)
+                    {
+                        continue;
+                    }
+                    // Handle the shortcut cases where the target value is missing or null
+                    if (!targetProperties.containsKey(propertyQName))
+                    {
+                        // There is nothing currently
+                        targetProperties.put(propertyQName, extractedValue);
+                        modified = true;
+                        continue;
+                    }
+                    Serializable originalValue = targetProperties.get(propertyQName);
+                    if (originalValue == null)
+                    {
+                        // The current value is null
+                        targetProperties.put(propertyQName, extractedValue);
+                        modified = true;
+                        continue;
+                    }
+                    // Check the string representation
+                    if (originalValue instanceof String)
+                    {
+                        String originalValueStr = (String) originalValue;
+                        if (originalValueStr != null && originalValueStr.length() > 0)
+                        {
+                            // The original value is non-trivial
+                            continue;
+                        }
+                        else
+                        {
+                            // The original string is trivial
+                            targetProperties.put(propertyQName, extractedValue);
+                            modified = true;
+                            continue;
+                        }
+                    }
+                    // We have some other object as the original value, so keep it
+                }
+                return modified;
+            }
+        },
+        /**
+         * This policy only puts the extracted value if there is no value (null or otherwise) in the properties map.
+         * It is assumed that the mere presence of a property key is enough to inidicate that the target property
+         * is as intented.
+         * This policy puts the new value if:
+         * <ul>
+         *   <li>the extracted property is not null</li>
+         *   <li>there is no target key for the property</li>
+         * </ul>
+         */
+        CAUTIOUS
+        {
+            @Override
+            public boolean applyProperties(Map<QName, Serializable> extractedProperties, Map<QName, Serializable> targetProperties)
+            {
+                boolean modified = false;
+                for (Map.Entry<QName, Serializable> entry : extractedProperties.entrySet())
+                {
+                    QName propertyQName = entry.getKey();
+                    Serializable extractedValue = entry.getValue();
+                    // Ignore null extracted value
+                    if (extractedValue == null)
+                    {
+                        continue;
+                    }
+                    // Is the key present in the target values
+                    if (targetProperties.containsKey(propertyQName))
+                    {
+                        // Cautiously bypass the value as there is one already
+                        continue;
+                    }
+                    targetProperties.put(propertyQName, extractedValue);
+                    modified = true;
+                }
+                return modified;
+            }
+        };
+
+        /**
+         * Apply the overwrite policy for the extracted properties.
+         * 
+         * @return Returns true if <i>any</i> properties were set on the target properties
+         */
+        public boolean applyProperties(Map<QName, Serializable> extractedProperties, Map<QName, Serializable> targetProperties)
+        {
+            throw new UnsupportedOperationException("Override this method");
+        }
+    };
+    
+    /**
+     * Get an estimate of the extracter's reliability on a scale from 0.0 to 1.0.
+     * 
+     * @param mimetype      the mimetype to check
+     * @return              Returns a reliability indicator from 0.0 to 1.0
+     * 
+     * @deprecated  This method is replaced by {@link #isSupported(String)}
+     */
+    public double getReliability(String mimetype);
+    
+    /**
+     * Determines if the extracter works against the given mimetype.
+     * 
+     * @param mimetype      the document mimetype
+     * @return Returns      <tt>true</tt> if the mimetype is supported, otherwise <tt>false</tt>.
+     */
+    public boolean isSupported(String mimetype);
 
     /**
      * Provides an estimate, usually a worst case guess, of how long an
@@ -63,41 +219,51 @@ public interface MetadataExtracter
     public long getExtractionTime();
 
     /**
-     * Extracts the metadata from the content provided by the reader and source
-     * mimetype to the supplied map.
+     * Extracts the metadata values from the content provided by the reader and source
+     * mimetype to the supplied map.  The internal mapping and {@link OverwritePolicy overwrite policy}
+     * between document metadata and system metadata will be used.
      * <p>
-     * The extraction viability can be determined by an up front call to
-     * {@link #getReliability(String)}.
+     * The extraction viability can be determined by an up front call to {@link #isSupported(String)}.
      * <p>
      * The source mimetype <b>must</b> be available on the
      * {@link org.alfresco.service.cmr.repository.ContentAccessor#getMimetype()} method
      * of the reader.
-     * <p>
-     * <b>Note:</b> Internally, the extracter may need to perform a mapping of document-specific
-     *              properties to <code>QName</code>.  This is an implementation detail that is
-     *              supported in the default abstract implementations.
      * 
      * @param reader                the source of the content
      * @param destination           the map of properties to populate (essentially a return value)
+     * @return                      Returns <tt>true</tt> if the destination map was modified
      * @throws ContentIOException   if a detectable error occurs
      * 
-     * @see #extract(ContentReader, Map, Map)
+     * @see #extract(ContentReader, OverwritePolicy, Map, Map)
      */
-    public void extract(ContentReader reader, Map<QName, Serializable> destination) throws ContentIOException;
+    public boolean extract(ContentReader reader, Map<QName, Serializable> destination) throws ContentIOException;
 
     /**
-     * 
+     * Extracts the metadata from the content provided by the reader and source
+     * mimetype to the supplied map.  The mapping from document metadata to system metadata
+     * is explicitly provided.  The {@link OverwritePolicy overwrite policy} is also explictly
+     * set.
+     * <p>
+     * The extraction viability can be determined by an up front call to
+     * {@link #isSupported(String)}.
+     * <p>
+     * The source mimetype <b>must</b> be available on the
+     * {@link org.alfresco.service.cmr.repository.ContentAccessor#getMimetype()} method
+     * of the reader.
      * 
      * @param reader                the source of the content
+     * @param overwritePolicy       the policy stipulating how the system properties must be
+     *                              overwritten if present
      * @param destination           the map of properties to populate (essentially a return value)
-     * @param propertyMapping       a mapping of internal (document-specific properties) to system
-     *                              properties.
+     * @param mapping               a mapping of document-specific properties to system properties.
+     * @return                      Returns <tt>true</tt> if the destination map was modified
      * @throws ContentIOException   if a detectable error occurs
      * 
      * @see #extract(ContentReader, Map)
      */
-    public void extract(
+    public boolean extract(
             ContentReader reader,
+            OverwritePolicy overwritePolicy,
             Map<QName, Serializable> destination,
-            Map<String, QName> propertyMapping) throws ContentIOException;
+            Map<String, Set<QName>> mapping) throws ContentIOException;
 }

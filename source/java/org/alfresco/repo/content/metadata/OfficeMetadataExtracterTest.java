@@ -8,13 +8,14 @@ package org.alfresco.repo.content.metadata;
  */
 public class OfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
-    private MetadataExtracter extracter;
+    private OfficeMetadataExtracter extracter;
 
     @Override
     public void setUp() throws Exception
     {
         super.setUp();
         extracter = new OfficeMetadataExtracter();
+        extracter.register();
     }
 
     /**

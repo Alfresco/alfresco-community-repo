@@ -205,6 +205,11 @@ public class WebDAV
     
     public static final String XML_CONTENT_TYPE = "text/xml; charset=UTF-8";
     
+    // Alfresco specific properties
+    
+    public static final String XML_ALF_AUTHTICKET    = "authticket";
+    public static final String XML_NS_ALF_AUTHTICKET = DAV_NS_PREFIX + "authticket";
+    
     // Path seperator
     
     public static final String PathSeperator   = "/";

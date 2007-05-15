@@ -35,6 +35,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.webdav.auth.AuthenticationFilter;
+import org.alfresco.repo.webdav.auth.WebDAVUser;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -598,6 +600,17 @@ public class PropFindMethod extends WebDAVMethod
                         xml.write(WebDAV.formatCreationDate(typeConv.convert(Date.class, davValue)));
                     xml.endElement(WebDAV.DAV_NS, WebDAV.XML_CREATION_DATE, WebDAV.XML_NS_CREATION_DATE);
                 }
+                else if ( propName.equals( WebDAV.XML_ALF_AUTHTICKET))
+                {
+                	// Get the users authentication ticket
+                	
+                    WebDAVUser davUser = (WebDAVUser) m_request.getSession().getAttribute( AuthenticationFilter.AUTHENTICATION_USER);
+                    
+                    xml.startElement(WebDAV.DAV_NS, WebDAV.XML_ALF_AUTHTICKET, WebDAV.XML_NS_ALF_AUTHTICKET, nullAttr);
+                    if ( davUser != null)
+                    	xml.write( davUser.getTicket());
+                    xml.endElement(WebDAV.DAV_NS, WebDAV.XML_ALF_AUTHTICKET, WebDAV.XML_NS_ALF_AUTHTICKET);
+                }
                 else
                 {
                     // Could not map the requested property to an Alfresco property
@@ -795,7 +808,12 @@ public class PropFindMethod extends WebDAVMethod
 
         // Print out all the custom properties
 
-        // TODO: Output custom properties
+        WebDAVUser davUser = (WebDAVUser) m_request.getSession().getAttribute( AuthenticationFilter.AUTHENTICATION_USER);
+        
+        xml.startElement(WebDAV.DAV_NS, WebDAV.XML_ALF_AUTHTICKET, WebDAV.XML_NS_ALF_AUTHTICKET, nullAttr);
+        if ( davUser != null)
+        	xml.write( davUser.getTicket());
+        xml.endElement(WebDAV.DAV_NS, WebDAV.XML_ALF_AUTHTICKET, WebDAV.XML_NS_ALF_AUTHTICKET);
 
         // Close off the response
 
@@ -846,7 +864,7 @@ public class PropFindMethod extends WebDAVMethod
 
             // Output the custom properties
 
-            // TODO: Custom properties
+            xml.write(DocumentHelper.createElement(WebDAV.XML_NS_ALF_AUTHTICKET));
 
             // Close off the response
 

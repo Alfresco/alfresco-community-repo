@@ -413,6 +413,8 @@
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
          <show-property name="bpm:taskId" />
          <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true"/>
+         <show-property name="wcmwf:label" read-only="true" />
+         <show-property name="wcmwf:launchDate" read-only="true"/>
          <show-property name="bpm:status" />
          <separator name="sep2" display-label-id="wf_reviewers" component-generator="HeaderSeparatorGenerator" />
          <show-property name="wcmwf:reviewType" read-only="true" />
@@ -432,6 +434,49 @@
       </property-sheet>
    </config>
    
+   <config evaluator="node-type" condition="wcmwf:submitpendingTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" />
+         <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true"/>
+         <show-property name="wcmwf:label" read-only="true" />
+         <show-property name="wcmwf:launchDate" read-only="true" />
+         <separator name="sep2" display-label-id="wf_review_status" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="wcmwf:reviewType" read-only="true"/>
+         <show-association name="bpm:assignees" display-label-id="wf_reviewers" read-only="true"/>
+         <show-property name="wcmwf:approveCnt" read-only="true"/>
+      </property-sheet>
+   </config>
+
+   <config evaluator="node-type" condition="wcmwf:submitcancelledTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" />
+         <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true"/>
+         <show-property name="wcmwf:label" read-only="true" />
+         <show-property name="wcmwf:launchDate" read-only="true" />
+         <separator name="sep2" display-label-id="wf_review_status" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="wcmwf:reviewType" read-only="true"/>
+         <show-association name="bpm:assignees" display-label-id="wf_reviewers" read-only="true"/>
+         <show-property name="wcmwf:approveCnt" read-only="true"/>
+      </property-sheet>
+   </config>
+
+   <config evaluator="node-type" condition="wcmwf:submittedTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" />
+         <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true"/>
+         <show-property name="wcmwf:label" read-only="true" />
+         <show-property name="wcmwf:launchDate" read-only="true" />
+         <separator name="sep2" display-label-id="wf_review_status" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="wcmwf:reviewType" read-only="true"/>
+         <show-association name="bpm:assignees" display-label-id="wf_reviewers" read-only="true"/>
+         <show-property name="wcmwf:approveCnt" read-only="true"/>
+      </property-sheet>
+   </config>
+
+   <!-- NOTE: kept for backwards compatibility only - for v2.0 wcm submit process definition -->
    <config evaluator="node-type" condition="wcmwf:approvedTask" replace="true">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />

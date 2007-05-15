@@ -1408,6 +1408,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             NetworkFile netFile = ContentNetworkFile.createFile(transactionService, nodeService, contentService, cifsHelper, nodeRef, params);
             
+            // Truncate the file so that the content stream is created
+            
+            netFile.truncateFile( 0L);
+            
             // Generate a file id for the file
             
             if ( netFile != null)

@@ -111,22 +111,59 @@
     <!--                -->
 
     <decision name="endreview">
-       <transition name="rejected" to="rejected">
-           <action class="org.alfresco.repo.avm.wf.AVMClearSubmittedHandler"/>
-       </transition>
-       <transition name="approved" to="approved">
+       <transition name="rejected" to="rejected" />
+       <transition name="approved" to="onapprove">
            <condition>#{wcmwf_approveCnt == wcmwf_reviewerCnt}</condition>
-           <action class="org.alfresco.repo.avm.wf.AVMSubmitPackageHandler"/>
        </transition>
     </decision>   
 
+    <decision name="onapprove">
+       <transition name="launchnow" to="submitted" />
+       <transition name="launchpending" to="submitpending">
+           <condition>#{wcmwf_launchDate != null}</condition>
+       </transition>
+    </decision>
+
     <task-node name="rejected">
+        <event type="node-enter">
+           <action class="org.alfresco.repo.avm.wf.AVMClearSubmittedHandler"/>
+        </event>
         <task name="wcmwf:rejectedTask" swimlane="initiator" />
         <transition name="" to="end" />
     </task-node>
 
-    <task-node name="approved">
-        <task name="wcmwf:approvedTask" swimlane="initiator" />
+    <task-node name="submitpending">
+        <task name="wcmwf:submitpendingTask" swimlane="initiator">
+           <event type="task-create">
+              <script>
+                 taskInstance.dueDate = wcmwf_launchDate;
+              </script>
+           </event>        
+           <timer duedate="#{wcmwf_launchDate}" transition="launch" >
+               <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+                   <script>
+                      logger.log("WCM Submission " + bpm_workflowDescription + " submitted at " + wcmwf_launchDate + " by " + person.properties.userName);
+                   </script>
+               </action>
+           </timer>
+        </task>
+        <transition name="cancel" to="submitcancelled" />
+        <transition name="launch" to="submitted" />
+    </task-node>
+
+    <task-node name="submitcancelled">
+        <event type="node-enter">
+           <action class="org.alfresco.repo.avm.wf.AVMClearSubmittedHandler"/>
+        </event>
+        <task name="wcmwf:submitcancelledTask" swimlane="initiator" />
+        <transition name="" to="end" />
+    </task-node>
+
+    <task-node name="submitted">
+        <event type="node-enter">
+           <action class="org.alfresco.repo.avm.wf.AVMSubmitPackageHandler"/>
+        </event>
+        <task name="wcmwf:submittedTask" swimlane="initiator" />
         <transition name="" to="end" />
     </task-node>
 

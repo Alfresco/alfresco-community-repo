@@ -96,7 +96,38 @@
       </mandatory-aspects>
     </type>
 
-    <type name="wcmwf:approvedTask">
+    <type name="wcmwf:submitpendingTask">
+      <parent>wcmwf:workflowTask</parent>
+      <mandatory-aspects>
+        <aspect>bpm:assignees</aspect>
+        <aspect>wcmwf:reviewType</aspect>
+        <aspect>wcmwf:reviewInfo</aspect>
+        <aspect>wcmwf:submission</aspect>
+      </mandatory-aspects>
+    </type>
+
+    <type name="wcmwf:submitcancelledTask">
+      <parent>wcmwf:workflowTask</parent>
+      <mandatory-aspects>
+        <aspect>bpm:assignees</aspect>
+        <aspect>wcmwf:reviewType</aspect>
+        <aspect>wcmwf:reviewInfo</aspect>
+        <aspect>wcmwf:submission</aspect>
+      </mandatory-aspects>
+    </type>
+
+    <type name="wcmwf:submittedTask">
+      <parent>wcmwf:workflowTask</parent>
+      <mandatory-aspects>
+        <aspect>bpm:assignees</aspect>
+        <aspect>wcmwf:reviewType</aspect>
+        <aspect>wcmwf:reviewInfo</aspect>
+        <aspect>wcmwf:submission</aspect>
+      </mandatory-aspects>
+    </type>
+
+   <!-- NOTE: kept for backwards compatibility only - for v2.0 wcm submit process definition -->
+   <type name="wcmwf:approvedTask">
       <parent>wcmwf:workflowTask</parent>
       <mandatory-aspects>
         <aspect>bpm:assignees</aspect>

@@ -25,7 +25,7 @@
   <bean name="jbpm.variable.resolver" class="org.jbpm.jpdl.el.impl.JbpmVariableResolver" singleton="true" />
   <bean name="jbpm.mail.address.resolver" class="org.jbpm.identity.mail.IdentityAddressResolver" singleton="true" />
   
-  <bean name="jbpm.job.executor" class="org.jbpm.job.executor.JobExecutor">
+  <bean name="jbpm.job.executor" class="org.alfresco.repo.workflow.jbpm.AlfrescoJobExecutor">
     <field name="jbpmConfiguration"><ref bean="jbpmConfiguration" /></field>
     <field name="name"><string value="AlfrescoJbpmJobExector" /></field>
     <field name="nbrOfThreads"><int value="1" /></field>

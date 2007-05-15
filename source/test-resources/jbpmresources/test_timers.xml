@@ -35,8 +35,20 @@
            </timer>
         </task>
         <transition name="cancel" to="end" />   <!-- signalling this transition will cancel timer -->
-        <transition name="launched" to="end" />  <!-- signalling this transition will cancel timer -->
+        <transition name="launched" to="doit" />  <!-- signalling this transition will cancel timer -->
     </task-node>
+
+    <node name="doit">
+        <event type="node-enter">
+        <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+               <script>
+                 companyhome.name = companyhome.name + "b";
+                 logger.log("Company Home: " + companyhome.name);
+               </script>
+             </action>
+        </event>
+        <transition name="" to="end" />
+    </node>
 
     <end-state name="end" />
 

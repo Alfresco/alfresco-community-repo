@@ -420,6 +420,8 @@ public class SchemaUtil
       final XSComplexTypeDefinition complexType = elDecl.getEnclosingCTDefinition();
       if (complexType == null)
       {
+         LOGGER.warn("unable to find corresponding particle for " + elDecl.getName() +
+                     ".  no enclosing complex type.");
          return null;
       }
 
@@ -427,25 +429,68 @@ public class SchemaUtil
       final XSTerm term = particle.getTerm();
       if (! (term instanceof XSModelGroup)) 
       {
+         LOGGER.warn("unable to find corresponding particle for " + elDecl.getName() +
+                     ".  term " + term + " is not a model group.");
          return null;
       }
-
-      final XSModelGroup group = (XSModelGroup) term;
-      final XSObjectList particles = group.getParticles();
-      if (particles == null)
+      final XSParticle result = SchemaUtil.findCorrespondingParticleInModelGroup((XSModelGroup)term, elDecl);
+      if (result == null)
       {
+         final String msg = ("unable to find corresponding particle for " + elDecl.getName() +
+                             " in term " + term);
+         if (LOGGER.isDebugEnabled())
+         {
+            throw new NullPointerException(msg);
+         }
+         else
+         {
+            LOGGER.warn(msg);
+         }
+      }
+      return result;
+   }
+
+   private static XSParticle findCorrespondingParticleInModelGroup(final XSModelGroup modelGroup, 
+                                                                   final XSElementDeclaration elDecl)
+   {
+      final XSObjectList particles = modelGroup.getParticles();
+      if (particles == null || particles.getLength() == 0)
+      {
+         LOGGER.debug("unable to find corresponding particle for " + elDecl.getName() +
+                     ".  group " + modelGroup + " contains no particles.");
          return null;
       }
 
       for (int i = 0; i < particles.getLength(); i++) 
       {
-         final XSParticle part = (XSParticle) particles.item(i);
-         //test term
+         XSParticle part = (XSParticle)particles.item(i);
          final XSTerm thisTerm = part.getTerm();
-         if (thisTerm == elDecl)
+         if (thisTerm instanceof XSModelGroup)
          {
-            return part;
+            part = SchemaUtil.findCorrespondingParticleInModelGroup((XSModelGroup)thisTerm, elDecl);
+            if (part != null)
+            {
+               return part;
+            }
          }
+         else
+         {
+            if (LOGGER.isDebugEnabled())
+            {
+               LOGGER.debug("checking term " + thisTerm.getName() + 
+                            " in " + modelGroup.getName() + "(" + modelGroup.getClass().getName() + ")");
+            }
+            if (thisTerm == elDecl)
+            {
+               return part;
+            }
+         }
+      }
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("unable to find corresponding particle for " + elDecl.getName() +
+                      ".  " + elDecl.getName() + 
+                      " not found in " + particles.getLength() + " particles");
       }
       return null;
    }

@@ -2,9 +2,9 @@
 
 <script type="text/javascript" src="/alfresco/scripts/ajax/yahoo/yahoo/yahoo-min.js"></script>
 <script type="text/javascript" src="/alfresco/scripts/ajax/yahoo/connection/connection-min.js"></script>
+<script type="text/javascript" src="/alfresco/scripts/ajax/mootools.v1.1.js"></script>
 <script type="text/javascript" src="/alfresco/scripts/ajax/common.js"></script>
 <script type="text/javascript" src="/alfresco/scripts/ajax/summary-info.js"></script>
-<script type="text/javascript" src="/alfresco/scripts/ajax/mootools.v1.1.js"></script>
 <script type="text/javascript" src="/alfresco/scripts/ajax/doclist.js"></script>
 <script type="text/javascript">setContextPath('${url.context}');</script>
 
@@ -60,15 +60,13 @@
             <#assign count=count+1>
             <div class="docRow">
                <div class="docIcon">
-                  <a href="${url.context}${d.url}" target="new"><img class="docIconImage" alt="document" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border=0></a>
+                  <a href="${url.context}${d.url}" target="new"><img class="docIconImage" alt="${d.name}" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border=0></a>
                </div>
-               <div class="docRowTitle">
-                  <div class="docItem">
-                     ${d.name?html}
-                     <span class="docInfo" onclick="event.cancelBubble=true; AlfNodeInfoMgr.toggle('${d.nodeRef}',this);">
-                        <img src="${url.context}/images/icons/popup.gif" class="popupImage" width="16" height="16" />
-                     </span>
-                  </div>
+               <div class="docItem">
+                  ${d.name?html}
+                  <span class="docInfo" onclick="event.cancelBubble=true; AlfNodeInfoMgr.toggle('${d.nodeRef}',this);">
+                     <img src="${url.context}/images/icons/popup.gif" class="popupImage" width="16" height="16" />
+                  </span>
                </div>
                <div class="docDetail">
                   <table cellpadding="2" cellspacing="0" border="0">
@@ -149,13 +147,6 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
    padding-top: 4px;
    border-top: 1px solid #F8FCFD;
    border-bottom: 1px solid #CCD4DB;
-}
-
-.docRowAlt
-{
-   padding-top: 4px;
-   border-bottom: 1px solid #CCD4DB;
-   background-color: #EEF7FB;
 }
 
 .docFooter

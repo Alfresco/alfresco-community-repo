@@ -91,15 +91,8 @@ public class WebScriptServlet extends HttpServlet
         if (logger.isDebugEnabled())
             logger.debug("Processing request ("  + req.getMethod() + ") " + req.getRequestURL() + (req.getQueryString() != null ? "?" + req.getQueryString() : ""));
 
-        try
-        {
-            WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, authenticator, req, res);
-            runtime.executeScript();
-        }
-        catch(Throwable e)
-        {
-            res.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
+        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, authenticator, req, res);
+        runtime.executeScript();
     }
     
 }

@@ -210,7 +210,115 @@ function getContextPath()
       
          return txt;
       },
-   
+      
+      /**
+       * Returns the x/y position of the element in page coordinates.
+       * Takes all parent scrollable containers into account.
+       */
+      getPageXY: function(el)
+      {
+         var parentNode = null;
+         var pos = new Object();
+         
+         if (el.getBoundingClientRect) // IE
+         { 
+            var box = el.getBoundingClientRect();
+            var doc = document;
+            
+            var scrollTop = Math.max(doc.documentElement.scrollTop, doc.body.scrollTop);
+            var scrollLeft = Math.max(doc.documentElement.scrollLeft, doc.body.scrollLeft);
+            
+            pos.x = box.left + scrollLeft;
+            pos.y = box.top + scrollTop;
+            
+            return pos;
+         }
+         else
+         {
+            // firefox, opera
+            pos.x = el.offsetLeft;
+            pos.y = el.offsetTop;
+            parentNode = el.offsetParent;
+            if (parentNode != el)
+            {
+               while (parentNode)
+               {
+                   pos.x += parentNode.offsetLeft;
+                   pos.y += parentNode.offsetTop;
+                   parentNode = parentNode.offsetParent;
+               }
+            }
+         }
+         
+         if (el.parentNode)
+         {
+            parentNode = el.parentNode;
+         }
+         else
+         {
+            parentNode = null;
+         }
+         
+         while (parentNode && parentNode.tagName.toUpperCase() != 'BODY' && parentNode.tagName.toUpperCase() != 'HTML')
+         {
+            // account for any scrolled ancestors
+            if ($(parentNode).getStyle('display') != 'inline')
+            {
+               pos.x -= parentNode.scrollLeft;
+               pos.y -= parentNode.scrollTop;
+            }
+            
+            if (parentNode.parentNode)
+            {
+               parentNode = parentNode.parentNode; 
+            }
+            else
+            {
+               parentNode = null;
+            }
+         }
+         
+         return pos;
+      },
+      
+      /**
+       * Returns the height of the document.
+       */
+      getDocumentHeight: function()
+      {
+         var scrollHeight = (document.compatMode != 'CSS1Compat') ? document.body.scrollHeight : document.documentElement.scrollHeight;
+         return Math.max(scrollHeight, this.getViewportHeight());
+      },
+      
+      /**
+       * Returns the width of the document.
+       */
+      getDocumentWidth: function()
+      {
+         var scrollWidth = (document.compatMode != 'CSS1Compat') ? document.body.scrollWidth : document.documentElement.scrollWidth;
+         return Math.max(scrollWidth, this.getViewportWidth());
+      },
+      
+      /**
+       * Returns the current height of the viewport.
+       */
+      getViewportHeight: function()
+      {
+          return (document.compatMode == 'CSS1Compat') ?
+                 document.documentElement.clientHeight : // Standards
+                 document.body.clientHeight; // Quirks
+      },
+      
+      /**
+       * Returns the current width of the viewport.
+       */
+      getViewportWidth: function()
+      {
+          return (document.compatMode == 'CSS1Compat') ?
+                 document.documentElement.clientWidth : // Standards
+                 document.body.clientWidth; // Quirks
+      },
+      
       /**
        * Aligns an element against the specified element. Automatically adjusts the element above or to
        * the left of the destination if the element would cause a scrollbar to appear.
@@ -221,12 +329,11 @@ function getContextPath()
        */
       smartAlignElement: function (el, destEl, maxwidth)
       {
-         // extend elements with useful mootools prototypes
+         // extend element with useful mootools prototypes
          el = $(el);
-         destEl = $(destEl);
          
          // get the position of the element we are aligning against
-         var pos = destEl.getPosition();
+         var pos = this.getPageXY(destEl);
          
          // calculate display position for the element
          var region = el.getCoordinates();
@@ -237,7 +344,7 @@ function getContextPath()
          {
             if (elWidth > maxwidth) elWidth = maxwidth;
          }
-         var docWidth = Window.innerWidth + Window.scrollMaxX;
+         var docWidth = this.getDocumentWidth();
          if (pos.x + 20 + elWidth < docWidth)
          {
             el.style.left = (pos.x + 20) + "px";
@@ -247,7 +354,7 @@ function getContextPath()
             // Shifting X coord left - overflow
             el.style.left = (pos.x + 20 - ((pos.x + elWidth) - docWidth)) + "px";
          }
-         if (pos.y + 12 + elHeight < (Window.innerHeight + Window.scrollMaxY))
+         if (pos.y + 12 + elHeight < this.getDocumentHeight())
          {
             el.style.top = (pos.y + 12) + "px";
          }

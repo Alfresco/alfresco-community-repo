@@ -479,4 +479,18 @@ public interface AVMStore
      * @param guid
      */
     public void setGuid(String path, String guid);
+    
+    /**
+     * Set the encoding of a file.
+     * @param path
+     * @param encoding
+     */
+    public void setEncoding(String path, String encoding);
+    
+    /**
+     * Set the mime type of a file.
+     * @param path
+     * @param mimeType
+     */
+    public void setMimeType(String path, String mimeType);
 }

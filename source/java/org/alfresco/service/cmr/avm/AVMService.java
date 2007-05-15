@@ -1216,4 +1216,18 @@ public interface AVMService
      * @param guid The GUID to set.
      */
     public void setGuid(String path, String guid);
+    
+    /**
+     * Set the mime type.
+     * @param path The path of the file.
+     * @param mimeType The mime type.
+     */
+    public void setMimeType(String path, String mimeType);
+    
+    /**
+     * Set the encoding.
+     * @param path The path of the file.
+     * @param encoding The encoding.
+     */
+    public void setEncoding(String path, String encoding);
 }

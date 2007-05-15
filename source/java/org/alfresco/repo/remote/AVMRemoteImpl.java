@@ -518,4 +518,20 @@ public class AVMRemoteImpl implements AVMRemote
     {
         fTransport.setGuid(fTicketHolder.getTicket(), path, guid);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemote#setEncoding(java.lang.String, java.lang.String)
+     */
+    public void setEncoding(String path, String encoding)
+    {
+        fTransport.setEncoding(fTicketHolder.getTicket(), path, encoding);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemote#setMimeType(java.lang.String, java.lang.String)
+     */
+    public void setMimeType(String path, String mimeType)
+    {
+        fTransport.setMimeType(fTicketHolder.getTicket(), path, mimeType);
+    }
 }

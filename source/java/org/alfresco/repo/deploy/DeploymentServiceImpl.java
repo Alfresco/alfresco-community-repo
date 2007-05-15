@@ -58,6 +58,7 @@ import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.remote.AVMRemoteTransport;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -492,6 +493,12 @@ public class DeploymentServiceImpl implements DeploymentService
             remote.addAspect(dst.getPath(), aspect);
         }
         remote.setGuid(dst.getPath(), src.getGuid());
+        if (src.isFile())
+        {
+            ContentData contData = fAVMService.getContentDataForRead(version, src.getPath());
+            remote.setEncoding(dst.getPath(), contData.getEncoding());
+            remote.setMimeType(dst.getPath(), contData.getMimetype());
+        }
     }
     
     /**

@@ -1472,4 +1472,42 @@ public class AVMStoreImpl implements AVMStore, Serializable
         AVMNode node = lPath.getCurrentNode();
         node.setGuid(guid);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMStore#setEncoding(java.lang.String, java.lang.String)
+     */
+    public void setEncoding(String path, String encoding)
+    {
+        Lookup lPath = lookup(-1, path, true, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found: " + path);
+        }
+        AVMNode node = lPath.getCurrentNode();
+        if (node.getType() != AVMNodeType.PLAIN_FILE)
+        {
+            throw new AVMWrongTypeException("Not a File: " + path);
+        }
+        PlainFileNode file = (PlainFileNode)node;
+        file.setEncoding(encoding);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMStore#setMimeType(java.lang.String, java.lang.String)
+     */
+    public void setMimeType(String path, String mimeType)
+    {
+        Lookup lPath = lookup(-1, path, true, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found: " + path);
+        }
+        AVMNode node = lPath.getCurrentNode();
+        if (node.getType() != AVMNodeType.PLAIN_FILE)
+        {
+            throw new AVMWrongTypeException("Not a File: " + path);
+        }
+        PlainFileNode file = (PlainFileNode)node;
+        file.setMimeType(mimeType);
+    }
 }

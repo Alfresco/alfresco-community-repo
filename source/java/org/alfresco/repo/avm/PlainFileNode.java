@@ -6,4 +6,15 @@ package org.alfresco.repo.avm;
  */
 interface PlainFileNode extends FileNode
 {
+    /**
+     * Set the encoding of this file.
+     * @param encoding
+     */
+    public void setEncoding(String encoding);
+    
+    /**
+     * Set the mime type of this file.
+     * @param mimeType
+     */
+    public void setMimeType(String mimeType);
 }

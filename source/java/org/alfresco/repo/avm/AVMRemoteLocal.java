@@ -504,4 +504,20 @@ public class AVMRemoteLocal implements AVMRemote
     {
         fService.setGuid(path, guid);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemote#setEncoding(java.lang.String, java.lang.String)
+     */
+    public void setEncoding(String path, String encoding)
+    {
+        fService.setEncoding(path, encoding);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemote#setMimeType(java.lang.String, java.lang.String)
+     */
+    public void setMimeType(String path, String mimeType)
+    {
+        fService.setMimeType(path, mimeType);
+    }
 }

@@ -65,6 +65,7 @@ import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.remote.RepoRemote;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -151,6 +152,9 @@ public class AVMServiceTest extends AVMServiceTestBase
                     fService.lookup(-1, "target:/a/b/c/foo").getGuid());
             assertEquals(fService.lookup(-1, "main:/a/b/c/bar").getGuid(),
                     fService.lookup(-1, "target:/a/b/c/bar").getGuid());
+            ContentData srcCD = fService.getContentDataForRead(-1, "main:/a/b/c/foo");
+            ContentData dstCD = fService.getContentDataForRead(-1, "target:/a/b/c/foo");
+            assertEquals(srcCD.getMimetype(), dstCD.getMimetype());
             fService.createFile("main:/a/b", "biz").close();
             report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, false, true, null);
             System.out.println(report);

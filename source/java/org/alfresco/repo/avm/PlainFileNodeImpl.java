@@ -304,7 +304,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
      * Set the character encoding.
      * @param encoding The encoding to set.
      */
-    protected void setEncoding(String encoding)
+    public void setEncoding(String encoding)
     {
         fEncoding = encoding;
     }
@@ -354,7 +354,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
      * Set the Mime Type of the content.
      * @param mimeType The Mime Type to set.
      */
-    protected void setMimeType(String mimeType)
+    public void setMimeType(String mimeType)
     {
         fMimeType = mimeType;
     }

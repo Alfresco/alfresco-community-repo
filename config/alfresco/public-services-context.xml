@@ -815,6 +815,8 @@
                 <value>getSystemStore</value>
                 <value>revert</value>
                 <value>setGuid</value>
+                <value>setEncoding</value>
+                <value>setMimeType</value>
             </list>
         </property>
     </bean>

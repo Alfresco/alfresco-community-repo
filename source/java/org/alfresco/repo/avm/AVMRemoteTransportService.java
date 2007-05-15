@@ -1027,4 +1027,22 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
         fAuthService.validate(ticket);
         fAVMService.setGuid(path, guid);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemoteTransport#setEncoding(java.lang.String, java.lang.String, java.lang.String)
+     */
+    public void setEncoding(String ticket, String path, String encoding)
+    {
+        fAuthService.validate(ticket);
+        fAVMService.setEncoding(path, encoding);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemoteTransport#setMimeType(java.lang.String, java.lang.String, java.lang.String)
+     */
+    public void setMimeType(String ticket, String path, String mimeType)
+    {
+        fAuthService.validate(ticket);
+        fAVMService.setMimeType(path, mimeType);
+    }
 }

@@ -2566,4 +2566,54 @@ public class AVMRepository
             fLookupCount.set(null);
         }
     }
+ 
+    /**
+     * Set the encoding on a node.
+     * @param path
+     * @param encoding
+     */
+    public void setEncoding(String path, String encoding)
+    {
+        fLookupCount.set(1);
+        try
+        {
+            String [] pathParts = SplitPath(path);
+            AVMStore store = getAVMStoreByName(pathParts[0]);
+            if (store == null)
+            {
+                throw new AVMNotFoundException("Store Not Found: " + pathParts[0]);
+            }
+            fLookupCache.onWrite(pathParts[0]);
+            store.setEncoding(pathParts[1], encoding);
+        }
+        finally
+        {
+            fLookupCount.set(null);
+        }
+    }
+
+    /**
+     * Set the mime type on a node.
+     * @param path
+     * @param encoding
+     */
+    public void setMimeType(String path, String mimeType)
+    {
+        fLookupCount.set(1);
+        try
+        {
+            String [] pathParts = SplitPath(path);
+            AVMStore store = getAVMStoreByName(pathParts[0]);
+            if (store == null)
+            {
+                throw new AVMNotFoundException("Store Not Found: " + pathParts[0]);
+            }
+            fLookupCache.onWrite(pathParts[0]);
+            store.setMimeType(pathParts[1], mimeType);
+        }
+        finally
+        {
+            fLookupCount.set(null);
+        }
+    }
 }

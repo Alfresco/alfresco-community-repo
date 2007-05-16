@@ -1,3 +1,4 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <link rel="stylesheet" href="${url.context}/css/main.css" TYPE="text/css">
 
 <script type="text/javascript" src="/alfresco/scripts/ajax/yahoo/yahoo/yahoo-min.js"></script>
@@ -60,7 +61,7 @@
             <#assign count=count+1>
             <div class="docRow">
                <div class="docIcon">
-                  <a href="${url.context}${d.url}" target="new"><img class="docIconImage" alt="${d.name}" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border=0></a>
+                  <a href="${url.context}${d.url}" target="new"><img class="docIconImage" alt="" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border=0></a>
                </div>
                <div class="docItem">
                   ${d.name?html}
@@ -189,9 +190,9 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 12px;
    color: #000000;
-   margin: 0px 0px 0px 48px;
    display: none;
    overflow: hidden;
+   padding-left: 48px;
 }
 
 .docItemSelected

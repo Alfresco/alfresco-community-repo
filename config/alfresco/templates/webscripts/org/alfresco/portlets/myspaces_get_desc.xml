@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>My Spaces</shortname>
+  <description>Generate the My Spaces portlet page</description>
+  <url format="html" template="/myspaces?f={filter?}&amp;p={path?}"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

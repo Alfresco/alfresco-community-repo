@@ -232,10 +232,7 @@ a.taskfilterLinkSelected:link, a.taskfilterLinkSelected:visited
 
 .taskResources
 {
-   border-left: 1px solid #0092DD;
-   border-top: 1px solid #0092DD;
-   border-bottom: 1px solid #CCD4DB;
-   border-right: 1px solid #CCD4DB;
+   border: 1px solid #FFE500;
    background-color: #FEF8BC;
    margin: 4px 0px 0px 16px;
    width: 400px;

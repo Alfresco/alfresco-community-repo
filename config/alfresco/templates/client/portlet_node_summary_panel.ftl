@@ -36,13 +36,13 @@
 	            <table cellspacing="0" cellpadding="0" border="0">
 	               <tr>
 	                  <td>
-	                     <div style="border: thin solid #cccccc; padding:4px">
+	                     <div style="border: 1px solid #cccccc; padding:4px">
 	                        <a href="${url.context}${node.url}" target="new"><img src="${url.context}${node.icon32}" width="32" height="32" border="0"></a>
 	                     </div>
 	                  </td>
 	                  <td><img src="${url.context}/images/parts/rightSideShadow42.gif" width="6" height="42"></td>
 	               </tr>
-	               <tr><td colspan="2"><img src="${url.context}/images/parts/bottomShadow42.gif" width="48" height="5"></td></tr>
+	               <tr><td colspan="2" style="font-size: 5px;"><img src="${url.context}/images/parts/bottomShadow42.gif" width="48" height="5"></td></tr>
 	            </table>
 	         </#if>
 	      </td>

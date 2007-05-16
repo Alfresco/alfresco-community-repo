@@ -148,7 +148,7 @@ public abstract class BaseContentNode implements TemplateContent
                 }
                 else
                 {
-                    return "/images/icons/space_small.gif";
+                    return "/images/icons/space-icon-default-16.gif";
                 }
             }
         }

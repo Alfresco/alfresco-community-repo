@@ -29,9 +29,10 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
@@ -43,12 +44,39 @@ import com.catcode.odf.OpenDocumentMetadata;
  * Metadata extractor for the
  * {@link org.alfresco.repo.content.MimetypeMap#MIMETYPE_OPENDOCUMENT_TEXT MIMETYPE_OPENDOCUMENT_XXX}
  * mimetypes.
+ * <pre>
+ *   <b>creationDate:</b>           --      cm:created
+ *   <b>creator:</b>                --      cm:author
+ *   <b>date:</b>
+ *   <b>description:</b>            --      cm:description
+ *   <b>generator:</b>
+ *   <b>initialCreator:</b>
+ *   <b>keyword:</b>
+ *   <b>language:</b>
+ *   <b>printDate:</b>
+ *   <b>printedBy:</b>
+ *   <b>subject:</b>
+ *   <b>title:</b>                  --      cm:title
+ * </pre>
  * 
  * @author Antti Jokipii
  */
-public class OpenDocumentMetadataExtracter extends AbstractMetadataExtracter
+public class OpenDocumentMetadataExtracter extends AbstractMappingMetadataExtracter
 {
-    private static String[] mimeTypes = new String[] {
+    private static final String KEY_CREATION_DATE = "creationDate";
+    private static final String KEY_CREATOR = "creator";
+    private static final String KEY_DATE = "date";
+    private static final String KEY_DESCRIPTION = "description";
+    private static final String KEY_GENERATOR = "generator";
+    private static final String KEY_INITIAL_CREATOR = "initialCreator";
+    private static final String KEY_KEYWORD = "keyword";
+    private static final String KEY_LANGUAGE = "language";
+    private static final String KEY_PRINT_DATE = "printDate";
+    private static final String KEY_PRINTED_BY = "printedBy";
+    private static final String KEY_SUBJECT = "subject";
+    private static final String KEY_TITLE = "title";
+    
+    public static String[] SUPPORTED_MIMETYPES = new String[] {
             MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT,
             MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT_TEMPLATE,
             MimetypeMap.MIMETYPE_OPENDOCUMENT_GRAPHICS,
@@ -65,15 +93,18 @@ public class OpenDocumentMetadataExtracter extends AbstractMetadataExtracter
             MimetypeMap.MIMETYPE_OPENDOCUMENT_FORMULA_TEMPLATE,
             MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT_MASTER,
             MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT_WEB,
-            MimetypeMap.MIMETYPE_OPENDOCUMENT_DATABASE, };
+            MimetypeMap.MIMETYPE_OPENDOCUMENT_DATABASE };
 
     public OpenDocumentMetadataExtracter()
     {
-        super(new HashSet<String>(Arrays.asList(mimeTypes)), 1.00, 1000);
+        super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)));
     }
 
-    public void extractInternal(ContentReader reader, Map<QName, Serializable> destination) throws Throwable
+    @Override
+    public Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
     {
+        Map<String, Serializable> rawProperties = newRawMap();
+        
         ODFMetaFileAnalyzer analyzer = new ODFMetaFileAnalyzer();
         InputStream is = null;
         try
@@ -84,11 +115,34 @@ public class OpenDocumentMetadataExtracter extends AbstractMetadataExtracter
 
             if (docInfo != null)
             {
-                // set the metadata
-                destination.put(ContentModel.PROP_AUTHOR, docInfo.getCreator());
-                destination.put(ContentModel.PROP_TITLE, docInfo.getTitle());
-                destination.put(ContentModel.PROP_DESCRIPTION, docInfo.getDescription());
-                destination.put(ContentModel.PROP_CREATED, docInfo.getCreationDate());
+                putRawValue(KEY_CREATION_DATE, docInfo.getCreationDate(), rawProperties);
+                putRawValue(KEY_CREATOR, docInfo.getCreator(), rawProperties);
+                putRawValue(KEY_DATE, docInfo.getDate(), rawProperties);
+                putRawValue(KEY_DESCRIPTION, docInfo.getDescription(), rawProperties);
+                putRawValue(KEY_GENERATOR, docInfo.getGenerator(), rawProperties);
+                putRawValue(KEY_INITIAL_CREATOR, docInfo.getInitialCreator(), rawProperties);
+                putRawValue(KEY_KEYWORD, docInfo.getKeyword(), rawProperties);
+                putRawValue(KEY_LANGUAGE, docInfo.getLanguage(), rawProperties);
+                putRawValue(KEY_PRINT_DATE, docInfo.getPrintDate(), rawProperties);
+                putRawValue(KEY_PRINTED_BY, docInfo.getPrintedBy(), rawProperties);
+                putRawValue(KEY_SUBJECT, docInfo.getSubject(), rawProperties);
+                putRawValue(KEY_TITLE, docInfo.getTitle(), rawProperties);
+                
+                // Handle user-defined properties dynamically
+                Map<String, Set<QName>> mapping = super.getMapping();
+                Hashtable userDefinedProperties = docInfo.getUserDefined();
+                // Extract those user properties for which there is a mapping
+                for (String key : mapping.keySet())
+                {
+                    if (userDefinedProperties.containsKey(key))
+                    {
+                        Object value = userDefinedProperties.get(key);
+                        if (value != null && value instanceof Serializable)
+                        {
+                            putRawValue(key, (Serializable) value, rawProperties);
+                        }
+                    }
+                }
             }
         }
         finally
@@ -98,5 +152,7 @@ public class OpenDocumentMetadataExtracter extends AbstractMetadataExtracter
                 try { is.close(); } catch (IOException e) {}
             }
         }
+        // Done
+        return rawProperties;
     }
 }

@@ -45,6 +45,7 @@ public interface MetadataExtracter
      * written into the property map or not.
      * 
      * @author Derek Hulley
+     * @author Jesper Steen Møller
      */
     public enum OverwritePolicy
     {

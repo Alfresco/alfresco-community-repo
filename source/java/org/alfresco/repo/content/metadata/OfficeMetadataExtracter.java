@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -43,18 +42,46 @@ import org.apache.poi.poifs.eventfilesystem.POIFSReaderEvent;
 import org.apache.poi.poifs.eventfilesystem.POIFSReaderListener;
 
 /**
- * Office file format Metadata Extracter
+ * Office file format Metadata Extracter.  This extracter uses the POI library to extract
+ * the following:
+ * <pre>
+ *   <b>author:</b>             --      cm:author
+ *   <b>title:</b>              --      cm:title
+ *   <b>subject:</b>            --      cm:description
+ *   <b>createDateTime:</b>     --      cm:created
+ *   <b>lastSaveDateTime:</b>   --      cm:modified
+ *   <b>comments:</b>
+ *   <b>editTime:</b>
+ *   <b>format:</b>
+ *   <b>keywords:</b>
+ *   <b>lastAuthor:</b>
+ *   <b>lastPrinted:</b>
+ *   <b>osVersion:</b>
+ *   <b>thumbnail:</b>
+ *   <b>pageCount:</b>
+ *   <b>wordCount:</b>
+ * </pre>
  * 
  * @author Jesper Steen Møller
  * @author Derek Hulley
  */
 public class OfficeMetadataExtracter extends AbstractMappingMetadataExtracter
 {
-    public static final String PROP_AUTHOR = "author";
-    public static final String PROP_TITLE = "title";
-    public static final String PROP_SUBJECT = "subject";
-    public static final String PROP_CREATE_DATETIME = "createDateTime";
-    public static final String PROP_LAST_SAVE_DATETIME = "lastSaveDateTime";
+    public static final String KEY_AUTHOR = "author";
+    public static final String KEY_TITLE = "title";
+    public static final String KEY_SUBJECT = "subject";
+    public static final String KEY_CREATE_DATETIME = "createDateTime";
+    public static final String KEY_LAST_SAVE_DATETIME = "lastSaveDateTime";
+    public static final String KEY_COMMENTS = "comments";
+    public static final String KEY_EDIT_TIME = "editTime";
+    public static final String KEY_FORMAT = "format";
+    public static final String KEY_KEYWORDS = "keywords";
+    public static final String KEY_LAST_AUTHOR = "lastAuthor";
+    public static final String KEY_LAST_PRINTED = "lastPrinted";
+    public static final String KEY_OS_VERSION = "osVersion";
+    public static final String KEY_THUMBNAIL = "thumbnail";
+    public static final String KEY_PAGE_COUNT = "pageCount";
+    public static final String KEY_WORD_COUNT = "wordCount";
     
     public static String[] SUPPORTED_MIMETYPES = new String[] {
         MimetypeMap.MIMETYPE_WORD,
@@ -69,7 +96,7 @@ public class OfficeMetadataExtracter extends AbstractMappingMetadataExtracter
     @Override
     protected Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
     {
-        final Map<String, Serializable> rawProperties = new HashMap<String, Serializable>(17);
+        final Map<String, Serializable> rawProperties = newRawMap();
         
         POIFSReaderListener readerListener = new POIFSReaderListener()
         {
@@ -82,11 +109,21 @@ public class OfficeMetadataExtracter extends AbstractMappingMetadataExtracter
                     {
                         SummaryInformation si = (SummaryInformation) ps;
                         
-                        putSafeRawValue(PROP_AUTHOR, si.getAuthor(), rawProperties);
-                        putSafeRawValue(PROP_TITLE, si.getTitle(), rawProperties);
-                        putSafeRawValue(PROP_SUBJECT, si.getSubject(), rawProperties);
-                        putSafeRawValue(PROP_CREATE_DATETIME, si.getCreateDateTime(), rawProperties);
-                        putSafeRawValue(PROP_LAST_SAVE_DATETIME, si.getLastSaveDateTime(), rawProperties); 
+                        putRawValue(KEY_AUTHOR, si.getAuthor(), rawProperties);
+                        putRawValue(KEY_TITLE, si.getTitle(), rawProperties);
+                        putRawValue(KEY_SUBJECT, si.getSubject(), rawProperties);
+                        putRawValue(KEY_CREATE_DATETIME, si.getCreateDateTime(), rawProperties);
+                        putRawValue(KEY_LAST_SAVE_DATETIME, si.getLastSaveDateTime(), rawProperties);
+                        putRawValue(KEY_COMMENTS, si.getComments(), rawProperties);
+                        putRawValue(KEY_EDIT_TIME, si.getEditTime(), rawProperties);
+                        putRawValue(KEY_FORMAT, si.getFormat(), rawProperties);
+                        putRawValue(KEY_KEYWORDS, si.getKeywords(), rawProperties);
+                        putRawValue(KEY_LAST_AUTHOR, si.getLastAuthor(), rawProperties);
+                        putRawValue(KEY_LAST_PRINTED, si.getLastPrinted(), rawProperties);
+                        putRawValue(KEY_OS_VERSION, si.getOSVersion(), rawProperties);
+                        putRawValue(KEY_THUMBNAIL, si.getThumbnail(), rawProperties);
+                        putRawValue(KEY_PAGE_COUNT, si.getPageCount(), rawProperties);
+                        putRawValue(KEY_WORD_COUNT, si.getWordCount(), rawProperties);
                     }
                 }
                 catch (Exception ex)

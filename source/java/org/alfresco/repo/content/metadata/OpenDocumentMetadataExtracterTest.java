@@ -2,19 +2,19 @@ package org.alfresco.repo.content.metadata;
 
 
 /**
- * @see OfficeMetadataExtracter
+ * @see OpenDocumentMetadataExtracter
  * 
- * @author Jesper Steen Møller
+ * @author Derek Hulley
  */
-public class OfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
+public class OpenDocumentMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
-    private OfficeMetadataExtracter extracter;
+    private OpenDocumentMetadataExtracter extracter;
 
     @Override
     public void setUp() throws Exception
     {
         super.setUp();
-        extracter = new OfficeMetadataExtracter();
+        extracter = new OpenDocumentMetadataExtracter();
         extracter.register();
     }
 
@@ -28,7 +28,7 @@ public class OfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
 
     public void testSupports() throws Exception
     {
-        for (String mimetype : OfficeMetadataExtracter.SUPPORTED_MIMETYPES)
+        for (String mimetype : OpenDocumentMetadataExtracter.SUPPORTED_MIMETYPES)
         {
             boolean supports = extracter.isSupported(mimetype);
             assertTrue("Mimetype should be supported: " + mimetype, supports);
@@ -40,7 +40,7 @@ public class OfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
      */
     public void testSupportedMimetypes() throws Exception
     {
-        for (String mimetype : OfficeMetadataExtracter.SUPPORTED_MIMETYPES)
+        for (String mimetype : OpenDocumentMetadataExtracter.SUPPORTED_MIMETYPES)
         {
             testExtractFromMimetype(mimetype);
         }

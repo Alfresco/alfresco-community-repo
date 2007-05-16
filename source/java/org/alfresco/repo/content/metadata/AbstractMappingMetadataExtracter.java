@@ -26,6 +26,7 @@ package org.alfresco.repo.content.metadata;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -62,7 +63,7 @@ import org.apache.commons.logging.LogFactory;
  *   <li>
  *   Implement the {@link extractInternal} method.  This now returns a raw map of extracted
  *   values keyed by document-specific property names.  The <b>trimPut</b> method has
- *   been replaced with an equivalent {@link #putSafeRawValue(String, Object, Map)}.
+ *   been replaced with an equivalent {@link #putRawValue(String, Serializable, Map)}.
  *   </li>
  *   <li>
  *   Provide the default mapping of the document-specific properties to system-specific
@@ -239,6 +240,28 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     public void setMappingProperties(Properties mappingProperties)
     {
         mapping = readMappingProperties(mappingProperties);
+    }
+    
+    /**
+     * Helper method for derived classes to obtain the mappings that will be applied to raw
+     * values.  This should be called after initialization in order to guarantee the complete
+     * map is given.
+     * <p>
+     * Normally, the list of properties that can be extracted from a document is fixed and
+     * well-known - in that case, just extract everything.  But Some implementations may have
+     * an extra, indeterminate set of values available for extraction.  If the extraction of
+     * these runtime parameters is expensive, then the keys provided by the return value can
+     * be used to extract values from the documents.  The metadata extraction becomes fully
+     * configuration-driven, i.e. declaring further mappings will result in more values being
+     * extracted from the documents.
+     */
+    protected final Map<String, Set<QName>> getMapping()
+    {
+        if (!initialized)
+        {
+            throw new UnsupportedOperationException("The complete mapping is only available after initialization.");
+        }
+        return Collections.unmodifiableMap(mapping);
     }
     
     /**
@@ -566,17 +589,26 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         }
         return systemProperties;
     }
-
+    
     /**
-     * Examines a value or string for nulls and adds it to the map (if non-empty).  If the value
-     * is non-Serializable, then the <code>toString</code> representation used directly.
+     * Adds a value to the map if it is non-trivial.  A value is trivial if
+     * <ul>
+     *   <li>it is null</li>
+     *   <li>it is an empty string value after trimming</li>
+     *   <li>it is an empty collection</li>
+     *   <li>it is an empty array</li>
+     * </ul>
+     * String values are trimmed before being put into the map.
+     * Otherwise, it is up to the extracter to ensure that the value is a <tt>Serializable</tt>.
+     * It is not appropriate to implicitly convert values in order to make them <tt>Serializable</tt>
+     * - the best conversion method will depend on the value's specific meaning.
      * 
-     * @param key           the destination map key
-     * @param value         the value to check and put.
-     * @param destination   map to put values into
-     * @return              Returns <tt>true</tt> if set, <tt>false</tt> otherwise
+     * @param key           the destination key
+     * @param value         the serializable value
+     * @param destination   the map to put values into
+     * @return              Returns <tt>true</tt> if set, otherwise <tt>false</tt>
      */
-    protected boolean putSafeRawValue(String key, Object value, Map<String, Serializable> destination)
+    protected boolean putRawValue(String key, Serializable value, Map<String, Serializable> destination)
     {
         if (value == null)
         {
@@ -584,23 +616,45 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         }
         if (value instanceof String)
         {
-            String svalue = ((String) value).trim();
-            if (svalue.length() > 0)
+            String valueStr = ((String) value).trim();
+            if (valueStr.length() == 0)
             {
-                destination.put(key, svalue);
-                return true;
+                return false;
             }
-            return false;
+            else
+            {
+                // Keep the trimmed value
+                value = valueStr;
+            }
         }
-        else if (value instanceof Serializable)
+        else if (value instanceof Collection)
         {
-            destination.put(key, (Serializable) value);
+            Collection valueCollection = (Collection) value;
+            if (valueCollection.isEmpty())
+            {
+                return false;
+            }
         }
-        else
+        else if (value.getClass().isArray())
         {
-            destination.put(key, value.toString());
+            if (Array.getLength(value) == 0)
+            {
+                return false;
+            }
         }
+        // It passed all the tests
+        destination.put(key, value);
         return true;
+    }
+
+    /**
+     * Helper method to fetch a clean map into which raw values can be dumped.
+     * 
+     * @return          Returns an empty map
+     */
+    protected final Map<String, Serializable> newRawMap()
+    {
+        return new HashMap<String, Serializable>(17);
     }
 
     /**

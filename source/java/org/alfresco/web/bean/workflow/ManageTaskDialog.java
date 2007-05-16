@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -153,8 +154,8 @@ public class ManageTaskDialog extends BaseDialogBean
                                             WorkflowModel.PROP_IS_SYSTEM_PACKAGE);
             LOGGER.debug("Workflow package: " + this.workflowPackage + 
                          " system package: " + isSystemPackage);
-            boolean isWCMWorkflow = 
-               this.task.properties.get(AVMWorkflowUtil.PROP_FROM_PATH) != null;
+            boolean isWCMWorkflow = (this.workflowPackage.getStoreRef().getProtocol().equals(
+                     StoreRef.PROTOCOL_AVM));
             LOGGER.debug("is wcm workflow: " + isWCMWorkflow);
          }
       }
@@ -651,7 +652,7 @@ public class ManageTaskDialog extends BaseDialogBean
             tx = Repository.getUserTransaction(context, true);
             tx.begin();
 
-            if (this.task.properties.get(AVMWorkflowUtil.PROP_FROM_PATH) != null)
+            if (this.workflowPackage.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
             {
                final NodeRef stagingNodeRef = (NodeRef)
                   this.nodeService.getProperty(this.workflowPackage,

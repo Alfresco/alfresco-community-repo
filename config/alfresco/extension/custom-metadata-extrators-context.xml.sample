@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!--
+       This sample show how to modify the mappings properties of the new V2.1 Metadata Extractors.
+       In this example, in addition to the default mappings, the field 'user1' is mapped to
+       'cm:description'.  The available source properties is described on the Javadocs of the
+       extracter class.
+-->
+<beans>
+
+    <bean id="extracter.OpenDocument" class="org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracter" parent="baseMetadataExtracter" >
+        <property name="inheritDefaultMapping">
+            <value>true</value>
+        </property>
+        <property name="mappingProperties">
+            <props>
+                <prop key="namespace.prefix.cm">http://www.alfresco.org/model/content/1.0</prop>
+                <prop key="user1">cm:description</prop>
+            </props>
+        </property>
+    </bean>
+
+</beans>

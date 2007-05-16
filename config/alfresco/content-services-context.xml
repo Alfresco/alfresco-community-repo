@@ -126,13 +126,13 @@
    </bean>
    
    <!-- Content Metadata Extracters -->
-   <bean class="org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter" parent="baseMetadataExtracter" />
-   <bean class="org.alfresco.repo.content.metadata.OfficeMetadataExtracter" parent="baseMetadataExtracter" />
-   <bean class="org.alfresco.repo.content.metadata.MailMetadataExtracter" parent="baseMetadataExtracter" />
-   <bean class="org.alfresco.repo.content.metadata.HtmlMetadataExtracter" parent="baseMetadataExtracter" />
-   <bean class="org.alfresco.repo.content.metadata.MP3MetadataExtracter" parent="baseMetadataExtracter" />
-   <bean class="org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracter" parent="baseMetadataExtracter" />
-   <bean class="org.alfresco.repo.content.metadata.OpenOfficeMetadataExtracter" parent="baseMetadataExtracter" init-method="init" >
+   <bean id="extracter.PDFBox" class="org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter" parent="baseMetadataExtracter" />
+   <bean id="extracter.Office" class="org.alfresco.repo.content.metadata.OfficeMetadataExtracter" parent="baseMetadataExtracter" />
+   <bean id="extracter.Mail" class="org.alfresco.repo.content.metadata.MailMetadataExtracter" parent="baseMetadataExtracter" />
+   <bean id="extracter.Html" class="org.alfresco.repo.content.metadata.HtmlMetadataExtracter" parent="baseMetadataExtracter" />
+   <bean id="extracter.MP3" class="org.alfresco.repo.content.metadata.MP3MetadataExtracter" parent="baseMetadataExtracter" />
+   <bean id="extracter.OpenDocument" class="org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracter" parent="baseMetadataExtracter" />
+   <bean id="extracter.OpenOffice" class="org.alfresco.repo.content.metadata.OpenOfficeMetadataExtracter" parent="baseMetadataExtracter" init-method="init" >
       <property name="connection">
          <ref bean="openOfficeConnection" />
       </property>

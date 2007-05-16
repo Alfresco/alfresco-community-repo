@@ -57,9 +57,11 @@ import com.catcode.odf.OpenDocumentMetadata;
  *   <b>printedBy:</b>
  *   <b>subject:</b>
  *   <b>title:</b>                  --      cm:title
+ *   <b>All user properties</b>
  * </pre>
  * 
  * @author Antti Jokipii
+ * @author Derek Hulley
  */
 public class OpenDocumentMetadataExtracter extends AbstractMappingMetadataExtracter
 {

@@ -308,6 +308,9 @@
         <property name="transactionService">
             <ref bean="TransactionService" />
         </property>
+        <property name="virtServerRegistry">
+            <ref bean="VirtServerRegistry" />
+        </property>
     </bean>
 
 	<!-- AVM Locking. -->

@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
 
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.domain.PropertyValue;
@@ -76,7 +77,8 @@ public class AVMExpiredContentProcessor
     // defaults in case these properties are not configured in Spring
     protected String adminUserName = "admin";
     protected String workflowName = "jbpm$wcmwf:changerequest";
-       
+    
+    protected List<String> workflowStores;
     protected Map<String, Map<String, List<String>>> expiredContent;
     protected AVMService avmService;
     protected AVMSyncService avmSyncService;
@@ -85,6 +87,7 @@ public class AVMExpiredContentProcessor
     protected PersonService personService;
     protected PermissionService permissionService;
     protected TransactionService transactionService;
+    protected VirtServerRegistry virtServerRegistry;
     
     private static Log logger = LogFactory.getLog(AVMExpiredContentProcessor.class);
 
@@ -140,6 +143,11 @@ public class AVMExpiredContentProcessor
         this.transactionService = transactionService;
     }
 
+    public void setVirtServerRegistry(VirtServerRegistry virtServerRegistry)
+    {
+        this.virtServerRegistry = virtServerRegistry;
+    }
+
    /**
      * Executes the expired content processor.
      * The work is performed within a transaction running as the system user.
@@ -166,6 +174,13 @@ public class AVMExpiredContentProcessor
          
          // perform the work as the system user
          AuthenticationUtil.runAs(authorisedWork, this.adminUserName);
+
+         // now we know everything worked ok, let the virtualisation server
+         // know about all the new workflow sandboxes created (just the main stores)
+         for (String path : this.workflowStores)
+         {
+            this.virtServerRegistry.updateAllWebapps(-1, path, true);
+         }
     }
     
     /**
@@ -175,6 +190,7 @@ public class AVMExpiredContentProcessor
     {
         // create the maps to hold the expired content for each user in each web project
         this.expiredContent = new HashMap<String, Map<String, List<String>>>(8);
+        this.workflowStores = new ArrayList<String>(4);
         
         // iterate through all AVM stores and focus only on staging main stores
         List<AVMStoreDescriptor> stores = avmService.getStores();
@@ -389,6 +405,12 @@ public class AVMExpiredContentProcessor
                     // transition the workflow to send it to the users inbox
                     this.workflowService.updateTask(startTask.id, params, null, null);
                     this.workflowService.endTask(startTask.id, null);
+                    
+                    // remember the root path of the workflow sandbox so we can inform
+                    // the virtualisation server later
+                    this.workflowStores.add(workflowStoreName + ":/" + 
+                             JNDIConstants.DIR_DEFAULT_WWW + "/" + 
+                             JNDIConstants.DIR_DEFAULT_APPBASE + "/ROOT");
                     
                     if (logger.isDebugEnabled())
                        logger.debug("Started '" + this.workflowName + "' workflow for user '" +

@@ -166,7 +166,7 @@
           <default></default>
         </property>
         <property name="bpm:packageItemActionGroup">
-          <default>edit_wcm_package_item_actions</default>
+          <default>edit_and_delete_wcm_package_item_actions</default>
         </property>
       </overrides>
       <mandatory-aspects>

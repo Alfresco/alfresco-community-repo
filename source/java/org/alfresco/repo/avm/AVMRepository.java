@@ -2508,6 +2508,7 @@ public class AVMRepository
             throw new AVMBadArgumentException("Bad store name: " + destName);
         }
         store.setName(destName);
+        store.createSnapshot("Rename Store", "Rename Store from " + sourceName + " to " + destName, new HashMap<String, Integer>());
         fLookupCache.onDelete(sourceName);
         fAVMStoreDAO.invalidateCache();
         fPurgeStoreTxnListener.storePurged(sourceName);

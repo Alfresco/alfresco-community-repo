@@ -259,6 +259,15 @@
       </dialogs>
    </config>
    
+   <config evaluator="node-type" condition="wcmwf:reviewTask">
+      <dialogs>
+         <dialog name="manageTask" page="/jsp/wcm/manage-review-task-dialog.jsp"
+                 managed-bean="ManageTaskDialog" 
+                 icon="/images/icons/manage_workflow_task_large.gif" 
+                 description-id="manage_task_desc" />
+      </dialogs>
+   </config>
+   
    <config evaluator="node-type" condition="wcmwf:changeRequestTask">
       <dialogs>
          <dialog name="manageTask" page="/jsp/workflow/manage-task-dialog.jsp"

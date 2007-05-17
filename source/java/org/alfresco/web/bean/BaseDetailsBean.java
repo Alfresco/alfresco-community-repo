@@ -38,6 +38,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.CopyService;
+import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
@@ -286,10 +287,10 @@ public abstract class BaseDetailsBean
    /** Template Image resolver helper */
    protected TemplateImageResolver imageResolver = new TemplateImageResolver()
    {
-       public String resolveImagePathForName(String filename, boolean small)
-       {
-           return Utils.getFileTypeImage(filename, small);
-       }
+      public String resolveImagePathForName(String filename, FileTypeImageSize size)
+      {
+         return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
+      }
    };
    
    /**

@@ -35,6 +35,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.ExpiringValueCache;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
@@ -120,9 +121,9 @@ public abstract class BasePreviewBean
    /** Template Image resolver helper */
    protected TemplateImageResolver imageResolver = new TemplateImageResolver()
    {
-      public String resolveImagePathForName(String filename, boolean small)
+      public String resolveImagePathForName(String filename, FileTypeImageSize size)
       {
-         return Utils.getFileTypeImage(filename, small);
+         return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
       }
    };
 

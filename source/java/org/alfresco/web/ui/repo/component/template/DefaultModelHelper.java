@@ -26,7 +26,10 @@ package org.alfresco.web.ui.repo.component.template;
 
 import java.util.Map;
 
+import javax.faces.context.FacesContext;
+
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.web.app.Application;
@@ -101,9 +104,9 @@ public class DefaultModelHelper
    /** Template Image resolver helper */
    public static final TemplateImageResolver imageResolver = new TemplateImageResolver()
    {
-       public String resolveImagePathForName(String filename, boolean small)
-       {
-           return Utils.getFileTypeImage(filename, small);
-       }
+      public String resolveImagePathForName(String filename, FileTypeImageSize size)
+      {
+         return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
+      }
    };
 }

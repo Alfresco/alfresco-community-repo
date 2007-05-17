@@ -32,6 +32,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateException;
@@ -300,9 +301,9 @@ public class UITemplate extends SelfRenderingComponent
    /** Template Image resolver helper */
    private TemplateImageResolver imageResolver = new TemplateImageResolver()
    {
-       public String resolveImagePathForName(String filename, boolean small)
-       {
-           return Utils.getFileTypeImage(filename, small);
-       }
+      public String resolveImagePathForName(String filename, FileTypeImageSize size)
+      {
+         return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
+      }
    };
 }

@@ -34,8 +34,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 
+import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
@@ -130,10 +132,10 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
     {
         this.imageResolver = new TemplateImageResolver()
         {
-            public String resolveImagePathForName(String filename, boolean small)
+            public String resolveImagePathForName(String filename, FileTypeImageSize size)
             {
-                return Utils.getFileTypeImage(getContext(), filename, small);
-            }
+                return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
+            }  
         };        
     }
     

@@ -37,6 +37,7 @@ import org.alfresco.repo.template.CropContentMethod;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.template.UrlEncodeMethod;
 import org.alfresco.repo.template.Workflow;
+import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
@@ -151,9 +152,9 @@ public class TaskInfoBean
    /** Template Image resolver helper */
    private TemplateImageResolver imageResolver = new TemplateImageResolver()
    {
-      public String resolveImagePathForName(String filename, boolean small)
+      public String resolveImagePathForName(String filename, FileTypeImageSize size)
       {
-         return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, small);
+         return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
       }
    };
 }

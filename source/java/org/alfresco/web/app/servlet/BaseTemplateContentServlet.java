@@ -40,6 +40,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.template.AbsoluteUrlMethod;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -309,9 +310,9 @@ public abstract class BaseTemplateContentServlet extends BaseServlet
    /** Template Image resolver helper */
    protected TemplateImageResolver imageResolver = new TemplateImageResolver()
    {
-      public String resolveImagePathForName(String filename, boolean small)
+      public String resolveImagePathForName(String filename, FileTypeImageSize size)
       {
-         return Utils.getFileTypeImage(getServletContext(), filename, small);
+         return Utils.getFileTypeImage(getServletContext(), filename, size);
       }
    };
    

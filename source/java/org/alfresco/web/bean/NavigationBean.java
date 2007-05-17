@@ -40,6 +40,7 @@ import org.alfresco.filesys.smb.server.repo.ContentContext;
 import org.alfresco.filesys.smb.server.repo.ContentDiskInterface;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -489,13 +490,13 @@ public class NavigationBean
 
       model.put("space", getCurrentNode().getNodeRef());
       model.put(TemplateService.KEY_IMAGE_RESOLVER, 
-              new TemplateImageResolver() 
-              {
-                  public String resolveImagePathForName(String filename, boolean small) 
-                  {
-                     return Utils.getFileTypeImage(filename, small);
-                  }
-               });
+            new TemplateImageResolver() 
+            {
+               public String resolveImagePathForName(String filename, FileTypeImageSize size)
+               {
+                  return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
+               }
+            });
       
       return model;
    }

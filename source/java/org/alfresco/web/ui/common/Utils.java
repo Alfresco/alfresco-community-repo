@@ -62,6 +62,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -92,9 +93,12 @@ public final class Utils
    
    private static final String IMAGE_PREFIX16 = "/images/filetypes/";
    private static final String IMAGE_PREFIX32 = "/images/filetypes32/";
-   private static final String IMAGE_POSTFIX = ".gif";
-   private static final String DEFAULT_FILE_IMAGE16 = IMAGE_PREFIX16 + "_default" + IMAGE_POSTFIX;
-   private static final String DEFAULT_FILE_IMAGE32 = IMAGE_PREFIX32 + "_default" + IMAGE_POSTFIX;
+   private static final String IMAGE_PREFIX64 = "/images/filetypes64/";
+   private static final String IMAGE_POSTFIX_GIF = ".gif";
+   private static final String IMAGE_POSTFIX_PNG = ".png";
+   private static final String DEFAULT_FILE_IMAGE16 = IMAGE_PREFIX16 + "_default" + IMAGE_POSTFIX_GIF;
+   private static final String DEFAULT_FILE_IMAGE32 = IMAGE_PREFIX32 + "_default" + IMAGE_POSTFIX_GIF;
+   private static final String DEFAULT_FILE_IMAGE64 = IMAGE_PREFIX64 + "_default" + IMAGE_POSTFIX_PNG;
    
    private static final Map<String, String> s_fileExtensionMap = new HashMap<String, String>(89, 1.0f);
    
@@ -1164,7 +1168,8 @@ public final class Utils
     */
    public static String getFileTypeImage(String name, boolean small)
    {
-      return getFileTypeImage(FacesContext.getCurrentInstance(), null, name, small);
+      return getFileTypeImage(FacesContext.getCurrentInstance(), null, name,
+             (small ? FileTypeImageSize.Small : FileTypeImageSize.Medium));
    }
    
    /**
@@ -1178,7 +1183,21 @@ public final class Utils
     */
    public static String getFileTypeImage(FacesContext fc, String name, boolean small)
    {
-      return getFileTypeImage(fc, null, name, small);
+      return getFileTypeImage(fc, null, name, (small ? FileTypeImageSize.Small : FileTypeImageSize.Medium));
+   }
+   
+   /**
+    * Return the image path to the filetype icon for the specified file name string
+    * 
+    * @param fc         FacesContext
+    * @param name       File name to build filetype icon path for
+    * @param size       Size of the icon to return
+    * 
+    * @return the image path for the specified node type or the default icon if not found
+    */
+   public static String getFileTypeImage(FacesContext fc, String name, FileTypeImageSize size)
+   {
+      return getFileTypeImage(fc, null, name, size);
    }
    
    /**
@@ -1192,18 +1211,42 @@ public final class Utils
     */
    public static String getFileTypeImage(ServletContext sc, String name, boolean small)
    {
-      return getFileTypeImage(null, sc, name, small);
+      return getFileTypeImage(null, sc, name, (small ? FileTypeImageSize.Small : FileTypeImageSize.Medium));
    }
    
-   private static String getFileTypeImage(FacesContext fc, ServletContext sc, String name, boolean small)
+   /**
+    * Return the image path to the filetype icon for the specified file name string
+    * 
+    * @param sc         ServletContext
+    * @param name       File name to build filetype icon path for
+    * @param size       Size of the icon to return
+    * 
+    * @return the image path for the specified node type or the default icon if not found
+    */
+   public static String getFileTypeImage(ServletContext sc, String name, FileTypeImageSize size)
    {
-      String image = (small ? DEFAULT_FILE_IMAGE16 : DEFAULT_FILE_IMAGE32);
+      return getFileTypeImage(null, sc, name, size);
+   }
+   
+   private static String getFileTypeImage(FacesContext fc, ServletContext sc, String name, FileTypeImageSize size)
+   {
+      String image = null;
+      String defaultImage = null;
+      switch (size)
+      {
+         case Small:
+            defaultImage = DEFAULT_FILE_IMAGE16; break;
+         case Medium:
+            defaultImage = DEFAULT_FILE_IMAGE32; break;
+         case Large:
+            defaultImage = DEFAULT_FILE_IMAGE64; break;
+      }
       
       int extIndex = name.lastIndexOf('.');
       if (extIndex != -1 && name.length() > extIndex + 1)
       {
          String ext = name.substring(extIndex + 1).toLowerCase();
-         String key = ext + ' ' + (small ? "16" : "32");
+         String key = ext + ' ' + size.toString();
          
          // found file extension for appropriate size image
          synchronized (s_fileExtensionMap)
@@ -1212,7 +1255,15 @@ public final class Utils
             if (image == null)
             {
                // not found create for first time
-               image = (small ? IMAGE_PREFIX16 : IMAGE_PREFIX32) + ext + IMAGE_POSTFIX;
+               if (size != FileTypeImageSize.Large)
+               {
+                  image = (size == FileTypeImageSize.Small ? IMAGE_PREFIX16 : IMAGE_PREFIX32) +
+                           ext + IMAGE_POSTFIX_GIF;
+               }
+               else
+               {
+                  image = IMAGE_PREFIX64 + ext + IMAGE_POSTFIX_PNG;
+               }
                
                // does this image exist on the web-server?
                if ((fc != null && fc.getExternalContext().getResourceAsStream(image) != null) ||
@@ -1224,14 +1275,13 @@ public final class Utils
                else
                {
                   // not found, save the default image for this extension instead
-                  image = (small ? DEFAULT_FILE_IMAGE16 : DEFAULT_FILE_IMAGE32);
-                  s_fileExtensionMap.put(key, image);
+                  s_fileExtensionMap.put(key, defaultImage);
                }
             }
          }
       }
       
-      return image;
+      return (image != null ? image : defaultImage);
    }
    
    /**

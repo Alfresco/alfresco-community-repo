@@ -42,7 +42,7 @@ public interface IndexerAndSearcher
      * @return
      * @throws IndexerException
      */
-    public abstract IndexerSPI getIndexer(StoreRef storeRef) throws IndexerException;
+    public abstract Indexer getIndexer(StoreRef storeRef) throws IndexerException;
 
     /**
      * Get a searcher for a store

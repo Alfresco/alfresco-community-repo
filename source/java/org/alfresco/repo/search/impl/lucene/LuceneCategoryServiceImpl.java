@@ -35,6 +35,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -49,6 +50,12 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
 
+/**
+ * Category service implementation
+ * 
+ * @author andyh
+ *
+ */
 public class LuceneCategoryServiceImpl implements CategoryService
 {
     private NodeService nodeService;
@@ -57,8 +64,11 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     private DictionaryService dictionaryService;
 
-    private LuceneIndexerAndSearcher indexerAndSearcher;
+    private IndexerAndSearcher indexerAndSearcher;
 
+    /**
+     * 
+     */
     public LuceneCategoryServiceImpl()
     {
         super();
@@ -66,22 +76,38 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     // Inversion of control support
 
+    /**
+     * Set the node service
+     * @param nodeService
+     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
 
+    /**
+     * Set the service to map prefixes to uris
+     * @param namespacePrefixResolver
+     */
     public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
     {
         this.namespacePrefixResolver = namespacePrefixResolver;
     }
 
+    /**
+     * Set the dictionary service
+     * @param dictionaryService
+     */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
 
-    public void setIndexerAndSearcher(LuceneIndexerAndSearcher indexerAndSearcher)
+    /**
+     * Set the indexer and searcher
+     * @param indexerAndSearcher
+     */
+    public void setIndexerAndSearcher(IndexerAndSearcher indexerAndSearcher)
     {
         this.indexerAndSearcher = indexerAndSearcher;
     }

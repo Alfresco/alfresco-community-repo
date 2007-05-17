@@ -36,7 +36,6 @@ import java.util.Set;
 
 import org.alfresco.repo.search.CannedQueryDef;
 import org.alfresco.repo.search.EmptyResultSet;
-import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NodeSearcher;
@@ -75,7 +74,7 @@ import com.werken.saxpath.XPathReader;
  * 
  * @author andyh
  */
-public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
+public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneSearcher
 {
 
     /**
@@ -91,7 +90,7 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
 
     private QueryRegisterComponent queryRegister;
 
-    private LuceneIndexer2 indexer;
+    private LuceneIndexer indexer;
 
     /*
      * Searcher implementation
@@ -101,12 +100,13 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
      * Get an initialised searcher for the store and transaction Normally we do not search against a a store and delta. Currently only gets the searcher against the main index.
      * 
      * @param storeRef
-     * @param deltaId
-     * @return
+     * @param indexer 
+     * @param config 
+     * @return - the searcher implementation
      */
-    public static LuceneSearcherImpl2 getSearcher(StoreRef storeRef, LuceneIndexer2 indexer, LuceneConfig config)
+    public static ADMLuceneSearcherImpl getSearcher(StoreRef storeRef, LuceneIndexer indexer, LuceneConfig config)
     {
-        LuceneSearcherImpl2 searcher = new LuceneSearcherImpl2();
+        ADMLuceneSearcherImpl searcher = new ADMLuceneSearcherImpl();
         searcher.setLuceneConfig(config);
         try
         {
@@ -124,9 +124,10 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
      * Get an intialised searcher for the store. No transactional ammendsmends are searched.
      * 
      * @param storeRef
-     * @return
+     * @param config 
+     * @return the searcher
      */
-    public static LuceneSearcherImpl2 getSearcher(StoreRef storeRef, LuceneConfig config)
+    public static ADMLuceneSearcherImpl getSearcher(StoreRef storeRef, LuceneConfig config)
     {
         return getSearcher(storeRef, null, config);
     }
@@ -152,6 +153,10 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
         this.dictionaryService = dictionaryService;
     }
 
+    /**
+     * Set the query register
+     * @param queryRegister
+     */
     public void setQueryRegister(QueryRegisterComponent queryRegister)
     {
         this.queryRegister = queryRegister;
@@ -608,8 +613,6 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
 
     /**
      * @return Returns true if the pattern is present, otherwise false.
-     * @see #setIndexer(Indexer)
-     * @see #setSearcher(SearchService)
      */
     public boolean like(NodeRef nodeRef, QName propertyQName, String sqlLikePattern, boolean includeFTS)
     {

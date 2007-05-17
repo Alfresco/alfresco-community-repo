@@ -24,29 +24,29 @@
  */
 package org.alfresco.repo.search;
 
-import org.alfresco.repo.search.impl.lucene.fts.FTSIndexerAware;
-
 /**
- * Add support for FTS indexing
- * 
+ * Indexer implementations that work with spring transactions
  * @author andyh
  *
  */
-public interface IndexerSPI extends Indexer
+public interface TransactionSynchronisationAwareIndexer
 {
     /**
-     * Register call back handler when the indexing chunk is done
-     * 
-     * @param callBack
+     * Commit
      */
-    public void registerCallBack(FTSIndexerAware callBack);
-
+    public void commit();
     /**
-     * Peform a chunk of background FTS (and other non atomic property) indexing
-     * 
-     * @param i
-     * @return - the number of docs updates
+     * Rollback
      */
-    public int updateFullTextSearch(int i);
-
+    public void rollback();
+    /**
+     * Prepare
+     * @return the return tx state
+     */
+    public int prepare();
+    /**
+     * Report if there are any chenges to commit
+     * @return false if read only access (by use not declaration)
+     */
+    public boolean isModified();
 }

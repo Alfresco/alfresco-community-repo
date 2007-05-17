@@ -90,7 +90,7 @@ public class NumericEncoder
      * ffffffff.
      * 
      * @param intToEncode
-     * @return
+     * @return the encoded string
      */
     public static String encode(int intToEncode)
     {
@@ -104,7 +104,7 @@ public class NumericEncoder
      * ffffffffffffffff.
      * 
      * @param longToEncode
-     * @return
+     * @return - the encoded string
      */
     public static String encode(long longToEncode)
     {
@@ -113,12 +113,22 @@ public class NumericEncoder
     }
 
     /**
+     * Secode a long
+     * @param hex
+     * @return - the decoded string
+     */
+    public static long decodeLong(String hex)
+    {
+        return decodeFromHex(hex) ^ LONG_SIGN_MASK;
+    }
+    
+    /**
      * Encode a float into a string that orders correctly according to string
      * comparison. Note that there is no negative NaN but there are codings that
      * imply this. So NaN and -Infinity may not compare as expected.
      * 
      * @param floatToEncode
-     * @return
+     * @return - the encoded string
      */
     public static String encode(float floatToEncode)
     {
@@ -142,7 +152,7 @@ public class NumericEncoder
      * imply this. So NaN and -Infinity may not compare as expected.
      * 
      * @param doubleToEncode
-     * @return
+     * @return the encoded string
      */
     public static String encode(double doubleToEncode)
     {
@@ -184,6 +194,18 @@ public class NumericEncoder
         }
         while (l != 0);
         return new String(buf);
+    }
+    
+    private static long decodeFromHex(String hex)
+    {
+        long l = 0;
+        long factor = 1;
+        for(int i = 15; i >= 0; i--, factor <<= 4)
+        {
+            int digit = Character.digit(hex.charAt(i), 16);
+            l += digit*factor;
+        }
+        return l;
     }
 
     private static final char[] DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',

@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
-import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -1397,6 +1396,9 @@ public class AVMServiceImpl implements AVMService
         {
             InputStream in = getFileInputStream(version, desc.getPath());
             createFile(path, name, in);
+            ContentData cd = getContentDataForRead(version, desc.getPath());
+            setEncoding(newPath, cd.getEncoding());
+            setMimeType(newPath, cd.getMimetype());
         }
         else // desc is a directory.
         {

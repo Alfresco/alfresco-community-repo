@@ -29,10 +29,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.search.IndexerAndSearcher;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
@@ -68,6 +79,8 @@ public class AVMServiceTestBase extends TestCase
      */
     private long fStartTime;
 
+    protected static IndexerAndSearcher fIndexerAndSearcher;
+    
     /**
      * Setup for AVM tests.  Note that we set the polling
      * interval for the reaper to 4 seconds so that tests will
@@ -82,6 +95,7 @@ public class AVMServiceTestBase extends TestCase
             fService = (AVMService)fContext.getBean("AVMService");
             fReaper = (OrphanReaper)fContext.getBean("orphanReaper");
             fSyncService = (AVMSyncService)fContext.getBean("AVMSyncService");
+            fIndexerAndSearcher = (IndexerAndSearcher)fContext.getBean("indexerAndSearcherFactory");
             AuthenticationService authService = (AuthenticationService)fContext.getBean("AuthenticationService");
             authService.authenticate("admin", "admin".toCharArray());
             CreateStoreTxnListener cstl = (CreateStoreTxnListener)fContext.getBean("createStoreTxnListener");
@@ -215,17 +229,295 @@ public class AVMServiceTestBase extends TestCase
         fService.createDirectory("main:/", "d");
         fService.createDirectory("main:/d", "e");
         fService.createDirectory("main:/d/e", "f");
+        
         fService.createFile("main:/a/b/c", "foo").close();
-        PrintStream out = new PrintStream(fService.getFileOutputStream("main:/a/b/c/foo"));
-        out.println("I am main:/a/b/c/foo");
-        out.flush();
-        out.close();
+        ContentWriter writer = fService.getContentWriter("main:/a/b/c/foo");
+        writer.setEncoding("UTF-8");
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.putContent("I am main:/a/b/c/foo");
+        
         fService.createFile("main:/a/b/c", "bar").close();
-        out = new PrintStream(fService.getFileOutputStream("main:/a/b/c/bar"));
-        out.println("I am main:/a/b/c/bar");
-        out.flush();
-        out.close();
+        writer = fService.getContentWriter("main:/a/b/c/bar");
+        // Force a conversion
+        writer.setEncoding("UTF-16");
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.putContent("I am main:/a/b/c/bar");
+       
         fService.createSnapshot("main", null, null);
+        
+        
+        runQueriesAgainstBasicTree("main");
+        
+    }
+
+    protected void runQueriesAgainstBasicTree(String store)
+    {
+        StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
+        
+        // Text index
+        SearchService searchService = fIndexerAndSearcher.getSearcher(AVMNodeConverter.ToStoreRef(store), true);
+        ResultSet results = searchService.query(storeRef, "lucene", "TEXT:\"I am main\"");
+        assertEquals(2, results.length());
+        results.close();
+        
+        // Basic properties
+        
+        // Note "a" is a stop word and therefore not findable ...
+        
+        results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_NAME)+":\"foo\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_NAME)+":foo");
+        assertEquals(1, results.length());
+        results.close();
+        
+        // TODO: Fix auth in AVMDiskDriver and more??
+        
+        results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_CREATOR)+":admin");
+      
+        assertEquals(9, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_MODIFIER)+":admin");
+        assertEquals(9, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_OWNER)+":admin");
+        assertEquals(9, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_NODE_UUID)+":unknown");
+        assertEquals(9, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_STORE_PROTOCOL)+":avm");
+        assertEquals(9, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_STORE_IDENTIFIER)+":"+store);
+        assertEquals(9, results.length());
+        results.close();
+        
+        // Basic paths
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/a\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/a/b\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/a/b/c\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/a/b/c/foo\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/a/b/c/bar\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/d\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/d/e\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/d/e/f\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
+        assertEquals(9, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"//*\"");
+        assertEquals(8, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/a//.\"");
+        assertEquals(5, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/a//*\"");
+        assertEquals(4, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/a/*\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"//c/*\"");
+        assertEquals(2, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/*\"");
+        assertEquals(2, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/*/*\"");
+        assertEquals(2, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/*/*/*\"");
+        assertEquals(2, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/*/*/*/*\"");
+        assertEquals(2, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/*/*/*/*/*\"");
+        assertEquals(0, results.length());
+        results.close();
+    }
+    
+    protected void runQueriesAgainstBasicTreeWithAOnly(String store)
+    {
+        StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
+        
+        // Text index
+        SearchService searchService = fIndexerAndSearcher.getSearcher(AVMNodeConverter.ToStoreRef(store), true);
+        ResultSet results = searchService.query(storeRef, "lucene", "TEXT:\"I am main\"");
+        assertEquals(2, results.length());
+        results.close();
+        
+        // Basic properties
+        
+        // Note "a" is a stop word and therefore not findable ...
+        
+        results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_NAME)+":\"foo\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_NAME)+":foo");
+        assertEquals(1, results.length());
+        results.close();
+        
+        // TODO: Fix auth in AVMDiskDriver and more??
+        
+        results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_CREATOR)+":admin");
+        if(results.length() == 10)
+        {
+        for (ResultSetRow row : results)
+        {
+            System.out.println(row.getNodeRef());
+        }
+        }
+        assertEquals(6, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_MODIFIER)+":admin");
+        assertEquals(6, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_OWNER)+":admin");
+        assertEquals(6, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_NODE_UUID)+":unknown");
+        assertEquals(6, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_STORE_PROTOCOL)+":avm");
+        assertEquals(6, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_STORE_IDENTIFIER)+":"+store);
+        assertEquals(6, results.length());
+        results.close();
+        
+        // Basic paths
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/a\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/a/b\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/a/b/c\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/a/b/c/foo\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/a/b/c/bar\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/d\"");
+        assertEquals(0, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/d/e\"");
+        assertEquals(0, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/d/e/f\"");
+        assertEquals(0, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
+        assertEquals(6, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"//*\"");
+        assertEquals(5, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/a//.\"");
+        assertEquals(5, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/a//*\"");
+        assertEquals(4, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/a/*\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"//c/*\"");
+        assertEquals(2, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/*\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/*/*\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/*/*/*\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/*/*/*/*\"");
+        assertEquals(2, results.length());
+        results.close();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"/*/*/*/*/*\"");
+        assertEquals(0, results.length());
+        results.close();
     }
     
     /**

@@ -25,10 +25,11 @@
 package org.alfresco.repo.search.impl.lucene;
 
 import java.io.File;
+import java.util.Collections;
 
 import junit.framework.TestCase;
 
-import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcherFactory2.LuceneIndexBackupComponent;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneIndexerAndSearcherFactory.LuceneIndexBackupComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.transaction.TransactionService;
@@ -37,7 +38,6 @@ import org.alfresco.util.TempFileProvider;
 import org.springframework.context.ApplicationContext;
 
 /**
- * @see org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcherFactory.LuceneIndexBackupComponent
  * 
  * @author Derek Hulley
  */
@@ -55,7 +55,7 @@ public class LuceneIndexBackupComponentTest extends TestCase
     {
         TransactionService transactionService = (TransactionService) ctx.getBean("transactionComponent");
         NodeService nodeService = (NodeService) ctx.getBean("NodeService");
-        LuceneIndexerAndSearcher factory = (LuceneIndexerAndSearcher) ctx.getBean("luceneIndexerAndSearcherFactory");
+        LuceneIndexerAndSearcher factory = (LuceneIndexerAndSearcher) ctx.getBean("admLuceneIndexerAndSearcherFactory");
         
         this.authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
         this.authenticationComponent.setSystemUserAsCurrentUser();
@@ -65,7 +65,7 @@ public class LuceneIndexBackupComponentTest extends TestCase
         
         backupComponent = new LuceneIndexBackupComponent();
         backupComponent.setTransactionService(transactionService);
-        backupComponent.setFactory(factory);
+        backupComponent.setFactories(Collections.singleton(factory));
         backupComponent.setNodeService(nodeService);
         backupComponent.setTargetLocation(tempTargetDir.toString());
     }
@@ -77,6 +77,9 @@ public class LuceneIndexBackupComponentTest extends TestCase
         super.tearDown();
     }
     
+    /**
+     * Test back up
+     */
     public void testBackup()
     {
         backupComponent.backup();

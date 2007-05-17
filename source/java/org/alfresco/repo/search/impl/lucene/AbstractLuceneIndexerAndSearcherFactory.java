@@ -28,6 +28,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
@@ -41,18 +42,14 @@ import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
-import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
 import org.alfresco.repo.search.transaction.SimpleTransaction;
 import org.alfresco.repo.search.transaction.SimpleTransactionManager;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.apache.commons.io.FileUtils;
@@ -73,13 +70,9 @@ import org.quartz.JobExecutionException;
  * @author andyh
  */
 
-public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearcher, XAResource
+public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneIndexerAndSearcher, XAResource
 {
-    private static Log logger = LogFactory.getLog(LuceneIndexerAndSearcherFactory2.class);
-
-    private DictionaryService dictionaryService;
-
-    private NamespaceService nameSpaceService;
+    private static Log logger = LogFactory.getLog(AbstractLuceneIndexerAndSearcherFactory.class);
 
     private int queryMaxClauses;
 
@@ -90,18 +83,18 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
      * indexer for each store within a transaction
      */
 
-    private static Map<Xid, Map<StoreRef, LuceneIndexer2>> activeIndexersInGlobalTx = new HashMap<Xid, Map<StoreRef, LuceneIndexer2>>();
+    private static Map<Xid, Map<StoreRef, LuceneIndexer>> activeIndexersInGlobalTx = new HashMap<Xid, Map<StoreRef, LuceneIndexer>>();
 
     /**
      * Suspended global transactions.
      */
-    private static Map<Xid, Map<StoreRef, LuceneIndexer2>> suspendedIndexersInGlobalTx = new HashMap<Xid, Map<StoreRef, LuceneIndexer2>>();
+    private static Map<Xid, Map<StoreRef, LuceneIndexer>> suspendedIndexersInGlobalTx = new HashMap<Xid, Map<StoreRef, LuceneIndexer>>();
 
     /**
      * Thread local indexers - used outside a global transaction
      */
 
-    private static ThreadLocal<Map<StoreRef, LuceneIndexer2>> threadLocalIndexers = new ThreadLocal<Map<StoreRef, LuceneIndexer2>>();
+    private static ThreadLocal<Map<StoreRef, LuceneIndexer>> threadLocalIndexers = new ThreadLocal<Map<StoreRef, LuceneIndexer>>();
 
     /**
      * The dafault timeout for transactions TODO: Respect this
@@ -118,13 +111,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
      * The node service we use to get information about nodes
      */
 
-    private NodeService nodeService;
-
-    private FullTextSearchIndexer luceneFullTextSearchIndexer;
-
     private String indexRootLocation;
-
-    private ContentService contentService;
 
     private QueryRegisterComponent queryRegister;
 
@@ -147,45 +134,40 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
      * Private constructor for the singleton TODO: FIt in with IOC
      */
 
-    public LuceneIndexerAndSearcherFactory2()
+    public AbstractLuceneIndexerAndSearcherFactory()
     {
         super();
     }
 
-    /**
-     * Setter for getting the node service via IOC Used in the Spring container
-     * 
-     * @param nodeService
-     */
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
-    public void setNameSpaceService(NamespaceService nameSpaceService)
-    {
-        this.nameSpaceService = nameSpaceService;
-    }
-
-    public void setLuceneFullTextSearchIndexer(FullTextSearchIndexer luceneFullTextSearchIndexer)
-    {
-        this.luceneFullTextSearchIndexer = luceneFullTextSearchIndexer;
-    }
+   /**
+    * Set the directory that contains the indexes
+    * 
+    * @param indexRootLocation
+    */
 
     public void setIndexRootLocation(String indexRootLocation)
     {
         this.indexRootLocation = indexRootLocation;
     }
 
+    /**
+     * Set the query register
+     * 
+     * @param queryRegister
+     */
     public void setQueryRegister(QueryRegisterComponent queryRegister)
     {
         this.queryRegister = queryRegister;
+    }
+
+    /**
+     * Get the query register.
+     * 
+     * @return - the query register.
+     */
+    public QueryRegisterComponent getQueryRegister()
+    {
+        return queryRegister;
     }
 
     /**
@@ -201,9 +183,19 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     }
 
     /**
+     * Get the max time for an atomic transform
+     * 
+     * @return - milliseconds as a long
+     */
+    public long getMaxTransformationTime()
+    {
+        return maxAtomicTransformationTime;
+    }
+
+    /**
      * Check if we are in a global transactoin according to the transaction manager
      * 
-     * @return
+     * @return - true if in a global transaction
      */
 
     private boolean inGlobalTransaction()
@@ -221,7 +213,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     /**
      * Get the local transaction - may be null oif we are outside a transaction.
      * 
-     * @return
+     * @return - the transaction
      * @throws IndexerException
      */
     private SimpleTransaction getTransaction() throws IndexerException
@@ -242,7 +234,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
      * @param storeRef -
      *            the id of the store
      */
-    public LuceneIndexer2 getIndexer(StoreRef storeRef) throws IndexerException
+    public LuceneIndexer getIndexer(StoreRef storeRef) throws IndexerException
     {
         // register to receive txn callbacks
         // TODO: make this conditional on whether the XA stuff is being used
@@ -253,14 +245,14 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         {
             SimpleTransaction tx = getTransaction();
             // Only find indexers in the active list
-            Map<StoreRef, LuceneIndexer2> indexers = activeIndexersInGlobalTx.get(tx);
+            Map<StoreRef, LuceneIndexer> indexers = activeIndexersInGlobalTx.get(tx);
             if (indexers == null)
             {
                 if (suspendedIndexersInGlobalTx.containsKey(tx))
                 {
                     throw new IndexerException("Trying to obtain an index for a suspended transaction.");
                 }
-                indexers = new HashMap<StoreRef, LuceneIndexer2>();
+                indexers = new HashMap<StoreRef, LuceneIndexer>();
                 activeIndexersInGlobalTx.put(tx, indexers);
                 try
                 {
@@ -280,7 +272,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
                     throw new IndexerException("", e);
                 }
             }
-            LuceneIndexer2 indexer = indexers.get(storeRef);
+            LuceneIndexer indexer = indexers.get(storeRef);
             if (indexer == null)
             {
                 indexer = createIndexer(storeRef, getTransactionId(tx, storeRef));
@@ -296,15 +288,15 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
 
     }
 
-    private LuceneIndexer2 getThreadLocalIndexer(StoreRef storeRef)
+    private LuceneIndexer getThreadLocalIndexer(StoreRef storeRef)
     {
-        Map<StoreRef, LuceneIndexer2> indexers = threadLocalIndexers.get();
+        Map<StoreRef, LuceneIndexer> indexers = threadLocalIndexers.get();
         if (indexers == null)
         {
-            indexers = new HashMap<StoreRef, LuceneIndexer2>();
+            indexers = new HashMap<StoreRef, LuceneIndexer>();
             threadLocalIndexers.set(indexers);
         }
-        LuceneIndexer2 indexer = indexers.get(storeRef);
+        LuceneIndexer indexer = indexers.get(storeRef);
         if (indexer == null)
         {
             indexer = createIndexer(storeRef, GUID.generate());
@@ -317,7 +309,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
      * Get the transaction identifier uised to store it in the transaction map.
      * 
      * @param tx
-     * @return
+     * @return - the transaction id
      */
     private static String getTransactionId(Transaction tx, StoreRef storeRef)
     {
@@ -328,10 +320,10 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         }
         else
         {
-            Map<StoreRef, LuceneIndexer2> indexers = threadLocalIndexers.get();
+            Map<StoreRef, LuceneIndexer> indexers = threadLocalIndexers.get();
             if (indexers != null)
             {
-                LuceneIndexer2 indexer = indexers.get(storeRef);
+                LuceneIndexer indexer = indexers.get(storeRef);
                 if (indexer != null)
                 {
                     return indexer.getDeltaId();
@@ -346,27 +338,17 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
      * 
      * @param storeRef
      * @param deltaId
-     * @return
+     * @return - the indexer made by the concrete implemntation
      */
-    private LuceneIndexerImpl2 createIndexer(StoreRef storeRef, String deltaId)
-    {
-        LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(storeRef, deltaId, this);
-        indexer.setNodeService(nodeService);
-        indexer.setDictionaryService(dictionaryService);
-        // indexer.setLuceneIndexLock(luceneIndexLock);
-        indexer.setLuceneFullTextSearchIndexer(luceneFullTextSearchIndexer);
-        indexer.setContentService(contentService);
-        indexer.setMaxAtomicTransformationTime(maxAtomicTransformationTime);
-        return indexer;
-    }
+    protected abstract LuceneIndexer createIndexer(StoreRef storeRef, String deltaId);
 
     /**
      * Encapsulate creating a searcher over the main index
      */
-    public LuceneSearcher2 getSearcher(StoreRef storeRef, boolean searchDelta) throws SearcherException
+    public LuceneSearcher getSearcher(StoreRef storeRef, boolean searchDelta) throws SearcherException
     {
         String deltaId = null;
-        LuceneIndexer2 indexer = null;
+        LuceneIndexer indexer = null;
         if (searchDelta)
         {
             deltaId = getTransactionId(getTransaction(), storeRef);
@@ -375,7 +357,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
                 indexer = getIndexer(storeRef);
             }
         }
-        LuceneSearcher2 searcher = getSearcher(storeRef, indexer);
+        LuceneSearcher searcher = getSearcher(storeRef, indexer);
         return searcher;
     }
 
@@ -384,19 +366,11 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
      * 
      * @param storeRef
      * @param deltaId
-     * @return
+     * @return - the searcher made by the concrete implementation.
      * @throws SearcherException
      */
-    private LuceneSearcher2 getSearcher(StoreRef storeRef, LuceneIndexer2 indexer) throws SearcherException
-    {
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(storeRef, indexer, this);
-        searcher.setNamespacePrefixResolver(nameSpaceService);
-        // searcher.setLuceneIndexLock(luceneIndexLock);
-        searcher.setNodeService(nodeService);
-        searcher.setDictionaryService(dictionaryService);
-        searcher.setQueryRegister(queryRegister);
-        return searcher;
-    }
+
+    protected abstract LuceneSearcher getSearcher(StoreRef storeRef, LuceneIndexer indexer) throws SearcherException;
 
     /*
      * XAResource implementation
@@ -408,7 +382,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         {
             // TODO: Should be remembering overall state
             // TODO: Keep track of prepare responses
-            Map<StoreRef, LuceneIndexer2> indexers = activeIndexersInGlobalTx.get(xid);
+            Map<StoreRef, LuceneIndexer> indexers = activeIndexersInGlobalTx.get(xid);
             if (indexers == null)
             {
                 if (suspendedIndexersInGlobalTx.containsKey(xid))
@@ -430,7 +404,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
                 }
                 else if (indexers.size() == 1)
                 {
-                    for (LuceneIndexer2 indexer : indexers.values())
+                    for (LuceneIndexer indexer : indexers.values())
                     {
                         indexer.commit();
                     }
@@ -444,7 +418,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
             else
             // two phase
             {
-                for (LuceneIndexer2 indexer : indexers.values())
+                for (LuceneIndexer indexer : indexers.values())
                 {
                     indexer.commit();
                 }
@@ -459,7 +433,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
 
     public void end(Xid xid, int flag) throws XAException
     {
-        Map<StoreRef, LuceneIndexer2> indexers = activeIndexersInGlobalTx.get(xid);
+        Map<StoreRef, LuceneIndexer> indexers = activeIndexersInGlobalTx.get(xid);
         if (indexers == null)
         {
             if (suspendedIndexersInGlobalTx.containsKey(xid))
@@ -501,13 +475,13 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
 
     public boolean isSameRM(XAResource xar) throws XAException
     {
-        return (xar instanceof LuceneIndexerAndSearcherFactory2);
+        return (xar instanceof AbstractLuceneIndexerAndSearcherFactory);
     }
 
     public int prepare(Xid xid) throws XAException
     {
         // TODO: Track state OK, ReadOnly, Exception (=> rolled back?)
-        Map<StoreRef, LuceneIndexer2> indexers = activeIndexersInGlobalTx.get(xid);
+        Map<StoreRef, LuceneIndexer> indexers = activeIndexersInGlobalTx.get(xid);
         if (indexers == null)
         {
             if (suspendedIndexersInGlobalTx.containsKey(xid))
@@ -522,7 +496,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         }
         boolean isPrepared = true;
         boolean isModified = false;
-        for (LuceneIndexer2 indexer : indexers.values())
+        for (LuceneIndexer indexer : indexers.values())
         {
             try
             {
@@ -567,7 +541,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         // TODO: What to do if all do not roll back?
         try
         {
-            Map<StoreRef, LuceneIndexer2> indexers = activeIndexersInGlobalTx.get(xid);
+            Map<StoreRef, LuceneIndexer> indexers = activeIndexersInGlobalTx.get(xid);
             if (indexers == null)
             {
                 if (suspendedIndexersInGlobalTx.containsKey(xid))
@@ -580,7 +554,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
                     return;
                 }
             }
-            for (LuceneIndexer2 indexer : indexers.values())
+            for (LuceneIndexer indexer : indexers.values())
             {
                 indexer.rollback();
             }
@@ -599,8 +573,8 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
 
     public void start(Xid xid, int flag) throws XAException
     {
-        Map<StoreRef, LuceneIndexer2> active = activeIndexersInGlobalTx.get(xid);
-        Map<StoreRef, LuceneIndexer2> suspended = suspendedIndexersInGlobalTx.get(xid);
+        Map<StoreRef, LuceneIndexer> active = activeIndexersInGlobalTx.get(xid);
+        Map<StoreRef, LuceneIndexer> suspended = suspendedIndexersInGlobalTx.get(xid);
         if (flag == XAResource.TMJOIN)
         {
             // must be active
@@ -659,10 +633,10 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     {
         try
         {
-            Map<StoreRef, LuceneIndexer2> indexers = threadLocalIndexers.get();
+            Map<StoreRef, LuceneIndexer> indexers = threadLocalIndexers.get();
             if (indexers != null)
             {
-                for (LuceneIndexer2 indexer : indexers.values())
+                for (LuceneIndexer indexer : indexers.values())
                 {
                     try
                     {
@@ -689,16 +663,16 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     /**
      * Prepare the transaction TODO: Store prepare results
      * 
-     * @return
+     * @return - the tx code
      */
     public int prepare() throws IndexerException
     {
         boolean isPrepared = true;
         boolean isModified = false;
-        Map<StoreRef, LuceneIndexer2> indexers = threadLocalIndexers.get();
+        Map<StoreRef, LuceneIndexer> indexers = threadLocalIndexers.get();
         if (indexers != null)
         {
-            for (LuceneIndexer2 indexer : indexers.values())
+            for (LuceneIndexer indexer : indexers.values())
             {
                 try
                 {
@@ -734,11 +708,11 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
      */
     public void rollback()
     {
-        Map<StoreRef, LuceneIndexer2> indexers = threadLocalIndexers.get();
+        Map<StoreRef, LuceneIndexer> indexers = threadLocalIndexers.get();
 
         if (indexers != null)
         {
-            for (LuceneIndexer2 indexer : indexers.values())
+            for (LuceneIndexer indexer : indexers.values())
             {
                 try
                 {
@@ -762,20 +736,15 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     public void flush()
     {
         // TODO: Needs fixing if we expose the indexer in JTA
-        Map<StoreRef, LuceneIndexer2> indexers = threadLocalIndexers.get();
+        Map<StoreRef, LuceneIndexer> indexers = threadLocalIndexers.get();
 
         if (indexers != null)
         {
-            for (LuceneIndexer2 indexer : indexers.values())
+            for (LuceneIndexer indexer : indexers.values())
             {
                 indexer.flushPending();
             }
         }
-    }
-
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
     }
 
     public String getIndexRootLocation()
@@ -788,11 +757,21 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         return indexerBatchSize;
     }
 
+    /**
+     * Set the batch six to use for background indexing
+     * 
+     * @param indexerBatchSize
+     */
     public void setIndexerBatchSize(int indexerBatchSize)
     {
         this.indexerBatchSize = indexerBatchSize;
     }
 
+    /**
+     * Get the directory where any lock files are written (by default there are none)
+     * 
+     * @return - the path to the directory
+     */
     public String getLockDirectory()
     {
         return lockDirectory;
@@ -834,42 +813,76 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         return queryMaxClauses;
     }
 
+    /**
+     * Set the max number of queries in a llucen boolean query
+     * 
+     * @param queryMaxClauses
+     */
     public void setQueryMaxClauses(int queryMaxClauses)
     {
         this.queryMaxClauses = queryMaxClauses;
         BooleanQuery.setMaxClauseCount(this.queryMaxClauses);
     }
 
+    /**
+     * Set the lucene write lock timeout
+     * @param timeout
+     */
     public void setWriteLockTimeout(long timeout)
     {
         this.writeLockTimeout = timeout;
     }
 
+    /**
+     * Set the lucene commit lock timeout (no longer used with lucene 2.1)
+     * @param timeout
+     */
     public void setCommitLockTimeout(long timeout)
     {
         this.commitLockTimeout = timeout;
     }
 
+    /**
+     * Get the commit lock timout.
+     * @return - the timeout
+     */
     public long getCommitLockTimeout()
     {
         return commitLockTimeout;
     }
 
+    /**
+     * Get the write lock timeout 
+     * @return - the timeout in ms
+     */
     public long getWriteLockTimeout()
     {
         return writeLockTimeout;
     }
 
+    /**
+     * Set the lock poll interval in ms
+     * 
+     * @param time
+     */
     public void setLockPollInterval(long time)
     {
         Lock.LOCK_POLL_INTERVAL = time;
     }
 
+    /**
+     * Get the max number of tokens in the field
+     * @return - the max tokens considered.
+     */
     public int getIndexerMaxFieldLength()
     {
         return indexerMaxFieldLength;
     }
 
+    /**
+     * Set the max field length.
+     * @param indexerMaxFieldLength
+     */
     public void setIndexerMaxFieldLength(int indexerMaxFieldLength)
     {
         this.indexerMaxFieldLength = indexerMaxFieldLength;
@@ -889,12 +902,17 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
 
         private TransactionService transactionService;
 
-        private LuceneIndexerAndSearcher factory;
+        private Set<LuceneIndexerAndSearcher> factories;
 
+        @SuppressWarnings("unused")
         private NodeService nodeService;
 
         private String targetLocation;
 
+        /**
+         * Default constructor
+         *
+         */
         public LuceneIndexBackupComponent()
         {
         }
@@ -912,12 +930,12 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         /**
          * Set the Lucene index factory that will be used to control the index locks
          * 
-         * @param factory
-         *            the index factory
+         * @param factories
+         *            the index factories
          */
-        public void setFactory(LuceneIndexerAndSearcher factory)
+        public void setFactories(Set<LuceneIndexerAndSearcher> factories)
         {
-            this.factory = factory;
+            this.factories = factories;
         }
 
         /**
@@ -961,83 +979,101 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         private void backupImpl()
         {
             // create the location to copy to
-            final File targetDir = new File(targetLocation);
+            File targetDir = new File(targetLocation);
             if (targetDir.exists() && !targetDir.isDirectory())
             {
                 throw new AlfrescoRuntimeException("Target location is a file and not a directory: " + targetDir);
             }
-            final File targetParentDir = targetDir.getParentFile();
+            File targetParentDir = targetDir.getParentFile();
             if (targetParentDir == null)
             {
                 throw new AlfrescoRuntimeException("Target location may not be a root directory: " + targetDir);
             }
-            final File tempDir = new File(targetParentDir, "indexbackup_temp");
+            File tempDir = new File(targetParentDir, "indexbackup_temp");
 
-            factory.doWithAllWriteLocks(new WithAllWriteLocksWork<Object>()
+            for (LuceneIndexerAndSearcher factory : factories)
             {
-                public Object doWork()
+                WithAllWriteLocksWork<Object> backupWork = new BackUpWithAllWriteLocksWork(factory, tempDir, targetDir);
+                factory.doWithAllWriteLocks(backupWork);
+
+                if (logger.isDebugEnabled())
                 {
-                    try
-                    {
-                        File indexRootDir = new File(factory.getIndexRootLocation());
-                        // perform the copy
-                        backupDirectory(indexRootDir, tempDir, targetDir);
-                        return null;
-                    }
-                    catch (Throwable e)
-                    {
-                        throw new AlfrescoRuntimeException(
-                                "Failed to copy Lucene index root: \n"
-                                        + "   Index root: " + factory.getIndexRootLocation() + "\n" + "   Target: "
-                                        + targetDir, e);
-                    }
+                    logger.debug("Backed up Lucene indexes: \n" + "   Target directory: " + targetDir);
                 }
-            });
-
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Backed up Lucene indexes: \n" + "   Target directory: " + targetDir);
             }
         }
 
-        /**
-         * Makes a backup of the source directory via a temporary folder
-         */
-        private void backupDirectory(File sourceDir, File tempDir, File targetDir) throws Exception
+        static class BackUpWithAllWriteLocksWork implements WithAllWriteLocksWork<Object>
         {
-            if (!sourceDir.exists())
+            LuceneIndexerAndSearcher factory;
+
+            File tempDir;
+
+            File targetDir;
+
+            BackUpWithAllWriteLocksWork(LuceneIndexerAndSearcher factory, File tempDir, File targetDir)
             {
-                // there is nothing to copy
-                return;
+                this.factory = factory;
+                this.tempDir = tempDir;
+                this.targetDir = targetDir;
             }
-            // delete the files from the temp directory
-            if (tempDir.exists())
+
+            public Object doWork()
             {
-                FileUtils.deleteDirectory(tempDir);
-                if (tempDir.exists())
+                try
                 {
-                    throw new AlfrescoRuntimeException("Temp directory exists and cannot be deleted: " + tempDir);
+                    File indexRootDir = new File(factory.getIndexRootLocation());
+                    // perform the copy
+                    backupDirectory(indexRootDir, tempDir, targetDir);
+                    return null;
+                }
+                catch (Throwable e)
+                {
+                    throw new AlfrescoRuntimeException("Failed to copy Lucene index root: \n"
+                            + "   Index root: " + factory.getIndexRootLocation() + "\n" + "   Target: " + targetDir, e);
                 }
             }
-            // copy to the temp directory
-            FileUtils.copyDirectory(sourceDir, tempDir, true);
-            // check that the temp directory was created
-            if (!tempDir.exists())
+
+            /**
+             * Makes a backup of the source directory via a temporary folder
+             */
+            private static void backupDirectory(File sourceDir, File tempDir, File targetDir) throws Exception
             {
-                throw new AlfrescoRuntimeException("Copy to temp location failed");
-            }
-            // delete the target directory
-            FileUtils.deleteDirectory(targetDir);
-            if (targetDir.exists())
-            {
-                throw new AlfrescoRuntimeException("Failed to delete older files from target location");
-            }
-            // rename the temp to be the target
-            tempDir.renameTo(targetDir);
-            // make sure the rename worked
-            if (!targetDir.exists())
-            {
-                throw new AlfrescoRuntimeException("Failed to rename temporary directory to target backup directory");
+                if (!sourceDir.exists())
+                {
+                    // there is nothing to copy
+                    return;
+                }
+                // delete the files from the temp directory
+                if (tempDir.exists())
+                {
+                    FileUtils.deleteDirectory(tempDir);
+                    if (tempDir.exists())
+                    {
+                        throw new AlfrescoRuntimeException("Temp directory exists and cannot be deleted: " + tempDir);
+                    }
+                }
+                // copy to the temp directory
+                FileUtils.copyDirectory(sourceDir, tempDir, true);
+                // check that the temp directory was created
+                if (!tempDir.exists())
+                {
+                    throw new AlfrescoRuntimeException("Copy to temp location failed");
+                }
+                // delete the target directory
+                FileUtils.deleteDirectory(targetDir);
+                if (targetDir.exists())
+                {
+                    throw new AlfrescoRuntimeException("Failed to delete older files from target location");
+                }
+                // rename the temp to be the target
+                tempDir.renameTo(targetDir);
+                // make sure the rename worked
+                if (!targetDir.exists())
+                {
+                    throw new AlfrescoRuntimeException(
+                            "Failed to rename temporary directory to target backup directory");
+                }
             }
         }
     }
@@ -1069,10 +1105,43 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         }
     }
 
+    public MLAnalysisMode getDefaultMLIndexAnalysisMode()
+    {
+        return defaultMLIndexAnalysisMode;
+    }
+
+    /**
+     * Set the ML analysis mode at index time.
+     * 
+     * @param mode
+     */
+    public void setDefaultMLIndexAnalysisMode(MLAnalysisMode mode)
+    {
+        // defaultMLIndexAnalysisMode = MLAnalysisMode.getMLAnalysisMode(mode);
+        defaultMLIndexAnalysisMode = mode;
+    }
+
+    public MLAnalysisMode getDefaultMLSearchAnalysisMode()
+    {
+        return defaultMLSearchAnalysisMode;
+    }
+
+    /**
+     * Set the ML analysis mode at search time
+     * @param mode
+     */
+    public void setDefaultMLSearchAnalysisMode(MLAnalysisMode mode)
+    {
+        // defaultMLSearchAnalysisMode = MLAnalysisMode.getMLAnalysisMode(mode);
+        defaultMLSearchAnalysisMode = mode;
+    }
+
+    protected abstract List<StoreRef> getAllStores();
+
     public <R> R doWithAllWriteLocks(WithAllWriteLocksWork<R> lockWork)
     {
         // get all the available stores
-        List<StoreRef> storeRefs = nodeService.getStores();
+        List<StoreRef> storeRefs = getAllStores();
 
         IndexInfo.LockWork<R> currentLockWork = null;
 
@@ -1119,9 +1188,9 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     {
         IndexInfo.LockWork<R> lockWork;
 
-        LuceneIndexer2 indexer;
+        LuceneIndexer indexer;
 
-        NestingLockWork(LuceneIndexer2 indexer, IndexInfo.LockWork<R> lockWork)
+        NestingLockWork(LuceneIndexer indexer, IndexInfo.LockWork<R> lockWork)
         {
             this.indexer = indexer;
             this.lockWork = lockWork;
@@ -1137,9 +1206,9 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     {
         WithAllWriteLocksWork<R> lockWork;
 
-        LuceneIndexer2 indexer;
+        LuceneIndexer indexer;
 
-        CoreLockWork(LuceneIndexer2 indexer, WithAllWriteLocksWork<R> lockWork)
+        CoreLockWork(LuceneIndexer indexer, WithAllWriteLocksWork<R> lockWork)
         {
             this.indexer = indexer;
             this.lockWork = lockWork;
@@ -1173,28 +1242,4 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         }
     }
 
-    public MLAnalysisMode getDefaultMLIndexAnalysisMode()
-    {
-        return defaultMLIndexAnalysisMode;
-    }
-
-    public void  setDefaultMLIndexAnalysisMode(MLAnalysisMode mode)
-    {
-        //defaultMLIndexAnalysisMode = MLAnalysisMode.getMLAnalysisMode(mode);
-        defaultMLIndexAnalysisMode = mode;
-    }
-    
-    public MLAnalysisMode getDefaultMLSearchAnalysisMode()
-    {
-       return defaultMLSearchAnalysisMode;
-    }
-    
-    public void  setDefaultMLSearchAnalysisMode(MLAnalysisMode mode)
-    {
-        //defaultMLSearchAnalysisMode = MLAnalysisMode.getMLAnalysisMode(mode);
-        defaultMLSearchAnalysisMode = mode;
-    }
-    
-    
-    
 }

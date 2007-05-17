@@ -33,7 +33,6 @@ import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
 import org.alfresco.repo.search.impl.lucene.index.TransactionStatus;
 import org.alfresco.repo.search.impl.lucene.index.IndexInfo.LockWork;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.apache.log4j.Logger;
 import org.apache.lucene.index.IndexReader;
@@ -64,9 +63,9 @@ import org.apache.lucene.search.IndexSearcher;
  * 
  */
 
-public abstract class LuceneBase2
+public abstract class AbstractLuceneBase
 {
-    private static Logger s_logger = Logger.getLogger(LuceneBase2.class);
+    private static Logger s_logger = Logger.getLogger(AbstractLuceneBase.class);
 
     private IndexInfo indexInfo;
 
@@ -115,13 +114,12 @@ public abstract class LuceneBase2
         {
             throw new IndexerException("Filed to set delta as active");
         }
-
     }
 
     /**
      * Utility method to find the path to the base index
      * 
-     * @return
+     * @return - the base path
      */
     private String getBasePath()
     {
@@ -137,7 +135,7 @@ public abstract class LuceneBase2
     /**
      * Get a searcher for the main index TODO: Split out support for the main index. We really only need this if we want to search over the changing index before it is committed
      * 
-     * @return
+     * @return - the searcher
      * @throws IOException
      */
 
@@ -154,7 +152,7 @@ public abstract class LuceneBase2
         }
     }
 
-    protected ClosingIndexSearcher getSearcher(LuceneIndexer2 luceneIndexer) throws LuceneIndexException
+    protected ClosingIndexSearcher getSearcher(LuceneIndexer luceneIndexer) throws LuceneIndexException
     {
         // If we know the delta id we should do better
 
@@ -185,7 +183,7 @@ public abstract class LuceneBase2
     /**
      * Get a reader for the on file portion of the delta
      * 
-     * @return
+     * @return - the index reader
      * @throws IOException
      * @throws IOException
      */
@@ -211,7 +209,7 @@ public abstract class LuceneBase2
     /**
      * Get the on file writer for the delta
      * 
-     * @return
+     * @return - the writer for the delta
      * @throws IOException
      * @throws IOException
      */
@@ -273,32 +271,63 @@ public abstract class LuceneBase2
         return indexInfo.getMainIndexReferenceCountingReadOnlyIndexReader();
     }
 
+    /**
+     * Set the dictionary service
+     * @param dictionaryService
+     */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
 
+    /**
+     * Get the dictionary service.
+     * 
+     * @return - the service
+     */
     public DictionaryService getDictionaryService()
     {
         return dictionaryService;
     }
 
+    /**
+     * Set the lucene configuration options
+     * 
+     * @param config
+     */
     public void setLuceneConfig(LuceneConfig config)
     {
         this.config = config;
     }
 
+    /**
+     * Get the lucene configuration options.
+     * 
+     * @return - the config options object.
+     */
     public LuceneConfig getLuceneConfig()
     {
         return config;
     }
 
+    /**
+     * Get the ID for the delat we are working with.
+     * 
+     * @return - the id
+     */
     public String getDeltaId()
     {
         return deltaId;
     }
     
 
+    /**
+     * Excute actions while holding the write lock oin the index
+     * 
+     * @param <R>
+     * @param lockWork
+     * @return - the result returned by the action.
+     */
     public <R> R doWithWriteLock(LockWork<R> lockWork)
     {
         return indexInfo.doWithWriteLock(lockWork);

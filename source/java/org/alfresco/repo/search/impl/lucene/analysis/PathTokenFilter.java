@@ -35,9 +35,8 @@ import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.Tokenizer;
 
 /**
- * @author andyh
- * 
- * TODO To change the template for this generated type comment go to Window - Preferences - Java - Code Style - Code Templates
+ * @author andyh TODO To change the template for this generated type comment go to Window - Preferences - Java - Code
+ *         Style - Code Templates
  */
 public class PathTokenFilter extends Tokenizer
 {
@@ -60,7 +59,7 @@ public class PathTokenFilter extends Tokenizer
     public final static String TOKEN_TYPE_PATH_ELEMENT_NAME = "PATH_ELEMENT_NAME";
 
     public final static String TOKEN_TYPE_PATH_ELEMENT_NAMESPACE = "PATH_ELEMENT_NAMESPACE";
-    
+
     public final static String TOKEN_TYPE_PATH_ELEMENT_NAMESPACE_PREFIX = "PATH_ELEMENT_NAMESPACE_PREFIX";
 
     char pathSeparator;
@@ -143,10 +142,9 @@ public class PathTokenFilter extends Tokenizer
 
             if (text.length() == 0)
             {
-                continue; //  Skip  if we find // or /; or ;; etc 
+                continue; // Skip if we find // or /; or ;; etc
             }
 
-            
             if (text.charAt(text.length() - 1) == pathSeparator)
             {
                 text = text.substring(0, text.length() - 1);
@@ -182,8 +180,8 @@ public class PathTokenFilter extends Tokenizer
                 {
                     namespaceToken = new Token(text.substring(0, split), t.startOffset(), t.startOffset() + split,
                             TOKEN_TYPE_PATH_ELEMENT_NAMESPACE_PREFIX);
-                    nameToken = new Token(text.substring(split + 1), t.startOffset()
-                            + split + 1, t.endOffset(), TOKEN_TYPE_PATH_ELEMENT_NAME);
+                    nameToken = new Token(text.substring(split + 1), t.startOffset() + split + 1, t.endOffset(),
+                            TOKEN_TYPE_PATH_ELEMENT_NAME);
                 }
                 else
                 {
@@ -200,7 +198,15 @@ public class PathTokenFilter extends Tokenizer
 
             if (includeNamespace)
             {
+                if (namespaceToken.termText().equals(""))
+                {
+                    namespaceToken = new Token(noNsTokenText, t.startOffset(), t.startOffset(),
+                            TOKEN_TYPE_PATH_ELEMENT_NAMESPACE);
+                    namespaceToken.setPositionIncrement(1);
+                }
+
                 tokens.add(namespaceToken);
+
             }
             tokens.add(nameToken);
 
@@ -271,9 +277,9 @@ public class PathTokenFilter extends Tokenizer
             else if (!inNameSpace && (c == ';'))
             {
                 buffer.append(c);
-                return new Token(buffer.toString(), start, readerPosition , "LASTQNAME");
+                return new Token(buffer.toString(), start, readerPosition, "LASTQNAME");
             }
-            
+
             buffer.append(c);
         }
         readerPosition = -1;

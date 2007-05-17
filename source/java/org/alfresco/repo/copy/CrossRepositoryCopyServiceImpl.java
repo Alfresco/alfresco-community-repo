@@ -15,13 +15,17 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -32,36 +36,36 @@ import org.alfresco.util.Pair;
 
 /**
  * Cross Repository Copying.
+ * 
  * @author britt
  */
-public class CrossRepositoryCopyServiceImpl implements
-        CrossRepositoryCopyService 
+public class CrossRepositoryCopyServiceImpl implements CrossRepositoryCopyService
 {
     /**
      * The NodeService reference.
      */
     private NodeService fNodeService;
-    
+
     /**
      * The FileFolderService reference.
      */
     private FileFolderService fFileFolderService;
-    
+
     /**
      * The regular CopyService reference.
      */
     private CopyService fCopyService;
-    
+
     /**
      * The AVMService.
      */
     private AVMService fAVMService;
-    
+
     /**
      * The ContentService.
      */
     private ContentService fContentService;
-    
+
     /**
      * The DictionaryService.
      */
@@ -73,48 +77,51 @@ public class CrossRepositoryCopyServiceImpl implements
     public CrossRepositoryCopyServiceImpl()
     {
     }
-    
+
     // Setters for Spring.
-    
+
     public void setAvmService(AVMService service)
     {
         fAVMService = service;
     }
-    
+
     public void setContentService(ContentService service)
     {
         fContentService = service;
     }
-    
+
     public void setCopyService(CopyService service)
     {
         fCopyService = service;
     }
-    
+
     public void setDictionaryService(DictionaryService service)
     {
         fDictionaryService = service;
     }
-    
+
     public void setFileFolderService(FileFolderService service)
     {
         fFileFolderService = service;
     }
-    
+
     public void setNodeService(NodeService service)
     {
         fNodeService = service;
     }
-    
+
     /**
-     * This copies recursively src, which may be a container or a content type
-     * to dst, which must be a container. Copied nodes will have the copied from aspect
-     * applied to them.
-     * @param src The node to copy.
-     * @param dst The container to copy it into.
-     * @param name The name to give the copy.
+     * This copies recursively src, which may be a container or a content type to dst, which must be a container. Copied
+     * nodes will have the copied from aspect applied to them.
+     * 
+     * @param src
+     *            The node to copy.
+     * @param dst
+     *            The container to copy it into.
+     * @param name
+     *            The name to give the copy.
      */
-    public void copy(NodeRef src, NodeRef dst, String name) 
+    public void copy(NodeRef src, NodeRef dst, String name)
     {
         StoreRef srcStoreRef = src.getStoreRef();
         StoreRef dstStoreRef = dst.getStoreRef();
@@ -141,26 +148,33 @@ public class CrossRepositoryCopyServiceImpl implements
             }
         }
     }
-    
+
     /**
      * Handle copying from AVM to AVM
-     * @param src Source node.
-     * @param dst Destination directory node.
-     * @param name Name to give copy.
+     * 
+     * @param src
+     *            Source node.
+     * @param dst
+     *            Destination directory node.
+     * @param name
+     *            Name to give copy.
      */
     private void copyAVMToAVM(NodeRef src, NodeRef dst, String name)
     {
         Pair<Integer, String> srcStorePath = AVMNodeConverter.ToAVMVersionPath(src);
         Pair<Integer, String> dstStorePath = AVMNodeConverter.ToAVMVersionPath(dst);
-        fAVMService.copy(srcStorePath.getFirst(), srcStorePath.getSecond(), 
-                         dstStorePath.getSecond(), name);        
+        fAVMService.copy(srcStorePath.getFirst(), srcStorePath.getSecond(), dstStorePath.getSecond(), name);
     }
-    
+
     /**
      * Handle copying from AVM to Repo.
-     * @param src Source node.
-     * @param dst Destination Container.
-     * @param name The name to give the copy.
+     * 
+     * @param src
+     *            Source node.
+     * @param dst
+     *            Destination Container.
+     * @param name
+     *            The name to give the copy.
      */
     private void copyAVMToRepo(NodeRef src, NodeRef dst, String name)
     {
@@ -171,7 +185,11 @@ public class CrossRepositoryCopyServiceImpl implements
             FileInfo newChild = fFileFolderService.create(dst, name, ContentModel.TYPE_CONTENT);
             NodeRef childRef = newChild.getNodeRef();
             InputStream in = fAVMService.getFileInputStream(desc);
-            OutputStream out = fContentService.getWriter(childRef, ContentModel.PROP_CONTENT, true).getContentOutputStream();
+            ContentData cd = fAVMService.getContentDataForRead(desc.getVersionID(), desc.getPath());
+            ContentWriter writer = fContentService.getWriter(childRef, ContentModel.PROP_CONTENT, true);
+            writer.setEncoding(cd.getEncoding());
+            writer.setMimetype(cd.getMimetype());
+            OutputStream out = writer.getContentOutputStream();
             copyData(in, out);
             copyPropsAndAspectsAVMToRepo(src, childRef);
         }
@@ -188,11 +206,14 @@ public class CrossRepositoryCopyServiceImpl implements
             }
         }
     }
-    
+
     /**
      * Helper that copies aspects and properties.
-     * @param src The source AVM node.
-     * @param dst The destination Repo node.
+     * 
+     * @param src
+     *            The source AVM node.
+     * @param dst
+     *            The destination Repo node.
      */
     private void copyPropsAndAspectsAVMToRepo(NodeRef src, NodeRef dst)
     {
@@ -217,9 +238,13 @@ public class CrossRepositoryCopyServiceImpl implements
 
     /**
      * Handle copying from Repo to AVM.
-     * @param src The source node.
-     * @param dst The destingation directory.
-     * @param name The name to give the copy.
+     * 
+     * @param src
+     *            The source node.
+     * @param dst
+     *            The destingation directory.
+     * @param name
+     *            The name to give the copy.
      */
     private void copyRepoToAVM(NodeRef src, NodeRef dst, String name)
     {
@@ -229,8 +254,20 @@ public class CrossRepositoryCopyServiceImpl implements
         NodeRef childNodeRef = AVMNodeConverter.ToNodeRef(-1, childPath);
         if (fDictionaryService.isSubClass(srcType, ContentModel.TYPE_CONTENT))
         {
-            InputStream in = fContentService.getReader(src, ContentModel.PROP_CONTENT).getContentInputStream();
-            OutputStream out = fAVMService.createFile(versionPath.getSecond(), name);
+            ContentReader reader = fContentService.getReader(src, ContentModel.PROP_CONTENT);
+            InputStream in = reader.getContentInputStream();
+            try
+            {
+                fAVMService.createFile(versionPath.getSecond(), name).close();
+            }
+            catch (IOException e)
+            {
+                throw new AlfrescoRuntimeException("I/O Error.", e);
+            }
+            ContentWriter writer = fAVMService.getContentWriter(childPath);
+            writer.setEncoding(reader.getEncoding());
+            writer.setMimetype(reader.getMimetype());
+            OutputStream out = writer.getContentOutputStream();
             copyData(in, out);
             copyPropsAndAspectsRepoToAVM(src, childNodeRef, childPath);
             return;
@@ -247,12 +284,16 @@ public class CrossRepositoryCopyServiceImpl implements
             return;
         }
     }
-    
+
     /**
      * Helper to copy properties and aspects.
-     * @param src The source node.
-     * @param dst The destination node.
-     * @param dstPath The destination AVM path.
+     * 
+     * @param src
+     *            The source node.
+     * @param dst
+     *            The destination node.
+     * @param dstPath
+     *            The destination AVM path.
      */
     private void copyPropsAndAspectsRepoToAVM(NodeRef src, NodeRef dst, String dstPath)
     {
@@ -269,24 +310,28 @@ public class CrossRepositoryCopyServiceImpl implements
         }
         fNodeService.setProperty(dst, ContentModel.PROP_COPY_REFERENCE, src);
     }
-    
+
     /**
      * Handle copying from Repo to Repo.
-     * @param src The source node.
-     * @param dst The destination container.
-     * @param name The name to give the copy.
+     * 
+     * @param src
+     *            The source node.
+     * @param dst
+     *            The destination container.
+     * @param name
+     *            The name to give the copy.
      */
     private void copyRepoToRepo(NodeRef src, NodeRef dst, String name)
     {
         ChildAssociationRef assocRef = fNodeService.getPrimaryParent(src);
         fCopyService.copyAndRename(src, dst, ContentModel.ASSOC_CONTAINS, assocRef.getQName(), true);
     }
-    
+
     private void copyData(InputStream in, OutputStream out)
     {
         try
         {
-            byte [] buff = new byte[8192];
+            byte[] buff = new byte[8192];
             int read = 0;
             while ((read = in.read(buff)) != -1)
             {

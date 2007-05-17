@@ -22,53 +22,37 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.search.impl.lucene.fts;
+package org.alfresco.repo.search.impl.lucene;
 
 /**
- * FTS indexer exception
+ * AVM specific indxer support
  * 
  * @author andyh
  *
  */
-public class FTSIndexerException extends RuntimeException
+public interface AVMLuceneIndexer extends LuceneIndexer
 {
-
     /**
+     * Index a specified change to a store between two snapshots 
      * 
+     * @param store - the name of the store
+     * @param srcVersion - the id of the snapshot before the changeset
+     * @param dstVersion - the id of the snapshot created by the change set
      */
-    private static final long serialVersionUID = 3258134635127912754L;
-
+    public void index(String store, int srcVersion, int dstVersion);
+    
     /**
+     * Delete the index for the specified store.
      * 
+     * @param store
      */
-    public FTSIndexerException()
-    {
-        super();
-    }
-
+    public void deleteIndex(String store);
+    
     /**
-     * @param message
+     * Create an index for the specified store.
+     * This makes sure that the root node for the store is indexed correctly.
+     * 
+     * @param store
      */
-    public FTSIndexerException(String message)
-    {
-        super(message);
-    }
-
-    /**
-     * @param message
-     * @param cause
-     */
-    public FTSIndexerException(String message, Throwable cause)
-    {
-        super(message, cause);
-    }
-
-    /**
-     * @param cause
-     */
-    public FTSIndexerException(Throwable cause)
-    {
-        super(cause);
-    }
-
+    public void createIndex(String store);
 }

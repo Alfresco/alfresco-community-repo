@@ -26,7 +26,7 @@ package org.alfresco.repo.node.index;
 
 import java.util.List;
 
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneIndexerImpl2;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneIndexerImpl;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -100,7 +100,7 @@ public class MissingContentReindexComponent extends AbstractReindexComponent
 
         // search for it in the index, sorting with youngest first
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("TEXT:" + AbstractLuceneIndexerImpl2.NOT_INDEXED_CONTENT_MISSING);
+        sp.setQuery("TEXT:" + AbstractLuceneIndexerImpl.NOT_INDEXED_CONTENT_MISSING);
         sp.addSort(SearchParameters.SORT_IN_DOCUMENT_ORDER_DESCENDING);
         ResultSet results = null;
         try

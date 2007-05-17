@@ -22,53 +22,31 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.search.impl.lucene.fts;
+package org.alfresco.repo.search;
+
+import org.alfresco.repo.search.impl.lucene.fts.FTSIndexerAware;
 
 /**
- * FTS indexer exception
+ * Add support for FTS indexing
  * 
  * @author andyh
- *
  */
-public class FTSIndexerException extends RuntimeException
+public interface BackgroundIndexerAware extends SupportsBackgroundIndexing
 {
-
     /**
+     * Register call back handler when the indexing chunk is done
      * 
+     * @param callBack
      */
-    private static final long serialVersionUID = 3258134635127912754L;
+    public void registerCallBack(FTSIndexerAware callBack);
 
     /**
+     * Peform a chunk of background FTS (and other non atomic property) indexing
      * 
+     * @param i
+     * @return - the number of docs updates
      */
-    public FTSIndexerException()
-    {
-        super();
-    }
+    public int updateFullTextSearch(int i);
 
-    /**
-     * @param message
-     */
-    public FTSIndexerException(String message)
-    {
-        super(message);
-    }
-
-    /**
-     * @param message
-     * @param cause
-     */
-    public FTSIndexerException(String message, Throwable cause)
-    {
-        super(message, cause);
-    }
-
-    /**
-     * @param cause
-     */
-    public FTSIndexerException(Throwable cause)
-    {
-        super(cause);
-    }
-
+    
 }

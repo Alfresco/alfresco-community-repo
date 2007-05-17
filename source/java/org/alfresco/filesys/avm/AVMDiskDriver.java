@@ -81,52 +81,61 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * AVM Repository Filesystem Driver Class
- * 
- * <p>Provides a filesystem interface for various protocols such as SMB/CIFS and FTP.
+ * <p>
+ * Provides a filesystem interface for various protocols such as SMB/CIFS and FTP.
  * 
  * @author GKSpencer
  */
-public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
+public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
+{
 
     // Logging
-    
+
     private static final Log logger = LogFactory.getLog(AVMDiskDriver.class);
-    
+
     // Configuration key names
-    
-    private static final String KEY_STORE 		= "storePath";
-    private static final String KEY_VERSION		= "version";
-    private static final String KEY_CREATE		= "createStore";
+
+    private static final String KEY_STORE = "storePath";
+
+    private static final String KEY_VERSION = "version";
+
+    private static final String KEY_CREATE = "createStore";
 
     // AVM path seperator
-    
-    public static final char AVM_SEPERATOR			= '/';
-    public static final String AVM_SEPERATOR_STR	= "/";
-    
+
+    public static final char AVM_SEPERATOR = '/';
+
+    public static final String AVM_SEPERATOR_STR = "/";
+
     // Services and helpers
-    
+
     private AVMService m_avmService;
+
     private TransactionService m_transactionService;
+
     private MimetypeService m_mimetypeService;
-    
+
     private AuthenticationComponent m_authComponent;
+
     private AuthenticationService m_authService;
-    
+
     // AVM listeners
-    
+
     private CreateStoreTxnListener m_createStoreListener;
+
     private PurgeStoreTxnListener m_purgeStoreListener;
-    
+
     private CreateVersionTxnListener m_createVerListener;
+
     private PurgeVersionTxnListener m_purgeVerListener;
-    
+
     /**
      * Default constructor
      */
     public AVMDiskDriver()
     {
     }
-    
+
     /**
      * Return the AVM service
      * 
@@ -134,9 +143,9 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
      */
     public final AVMService getAvmService()
     {
-    	return m_avmService;
+        return m_avmService;
     }
-    
+
     /**
      * Return the authentication service
      * 
@@ -144,9 +153,9 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
      */
     public final AuthenticationService getAuthenticationService()
     {
-    	return m_authService;
+        return m_authService;
     }
-    
+
     /**
      * Return the transaction service
      * 
@@ -154,23 +163,25 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
      */
     public final TransactionService getTransactionService()
     {
-    	return m_transactionService;
+        return m_transactionService;
     }
-    
+
     /**
      * Set the AVM service
      * 
-     * @param avmService AVMService
+     * @param avmService
+     *            AVMService
      */
     public void setAvmService(AVMService avmService)
     {
-    	m_avmService = avmService;
+        m_avmService = avmService;
     }
-    
+
     /**
      * Set the transaction service
      * 
-     * @param transactionService the transaction service
+     * @param transactionService
+     *            the transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -180,7 +191,8 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     /**
      * Set the authentication component
      * 
-     * @param authComponent AuthenticationComponent
+     * @param authComponent
+     *            AuthenticationComponent
      */
     public void setAuthenticationComponent(AuthenticationComponent authComponent)
     {
@@ -190,308 +202,329 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     /**
      * Set the authentication service
      * 
-     * @param authService AuthenticationService
+     * @param authService
+     *            AuthenticationService
      */
     public void setAuthenticationService(AuthenticationService authService)
     {
-    	m_authService = authService;
+        m_authService = authService;
     }
-    
+
     /**
      * Set the mimetype service
      * 
-     * @param mimetypeService MimetypeService
+     * @param mimetypeService
+     *            MimetypeService
      */
     public void setMimetypeService(MimetypeService mimetypeService)
     {
         m_mimetypeService = mimetypeService;
     }
-    
+
     /**
      * Set the create store listener
      * 
-     * @param createStoreListener CreateStoreTxnListener
+     * @param createStoreListener
+     *            CreateStoreTxnListener
      */
     public void setCreateStoreListener(CreateStoreTxnListener createStoreListener)
     {
-    	m_createStoreListener = createStoreListener;
+        m_createStoreListener = createStoreListener;
     }
-    
+
     /**
      * Set the purge store listener
      * 
-     * @param purgeStoreListener PurgeStoreTxnListener
+     * @param purgeStoreListener
+     *            PurgeStoreTxnListener
      */
     public void setPurgeStoreListener(PurgeStoreTxnListener purgeStoreListener)
     {
-    	m_purgeStoreListener = purgeStoreListener;
+        m_purgeStoreListener = purgeStoreListener;
     }
-    
+
     /**
      * Set the create version listener
      * 
-     * @param createVersionListener CreateVersionTxnListener
+     * @param createVersionListener
+     *            CreateVersionTxnListener
      */
     public void setCreateVersionListener(CreateVersionTxnListener createVersionListener)
     {
-    	m_createVerListener = createVersionListener;
+        m_createVerListener = createVersionListener;
     }
-    
+
     /**
      * Set the purge version listener
      * 
-     * @param purgeVersionListener PurgeVersionTxnListener
+     * @param purgeVersionListener
+     *            PurgeVersionTxnListener
      */
     public void setPurgeVersionListener(PurgeVersionTxnListener purgeVersionListener)
     {
-    	m_purgeVerListener = purgeVersionListener;
+        m_purgeVerListener = purgeVersionListener;
     }
-    
+
     /**
-     * Parse and validate the parameter string and create a device context object for this instance
-     * of the shared device.
+     * Parse and validate the parameter string and create a device context object for this instance of the shared
+     * device.
      * 
-     * @param devIface DeviceInterface
-     * @param name String
-     * @param cfg ConfigElement
+     * @param devIface
+     *            DeviceInterface
+     * @param name
+     *            String
+     * @param cfg
+     *            ConfigElement
      * @return DeviceContext
      * @exception DeviceContextException
      */
     public DeviceContext createContext(DeviceInterface devIface, String name, ConfigElement cfg)
-    	throws DeviceContextException
+            throws DeviceContextException
     {
         // Use the system user as the authenticated context for the filesystem initialization
-        
-        m_authComponent.setCurrentUser( m_authComponent.getSystemUserName());
-        
-        // Wrap the initialization in a transaction
-        
-        UserTransaction tx = m_transactionService.getUserTransaction(false);
 
-        AVMContext context = null;
-        
+        String currentUser = m_authComponent.getCurrentUserName();
         try
         {
-            // Start the transaction
-            
-            if ( tx != null)
-                tx.begin();
-            
-            // Check if the share is a virtualization view
-            
-            ConfigElement virtElem = cfg.getChild( "virtualView");
-            if ( virtElem != null)
+            m_authComponent.setCurrentUser(m_authComponent.getSystemUserName());
+
+            // Wrap the initialization in a transaction
+
+            UserTransaction tx = m_transactionService.getUserTransaction(false);
+
+            AVMContext context = null;
+
+            try
             {
-            	// Check if sandboxes should be shown in the virtualization view
-            	
-            	boolean showSandboxes = cfg.getChild( "showAllSandboxes") != null ? true : false;
-            	
-            	// Create the context
-            	
-            	context = new AVMContext( name, showSandboxes, this);
-            	
-	            // Enable file state caching
-	            
-	            context.enableStateTable( true, getStateReaper());
-	            
-	            // Plug the virtualization view context into the various store/version call back listeners
-	            // so that store/version pseudo folders can be kept in sync with AVM
-	            
-	            m_createStoreListener.addCallback( context);
-	            m_purgeStoreListener.addCallback( context);
-	            
-	            m_createVerListener.addCallback( context);
-	            m_purgeVerListener.addCallback( context);
+                // Start the transaction
+
+                if (tx != null)
+                    tx.begin();
+
+                // Check if the share is a virtualization view
+
+                ConfigElement virtElem = cfg.getChild("virtualView");
+                if (virtElem != null)
+                {
+                    // Check if sandboxes should be shown in the virtualization view
+
+                    boolean showSandboxes = cfg.getChild("showAllSandboxes") != null ? true : false;
+
+                    // Create the context
+
+                    context = new AVMContext(name, showSandboxes, this);
+
+                    // Enable file state caching
+
+                    context.enableStateTable(true, getStateReaper());
+
+                    // Plug the virtualization view context into the various store/version call back listeners
+                    // so that store/version pseudo folders can be kept in sync with AVM
+
+                    m_createStoreListener.addCallback(context);
+                    m_purgeStoreListener.addCallback(context);
+
+                    m_createVerListener.addCallback(context);
+                    m_purgeVerListener.addCallback(context);
+                }
+                else
+                {
+                    // Get the store path
+
+                    ConfigElement storeElement = cfg.getChild(KEY_STORE);
+                    if (storeElement == null
+                            || storeElement.getValue() == null || storeElement.getValue().length() == 0)
+                        throw new DeviceContextException("Device missing init value: " + KEY_STORE);
+
+                    String storePath = storeElement.getValue();
+
+                    // Get the version if specified, or default to the head version
+
+                    int version = AVMContext.VERSION_HEAD;
+
+                    ConfigElement versionElem = cfg.getChild(KEY_VERSION);
+                    if (versionElem != null)
+                    {
+                        // Check if the version is valid
+
+                        if (versionElem.getValue() == null || versionElem.getValue().length() == 0)
+                            throw new DeviceContextException("Store version not specified");
+
+                        // Validate the version id
+
+                        try
+                        {
+                            version = Integer.parseInt(versionElem.getValue());
+                        }
+                        catch (NumberFormatException ex)
+                        {
+                            throw new DeviceContextException("Invalid store version specified, "
+                                    + versionElem.getValue());
+                        }
+
+                        // Range check the version id
+
+                        if (version < 0 && version != AVMContext.VERSION_HEAD)
+                            throw new DeviceContextException("Invalid store version id specified, " + version);
+                    }
+
+                    // Check if the create flag is enabled
+
+                    ConfigElement createStore = cfg.getChild(KEY_CREATE);
+
+                    // Validate the store path
+
+                    AVMNodeDescriptor rootNode = m_avmService.lookup(version, storePath);
+                    if (rootNode == null)
+                    {
+                        // Check if the store should be created
+
+                        if (createStore == null || version != AVMContext.VERSION_HEAD)
+                            throw new DeviceContextException("Invalid store path/version, "
+                                    + storePath + " (" + version + ")");
+
+                        // Parse the store path
+
+                        String storeName = null;
+                        String path = null;
+
+                        int pos = storePath.indexOf(":/");
+                        if (pos != -1)
+                        {
+                            storeName = storePath.substring(0, pos);
+                            if (storePath.length() > pos)
+                                path = storePath.substring(pos + 2);
+                        }
+                        else
+                            storeName = storePath;
+
+                        // Check if the store exists
+
+                        AVMStoreDescriptor storeDesc = null;
+
+                        try
+                        {
+                            storeDesc = m_avmService.getStore(storeName);
+                        }
+                        catch (AVMNotFoundException ex)
+                        {
+                        }
+
+                        // Create a new store if it does not exist
+
+                        if (storeDesc == null)
+                            m_avmService.createStore(storeName);
+
+                        // Check if there is an optional path
+
+                        if (path != null)
+                        {
+                            // Split the path
+
+                            StringTokenizer tokens = new StringTokenizer(path, AVMPath.AVM_SEPERATOR_STR);
+                            StringList paths = new StringList();
+
+                            while (tokens.hasMoreTokens())
+                                paths.addString(tokens.nextToken());
+
+                            // Create the path, or folders that do not exist
+
+                            AVMPath curPath = new AVMPath(storeName, version, FileName.DOS_SEPERATOR_STR);
+                            AVMNodeDescriptor curDesc = m_avmService.lookup(curPath.getVersion(), curPath.getAVMPath());
+
+                            // Walk the path checking creating each folder as required
+
+                            for (int i = 0; i < paths.numberOfStrings(); i++)
+                            {
+                                AVMNodeDescriptor nextDesc = null;
+
+                                try
+                                {
+                                    // Check if the child folder exists
+
+                                    nextDesc = m_avmService.lookup(curDesc, paths.getStringAt(i));
+                                }
+                                catch (AVMNotFoundException ex)
+                                {
+                                }
+
+                                // Check if the folder exists
+
+                                if (nextDesc == null)
+                                {
+                                    // Create the new folder
+
+                                    m_avmService.createDirectory(curPath.getAVMPath(), paths.getStringAt(i));
+
+                                    // Get the details of the new folder
+
+                                    nextDesc = m_avmService.lookup(curDesc, paths.getStringAt(i));
+                                }
+                                else if (nextDesc.isFile())
+                                    throw new DeviceContextException("Path element error, not a folder, "
+                                            + paths.getStringAt(i));
+
+                                // Step to the next level
+
+                                curPath.parsePath(storeName, version, curPath.getRelativePath()
+                                        + paths.getStringAt(i) + FileName.DOS_SEPERATOR_STR);
+                                curDesc = nextDesc;
+                            }
+                        }
+
+                        // Validate the store path again
+
+                        rootNode = m_avmService.lookup(version, storePath);
+                        if (rootNode == null)
+                            throw new DeviceContextException("Failed to create new store " + storePath);
+                    }
+
+                    // Create the context
+
+                    context = new AVMContext(name, storePath, version);
+
+                    // Enable file state caching
+
+                    context.enableStateTable(true, getStateReaper());
+                }
+
+                // Commit the transaction
+
+                tx.commit();
+                tx = null;
             }
-            else
+            catch (Exception ex)
             {
-	            // Get the store path
-	            
-	            ConfigElement storeElement = cfg.getChild(KEY_STORE);
-	            if (storeElement == null || storeElement.getValue() == null || storeElement.getValue().length() == 0)
-	                throw new DeviceContextException("Device missing init value: " + KEY_STORE);
-	            
-	            String storePath = storeElement.getValue();
-	
-	            // Get the version if specified, or default to the head version
-	            
-	            int version = AVMContext.VERSION_HEAD;
-	            
-	            ConfigElement versionElem = cfg.getChild(KEY_VERSION);
-	            if ( versionElem != null)
-	            {
-	            	// Check if the version is valid
-	            	
-	            	if ( versionElem.getValue() == null || versionElem.getValue().length() == 0)
-	            		throw new DeviceContextException("Store version not specified");
-	            	
-	            	// Validate the version id
-	            	
-	            	try
-	            	{
-	            		version = Integer.parseInt( versionElem.getValue());
-	            	}
-	            	catch ( NumberFormatException ex)
-	            	{
-	            		throw new DeviceContextException("Invalid store version specified, " + versionElem.getValue());
-	            	}
-	            	
-	            	// Range check the version id
-	            	
-	            	if ( version < 0 && version != AVMContext.VERSION_HEAD)
-	            		throw new DeviceContextException("Invalid store version id specified, " + version);
-	            }
-	            
-	            // Check if the create flag is enabled
-	            
-	            ConfigElement createStore = cfg.getChild( KEY_CREATE);
+                logger.error("Error during create context", ex);
 
-	            // Validate the store path
-	            
-	            AVMNodeDescriptor rootNode = m_avmService.lookup( version, storePath);
-	            if ( rootNode == null)
-	            {
-	            	// Check if the store should be created
-	            	
-	            	if ( createStore == null || version != AVMContext.VERSION_HEAD)
-	            		throw new DeviceContextException("Invalid store path/version, " + storePath + " (" + version + ")");
-	            	
-	            	// Parse the store path
-	            	
-	            	String storeName = null;
-	            	String path = null;
-	            	
-	            	int pos = storePath.indexOf(":/");
-	            	if ( pos != -1)
-	            	{
-	            		storeName = storePath.substring(0, pos);
-	            		if ( storePath.length() > pos)
-	            			path = storePath.substring(pos + 2);
-	            	}
-	            	else
-	            		storeName = storePath;
-	            	
-	            	// Check if the store exists
-	            	
-	            	AVMStoreDescriptor storeDesc = null;
-	            	
-	            	try
-	            	{
-	            		storeDesc = m_avmService.getStore( storeName);
-	            	}
-	            	catch (AVMNotFoundException ex)
-	            	{
-	            	}
-	            	
-	            	// Create a new store if it does not exist
-	            	
-	            	if ( storeDesc == null)
-	            		m_avmService.createStore( storeName);
-	            	
-	            	// Check if there is an optional path
-	            	
-	            	if ( path != null)
-	            	{
-	            		// Split the path
-	            		
-	            		StringTokenizer tokens = new StringTokenizer( path, AVMPath.AVM_SEPERATOR_STR);
-	            		StringList paths = new StringList();
-	            		
-	            		while ( tokens.hasMoreTokens())
-	            			paths.addString( tokens.nextToken());
-	            		
-	            		// Create the path, or folders that do not exist
-	            		
-	            		AVMPath curPath = new AVMPath( storeName, version, FileName.DOS_SEPERATOR_STR);
-	            		AVMNodeDescriptor curDesc = m_avmService.lookup( curPath.getVersion(), curPath.getAVMPath());
+                // Rethrow the exception
 
-            			// Walk the path checking creating each folder as required
-	            			
-	            		for ( int i = 0; i < paths.numberOfStrings(); i++)
-	            		{
-	            			AVMNodeDescriptor nextDesc = null;
-	            			
-	            			try
-	            			{
-	            				// Check if the child folder exists
-		            			
-		            			nextDesc = m_avmService.lookup( curDesc, paths.getStringAt( i));
-		            		}
-		            		catch ( AVMNotFoundException ex)
-		            		{
-		            		}
-		            		
-		            		// Check if the folder exists
-		            		
-		            		if ( nextDesc == null)
-		            		{
-		            			// Create the new folder
-		            			
-		            			m_avmService.createDirectory( curPath.getAVMPath(), paths.getStringAt( i));
-		            			
-		            			// Get the details of the new folder
-		            			
-		            			nextDesc = m_avmService.lookup( curDesc, paths.getStringAt( i));
-		            		}
-		            		else if ( nextDesc.isFile())
-		            			throw new DeviceContextException("Path element error, not a folder, " + paths.getStringAt( i));
-		            		
-		            		// Step to the next level
-		            		
-		            		curPath.parsePath( storeName, version, curPath.getRelativePath() + paths.getStringAt( i) + FileName.DOS_SEPERATOR_STR);
-		            		curDesc = nextDesc;
-	            		}
-	            	}
-	            	
-	            	// Validate the store path again
-	            	
-	            	rootNode = m_avmService.lookup( version, storePath);
-	            	if ( rootNode == null)
-	            		throw new DeviceContextException("Failed to create new store " + storePath);
-	            }
-	            
-	            // Create the context
-	            
-	            context = new AVMContext( name, storePath, version);
-
-	            // Enable file state caching
-	            
-	            context.enableStateTable( true, getStateReaper());
+                throw new DeviceContextException("Driver setup error, " + ex.getMessage());
             }
+            finally
+            {
+                // If there is an active transaction then roll it back
 
-            // Commit the transaction
-            
-            tx.commit();
-            tx = null;
-        }
-        catch (Exception ex)
-        {
-            logger.error("Error during create context", ex);
-            
-            // Rethrow the exception
-            
-            throw new DeviceContextException("Driver setup error, " + ex.getMessage());
+                if (tx != null)
+                {
+                    try
+                    {
+                        tx.rollback();
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.warn("Failed to rollback transaction", ex);
+                    }
+                }
+            }
+            // Return the context for this shared filesystem
+            return context;
         }
         finally
         {
-            // If there is an active transaction then roll it back
-            
-            if ( tx != null)
-            {
-                try
-                {
-                    tx.rollback();
-                }
-                catch (Exception ex)
-                {
-                    logger.warn("Failed to rollback transaction", ex);
-                }
-            }
+            m_authComponent.setCurrentUser(currentUser);
         }
 
-        // Return the context for this shared filesystem
-        
-        return context;
     }
 
     /**
@@ -502,1200 +535,1294 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     public final StringList getAVMStoreNames()
     {
         // Use the system user as the authenticated context to get the AVM store list
-        
-        m_authComponent.setCurrentUser( m_authComponent.getSystemUserName());
-        
-        // Wrap the service request in a transaction
-        
-        UserTransaction tx = m_transactionService.getUserTransaction(false);
 
-        StringList storeNames = new StringList();
-        
+        String currentUser = m_authComponent.getCurrentUserName();
         try
         {
-            // Start the transaction
-            
-            if ( tx != null)
-                tx.begin();
+            m_authComponent.setCurrentUser(m_authComponent.getSystemUserName());
 
-            // Get the list of AVM stores
-            
-            List<AVMStoreDescriptor> storeList = m_avmService.getStores();
-            
-            if ( storeList != null)
+            // Wrap the service request in a transaction
+
+            UserTransaction tx = m_transactionService.getUserTransaction(false);
+
+            StringList storeNames = new StringList();
+
+            try
             {
-            	for ( AVMStoreDescriptor storeDesc : storeList)
-            		storeNames.addString( storeDesc.getName());
+                // Start the transaction
+
+                if (tx != null)
+                    tx.begin();
+
+                // Get the list of AVM stores
+
+                List<AVMStoreDescriptor> storeList = m_avmService.getStores();
+
+                if (storeList != null)
+                {
+                    for (AVMStoreDescriptor storeDesc : storeList)
+                        storeNames.addString(storeDesc.getName());
+                }
+
+                // Commit the transaction
+
+                tx.commit();
+                tx = null;
+            }
+            catch (Exception ex)
+            {
+                logger.error("Error getting store names", ex);
+            }
+            finally
+            {
+                // If there is an active transaction then roll it back
+
+                if (tx != null)
+                {
+                    try
+                    {
+                        tx.rollback();
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.warn("Failed to rollback transaction", ex);
+                    }
+                }
             }
 
-            // Commit the transaction
-            
-            tx.commit();
-            tx = null;
+            // Return the list of AVM store names
+
+            return storeNames;
         }
-        catch (Exception ex)
+        finally
         {
-	        logger.error("Error getting store names", ex);
-	    }
-	    finally
-	    {
-	        // If there is an active transaction then roll it back
-	        
-	        if ( tx != null)
-	        {
-	            try
-	            {
-	                tx.rollback();
-	            }
-	            catch (Exception ex)
-	            {
-	                logger.warn("Failed to rollback transaction", ex);
-	            }
-	        }
-	    }
-	    
-	    // Return the list of AVM store names
-	    
-	    return storeNames;
+            m_authComponent.setCurrentUser(currentUser);
+        }
     }
-    
+
     /**
      * Get the properties for a store
      * 
-     * @param storeName String
+     * @param storeName
+     *            String
      * @return Map<QName, PropertyValue>
      */
-    protected final Map<QName, PropertyValue> getAVMStoreProperties( String storeName)
+    protected final Map<QName, PropertyValue> getAVMStoreProperties(String storeName)
     {
         // Use the system user as the authenticated context to get the AVM store properties
-        
-        m_authComponent.setCurrentUser( m_authComponent.getSystemUserName());
-        
-        // Wrap the service request in a transaction
-        
-        UserTransaction tx = m_transactionService.getUserTransaction(false);
 
-        Map<QName, PropertyValue> properties = null;
-        
+        String currentUser = m_authComponent.getCurrentUserName();
         try
         {
-            // Start the transaction
-            
-            if ( tx != null)
-                tx.begin();
+            m_authComponent.setCurrentUser(m_authComponent.getSystemUserName());
 
-            // Get the list of properties for AVM store
-            
-            properties = m_avmService.getStoreProperties( storeName);
+            // Wrap the service request in a transaction
 
-            // Commit the transaction
-            
-            tx.commit();
-            tx = null;
+            UserTransaction tx = m_transactionService.getUserTransaction(false);
+
+            Map<QName, PropertyValue> properties = null;
+
+            try
+            {
+                // Start the transaction
+
+                if (tx != null)
+                    tx.begin();
+
+                // Get the list of properties for AVM store
+
+                properties = m_avmService.getStoreProperties(storeName);
+
+                // Commit the transaction
+
+                tx.commit();
+                tx = null;
+            }
+            catch (Exception ex)
+            {
+                logger.error("Error getting store properties", ex);
+            }
+            finally
+            {
+                // If there is an active transaction then roll it back
+
+                if (tx != null)
+                {
+                    try
+                    {
+                        tx.rollback();
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.warn("Failed to rollback transaction", ex);
+                    }
+                }
+            }
+
+            // Return the list of AVM store properties
+
+            return properties;
         }
-        catch (Exception ex)
+        finally
         {
-	        logger.error("Error getting store properties", ex);
-	    }
-	    finally
-	    {
-	        // If there is an active transaction then roll it back
-	        
-	        if ( tx != null)
-	        {
-	            try
-	            {
-	                tx.rollback();
-	            }
-	            catch (Exception ex)
-	            {
-	                logger.warn("Failed to rollback transaction", ex);
-	            }
-	        }
-	    }
-	    
-	    // Return the list of AVM store properties
-	    
-	    return properties;
+            m_authComponent.setCurrentUser(currentUser);
+        }
     }
-    
+
     /**
      * Build the full store path for a file/folder using the share relative path
      * 
-     * @param ctx AVMContext
-     * @param path String
+     * @param ctx
+     *            AVMContext
+     * @param path
+     *            String
      * @return AVMPath
      */
-    protected final AVMPath buildStorePath( AVMContext ctx, String path)
+    protected final AVMPath buildStorePath(AVMContext ctx, String path)
     {
-    	// Check if the AVM filesystem is a normal or virtualization view
+        // Check if the AVM filesystem is a normal or virtualization view
 
-    	AVMPath avmPath = null;
-    	
-    	if ( ctx.isVirtualizationView())
-    	{
-    		// Create a path for the virtualization view
-    		
-    		avmPath = new AVMPath( path);
-    	}
-    	else
-    	{
-    		// Create a path to a single store/version
-    		
-    		avmPath = new AVMPath( ctx.getStorePath(), ctx.isVersion(), path);
-    	}
-    	
-    	// Return the path
-    	
-    	return avmPath;
+        AVMPath avmPath = null;
+
+        if (ctx.isVirtualizationView())
+        {
+            // Create a path for the virtualization view
+
+            avmPath = new AVMPath(path);
+        }
+        else
+        {
+            // Create a path to a single store/version
+
+            avmPath = new AVMPath(ctx.getStorePath(), ctx.isVersion(), path);
+        }
+
+        // Return the path
+
+        return avmPath;
     }
-    
-	/**
+
+    /**
      * Close the file.
      * 
-     * @param sess Server session
-     * @param tree Tree connection.
-     * @param file Network file context.
-     * @exception java.io.IOException If an error occurs.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection.
+     * @param file
+     *            Network file context.
+     * @exception java.io.IOException
+     *                If an error occurs.
      */
-    public void closeFile(SrvSession sess, TreeConnection tree, NetworkFile file)
-    	throws java.io.IOException
+    public void closeFile(SrvSession sess, TreeConnection tree, NetworkFile file) throws java.io.IOException
     {
-    	// DEBUG
-    	
-    	if ( logger.isDebugEnabled())
-    		logger.debug("Close file " + file.getFullName());
-    	
-        //	Close the file
-        
+        // DEBUG
+
+        if (logger.isDebugEnabled())
+            logger.debug("Close file " + file.getFullName());
+
+        // Close the file
+
         file.closeFile();
 
-        //	Check if the file/directory is marked for delete
-      	
-      	if ( file.hasDeleteOnClose()) {
-      		
-      		//	Check for a file or directory
-      		
-      		if ( file.isDirectory())
-      			deleteDirectory(sess, tree, file.getFullName());
-      		else
-      			deleteFile(sess, tree, file.getFullName());
-      	}
+        // Check if the file/directory is marked for delete
+
+        if (file.hasDeleteOnClose())
+        {
+
+            // Check for a file or directory
+
+            if (file.isDirectory())
+                deleteDirectory(sess, tree, file.getFullName());
+            else
+                deleteFile(sess, tree, file.getFullName());
+        }
     }
 
     /**
      * Create a new directory on this file system.
      * 
-     * @param sess Server session
-     * @param tree Tree connection.
-     * @param params Directory create parameters
-     * @exception java.io.IOException If an error occurs.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection.
+     * @param params
+     *            Directory create parameters
+     * @exception java.io.IOException
+     *                If an error occurs.
      */
-    public void createDirectory(SrvSession sess, TreeConnection tree, FileOpenParams params)
-    	throws java.io.IOException
+    public void createDirectory(SrvSession sess, TreeConnection tree, FileOpenParams params) throws java.io.IOException
     {
-    	// Check if the filesystem is writable
-    	
-    	AVMContext ctx = (AVMContext) tree.getContext();
-    	if ( ctx.isVersion() != AVMContext.VERSION_HEAD)
-    		throw new AccessDeniedException("Cannot create " + params.getPath() + ", filesys not writable");
-    	
-    	// Split the path to get the new folder name and relative path
-    	
-    	String[] paths = FileName.splitPath( params.getPath());
-    	
-    	// Convert the relative path to a store path
-    	
-    	AVMPath storePath = buildStorePath( ctx, paths[0]);
-    	
-    	// DEBUG
-    	
-    	if ( logger.isDebugEnabled())
-    		logger.debug("Create directory params=" + params + ", storePath=" + storePath + ", name=" + paths[1]);
-    	
-    	// Check if the filesystem is the virtualization view
-    	
-    	if ( ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
-    	{
-    		throw new AccessDeniedException( "Cannot create folder in store/version layer, " + params.getPath());
-    	}
-    	
-    	// Create a new file
-    	
-    	sess.beginWriteTransaction( m_transactionService);
-    	
-    	try
-    	{
-    		// Create the new file entry
+        // Check if the filesystem is writable
 
-    		m_avmService.createDirectory( storePath.getAVMPath(), paths[1]);
-    	}
-    	catch ( AVMExistsException ex)
-    	{
-    		throw new FileExistsException( params.getPath());
-    	}
-    	catch ( AVMNotFoundException ex)
-    	{
-    		throw new FileNotFoundException( params.getPath());
-    	}
-    	catch ( AVMWrongTypeException ex)
-    	{
-    		throw new FileNotFoundException( params.getPath());
-    	}
-    	catch ( AVMBadArgumentException ex)
-    	{
-    		throw new FileNotFoundException( params.getPath());
-    	}
+        AVMContext ctx = (AVMContext) tree.getContext();
+        if (ctx.isVersion() != AVMContext.VERSION_HEAD)
+            throw new AccessDeniedException("Cannot create " + params.getPath() + ", filesys not writable");
+
+        // Split the path to get the new folder name and relative path
+
+        String[] paths = FileName.splitPath(params.getPath());
+
+        // Convert the relative path to a store path
+
+        AVMPath storePath = buildStorePath(ctx, paths[0]);
+
+        // DEBUG
+
+        if (logger.isDebugEnabled())
+            logger.debug("Create directory params=" + params + ", storePath=" + storePath + ", name=" + paths[1]);
+
+        // Check if the filesystem is the virtualization view
+
+        if (ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
+        {
+            throw new AccessDeniedException("Cannot create folder in store/version layer, " + params.getPath());
+        }
+
+        // Create a new file
+
+        sess.beginWriteTransaction(m_transactionService);
+
+        try
+        {
+            // Create the new file entry
+
+            m_avmService.createDirectory(storePath.getAVMPath(), paths[1]);
+        }
+        catch (AVMExistsException ex)
+        {
+            throw new FileExistsException(params.getPath());
+        }
+        catch (AVMNotFoundException ex)
+        {
+            throw new FileNotFoundException(params.getPath());
+        }
+        catch (AVMWrongTypeException ex)
+        {
+            throw new FileNotFoundException(params.getPath());
+        }
+        catch (AVMBadArgumentException ex)
+        {
+            throw new FileNotFoundException(params.getPath());
+        }
     }
-    
+
     /**
      * Create a new file on the file system.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param params File create parameters
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param params
+     *            File create parameters
      * @return NetworkFile
-     * @exception java.io.IOException If an error occurs.
+     * @exception java.io.IOException
+     *                If an error occurs.
      */
     public NetworkFile createFile(SrvSession sess, TreeConnection tree, FileOpenParams params)
-    	throws java.io.IOException
+            throws java.io.IOException
     {
-    	// Check if the filesystem is writable
-    	
-    	AVMContext ctx = (AVMContext) tree.getContext();
-    	
-    	// Split the path to get the file name and relative path
-    	
-    	String[] paths = FileName.splitPath( params.getPath());
-    	
-    	// Convert the relative path to a store path
-    	
-    	AVMPath storePath = buildStorePath( ctx, paths[0]);
-    	
-    	// DEBUG
-    	
-    	if ( logger.isDebugEnabled())
-    		logger.debug("Create file params=" + params + ", storePath=" + storePath + ", name=" + paths[1]);
-    	
-    	// Check if the filesystem is the virtualization view
-    	
-    	if ( ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
-    	{
-    		throw new AccessDeniedException( "Cannot create file in store/version layer, " + params.getPath());
-    	}
-    	else if ( storePath.getVersion() != AVMContext.VERSION_HEAD)
-    	{
-    		throw new AccessDeniedException("Cannot create " + params.getPath() + ", filesys not writable");
-    	}
-    	
-    	// Create a new file
-    	
-    	sess.beginWriteTransaction( m_transactionService);
-    	
-    	AVMNetworkFile netFile = null;
-    	
-    	try
-    	{
-    		// Create the new file entry
+        // Check if the filesystem is writable
 
-    		m_avmService.createFile( storePath.getAVMPath(), paths[1]).close();
+        AVMContext ctx = (AVMContext) tree.getContext();
 
-    		// Get the new file details
-    		
-    		AVMPath fileStorePath = buildStorePath( ctx, params.getPath());
-    		AVMNodeDescriptor nodeDesc = m_avmService.lookup( fileStorePath.getVersion(), fileStorePath.getAVMPath());
+        // Split the path to get the file name and relative path
 
-    		if ( nodeDesc != null)
-	    	{
-	    	    //	Create the network file object for the new file
-	    	    
-	    	    netFile = new AVMNetworkFile( nodeDesc, fileStorePath.getAVMPath(), fileStorePath.getVersion(), m_avmService);
-    	    	netFile.setGrantedAccess(NetworkFile.READWRITE);
-	    	    netFile.setFullName(params.getPath());
-	    	    
-	    	    netFile.setFileId( fileStorePath.generateFileId());
-	    	    
-	    	    // Set the mime-type for the new file
-	    	    
-	    	    netFile.setMimeType( m_mimetypeService.guessMimetype( paths[1]));
-	    	}
-    	}
-    	catch ( AVMExistsException ex)
-    	{
-    		throw new FileExistsException( params.getPath());
-    	}
-    	catch ( AVMNotFoundException ex)
-    	{
-    		throw new FileNotFoundException( params.getPath());
-    	}
-    	catch ( AVMWrongTypeException ex)
-    	{
-    		throw new FileNotFoundException( params.getPath());
-    	}
-    	catch ( AVMBadArgumentException ex)
-    	{
-    		throw new FileNotFoundException( params.getPath());
-    	}
-    	
-    	// Return the file
-    	
-    	return netFile;
+        String[] paths = FileName.splitPath(params.getPath());
+
+        // Convert the relative path to a store path
+
+        AVMPath storePath = buildStorePath(ctx, paths[0]);
+
+        // DEBUG
+
+        if (logger.isDebugEnabled())
+            logger.debug("Create file params=" + params + ", storePath=" + storePath + ", name=" + paths[1]);
+
+        // Check if the filesystem is the virtualization view
+
+        if (ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
+        {
+            throw new AccessDeniedException("Cannot create file in store/version layer, " + params.getPath());
+        }
+        else if (storePath.getVersion() != AVMContext.VERSION_HEAD)
+        {
+            throw new AccessDeniedException("Cannot create " + params.getPath() + ", filesys not writable");
+        }
+
+        // Create a new file
+
+        sess.beginWriteTransaction(m_transactionService);
+
+        AVMNetworkFile netFile = null;
+
+        try
+        {
+            // Create the new file entry
+
+            m_avmService.createFile(storePath.getAVMPath(), paths[1]).close();
+
+            // Get the new file details
+
+            AVMPath fileStorePath = buildStorePath(ctx, params.getPath());
+            AVMNodeDescriptor nodeDesc = m_avmService.lookup(fileStorePath.getVersion(), fileStorePath.getAVMPath());
+
+            if (nodeDesc != null)
+            {
+                // Create the network file object for the new file
+
+                netFile = new AVMNetworkFile(nodeDesc, fileStorePath.getAVMPath(), fileStorePath.getVersion(),
+                        m_avmService);
+                netFile.setGrantedAccess(NetworkFile.READWRITE);
+                netFile.setFullName(params.getPath());
+
+                netFile.setFileId(fileStorePath.generateFileId());
+
+                // Set the mime-type for the new file
+
+                netFile.setMimeType(m_mimetypeService.guessMimetype(paths[1]));
+            }
+        }
+        catch (AVMExistsException ex)
+        {
+            throw new FileExistsException(params.getPath());
+        }
+        catch (AVMNotFoundException ex)
+        {
+            throw new FileNotFoundException(params.getPath());
+        }
+        catch (AVMWrongTypeException ex)
+        {
+            throw new FileNotFoundException(params.getPath());
+        }
+        catch (AVMBadArgumentException ex)
+        {
+            throw new FileNotFoundException(params.getPath());
+        }
+
+        // Return the file
+
+        return netFile;
     }
-    
+
     /**
      * Delete the directory from the filesystem.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param dir Directory name.
-     * @exception java.io.IOException The exception description.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param dir
+     *            Directory name.
+     * @exception java.io.IOException
+     *                The exception description.
      */
-    public void deleteDirectory(SrvSession sess, TreeConnection tree, String dir)
-    	throws java.io.IOException
+    public void deleteDirectory(SrvSession sess, TreeConnection tree, String dir) throws java.io.IOException
     {
-    	// Convert the relative path to a store path
-    	
-    	AVMContext ctx = (AVMContext) tree.getContext();
-    	AVMPath storePath = buildStorePath( ctx, dir);
-    	
-    	// DEBUG
-    	
-    	if ( logger.isDebugEnabled())
-    		logger.debug("Delete directory, path=" + dir + ", storePath=" + storePath);
-    	
-    	// Check if the filesystem is the virtualization view
-    	
-    	if ( ctx.isVirtualizationView() && storePath.isPseudoPath())
-    	{
-    		throw new AccessDeniedException( "Cannot delete pseudo folder, " + dir);
-    	}
-    	
-    	// Make sure the path is to a folder before deleting it
-    	
-    	sess.beginWriteTransaction( m_transactionService);
-    	
-    	try
-    	{
-    		AVMNodeDescriptor nodeDesc = m_avmService.lookup( storePath.getVersion(), storePath.getAVMPath());
-	    	if ( nodeDesc != null)
-	    	{
-	    		// Check that we are deleting a folder
-	    		
-	    		if ( nodeDesc.isDirectory())
-	    		{
-	    			// Make sure the directory is empty
-	    			
-	    			SortedMap<String, AVMNodeDescriptor> fileList = m_avmService.getDirectoryListing( nodeDesc);
-	    			if ( fileList != null && fileList.size() > 0)
-	    				throw new DirectoryNotEmptyException( dir);
-	    			
-	    			// Delete the folder
-	    			
-	    			m_avmService.removeNode( storePath.getAVMPath());
-	    		}
-	    		else
-	    			throw new IOException( "Delete directory path is not a directory, " + dir);
-	    	}
-    	}
-    	catch ( AVMNotFoundException ex)
-    	{
-    		throw new IOException( "Directory not found, " + dir);
-    	}
-    	catch ( AVMWrongTypeException ex)
-    	{
-    		throw new IOException( "Invalid path, " + dir);
-    	}
+        // Convert the relative path to a store path
+
+        AVMContext ctx = (AVMContext) tree.getContext();
+        AVMPath storePath = buildStorePath(ctx, dir);
+
+        // DEBUG
+
+        if (logger.isDebugEnabled())
+            logger.debug("Delete directory, path=" + dir + ", storePath=" + storePath);
+
+        // Check if the filesystem is the virtualization view
+
+        if (ctx.isVirtualizationView() && storePath.isPseudoPath())
+        {
+            throw new AccessDeniedException("Cannot delete pseudo folder, " + dir);
+        }
+
+        // Make sure the path is to a folder before deleting it
+
+        sess.beginWriteTransaction(m_transactionService);
+
+        try
+        {
+            AVMNodeDescriptor nodeDesc = m_avmService.lookup(storePath.getVersion(), storePath.getAVMPath());
+            if (nodeDesc != null)
+            {
+                // Check that we are deleting a folder
+
+                if (nodeDesc.isDirectory())
+                {
+                    // Make sure the directory is empty
+
+                    SortedMap<String, AVMNodeDescriptor> fileList = m_avmService.getDirectoryListing(nodeDesc);
+                    if (fileList != null && fileList.size() > 0)
+                        throw new DirectoryNotEmptyException(dir);
+
+                    // Delete the folder
+
+                    m_avmService.removeNode(storePath.getAVMPath());
+                }
+                else
+                    throw new IOException("Delete directory path is not a directory, " + dir);
+            }
+        }
+        catch (AVMNotFoundException ex)
+        {
+            throw new IOException("Directory not found, " + dir);
+        }
+        catch (AVMWrongTypeException ex)
+        {
+            throw new IOException("Invalid path, " + dir);
+        }
     }
 
     /**
      * Delete the specified file.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param file NetworkFile
-     * @exception java.io.IOException The exception description.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param file
+     *            NetworkFile
+     * @exception java.io.IOException
+     *                The exception description.
      */
-    public void deleteFile(SrvSession sess, TreeConnection tree, String name)
-    	throws java.io.IOException
+    public void deleteFile(SrvSession sess, TreeConnection tree, String name) throws java.io.IOException
     {
-    	// Convert the relative path to a store path
-    	
-    	AVMContext ctx = (AVMContext) tree.getContext();
-    	AVMPath storePath = buildStorePath( ctx, name);
-    	
-    	// DEBUG
-    	
-    	if ( logger.isDebugEnabled())
-    		logger.debug("Delete file, path=" + name + ", storePath=" + storePath);
-    	
-    	// Check if the filesystem is the virtualization view
-    	
-    	if ( ctx.isVirtualizationView() && storePath.isPseudoPath())
-    	{
-    		throw new AccessDeniedException( "Cannot delete pseudo file, " + name);
-    	}
-    	
-    	// Make sure the path is to a file before deleting it
-    	
-    	sess.beginWriteTransaction( m_transactionService);
-    	
-    	try
-    	{
-    		AVMNodeDescriptor nodeDesc = m_avmService.lookup( storePath.getVersion(), storePath.getAVMPath());
-	    	if ( nodeDesc != null)
-	    	{
-	    		// Check that we are deleting a file
-	    		
-	    		if ( nodeDesc.isFile())
-	    		{
-	    			// Delete the file
-	    			
-	    			m_avmService.removeNode( storePath.getAVMPath());
-	    		}
-	    		else
-	    			throw new IOException( "Delete file path is not a file, " + name);
-	    	}
-    	}
-    	catch ( AVMNotFoundException ex)
-    	{
-    		throw new IOException( "File not found, " + name);
-    	}
-    	catch ( AVMWrongTypeException ex)
-    	{
-    		throw new IOException( "Invalid path, " + name);
-    	}
+        // Convert the relative path to a store path
+
+        AVMContext ctx = (AVMContext) tree.getContext();
+        AVMPath storePath = buildStorePath(ctx, name);
+
+        // DEBUG
+
+        if (logger.isDebugEnabled())
+            logger.debug("Delete file, path=" + name + ", storePath=" + storePath);
+
+        // Check if the filesystem is the virtualization view
+
+        if (ctx.isVirtualizationView() && storePath.isPseudoPath())
+        {
+            throw new AccessDeniedException("Cannot delete pseudo file, " + name);
+        }
+
+        // Make sure the path is to a file before deleting it
+
+        sess.beginWriteTransaction(m_transactionService);
+
+        try
+        {
+            AVMNodeDescriptor nodeDesc = m_avmService.lookup(storePath.getVersion(), storePath.getAVMPath());
+            if (nodeDesc != null)
+            {
+                // Check that we are deleting a file
+
+                if (nodeDesc.isFile())
+                {
+                    // Delete the file
+
+                    m_avmService.removeNode(storePath.getAVMPath());
+                }
+                else
+                    throw new IOException("Delete file path is not a file, " + name);
+            }
+        }
+        catch (AVMNotFoundException ex)
+        {
+            throw new IOException("File not found, " + name);
+        }
+        catch (AVMWrongTypeException ex)
+        {
+            throw new IOException("Invalid path, " + name);
+        }
     }
 
     /**
      * Check if the specified file exists, and whether it is a file or directory.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param name java.lang.String
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param name
+     *            java.lang.String
      * @return int
      * @see FileStatus
      */
     public int fileExists(SrvSession sess, TreeConnection tree, String name)
     {
-    	// Convert the relative path to a store path
-    	
-    	AVMContext ctx = (AVMContext) tree.getContext();
-    	AVMPath storePath = buildStorePath( ctx, name);
-    	
-    	// DEBUG
-    	
-    	if ( logger.isDebugEnabled())
-    		logger.debug("File exists check, path=" + name + ", storePath=" + storePath);
-    	
-    	// Check if the path is valid
-    	
-    	int status = FileStatus.NotExist;
-    	
-    	if ( storePath.isValid() == false)
-    		return status;
-    	
-    	// Check if the filesystem is the virtualization view
-    	
-    	if ( ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
-    	{
-    		// Find the file state for the pseudo folder
-    		
-    		FileState fstate = findPseudoState( storePath, ctx);
-    		
-    		if ( fstate != null)
-    		{
-				// DEBUG
-				
-				if ( logger.isDebugEnabled())
-					logger.debug( "  Found pseudo file " + fstate);
-				
-    			// Check if the pseudo file is a file or folder
-    			
-    			if ( fstate.isDirectory())
-    				status = FileStatus.DirectoryExists;
-    			else
-    				status = FileStatus.FileExists;
-    		}
-   			else
-   			{
-   				// Invalid pseudo file path
-   				
-   				status = FileStatus.NotExist;
-    		}
-    		
-    		// Return the file status
-    		
-    		return status;
-    	}
-    	
-    	// Search for the file/folder
-    	
-    	sess.beginReadTransaction( m_transactionService);
-    	
-    	AVMNodeDescriptor nodeDesc = m_avmService.lookup( storePath.getVersion(), storePath.getAVMPath());
-    	
-    	if ( nodeDesc != null)
-    	{
-    		// Check if the path is to a file or folder
-    		
-    		if ( nodeDesc.isDirectory())
-    			status = FileStatus.DirectoryExists;
-    		else
-    			status = FileStatus.FileExists;
-    	}
-    	
-    	// Return the file status
-    	
-    	return status;
+        // Convert the relative path to a store path
+
+        AVMContext ctx = (AVMContext) tree.getContext();
+        AVMPath storePath = buildStorePath(ctx, name);
+
+        // DEBUG
+
+        if (logger.isDebugEnabled())
+            logger.debug("File exists check, path=" + name + ", storePath=" + storePath);
+
+        // Check if the path is valid
+
+        int status = FileStatus.NotExist;
+
+        if (storePath.isValid() == false)
+            return status;
+
+        // Check if the filesystem is the virtualization view
+
+        if (ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
+        {
+            // Find the file state for the pseudo folder
+
+            FileState fstate = findPseudoState(storePath, ctx);
+
+            if (fstate != null)
+            {
+                // DEBUG
+
+                if (logger.isDebugEnabled())
+                    logger.debug("  Found pseudo file " + fstate);
+
+                // Check if the pseudo file is a file or folder
+
+                if (fstate.isDirectory())
+                    status = FileStatus.DirectoryExists;
+                else
+                    status = FileStatus.FileExists;
+            }
+            else
+            {
+                // Invalid pseudo file path
+
+                status = FileStatus.NotExist;
+            }
+
+            // Return the file status
+
+            return status;
+        }
+
+        // Search for the file/folder
+
+        sess.beginReadTransaction(m_transactionService);
+
+        AVMNodeDescriptor nodeDesc = m_avmService.lookup(storePath.getVersion(), storePath.getAVMPath());
+
+        if (nodeDesc != null)
+        {
+            // Check if the path is to a file or folder
+
+            if (nodeDesc.isDirectory())
+                status = FileStatus.DirectoryExists;
+            else
+                status = FileStatus.FileExists;
+        }
+
+        // Return the file status
+
+        return status;
     }
 
     /**
      * Flush any buffered output for the specified file.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param file Network file context.
-     * @exception java.io.IOException The exception description.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param file
+     *            Network file context.
+     * @exception java.io.IOException
+     *                The exception description.
      */
-    public void flushFile(SrvSession sess, TreeConnection tree, NetworkFile file)
-    	throws java.io.IOException
+    public void flushFile(SrvSession sess, TreeConnection tree, NetworkFile file) throws java.io.IOException
     {
-        //	Flush the file
-        
+        // Flush the file
+
         file.flushFile();
     }
 
     /**
      * Get the file information for the specified file.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param name File name/path that information is required for.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param name
+     *            File name/path that information is required for.
      * @return File information if valid, else null
-     * @exception java.io.IOException The exception description.
+     * @exception java.io.IOException
+     *                The exception description.
      */
-    public FileInfo getFileInformation(SrvSession sess, TreeConnection tree, String name)
-    	throws java.io.IOException
+    public FileInfo getFileInformation(SrvSession sess, TreeConnection tree, String name) throws java.io.IOException
     {
-    	// Convert the relative path to a store path
-    	
-    	AVMContext ctx = (AVMContext) tree.getContext();
-    	AVMPath storePath = buildStorePath( ctx, name);
-    	
-    	// DEBUG
-    	
-    	if ( logger.isDebugEnabled())
-    		logger.debug("Get file information, path=" + name + ", storePath=" + storePath);
+        // Convert the relative path to a store path
 
-    	// Check if hte path is valid
-    	
-    	if ( storePath.isValid() == false)
-    		throw new FileNotFoundException( name);
-    	
-    	// Check if the filesystem is the virtualization view
-    	
-    	if ( ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
-    	{
-    		// Check if the search path is for the root, a store or version folder
-    		
-    		if ( storePath.isRootPath())
-    		{
-    			// Return dummy file informatiom for the root folder
-    			
-    			return new FileInfo( name, 0L, FileAttribute.Directory);
-    		}
-    		else
-    		{
-    			// Find the pseudo file for the store/version folder
-    			
-    			PseudoFile psFile = findPseudoFolder( storePath, ctx);
-    			if ( psFile != null)
-    			{
-    				// DEBUG
-    				
-    				if ( logger.isDebugEnabled())
-    					logger.debug( "  Found pseudo file " + psFile);
-    				return psFile.getFileInfo();
-    			}
-    			else
-    				throw new FileNotFoundException( name);
-    		}
-    	}
-    	
-    	// Search for the file/folder
-    	
-    	sess.beginReadTransaction( m_transactionService);
-    	
-    	FileInfo info = null;
-    	
-    	try
-    	{
-	    	AVMNodeDescriptor nodeDesc = m_avmService.lookup( storePath.getVersion(), storePath.getAVMPath());
-	    	
-	    	if ( nodeDesc != null)
-	    	{
-	    		// Create, and fill in, the file information
-	    		
-	    		info = new FileInfo();
-	        	
-	        	info.setFileName( nodeDesc.getName());
-	        	
-	        	if ( nodeDesc.isFile())
-	        	{
-	        		info.setFileSize( nodeDesc.getLength());
-	        		info.setAllocationSize((nodeDesc.getLength() + 512L) & 0xFFFFFFFFFFFFFE00L);
-	        	}
-	        	else
-	        		info.setFileSize( 0L);
-	
-	        	info.setAccessDateTime( nodeDesc.getAccessDate());
-	        	info.setCreationDateTime( nodeDesc.getCreateDate());
-	        	info.setModifyDateTime( nodeDesc.getModDate());
-	
-	        	// Build the file attributes
-	        	
-	        	int attr = 0;
-	        	
-	        	if ( nodeDesc.isDirectory())
-	        		attr += FileAttribute.Directory;
-	        	
-	        	if ( nodeDesc.getName().startsWith( ".") ||
-	        			nodeDesc.getName().equalsIgnoreCase( "Desktop.ini") ||
-	        			nodeDesc.getName().equalsIgnoreCase( "Thumbs.db"))
-	        		attr += FileAttribute.Hidden;
-	        	
-	        	// Mark the file/folder as read-only if not the head version
-	        	
-	        	if ( ctx.isVersion() != AVMContext.VERSION_HEAD)
-	        		attr += FileAttribute.ReadOnly;
-	        	
-	        	info.setFileAttributes( attr);
+        AVMContext ctx = (AVMContext) tree.getContext();
+        AVMPath storePath = buildStorePath(ctx, name);
 
-	        	// Set the file id
-	        	
-	        	info.setFileId( storePath.generateFileId());
-	        	
-	        	// DEBUG
-	        	
-	        	if ( logger.isDebugEnabled())
-	        		logger.debug("  File info=" + info);
-	    	}
-    	}
-    	catch ( AVMNotFoundException ex)
-    	{
-    		throw new FileNotFoundException( name);
-    	}
-    	catch ( AVMWrongTypeException ex)
-    	{
-    		throw new PathNotFoundException( name);
-    	}
-    	
-    	// Return the file information
-    	
-    	return info;
+        // DEBUG
+
+        if (logger.isDebugEnabled())
+            logger.debug("Get file information, path=" + name + ", storePath=" + storePath);
+
+        // Check if hte path is valid
+
+        if (storePath.isValid() == false)
+            throw new FileNotFoundException(name);
+
+        // Check if the filesystem is the virtualization view
+
+        if (ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
+        {
+            // Check if the search path is for the root, a store or version folder
+
+            if (storePath.isRootPath())
+            {
+                // Return dummy file informatiom for the root folder
+
+                return new FileInfo(name, 0L, FileAttribute.Directory);
+            }
+            else
+            {
+                // Find the pseudo file for the store/version folder
+
+                PseudoFile psFile = findPseudoFolder(storePath, ctx);
+                if (psFile != null)
+                {
+                    // DEBUG
+
+                    if (logger.isDebugEnabled())
+                        logger.debug("  Found pseudo file " + psFile);
+                    return psFile.getFileInfo();
+                }
+                else
+                    throw new FileNotFoundException(name);
+            }
+        }
+
+        // Search for the file/folder
+
+        sess.beginReadTransaction(m_transactionService);
+
+        FileInfo info = null;
+
+        try
+        {
+            AVMNodeDescriptor nodeDesc = m_avmService.lookup(storePath.getVersion(), storePath.getAVMPath());
+
+            if (nodeDesc != null)
+            {
+                // Create, and fill in, the file information
+
+                info = new FileInfo();
+
+                info.setFileName(nodeDesc.getName());
+
+                if (nodeDesc.isFile())
+                {
+                    info.setFileSize(nodeDesc.getLength());
+                    info.setAllocationSize((nodeDesc.getLength() + 512L) & 0xFFFFFFFFFFFFFE00L);
+                }
+                else
+                    info.setFileSize(0L);
+
+                info.setAccessDateTime(nodeDesc.getAccessDate());
+                info.setCreationDateTime(nodeDesc.getCreateDate());
+                info.setModifyDateTime(nodeDesc.getModDate());
+
+                // Build the file attributes
+
+                int attr = 0;
+
+                if (nodeDesc.isDirectory())
+                    attr += FileAttribute.Directory;
+
+                if (nodeDesc.getName().startsWith(".")
+                        || nodeDesc.getName().equalsIgnoreCase("Desktop.ini")
+                        || nodeDesc.getName().equalsIgnoreCase("Thumbs.db"))
+                    attr += FileAttribute.Hidden;
+
+                // Mark the file/folder as read-only if not the head version
+
+                if (ctx.isVersion() != AVMContext.VERSION_HEAD)
+                    attr += FileAttribute.ReadOnly;
+
+                info.setFileAttributes(attr);
+
+                // Set the file id
+
+                info.setFileId(storePath.generateFileId());
+
+                // DEBUG
+
+                if (logger.isDebugEnabled())
+                    logger.debug("  File info=" + info);
+            }
+        }
+        catch (AVMNotFoundException ex)
+        {
+            throw new FileNotFoundException(name);
+        }
+        catch (AVMWrongTypeException ex)
+        {
+            throw new PathNotFoundException(name);
+        }
+
+        // Return the file information
+
+        return info;
     }
 
     /**
      * Determine if the disk device is read-only.
      * 
-     * @param sess Server session
-     * @param ctx Device context
+     * @param sess
+     *            Server session
+     * @param ctx
+     *            Device context
      * @return boolean
-     * @exception java.io.IOException If an error occurs.
+     * @exception java.io.IOException
+     *                If an error occurs.
      */
-    public boolean isReadOnly(SrvSession sess, DeviceContext ctx)
-    	throws java.io.IOException
+    public boolean isReadOnly(SrvSession sess, DeviceContext ctx) throws java.io.IOException
     {
-    	// Check if the version indicates the head version, only the head is writable
-    	
-    	AVMContext avmCtx = (AVMContext) ctx;
-    	return avmCtx.isVersion() == AVMContext.VERSION_HEAD ? true : false;
+        // Check if the version indicates the head version, only the head is writable
+
+        AVMContext avmCtx = (AVMContext) ctx;
+        return avmCtx.isVersion() == AVMContext.VERSION_HEAD ? true : false;
     }
 
     /**
      * Open a file on the file system.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param params File open parameters
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param params
+     *            File open parameters
      * @return NetworkFile
-     * @exception java.io.IOException If an error occurs.
+     * @exception java.io.IOException
+     *                If an error occurs.
      */
-    public NetworkFile openFile(SrvSession sess, TreeConnection tree, FileOpenParams params)
-    	throws java.io.IOException
+    public NetworkFile openFile(SrvSession sess, TreeConnection tree, FileOpenParams params) throws java.io.IOException
     {
-    	// Convert the relative path to a store path
-    	
-    	AVMContext ctx = (AVMContext) tree.getContext();
-    	AVMPath storePath = buildStorePath( ctx, params.getPath());
-    	
-    	// DEBUG
-    	
-    	if ( logger.isDebugEnabled())
-    		logger.debug("Open file params=" + params + ", storePath=" + storePath);
-    	
-    	// Check if the filesystem is the virtualization view
-    	
-    	if ( ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
-    	{
-    		// Check if the path is for the root, a store or version folder
-    		
-    		if ( storePath.isRootPath())
-    		{
-    			// Return a dummy file for the root folder
-    			
-    			return new PseudoFolderNetworkFile( FileName.DOS_SEPERATOR_STR);
-    		}
-    		else
-    		{
-    			// Find the pseudo file for the store/version folder
-    			
-    			PseudoFile psFile = findPseudoFolder( storePath, ctx);
-    			if ( psFile != null)
-    			{
-    				// DEBUG
-    				
-    				if ( logger.isDebugEnabled())
-    					logger.debug( "  Found pseudo file " + psFile);
-    				return psFile.getFile( params.getPath());
-    			}
-    			else
-    				return null;
-    		}
-    	}
-    	
-    	// Search for the file/folder
-    	
-    	sess.beginReadTransaction( m_transactionService);
-    	
-    	AVMNetworkFile netFile = null;
-    	
-    	try
-    	{
-    		// Get the details of the file/folder
+        // Convert the relative path to a store path
 
-    		AVMNodeDescriptor nodeDesc = m_avmService.lookup( storePath.getVersion(), storePath.getAVMPath());
-    	
-	    	if ( nodeDesc != null)
-	    	{
-	    	    //	Check if the filesystem is read-only and write access has been requested
-	    	    
-	    	    if ( storePath.getVersion() != AVMContext.VERSION_HEAD && ( params.isReadWriteAccess() || params.isWriteOnlyAccess()))
-	    	      throw new AccessDeniedException("File " + params.getPath() + " is read-only");
-	    	    
-	    	    //	Create the network file object for the opened file/folder
-	    	    
-	    	    netFile = new AVMNetworkFile( nodeDesc, storePath.getAVMPath(), storePath.getVersion(), m_avmService);
-	    	    
-	    	    if ( params.isReadOnlyAccess() || storePath.getVersion() != AVMContext.VERSION_HEAD)
-	    	    	netFile.setGrantedAccess(NetworkFile.READONLY);
-	    		else
-	    	    	netFile.setGrantedAccess(NetworkFile.READWRITE);
-	    	    	
-	    	    netFile.setFullName(params.getPath());
-	    	    netFile.setFileId( storePath.generateFileId());
-	    	    
-	    	    
-	    	    // Set the mime-type for the new file
-	    	    
-	    	    netFile.setMimeType( m_mimetypeService.guessMimetype( params.getPath()));
-	    	}
-	    	else
-	    		throw new FileNotFoundException( params.getPath());
-    	}
-    	catch ( AVMNotFoundException ex)
-    	{
-    		throw new FileNotFoundException( params.getPath());
-    	}
-    	catch ( AVMWrongTypeException ex)
-    	{
-    		throw new FileNotFoundException( params.getPath());
-    	}
-    	
-    	// Return the file
-    	
-    	return netFile;
+        AVMContext ctx = (AVMContext) tree.getContext();
+        AVMPath storePath = buildStorePath(ctx, params.getPath());
+
+        // DEBUG
+
+        if (logger.isDebugEnabled())
+            logger.debug("Open file params=" + params + ", storePath=" + storePath);
+
+        // Check if the filesystem is the virtualization view
+
+        if (ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
+        {
+            // Check if the path is for the root, a store or version folder
+
+            if (storePath.isRootPath())
+            {
+                // Return a dummy file for the root folder
+
+                return new PseudoFolderNetworkFile(FileName.DOS_SEPERATOR_STR);
+            }
+            else
+            {
+                // Find the pseudo file for the store/version folder
+
+                PseudoFile psFile = findPseudoFolder(storePath, ctx);
+                if (psFile != null)
+                {
+                    // DEBUG
+
+                    if (logger.isDebugEnabled())
+                        logger.debug("  Found pseudo file " + psFile);
+                    return psFile.getFile(params.getPath());
+                }
+                else
+                    return null;
+            }
+        }
+
+        // Search for the file/folder
+
+        sess.beginReadTransaction(m_transactionService);
+
+        AVMNetworkFile netFile = null;
+
+        try
+        {
+            // Get the details of the file/folder
+
+            AVMNodeDescriptor nodeDesc = m_avmService.lookup(storePath.getVersion(), storePath.getAVMPath());
+
+            if (nodeDesc != null)
+            {
+                // Check if the filesystem is read-only and write access has been requested
+
+                if (storePath.getVersion() != AVMContext.VERSION_HEAD
+                        && (params.isReadWriteAccess() || params.isWriteOnlyAccess()))
+                    throw new AccessDeniedException("File " + params.getPath() + " is read-only");
+
+                // Create the network file object for the opened file/folder
+
+                netFile = new AVMNetworkFile(nodeDesc, storePath.getAVMPath(), storePath.getVersion(), m_avmService);
+
+                if (params.isReadOnlyAccess() || storePath.getVersion() != AVMContext.VERSION_HEAD)
+                    netFile.setGrantedAccess(NetworkFile.READONLY);
+                else
+                    netFile.setGrantedAccess(NetworkFile.READWRITE);
+
+                netFile.setFullName(params.getPath());
+                netFile.setFileId(storePath.generateFileId());
+
+                // Set the mime-type for the new file
+
+                netFile.setMimeType(m_mimetypeService.guessMimetype(params.getPath()));
+            }
+            else
+                throw new FileNotFoundException(params.getPath());
+        }
+        catch (AVMNotFoundException ex)
+        {
+            throw new FileNotFoundException(params.getPath());
+        }
+        catch (AVMWrongTypeException ex)
+        {
+            throw new FileNotFoundException(params.getPath());
+        }
+
+        // Return the file
+
+        return netFile;
     }
 
     /**
      * Read a block of data from the specified file.
      * 
-     * @param sess Session details
-     * @param tree Tree connection
-     * @param file Network file
-     * @param buf Buffer to return data to
-     * @param bufPos Starting position in the return buffer
-     * @param siz Maximum size of data to return
-     * @param filePos File offset to read data
+     * @param sess
+     *            Session details
+     * @param tree
+     *            Tree connection
+     * @param file
+     *            Network file
+     * @param buf
+     *            Buffer to return data to
+     * @param bufPos
+     *            Starting position in the return buffer
+     * @param siz
+     *            Maximum size of data to return
+     * @param filePos
+     *            File offset to read data
      * @return Number of bytes read
-     * @exception java.io.IOException The exception description.
+     * @exception java.io.IOException
+     *                The exception description.
      */
     public int readFile(SrvSession sess, TreeConnection tree, NetworkFile file, byte[] buf, int bufPos, int siz,
-    					long filePos)
-    	throws java.io.IOException
+            long filePos) throws java.io.IOException
     {
-  	  	// Check if the file is a directory
-    	
-		if ( file.isDirectory())
-			throw new AccessDeniedException();
-      
-    	// If the content channel is not open for the file then start a transaction
-    	
-    	AVMNetworkFile avmFile = (AVMNetworkFile) file;
-    	
-    	if ( avmFile.hasContentChannel() == false)
-    		sess.beginReadTransaction( m_transactionService);
-    	
-		// Read the file
+        // Check if the file is a directory
 
-		int rdlen = file.readFile(buf, siz, bufPos, filePos);
+        if (file.isDirectory())
+            throw new AccessDeniedException();
 
-		// If we have reached end of file return a zero length read
+        // If the content channel is not open for the file then start a transaction
 
-		if (rdlen == -1)
-			rdlen = 0;
+        AVMNetworkFile avmFile = (AVMNetworkFile) file;
 
-		//  Return the actual read length
+        if (avmFile.hasContentChannel() == false)
+            sess.beginReadTransaction(m_transactionService);
 
-		return rdlen;
+        // Read the file
+
+        int rdlen = file.readFile(buf, siz, bufPos, filePos);
+
+        // If we have reached end of file return a zero length read
+
+        if (rdlen == -1)
+            rdlen = 0;
+
+        // Return the actual read length
+
+        return rdlen;
     }
 
     /**
      * Rename the specified file.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param oldName java.lang.String
-     * @param newName java.lang.String
-     * @exception java.io.IOException The exception description.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param oldName
+     *            java.lang.String
+     * @param newName
+     *            java.lang.String
+     * @exception java.io.IOException
+     *                The exception description.
      */
     public void renameFile(SrvSession sess, TreeConnection tree, String oldName, String newName)
-    	throws java.io.IOException
+            throws java.io.IOException
     {
-    	// Split the relative paths into parent and file/folder name pairs
-    	
-    	AVMContext ctx = (AVMContext) tree.getContext();
-    	
-    	String[] oldPaths = FileName.splitPath( oldName);
-    	String[] newPaths = FileName.splitPath( newName);
-    	
-    	// Convert the parent paths to store paths
-    	
-    	AVMPath oldAVMPath = buildStorePath( ctx, oldPaths[0]);
-    	AVMPath newAVMPath = buildStorePath( ctx, newPaths[0]);
-    	
-    	// DEBUG
-    	
-    	if ( logger.isDebugEnabled())
-    	{
-    		logger.debug("Rename from path=" + oldPaths[0] + ", name=" + oldPaths[1]);
-    		logger.debug("        new path=" + newPaths[0] + ", name=" + newPaths[1]);
-    	}
+        // Split the relative paths into parent and file/folder name pairs
 
-    	// Check if the filesystem is the virtualization view
-    	
-    	if ( ctx.isVirtualizationView() && oldAVMPath.isReadOnlyPseudoPath())
-    	{
-    		throw new AccessDeniedException( "Cannot rename folder in store/version layer, " + oldName);
-    	}
-    	
-    	// Start a transaction for the rename
-    	
-    	sess.beginWriteTransaction( m_transactionService);
-    	
-    	try
-    	{
-    		// Rename the file/folder
-    		
-    		m_avmService.rename( oldAVMPath.getAVMPath(), oldPaths[1], newAVMPath.getAVMPath(), newPaths[1]);
-    	}
-    	catch ( AVMNotFoundException ex)
-    	{
-    		throw new IOException( "Source not found, " + oldName);
-    	}
-    	catch ( AVMWrongTypeException ex)
-    	{
-    		throw new IOException( "Invalid path, " + oldName);
-    	}
-    	catch ( AVMExistsException ex)
-    	{
-    		throw new FileExistsException( "Destination exists, " + newName);
-    	}
+        AVMContext ctx = (AVMContext) tree.getContext();
+
+        String[] oldPaths = FileName.splitPath(oldName);
+        String[] newPaths = FileName.splitPath(newName);
+
+        // Convert the parent paths to store paths
+
+        AVMPath oldAVMPath = buildStorePath(ctx, oldPaths[0]);
+        AVMPath newAVMPath = buildStorePath(ctx, newPaths[0]);
+
+        // DEBUG
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Rename from path=" + oldPaths[0] + ", name=" + oldPaths[1]);
+            logger.debug("        new path=" + newPaths[0] + ", name=" + newPaths[1]);
+        }
+
+        // Check if the filesystem is the virtualization view
+
+        if (ctx.isVirtualizationView() && oldAVMPath.isReadOnlyPseudoPath())
+        {
+            throw new AccessDeniedException("Cannot rename folder in store/version layer, " + oldName);
+        }
+
+        // Start a transaction for the rename
+
+        sess.beginWriteTransaction(m_transactionService);
+
+        try
+        {
+            // Rename the file/folder
+
+            m_avmService.rename(oldAVMPath.getAVMPath(), oldPaths[1], newAVMPath.getAVMPath(), newPaths[1]);
+        }
+        catch (AVMNotFoundException ex)
+        {
+            throw new IOException("Source not found, " + oldName);
+        }
+        catch (AVMWrongTypeException ex)
+        {
+            throw new IOException("Invalid path, " + oldName);
+        }
+        catch (AVMExistsException ex)
+        {
+            throw new FileExistsException("Destination exists, " + newName);
+        }
     }
 
     /**
      * Seek to the specified file position.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param file Network file.
-     * @param pos Position to seek to.
-     * @param typ Seek type.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param file
+     *            Network file.
+     * @param pos
+     *            Position to seek to.
+     * @param typ
+     *            Seek type.
      * @return New file position, relative to the start of file.
      */
     public long seekFile(SrvSession sess, TreeConnection tree, NetworkFile file, long pos, int typ)
-    	throws java.io.IOException
+            throws java.io.IOException
     {
-  	  	// Check if the file is a directory
-    	
-		if ( file.isDirectory())
-			throw new AccessDeniedException();
-      
-    	// If the content channel is not open for the file then start a transaction
-    	
-    	AVMNetworkFile avmFile = (AVMNetworkFile) file;
-    	
-    	if ( avmFile.hasContentChannel() == false)
-    		sess.beginReadTransaction( m_transactionService);
-    	
-		// Set the file position
+        // Check if the file is a directory
 
-		return file.seekFile(pos, typ);
+        if (file.isDirectory())
+            throw new AccessDeniedException();
+
+        // If the content channel is not open for the file then start a transaction
+
+        AVMNetworkFile avmFile = (AVMNetworkFile) file;
+
+        if (avmFile.hasContentChannel() == false)
+            sess.beginReadTransaction(m_transactionService);
+
+        // Set the file position
+
+        return file.seekFile(pos, typ);
     }
 
     /**
      * Set the file information for the specified file.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param name java.lang.String
-     * @param info FileInfo
-     * @exception java.io.IOException The exception description.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param name
+     *            java.lang.String
+     * @param info
+     *            FileInfo
+     * @exception java.io.IOException
+     *                The exception description.
      */
     public void setFileInformation(SrvSession sess, TreeConnection tree, String name, FileInfo info)
-    	throws java.io.IOException
+            throws java.io.IOException
     {
         // Check if the file is being marked for deletion, check if the file is writable
-        
-        if ( info.hasSetFlag(FileInfo.SetDeleteOnClose) && info.hasDeleteOnClose())
+
+        if (info.hasSetFlag(FileInfo.SetDeleteOnClose) && info.hasDeleteOnClose())
         {
-        	// If this is not the head version then it's not writable
-        	
-        	AVMContext avmCtx = (AVMContext) tree.getContext();
-        	if ( avmCtx.isVersion() != AVMContext.VERSION_HEAD)
-        		throw new AccessDeniedException( "Store not writable, cannot set delete on close");
+            // If this is not the head version then it's not writable
+
+            AVMContext avmCtx = (AVMContext) tree.getContext();
+            if (avmCtx.isVersion() != AVMContext.VERSION_HEAD)
+                throw new AccessDeniedException("Store not writable, cannot set delete on close");
         }
     }
 
     /**
-     * Start a new search on the filesystem using the specified searchPath that may contain
-     * wildcards.
+     * Start a new search on the filesystem using the specified searchPath that may contain wildcards.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param searchPath File(s) to search for, may include wildcards.
-     * @param attrib Attributes of the file(s) to search for, see class SMBFileAttribute.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param searchPath
+     *            File(s) to search for, may include wildcards.
+     * @param attrib
+     *            Attributes of the file(s) to search for, see class SMBFileAttribute.
      * @return SearchContext
-     * @exception java.io.FileNotFoundException If the search could not be started.
+     * @exception java.io.FileNotFoundException
+     *                If the search could not be started.
      */
     public SearchContext startSearch(SrvSession sess, TreeConnection tree, String searchPath, int attrib)
-    	throws java.io.FileNotFoundException
+            throws java.io.FileNotFoundException
     {
-    	// Access the AVM context
-    	
-    	AVMContext avmCtx = (AVMContext) tree.getContext();
-    	
-    	// DEBUG
-    	
-    	if ( logger.isDebugEnabled())
-    		logger.debug("Start search path=" + searchPath);
+        // Access the AVM context
 
-    	// Split the search path into relative path and search name
-    	
-    	String[] paths = FileName.splitPath( searchPath);
-    	
-    	// Build the store path to the folder being searched
-    	
-    	AVMPath storePath = buildStorePath( avmCtx, paths[0]);
-    	
-    	// Check if the filesystem is the virtualization view
-    	
-    	if ( avmCtx.isVirtualizationView())
-    	{
-    		// Check for a search of a pseudo folder
+        AVMContext avmCtx = (AVMContext) tree.getContext();
 
-    		if (storePath.isReadOnlyPseudoPath())
-	    	{
-	    		// Get the file state for the folder being searched
-	
-	    		FileState fstate = findPseudoState( storePath, avmCtx);
-	
-	    		if ( fstate != null)
-	    		{
-	    			// Get the pseudo file list for the parent directory
-	    			
-	    			PseudoFileList searchList = fstate.getPseudoFileList();
-	    			
-		   			// Check if this is a single file or wildcard search
-		    			
-		   			if ( WildCard.containsWildcards( searchPath))
-		   			{
-		   				// Check if the pseudo file list is valid
-		   				
-		   				if ( searchList == null)
-		   					searchList = new PseudoFileList();
-		   				
-		   	    		// Create the search context, wildcard filter will take care of secondary filtering of the
-		   	    		// folder listing
-		    	    		
-		   	    		WildCard wildCardFilter = new WildCard( paths[1], false);
-		   	    		return new PseudoFileListSearchContext( searchList, attrib, wildCardFilter);
-		   			}
-		   			else
-		   			{
-		   				// Search the pseudo file list for the required file
-		    				
-		   				PseudoFile pseudoFile = searchList.findFile( paths[1], false);
-		   				if ( pseudoFile != null)
-		   				{
-		   					// Create a search context using the single file details
-		    					
-		   					PseudoFileList singleList = new PseudoFileList();
-		   					singleList.addFile( pseudoFile);
-		    					
-		       	    		return new PseudoFileListSearchContext( singleList, attrib, null);
-		   				}
-		   			}
-	    		}
-	    		
-	   			// File not found
-	    			
-	   			throw new FileNotFoundException( searchPath);
-	    	}
-	    	else if ( storePath.isLevel() == AVMPath.LevelId.HeadMetaData || storePath.isLevel() == AVMPath.LevelId.VersionMetaData)
-	    	{
-	    		// Return an empty file list for now
-	    		
-	    		PseudoFileList metaFiles = new PseudoFileList();
-	    		
-	    		return new PseudoFileListSearchContext( metaFiles, attrib, null);
-	    	}
-    	}
+        // DEBUG
 
-    	// Check if the path is a wildcard search
-    	
-		sess.beginReadTransaction( m_transactionService);
-    	SearchContext context = null;
-    	
-    	if ( WildCard.containsWildcards( searchPath))
-    	{
-	    	// Get the file listing for the folder
-	    	
-	    	AVMNodeDescriptor[] fileList = m_avmService.getDirectoryListingArray( storePath.getVersion(), storePath.getAVMPath(), false);
-	    	
-	    	// Create the search context
-	    	
-	    	if ( fileList != null) {
+        if (logger.isDebugEnabled())
+            logger.debug("Start search path=" + searchPath);
 
-	    		// DEBUG
-	    		
-	    		if ( logger.isDebugEnabled())
-	    			logger.debug("  Wildcard search returned " + fileList.length + " files");
-	    		
-	    		// Create the search context, wildcard filter will take care of secondary filtering of the
-	    		// folder listing
-	    		
-	    		WildCard wildCardFilter = new WildCard( paths[1], false);
-	    		context = new AVMSearchContext( fileList, attrib, wildCardFilter, storePath.getRelativePath());
-	    	}
-    	}
-    	else
-    	{
-    		// Single file/folder search, convert the path to a store path
-    		
-    		storePath = buildStorePath( avmCtx, searchPath);
-    		
-    		// Get the single file/folder details
-    		
-    		AVMNodeDescriptor nodeDesc = m_avmService.lookup( storePath.getVersion(), storePath.getAVMPath());
-    		
-    		if ( nodeDesc != null)
-    		{
-    			// Create the search context for the single file/folder
-    			
-    			context = new AVMSingleFileSearchContext( nodeDesc, storePath.getRelativePath());
-    		}
-    		
-    	}
-    	
-    	// Return the search context
-    	
-    	return context;
+        // Split the search path into relative path and search name
+
+        String[] paths = FileName.splitPath(searchPath);
+
+        // Build the store path to the folder being searched
+
+        AVMPath storePath = buildStorePath(avmCtx, paths[0]);
+
+        // Check if the filesystem is the virtualization view
+
+        if (avmCtx.isVirtualizationView())
+        {
+            // Check for a search of a pseudo folder
+
+            if (storePath.isReadOnlyPseudoPath())
+            {
+                // Get the file state for the folder being searched
+
+                FileState fstate = findPseudoState(storePath, avmCtx);
+
+                if (fstate != null)
+                {
+                    // Get the pseudo file list for the parent directory
+
+                    PseudoFileList searchList = fstate.getPseudoFileList();
+
+                    // Check if this is a single file or wildcard search
+
+                    if (WildCard.containsWildcards(searchPath))
+                    {
+                        // Check if the pseudo file list is valid
+
+                        if (searchList == null)
+                            searchList = new PseudoFileList();
+
+                        // Create the search context, wildcard filter will take care of secondary filtering of the
+                        // folder listing
+
+                        WildCard wildCardFilter = new WildCard(paths[1], false);
+                        return new PseudoFileListSearchContext(searchList, attrib, wildCardFilter);
+                    }
+                    else
+                    {
+                        // Search the pseudo file list for the required file
+
+                        PseudoFile pseudoFile = searchList.findFile(paths[1], false);
+                        if (pseudoFile != null)
+                        {
+                            // Create a search context using the single file details
+
+                            PseudoFileList singleList = new PseudoFileList();
+                            singleList.addFile(pseudoFile);
+
+                            return new PseudoFileListSearchContext(singleList, attrib, null);
+                        }
+                    }
+                }
+
+                // File not found
+
+                throw new FileNotFoundException(searchPath);
+            }
+            else if (storePath.isLevel() == AVMPath.LevelId.HeadMetaData
+                    || storePath.isLevel() == AVMPath.LevelId.VersionMetaData)
+            {
+                // Return an empty file list for now
+
+                PseudoFileList metaFiles = new PseudoFileList();
+
+                return new PseudoFileListSearchContext(metaFiles, attrib, null);
+            }
+        }
+
+        // Check if the path is a wildcard search
+
+        sess.beginReadTransaction(m_transactionService);
+        SearchContext context = null;
+
+        if (WildCard.containsWildcards(searchPath))
+        {
+            // Get the file listing for the folder
+
+            AVMNodeDescriptor[] fileList = m_avmService.getDirectoryListingArray(storePath.getVersion(), storePath
+                    .getAVMPath(), false);
+
+            // Create the search context
+
+            if (fileList != null)
+            {
+
+                // DEBUG
+
+                if (logger.isDebugEnabled())
+                    logger.debug("  Wildcard search returned " + fileList.length + " files");
+
+                // Create the search context, wildcard filter will take care of secondary filtering of the
+                // folder listing
+
+                WildCard wildCardFilter = new WildCard(paths[1], false);
+                context = new AVMSearchContext(fileList, attrib, wildCardFilter, storePath.getRelativePath());
+            }
+        }
+        else
+        {
+            // Single file/folder search, convert the path to a store path
+
+            storePath = buildStorePath(avmCtx, searchPath);
+
+            // Get the single file/folder details
+
+            AVMNodeDescriptor nodeDesc = m_avmService.lookup(storePath.getVersion(), storePath.getAVMPath());
+
+            if (nodeDesc != null)
+            {
+                // Create the search context for the single file/folder
+
+                context = new AVMSingleFileSearchContext(nodeDesc, storePath.getRelativePath());
+            }
+
+        }
+
+        // Return the search context
+
+        return context;
     }
 
     /**
      * Truncate a file to the specified size
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param file Network file details
-     * @param siz New file length
-     * @exception java.io.IOException The exception description.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param file
+     *            Network file details
+     * @param siz
+     *            New file length
+     * @exception java.io.IOException
+     *                The exception description.
      */
     public void truncateFile(SrvSession sess, TreeConnection tree, NetworkFile file, long siz)
-    	throws java.io.IOException
+            throws java.io.IOException
     {
         // Check if the file is a directory, or only has read access
 
-		if ( file.getGrantedAccess() == NetworkFile.READONLY)
-			throw new AccessDeniedException();
-		
-    	// If the content channel is not open for the file then start a transaction
-    	
-    	AVMNetworkFile avmFile = (AVMNetworkFile) file;
-    	
-    	if ( avmFile.hasContentChannel() == false || avmFile.isWritable() == false)
-    		sess.beginWriteTransaction( m_transactionService);
-    	
-  	  	// Truncate or extend the file
-  	  
-  	  	file.truncateFile(siz);
-  	  	file.flushFile();
+        if (file.getGrantedAccess() == NetworkFile.READONLY)
+            throw new AccessDeniedException();
+
+        // If the content channel is not open for the file then start a transaction
+
+        AVMNetworkFile avmFile = (AVMNetworkFile) file;
+
+        if (avmFile.hasContentChannel() == false || avmFile.isWritable() == false)
+            sess.beginWriteTransaction(m_transactionService);
+
+        // Truncate or extend the file
+
+        file.truncateFile(siz);
+        file.flushFile();
     }
 
     /**
      * Write a block of data to the file.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param file Network file details
-     * @param buf byte[] Data to be written
-     * @param bufoff Offset within the buffer that the data starts
-     * @param siz int Data length
-     * @param fileoff Position within the file that the data is to be written.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param file
+     *            Network file details
+     * @param buf
+     *            byte[] Data to be written
+     * @param bufoff
+     *            Offset within the buffer that the data starts
+     * @param siz
+     *            int Data length
+     * @param fileoff
+     *            Position within the file that the data is to be written.
      * @return Number of bytes actually written
-     * @exception java.io.IOException The exception description.
+     * @exception java.io.IOException
+     *                The exception description.
      */
     public int writeFile(SrvSession sess, TreeConnection tree, NetworkFile file, byte[] buf, int bufoff, int siz,
-            				long fileoff)
-    	throws java.io.IOException
+            long fileoff) throws java.io.IOException
     {
         // Check if the file is a directory, or only has read access
 
-		if ( file.isDirectory() || file.getGrantedAccess() == NetworkFile.READONLY)
-			throw new AccessDeniedException();
+        if (file.isDirectory() || file.getGrantedAccess() == NetworkFile.READONLY)
+            throw new AccessDeniedException();
 
-    	// If the content channel is not open for the file, or the channel is not writable, then start a transaction
-    	
-    	AVMNetworkFile avmFile = (AVMNetworkFile) file;
-    	
-    	if ( avmFile.hasContentChannel() == false || avmFile.isWritable() == false)
-    		sess.beginWriteTransaction( m_transactionService);
-    	
-		// Write the data to the file
-		      
-		file.writeFile(buf, siz, bufoff, fileoff);
+        // If the content channel is not open for the file, or the channel is not writable, then start a transaction
 
-		//  Return the actual write length
+        AVMNetworkFile avmFile = (AVMNetworkFile) file;
 
-		return siz;
+        if (avmFile.hasContentChannel() == false || avmFile.isWritable() == false)
+            sess.beginWriteTransaction(m_transactionService);
+
+        // Write the data to the file
+
+        file.writeFile(buf, siz, bufoff, fileoff);
+
+        // Return the actual write length
+
+        return siz;
     }
-    
+
     /**
      * Connection opened to this disk device
      * 
-     * @param sess Server session
-     * @param tree Tree connection
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
      */
     public void treeClosed(SrvSession sess, TreeConnection tree)
     {
@@ -1705,521 +1832,534 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     /**
      * Connection closed to this device
      * 
-     * @param sess Server session
-     * @param tree Tree connection
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
      */
     public void treeOpened(SrvSession sess, TreeConnection tree)
     {
         // Nothing to do
     }
-    
+
     /**
      * Find the pseudo file for a virtual path
      * 
-     * @param avmPath AVMPath
-     * @param avmCtx AVMContext
+     * @param avmPath
+     *            AVMPath
+     * @param avmCtx
+     *            AVMContext
      * @return PseudoFile
      */
-    private final PseudoFile findPseudoFolder( AVMPath avmPath, AVMContext avmCtx)
+    private final PseudoFile findPseudoFolder(AVMPath avmPath, AVMContext avmCtx)
     {
-    	return findPseudoFolder( avmPath, avmCtx, true);
+        return findPseudoFolder(avmPath, avmCtx, true);
     }
-    
+
     /**
      * Find the pseudo file for a virtual path
      * 
-     * @param avmPath AVMPath
-     * @param avmCtx AVMContext
-     * @param generateStates boolean
+     * @param avmPath
+     *            AVMPath
+     * @param avmCtx
+     *            AVMContext
+     * @param generateStates
+     *            boolean
      * @return PseudoFile
      */
-    private final PseudoFile findPseudoFolder( AVMPath avmPath, AVMContext avmCtx, boolean generateStates)
+    private final PseudoFile findPseudoFolder(AVMPath avmPath, AVMContext avmCtx, boolean generateStates)
     {
-    	// Check if the path is to a store pseudo folder
+        // Check if the path is to a store pseudo folder
 
-    	if ( avmPath.isRootPath())
-    		return null;
-    	
-    	// Get the file state for the parent of the required folder
-    	
-    	FileState fstate = null;
-    	StringBuilder str = null;
-    	PseudoFile psFile = null;
-    	
-    	switch ( avmPath.isLevel())
-    	{
-    		// Store root folder
-    	
-	    	case StoreRoot:
-	    		
-	    		// Get the root folder file state
-	    		
-	    		fstate = avmCtx.getStateTable().findFileState( FileName.DOS_SEPERATOR_STR);
-	    		
-	    		if ( fstate != null && fstate.hasPseudoFiles())
-	    			psFile = fstate.getPseudoFileList().findFile( avmPath.getStoreName(), false);
-	    		break;
-	    		
-	    	// Versions root or Head folder
-	    		
-	    	case VersionRoot:
-	    	case Head:
-	    		
-	    		// Create a path to the parent store
-	    		
-	    		str = new StringBuilder();
-	    		
-	    		str.append( FileName.DOS_SEPERATOR);
-	    		str.append( avmPath.getStoreName());
-	    		
-	    		// Find/create the file state for the store
-	    		
-	    		AVMPath storePath = new AVMPath( str.toString());
-	    		fstate = findPseudoState( storePath, avmCtx);
+        if (avmPath.isRootPath())
+            return null;
 
-	    		// Find the version root or head pseudo folder
-	    		
-	    		if ( fstate != null)
-	    		{
-	    			if ( avmPath.isLevel() == AVMPath.LevelId.Head)
-	    				psFile = fstate.getPseudoFileList().findFile( AVMPath.VersionNameHead, true);
-	    			else
-	    				psFile = fstate.getPseudoFileList().findFile( AVMPath.VersionsFolder, true);
-	    		}
-	    		break;
-	    		
-	    	// Version folder
-	    		
-	    	case Version:
+        // Get the file state for the parent of the required folder
 
-	    		// Create a path to the versions folder
-	    		
-	    		str = new StringBuilder();
-	    		
-	    		str.append( FileName.DOS_SEPERATOR);
-	    		str.append( avmPath.getStoreName());
-	    		str.append( FileName.DOS_SEPERATOR);
-	    		str.append( AVMPath.VersionsFolder);
-	    		
-	    		// Find/create the file state for the store
-	    		
-	    		AVMPath verrootPath = new AVMPath( str.toString());
-	    		fstate = findPseudoState( verrootPath, avmCtx);
+        FileState fstate = null;
+        StringBuilder str = null;
+        PseudoFile psFile = null;
 
-	    		// Find the version pseudo file
-	    		
-	    		if ( fstate != null)
-	    		{
-	    			// Build the version folder name string
-		    		
-		    		str.setLength( 0);
-		    		
-		    		str.append( AVMPath.VersionFolderPrefix);
-		    		str.append( avmPath.getVersion());
-		    		
-	    			// find the version folder pseduo file
-	    			
-	    			psFile = fstate.getPseudoFileList().findFile( str.toString(), true);
-	    		}
-	    		break;
-	    		
-	    	// Head data or metadata folder
-	    		
-	    	case HeadData:
-	    	case HeadMetaData:
+        switch (avmPath.isLevel())
+        {
+        // Store root folder
 
-	    		// Create a path to the head folder
-	    		
-	    		str = new StringBuilder();
-	    		
-	    		str.append( FileName.DOS_SEPERATOR);
-	    		str.append( avmPath.getStoreName());
-	    		str.append( FileName.DOS_SEPERATOR);
-	    		str.append( AVMPath.VersionNameHead);
-	    		
-	    		// Find/create the file state for the store
-	    		
-	    		AVMPath headPath = new AVMPath( str.toString());
-	    		fstate = findPseudoState( headPath, avmCtx);
+        case StoreRoot:
 
-	    		// Find the data or metadata pseudo folder
-	    		
-	    		if ( fstate != null)
-	    		{
-	    			// Find the pseudo folder
-	    			
-	    			if ( avmPath.isLevel() == AVMPath.LevelId.HeadData)
-	    			{
-	    				psFile = fstate.getPseudoFileList().findFile( AVMPath.DataFolder, true);
-	    			}
-	    			else
-	    			{
-	    				psFile = fstate.getPseudoFileList().findFile( AVMPath.MetaDataFolder, true);
-	    			}
-	    		}
-	    		break;
+            // Get the root folder file state
 
-	    	// Version data or metadata folder
-	    		
-	    	case VersionData:
-	    	case VersionMetaData:
+            fstate = avmCtx.getStateTable().findFileState(FileName.DOS_SEPERATOR_STR);
 
-	    		// Create a path to the version folder
-	    		
-	    		str = new StringBuilder();
-	    		
-	    		str.append( FileName.DOS_SEPERATOR);
-	    		str.append( avmPath.getStoreName());
-	    		str.append( FileName.DOS_SEPERATOR);
-	    		str.append( AVMPath.VersionFolderPrefix);
-	    		str.append( avmPath.getVersion());
-	    		
-	    		// Find/create the file state for the store
-	    		
-	    		AVMPath verPath = new AVMPath( str.toString());
-	    		fstate = findPseudoState( verPath, avmCtx);
+            if (fstate != null && fstate.hasPseudoFiles())
+                psFile = fstate.getPseudoFileList().findFile(avmPath.getStoreName(), false);
+            break;
 
-	    		// Find the data or metadata pseudo folder
-	    		
-	    		if ( fstate != null)
-	    		{
-	    			// Find the pseudo folder
-	    			
-	    			if ( avmPath.isLevel() == AVMPath.LevelId.VersionData)
-	    			{
-	    				psFile = fstate.getPseudoFileList().findFile( AVMPath.DataFolder, true);
-	    			}
-	    			else
-	    			{
-	    				psFile = fstate.getPseudoFileList().findFile( AVMPath.MetaDataFolder, true);
-	    			}
-	    		}
-	    		break;
-    	}
+        // Versions root or Head folder
 
-    	// Check if the pseudo file was not found but file states should be generated
-    	
-    	if ( psFile == null && generateStates == true)
-    	{
-    		// Generate the file states for the path, this is required if a request is made to a path without
-    		// walking the folder tree
-    		
-    		generatePseudoFolders( avmPath, avmCtx);
-    		
-    		// Try and find the pseudo file again
-    		
-    		psFile = findPseudoFolder( avmPath, avmCtx, false);
-    	}
-    	
-		// Return the pseudo file, or null if not found
-		
-		return psFile;
+        case VersionRoot:
+        case Head:
+
+            // Create a path to the parent store
+
+            str = new StringBuilder();
+
+            str.append(FileName.DOS_SEPERATOR);
+            str.append(avmPath.getStoreName());
+
+            // Find/create the file state for the store
+
+            AVMPath storePath = new AVMPath(str.toString());
+            fstate = findPseudoState(storePath, avmCtx);
+
+            // Find the version root or head pseudo folder
+
+            if (fstate != null)
+            {
+                if (avmPath.isLevel() == AVMPath.LevelId.Head)
+                    psFile = fstate.getPseudoFileList().findFile(AVMPath.VersionNameHead, true);
+                else
+                    psFile = fstate.getPseudoFileList().findFile(AVMPath.VersionsFolder, true);
+            }
+            break;
+
+        // Version folder
+
+        case Version:
+
+            // Create a path to the versions folder
+
+            str = new StringBuilder();
+
+            str.append(FileName.DOS_SEPERATOR);
+            str.append(avmPath.getStoreName());
+            str.append(FileName.DOS_SEPERATOR);
+            str.append(AVMPath.VersionsFolder);
+
+            // Find/create the file state for the store
+
+            AVMPath verrootPath = new AVMPath(str.toString());
+            fstate = findPseudoState(verrootPath, avmCtx);
+
+            // Find the version pseudo file
+
+            if (fstate != null)
+            {
+                // Build the version folder name string
+
+                str.setLength(0);
+
+                str.append(AVMPath.VersionFolderPrefix);
+                str.append(avmPath.getVersion());
+
+                // find the version folder pseduo file
+
+                psFile = fstate.getPseudoFileList().findFile(str.toString(), true);
+            }
+            break;
+
+        // Head data or metadata folder
+
+        case HeadData:
+        case HeadMetaData:
+
+            // Create a path to the head folder
+
+            str = new StringBuilder();
+
+            str.append(FileName.DOS_SEPERATOR);
+            str.append(avmPath.getStoreName());
+            str.append(FileName.DOS_SEPERATOR);
+            str.append(AVMPath.VersionNameHead);
+
+            // Find/create the file state for the store
+
+            AVMPath headPath = new AVMPath(str.toString());
+            fstate = findPseudoState(headPath, avmCtx);
+
+            // Find the data or metadata pseudo folder
+
+            if (fstate != null)
+            {
+                // Find the pseudo folder
+
+                if (avmPath.isLevel() == AVMPath.LevelId.HeadData)
+                {
+                    psFile = fstate.getPseudoFileList().findFile(AVMPath.DataFolder, true);
+                }
+                else
+                {
+                    psFile = fstate.getPseudoFileList().findFile(AVMPath.MetaDataFolder, true);
+                }
+            }
+            break;
+
+        // Version data or metadata folder
+
+        case VersionData:
+        case VersionMetaData:
+
+            // Create a path to the version folder
+
+            str = new StringBuilder();
+
+            str.append(FileName.DOS_SEPERATOR);
+            str.append(avmPath.getStoreName());
+            str.append(FileName.DOS_SEPERATOR);
+            str.append(AVMPath.VersionFolderPrefix);
+            str.append(avmPath.getVersion());
+
+            // Find/create the file state for the store
+
+            AVMPath verPath = new AVMPath(str.toString());
+            fstate = findPseudoState(verPath, avmCtx);
+
+            // Find the data or metadata pseudo folder
+
+            if (fstate != null)
+            {
+                // Find the pseudo folder
+
+                if (avmPath.isLevel() == AVMPath.LevelId.VersionData)
+                {
+                    psFile = fstate.getPseudoFileList().findFile(AVMPath.DataFolder, true);
+                }
+                else
+                {
+                    psFile = fstate.getPseudoFileList().findFile(AVMPath.MetaDataFolder, true);
+                }
+            }
+            break;
+        }
+
+        // Check if the pseudo file was not found but file states should be generated
+
+        if (psFile == null && generateStates == true)
+        {
+            // Generate the file states for the path, this is required if a request is made to a path without
+            // walking the folder tree
+
+            generatePseudoFolders(avmPath, avmCtx);
+
+            // Try and find the pseudo file again
+
+            psFile = findPseudoFolder(avmPath, avmCtx, false);
+        }
+
+        // Return the pseudo file, or null if not found
+
+        return psFile;
     }
-    
+
     /**
      * Find the file state for a pseudo folder path
      * 
-     * @param avmPath AVMPath
-     * @param avmCtx AVMContext
+     * @param avmPath
+     *            AVMPath
+     * @param avmCtx
+     *            AVMContext
      * @return FileState
      */
-    private final FileState findPseudoState( AVMPath avmPath, AVMContext avmCtx)
+    private final FileState findPseudoState(AVMPath avmPath, AVMContext avmCtx)
     {
-    	// Make sure the is to a pseudo file/folder
-    	
-    	if ( avmPath.isPseudoPath() == false)
-    		return null;
-    	
-    	// Check if the path is to a store pseudo folder
-    	
-    	FileState fstate = null;
-    	StringBuilder str = null;
+        // Make sure the is to a pseudo file/folder
 
-    	switch ( avmPath.isLevel())
-    	{
-	    	// Root of the hieararchy
-	    	
-	    	case Root:
+        if (avmPath.isPseudoPath() == false)
+            return null;
 
-	    		// Get the root path file state
-				
-				fstate = avmCtx.getStateTable().findFileState( FileName.DOS_SEPERATOR_STR);
-				
-				// Check if the root file state is valid
-				
-				if ( fstate == null)
-				{
-					// Create a file state for the root folder
-					
-	            	fstate = avmCtx.getStateTable().findFileState( FileName.DOS_SEPERATOR_STR, true, true);
-	            	fstate.setExpiryTime( FileState.NoTimeout);
-	            	
-		            // Get a list of the available AVM stores
-		            
-		            List<AVMStoreDescriptor> storeList = m_avmService.getStores();
-		            
-		            if ( storeList != null && storeList.size() > 0)
-		            {
-		            	// Add pseudo files for the stores
-		            	
-		            	boolean sandbox = false;
-		            	
-		            	for ( AVMStoreDescriptor storeDesc : storeList)
-		            	{
-		            		// Get the properties for the current store
-		            		
-		            		Map<QName, PropertyValue> props = m_avmService.getStoreProperties( storeDesc.getName());
-		            		
-		            		if ( props.containsKey( AVMContext.PROP_WORKFLOWPREVIEW) || props.containsKey( AVMContext.PROP_AUTHORPREVIEW))
-		            			sandbox = true;
-		            		else
-		            			sandbox = false;
+        // Check if the path is to a store pseudo folder
 
-		            		// DEBUG
-		            		
-		            		if ( logger.isDebugEnabled())
-		            			logger.debug( "Store " + storeDesc.getName() + ", sandbox=" + sandbox);
-		            		
-		            		// Add a pseudo file for the current store
+        FileState fstate = null;
+        StringBuilder str = null;
 
-		            		if ( sandbox == false || avmCtx.showSandboxes() == true)
-		            			fstate.addPseudoFile( new StorePseudoFile( storeDesc));
-		            	}
-		            }
-				}
-	    		break;
-	    		
-	    	// Store folder
-	    		
-	    	case StoreRoot:
-	    		
-				// Build the path to the parent store folder
-				
-				str = new StringBuilder();
-				
-				str.append( FileName.DOS_SEPERATOR);
-				str.append( avmPath.getStoreName());
-				
-				// Search for the file state for the store pseudo folder
-				
-				fstate = avmCtx.getStateTable().findFileState( str.toString());
-				
-				if ( fstate == null)
-				{
-					// Create a file state for the store path
-					
-					fstate = avmCtx.getStateTable().findFileState( str.toString(), true, true);
-					
-					// Add a pseudo file for the head version
-					
-					fstate.addPseudoFile( new VersionPseudoFile( AVMPath.VersionNameHead));
-					
-					// Add a pseudo file for the version root folder
-					
-					fstate.addPseudoFile( new DummyFolderPseudoFile( AVMPath.VersionsFolder));
-				}
-				break;
+        switch (avmPath.isLevel())
+        {
+        // Root of the hieararchy
 
-			// Head folder
-				
-	    	case Head:
+        case Root:
 
-	    		// Build the path to the store head version folder
-				
-				str = new StringBuilder();
-				
-				str.append( FileName.DOS_SEPERATOR);
-				str.append( avmPath.getStoreName());
-				str.append( FileName.DOS_SEPERATOR);
-				str.append( AVMPath.VersionNameHead);
-				
-				// Search for the file state for the store head version pseudo folder
-				
-				fstate = avmCtx.getStateTable().findFileState( str.toString());
-				
-				if ( fstate == null)
-				{
-					// Create a file state for the store head folder path
-					
-					fstate = avmCtx.getStateTable().findFileState( str.toString(), true, true);
-					
-					// Add a pseudo file for the data pseudo folder
-					
-					fstate.addPseudoFile( new DummyFolderPseudoFile( AVMPath.DataFolder));
-					
-					// Add a pseudo file for the metadata pseudo folder
-					
-					fstate.addPseudoFile( new DummyFolderPseudoFile( AVMPath.MetaDataFolder));
-				}
-	    		break;
-	    		
-			// Version root folder
-				
-	    	case VersionRoot:
+            // Get the root path file state
 
-	    		// Get the list of AVM store versions
+            fstate = avmCtx.getStateTable().findFileState(FileName.DOS_SEPERATOR_STR);
 
-				try
-				{
-					// Build the path to the parent store folder
-					
-					str = new StringBuilder();
-					
-					str.append( FileName.DOS_SEPERATOR);
-					str.append( avmPath.getStoreName());
-					str.append( FileName.DOS_SEPERATOR);
-					str.append( AVMPath.VersionsFolder);
-					
-					// Create a file state for the store path
-					
-					fstate = avmCtx.getStateTable().findFileState( str.toString(), true, true);
-					
-					// Add pseudo folders if the list is empty
-					
-					if ( fstate.hasPseudoFiles() == false)
-					{
-						// Build the version folder name for the head version
-						
-						StringBuilder verStr = new StringBuilder( AVMPath.VersionFolderPrefix);
-						verStr.append( "-1");
-						
-						// Add a pseudo file for the head version
-						
-						fstate.addPseudoFile( new VersionPseudoFile( verStr.toString()));
-						
-						// Get the list of versions for the store
-						
-						List<VersionDescriptor> verList = m_avmService.getStoreVersions( avmPath.getStoreName());
-						
-						// Add pseudo files for the versions to the store state
-	
-						if ( verList.size() > 0)
-						{
-							for ( VersionDescriptor verDesc : verList)
-							{
-								// Generate the version string
-								
-								String verName = null;
-								
-								verStr.setLength( AVMPath.VersionFolderPrefix.length());
-								verStr.append( verDesc.getVersionID());
-								
-								verName = verStr.toString();
-								
-								// Add the version pseudo folder
-								
-								fstate.addPseudoFile( new VersionPseudoFile ( verName, verDesc));
-							}
-						}
-					}
-				}
-				catch ( AVMNotFoundException ex)
-				{
-					// Invalid store name
-				}
-				break;
+            // Check if the root file state is valid
 
-			// Version folder
-				
-	    	case Version:
+            if (fstate == null)
+            {
+                // Create a file state for the root folder
 
-	    		// Build the path to the store version folder
-				
-				str = new StringBuilder();
-				
-				str.append( FileName.DOS_SEPERATOR);
-				str.append( avmPath.getStoreName());
-				str.append( FileName.DOS_SEPERATOR);
-				str.append( AVMPath.VersionFolderPrefix);
-				str.append( avmPath.getVersion());
-				
-				// Search for the file state for the version pseudo folder
-				
-				fstate = avmCtx.getStateTable().findFileState( str.toString());
-				
-				if ( fstate == null)
-				{
-					// Create a file state for the version folder path
-					
-					fstate = avmCtx.getStateTable().findFileState( str.toString(), true, true);
-					
-					// Add a pseudo file for the data pseudo folder
-					
-					fstate.addPseudoFile( new DummyFolderPseudoFile( AVMPath.DataFolder));
-					
-					// Add a pseudo file for the metadata pseudo folder
-					
-					fstate.addPseudoFile( new DummyFolderPseudoFile( AVMPath.MetaDataFolder));
-				}
-	    		break;
-		}
+                fstate = avmCtx.getStateTable().findFileState(FileName.DOS_SEPERATOR_STR, true, true);
+                fstate.setExpiryTime(FileState.NoTimeout);
 
-    	// Return the file state
-	    
-	    return fstate;
+                // Get a list of the available AVM stores
+
+                List<AVMStoreDescriptor> storeList = m_avmService.getStores();
+
+                if (storeList != null && storeList.size() > 0)
+                {
+                    // Add pseudo files for the stores
+
+                    boolean sandbox = false;
+
+                    for (AVMStoreDescriptor storeDesc : storeList)
+                    {
+                        // Get the properties for the current store
+
+                        Map<QName, PropertyValue> props = m_avmService.getStoreProperties(storeDesc.getName());
+
+                        if (props.containsKey(AVMContext.PROP_WORKFLOWPREVIEW)
+                                || props.containsKey(AVMContext.PROP_AUTHORPREVIEW))
+                            sandbox = true;
+                        else
+                            sandbox = false;
+
+                        // DEBUG
+
+                        if (logger.isDebugEnabled())
+                            logger.debug("Store " + storeDesc.getName() + ", sandbox=" + sandbox);
+
+                        // Add a pseudo file for the current store
+
+                        if (sandbox == false || avmCtx.showSandboxes() == true)
+                            fstate.addPseudoFile(new StorePseudoFile(storeDesc));
+                    }
+                }
+            }
+            break;
+
+        // Store folder
+
+        case StoreRoot:
+
+            // Build the path to the parent store folder
+
+            str = new StringBuilder();
+
+            str.append(FileName.DOS_SEPERATOR);
+            str.append(avmPath.getStoreName());
+
+            // Search for the file state for the store pseudo folder
+
+            fstate = avmCtx.getStateTable().findFileState(str.toString());
+
+            if (fstate == null)
+            {
+                // Create a file state for the store path
+
+                fstate = avmCtx.getStateTable().findFileState(str.toString(), true, true);
+
+                // Add a pseudo file for the head version
+
+                fstate.addPseudoFile(new VersionPseudoFile(AVMPath.VersionNameHead));
+
+                // Add a pseudo file for the version root folder
+
+                fstate.addPseudoFile(new DummyFolderPseudoFile(AVMPath.VersionsFolder));
+            }
+            break;
+
+        // Head folder
+
+        case Head:
+
+            // Build the path to the store head version folder
+
+            str = new StringBuilder();
+
+            str.append(FileName.DOS_SEPERATOR);
+            str.append(avmPath.getStoreName());
+            str.append(FileName.DOS_SEPERATOR);
+            str.append(AVMPath.VersionNameHead);
+
+            // Search for the file state for the store head version pseudo folder
+
+            fstate = avmCtx.getStateTable().findFileState(str.toString());
+
+            if (fstate == null)
+            {
+                // Create a file state for the store head folder path
+
+                fstate = avmCtx.getStateTable().findFileState(str.toString(), true, true);
+
+                // Add a pseudo file for the data pseudo folder
+
+                fstate.addPseudoFile(new DummyFolderPseudoFile(AVMPath.DataFolder));
+
+                // Add a pseudo file for the metadata pseudo folder
+
+                fstate.addPseudoFile(new DummyFolderPseudoFile(AVMPath.MetaDataFolder));
+            }
+            break;
+
+        // Version root folder
+
+        case VersionRoot:
+
+            // Get the list of AVM store versions
+
+            try
+            {
+                // Build the path to the parent store folder
+
+                str = new StringBuilder();
+
+                str.append(FileName.DOS_SEPERATOR);
+                str.append(avmPath.getStoreName());
+                str.append(FileName.DOS_SEPERATOR);
+                str.append(AVMPath.VersionsFolder);
+
+                // Create a file state for the store path
+
+                fstate = avmCtx.getStateTable().findFileState(str.toString(), true, true);
+
+                // Add pseudo folders if the list is empty
+
+                if (fstate.hasPseudoFiles() == false)
+                {
+                    // Build the version folder name for the head version
+
+                    StringBuilder verStr = new StringBuilder(AVMPath.VersionFolderPrefix);
+                    verStr.append("-1");
+
+                    // Add a pseudo file for the head version
+
+                    fstate.addPseudoFile(new VersionPseudoFile(verStr.toString()));
+
+                    // Get the list of versions for the store
+
+                    List<VersionDescriptor> verList = m_avmService.getStoreVersions(avmPath.getStoreName());
+
+                    // Add pseudo files for the versions to the store state
+
+                    if (verList.size() > 0)
+                    {
+                        for (VersionDescriptor verDesc : verList)
+                        {
+                            // Generate the version string
+
+                            String verName = null;
+
+                            verStr.setLength(AVMPath.VersionFolderPrefix.length());
+                            verStr.append(verDesc.getVersionID());
+
+                            verName = verStr.toString();
+
+                            // Add the version pseudo folder
+
+                            fstate.addPseudoFile(new VersionPseudoFile(verName, verDesc));
+                        }
+                    }
+                }
+            }
+            catch (AVMNotFoundException ex)
+            {
+                // Invalid store name
+            }
+            break;
+
+        // Version folder
+
+        case Version:
+
+            // Build the path to the store version folder
+
+            str = new StringBuilder();
+
+            str.append(FileName.DOS_SEPERATOR);
+            str.append(avmPath.getStoreName());
+            str.append(FileName.DOS_SEPERATOR);
+            str.append(AVMPath.VersionFolderPrefix);
+            str.append(avmPath.getVersion());
+
+            // Search for the file state for the version pseudo folder
+
+            fstate = avmCtx.getStateTable().findFileState(str.toString());
+
+            if (fstate == null)
+            {
+                // Create a file state for the version folder path
+
+                fstate = avmCtx.getStateTable().findFileState(str.toString(), true, true);
+
+                // Add a pseudo file for the data pseudo folder
+
+                fstate.addPseudoFile(new DummyFolderPseudoFile(AVMPath.DataFolder));
+
+                // Add a pseudo file for the metadata pseudo folder
+
+                fstate.addPseudoFile(new DummyFolderPseudoFile(AVMPath.MetaDataFolder));
+            }
+            break;
+        }
+
+        // Return the file state
+
+        return fstate;
     }
-    
+
     /**
      * Generate the pseudo folders for the specified path
      * 
-     * @param avmPath AVMPath
-     * @param avmCtx AVMContext
+     * @param avmPath
+     *            AVMPath
+     * @param avmCtx
+     *            AVMContext
      */
-   private final void generatePseudoFolders( AVMPath avmPath, AVMContext avmCtx)
-   {
-	   // Create the root file state
-	   
-	   AVMPath createPath = new AVMPath();
-	   StringBuilder pathStr = new StringBuilder();
-	   
-	   pathStr.append( FileName.DOS_SEPERATOR);
-	   createPath.parsePath( pathStr.toString());
-	   
-	   FileState rootState = findPseudoState( createPath, avmCtx);
-	   
-	   // Check if the path has a store name
-	   
-	   if ( avmPath.getStoreName() != null)
-	   {
-		   // Check if the store name is valid
-		   
-		   if ( rootState.hasPseudoFiles() && rootState.getPseudoFileList().findFile( avmPath.getStoreName(), false) != null)
-		   {
-			   // Create the store file state
-			   
-			   pathStr.append( avmPath.getStoreName());
-			   pathStr.append( FileName.DOS_SEPERATOR);
-			   
-			   createPath.parsePath( pathStr.toString());
-			   
-			   findPseudoState( createPath, avmCtx);
-			   
-			   // Add the head and version root pseudo folders
-	
-			   createPath.parsePath( pathStr.toString() + AVMPath.VersionNameHead);
-			   findPseudoState( createPath, avmCtx);
-			   
-			   createPath.parsePath( pathStr.toString() + AVMPath.VersionsFolder);
-			   findPseudoState( createPath, avmCtx);
-			   
-			   // Check if the path is to a version folder
-			   
-			   if ( avmPath.isLevel().ordinal() >= AVMPath.LevelId.Version.ordinal())
-			   {
-				   // Build the path
-				   
-				   pathStr.append( AVMPath.VersionsFolder);
-				   pathStr.append( FileName.DOS_SEPERATOR);
-				   pathStr.append( AVMPath.VersionFolderPrefix);
-				   pathStr.append( avmPath.getVersion());
-				   
-				   createPath.parsePath( pathStr.toString());
-				   
-				   // Generate the version folders
-				   
-				   findPseudoState( createPath, avmCtx);
-			   }
-		   }
-	   }
-   }
+    private final void generatePseudoFolders(AVMPath avmPath, AVMContext avmCtx)
+    {
+        // Create the root file state
+
+        AVMPath createPath = new AVMPath();
+        StringBuilder pathStr = new StringBuilder();
+
+        pathStr.append(FileName.DOS_SEPERATOR);
+        createPath.parsePath(pathStr.toString());
+
+        FileState rootState = findPseudoState(createPath, avmCtx);
+
+        // Check if the path has a store name
+
+        if (avmPath.getStoreName() != null)
+        {
+            // Check if the store name is valid
+
+            if (rootState.hasPseudoFiles()
+                    && rootState.getPseudoFileList().findFile(avmPath.getStoreName(), false) != null)
+            {
+                // Create the store file state
+
+                pathStr.append(avmPath.getStoreName());
+                pathStr.append(FileName.DOS_SEPERATOR);
+
+                createPath.parsePath(pathStr.toString());
+
+                findPseudoState(createPath, avmCtx);
+
+                // Add the head and version root pseudo folders
+
+                createPath.parsePath(pathStr.toString() + AVMPath.VersionNameHead);
+                findPseudoState(createPath, avmCtx);
+
+                createPath.parsePath(pathStr.toString() + AVMPath.VersionsFolder);
+                findPseudoState(createPath, avmCtx);
+
+                // Check if the path is to a version folder
+
+                if (avmPath.isLevel().ordinal() >= AVMPath.LevelId.Version.ordinal())
+                {
+                    // Build the path
+
+                    pathStr.append(AVMPath.VersionsFolder);
+                    pathStr.append(FileName.DOS_SEPERATOR);
+                    pathStr.append(AVMPath.VersionFolderPrefix);
+                    pathStr.append(avmPath.getVersion());
+
+                    createPath.parsePath(pathStr.toString());
+
+                    // Generate the version folders
+
+                    findPseudoState(createPath, avmCtx);
+                }
+            }
+        }
+    }
 }

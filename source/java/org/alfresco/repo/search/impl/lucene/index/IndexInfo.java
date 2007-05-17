@@ -55,7 +55,7 @@ import java.util.zip.CRC32;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.IndexerException;
-import org.alfresco.repo.search.impl.lucene.FilterIndexReaderByNodeRefs2;
+import org.alfresco.repo.search.impl.lucene.FilterIndexReaderByStringId;
 import org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
@@ -1068,7 +1068,7 @@ public class IndexInfo
             else
             {
                 reader = new MultiReader(new IndexReader[] {
-                        new FilterIndexReaderByNodeRefs2("main+id", mainIndexReader, deletions, deleteOnlyNodes),
+                        new FilterIndexReaderByStringId("main+id", mainIndexReader, deletions, deleteOnlyNodes),
                         deltaReader });
             }
             reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader("MainReader" + id, reader);
@@ -1690,7 +1690,7 @@ public class IndexInfo
                         try
                         {
                             reader = new MultiReader(new IndexReader[] {
-                                    new FilterIndexReaderByNodeRefs2(id, reader, getDeletions(entry.getName()), entry
+                                    new FilterIndexReaderByStringId(id, reader, getDeletions(entry.getName()), entry
                                             .isDeletOnlyNodes()), subReader });
                         }
                         catch (IOException ioe)

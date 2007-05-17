@@ -39,7 +39,12 @@ import org.saxpath.Axis;
 import org.saxpath.Operator;
 import org.saxpath.SAXPathException;
 import org.saxpath.XPathHandler;
-
+/**
+ * XPATH handler for lucene - currently only does basic paths
+ * 
+ * @author andyh
+ *
+ */
 public class LuceneXPathHandler implements XPathHandler
 {
     private PathQuery query;
@@ -52,11 +57,18 @@ public class LuceneXPathHandler implements XPathHandler
 
     private DictionaryService dictionaryService;
 
+    /**
+     * 
+     */
     public LuceneXPathHandler()
     {
         super();
     }
 
+    /**
+     * Get the resulting query
+     * @return - the query
+     */
     public PathQuery getQuery()
     {
         return this.query;
@@ -348,6 +360,7 @@ public class LuceneXPathHandler implements XPathHandler
 
     }
 
+    @SuppressWarnings("unused")
     private void addAbsolute(String nameSpace, String localName)
     {
         ArrayList<StructuredFieldPosition> answer = new ArrayList<StructuredFieldPosition>(2);
@@ -398,6 +411,10 @@ public class LuceneXPathHandler implements XPathHandler
                 answer.add(new RelativeStructuredFieldPosition("*"));
             }
             else if (namespacePrefixResolver.getNamespaceURI("") == null)
+            {
+                answer.add(new RelativeStructuredFieldPosition(PathTokenFilter.NO_NS_TOKEN_TEXT));
+            }
+            else if (namespacePrefixResolver.getNamespaceURI("").equals(""))
             {
                 answer.add(new RelativeStructuredFieldPosition(PathTokenFilter.NO_NS_TOKEN_TEXT));
             }
@@ -480,11 +497,19 @@ public class LuceneXPathHandler implements XPathHandler
        
     }
 
+    /**
+     * Set the service to resolve name space prefixes
+     * @param namespacePrefixResolver
+     */
     public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
     {
         this.namespacePrefixResolver = namespacePrefixResolver;
     }
 
+    /**
+     * Set the dictionary service.
+     * @param dictionaryService
+     */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;

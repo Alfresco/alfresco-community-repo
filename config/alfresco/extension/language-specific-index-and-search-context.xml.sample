@@ -9,7 +9,7 @@
     
     <!-- See MLAnalysisMode for all the available options -->
     
-    <bean id="luceneIndexerAndSearcherFactory"
+    <bean id="admLuceneIndexerAndSearcherFactory"
         class="org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcherFactory2">
         <property name="nodeService">
             <ref bean="mlAwareNodeService" />
@@ -19,9 +19,6 @@
         </property>
         <property name="nameSpaceService">
             <ref bean="namespaceService" />
-        </property>
-        <property name="luceneFullTextSearchIndexer">
-            <ref bean="LuceneFullTextSearchIndexer" />
         </property>
         <property name="indexRootLocation">
             <value>${dir.indexes}</value>

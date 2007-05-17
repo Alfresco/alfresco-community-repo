@@ -24,33 +24,30 @@
  */
 package org.alfresco.repo.search.impl.lucene;
 
-import java.util.Set;
-
-import org.alfresco.repo.search.IndexerSPI;
-import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
-import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
 
 /**
- * @author Andy Hind
+ * Lucene implementation specific entension to the seracher API
+ * @author andyh
+ *
  */
-public interface LuceneIndexer2 extends IndexerSPI
+public interface LuceneSearcher extends SearchService
 {
-
-    public void commit();
-    public void rollback();
-    public int prepare();
-    public boolean isModified();
-    public void setNodeService(NodeService nodeService);
-    public void setDictionaryService(DictionaryService dictionaryService);
-    public void setLuceneFullTextSearchIndexer(FullTextSearchIndexer luceneFullTextSearchIndexer);
-    
-    public String getDeltaId();
-    public  void flushPending() throws LuceneIndexException;
-    public Set<String> getDeletions();
-    public boolean getDeleteOnlyNodes();
-    
-    public <R> R doWithWriteLock(IndexInfo.LockWork <R> lockWork);
+    /**
+     * Check if the index exists 
+     * @return - true if it exists
+     */
+   public boolean indexExists();
+   /**
+    * Ste the node service
+    * @param nodeService
+    */
+   public void setNodeService(NodeService nodeService);
+   /**
+    * Set the name space service
+    * @param namespacePrefixResolver
+    */
+   public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver);
 }

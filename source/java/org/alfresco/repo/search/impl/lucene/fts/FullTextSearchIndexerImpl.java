@@ -28,29 +28,36 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.alfresco.repo.search.IndexerSPI;
-import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcher;
+import org.alfresco.repo.search.BackgroundIndexerAware;
+import org.alfresco.repo.search.Indexer;
+import org.alfresco.repo.search.IndexerAndSearcher;
+import org.alfresco.repo.search.SupportsBackgroundIndexing;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+/**
+ * Background index update scheduler
+ * @author andyh
+ *
+ */
 public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearchIndexer
 {
-    private enum State
-    {
-        ACTIVE, PAUSING, PAUSED
-    };
-
     private static Set<StoreRef> requiresIndex = new LinkedHashSet<StoreRef>();
 
     private static Set<StoreRef> indexing = new HashSet<StoreRef>();
 
-    LuceneIndexerAndSearcher luceneIndexerAndSearcherFactory;
+    private IndexerAndSearcher indexerAndSearcherFactory;
 
     private int pauseCount = 0;
 
     private boolean paused = false;
 
+    /**
+     * 
+     */
     public FullTextSearchIndexerImpl()
     {
         super();
@@ -139,6 +146,7 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
         }
     }
 
+    @SuppressWarnings("unused")
     private synchronized boolean isPaused() throws InterruptedException
     {
         if (pauseCount == 0)
@@ -172,9 +180,13 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
             if (toIndex != null)
             {
                 // System.out.println("Indexing "+toIndex+" at "+(new java.util.Date()));
-                IndexerSPI indexer = luceneIndexerAndSearcherFactory.getIndexer(toIndex);
-                indexer.registerCallBack(this);
-                done += indexer.updateFullTextSearch(1000);
+                Indexer indexer = indexerAndSearcherFactory.getIndexer(toIndex);
+                if(indexer instanceof BackgroundIndexerAware)
+                {
+                   BackgroundIndexerAware backgroundIndexerAware = (BackgroundIndexerAware)indexer;
+                   backgroundIndexerAware.registerCallBack(this);
+                   done += backgroundIndexerAware.updateFullTextSearch(1000);
+                }
             }
             else
             {
@@ -213,13 +225,34 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
         return nextStoreRef;
     }
 
-    public void setLuceneIndexerAndSearcherFactory(LuceneIndexerAndSearcher luceneIndexerAndSearcherFactory)
+    /**
+     * @param indexerAndSearcherFactory
+     */
+    public void setIndexerAndSearcherFactory(IndexerAndSearcher indexerAndSearcherFactory)
     {
-        this.luceneIndexerAndSearcherFactory = luceneIndexerAndSearcherFactory;
+        this.indexerAndSearcherFactory = indexerAndSearcherFactory;
     }
 
+    /**
+     * @param args
+     * @throws InterruptedException
+     */
     public static void main(String[] args) throws InterruptedException
     {
+        @SuppressWarnings("unused")
         ApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:alfresco/application-context.xml");
+    }
+
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException
+    {
+        // Find bean implementaing SupportsBackgroundIndexing and register
+        for(Object bgindexable : beanFactory.getBeansOfType(SupportsBackgroundIndexing.class).values())
+        {
+            if(bgindexable instanceof SupportsBackgroundIndexing)
+            {
+                ((SupportsBackgroundIndexing)bgindexable).setFullTextSearchIndexer(this);
+            }
+        }
+        
     }
 }

@@ -50,6 +50,11 @@ import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Weight;
 
+/**
+ * Leaf scorer to complete path queries
+ * @author andyh
+ *
+ */
 public class LeafScorer extends Scorer
 {
     static class Counter
@@ -112,6 +117,23 @@ public class LeafScorer extends Scorer
 
     private TermPositions tp;
 
+    /**
+     * Constructor - should use an arg object ...
+     * 
+     * @param weight
+     * @param root
+     * @param level0
+     * @param containerScorer
+     * @param sfps
+     * @param allNodes
+     * @param selfIds
+     * @param reader
+     * @param similarity
+     * @param norms
+     * @param dictionaryService
+     * @param repeat
+     * @param tp
+     */
     public LeafScorer(Weight weight, TermPositions root, TermPositions level0, ContainerScorer containerScorer,
             StructuredFieldPosition[] sfps, TermPositions allNodes, HashMap<String, Counter> selfIds,
             IndexReader reader, Similarity similarity, byte[] norms, DictionaryService dictionaryService,
@@ -157,7 +179,8 @@ public class LeafScorer extends Scorer
             {
                 int doc = containerScorer.doc();
                 Document document = reader.document(doc);
-                Field id = document.getField("ID");
+                Field[] fields = document.getFields("ID");
+                Field id = fields[fields.length-1];
                 Counter counter = parentIds.get(id.stringValue());
                 if (counter == null)
                 {
@@ -203,7 +226,8 @@ public class LeafScorer extends Scorer
             {
                 int doc = level0.doc();
                 Document document = reader.document(doc);
-                Field id = document.getField("ID");
+                Field[] fields = document.getFields("ID");
+                Field id = fields[fields.length-1];
                 if (id != null)
                 {
                     Counter counter = parentIds.get(id.stringValue());
@@ -701,7 +725,8 @@ public class LeafScorer extends Scorer
             {
                 return;
             }
-            String id = document.getField("ID").stringValue();
+            Field[] fields = document.getFields("ID");
+            String id = fields[fields.length-1].stringValue();
             StructuredFieldPosition last = sfps[sfps.length - 1];
             if ((last.linkSelf() && selfIds.containsKey(id)))
             {

@@ -27,6 +27,7 @@ package org.alfresco.repo.search.impl.lucene;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
@@ -38,7 +39,6 @@ import javax.transaction.xa.XAResource;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.impl.lucene.index.TransactionStatus;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
@@ -50,25 +50,52 @@ import org.apache.lucene.index.TermDocs;
  * Common support for indexing across implementations
  * 
  * @author andyh
+ * @param <T> -
+ *            the type used to generate the key in the index file
  */
-public abstract class AbstractLuceneIndexerImpl2<T> extends LuceneBase2
+public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
 {
     /**
      * Enum for indexing actions against a node
      */
     protected enum Action
     {
-        INDEX, REINDEX, DELETE, CASCADEREINDEX
+        /**
+         * An index
+         */
+        INDEX, 
+        /**
+         * A reindex
+         */
+        REINDEX, 
+        /**
+         * A delete
+         */
+        DELETE, 
+        /**
+         * A cascaded reindex (ensures directory structre is ok)
+         */
+        CASCADEREINDEX
     }
 
     protected enum IndexUpdateStatus
     {
-        UNMODIFIED, SYNCRONOUS, ASYNCHRONOUS;
+        /**
+         * Inde is unchanged
+         */
+        UNMODIFIED, 
+        /**
+         * Index is being changein in TX 
+         */
+        SYNCRONOUS, 
+        /**
+         * Index is eiong changed by a background upate 
+         */
+        ASYNCHRONOUS;
     }
 
-
     protected long docs;
-    
+
     // Failure codes to index when problems occur indexing content
 
     protected static class Command<S>
@@ -131,7 +158,8 @@ public abstract class AbstractLuceneIndexerImpl2<T> extends LuceneBase2
     /**
      * Logger
      */
-    private static Logger s_logger = Logger.getLogger(AbstractLuceneIndexerImpl2.class);
+    @SuppressWarnings("unused")
+    private static Logger s_logger = Logger.getLogger(AbstractLuceneIndexerImpl.class);
 
     protected static Set<String> deletePrimary(Collection<String> nodeRefs, IndexReader reader, boolean delete)
             throws LuceneIndexException
@@ -149,8 +177,8 @@ public abstract class AbstractLuceneIndexerImpl2<T> extends LuceneBase2
                 {
                     int doc = td.doc();
                     Document document = reader.document(doc);
-                    String id = document.get("ID");
-                    refs.add(id);
+                    String[] ids = document.getValues("ID");
+                    refs.add(ids[ids.length - 1]);
                     if (delete)
                     {
                         reader.deleteDocument(doc);
@@ -183,8 +211,8 @@ public abstract class AbstractLuceneIndexerImpl2<T> extends LuceneBase2
                 {
                     int doc = td.doc();
                     Document document = reader.document(doc);
-                    String id = document.get("ID");
-                    refs.add(id);
+                    String[] ids = document.getValues("ID");
+                    refs.add(ids[ids.length - 1]);
                     if (delete)
                     {
                         reader.deleteDocument(doc);
@@ -220,8 +248,8 @@ public abstract class AbstractLuceneIndexerImpl2<T> extends LuceneBase2
                 {
                     int doc = td.doc();
                     Document document = reader.document(doc);
-                    String id = document.get("ID");
-                    refs.add(id);
+                    String[] ids = document.getValues("ID");
+                    refs.add(ids[ids.length - 1]);
                     if (delete)
                     {
                         reader.deleteDocument(doc);
@@ -351,6 +379,7 @@ public abstract class AbstractLuceneIndexerImpl2<T> extends LuceneBase2
 
     /**
      * Commit this index
+     * @throws LuceneIndexException 
      */
     public void commit() throws LuceneIndexException
     {
@@ -411,7 +440,8 @@ public abstract class AbstractLuceneIndexerImpl2<T> extends LuceneBase2
      * Prepare to commit At the moment this makes sure we have all the locks TODO: This is not doing proper
      * serialisation against the index as would a data base transaction.
      * 
-     * @return
+     * @return the tx state
+     * @throws LuceneIndexException 
      */
     public int prepare() throws LuceneIndexException
     {
@@ -459,7 +489,7 @@ public abstract class AbstractLuceneIndexerImpl2<T> extends LuceneBase2
     /**
      * Has this index been modified?
      * 
-     * @return
+     * @return true if modified
      */
     public boolean isModified()
     {
@@ -468,6 +498,7 @@ public abstract class AbstractLuceneIndexerImpl2<T> extends LuceneBase2
 
     /**
      * Roll back the index changes (this just means they are never added)
+     * @throws LuceneIndexException 
      */
     public void rollback() throws LuceneIndexException
     {
@@ -530,7 +561,7 @@ public abstract class AbstractLuceneIndexerImpl2<T> extends LuceneBase2
     protected abstract void doRollBack() throws IOException;
 
     protected abstract void doSetRollbackOnly() throws IOException;
-    
+
     protected abstract List<Document> createDocuments(String stringNodeRef, boolean isNew, boolean indexAllProperties,
             boolean includeDirectoryDocuments);
 
@@ -631,7 +662,7 @@ public abstract class AbstractLuceneIndexerImpl2<T> extends LuceneBase2
         addCommand(new Command<T>(ref, Action.DELETE));
     }
 
-    private void addCommand(Command command)
+    private void addCommand(Command<T> command)
     {
         if (commandList.size() > 0)
         {
@@ -693,6 +724,9 @@ public abstract class AbstractLuceneIndexerImpl2<T> extends LuceneBase2
         }
     }
 
+    /**
+     * @throws LuceneIndexException
+     */
     public void flushPending() throws LuceneIndexException
     {
         IndexReader mainReader = null;
@@ -779,6 +813,66 @@ public abstract class AbstractLuceneIndexerImpl2<T> extends LuceneBase2
             catch (IOException e)
             {
 
+            }
+        }
+    }
+
+    /**
+     * Are we deleting leaves only (not meta data)
+     * @return - deleting only nodes.
+     */
+    public boolean getDeleteOnlyNodes()
+    {
+        return indexUpdateStatus == IndexUpdateStatus.ASYNCHRONOUS;
+    }
+
+    /**
+     * Get the deletions
+     * @return - the ids to delete
+     */
+    public Set<String> getDeletions()
+    {
+        return Collections.unmodifiableSet(deletions);
+    }
+
+    /**
+     * Delete all entries from the index.
+     *
+     */
+    public void deleteAll()
+    {
+        IndexReader mainReader = null;
+        try
+        {
+            mainReader = getReader();
+            for (int doc = 0; doc < mainReader.maxDoc(); doc++)
+            {
+                if (!mainReader.isDeleted(doc))
+                {
+                    Document document = mainReader.document(doc);
+                    String[] ids = document.getValues("ID");
+                    deletions.add(ids[ids.length - 1]);
+                }
+            }
+
+        }
+        catch (IOException e)
+        {
+            // If anything goes wrong we try and do a roll back
+            throw new LuceneIndexException("Failed to delete all entries from the index", e);
+        }
+        finally
+        {
+            if (mainReader != null)
+            {
+                try
+                {
+                    mainReader.close();
+                }
+                catch (IOException e)
+                {
+                    throw new LuceneIndexException("Filed to close main reader", e);
+                }
             }
         }
     }

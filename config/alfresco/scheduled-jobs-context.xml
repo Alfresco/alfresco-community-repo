@@ -135,7 +135,7 @@
 
     <bean id="indexBackupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">
-            <value>org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcherFactory2$LuceneIndexBackupJob</value>
+            <value>org.alfresco.repo.search.impl.lucene.AbstractLuceneIndexerAndSearcherFactory$LuceneIndexBackupJob</value>
         </property>
         <property name="jobDataAsMap">
             <map>

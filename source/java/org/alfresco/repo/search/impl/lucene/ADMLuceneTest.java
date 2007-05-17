@@ -95,7 +95,7 @@ import org.springframework.context.ApplicationContext;
  * @author andyh
  */
 @SuppressWarnings("unused")
-public class LuceneTest2 extends TestCase
+public class ADMLuceneTest extends TestCase
 {
 
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/lucenetest";
@@ -104,7 +104,7 @@ public class LuceneTest2 extends TestCase
 
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
-    private static Log logger = LogFactory.getLog(LuceneTest2.class);
+    private static Log logger = LogFactory.getLog(ADMLuceneTest.class);
 
     QName createdDate = QName.createQName(TEST_NAMESPACE, "createdDate");
 
@@ -184,7 +184,10 @@ public class LuceneTest2 extends TestCase
 
     private NamespaceDAOImpl namespaceDao;
 
-    public LuceneTest2()
+    /**
+     * 
+     */
+    public ADMLuceneTest()
     {
         super();
     }
@@ -198,8 +201,8 @@ public class LuceneTest2 extends TestCase
         contentService = (ContentService) ctx.getBean("contentService");
         queryRegisterComponent = (QueryRegisterComponent) ctx.getBean("queryRegisterComponent");
         namespacePrefixResolver = (DictionaryNamespaceComponent) ctx.getBean("namespaceService");
-        indexerAndSearcher = (LuceneIndexerAndSearcher) ctx.getBean("luceneIndexerAndSearcherFactory");
-        ((LuceneIndexerAndSearcherFactory2)indexerAndSearcher).setMaxAtomicTransformationTime(1000000);
+        indexerAndSearcher = (LuceneIndexerAndSearcher) ctx.getBean("admLuceneIndexerAndSearcherFactory");
+        ((AbstractLuceneIndexerAndSearcherFactory)indexerAndSearcher).setMaxAtomicTransformationTime(1000000);
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
 
@@ -412,6 +415,9 @@ public class LuceneTest2 extends TestCase
 
     private int orderIntCount = -45764576;
 
+    /**
+     * @return properties
+     */
     public Map<QName, Serializable> getOrderProperties()
     {
         Map<QName, Serializable> testProperties = new HashMap<QName, Serializable>();
@@ -440,11 +446,17 @@ public class LuceneTest2 extends TestCase
         super.tearDown();
     }
 
-    public LuceneTest2(String arg0)
+    /**
+     * @param arg0
+     */
+    public ADMLuceneTest(String arg0)
     {
         super(arg0);
     }
 
+    /**
+     * @throws Exception
+     */
     public void testAuxDataIsPresent() throws Exception
     {
         luceneFTS.pause();
@@ -454,7 +466,7 @@ public class LuceneTest2 extends TestCase
         testTX.begin();
         runBaseTests();
         
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -468,7 +480,7 @@ public class LuceneTest2 extends TestCase
         testTX = transactionService.getUserTransaction();
         testTX.begin();
         
-        searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -477,11 +489,17 @@ public class LuceneTest2 extends TestCase
         results.close();
     }
     
+    /**
+     * @throws Exception
+     */
     public void testFirst() throws Exception
     {
         testReadAgainstDelta();
     }
 
+    /**
+     * @throws Exception
+     */
     public void test0() throws Exception
     {
         luceneFTS.pause();
@@ -491,6 +509,9 @@ public class LuceneTest2 extends TestCase
     }
 
     
+    /**
+     * @throws Exception
+     */
     public void testDeleteSecondaryAssocToContainer() throws Exception
     {
         luceneFTS.pause();
@@ -506,7 +527,7 @@ public class LuceneTest2 extends TestCase
         testTX = transactionService.getUserTransaction();
         testTX.begin();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -740,6 +761,9 @@ public class LuceneTest2 extends TestCase
     }
 
     
+    /**
+     * @throws Exception
+     */
     public void testDeleteSecondaryAssocToLeaf() throws Exception
     {
         luceneFTS.pause();
@@ -755,7 +779,7 @@ public class LuceneTest2 extends TestCase
         testTX = transactionService.getUserTransaction();
         testTX.begin();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -979,6 +1003,9 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
+    /**
+     * @throws Exception
+     */
     public void testDeleteIssue() throws Exception
     {
 
@@ -990,7 +1017,7 @@ public class LuceneTest2 extends TestCase
                 .createQName("{namespace}testFind"), testSuperType);
         testTX.commit();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -1028,6 +1055,9 @@ public class LuceneTest2 extends TestCase
         tx3.commit();
     }
 
+    /**
+     * @throws Exception
+     */
     public void testMTDeleteIssue() throws Exception
     {
         luceneFTS.pause();
@@ -1041,7 +1071,7 @@ public class LuceneTest2 extends TestCase
         testTX = transactionService.getUserTransaction();
         testTX.begin();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -1144,6 +1174,9 @@ public class LuceneTest2 extends TestCase
 
     }
 
+    /**
+     * @throws Exception
+     */
     public void testDeltaIssue() throws Exception
     {
         luceneFTS.pause();
@@ -1274,13 +1307,16 @@ public class LuceneTest2 extends TestCase
 
     }
 
+    /**
+     * @throws Exception
+     */
     public void testRepeatPerformance() throws Exception
     {
         luceneFTS.pause();
         buildBaseIndex();
         runBaseTests();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -1317,13 +1353,16 @@ public class LuceneTest2 extends TestCase
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public void testSort() throws Exception
     {
         luceneFTS.pause();
         buildBaseIndex();
         runBaseTests();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -1666,6 +1705,9 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
+    /**
+     * @throws Exception
+     */
     public void test1() throws Exception
     {
         luceneFTS.pause();
@@ -1674,6 +1716,9 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
+    /**
+     * @throws Exception
+     */
     public void test2() throws Exception
     {
         luceneFTS.pause();
@@ -1682,6 +1727,9 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
+    /**
+     * @throws Exception
+     */
     public void test3() throws Exception
     {
         luceneFTS.pause();
@@ -1690,12 +1738,15 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
+    /**
+     * @throws Exception
+     */
     public void test4() throws Exception
     {
         luceneFTS.pause();
         buildBaseIndex();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setDictionaryService(dictionaryService);
 
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene",
@@ -1704,6 +1755,9 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
+    /**
+     * @throws Exception
+     */
     public void test5() throws Exception
     {
         luceneFTS.pause();
@@ -1712,6 +1766,9 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
+    /**
+     * @throws Exception
+     */
     public void test6() throws Exception
     {
         luceneFTS.pause();
@@ -1720,16 +1777,19 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
+    /**
+     * @throws Exception
+     */
     public void testNoOp() throws Exception
     {
         luceneFTS.pause();
-        LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis() + "_1", indexerAndSearcher);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
-        indexer.setLuceneFullTextSearchIndexer(luceneFTS);
+        indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
         indexer.prepare();
@@ -1739,6 +1799,7 @@ public class LuceneTest2 extends TestCase
 
     /**
      * Test basic index and search
+     * @throws Exception 
      * 
      * @throws InterruptedException
      */
@@ -1746,14 +1807,14 @@ public class LuceneTest2 extends TestCase
     public void testStandAloneIndexerCommit() throws Exception
     {
         luceneFTS.pause();
-        LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis() + "_1", indexerAndSearcher);
         indexer.setMaxAtomicTransformationTime(1000000);
 
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
-        indexer.setLuceneFullTextSearchIndexer(luceneFTS);
+        indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
         // //indexer.clearIndex();
@@ -1770,7 +1831,7 @@ public class LuceneTest2 extends TestCase
         indexer.prepare();
         indexer.commit();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -1887,12 +1948,15 @@ public class LuceneTest2 extends TestCase
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public void testStandAlonePathIndexer() throws Exception
     {
         luceneFTS.pause();
         buildBaseIndex();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
 
@@ -1939,13 +2003,13 @@ public class LuceneTest2 extends TestCase
 
     private void buildBaseIndex()
     {
-        LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis() + "_" + (new Random().nextInt()), indexerAndSearcher);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
-        indexer.setLuceneFullTextSearchIndexer(luceneFTS);
+        indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
         // indexer.clearIndex();
         indexer.createNode(new ChildAssociationRef(null, null, null, rootNodeRef));
@@ -1975,6 +2039,9 @@ public class LuceneTest2 extends TestCase
         indexer.commit();
     }
 
+    /**
+     * @throws Exception
+     */
     public void testAllPathSearch() throws Exception
     {
         luceneFTS.pause();
@@ -1986,7 +2053,7 @@ public class LuceneTest2 extends TestCase
 
     private void runBaseTests()
     {
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -3133,12 +3200,15 @@ public class LuceneTest2 extends TestCase
 
     }
 
+    /**
+     * @throws Exception
+     */
     public void testPathSearch() throws Exception
     {
         luceneFTS.pause();
         buildBaseIndex();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -3185,12 +3255,15 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
+    /**
+     * @throws Exception
+     */
     public void testXPathSearch() throws Exception
     {
         luceneFTS.pause();
         buildBaseIndex();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -3212,11 +3285,14 @@ public class LuceneTest2 extends TestCase
         results.close();
     }
 
+    /**
+     * @throws Exception
+     */
     public void testMissingIndex() throws Exception
     {
         luceneFTS.pause();
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "_missing_");
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(storeRef, indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(storeRef, indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -3230,6 +3306,9 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
+    /**
+     * @throws Exception
+     */
     public void testUpdateIndex() throws Exception
     {
         luceneFTS.pause();
@@ -3237,13 +3316,13 @@ public class LuceneTest2 extends TestCase
 
         runBaseTests();
 
-        LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
-        indexer.setLuceneFullTextSearchIndexer(luceneFTS);
+        indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
         indexer.updateNode(rootNodeRef);
@@ -3268,6 +3347,9 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
+    /**
+     * @throws Exception
+     */
     public void testDeleteLeaf() throws Exception
     {
         testTX.commit();
@@ -3292,7 +3374,7 @@ public class LuceneTest2 extends TestCase
         testTX = transactionService.getUserTransaction();
         testTX.begin();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -3507,6 +3589,9 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
+    /**
+     * @throws Exception
+     */
     public void testAddEscapedChild() throws Exception
     {
         String  COMPLEX_LOCAL_NAME = "\u0020\u0060\u00ac\u00a6\u0021\"\u00a3\u0024\u0025\u005e\u0026\u002a\u0028\u0029\u002d\u005f\u003d\u002b\t\n\\\u0000\u005b\u005d\u007b\u007d\u003b\u0027\u0023\u003a\u0040\u007e\u002c\u002e\u002f\u003c\u003e\u003f\\u007c\u005f\u0078\u0054\u0036\u0035\u0041\u005f";
@@ -3516,13 +3601,13 @@ public class LuceneTest2 extends TestCase
         buildBaseIndex();
         runBaseTests();
 
-        LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
-        indexer.setLuceneFullTextSearchIndexer(luceneFTS);
+        indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
         ChildAssociationRef car = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName
@@ -3531,7 +3616,7 @@ public class LuceneTest2 extends TestCase
 
         indexer.commit();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -3541,6 +3626,9 @@ public class LuceneTest2 extends TestCase
         results.close();
     }
 
+    /**
+     * @throws Exception
+     */
     public void testNumericInPath() throws Exception
     {
         String COMPLEX_LOCAL_NAME = "Woof12";
@@ -3549,13 +3637,13 @@ public class LuceneTest2 extends TestCase
         buildBaseIndex();
         runBaseTests();
 
-        LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
-        indexer.setLuceneFullTextSearchIndexer(luceneFTS);
+        indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
         ChildAssociationRef car = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName
@@ -3564,7 +3652,7 @@ public class LuceneTest2 extends TestCase
 
         indexer.commit();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -3574,6 +3662,9 @@ public class LuceneTest2 extends TestCase
         results.close();
     }
 
+    /**
+     * @throws Exception
+     */
     public void testDeleteContainer() throws Exception
     {
         testTX.commit();
@@ -3584,12 +3675,12 @@ public class LuceneTest2 extends TestCase
         runBaseTests();
         testTX.commit();
 
-        LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
-        indexer.setLuceneFullTextSearchIndexer(luceneFTS);
+        indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
         testTX = transactionService.getUserTransaction();
@@ -3604,7 +3695,7 @@ public class LuceneTest2 extends TestCase
         testTX = transactionService.getUserTransaction();
         testTX.begin();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -3822,19 +3913,22 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
+    /**
+     * @throws Exception
+     */
     public void testDeleteAndAddReference() throws Exception
     {
         luceneFTS.pause();
         buildBaseIndex();
         runBaseTests();
 
-        LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
-        indexer.setLuceneFullTextSearchIndexer(luceneFTS);
+        indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
         nodeService.removeChild(n2, n13);
@@ -3843,7 +3937,7 @@ public class LuceneTest2 extends TestCase
 
         indexer.commit();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
@@ -4072,13 +4166,13 @@ public class LuceneTest2 extends TestCase
         assertEquals(1, results.length());
         results.close();
 
-        indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(),
+        indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(),
                 indexerAndSearcher);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
-        indexer.setLuceneFullTextSearchIndexer(luceneFTS);
+        indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
         nodeService.addChild(n2, n13, ASSOC_TYPE_QNAME, QName.createQName("{namespace}link"));
@@ -4091,13 +4185,16 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
+    /**
+     * @throws Exception
+     */
     public void testRenameReference() throws Exception
     {
         luceneFTS.pause();
         buildBaseIndex();
         runBaseTests();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -4117,13 +4214,13 @@ public class LuceneTest2 extends TestCase
         assertEquals(0, results.length());
         results.close();
 
-        LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
-        indexer.setLuceneFullTextSearchIndexer(luceneFTS);
+        indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
         nodeService.removeChild(n2, n13);
@@ -4137,7 +4234,7 @@ public class LuceneTest2 extends TestCase
 
         runBaseTests();
 
-        searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setDictionaryService(dictionaryService);
 
@@ -4156,13 +4253,16 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
+    /**
+     * @throws Exception
+     */
     public void testDelayIndex() throws Exception
     {
         luceneFTS.pause();
         buildBaseIndex();
         runBaseTests();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
@@ -4187,19 +4287,19 @@ public class LuceneTest2 extends TestCase
 
         // Do index
 
-        LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis() + "_" + (new Random().nextInt()), indexerAndSearcher);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
-        indexer.setLuceneFullTextSearchIndexer(luceneFTS);
+        indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
         indexer.updateFullTextSearch(1000);
         indexer.prepare();
         indexer.commit();
 
-        searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setDictionaryService(dictionaryService);
 
@@ -4225,13 +4325,16 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
+    /**
+     * @throws Exception
+     */
     public void testWaitForIndex() throws Exception
     {
         luceneFTS.pause();
         buildBaseIndex();
         runBaseTests();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -4256,7 +4359,7 @@ public class LuceneTest2 extends TestCase
 
         // Do index
 
-        searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -4267,13 +4370,13 @@ public class LuceneTest2 extends TestCase
         assertEquals(1, results.length());
         results.close();
 
-        LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis() + "_" + (new Random().nextInt()), indexerAndSearcher);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
-        indexer.setLuceneFullTextSearchIndexer(luceneFTS);
+        indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
         indexer.updateFullTextSearch(1000);
         indexer.prepare();
@@ -4307,13 +4410,16 @@ public class LuceneTest2 extends TestCase
         return LuceneQueryParser.escape(qname.toString());
     }
 
+    /**
+     * @throws Exception
+     */
     public void testForKev() throws Exception
     {
         luceneFTS.pause();
         buildBaseIndex();
         runBaseTests();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
@@ -4338,6 +4444,9 @@ public class LuceneTest2 extends TestCase
         luceneFTS.resume();
     }
 
+    /**
+     * @throws Exception
+     */
     public void testIssueAR47() throws Exception
     {
         // This bug arose from repeated deletes and adds creating empty index
@@ -4357,7 +4466,7 @@ public class LuceneTest2 extends TestCase
                 .createQName("{namespace}testFind"), testSuperType);
         tx.commit();
 
-        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
@@ -4389,6 +4498,9 @@ public class LuceneTest2 extends TestCase
         tx3.commit();
     }
 
+    /**
+     * @throws Exception
+     */
     public void testReadAgainstDelta() throws Exception
     {
         testTX.commit();
@@ -4641,13 +4753,13 @@ public class LuceneTest2 extends TestCase
 
     private void runPerformanceTest(double time, boolean clear)
     {
-        LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis() + "_" + (new Random().nextInt()), indexerAndSearcher);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
-        indexer.setLuceneFullTextSearchIndexer(luceneFTS);
+        indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
         if (clear)
         {
@@ -4692,9 +4804,13 @@ public class LuceneTest2 extends TestCase
         return nspr;
     }
 
+    /**
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception
     {
-        LuceneTest2 test = new LuceneTest2();
+        ADMLuceneTest test = new ADMLuceneTest();
         test.setUp();
         // test.testForKev();
         // test.testDeleteContainer();
@@ -4715,6 +4831,10 @@ public class LuceneTest2 extends TestCase
         // test.dictionaryService.getType(test.nodeService.getType(test.rootNodeRef)).getDefaultAspects();
     }
     
+    /**
+     * @author andyh
+     *
+     */
     public static class UnknownDataType implements Serializable
     {
 

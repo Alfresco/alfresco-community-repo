@@ -24,13 +24,25 @@
  */
 package org.alfresco.repo.search.impl.lucene;
 
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.NamespacePrefixResolver;
+import java.util.Set;
 
-public interface LuceneSearcher2 extends SearchService
-{
-   public boolean indexExists();
-   public void setNodeService(NodeService nodeService);
-   public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver);
+import org.alfresco.repo.search.BackgroundIndexerAware;
+import org.alfresco.repo.search.Indexer;
+import org.alfresco.repo.search.TransactionSynchronisationAwareIndexer;
+import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
+import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+
+/**
+ * @author Andy Hind
+ */
+public interface LuceneIndexer extends Indexer, TransactionSynchronisationAwareIndexer
+{ 
+    public String getDeltaId();
+    public  void flushPending() throws LuceneIndexException;
+    public Set<String> getDeletions();
+    public boolean getDeleteOnlyNodes();   
+    public <R> R doWithWriteLock(IndexInfo.LockWork <R> lockWork);
 }

@@ -28,8 +28,16 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
+/**
+ * Job to run the FTS indexer
+ * @author andyh
+ *
+ */
 public class FTSIndexerJob implements Job
 {
+    /**
+     * 
+     */
     public FTSIndexerJob()
     {
         super();

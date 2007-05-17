@@ -834,15 +834,41 @@
             <list>
                 <value>avmServiceWriteTxnAdvisor</value>
                 <value>avmServiceReadTxnAdvisor</value>
+				<value>avmSnapShotTriggeredIndexingMethodInterceptor</value>
             </list>
         </property>
     </bean>
+	
+	 <bean id="indexingAVMService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.service.cmr.avm.AVMService</value>
+            </list>
+        </property>
+        <property name="targetName">
+            <value>avmService</value>
+        </property>
+        <property name="interceptorNames">
+            <list>
+				<value>avmSnapShotTriggeredIndexingMethodInterceptor</value>
+            </list>
+        </property>
+    </bean>
+	
+	<bean id="avmSnapShotTriggeredIndexingMethodInterceptor" class="org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor">
+		<property name="avmService">
+			<ref bean="avmService" />
+		</property>
+		<property name="indexerAndSearcher">
+			<ref bean="avmLuceneIndexerAndSearcherFactory" />
+		</property>
+	</bean>
 	
     <!-- The AVMSyncService -->
     
     <bean id="avmSyncService" class="org.alfresco.repo.avm.AVMSyncServiceImpl">
         <property name="avmService">
-            <ref bean="avmService"/>
+            <ref bean="indexingAVMService"/>
         </property>
         <property name="avmRepository">
             <ref bean="avmRepository"/>
@@ -945,7 +971,7 @@
 	
 	 <bean id="deploymentService" class="org.alfresco.repo.deploy.DeploymentServiceImpl">
         <property name="avmService">
-            <ref bean="avmService"/>
+            <ref bean="indexingAVMService"/>
         </property>
 	 </bean>
 

@@ -29,47 +29,120 @@ import java.util.BitSet;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.index.TermPositions;
+import org.apache.lucene.search.Hits;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Searcher;
+import org.apache.lucene.search.TermQuery;
 
-public class FilterIndexReaderByNodeRefs extends FilterIndexReader
+
+/**
+ * An index reader that filters documents from another.
+ * 
+ * @author andyh
+ *
+ */        
+public class FilterIndexReaderByStringId extends FilterIndexReader
 {
-    BitSet deletedDocuments;
+    private static Log s_logger = LogFactory.getLog(FilterIndexReaderByStringId.class);
 
-    public FilterIndexReaderByNodeRefs(IndexReader reader, Set<NodeRef> deletions)
+    BitSet deletedDocuments;
+    
+    private String id;
+
+    /**
+     * Apply the filter
+     * 
+     * @param id
+     * @param reader
+     * @param deletions
+     * @param deleteNodesOnly
+     */
+    public FilterIndexReaderByStringId(String id, IndexReader reader, Set<String> deletions, boolean deleteNodesOnly)
     {
         super(reader);
+        this.id = id;
+        
         deletedDocuments = new BitSet(reader.maxDoc());
+
+        if (s_logger.isDebugEnabled())
+        {
+            s_logger.debug("Applying deletions FOR "+id +" (the index ito which these are applied is the previous one ...)");
+        }
 
         try
         {
-            for (NodeRef nodeRef : deletions)
+            if (!deleteNodesOnly)
             {
-                TermDocs td = reader.termDocs(new Term("ID", nodeRef.toString()));
-                while (td.next())
+                for (String stringRef : deletions)
                 {
-                    deletedDocuments.set(td.doc(), true);
+                    TermDocs td = reader.termDocs(new Term("ID", stringRef));
+                    while (td.next())
+                    {
+                        deletedDocuments.set(td.doc(), true);
+                    }
+                }
+            }
+            else
+            {
+
+                Searcher searcher = new IndexSearcher(reader);
+                for (String stringRef : deletions)
+                {
+                    TermQuery query = new TermQuery(new Term("ID", stringRef));
+                    Hits hits = searcher.search(query);
+                    if (hits.length() > 0)
+                    {
+                        for (int i = 0; i < hits.length(); i++)
+                        {
+                            Document doc = hits.doc(i);
+                            if (doc.getField("ISCONTAINER") == null)
+                            {
+                                deletedDocuments.set(hits.id(i), true);
+                                // There should only be one thing to delete
+                                // break;
+                            }
+                        }
+                    }
+
                 }
             }
         }
         catch (IOException e)
         {
+        	s_logger.error("Error initialising "+id);
             throw new AlfrescoRuntimeException("Failed to construct filtering index reader", e);
         }
     }
 
+    /**
+     * Filter implementation
+     * 
+     * @author andyh
+     *
+     */
     public static class FilterTermDocs implements TermDocs
     {
         BitSet deletedDocuments;
-        
-        protected TermDocs in;
 
-        public FilterTermDocs(TermDocs in, BitSet deletedDocuments)
+        protected TermDocs in;
+        
+        String id;
+
+        /**
+         * @param id
+         * @param in
+         * @param deletedDocuments
+         */
+        public FilterTermDocs(String id, TermDocs in, BitSet deletedDocuments)
         {
             this.in = in;
             this.deletedDocuments = deletedDocuments;
@@ -95,21 +168,29 @@ public class FilterIndexReaderByNodeRefs extends FilterIndexReader
 
         public int freq()
         {
-            // The frequency is valid in the base implementation 
+            // The frequency is valid in the base implementation
             return in.freq();
         }
 
         public boolean next() throws IOException
         {
-            while(in.next())
-            {
-                if(!deletedDocuments.get(in.doc()))
+        	try
+        	{
+                while (in.next())
                 {
-                    // Not masked
-                    return true;
+                    if (!deletedDocuments.get(in.doc()))
+                    {
+                        // Not masked
+                        return true;
+                    }
                 }
-            }
-            return false;
+                return false;
+        	}
+        	catch(IOException ioe)
+        	{
+        		s_logger.error("Error reading docs for "+id);
+        		throw ioe;
+        	}
         }
 
         public int read(int[] docs, int[] freqs) throws IOException
@@ -117,56 +198,56 @@ public class FilterIndexReaderByNodeRefs extends FilterIndexReader
             int[] innerDocs = new int[docs.length];
             int[] innerFreq = new int[docs.length];
             int count = in.read(innerDocs, innerFreq);
-            
+
             // Is the stream exhausted
             if (count == 0)
             {
                 return 0;
             }
-            
-            if(allDeleted(innerDocs, count))
+
+            if (allDeleted(innerDocs, count))
             {
                 // Did not find anything - try again
                 return read(docs, freqs);
             }
-            
+
             // Add non deleted
-            
+
             int insertPosition = 0;
-            for(int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
-                if(!deletedDocuments.get(innerDocs[i]))
+                if (!deletedDocuments.get(innerDocs[i]))
                 {
                     docs[insertPosition] = innerDocs[i];
                     freqs[insertPosition] = innerFreq[i];
                     insertPosition++;
                 }
             }
-            
+
             return insertPosition;
         }
 
-        private boolean  allDeleted(int[] docs, int fillSize)
+        private boolean allDeleted(int[] docs, int fillSize)
         {
-            for(int i = 0; i < fillSize; i++)
+            for (int i = 0; i < fillSize; i++)
             {
-                if(!deletedDocuments.get(docs[i]))
+                if (!deletedDocuments.get(docs[i]))
                 {
                     return false;
                 }
             }
             return true;
         }
-        
+
         public boolean skipTo(int i) throws IOException
         {
             boolean result = in.skipTo(i);
-            if(result == false)
+            if (result == false)
             {
                 return false;
             }
-            
-            if(deletedDocuments.get(in.doc()))
+
+            if (deletedDocuments.get(in.doc()))
             {
                 return skipTo(i);
             }
@@ -187,9 +268,14 @@ public class FilterIndexReaderByNodeRefs extends FilterIndexReader
     public static class FilterTermPositions extends FilterTermDocs implements TermPositions
     {
 
-        public FilterTermPositions(TermPositions in, BitSet deletedDocuements)
+        /**
+         * @param id
+         * @param in
+         * @param deletedDocuements
+         */
+        public FilterTermPositions(String id, TermPositions in, BitSet deletedDocuements)
         {
-            super(in, deletedDocuements);
+            super(id, in, deletedDocuements);
         }
 
         public int nextPosition() throws IOException
@@ -207,12 +293,12 @@ public class FilterIndexReaderByNodeRefs extends FilterIndexReader
     @Override
     public TermDocs termDocs() throws IOException
     {
-        return new FilterTermDocs(super.termDocs(), deletedDocuments);
+        return new FilterTermDocs(id, super.termDocs(), deletedDocuments);
     }
 
     @Override
     public TermPositions termPositions() throws IOException
     {
-        return new FilterTermPositions(super.termPositions(), deletedDocuments);
+        return new FilterTermPositions(id, super.termPositions(), deletedDocuments);
     }
 }

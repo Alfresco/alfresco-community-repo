@@ -26,14 +26,27 @@ package org.alfresco.repo.search.impl.lucene.analysis;
 
 import junit.framework.TestCase;
 
+/**
+ * Tests for string encoding
+ * @author andyh
+ *
+ */
 public class NumericEncodingTest extends TestCase
 {
 
+    /**
+     * 
+     *
+     */
     public NumericEncodingTest()
     {
         super();
     }
 
+    /**
+     * 
+     * @param arg0
+     */
     public NumericEncodingTest(String arg0)
     {
         super(arg0);
@@ -126,7 +139,7 @@ public class NumericEncodingTest extends TestCase
         }
     }
 
-    /*
+    /**
      * Sample test for int
      */
 
@@ -141,7 +154,7 @@ public class NumericEncodingTest extends TestCase
         assertEquals("ffffffff", NumericEncoder.encode(Integer.MAX_VALUE));
     }
 
-    /*
+    /**
      * Sample test for long
      */
 
@@ -154,9 +167,17 @@ public class NumericEncodingTest extends TestCase
         assertEquals("8000000000000001", NumericEncoder.encode(1L));
         assertEquals("fffffffffffffffe", NumericEncoder.encode(Long.MAX_VALUE - 1));
         assertEquals("ffffffffffffffff", NumericEncoder.encode(Long.MAX_VALUE));      
+        
+        assertEquals(NumericEncoder.decodeLong(NumericEncoder.encode(Long.MIN_VALUE)), Long.MIN_VALUE);
+        assertEquals(NumericEncoder.decodeLong(NumericEncoder.encode(Long.MIN_VALUE + 1)),Long.MIN_VALUE + 1);
+        assertEquals(NumericEncoder.decodeLong(NumericEncoder.encode(-1L)), -1L);
+        assertEquals(NumericEncoder.decodeLong(NumericEncoder.encode(0L)), 0L);
+        assertEquals(NumericEncoder.decodeLong(NumericEncoder.encode(1L)), 1L);
+        assertEquals(NumericEncoder.decodeLong(NumericEncoder.encode(Long.MAX_VALUE - 1)),Long.MAX_VALUE - 1);
+        assertEquals(NumericEncoder.decodeLong(NumericEncoder.encode(Long.MAX_VALUE)), Long.MAX_VALUE);
     }
 
-    /*
+    /**
      * Sample test for float
      */
 
@@ -174,7 +195,7 @@ public class NumericEncodingTest extends TestCase
 
     }
 
-    /*
+    /**
      * Sample test for double
      */
 

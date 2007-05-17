@@ -83,6 +83,7 @@
                <#else>
                   <a href="${scripturl("?f=${filter}&p=${path}/${d.name}")}"><img class="spaceIconImage" alt="" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border=0></a>
                </#if>
+               <div style="display:none"><img class="spaceIconImage64" alt="" width="64" height="64" src="${url.context}${d.icon64}"></div>
             </div>
             <div class="spaceItem">
                ${d.name?html}

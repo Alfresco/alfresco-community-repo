@@ -17,6 +17,7 @@ var MyDocs = {
       var details = $$('#docPanel .docDetail');
       var icons = $$('#docPanel .docIcon');
       var imgs = $$('#docPanel .docIconImage');
+      var imgs64 = $$('#docPanel .docIconImage64');
       var resources = $$('#docPanel .docResource');
       var fxItem = new Fx.Elements(items, {wait: false, duration: 300, transition: Fx.Transitions.linear});
       var fxDetail = new Fx.Elements(details, {wait: false, duration: 300, transition: Fx.Transitions.linear});
@@ -82,11 +83,16 @@ var MyDocs = {
          detail.setStyle('display', 'block');
          detail.setStyle('height', detail.defHeight);
          info.setStyle('opacity', 0);
+         // NOTE: special check for images without special 64x64 pixel version
+         if (imgs64[i].src.lastIndexOf("_default.png") != -1)
+         {
+            img.src = img.src.replace(new RegExp("/filetypes/.*\.png$"), "/filetypes/_default.png");
+         }
          img.defSrc = img.src;
-         img.bigSrc = img.src.replace(/filetypes\//, 'filetypes64/').replace(/.gif$/, '.png');
+         img.bigSrc = imgs64[i].src;
          resource.defHeight = 1;
          resource.setStyle('height', resource.defHeight);
-
+         
          // register 'mouseenter' (subclassed mouseover) event for each doc
          doc.addEvent('mouseenter', function(e)
          {

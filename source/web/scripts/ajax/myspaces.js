@@ -17,6 +17,7 @@ var MySpaces = {
       var details = $$('#spacePanel .spaceDetail');
       var icons = $$('#spacePanel .spaceIcon');
       var imgs = $$('#spacePanel .spaceIconImage');
+      var imgs64 = $$('#spacePanel .spaceIconImage64');
       var fxItem = new Fx.Elements(items, {wait: false, duration: 300, transition: Fx.Transitions.linear});
       var fxDetail = new Fx.Elements(details, {wait: false, duration: 300, transition: Fx.Transitions.linear});
       var fxInfo = new Fx.Elements(infos, {wait: false, duration: 300, transition: Fx.Transitions.linear});
@@ -51,16 +52,14 @@ var MySpaces = {
          detail.setStyle('display', 'block');
          detail.setStyle('height', detail.defHeight);
          info.setStyle('opacity', 0);
+         // NOTE: special check for images without special 64x64 pixel version
+         if (imgs64[i].src.lastIndexOf("_default.png") != -1)
+         {
+            img.src = img.src.replace(new RegExp("/filetypes/.*\.png$"), "/filetypes/_default.png");
+         }
          img.defSrc = img.src;
-         if (img.src.indexOf("/filetypes/") != -1)
-         {
-            img.bigSrc = img.src.replace(/filetypes\//, 'filetypes64/');
-         }
-         else
-         {
-            img.bigSrc = img.src.replace(/16.png$/, '64.png');
-         }
-
+         img.bigSrc = imgs64[i].src;
+         
          // register 'mouseenter' (subclassed mouseover) event for each space
          space.addEvent('mouseenter', function(e)
          {

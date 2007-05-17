@@ -207,4 +207,40 @@ public class AttributeServiceTransportService implements
         fAuthService.validate(ticket);
         fService.setAttribute(keys, index, value);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AttributeServiceTransport#exists(java.lang.String, java.util.List)
+     */
+    public boolean exists(String ticket, List<String> keys)
+    {
+        fAuthService.validate(ticket);
+        return fService.exists(keys);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AttributeServiceTransport#exists(java.lang.String, java.lang.String)
+     */
+    public boolean exists(String ticket, String path)
+    {
+        fAuthService.validate(ticket);
+        return fService.exists(path);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AttributeServiceTransport#getCount(java.lang.String, java.util.List)
+     */
+    public int getCount(String ticket, List<String> keys)
+    {
+        fAuthService.validate(ticket);
+        return fService.getCount(keys);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AttributeServiceTransport#getCount(java.lang.String, java.lang.String)
+     */
+    public int getCount(String ticket, String path)
+    {
+        fAuthService.validate(ticket);
+        return fService.getCount(path);
+    }
 }

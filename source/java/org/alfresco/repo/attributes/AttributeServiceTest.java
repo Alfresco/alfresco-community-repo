@@ -294,6 +294,9 @@ public class AttributeServiceTest extends TestCase
             list.add(new IntAttributeValue(4));
             fService.setAttribute("", "dummy", list);
             Attribute found = fService.getAttribute("dummy");
+            assertTrue(fService.exists("dummy"));
+            assertFalse(fService.exists("dimmy"));
+            assertEquals(5, fService.getCount("dummy"));
             assertNotNull(found);
             assertEquals(5, found.size());
             Attribute add = new IntAttributeValue(6);
@@ -315,6 +318,7 @@ public class AttributeServiceTest extends TestCase
             list.add(subMap);
             fService.setAttribute("", "map", map);
             assertEquals("donuts", fService.getAttribute("map/list/5/b").getStringValue());
+            assertEquals(3, fService.getCount("map/list/5"));
         }
         catch (Exception e)
         {

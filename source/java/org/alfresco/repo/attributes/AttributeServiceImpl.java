@@ -456,5 +456,73 @@ public class AttributeServiceImpl implements AttributeService
         List<String> keys = parsePath(path);
         setAttribute(keys, index, value);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#exists(java.util.List)
+     */
+    public boolean exists(List<String> keys)
+    {
+        if (keys == null)
+        {
+            throw new AVMBadArgumentException("Null keys list.");
+        }
+        if (keys.size() == 0)
+        {
+            throw new AVMBadArgumentException("Illegal zero length keys list.");
+        }
+        return getAttributeFromPath(keys) != null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#exists(java.lang.String)
+     */
+    public boolean exists(String path)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Null attribute path.");
+        }
+        List<String> keys = parsePath(path);
+        return exists(keys);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#getCount(java.util.List)
+     */
+    public int getCount(List<String> keys)
+    {
+        if (keys == null)
+        {
+            throw new AVMBadArgumentException("Null keys list.");
+        }
+        if (keys.size() == 0)
+        {
+            throw new AVMBadArgumentException("Illegal empty keys list.");
+        }
+        Attribute found = getAttributeFromPath(keys);
+        if (found == null)
+        {
+            throw new AVMNotFoundException("Attribute not found: " + keys);
+        }
+        if (found.getType() != Attribute.Type.LIST &&
+            found.getType() != Attribute.Type.MAP)
+        {
+            throw new AVMWrongTypeException("Not a map or list: " + keys);
+        }
+        return found.size();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#getCount(java.lang.String)
+     */
+    public int getCount(String path)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Null attribute path.");
+        }
+        List<String> keys = parsePath(path);
+        return getCount(keys);
+    }
 }
 

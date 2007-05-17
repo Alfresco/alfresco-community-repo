@@ -236,4 +236,32 @@ public interface AttributeService
      * @return A list of all keys at the specified Attribute location
      */
     public List<String> getKeys(List<String> keys);
+
+    /**
+     * Get the size of a map or list.
+     * @param keys List of attribute path keys.
+     * @return The size of of the list or map.
+     */
+    public int getCount(List<String> keys);
+    
+    /**
+     * Get the size of a map or list.
+     * @param path The path to the map or list.
+     * @return The size of the list or map.
+     */
+    public int getCount(String path);
+    
+    /**
+     * Does an attribute exist.
+     * @param keys List of attribute path keys.
+     * @return Whether the attribute exists.
+     */
+    public boolean exists(List<String> keys);
+ 
+    /**
+     * Does an attribute exist.
+     * @param path The path to the attribute.
+     * @return Whether the attribute exists.
+     */
+    public boolean exists(String path);
 }

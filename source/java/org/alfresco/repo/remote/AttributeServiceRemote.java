@@ -185,4 +185,36 @@ public class AttributeServiceRemote implements AttributeService
     {
         fTransport.setAttribute(fTicketHolder.getTicket(), keys, index, value);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#exists(java.util.List)
+     */
+    public boolean exists(List<String> keys)
+    {
+        return fTransport.exists(fTicketHolder.getTicket(), keys);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#exists(java.lang.String)
+     */
+    public boolean exists(String path)
+    {
+        return fTransport.exists(fTicketHolder.getTicket(), path);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#getCount(java.util.List)
+     */
+    public int getCount(List<String> keys)
+    {
+        return fTransport.getCount(fTicketHolder.getTicket(), keys);    
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#getCount(java.lang.String)
+     */
+    public int getCount(String path)
+    {
+        return fTransport.getCount(fTicketHolder.getTicket(), path);
+    }
 }

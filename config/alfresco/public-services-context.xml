@@ -904,6 +904,8 @@
             	<value>getAttributes</value>
             	<value>query</value>
             	<value>getKeys</value>
+            	<value>exists</value>
+            	<value>getCount</value>
             </list>
         </property>
     </bean>

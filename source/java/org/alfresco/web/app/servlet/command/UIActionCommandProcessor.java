@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.servlet.FacesHelper;
 
 /**
@@ -52,6 +53,8 @@ import org.alfresco.web.app.servlet.FacesHelper;
  */
 public class UIActionCommandProcessor implements ExtCommandProcessor
 {
+   public static final String PARAM_CONTAINER = "container";
+   
    private ServletContext sc = null;
    private String command = null;
    private Map<String, String> args = null;
@@ -91,6 +94,16 @@ public class UIActionCommandProcessor implements ExtCommandProcessor
       properties.put(BaseUIActionCommand.PROP_SERVLETCONTEXT, this.sc);
       properties.put(BaseUIActionCommand.PROP_REQUEST, request);
       properties.put(BaseUIActionCommand.PROP_RESPONSE, response);
+      
+      // if the container parameter is present and equal to "plain" add the 
+      // external container object to the request
+      String container = request.getParameter(PARAM_CONTAINER);
+      if (container != null && container.equalsIgnoreCase("plain"))
+      {
+         request.setAttribute(
+                  AlfrescoNavigationHandler.EXTERNAL_CONTAINER_REQUEST, Boolean.TRUE);
+      }
+      
       Command cmd = CommandFactory.getInstance().createCommand(command);
       if (cmd == null)
       {

@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
@@ -261,6 +262,11 @@ public class ExternalAccessServlet extends BaseServlet
                NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
                navigator.setCurrentNodeId(args[1]);
             }
+            
+            // set the external container request flag so that a plain container gets used
+            fc.getExternalContext().getRequestMap().put(
+                     AlfrescoNavigationHandler.EXTERNAL_CONTAINER_REQUEST, Boolean.TRUE);
+            
             NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
             navigationHandler.handleNavigation(fc, null, outcome + ':' + args[0]);
          }

@@ -60,9 +60,12 @@ public class AlfrescoNavigationHandler extends NavigationHandler
    public final static String WIZARD_PREFIX = "wizard" + OUTCOME_SEPARATOR;
    public final static String CLOSE_DIALOG_OUTCOME = DIALOG_PREFIX + "close";
    public final static String CLOSE_WIZARD_OUTCOME = WIZARD_PREFIX + "close";
+   public final static String EXTERNAL_CONTAINER_REQUEST = "externalContainerRequest";
    
    protected String dialogContainer = null;
    protected String wizardContainer = null;
+   protected String plainDialogContainer = null;
+   protected String plainWizardContainer = null;
    
    private final static Log logger = LogFactory.getLog(AlfrescoNavigationHandler.class);
    private final static String VIEW_STACK = "_alfViewStack";
@@ -365,18 +368,47 @@ public class AlfrescoNavigationHandler extends NavigationHandler
     */
    protected String getDialogContainer(FacesContext context)
    {
-      if (this.dialogContainer == null)
+      String container;
+      
+      // determine which kind of container we need to return, if the
+      // external request flag is set then use the plain container
+      Object obj = context.getExternalContext().getRequestMap().get(EXTERNAL_CONTAINER_REQUEST);
+      
+      if (obj != null && obj instanceof Boolean && ((Boolean)obj).booleanValue())
       {
-         ConfigService configSvc = Application.getConfigService(context);
-         Config globalConfig = configSvc.getGlobalConfig();
-         
-         if (globalConfig != null)
+         if (this.plainDialogContainer == null)
          {
-            this.dialogContainer = globalConfig.getConfigElement("dialog-container").getValue();
+            ConfigService configSvc = Application.getConfigService(context);
+            Config globalConfig = configSvc.getGlobalConfig();
+            
+            if (globalConfig != null)
+            {
+               this.plainDialogContainer = globalConfig.getConfigElement("plain-dialog-container").getValue();
+            }
          }
+         
+         container = this.plainDialogContainer;
+      }
+      else
+      {
+         if (this.dialogContainer == null)
+         {
+            ConfigService configSvc = Application.getConfigService(context);
+            Config globalConfig = configSvc.getGlobalConfig();
+            
+            if (globalConfig != null)
+            {
+               this.dialogContainer = globalConfig.getConfigElement("dialog-container").getValue();
+            }
+         }
+         
+         container = this.dialogContainer;
       }
       
-      return this.dialogContainer;
+      if (logger.isDebugEnabled())
+         logger.debug("Using dialog container: " + container);
+      
+      return container;
    }
    
    /**
@@ -387,18 +419,47 @@ public class AlfrescoNavigationHandler extends NavigationHandler
     */
    protected String getWizardContainer(FacesContext context)
    {
-      if (this.wizardContainer == null)
+      String container;
+      
+      // determine which kind of container we need to return, if the
+      // external request flag is set then use the plain container
+      Object obj = context.getExternalContext().getRequestMap().get(EXTERNAL_CONTAINER_REQUEST);
+      
+      if (obj != null && obj instanceof Boolean && ((Boolean)obj).booleanValue())
       {
-         ConfigService configSvc = Application.getConfigService(context);
-         Config globalConfig = configSvc.getGlobalConfig();
-         
-         if (globalConfig != null)
+         if (this.plainWizardContainer == null)
          {
-            this.wizardContainer = globalConfig.getConfigElement("wizard-container").getValue();
+            ConfigService configSvc = Application.getConfigService(context);
+            Config globalConfig = configSvc.getGlobalConfig();
+            
+            if (globalConfig != null)
+            {
+               this.plainWizardContainer = globalConfig.getConfigElement("plain-wizard-container").getValue();
+            }
          }
+         
+         container = this.plainWizardContainer;
+      }
+      else
+      {
+         if (this.wizardContainer == null)
+         {
+            ConfigService configSvc = Application.getConfigService(context);
+            Config globalConfig = configSvc.getGlobalConfig();
+            
+            if (globalConfig != null)
+            {
+               this.wizardContainer = globalConfig.getConfigElement("wizard-container").getValue();
+            }
+         }
+         
+         container = this.wizardContainer;
       }
       
-      return this.wizardContainer;
+      if (logger.isDebugEnabled())
+         logger.debug("Using wizard container: " + container);
+      
+      return container;
    }
    
    /**

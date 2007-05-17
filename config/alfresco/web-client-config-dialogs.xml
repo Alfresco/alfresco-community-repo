@@ -2,6 +2,7 @@
 
 	<config>
       <dialog-container>/jsp/dialog/container.jsp</dialog-container>
+      <plain-dialog-container>/jsp/dialog/plain-container.jsp</plain-dialog-container>
 
       <dialogs>
       

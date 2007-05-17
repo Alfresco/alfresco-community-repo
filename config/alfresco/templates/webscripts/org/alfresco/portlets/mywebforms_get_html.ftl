@@ -47,7 +47,7 @@
                      <#assign formcount=formcount+1>
                      <div class="formsRow">
                         <img src="${url.context}/images/icons/webform_large.gif" width=32 height=32 border=0>
-                        <a class="webformLink" href="${url.context}/command/ui/createwebcontent?sandbox=${sandbox}&webproject=${wp.id}&form=${form.properties["wca:formname"]}" target="new">${form.properties.title}</a>
+                        <a class="webformLink" href="${url.context}/command/ui/createwebcontent?sandbox=${sandbox}&webproject=${wp.id}&form=${form.properties["wca:formname"]}&container=plain" target="new">${form.properties.title}</a>
                         <#--<span>${form.properties.description}</span>-->
                      </div>
                   </#list>

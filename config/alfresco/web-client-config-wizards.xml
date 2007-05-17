@@ -2,6 +2,7 @@
 
    <config>
       <wizard-container>/jsp/wizard/container.jsp</wizard-container>
+      <plain-wizard-container>/jsp/wizard/plain-container.jsp</plain-wizard-container>
       
       <wizards>
          

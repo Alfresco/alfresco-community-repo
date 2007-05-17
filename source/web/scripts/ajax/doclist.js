@@ -104,7 +104,7 @@ var MyDocs = {
             doc.addClass('docItemSelected');
             // move the item title to the right
             animItem[i] = {
-               'margin-left': [item.getStyle('margin-left').toInt(), 89],
+               'margin-left': [item.getStyle('margin-left').toInt(), 56],
                'font-size': [item.getStyle('font-size').toInt(), 18]
             };
             // fade in the info button
@@ -241,7 +241,7 @@ var MyDocs = {
                      // continue animations that may have been going on before the click
                      // move the item title to the right
                      animItem[j] = {
-                        'margin-left': [otherItem.getStyle('margin-left').toInt(), 89],
+                        'margin-left': [otherItem.getStyle('margin-left').toInt(), 56],
                         'font-size': [otherItem.getStyle('font-size').toInt(), 18]
                      };
                      // fade in the info button
@@ -359,7 +359,7 @@ var MyDocs = {
                // continue animations that may have been going on before the click
                // move the item title to the right
                animItem[i] = {
-                  'margin-left': [item.getStyle('margin-left').toInt(), 89],
+                  'margin-left': [item.getStyle('margin-left').toInt(), 56],
                   'font-size': [item.getStyle('font-size').toInt(), 18]
                };
                // fade in the info button

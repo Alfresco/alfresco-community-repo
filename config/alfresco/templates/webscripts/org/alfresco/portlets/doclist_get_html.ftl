@@ -169,13 +169,11 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 14px;
    color: #515D6B;
-   margin: 0px 0px 0px 24px;
-   padding: 0px 8px 6px 8px;
+   padding: 0px 8px 6px 40px;
 }
 
 .docIcon
 {
-   width: 32px;
    float: left;
    padding-left: 16px;
    padding-top: 4px;
@@ -193,7 +191,7 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
    color: #000000;
    display: none;
    overflow: hidden;
-   padding-left: 48px;
+   padding-left: 16px;
 }
 
 .docItemSelected

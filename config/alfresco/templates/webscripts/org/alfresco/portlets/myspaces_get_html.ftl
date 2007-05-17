@@ -52,7 +52,10 @@
       <img src="${url.context}${home.icon16}" width="16" height="16" alt="" style="vertical-align:-25%;padding-right:6px">${home.name?html}
    </div>
    <div class="spaceActions">
-      <div class="spaceAction spaceActionUpload" title="Upload a new document">Upload</div>
+      <div class="spaceAction spaceActionUpload" title="Upload a new document" onclick="MySpaces.upload(this);">
+         Upload
+         <div class="spaceUploadPanel"><input type="file" value=""></div>
+      </div>
       <div class="spaceAction spaceActionCreateSpace" title="Create a new Space">Create Space</div>
    </div>
    <div style="text-align: center;">
@@ -195,13 +198,11 @@ a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 14px;
    color: #515D6B;
-   margin: 0px 0px 0px 24px;
-   padding: 0px 8px 6px 8px;
+   padding: 0px 8px 6px 40px;
 }
 
 .spaceIcon
 {
-   width: 32px;
    float: left;
    padding-left: 16px;
    padding-top: 4px;
@@ -219,7 +220,7 @@ a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited
    color: #000000;
    display: none;
    overflow: hidden;
-   padding-left: 48px;
+   padding-left: 16px;
 }
 
 .spaceItemSelected
@@ -288,6 +289,16 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
 .spaceActionCreateSpace
 {
    background-image: url(${url.context}/images/icons/doclist_action_createspace.png);
+}
+
+.spaceUploadPanel
+{
+   position: absolute;
+   border: 1px solid #CCD4DB;
+   background-color: #EEF7FB;
+   width: 24em;
+   height: 6em;
+   display: none;
 }
 
 </STYLE>

@@ -71,7 +71,7 @@ var MySpaces = {
             space.addClass('spaceItemSelected');
             // move the item title to the right
             animItem[i] = {
-               'margin-left': [item.getStyle('margin-left').toInt(), 89],
+               'margin-left': [item.getStyle('margin-left').toInt(), 56],
                'font-size': [item.getStyle('font-size').toInt(), 18]
             };
             // fade in the info button
@@ -160,7 +160,7 @@ var MySpaces = {
                // continue animations that may have been going on before the click
                // move the item title to the right
                animItem[i] = {
-                  'margin-left': [item.getStyle('margin-left').toInt(), 89],
+                  'margin-left': [item.getStyle('margin-left').toInt(), 56],
                   'font-size': [item.getStyle('font-size').toInt(), 18]
                };
                // fade in the info button
@@ -199,6 +199,12 @@ var MySpaces = {
          fxInfo.start(animInfo);
          fxImage.start(animImage);
       });
+   },
+   
+   upload: function(actionEl)
+   {
+      var panel = $E(".spaceUploadPanel", actionEl);
+      panel.setStyle("display", "block");
    }
 };
 

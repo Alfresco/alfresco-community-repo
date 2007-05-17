@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.namespace.QName;
@@ -137,7 +138,7 @@ public abstract class BaseContentNode implements TemplateContent
         {
             if (getIsDocument())
             {
-                return this.imageResolver.resolveImagePathForName(getName(), true);
+                return this.imageResolver.resolveImagePathForName(getName(), FileTypeImageSize.Small);
             }
             else
             {
@@ -159,7 +160,7 @@ public abstract class BaseContentNode implements TemplateContent
     }
     
     /**
-     * @return the large icon image for this node
+     * @return the medium icon image for this node
      */
     public String getIcon32()
     {
@@ -167,7 +168,7 @@ public abstract class BaseContentNode implements TemplateContent
         {
             if (getIsDocument())
             {
-                return this.imageResolver.resolveImagePathForName(getName(), false);
+                return this.imageResolver.resolveImagePathForName(getName(), FileTypeImageSize.Medium);
             }
             else
             {
@@ -185,6 +186,36 @@ public abstract class BaseContentNode implements TemplateContent
         else
         {
             return "/images/filetypes32/_default.gif";
+        }
+    }
+    
+    /**
+     * @return the large icon image for this node
+     */
+    public String getIcon64()
+    {
+        if (this.imageResolver != null)
+        {
+            if (getIsDocument())
+            {
+                return this.imageResolver.resolveImagePathForName(getName(), FileTypeImageSize.Large);
+            }
+            else
+            {
+                String icon = (String)getProperties().get("app:icon");
+                if (icon != null)
+                {
+                    return "/images/icons/" + icon + "-64.png";
+                }
+                else
+                {
+                    return "/images/icons/space-icon-default-64.png";
+                }
+            }
+        }
+        else
+        {
+            return "/images/filetypes64/_default.gif";
         }
     }
     

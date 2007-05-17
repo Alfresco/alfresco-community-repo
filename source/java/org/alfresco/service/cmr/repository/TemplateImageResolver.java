@@ -39,7 +39,9 @@ public interface TemplateImageResolver
      * Resolve the qualified icon image path for the specified filename 
      * 
      * @param filename      The file name to resolve image path for
-     * @param small         True to resolve to the small 16x16 image, else large 32x32 image
+     * @param size          Enum representing the size of the image to retrieve
+     * 
+     * @return image path for the specified filename and image size
      */
-    public String resolveImagePathForName(String filename, boolean small);
+    public String resolveImagePathForName(String filename, FileTypeImageSize size);
 }

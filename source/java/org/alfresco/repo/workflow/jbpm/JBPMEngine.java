@@ -1070,6 +1070,14 @@ public class JBPMEngine extends BPMEngine
                 {
                     task.addOrder(Order.desc("create"));
                 } 
+                else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskDue_Asc)
+                {
+                    task.addOrder(Order.asc("dueDate"));
+                } 
+                else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskDue_Desc)
+                {
+                    task.addOrder(Order.desc("dueDate"));
+                } 
                 else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskId_Asc)
                 {
                     task.addOrder(Order.asc("id"));

@@ -64,6 +64,8 @@ public class WorkflowTaskQuery
         TaskId_Desc,
         TaskCreated_Asc,
         TaskCreated_Desc,
+        TaskDue_Asc,
+        TaskDue_Desc,
         TaskName_Asc,
         TaskName_Desc,
         TaskActor_Asc,

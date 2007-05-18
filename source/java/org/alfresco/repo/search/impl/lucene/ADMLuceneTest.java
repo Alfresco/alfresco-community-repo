@@ -44,6 +44,7 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryNamespaceComponent;
@@ -208,6 +209,8 @@ public class ADMLuceneTest extends TestCase
 
         namespaceDao = (NamespaceDAOImpl) ctx.getBean("namespaceDAO");
 
+        I18NUtil.setLocale(Locale.UK);
+        
         this.authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
 
         queryRegisterComponent.loadQueryCollection("testQueryRegister.xml");
@@ -216,6 +219,8 @@ public class ADMLuceneTest extends TestCase
 
         testTX = transactionService.getUserTransaction();
         testTX.begin();
+       
+        
         this.authenticationComponent.setSystemUserAsCurrentUser();
 
         // load in the test model
@@ -311,7 +316,7 @@ public class ADMLuceneTest extends TestCase
         // - andit has to go in type d:any as d:content is not allowed to be multivalued
         
         ArrayList<Serializable> contentValues = new ArrayList<Serializable>();
-        contentValues.add(new ContentData(null, "text/plain", 0L, "UTF-16"));
+        contentValues.add(new ContentData(null, "text/plain", 0L, "UTF-16", Locale.CHINESE ));
         testProperties.put(QName.createQName(TEST_NAMESPACE, "content-many-ista"), contentValues);
         
       
@@ -376,7 +381,7 @@ public class ADMLuceneTest extends TestCase
                 getOrderProperties()).getChildRef();
 
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        properties.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8"));
+        properties.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.CHINESE ));
         n14 = nodeService.createNode(n13, ASSOC_TYPE_QNAME, QName.createQName("{namespace}fourteen"),
                 ContentModel.TYPE_CONTENT, properties).getChildRef();
         // nodeService.addAspect(n14, DictionaryBootstrap.ASPECT_QNAME_CONTENT,

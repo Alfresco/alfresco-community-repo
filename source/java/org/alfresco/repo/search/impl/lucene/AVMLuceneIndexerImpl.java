@@ -40,6 +40,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMDAOs;
@@ -639,7 +640,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                 // No default locale in AVM
                 if (locale == null)
                 {
-                    locale = Locale.getDefault();
+                    locale = I18NUtil.getLocale();
                 }
                 doc.add(new Field(attributeName + ".locale", locale.toString().toLowerCase(), Field.Store.NO,
                         Field.Index.UN_TOKENIZED, Field.TermVector.NO));
@@ -806,7 +807,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
                         if (locale == null)
                         {
-                            locale = Locale.getDefault();
+                            locale = I18NUtil.getLocale();
                         }
                         if (tokenise)
                         {

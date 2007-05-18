@@ -35,94 +35,102 @@ import org.aopalliance.intercept.MethodInvocation;
  * Method interceptor for atomic indexing of AVM entries
  * 
  * @author andyh
- *
  */
 public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInterceptor
 {
     private AVMService avmService;
-    
+
     private IndexerAndSearcher indexerAndSearcher;
-    
+
+    private boolean enableIndexing = true;
+
     public Object invoke(MethodInvocation mi) throws Throwable
     {
-        if(mi.getMethod().getName().equals("createSnapshot"))
+        if (enableIndexing)
         {
-            String store = (String)mi.getArguments()[0];
-            int before = avmService.getLatestSnapshotID(store);
-            Object returnValue = mi.proceed();
-            int after = avmService.getLatestSnapshotID(store);
-            StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
-            Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
-            if(indexer instanceof AVMLuceneIndexer)
+            if (mi.getMethod().getName().equals("createSnapshot"))
             {
-                AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer)indexer;
-                avmIndexer.index(store, before, after);
+                String store = (String) mi.getArguments()[0];
+                int before = avmService.getLatestSnapshotID(store);
+                Object returnValue = mi.proceed();
+                int after = avmService.getLatestSnapshotID(store);
+                StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
+                Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
+                if (indexer instanceof AVMLuceneIndexer)
+                {
+                    AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
+                    avmIndexer.index(store, before, after);
+                }
+                return returnValue;
             }
-            return returnValue;
-        }
-        // TODO: Purge store
-        else if(mi.getMethod().getName().equals("purgeStore"))
-        {
-            String store = (String)mi.getArguments()[0];
-            Object returnValue = mi.proceed();
-            StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
-            Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
-            if(indexer instanceof AVMLuceneIndexer)
+            // TODO: Purge store
+            else if (mi.getMethod().getName().equals("purgeStore"))
             {
-                AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer)indexer;
-                avmIndexer.deleteIndex(store);
+                String store = (String) mi.getArguments()[0];
+                Object returnValue = mi.proceed();
+                StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
+                Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
+                if (indexer instanceof AVMLuceneIndexer)
+                {
+                    AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
+                    avmIndexer.deleteIndex(store);
+                }
+                return returnValue;
             }
-            return returnValue;
-        }
-        else if(mi.getMethod().getName().equals("createStore"))
-        {
-            String store = (String)mi.getArguments()[0];
-            Object returnValue = mi.proceed();
-            StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
-            Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
-            if(indexer instanceof AVMLuceneIndexer)
+            else if (mi.getMethod().getName().equals("createStore"))
             {
-                AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer)indexer;
-                avmIndexer.createIndex(store);
+                String store = (String) mi.getArguments()[0];
+                Object returnValue = mi.proceed();
+                StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
+                Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
+                if (indexer instanceof AVMLuceneIndexer)
+                {
+                    AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
+                    avmIndexer.createIndex(store);
+                }
+                return returnValue;
             }
-            return returnValue;
-        }
-        else if(mi.getMethod().getName().equals("renameStore"))
-        {
-            String from = (String)mi.getArguments()[0];
-            String to = (String)mi.getArguments()[1];
-            Object returnValue = mi.proceed();
-            int after = avmService.getLatestSnapshotID(to);
-            
-            StoreRef fromRef = AVMNodeConverter.ToStoreRef(from);
-            StoreRef toRef = AVMNodeConverter.ToStoreRef(to);
-            
-            Indexer indexer = indexerAndSearcher.getIndexer(fromRef);
-            if(indexer instanceof AVMLuceneIndexer)
+            else if (mi.getMethod().getName().equals("renameStore"))
             {
-                AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer)indexer;
-                avmIndexer.deleteIndex(from);
+                String from = (String) mi.getArguments()[0];
+                String to = (String) mi.getArguments()[1];
+                Object returnValue = mi.proceed();
+                int after = avmService.getLatestSnapshotID(to);
+
+                StoreRef fromRef = AVMNodeConverter.ToStoreRef(from);
+                StoreRef toRef = AVMNodeConverter.ToStoreRef(to);
+
+                Indexer indexer = indexerAndSearcher.getIndexer(fromRef);
+                if (indexer instanceof AVMLuceneIndexer)
+                {
+                    AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
+                    avmIndexer.deleteIndex(from);
+                }
+
+                indexer = indexerAndSearcher.getIndexer(toRef);
+                if (indexer instanceof AVMLuceneIndexer)
+                {
+                    AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
+                    avmIndexer.createIndex(to);
+                    avmIndexer.index(to, 0, after);
+                }
+
+                return returnValue;
             }
-            
-            indexer = indexerAndSearcher.getIndexer(toRef);
-            if(indexer instanceof AVMLuceneIndexer)
+            else
             {
-                AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer)indexer;
-                avmIndexer.createIndex(to);
-                avmIndexer.index(to, 0, after);
+                return mi.proceed();
             }
-            
-            return returnValue;
         }
         else
         {
             return mi.proceed();
         }
-                
     }
 
     /**
      * Set the AVM service
+     * 
      * @param avmService
      */
     public void setAvmService(AVMService avmService)
@@ -132,11 +140,24 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
 
     /**
      * Set the AVM indexer and searcher
+     * 
      * @param indexerAndSearcher
      */
     public void setIndexerAndSearcher(IndexerAndSearcher indexerAndSearcher)
     {
         this.indexerAndSearcher = indexerAndSearcher;
     }
+
+    /**
+     * Enable or disable indexing
+     * 
+     * @param enableIndexing
+     */
+    public void setEnableIndexing(boolean enableIndexing)
+    {
+        this.enableIndexing = enableIndexing;
+    }
+    
+    
 
 }

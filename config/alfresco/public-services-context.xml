@@ -862,6 +862,9 @@
 		<property name="indexerAndSearcher">
 			<ref bean="avmLuceneIndexerAndSearcherFactory" />
 		</property>
+		<property name="enableIndexing">
+			<value>true</value>
+		</property>
 	</bean>
 	
     <!-- The AVMSyncService -->

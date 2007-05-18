@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    
+	<!-- disable avm indexing -->
+   <bean id="avmSnapShotTriggeredIndexingMethodInterceptor" class="org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor">
+		<property name="avmService">
+			<ref bean="avmService" />
+		</property>
+		<property name="indexerAndSearcher">
+			<ref bean="avmLuceneIndexerAndSearcherFactory" />
+		</property>
+		<property name="enableIndexing">
+			<value>false</value>
+		</property>
+	</bean>
+    
+</beans>

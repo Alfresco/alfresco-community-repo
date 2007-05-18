@@ -219,8 +219,6 @@ public class ADMLuceneTest extends TestCase
 
         testTX = transactionService.getUserTransaction();
         testTX.begin();
-       
-        
         this.authenticationComponent.setSystemUserAsCurrentUser();
 
         // load in the test model
@@ -316,7 +314,7 @@ public class ADMLuceneTest extends TestCase
         // - andit has to go in type d:any as d:content is not allowed to be multivalued
         
         ArrayList<Serializable> contentValues = new ArrayList<Serializable>();
-        contentValues.add(new ContentData(null, "text/plain", 0L, "UTF-16", Locale.CHINESE ));
+        contentValues.add(new ContentData(null, "text/plain", 0L, "UTF-16", Locale.UK ));
         testProperties.put(QName.createQName(TEST_NAMESPACE, "content-many-ista"), contentValues);
         
       
@@ -381,7 +379,7 @@ public class ADMLuceneTest extends TestCase
                 getOrderProperties()).getChildRef();
 
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        properties.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.CHINESE ));
+        properties.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.UK ));
         n14 = nodeService.createNode(n13, ASSOC_TYPE_QNAME, QName.createQName("{namespace}fourteen"),
                 ContentModel.TYPE_CONTENT, properties).getChildRef();
         // nodeService.addAspect(n14, DictionaryBootstrap.ASPECT_QNAME_CONTENT,
@@ -2612,6 +2610,61 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
         
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":cabba*");
+        sp.addLocale(new Locale("en"));
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":ca*ge");
+        sp.addLocale(new Locale("en"));
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":*bage");
+        sp.addLocale(new Locale("en"));
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":cabage~");
+        sp.addLocale(new Locale("en"));
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":*b?ag?");
+        sp.addLocale(new Locale("en"));
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":cho*");
+        sp.setMlAnalaysisMode(MLAnalysisMode.LOCALE_AND_ALL_CONTAINED_LOCALES);
+        sp.addLocale(new Locale("fr"));
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
         // multivalued content in type d:any
         // This should not be indexed as we can not know what to do with content here. 
         
@@ -2755,7 +2808,32 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"over a lazy\"", null, null);
         assertEquals(1, results.length());
         results.close();
+        
+        // Test wildcards in text
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:laz*", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:laz~", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:la?y", null, null);
+        assertEquals(1, results.length());
+        results.close();
 
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:?a?y", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:*azy", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:*az*", null, null);
+        assertEquals(1, results.length());
+        results.close();
         
         // Accents
         

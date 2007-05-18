@@ -37,6 +37,8 @@ import java.util.Set;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.SearcherException;
+import org.alfresco.repo.search.impl.lucene.analysis.MLTokenDuplicator;
+import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
 import org.alfresco.repo.search.impl.lucene.query.PathQuery;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -48,6 +50,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanQuery;
@@ -408,7 +411,7 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (field.startsWith("@"))
             {
-                Query query = attributeQueryBuilder(field, queryText, new FieldQuery());
+                Query query = attributeQueryBuilder(field, queryText, new FieldQuery(), true);
                 return query;
             }
             else if (field.equals("ALL"))
@@ -636,7 +639,7 @@ public class LuceneQueryParser extends QueryParser
     {
         if (field.startsWith("@"))
         {
-            return attributeQueryBuilder(field, termStr, new PrefixQuery());
+            return attributeQueryBuilder(field, termStr, new PrefixQuery(), false);
         }
         else if (field.equals("TEXT"))
         {
@@ -668,7 +671,7 @@ public class LuceneQueryParser extends QueryParser
     {
         if (field.startsWith("@"))
         {
-            return attributeQueryBuilder(field, termStr, new WildcardQuery());
+            return attributeQueryBuilder(field, termStr, new WildcardQuery(), false);
         }
 
         else if (field.equals("TEXT"))
@@ -701,7 +704,7 @@ public class LuceneQueryParser extends QueryParser
     {
         if (field.startsWith("@"))
         {
-            return attributeQueryBuilder(field, termStr, new FuzzyQuery(minSimilarity));
+            return attributeQueryBuilder(field, termStr, new FuzzyQuery(minSimilarity), false);
         }
 
         else if (field.equals("TEXT"))
@@ -798,7 +801,7 @@ public class LuceneQueryParser extends QueryParser
         }
     }
 
-    private Query attributeQueryBuilder(String field, String queryText, SubQuery subQueryBuilder) throws ParseException
+    private Query attributeQueryBuilder(String field, String queryText, SubQuery subQueryBuilder, boolean isAnalysed) throws ParseException
     {
         // Expand prefixes
 
@@ -851,17 +854,49 @@ public class LuceneQueryParser extends QueryParser
             for (Locale locale : (((locales == null) || (locales.size() == 0)) ? Collections.singletonList(I18NUtil
                     .getLocale()) : locales))
             {
-                StringBuilder builder = new StringBuilder(queryText.length() + 10);
-                builder.append("\u0000").append(locale.toString()).append("\u0000").append(queryText);
-                Query subQuery = subQueryBuilder.getQuery(expandedFieldName, builder.toString());
-                if (subQuery != null)
+                
+                if(isAnalysed)
                 {
-                    booleanQuery.add(subQuery, Occur.SHOULD);
+                    StringBuilder builder = new StringBuilder(queryText.length() + 10);
+                    builder.append("\u0000").append(locale.toString()).append("\u0000").append(queryText);
+                    Query subQuery = subQueryBuilder.getQuery(expandedFieldName, builder.toString());
+                    if (subQuery != null)
+                    {
+                        booleanQuery.add(subQuery, Occur.SHOULD);
+                    }
+                    else
+                    {
+                        booleanQuery.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
+                    }
                 }
                 else
                 {
-                    booleanQuery.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
+                    // analyse ml text
+                    MLAnalysisMode analysisMode = searchParameters.getMlAnalaysisMode() == null ? config
+                            .getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode();
+                    // Do the analysis here
+                    VerbatimAnalyser vba = new VerbatimAnalyser(false);        
+                    MLTokenDuplicator duplicator = new MLTokenDuplicator(vba.tokenStream(field, new StringReader(queryText)), locale, null, analysisMode);
+                    Token t;
+                    try
+                    {
+                        while( (t = duplicator.next()) != null)
+                        {
+                            Query subQuery = subQueryBuilder.getQuery(expandedFieldName, t.termText());
+                            booleanQuery.add(subQuery, Occur.SHOULD);
+                        }
+                    }
+                    catch (IOException e)
+                    {
+                       
+                    }
+                    if(booleanQuery.getClauses().length == 0)
+                    {
+                        booleanQuery.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
+                    }
+                    
                 }
+                
             }
             return booleanQuery;
         }

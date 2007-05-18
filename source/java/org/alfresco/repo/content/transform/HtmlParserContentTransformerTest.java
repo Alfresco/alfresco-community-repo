@@ -36,8 +36,9 @@ public class HtmlParserContentTransformerTest extends AbstractContentTransformer
     private ContentTransformer transformer;
     
     @Override
-    public void onSetUpInTransaction() throws Exception
+    public void setUp() throws Exception
     {
+        super.setUp();
         transformer = new HtmlParserContentTransformer();
     }
     

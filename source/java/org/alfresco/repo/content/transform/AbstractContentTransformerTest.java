@@ -32,13 +32,20 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
+import junit.framework.TestCase;
+
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.util.BaseSpringTest;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.TempFileProvider;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Provides a base set of tests for testing
@@ -47,19 +54,19 @@ import org.alfresco.util.TempFileProvider;
  * 
  * @author Derek Hulley
  */
-public abstract class AbstractContentTransformerTest extends BaseSpringTest
+public abstract class AbstractContentTransformerTest extends TestCase
 {
     private static String QUICK_CONTENT = "The quick brown fox jumps over the lazy dog";
     private static String[] QUICK_WORDS = new String[] {
             "quick", "brown", "fox", "jumps", "lazy", "dog"};
-
-    protected MimetypeMap mimetypeMap;
-
-    public final void setMimetypeMap(MimetypeMap mimetypeMap)
-    {
-        this.mimetypeMap = mimetypeMap;
-    }
     
+    private static Log logger = LogFactory.getLog(AbstractContentTransformerTest.class);
+    
+    protected static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+
+    protected ServiceRegistry serviceRegistry;
+    protected MimetypeService mimetypeService;
+
     /**
      * Fetches a transformer to test for a given transformation.  The transformer
      * does not <b>have</b> to be reliable for the given format - if it isn't
@@ -77,8 +84,10 @@ public abstract class AbstractContentTransformerTest extends BaseSpringTest
      * Ensures that the temp locations are cleaned out before the tests start
      */
     @Override
-    protected void onSetUpInTransaction() throws Exception
+    protected void setUp() throws Exception
     {
+        serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        mimetypeService = serviceRegistry.getMimetypeService();
         // perform a little cleaning up
         long now = System.currentTimeMillis();
         TempFileProvider.TempFileCleanerJob.removeFiles(now);
@@ -89,7 +98,7 @@ public abstract class AbstractContentTransformerTest extends BaseSpringTest
      */
     public void testSetUp() throws Exception
     {
-        assertNotNull("MimetypeMap not present", mimetypeMap);
+        assertNotNull("MimetypeMap not present", mimetypeService);
         // check that the quick resources are available
         File sourceFile = AbstractContentTransformerTest.loadQuickTestFile("txt");
         assertNotNull(sourceFile);
@@ -144,11 +153,11 @@ public abstract class AbstractContentTransformerTest extends BaseSpringTest
           .append("\n");
         
         // get all mimetypes
-        Set<String> mimetypes = new TreeSet<String>(mimetypeMap.getMimetypes());
+        Set<String> mimetypes = new TreeSet<String>(mimetypeService.getMimetypes());
         for (String sourceMimetype : mimetypes)
         {
             // attempt to get a source file for each mimetype
-            String sourceExtension = mimetypeMap.getExtension(sourceMimetype);
+            String sourceExtension = mimetypeService.getExtension(sourceMimetype);
             
             sb.append("   Source Extension: ").append(sourceExtension).append("\n");
             
@@ -157,7 +166,7 @@ public abstract class AbstractContentTransformerTest extends BaseSpringTest
             {
                 ContentWriter targetWriter = null;
                 // construct a reader onto the source file
-                String targetExtension = mimetypeMap.getExtension(targetMimetype);
+                String targetExtension = mimetypeService.getExtension(targetMimetype);
 
                 // must we test the transformation?
                 ContentTransformer transformer = getTransformer(sourceMimetype, targetMimetype);

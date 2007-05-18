@@ -33,15 +33,15 @@ import java.nio.channels.FileLock;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.List;
+import java.util.Locale;
 
 import org.alfresco.error.StackTraceUtil;
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
-import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.aop.AfterReturningAdvice;
@@ -66,12 +66,12 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     private StackTraceElement[] traceLoggerChannelAssignTrace;
     
     /** when set, ensures that listeners are executed within a transaction */
-//    private TransactionService transactionService;
     private RetryingTransactionHelper transactionHelper;
     
     private String contentUrl;
     private String mimetype;
     private String encoding;
+    private Locale locale;
 
     /**
      * @param contentUrl the content URL
@@ -86,6 +86,8 @@ public abstract class AbstractContentAccessor implements ContentAccessor
         
         // the default encoding is Java's default encoding
         encoding = "UTF-8";
+        // the default locale
+        locale = I18NUtil.getLocale();
     }
     
     @Override
@@ -115,35 +117,16 @@ public abstract class AbstractContentAccessor implements ContentAccessor
           .append(", mimetype=").append(getMimetype())
           .append(", size=").append(getSize())
           .append(", encoding=").append(getEncoding())
+          .append(", locale=").append(getLocale())
           .append("]");
         return sb.toString();
     }
     
     public ContentData getContentData()
     {
-        ContentData property = new ContentData(contentUrl, mimetype, getSize(), encoding);
+        ContentData property = new ContentData(contentUrl, mimetype, getSize(), encoding, locale);
         return property;
     }
-
-    /**
-     * Provides access to transactions for implementing classes
-     * 
-     * @return Returns a source of user transactions
-     */
-//    protected TransactionService getTransactionService()
-//    {
-//        return transactionService;
-//    }
-
-    /**
-     * Set the transaction provider to be used by {@link ContentStreamListener listeners}.
-     * 
-     * @param transactionService the transaction service to wrap callback code in
-     */
-//    public void setTransactionService(TransactionService transactionService)
-//    {
-//        this.transactionService = transactionService;
-//    }
 
     public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
     {
@@ -198,7 +181,23 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     {
         this.encoding = encoding;
     }
-    
+
+    /**
+     * @return  Returns the content locale or <tt>null</tt> if unkown
+     */
+    public Locale getLocale()
+    {
+        return locale;
+    }
+
+    /**
+     * @param locale    the content's locale, if known.
+     */
+    public void setLocale(Locale locale)
+    {
+        this.locale = locale;
+    }
+
     /**
      * Generate a callback instance of the {@link FileChannel FileChannel}.
      *  
@@ -264,18 +263,6 @@ public abstract class AbstractContentAccessor implements ContentAccessor
                     return null;
                 }
             };
-//            TransactionUtil.TransactionWork<Object> work = new TransactionUtil.TransactionWork<Object>()
-//                    {
-//                        public Object doWork()
-//                        {
-//                            // call the listeners
-//                            for (ContentStreamListener listener : listeners)
-//                            {
-//                                listener.contentStreamClosed();
-//                            }
-//                            return null;
-//                        }
-//                    };
             if (transactionHelper != null)
             {
                 // Execute in transaction.
@@ -372,18 +359,6 @@ public abstract class AbstractContentAccessor implements ContentAccessor
                     return null;
                 }
             };
-//            TransactionUtil.TransactionWork<Object> work = new TransactionUtil.TransactionWork<Object>()
-//                    {
-//                        public Object doWork()
-//                        {
-//                            // call the listeners
-//                            for (ContentStreamListener listener : listeners)
-//                            {
-//                                listener.contentStreamClosed();
-//                            }
-//                            return null;
-//                        }
-//                    };
             // We're now doing this inside a Retrying transaction.
             // NB 
             if (transactionHelper != null)

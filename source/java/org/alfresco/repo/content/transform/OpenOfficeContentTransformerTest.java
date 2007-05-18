@@ -46,12 +46,15 @@ public class OpenOfficeContentTransformerTest extends AbstractContentTransformer
     
     private OpenOfficeContentTransformer transformer;
     
-    public void onSetUpInTransaction() throws Exception
+    @Override
+    public void setUp() throws Exception
     {
-        OpenOfficeConnection connection = (OpenOfficeConnection) applicationContext.getBean("openOfficeConnection");
+        super.setUp();
+        
+        OpenOfficeConnection connection = (OpenOfficeConnection) ctx.getBean("openOfficeConnection");
         
         transformer = new OpenOfficeContentTransformer();
-        transformer.setMimetypeService(mimetypeMap);
+        transformer.setMimetypeService(mimetypeService);
         transformer.setConnection(connection);
         transformer.setDocumentFormatsConfiguration("classpath:alfresco/mimetype/openoffice-document-formats.xml");
         transformer.register();
@@ -68,7 +71,7 @@ public class OpenOfficeContentTransformerTest extends AbstractContentTransformer
     public void testSetUp() throws Exception
     {
         super.testSetUp();
-        assertNotNull(mimetypeMap);
+        assertNotNull(mimetypeService);
     }
     
     public void testReliability() throws Exception

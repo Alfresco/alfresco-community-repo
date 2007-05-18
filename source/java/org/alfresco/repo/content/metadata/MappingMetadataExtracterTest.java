@@ -46,7 +46,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Derek Hulley
  */
-public class AbstractMappingMetadataExtracterTest extends TestCase
+public class MappingMetadataExtracterTest extends TestCase
 {
     private DummyMappingMetadataExtracter extracter;
     private ContentReader reader;

@@ -319,6 +319,7 @@ public class RoutingContentService implements ContentService
         // set extra data on the reader
         reader.setMimetype(contentData.getMimetype());
         reader.setEncoding(contentData.getEncoding());
+        reader.setLocale(contentData.getLocale());
         
         // Fire the content read policy
         if (reader != null && fireContentReadPolicy == true)
@@ -372,6 +373,7 @@ public class RoutingContentService implements ContentService
             ContentData contentData = (ContentData)contentValue;
             writer.setMimetype(contentData.getMimetype());
             writer.setEncoding(contentData.getEncoding());
+            writer.setLocale(contentData.getLocale());
         }
         
         // attach a listener if required

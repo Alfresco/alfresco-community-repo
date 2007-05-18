@@ -22,13 +22,14 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.service.cmr.repository;
+package org.alfresco.repo.content;
 
 import java.util.Locale;
 
 import junit.framework.TestCase;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 
 /**

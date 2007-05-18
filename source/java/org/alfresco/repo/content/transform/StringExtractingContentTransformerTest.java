@@ -66,8 +66,10 @@ public class StringExtractingContentTransformerTest extends AbstractContentTrans
     private ContentWriter targetWriter;
     
     @Override
-    public void onSetUpInTransaction() throws Exception
+    public void setUp() throws Exception
     {
+        super.setUp();
+        
         transformer = new StringExtractingContentTransformer();
         targetWriter = new FileContentWriter(getTempFile());
         targetWriter.setMimetype("text/plain");

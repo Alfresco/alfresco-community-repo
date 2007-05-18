@@ -25,8 +25,6 @@
 package org.alfresco.repo.content.transform;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @see org.alfresco.repo.content.transform.BinaryPassThroughContentTransformer
@@ -35,12 +33,13 @@ import org.apache.commons.logging.LogFactory;
  */
 public class BinaryPassThroughContentTransformerTest extends AbstractContentTransformerTest
 {
-    private static final Log logger = LogFactory.getLog(BinaryPassThroughContentTransformerTest.class);
-
     private ContentTransformer transformer;
-    
-    public void onSetUpInTransaction() throws Exception
+
+    @Override
+    public void setUp() throws Exception
     {
+        super.setUp();
+        
         transformer = new BinaryPassThroughContentTransformer();
     }
     

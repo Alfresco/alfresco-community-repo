@@ -42,10 +42,13 @@ public class ComplexContentTransformerTest extends AbstractContentTransformerTes
     private ComplexContentTransformer transformer;
     private boolean isAvailable;
     
-    public void onSetUpInTransaction() throws Exception
+    @Override
+    public void setUp() throws Exception
     {
-        ContentTransformer unoTransformer = (ContentTransformer) applicationContext.getBean("transformer.OpenOffice");
-        ContentTransformer pdfBoxTransformer = (ContentTransformer) applicationContext.getBean("transformer.PdfBox");
+        super.setUp();
+        
+        ContentTransformer unoTransformer = (ContentTransformer) ctx.getBean("transformer.OpenOffice");
+        ContentTransformer pdfBoxTransformer = (ContentTransformer) ctx.getBean("transformer.PdfBox");
         // make sure that they are working for this test
         if (unoTransformer.getReliability(MimetypeMap.MIMETYPE_PPT, MimetypeMap.MIMETYPE_PDF) == 0.0)
         {
@@ -63,7 +66,7 @@ public class ComplexContentTransformerTest extends AbstractContentTransformerTes
         }
         
         transformer = new ComplexContentTransformer();
-        transformer.setMimetypeService(mimetypeMap);
+        transformer.setMimetypeService(mimetypeService);
         // set the transformer list
         List<ContentTransformer> transformers = new ArrayList<ContentTransformer>(2);
         transformers.add(unoTransformer);

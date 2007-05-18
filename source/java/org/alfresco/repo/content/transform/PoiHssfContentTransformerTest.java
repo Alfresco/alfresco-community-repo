@@ -31,8 +31,6 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @see org.alfresco.repo.content.transform.PoiHssfContentTransformer
@@ -41,12 +39,13 @@ import org.apache.commons.logging.LogFactory;
  */
 public class PoiHssfContentTransformerTest extends AbstractContentTransformerTest
 {
-    private static final Log logger = LogFactory.getLog(PoiHssfContentTransformerTest.class);
-
     private ContentTransformer transformer;
     
-    public void onSetUpInTransaction() throws Exception
+    @Override
+    public void setUp() throws Exception
     {
+        super.setUp();
+        
         transformer = new PoiHssfContentTransformer();
     }
     

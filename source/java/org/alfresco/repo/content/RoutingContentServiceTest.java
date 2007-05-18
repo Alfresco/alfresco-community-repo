@@ -27,6 +27,7 @@ package org.alfresco.repo.content;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Locale;
 
 import javax.transaction.RollbackException;
 import javax.transaction.UserTransaction;
@@ -107,7 +108,7 @@ public class RoutingContentServiceTest extends TestCase
         }
         rootNodeRef = nodeService.getRootNode(storeRef);
         // create a content node
-        ContentData contentData = new ContentData(null, "text/plain", 0L, "UTF-16");
+        ContentData contentData = new ContentData(null, "text/plain", 0L, "UTF-16", Locale.CHINESE);
         
         PropertyMap properties = new PropertyMap();
         properties.put(ContentModel.PROP_CONTENT, contentData);
@@ -173,7 +174,8 @@ public class RoutingContentServiceTest extends TestCase
         // write some content
         writer.putContent(SOME_CONTENT);
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        writer.setEncoding("UTF8");
+        writer.setEncoding("UTF-16");
+        writer.setLocale(Locale.CHINESE);
         
         // set the content property manually
         nodeService.setProperty(contentNodeRef, ContentModel.PROP_CONTENT, writer.getContentData());
@@ -182,6 +184,8 @@ public class RoutingContentServiceTest extends TestCase
         ContentReader reader = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
         assertNotNull("Reader should not be null", reader);
         assertNotNull("Content URL should not be null", reader.getContentUrl());
+        assertEquals("Content Encoding was not set", "UTF-16", reader.getEncoding());
+        assertEquals("Content Locale was not set", Locale.CHINESE, reader.getLocale());
     }
     
     /**
@@ -196,6 +200,7 @@ public class RoutingContentServiceTest extends TestCase
         assertNotNull("Content URL should not be null", writer.getContentUrl());
         assertNotNull("Content mimetype should not be null", writer.getMimetype());
         assertNotNull("Content encoding should not be null", writer.getEncoding());
+        assertNotNull("Content locale should not be null", writer.getLocale());
         
         // write some content
         writer.putContent(SOME_CONTENT);
@@ -206,6 +211,7 @@ public class RoutingContentServiceTest extends TestCase
         assertNotNull("Content URL should not be null", reader.getContentUrl());
         assertNotNull("Content mimetype should not be null", reader.getMimetype());
         assertNotNull("Content encoding should not be null", reader.getEncoding());
+        assertNotNull("Content locale should not be null", reader.getLocale());
         
         // check that the content length is correct
         // - note encoding is important as we get the byte length
@@ -223,8 +229,9 @@ public class RoutingContentServiceTest extends TestCase
         // previously, the node was populated with the mimetype, etc
         // check that the write has these
         ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
-        assertNotNull(writer.getMimetype());
-        assertNotNull(writer.getEncoding());
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, writer.getMimetype());
+        assertEquals("UTF-16", writer.getEncoding());
+        assertEquals(Locale.CHINESE, writer.getLocale());
 
         // now remove the content property from the node
         nodeService.setProperty(contentNodeRef, ContentModel.PROP_CONTENT, null);
@@ -232,10 +239,12 @@ public class RoutingContentServiceTest extends TestCase
         writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
         assertNull(writer.getMimetype());
         assertEquals("UTF-8", writer.getEncoding());
+        assertEquals(Locale.getDefault(), writer.getLocale());
         
         // now set it on the writer
         writer.setMimetype("text/plain");
-        writer.setEncoding("UTF-8");
+        writer.setEncoding("UTF-16");
+        writer.setLocale(Locale.FRENCH);
         
         String content = "The quick brown fox ...";
         writer.putContent(content);

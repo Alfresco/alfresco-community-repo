@@ -26,26 +26,35 @@ package org.alfresco.repo.content;
 
 import java.util.Map;
 
-import org.alfresco.util.BaseSpringTest;
+import junit.framework.TestCase;
+
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.util.ApplicationContextHelper;
+import org.springframework.context.ApplicationContext;
 
 /**
  * @see org.alfresco.repo.content.MimetypeMap
  * 
  * @author Derek Hulley
  */
-public class MimetypeMapTest extends BaseSpringTest
+public class MimetypeMapTest extends TestCase
 {
-    private MimetypeMap mimetypeMap;
-
-    public void setMimetypeMap(MimetypeMap mimetypeMap)
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    
+    private MimetypeService mimetypeService;
+    
+    @Override
+    public void setUp() throws Exception
     {
-        this.mimetypeMap = mimetypeMap;
+        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        mimetypeService = serviceRegistry.getMimetypeService();
     }
     
     public void testExtensions() throws Exception
     {
-        Map<String, String> extensionsByMimetype = mimetypeMap.getExtensionsByMimetype();
-        Map<String, String> mimetypesByExtension = mimetypeMap.getMimetypesByExtension();
+        Map<String, String> extensionsByMimetype = mimetypeService.getExtensionsByMimetype();
+        Map<String, String> mimetypesByExtension = mimetypeService.getMimetypesByExtension();
         
         // plain text
         assertEquals("txt", extensionsByMimetype.get("text/plain"));

@@ -40,14 +40,17 @@ public class ImageMagickContentTransformerTest extends AbstractContentTransforme
 {
     private ImageMagickContentTransformer transformer;
     
-    public void onSetUpInTransaction() throws Exception
+    @Override
+    public void setUp() throws Exception
     {
+        super.setUp();
+        
         RuntimeExec executer = new RuntimeExec();
         executer.setCommand("imconvert.exe ${source} ${options} ${target}");
         executer.setDefaultProperties(Collections.singletonMap("options", ""));
         
         transformer = new ImageMagickContentTransformer();
-        transformer.setMimetypeService(mimetypeMap);
+        transformer.setMimetypeService(mimetypeService);
         transformer.setExecuter(executer);
         transformer.init();
     }

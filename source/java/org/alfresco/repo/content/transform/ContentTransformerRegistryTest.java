@@ -55,17 +55,13 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
     private ContentReader reader;
     private ContentWriter writer;
     
-    /**
-     * Allows dependency injection
-     */
-    public void setContentTransformerRegistry(ContentTransformerRegistry registry)
-    {
-        this.registry = registry;
-    }
-
     @Override
-    public void onSetUpInTransaction() throws Exception
+    public void setUp() throws Exception
     {
+        super.setUp();
+        
+        registry = (ContentTransformerRegistry) ctx.getBean("contentTransformerRegistry");
+        
         reader = new FileContentReader(TempFileProvider.createTempFile(getName(), ".txt"));
         reader.setMimetype(A);
         writer = new FileContentWriter(TempFileProvider.createTempFile(getName(), ".txt"));
@@ -79,17 +75,17 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
         // create the dummyRegistry
         dummyRegistry = new ContentTransformerRegistry();
         // create some dummy transformers for reliability tests
-        new DummyTransformer(mimetypeMap, dummyRegistry, A, B, 0.3, 10L);
-        new DummyTransformer(mimetypeMap, dummyRegistry, A, B, 0.6, 10L);
-        new DummyTransformer(mimetypeMap, dummyRegistry, A, C, 0.5, 10L);
-        new DummyTransformer(mimetypeMap, dummyRegistry, A, C, 1.0, 10L);
-        new DummyTransformer(mimetypeMap, dummyRegistry, B, C, 0.2, 10L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, B, 0.3, 10L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, B, 0.6, 10L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, C, 0.5, 10L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, C, 1.0, 10L);
+        new DummyTransformer(mimetypeService, dummyRegistry, B, C, 0.2, 10L);
         // create some dummy transformers for speed tests
-        new DummyTransformer(mimetypeMap, dummyRegistry, A, D, 1.0, 20L);
-        new DummyTransformer(mimetypeMap, dummyRegistry, A, D, 1.0, 20L);
-        new DummyTransformer(mimetypeMap, dummyRegistry, A, D, 1.0, 10L);  // the fast one
-        new DummyTransformer(mimetypeMap, dummyRegistry, A, D, 1.0, 20L);
-        new DummyTransformer(mimetypeMap, dummyRegistry, A, D, 1.0, 20L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 1.0, 20L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 1.0, 20L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 1.0, 10L);  // the fast one
+        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 1.0, 20L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 1.0, 20L);
     }
 
     /**
@@ -167,7 +163,7 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
     public void testExplicitTransformation()
     {
         AbstractContentTransformer dummyTransformer = new DummyTransformer(
-                mimetypeMap,
+                mimetypeService,
                 dummyRegistry,
                 MimetypeMap.MIMETYPE_FLASH, MimetypeMap.MIMETYPE_EXCEL,
                 1.0, 12345);

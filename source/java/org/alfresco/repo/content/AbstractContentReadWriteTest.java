@@ -35,13 +35,13 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Set;
 
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
-import org.alfresco.repo.transaction.DummyTransactionService;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
@@ -143,12 +143,13 @@ public abstract class AbstractContentReadWriteTest extends TestCase
                 readerContentUrl.startsWith(ContentStore.STORE_PROTOCOL));
     }
     
-    public void testMimetypeAndEncoding() throws Exception
+    public void testMimetypAbdEncodingAndLocale() throws Exception
     {
         ContentWriter writer = getWriter();
         // set mimetype and encoding
         writer.setMimetype("text/plain");
         writer.setEncoding("UTF-16");
+        writer.setLocale(Locale.CHINESE);
         
         // create a UTF-16 string
         String content = "A little bit o' this and a little bit o' that";
@@ -163,6 +164,7 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         assertEquals("Writer -> Reader content URL mismatch", writer.getContentUrl(), reader.getContentUrl());
         assertEquals("Writer -> Reader mimetype mismatch", writer.getMimetype(), reader.getMimetype());
         assertEquals("Writer -> Reader encoding mismatch", writer.getEncoding(), reader.getEncoding());
+        assertEquals("Writer -> Reader locale mismatch", writer.getLocale(), reader.getLocale());
         
         // now get the string directly from the reader
         String contentCheck = reader.getContentString();     // internally it should have taken care of the encoding
@@ -204,6 +206,7 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         long before = System.currentTimeMillis();
         writer.setMimetype("text/plain");
         writer.setEncoding("UTF-8");
+        writer.setLocale(Locale.CHINESE);
         writer.putContent(content);
         long after = System.currentTimeMillis();
         
@@ -212,12 +215,14 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         assertEquals("URL incorrect", writer.getContentUrl(), readerFromWriter.getContentUrl());
         assertEquals("Mimetype incorrect", writer.getMimetype(), readerFromWriter.getMimetype());
         assertEquals("Encoding incorrect", writer.getEncoding(), readerFromWriter.getEncoding());
+        assertEquals("Locale incorrect", writer.getLocale(), readerFromWriter.getLocale());
         
         // get another reader from the reader
         ContentReader readerFromReader = readerFromWriter.getReader();
         assertEquals("URL incorrect", writer.getContentUrl(), readerFromReader.getContentUrl());
         assertEquals("Mimetype incorrect", writer.getMimetype(), readerFromReader.getMimetype());
         assertEquals("Encoding incorrect", writer.getEncoding(), readerFromReader.getEncoding());
+        assertEquals("Locale incorrect", writer.getLocale(), readerFromReader.getLocale());
         
         // check the content
         String contentCheck = readerFromWriter.getContentString();

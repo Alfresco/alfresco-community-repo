@@ -27,8 +27,6 @@ package org.alfresco.repo.content.transform.magick;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformer;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @see org.alfresco.repo.content.transform.magick.JMagickContentTransformer
@@ -37,14 +35,15 @@ import org.apache.commons.logging.LogFactory;
  */
 public class JMagickContentTransformerTest extends AbstractContentTransformerTest
 {
-    private static final Log logger = LogFactory.getLog(JMagickContentTransformerTest.class);
-
     private JMagickContentTransformer transformer;
-    
-    public void onSetUpInTransaction() throws Exception
+
+    @Override
+    public void setUp() throws Exception
     {
+        super.setUp();
+        
         transformer = new JMagickContentTransformer();
-        transformer.setMimetypeService(mimetypeMap);
+        transformer.setMimetypeService(mimetypeService);
         transformer.init();
     }
     

@@ -24,6 +24,8 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import java.util.Locale;
+
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.transaction.TransactionService;
 
@@ -120,4 +122,18 @@ public interface ContentAccessor
      * @param encoding a java-recognised encoding format
      */
     public void setEncoding(String encoding);
+
+    /**
+     * Get the locale of the content being accessed
+     *
+     * @return  Returns a valid java Locale
+     */
+    public Locale getLocale();
+    
+    /**
+     * Set the <code>Locale</code> for this accessor
+     * 
+     * @param locale    a java-recognised locale
+     */
+    public void setLocale(Locale locale);
 }

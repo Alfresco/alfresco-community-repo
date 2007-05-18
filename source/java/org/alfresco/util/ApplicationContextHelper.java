@@ -35,17 +35,40 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class ApplicationContextHelper
 {
+    private static ClassPathXmlApplicationContext instance;
+    
     /** location of required configuration files */
     public static final String[] CONFIG_LOCATIONS = new String[] { "classpath:alfresco/application-context.xml" };
     
     /**
-     * Instantiates a new application context.
+     * Provides a static, single instance of the application context.  This method can be
+     * called repeatedly.
      * 
      * @return Returns a new application context
      */
-    public static ApplicationContext getApplicationContext()
+    public synchronized static ApplicationContext getApplicationContext()
     {
-        return new ClassPathXmlApplicationContext(CONFIG_LOCATIONS);
+        if (instance != null)
+        {
+            return instance;
+        }
+        instance = new ClassPathXmlApplicationContext(CONFIG_LOCATIONS);
+        return instance;
+    }
+    
+    /**
+     * Closes and releases the application context.  On the next call to
+     * {@link #getApplicationContext()}, a new context will be given.
+     */
+    public synchronized void closeApplicationContext()
+    {
+        if (instance == null)
+        {
+            // Nothing to do
+            return;
+        }
+        instance.close();
+        instance = null;
     }
     
     public static void main(String ... args)

@@ -124,6 +124,7 @@ public abstract class AbstractContentReader extends AbstractContentAccessor impl
         // copy across common attributes
         reader.setMimetype(this.getMimetype());
         reader.setEncoding(this.getEncoding());
+        reader.setLocale(this.getLocale());
         // done
         if (logger.isDebugEnabled())
         {

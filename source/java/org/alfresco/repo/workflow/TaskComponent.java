@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.QName;
 
@@ -66,6 +67,14 @@ public interface TaskComponent
      * @return  the list of pooled tasks
      */
     public List<WorkflowTask> getPooledTasks(List<String> authorities);
+    
+    /**
+     * Query for tasks
+     * 
+     * @param query  the filter by which tasks are queried
+     * @return  the list of tasks matching the specified query
+     */
+    public List<WorkflowTask> queryTasks(WorkflowTaskQuery query);
     
     /**
      * Update the Properties and Associations of a Task

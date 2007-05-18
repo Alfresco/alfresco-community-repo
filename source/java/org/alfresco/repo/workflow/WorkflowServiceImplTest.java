@@ -40,6 +40,9 @@ import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
+import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
@@ -92,6 +95,29 @@ public class WorkflowServiceImplTest extends BaseSpringTest
         NodeRef nodeRef = workflowService.createPackage(null);
         assertNotNull(nodeRef);
         assertTrue(nodeService.hasAspect(nodeRef, WorkflowModel.ASPECT_WORKFLOW_PACKAGE));
+    }
+    
+    public void testQueryTasks()
+    {
+        WorkflowTaskQuery filter = new WorkflowTaskQuery();
+        filter.setTaskName(QName.createQName("{http://www.alfresco.org/model/wcmworkflow/1.0}submitpendingTask"));
+        filter.setTaskState(WorkflowTaskState.COMPLETED);
+        Map<QName, Object> taskProps = new HashMap<QName, Object>();
+        taskProps.put(QName.createQName("{http://www.alfresco.org/model/bpm/1.0}workflowDescription"), "Test5");
+        filter.setTaskCustomProps(taskProps);
+        filter.setProcessId("jbpm$48");
+        filter.setProcessName(QName.createQName("{http://www.alfresco.org/model/wcmworkflow/1.0}submit"));
+        Map<QName, Object> procProps = new HashMap<QName, Object>();
+        procProps.put(QName.createQName("{http://www.alfresco.org/model/bpm/1.0}workflowDescription"), "Test5");
+        procProps.put(QName.createQName("companyhome"), new NodeRef("workspace://SpacesStore/3df8a9d0-ff04-11db-98da-a3c3f3149ea5"));
+        filter.setProcessCustomProps(procProps);
+        filter.setOrderBy(new WorkflowTaskQuery.OrderBy[] { WorkflowTaskQuery.OrderBy.TaskName_Asc, WorkflowTaskQuery.OrderBy.TaskState_Asc });
+        List<WorkflowTask> tasks = workflowService.queryTasks(filter);
+        System.out.println("Found " + tasks.size() + " tasks.");
+        for (WorkflowTask task : tasks)
+        {
+            System.out.println(task.toString());
+        }
     }
     
     public void testAssociateWorkflowPackage()

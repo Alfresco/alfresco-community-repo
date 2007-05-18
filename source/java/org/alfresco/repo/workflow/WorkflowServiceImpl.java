@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -323,6 +324,46 @@ public class WorkflowServiceImpl implements WorkflowService
         {
             TaskComponent component = registry.getTaskComponent(id);
             tasks.addAll(component.getPooledTasks(authorities));
+        }
+        return Collections.unmodifiableList(tasks);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#queryTasks(org.alfresco.service.cmr.workflow.WorkflowTaskFilter)
+     */
+    public List<WorkflowTask> queryTasks(WorkflowTaskQuery query)
+    {
+        // extract task component to perform query
+        String engineId = null;
+        String processId = query.getProcessId();
+        if (processId != null)
+        {
+            engineId = BPMEngineRegistry.getEngineId(processId);
+        }
+        String taskId = query.getTaskId();
+        if (taskId != null)
+        {
+            String taskEngineId = BPMEngineRegistry.getEngineId(taskId);
+            if (engineId != null && !engineId.equals(taskEngineId))
+            {
+                throw new WorkflowException("Cannot query for tasks across multiple task components: " + engineId + ", " + taskEngineId);
+            }
+            engineId = taskEngineId; 
+        }
+        
+        // perform query
+        List<WorkflowTask> tasks = new ArrayList<WorkflowTask>(10);
+        String[] ids = registry.getTaskComponents();
+        for (String id: ids)
+        {
+            TaskComponent component = registry.getTaskComponent(id);
+            // NOTE: don't bother asking task component if specific task or process id
+            //       are in the filter and do not correspond to the component
+            if (engineId != null && !engineId.equals(id))
+            {
+                continue;
+            }
+            tasks.addAll(component.queryTasks(query));
         }
         return Collections.unmodifiableList(tasks);
     }

@@ -68,18 +68,26 @@ import org.alfresco.service.cmr.workflow.WorkflowNode;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.criterion.Conjunction;
+import org.hibernate.criterion.Disjunction;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Property;
+import org.hibernate.criterion.Restrictions;
 import org.hibernate.proxy.HibernateProxy;
 import org.jbpm.JbpmContext;
 import org.jbpm.JbpmException;
 import org.jbpm.context.exe.ContextInstance;
 import org.jbpm.context.exe.TokenVariableMap;
+import org.jbpm.context.exe.VariableInstance;
 import org.jbpm.db.GraphSession;
 import org.jbpm.db.TaskMgmtSession;
 import org.jbpm.file.def.FileDefinition;
@@ -869,6 +877,229 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.TaskComponent#queryTasks(org.alfresco.service.cmr.workflow.WorkflowTaskFilter)
+     */
+    @SuppressWarnings("unchecked")
+    public List<WorkflowTask> queryTasks(final WorkflowTaskQuery query)
+    {
+        try
+        {
+            return (List<WorkflowTask>) jbpmTemplate.execute(new JbpmCallback()
+            {
+                public List<WorkflowTask> doInJbpm(JbpmContext context)
+                {
+                    Session session = context.getSession();
+                    Criteria criteria = createTaskQueryCriteria(session, query);
+                    List<TaskInstance> tasks = criteria.list();
+                    
+                    // convert tasks to appropriate service response format 
+                    List<WorkflowTask> workflowTasks = new ArrayList<WorkflowTask>(tasks.size());
+                    for (TaskInstance task : tasks)
+                    {
+                        WorkflowTask workflowTask = createWorkflowTask(task);
+                        workflowTasks.add(workflowTask);
+                    }
+                    return workflowTasks;
+                }
+            });
+        }
+        catch(JbpmException e)
+        {
+            throw new WorkflowException("Failed to query tasks", e);
+        }
+    }
+
+    /**
+     * Construct a JBPM Hibernate query based on the Task Query provided
+     * 
+     * @param session
+     * @param query
+     * @return  jbpm hiberate query criteria
+     */
+    private Criteria createTaskQueryCriteria(Session session, WorkflowTaskQuery query)
+    {
+        Criteria process = null;
+        Criteria task = session.createCriteria(TaskInstance.class);
+        
+        // task id
+        if (query.getTaskId() != null)
+        {
+            task.add(Restrictions.eq("id", getJbpmId(query.getTaskId())));
+        }
+        
+        // task state
+        if (query.getTaskState() != null)
+        {
+            WorkflowTaskState state = query.getTaskState();
+            if (state == WorkflowTaskState.IN_PROGRESS)
+            {
+                task.add(Restrictions.eq("isOpen", true));
+                task.add(Restrictions.isNull("end"));
+            }
+            else if (state == WorkflowTaskState.COMPLETED)
+            {
+                task.add(Restrictions.eq("isOpen", false));
+                task.add(Restrictions.isNotNull("end"));
+            }
+        }
+        
+        // task name
+        if (query.getTaskName() != null)
+        {
+            task.add(Restrictions.eq("name", query.getTaskName().toPrefixString(namespaceService)));
+        }
+        
+        // task actor
+        if (query.getActorId() != null)
+        {
+            task.add(Restrictions.eq("actorId", query.getActorId()));
+        }
+        
+        // task custom properties
+        if (query.getTaskCustomProps() != null)
+        {
+            Map<QName, Object> props = query.getTaskCustomProps();
+            if (props.size() > 0)
+            {
+                Criteria variables = task.createCriteria("variableInstances");
+                Disjunction values = Restrictions.disjunction();
+                for (Map.Entry<QName, Object> prop : props.entrySet())
+                {
+                    Conjunction value = Restrictions.conjunction();
+                    value.add(Restrictions.eq("name", mapQNameToName(prop.getKey())));
+                    value.add(Restrictions.eq("value", prop.getValue().toString()));
+                    values.add(value);
+                }
+                variables.add(values);   
+            }
+        }
+        
+        // process active?
+        if (query.isActive() != null)
+        {
+            process = (process == null) ? task.createCriteria("processInstance") : process;
+            if (query.isActive())
+            {
+                process.add(Restrictions.isNull("end"));
+            }
+            else
+            {
+                process.add(Restrictions.isNotNull("end"));
+            }
+        }
+        
+        // process id
+        if (query.getProcessId() != null)
+        {
+            process = (process == null) ? task.createCriteria("processInstance") : process;
+            process.add(Restrictions.eq("id", getJbpmId(query.getProcessId())));
+        }
+        
+        // process name
+        if (query.getProcessName() != null)
+        {
+            process = (process == null) ? task.createCriteria("processInstance") : process;
+            Criteria processDef = process.createCriteria("processDefinition");
+            processDef.add(Restrictions.eq("name", query.getProcessName().toPrefixString(namespaceService)));
+        }
+
+        // process custom properties
+        if (query.getProcessCustomProps() != null)
+        {
+            // TODO: Due to Hibernate bug http://opensource.atlassian.com/projects/hibernate/browse/HHH-957
+            //       it's not possible to perform a sub-select with the criteria api.  For now issue a
+            //       secondary query and create an IN clause.
+            Map<QName, Object> props = query.getProcessCustomProps();
+            if (props.size() > 0)
+            {
+                // create criteria for process variables
+                Criteria variables = session.createCriteria(VariableInstance.class);
+                variables.setProjection(Property.forName("processInstance"));
+                Disjunction values = Restrictions.disjunction();
+                for (Map.Entry<QName, Object> prop : props.entrySet())
+                {
+                    Conjunction value = Restrictions.conjunction();
+                    value.add(Restrictions.eq("name", mapQNameToName(prop.getKey())));
+                    value.add(Restrictions.eq("value", prop.getValue().toString()));
+                    values.add(value);
+                }
+                variables.add(values);
+                
+                // retrieve list of processes matching specified variables
+                List<ProcessInstance> processList = variables.list();
+                Object[] processIds = null;
+                if (processList.size() == 0)
+                {
+                    processIds = new Object[] { new Long(-1) };
+                }
+                else
+                {
+                    processIds = new Object[processList.size()];
+                    for (int i = 0; i < processList.size(); i++)
+                    {
+                        processIds[i] = processList.get(i).getId();
+                    }
+                }
+
+                // constrain tasks by process list
+                process = (process == null) ? task.createCriteria("processInstance") : process;
+                process.add(Restrictions.in("id", processIds));
+            }
+        }
+
+        // order by
+        if (query.getOrderBy() != null)
+        {
+            WorkflowTaskQuery.OrderBy[] orderBy = query.getOrderBy();
+            for (WorkflowTaskQuery.OrderBy orderByPart : orderBy)
+            {
+                if (orderByPart == WorkflowTaskQuery.OrderBy.TaskActor_Asc)
+                {
+                    task.addOrder(Order.asc("actorId"));
+                }
+                else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskActor_Desc)
+                {
+                    task.addOrder(Order.desc("actorId"));
+                } 
+                else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskCreated_Asc)
+                {
+                    task.addOrder(Order.asc("create"));
+                } 
+                else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskCreated_Desc)
+                {
+                    task.addOrder(Order.desc("create"));
+                } 
+                else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskId_Asc)
+                {
+                    task.addOrder(Order.asc("id"));
+                } 
+                else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskId_Desc)
+                {
+                    task.addOrder(Order.desc("id"));
+                } 
+                else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskName_Asc)
+                {
+                    task.addOrder(Order.asc("name"));
+                } 
+                else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskName_Desc)
+                {
+                    task.addOrder(Order.desc("name"));
+                } 
+                else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskState_Asc)
+                {
+                    task.addOrder(Order.asc("end"));
+                } 
+                else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskState_Desc)
+                {
+                    task.addOrder(Order.desc("end"));
+                } 
+            }
+        }
+        
+        return task;
+    }
+    
     /**
      * Gets a jBPM Task Instance
      * @param taskSession  jBPM task session

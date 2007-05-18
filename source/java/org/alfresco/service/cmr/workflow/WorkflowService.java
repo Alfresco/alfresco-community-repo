@@ -258,6 +258,15 @@ public interface WorkflowService
     public List<WorkflowTask> getPooledTasks(String authority);
     
     /**
+     * Query for tasks
+     * 
+     * @param query  the filter by which tasks are queried
+     * @return  the list of tasks matching the specified query
+     */
+    @Auditable(parameters = {"filter"})
+    public List<WorkflowTask> queryTasks(WorkflowTaskQuery query);
+    
+    /**
      * Update the Properties and Associations of a Task
      * 
      * @param taskId  the task id to update

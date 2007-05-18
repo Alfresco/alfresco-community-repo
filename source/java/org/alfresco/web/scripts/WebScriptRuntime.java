@@ -202,7 +202,6 @@ public abstract class WebScriptRuntime
                 //
                 // Determine if user already authenticated
                 //
-                
                 currentUser = AuthenticationUtil.getCurrentUserName();
                 if (logger.isDebugEnabled())
                 {
@@ -214,19 +213,18 @@ public abstract class WebScriptRuntime
                 //
                 // Apply appropriate authentication to Web Script invocation
                 //
-                
-                authenticate(required, isGuest);
-                
-                //
-                // Execute Web Script
-                wrappedExecute(scriptReq, scriptRes);
+                if (authenticate(required, isGuest))
+                {
+                    //
+                    // Execute Web Script
+                    wrappedExecute(scriptReq, scriptRes);
+                }
             }
             finally
             {
                 //
                 // Reset authentication for current thread
                 //
-                
                 AuthenticationUtil.clearCurrentSecurityContext();
                 if (currentUser != null)
                 {
@@ -293,8 +291,10 @@ public abstract class WebScriptRuntime
      * 
      * @param required  required level of authentication
      * @param isGuest  is the request accessed as Guest
+     * 
+     * @return true if authorised, false otherwise
      */
-    protected abstract void authenticate(RequiredAuthentication required, boolean isGuest);
+    protected abstract boolean authenticate(RequiredAuthentication required, boolean isGuest);
     
     /**
      * Pre-execution hook

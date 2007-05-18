@@ -29,7 +29,6 @@ import javax.portlet.RenderResponse;
 
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 
-
 /**
  * Web Script Authenticator for the JSR-168 environment
  * 
@@ -37,15 +36,15 @@ import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
  */
 public interface WebScriptPortletAuthenticator
 {
-
-    /**
-     * Authenticate Web Script execution
-     * 
-     * @param required  required level of authentication
-     * @param isGuest  is Guest accessing the web script
-     * @param req  portlet render request
-     * @param res  portlet render response
-     */
-    public void authenticate(RequiredAuthentication required, boolean isGuest, RenderRequest req, RenderResponse res);
-    
+   /**
+    * Authenticate Web Script execution
+    * 
+    * @param required  required level of authentication
+    * @param isGuest  is Guest accessing the web script
+    * @param req  portlet render request
+    * @param res  portlet render response
+    * 
+    * @return true if authorised, false otherwise
+    */
+   public boolean authenticate(RequiredAuthentication required, boolean isGuest, RenderRequest req, RenderResponse res);
 }

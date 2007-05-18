@@ -60,7 +60,7 @@ public class BasicHttpAuthenticator implements WebScriptServletAuthenticator
     /* (non-Javadoc)
      * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
      */
-    public void authenticate(RequiredAuthentication required, boolean isGuest, HttpServletRequest req, HttpServletResponse res)
+    public boolean authenticate(RequiredAuthentication required, boolean isGuest, HttpServletRequest req, HttpServletResponse res)
     {
         boolean authorized = false;
 
@@ -146,6 +146,7 @@ public class BasicHttpAuthenticator implements WebScriptServletAuthenticator
             res.setStatus(401);
             res.setHeader("WWW-Authenticate", "Basic realm=\"Alfresco\"");
         }
+        return authorized;
     }
 
 }

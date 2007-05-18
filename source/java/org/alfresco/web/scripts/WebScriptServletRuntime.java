@@ -100,11 +100,13 @@ public class WebScriptServletRuntime extends WebScriptRuntime
      * @see org.alfresco.web.scripts.WebScriptRuntime#authenticate(org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication, boolean)
      */
     @Override
-    protected void authenticate(RequiredAuthentication required, boolean isGuest)
+    protected boolean authenticate(RequiredAuthentication required, boolean isGuest)
     {
+        boolean authorised = true;
         if (authenticator != null)
         {
-            authenticator.authenticate(required, isGuest, req, res);
+            authorised = authenticator.authenticate(required, isGuest, req, res);
         }
+        return authorised;
     }
 }

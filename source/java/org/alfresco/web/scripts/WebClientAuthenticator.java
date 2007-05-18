@@ -38,7 +38,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.ServletContextAware;
 
-
 /**
  * Alfresco Web Client Authentication Interceptor
  * 
@@ -64,17 +63,15 @@ public class WebClientAuthenticator implements WebScriptServletAuthenticator, Se
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptServletAuthenticator#authenticate(org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication, boolean, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
-    public void authenticate(RequiredAuthentication required, boolean isGuest, HttpServletRequest req, HttpServletResponse res)
+    public boolean authenticate(RequiredAuthentication required, boolean isGuest, HttpServletRequest req, HttpServletResponse res)
     {
         AuthenticationStatus status = null;
 
         try
         {
-            
             //
             // validate credentials
             // 
-    
             String ticket = req.getParameter("ticket");
             
             if (logger.isDebugEnabled())
@@ -110,7 +107,6 @@ public class WebClientAuthenticator implements WebScriptServletAuthenticator, Se
             //
             // if not authorized, redirect to login page
             //
-            
             if (status == null || status == AuthenticationStatus.Failure)
             {
                 // authentication failed - now need to display the login page to the user, if asked to
@@ -124,6 +120,7 @@ public class WebClientAuthenticator implements WebScriptServletAuthenticator, Se
         {
             throw new WebScriptException("Failed to authenticate", e);
         }
+        
+        return !(status == null || status == AuthenticationStatus.Failure);
     }
-
 }

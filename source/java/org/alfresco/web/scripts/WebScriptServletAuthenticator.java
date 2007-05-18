@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 
-
 /**
  * Web Script Authenticator for the HTTP Servlet environment
  * 
@@ -37,15 +36,15 @@ import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
  */
 public interface WebScriptServletAuthenticator
 {
-
-    /**
-     * Authenticate Web Script execution
-     * 
-     * @param required  required level of authentication
-     * @param isGuest  is Guest accessing the web script
-     * @param req  http servlet request
-     * @param res  http servlet response
-     */
-    public void authenticate(RequiredAuthentication required, boolean isGuest, HttpServletRequest req, HttpServletResponse res);
-    
+   /**
+    * Authenticate Web Script execution
+    * 
+    * @param required  required level of authentication
+    * @param isGuest  is Guest accessing the web script
+    * @param req  http servlet request
+    * @param res  http servlet response
+    * 
+    * @return true if authorised to execute the script, false otherwise
+    */
+   public boolean authenticate(RequiredAuthentication required, boolean isGuest, HttpServletRequest req, HttpServletResponse res);
 }

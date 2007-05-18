@@ -73,7 +73,7 @@ public class WebClientPortletAuthenticator implements WebScriptPortletAuthentica
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.portlet.WebScriptPortletAuthenticator#authenticate(org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication, boolean, javax.portlet.RenderRequest, javax.portlet.RenderResponse)
      */
-    public void authenticate(RequiredAuthentication required, boolean isGuest, RenderRequest req, RenderResponse res)
+    public boolean authenticate(RequiredAuthentication required, boolean isGuest, RenderRequest req, RenderResponse res)
     {
         PortletSession session = req.getPortletSession();
         String portalUser = req.getRemoteUser();
@@ -115,6 +115,8 @@ public class WebClientPortletAuthenticator implements WebScriptPortletAuthentica
                 removeSessionInvalidated(session);
             }
         }
+        
+        return true;
     }
 
     /**

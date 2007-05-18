@@ -394,31 +394,103 @@ function log(message)
 
 if (!String.prototype.startsWith)
 {
-  String.prototype.startsWith = function(s)
-  {
-    return this.indexOf(s) == 0;
-  }
+   String.prototype.startsWith = function(s)
+   {
+      return this.indexOf(s) == 0;
+   }
 }
 
 if (!Array.prototype.indexOf)
 {
-  Array.prototype.indexOf = function(o)
-  {
-    for (var i = 0; i < this.length; i++)
-    {
-      if (this[i] == o)
+   Array.prototype.indexOf = function(o)
+   {
+      for (var i = 0; i < this.length; i++)
       {
-        return i;
+         if (this[i] == o)
+         {
+            return i;
+         }
       }
-    }
-    return -1;
-  }
+      return -1;
+   }
 }
 
 if (!Array.prototype.peek)
 {
-  Array.prototype.peek = function(o)
-  {
-    return this[this.length - 1];
-  }
+   Array.prototype.peek = function(o)
+   {
+      return this[this.length - 1];
+   }
+}
+
+var _fileUploads = [];
+
+function handleUploadHelper(fileInputElement,
+                            uploadId,
+                            callback,
+                            contextPath,
+                            actionUrl,
+                            params)
+{
+   var id = fileInputElement.getAttribute("name");
+   var d = fileInputElement.ownerDocument;
+   var iframe = d.createElement("iframe");
+   iframe.style.display = "none";
+   iframe.name = id + "upload_frame";
+   iframe.id = iframe.name;
+   document.body.appendChild(iframe);
+   
+   // makes it possible to target the frame properly in IE.
+   window.frames[iframe.name].name = iframe.name;
+   
+   _fileUploads[uploadId] = { path: fileInputElement.value, callback: callback };
+   
+   var form = d.createElement("form");
+   d.body.appendChild(form);
+   form.id = id + "_upload_form";
+   form.name = form.id;
+   form.style.display = "none";
+   form.method = "post";
+   form.encoding = "multipart/form-data";
+   form.enctype = "multipart/form-data";
+   form.target = iframe.name;
+   actionUrl = actionUrl || "/uploadFileServlet";
+   form.action = contextPath + actionUrl;
+   form.appendChild(fileInputElement);
+   
+   var id = document.createElement("input");
+   id.type = "hidden";
+   form.appendChild(id);
+   id.name = "upload-id";
+   id.value = uploadId;
+   
+   if (params != undefined && params != null)
+   {
+      for (var i in params)
+      {
+         var p = document.createElement("input");
+         p.type = "hidden";
+         form.appendChild(p);
+         id.name = i;
+         id.value = params[i];
+      }
+   }
+   
+   var rp = document.createElement("input");
+   rp.type = "hidden";
+   form.appendChild(rp);
+   rp.name = "return-page";
+   rp.value = "javascript:window.parent.uploadCompleteHelper('" + uploadId + 
+              "',{error: '${UPLOAD_ERROR}'})";
+   
+   form.submit();
+}
+
+function uploadCompleteHelper(id, args)
+{
+   var upload = _fileUploads[id];
+   upload.callback(id, 
+                   upload.path, 
+                   upload.path.replace(/.*[\/\\]([^\/\\]+)/, "$1"),
+                   args.error != "${UPLOAD_ERROR}" ? args.error : null);
 }

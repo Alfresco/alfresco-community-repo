@@ -1,5 +1,11 @@
 var MySpaces = {
-
+   IMG_SMALL: 16,
+   IMG_LARGE: 64,
+   ANIM_LENGTH: 300,
+   DETAIL_MARGIN: 56,
+   TITLE_FONT_SIZE: 18,
+   fileInput: null,
+   
    start: function()
    {
       if ($('spacePanel'))
@@ -18,20 +24,20 @@ var MySpaces = {
       var icons = $$('#spacePanel .spaceIcon');
       var imgs = $$('#spacePanel .spaceIconImage');
       var imgs64 = $$('#spacePanel .spaceIconImage64');
-      var fxItem = new Fx.Elements(items, {wait: false, duration: 300, transition: Fx.Transitions.linear});
-      var fxDetail = new Fx.Elements(details, {wait: false, duration: 300, transition: Fx.Transitions.linear});
-      var fxInfo = new Fx.Elements(infos, {wait: false, duration: 300, transition: Fx.Transitions.linear});
-      var fxIcon = new Fx.Elements(icons, {wait: false, duration: 300, transition: Fx.Transitions.linear});
+      var fxItem = new Fx.Elements(items, {wait: false, duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
+      var fxDetail = new Fx.Elements(details, {wait: false, duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
+      var fxInfo = new Fx.Elements(infos, {wait: false, duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
+      var fxIcon = new Fx.Elements(icons, {wait: false, duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
       var fxImage = new Fx.Elements(imgs,
       {
          wait: false,
-         duration: 300,
+         duration: MySpaces.ANIM_LENGTH,
          transition: Fx.Transitions.linear,
          onComplete: function()
          {
             this.elements.each(function(img, i)
             {
-               img.src = (img.getStyle('height').toInt() == 16) ? img.defSrc : img.bigSrc;
+               img.src = (img.getStyle('height').toInt() == MySpaces.IMG_SMALL) ? img.defSrc : img.bigSrc;
             });
          }
       });
@@ -71,20 +77,20 @@ var MySpaces = {
             space.addClass('spaceItemSelected');
             // move the item title to the right
             animItem[i] = {
-               'margin-left': [item.getStyle('margin-left').toInt(), 56],
-               'font-size': [item.getStyle('font-size').toInt(), 18]
+               'margin-left': [item.getStyle('margin-left').toInt(), MySpaces.DETAIL_MARGIN],
+               'font-size': [item.getStyle('font-size').toInt(), MySpaces.TITLE_FONT_SIZE]
             };
             // fade in the info button
             animInfo[i] = {'opacity': [info.getStyle('opacity'), 1]};
             // slide and fade in the details panel
             animDetail[i] = {
-               'height': [detail.getStyle('height').toInt(), detail.defHeight + 64],
+               'height': [detail.getStyle('height').toInt(), detail.defHeight + MySpaces.IMG_LARGE],
                'opacity': [detail.getStyle('opacity'), 1]
             };
             // grow the spacetype image
             animImage[i] = {
-               'height': [img.getStyle('height').toInt(), 64],
-               'width': [img.getStyle('width').toInt(), 64]
+               'height': [img.getStyle('height').toInt(), MySpaces.IMG_LARGE],
+               'width': [img.getStyle('width').toInt(), MySpaces.IMG_LARGE]
             };
             img.src = img.bigSrc;
 
@@ -124,11 +130,11 @@ var MySpaces = {
                   }
                   // does the image need shrinking?
                   var ih = otherImg.getStyle('height').toInt();
-                  if (ih != 16)
+                  if (ih != MySpaces.IMG_SMALL)
                   {
                      animImage[j] = {
-                        'height': [ih, 16],
-                        'width': [ih, 16]
+                        'height': [ih, MySpaces.IMG_SMALL],
+                        'width': [ih, MySpaces.IMG_SMALL]
                      };
                   }
                }
@@ -160,20 +166,20 @@ var MySpaces = {
                // continue animations that may have been going on before the click
                // move the item title to the right
                animItem[i] = {
-                  'margin-left': [item.getStyle('margin-left').toInt(), 56],
-                  'font-size': [item.getStyle('font-size').toInt(), 18]
+                  'margin-left': [item.getStyle('margin-left').toInt(), MySpaces.DETAIL_MARGIN],
+                  'font-size': [item.getStyle('font-size').toInt(), MySpaces.TITLE_FONT_SIZE]
                };
                // fade in the info button
                animInfo[i] = {'opacity': [info.getStyle('opacity'), 1]};
                // slide and fade in the details panel
                animDetail[i] = {
-                  'height': [detail.getStyle('height').toInt(), detail.defHeight + 64],
+                  'height': [detail.getStyle('height').toInt(), detail.defHeight + MySpaces.IMG_LARGE],
                   'opacity': [detail.getStyle('opacity'), 1]
                };
                // grow the spacetype image
                animImage[i] = {
-                  'height': [img.getStyle('height').toInt(), 64],
-                  'width': [img.getStyle('width').toInt(), 64]
+                  'height': [img.getStyle('height').toInt(), MySpaces.IMG_LARGE],
+                  'width': [img.getStyle('width').toInt(), MySpaces.IMG_LARGE]
                };
             }
             else
@@ -189,8 +195,8 @@ var MySpaces = {
                };
                animInfo[i] = {'opacity': [infos[i].getStyle('opacity'), 0]};
                animImage[i] = {
-                  'height': [img.getStyle('height').toInt(), 16],
-                  'width': [img.getStyle('width').toInt(), 16]
+                  'height': [img.getStyle('height').toInt(), MySpaces.IMG_SMALL],
+                  'width': [img.getStyle('width').toInt(), MySpaces.IMG_SMALL]
                };
             }
          });
@@ -203,8 +209,60 @@ var MySpaces = {
    
    upload: function(actionEl)
    {
-      var panel = $E(".spaceUploadPanel", actionEl);
-      panel.setStyle("display", "block");
+      var panel = $E(".spaceUploadPanel", $(actionEl).getParent());
+      panel.setStyle("opacity", 0);
+      panel.setStyle("display", "inline");
+      
+      // Generate a file upload element
+      // To perform the actual upload, the element is moved to a hidden iframe
+      // from which the upload is performed - this is required as javascript cannot
+      // set the important properties on a file upload element for security reasons.
+      // <input size="35" style="width:100%" type="file" value="" id="_upload" name="_upload">
+      if (this.fileInput == null)
+      {
+         var fileInput = $(document.createElement("input"));
+         fileInput.type = "file";
+         fileInput.name = "_upload";
+         fileInput.size = "35";
+         fileInput.setStyle("width", "100%");
+         fileInput.injectTop(panel);
+         this.fileInput = fileInput;
+      }
+      
+      var anim = new Fx.Styles(panel, {duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
+      anim.start({'opacity': 1});
+   },
+   
+   uploadOK: function(actionEl, path)
+   {
+      // call the upload help to perform the upload
+      handleUploadHelper(this.fileInput,
+                         "1",   // TODO: generate unique ID (parent space noderef?)
+                         MySpaces.uploadCompleteHandler,
+                         getContextPath(),
+                         "/ajax/invoke/FileUploadBean.uploadFile",
+                         {currentPath: path.replace("_%_", "'")});   // decode path
+      this.fileInput = null;
+      this.uploadClose(actionEl);
+   },
+   
+   uploadClose: function(actionEl)
+   {
+      var panel = $(actionEl).getParent();
+      panel.setStyle("display", "none");
+   },
+   
+   uploadCompleteHandler: function(id, path, fileName, error)
+   {
+      if (error == null)
+      {
+         // TODO: refresh!
+         alert("Uploaded: " + fileName);
+      }
+      else
+      {
+         alert("ERROR: " + error);
+      }
    }
 };
 

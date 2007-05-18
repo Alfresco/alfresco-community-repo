@@ -1,5 +1,6 @@
 var MyWebForms = {
-
+   ANIM_LENGTH: 300,
+   
    start: function()
    {
       if ($('formsPanel'))
@@ -13,7 +14,7 @@ var MyWebForms = {
    {
       var projects = $$('#formsPanel .webProjectRow');
       var frms = $$('#formsPanel .webProjectForms');
-      var fxForm = new Fx.Elements(frms, {wait: false, duration: 300, transition: Fx.Transitions.sineInOut});
+      var fxForm = new Fx.Elements(frms, {wait: false, duration: MyWebForms.ANIM_LENGTH, transition: Fx.Transitions.sineInOut});
 
       projects.each(function(project, i)
       {

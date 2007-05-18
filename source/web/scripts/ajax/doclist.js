@@ -1,4 +1,10 @@
 var MyDocs = {
+   IMG_SMALL: 16,
+   IMG_LARGE: 64,
+   ANIM_LENGTH: 300,
+   DETAIL_MARGIN: 56,
+   TITLE_FONT_SIZE: 18,
+   RESOURCE_PANEL_HEIGHT: 150,
 
    start: function()
    {
@@ -19,10 +25,10 @@ var MyDocs = {
       var imgs = $$('#docPanel .docIconImage');
       var imgs64 = $$('#docPanel .docIconImage64');
       var resources = $$('#docPanel .docResource');
-      var fxItem = new Fx.Elements(items, {wait: false, duration: 300, transition: Fx.Transitions.linear});
-      var fxDetail = new Fx.Elements(details, {wait: false, duration: 300, transition: Fx.Transitions.linear});
-      var fxInfo = new Fx.Elements(infos, {wait: false, duration: 300, transition: Fx.Transitions.linear});
-      var fxIcon = new Fx.Elements(icons, {wait: false, duration: 300, transition: Fx.Transitions.linear});
+      var fxItem = new Fx.Elements(items, {wait: false, duration: MyDocs.ANIM_LENGTH, transition: Fx.Transitions.linear});
+      var fxDetail = new Fx.Elements(details, {wait: false, duration: MyDocs.ANIM_LENGTH, transition: Fx.Transitions.linear});
+      var fxInfo = new Fx.Elements(infos, {wait: false, duration: MyDocs.ANIM_LENGTH, transition: Fx.Transitions.linear});
+      var fxIcon = new Fx.Elements(icons, {wait: false, duration: MyDocs.ANIM_LENGTH, transition: Fx.Transitions.linear});
       var fxResource = new Fx.Elements(resources,
       {
          wait: false,
@@ -55,13 +61,13 @@ var MyDocs = {
       var fxImage = new Fx.Elements(imgs,
       {
          wait: false,
-         duration: 300,
+         duration: MyDocs.ANIM_LENGTH,
          transition: Fx.Transitions.linear,
          onComplete: function()
          {
             this.elements.each(function(img, i)
             {
-               img.src = (img.getStyle('height').toInt() == 16) ? img.defSrc : img.bigSrc;
+               img.src = (img.getStyle('height').toInt() == MyDocs.IMG_SMALL) ? img.defSrc : img.bigSrc;
             });
          }
       });
@@ -104,20 +110,20 @@ var MyDocs = {
             doc.addClass('docItemSelected');
             // move the item title to the right
             animItem[i] = {
-               'margin-left': [item.getStyle('margin-left').toInt(), 56],
-               'font-size': [item.getStyle('font-size').toInt(), 18]
+               'margin-left': [item.getStyle('margin-left').toInt(), MyDocs.DETAIL_MARGIN],
+               'font-size': [item.getStyle('font-size').toInt(), MyDocs.TITLE_FONT_SIZE]
             };
             // fade in the info button
             animInfo[i] = {'opacity': [info.getStyle('opacity'), 1]};
             // slide and fade in the details panel
             animDetail[i] = {
-               'height': [detail.getStyle('height').toInt(), detail.defHeight + 64],
+               'height': [detail.getStyle('height').toInt(), detail.defHeight + MyDocs.IMG_LARGE],
                'opacity': [detail.getStyle('opacity'), 1]
             };
             // grow the doctype image
             animImage[i] = {
-               'height': [img.getStyle('height').toInt(), 64],
-               'width': [img.getStyle('width').toInt(), 64]
+               'height': [img.getStyle('height').toInt(), MyDocs.IMG_LARGE],
+               'width': [img.getStyle('width').toInt(), MyDocs.IMG_LARGE]
             };
             img.src = img.bigSrc;
 
@@ -157,11 +163,11 @@ var MyDocs = {
                   }
                   // does the image need shrinking?
                   var ih = otherImg.getStyle('height').toInt();
-                  if (ih != 16)
+                  if (ih != MyDocs.IMG_SMALL)
                   {
                      animImage[j] = {
-                        'height': [ih, 16],
-                        'width': [ih, 16]
+                        'height': [ih, MyDocs.IMG_SMALL],
+                        'width': [ih, MyDocs.IMG_SMALL]
                      };
                   }
                }
@@ -224,7 +230,7 @@ var MyDocs = {
                
                // slide and fade in the resources panel
                animResource[i] = {
-                  'height': [resourceHeight, resource.defHeight + 150],
+                  'height': [resourceHeight, resource.defHeight + MyDocs.RESOURCE_PANEL_HEIGHT],
                   'opacity': [resource.getStyle('opacity'), 1]};
    
                // close other open documents and toggle this one if it's already open
@@ -241,20 +247,20 @@ var MyDocs = {
                      // continue animations that may have been going on before the click
                      // move the item title to the right
                      animItem[j] = {
-                        'margin-left': [otherItem.getStyle('margin-left').toInt(), 56],
-                        'font-size': [otherItem.getStyle('font-size').toInt(), 18]
+                        'margin-left': [otherItem.getStyle('margin-left').toInt(), MyDocs.DETAIL_MARGIN],
+                        'font-size': [otherItem.getStyle('font-size').toInt(), MyDocs.TITLE_FONT_SIZE]
                      };
                      // fade in the info button
                      animInfo[j] = {'opacity': [otherInfo.getStyle('opacity'), 1]};
                      // slide and fade in the details panel
                      animDetail[j] = {
-                        'height': [otherDetail.getStyle('height').toInt(), otherDetail.defHeight + 64],
+                        'height': [otherDetail.getStyle('height').toInt(), otherDetail.defHeight + MyDocs.IMG_LARGE],
                         'opacity': [otherDetail.getStyle('opacity'), 1]
                      };
                      // grow the doctype image
                      animImage[j] = {
-                        'height': [otherImg.getStyle('height').toInt(), 64],
-                        'width': [otherImg.getStyle('width').toInt(), 64]
+                        'height': [otherImg.getStyle('height').toInt(), MyDocs.IMG_LARGE],
+                        'width': [otherImg.getStyle('width').toInt(), MyDocs.IMG_LARGE]
                      };
                   }
                   else
@@ -289,11 +295,11 @@ var MyDocs = {
                      }
                      // does the image need shrinking?
                      var ih = otherImg.getStyle('height').toInt();
-                     if (ih != 16)
+                     if (ih != MyDocs.IMG_SMALL)
                      {
                         animImage[j] = {
-                           'height': [ih, 16],
-                           'width': [ih, 16]
+                           'height': [ih, MyDocs.IMG_SMALL],
+                           'width': [ih, MyDocs.IMG_SMALL]
                         };
                      }
    
@@ -359,20 +365,20 @@ var MyDocs = {
                // continue animations that may have been going on before the click
                // move the item title to the right
                animItem[i] = {
-                  'margin-left': [item.getStyle('margin-left').toInt(), 56],
-                  'font-size': [item.getStyle('font-size').toInt(), 18]
+                  'margin-left': [item.getStyle('margin-left').toInt(), MyDocs.DETAIL_MARGIN],
+                  'font-size': [item.getStyle('font-size').toInt(), MyDocs.TITLE_FONT_SIZE]
                };
                // fade in the info button
                animInfo[i] = {'opacity': [info.getStyle('opacity'), 1]};
                // slide and fade in the details panel
                animDetail[i] = {
-                  'height': [detail.getStyle('height').toInt(), detail.defHeight + 64],
+                  'height': [detail.getStyle('height').toInt(), detail.defHeight + MyDocs.IMG_LARGE],
                   'opacity': [detail.getStyle('opacity'), 1]
                };
                // grow the doctype image
                animImage[i] = {
-                  'height': [img.getStyle('height').toInt(), 64],
-                  'width': [img.getStyle('width').toInt(), 64]
+                  'height': [img.getStyle('height').toInt(), MyDocs.IMG_LARGE],
+                  'width': [img.getStyle('width').toInt(), MyDocs.IMG_LARGE]
                };
             }
             else
@@ -388,8 +394,8 @@ var MyDocs = {
                };
                animInfo[i] = {'opacity': [infos[i].getStyle('opacity'), 0]};
                animImage[i] = {
-                  'height': [img.getStyle('height').toInt(), 16],
-                  'width': [img.getStyle('width').toInt(), 16]
+                  'height': [img.getStyle('height').toInt(), MyDocs.IMG_SMALL],
+                  'width': [img.getStyle('width').toInt(), MyDocs.IMG_SMALL]
                };
             }
          });

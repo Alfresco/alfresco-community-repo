@@ -1,5 +1,7 @@
 var MyTasks = {
-
+   ANIM_LENGTH: 300,
+   DETAIL_PANEL_HEIGHT: 132,
+   
    start: function()
    {
       if ($('taskPanel'))
@@ -15,8 +17,8 @@ var MyTasks = {
       var infos = $$('#taskPanel .taskInfo');
       var details = $$('#taskPanel .taskDetail');
       var resources = $$('#taskPanel .taskResources');
-      var fxInfo = new Fx.Elements(infos, {wait: false, duration: 300, transition: Fx.Transitions.sineInOut});
-      var fxDetail = new Fx.Elements(details, {wait: false, duration: 300, transition: Fx.Transitions.sineInOut,
+      var fxInfo = new Fx.Elements(infos, {wait: false, duration: MyTasks.ANIM_LENGTH, transition: Fx.Transitions.sineInOut});
+      var fxDetail = new Fx.Elements(details, {wait: false, duration: MyTasks.ANIM_LENGTH, transition: Fx.Transitions.sineInOut,
          onComplete: function()
          {
             // event handler to ensure 
@@ -157,7 +159,7 @@ var MyTasks = {
 
                // slide and fade in the details panel
                animDetail[i] = {
-                  'height': [detailHeight, detail.defHeight + 132],
+                  'height': [detailHeight, detail.defHeight + MyTasks.DETAIL_PANEL_HEIGHT],
                   'opacity': [detail.getStyle('opacity'), 1]};
 
                // close other open tasks and toggle this one if it's already open

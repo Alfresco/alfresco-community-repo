@@ -44,7 +44,7 @@
          <#if c?length != 0>
             <#assign bcpath=bcpath+c+"/">
             <a class="spaceBreadcrumbLink" href="${scripturl("?f=${filter}&p=${bcpath}")}"><img src="${url.context}/images/icons/space-icon-default-16.png" border="0" width="16" height="16" alt="" style="vertical-align:-25%;padding-right:2px">${c}</a>
-            <#if c_index<crumbs?size-1>&nbsp;&gt;&nbsp;</#if>
+            <#if c_index < (crumbs?size - 1)>&nbsp;&gt;&nbsp;</#if>
          </#if>
       </#list>
    </div>
@@ -54,7 +54,11 @@
    <div class="spaceActions">
       <div class="spaceAction spaceActionUpload" title="Upload a new document" onclick="MySpaces.upload(this);">
          Upload
-         <div class="spaceUploadPanel"><input type="file" value=""></div>
+      </div>
+      <div class="spaceUploadPanel">
+         <#-- TODO: Url encode the path value! -->
+         <input style="margin:4px" type="submit" value="OK" onclick='MySpaces.uploadOK(this, "${path?url?replace("'","_%_")}");'>
+         <input style="margin:4px" type="button" value="Cancel" onclick="MySpaces.uploadClose(this);">
       </div>
       <div class="spaceAction spaceActionCreateSpace" title="Create a new Space">Create Space</div>
    </div>
@@ -297,8 +301,12 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    border: 1px solid #CCD4DB;
    background-color: #EEF7FB;
    width: 24em;
-   height: 6em;
+   height: 4em;
+   padding: 8px;
+   margin: 8px;
    display: none;
+   left: 8px;
+   -moz-border-radius: 5px;
 }
 
 </STYLE>

@@ -13,9 +13,20 @@
 
     <start-state name="start">
         <task name="wcmwf:submitReviewTask" swimlane="initiator"/>
-        <transition name="" to="serialorparallel"/>
+        <transition name="" to="initialise"/>
     </start-state>
 
+    <node name="initialise">
+        <event type="node-enter">
+            <script>
+                <variable name="wcmwf_reviewCycle" access="write"/>
+                <expression>
+                   wcmwf_reviewCycle = 1;
+                </expression>
+            </script>
+        </event>
+        <transition name="" to="serialorparallel"/>
+    </node>
 
     <!--                                      -->
     <!-- Split into Serial or Parallel Review -->
@@ -58,6 +69,12 @@
            <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
               <actor>#{bpm_assignees.get(wcmwf_approveCnt)}</actor>
            </assignment>
+           <event type="task-assign">
+              <script>
+                 if (wcmwf_reviewCycle > 1)
+                    taskInstance.description = taskInstance.description + " (" + wcmwf_reviewCycle + ")";
+              </script>
+           </event>           
         </task>
 
         <transition name="reject" to="endreview" />
@@ -89,6 +106,12 @@
            <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
               <actor>#{reviewer}</actor>
            </assignment>
+           <event type="task-assign">
+              <script>
+                 if (wcmwf_reviewCycle > 1)
+                    taskInstance.description = taskInstance.description + " (" + wcmwf_reviewCycle + ")";
+              </script>
+           </event>           
         </task>
         <transition name="reject" to="joinparallelreview" />
         <transition name="approve" to="joinparallelreview">
@@ -96,7 +119,7 @@
                 <variable name="wcmwf_approveCnt" access="read,write" />
                 <expression>
                     wcmwf_approveCnt = wcmwf_approveCnt +1;
-                 </expression>
+                </expression>
             </script>
         </transition>
     </task-node>
@@ -117,20 +140,32 @@
        </transition>
     </decision>   
 
+    <task-node name="rejected">
+        <task name="wcmwf:rejectedTask" swimlane="initiator" >
+            <event type="task-assign">
+                <script>
+                    if (wcmwf_reviewCycle > 1)
+                        taskInstance.description = taskInstance.description + " (" + wcmwf_reviewCycle + ")";
+                </script>
+            </event>
+        </task>
+        <transition name="abort" to="end" />
+        <transition name="resubmit" to="serialorparallel">        <!-- restart review process (next cycle) -->
+           <script>
+               <variable name="wcmwf_reviewCycle" access="read,write" />
+               <expression>
+                   wcmwf_reviewCycle = wcmwf_reviewCycle +1;
+               </expression>
+           </script>
+        </transition>
+    </task-node>
+
     <decision name="onapprove">
        <transition name="launchnow" to="submitted" />
        <transition name="launchpending" to="submitpending">
            <condition>#{wcmwf_launchDate != null}</condition>
        </transition>
     </decision>
-
-    <task-node name="rejected">
-        <event type="node-enter">
-           <action class="org.alfresco.repo.avm.wf.AVMClearSubmittedHandler"/>
-        </event>
-        <task name="wcmwf:rejectedTask" swimlane="initiator" />
-        <transition name="" to="end" />
-    </task-node>
 
     <task-node name="submitpending">
         <task name="wcmwf:submitpendingTask" swimlane="initiator">

@@ -89,6 +89,11 @@
 
     <type name="wcmwf:rejectedTask">
       <parent>wcmwf:workflowTask</parent>
+      <overrides>
+        <property name="bpm:packageItemActionGroup">
+          <default>edit_and_remove_wcm_package_item_actions</default>
+        </property>
+      </overrides>
       <mandatory-aspects>
         <aspect>bpm:assignees</aspect>
         <aspect>wcmwf:reviewType</aspect>
@@ -221,6 +226,11 @@
         </property>
         <property name="wcmwf:approveCnt">
           <title>Approver Count</title>
+          <type>d:int</type>
+          <mandatory>true</mandatory>
+        </property>
+        <property name="wcmwf:reviewCycle">
+          <title>Reviewer Cycle</title>
           <type>d:int</type>
           <mandatory>true</mandatory>
         </property>

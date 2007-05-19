@@ -4581,6 +4581,18 @@ public class ADMLuceneTest extends TestCase
         tx3.commit();
     }
 
+//    public void testMany() throws Exception
+//    {
+//        for(int i = 0; i < 100; i++)
+//        {
+//            testReadAgainstDelta();
+//            System.out.println("At "+i);
+//            testTX.rollback();
+//            testTX = transactionService.getUserTransaction();
+//            testTX.begin();
+//        }
+//    }
+    
     /**
      * @throws Exception
      */
@@ -4624,16 +4636,21 @@ public class ADMLuceneTest extends TestCase
 
         testTX.rollback();
 
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("PATH:\"//.\"");
-        sp.addSort("ID", true);
+        //sp.addSort("ID", true);
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(15, results.length());
         results.close();
 
+        testTX.rollback();
+        
         // Delete
 
         testTX = transactionService.getUserTransaction();
@@ -4665,16 +4682,22 @@ public class ADMLuceneTest extends TestCase
 
         testTX.rollback();
 
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+
+        
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("PATH:\"//.\"");
-        sp.addSort("ID", true);
+        //sp.addSort("ID", true);
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(15, results.length());
         results.close();
 
+        testTX.rollback();
+        
         // Create
 
         testTX = transactionService.getUserTransaction();
@@ -4698,16 +4721,21 @@ public class ADMLuceneTest extends TestCase
 
         testTX.rollback();
 
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("PATH:\"//.\"");
-        sp.addSort("ID", true);
+        //sp.addSort("ID", true);
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(15, results.length());
         results.close();
 
+        testTX.rollback();
+        
         // update property
 
         testTX = transactionService.getUserTransaction();
@@ -4719,7 +4747,7 @@ public class ADMLuceneTest extends TestCase
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("\\@\\{namespace\\}property\\-1:\"valueone\"");
-        sp.addSort("ID", true);
+        //sp.addSort("ID", true);
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
 
@@ -4732,7 +4760,7 @@ public class ADMLuceneTest extends TestCase
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("\\@\\{namespace\\}property\\-1:\"valueone\"");
-        sp.addSort("ID", true);
+        //sp.addSort("ID", true);
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
 
@@ -4740,17 +4768,23 @@ public class ADMLuceneTest extends TestCase
         results.close();
 
         testTX.rollback();
+        
+
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
 
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("\\@\\{namespace\\}property\\-1:\"valueone\"");
         sp.excludeDataInTheCurrentTransaction(false);
-        sp.addSort("ID", true);
+        //sp.addSort("ID", true);
         results = serviceRegistry.getSearchService().query(sp);
 
         assertEquals(2, results.length());
         results.close();
+        
+        testTX.rollback();
 
         // Add and delete
 
@@ -4822,11 +4856,14 @@ public class ADMLuceneTest extends TestCase
 
         testTX.rollback();
 
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("PATH:\"//.\"");
-        sp.addSort("ID", true);
+        //sp.addSort("ID", true);
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(15, results.length());

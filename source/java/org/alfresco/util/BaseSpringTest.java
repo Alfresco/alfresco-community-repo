@@ -27,6 +27,7 @@ package org.alfresco.util;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
 import org.springframework.test.AbstractTransactionalDataSourceSpringContextTests;
 
@@ -44,12 +45,14 @@ public abstract class BaseSpringTest extends AbstractTransactionalDataSourceSpri
 {
     /** protected so that it gets populated if autowiring is done by variable name **/
     protected SessionFactory sessionFactory;
+    private boolean defaultContext;
     
 	/**
 	 * Constructor
 	 */
     public BaseSpringTest()
     {
+        defaultContext = false;
     }
     
     /**
@@ -90,6 +93,8 @@ public abstract class BaseSpringTest extends AbstractTransactionalDataSourceSpri
     @Override
     protected String[] getConfigLocations()
     {
+        // The derived class is using the default context
+        defaultContext = true;
         if (logger.isDebugEnabled())
         {
             logger.debug("Getting config locations");
@@ -103,6 +108,14 @@ public abstract class BaseSpringTest extends AbstractTransactionalDataSourceSpri
     @Override
     protected ConfigurableApplicationContext loadContext(Object key) throws Exception
     {
-        return (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();
+        if (defaultContext)
+        {
+            return (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();
+        }
+        else
+        {
+            String[] configLocations = (String[]) key;
+            return new ClassPathXmlApplicationContext(configLocations);
+        }
     }
 }

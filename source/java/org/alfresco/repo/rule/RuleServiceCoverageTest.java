@@ -86,8 +86,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.util.StopWatch;
 
 /**
@@ -98,7 +98,7 @@ public class RuleServiceCoverageTest extends TestCase
     /**
 	 * Application context used during the test
 	 */
-	static ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:alfresco/application-context.xml");
+	static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
 	
 	/**
 	 * Services used during the tests

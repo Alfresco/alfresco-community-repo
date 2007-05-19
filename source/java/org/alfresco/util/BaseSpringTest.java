@@ -26,6 +26,7 @@ package org.alfresco.util;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
 import org.springframework.test.AbstractTransactionalDataSourceSpringContextTests;
 
@@ -86,6 +87,7 @@ public abstract class BaseSpringTest extends AbstractTransactionalDataSourceSpri
 	 * 
 	 * @return  an array containing the config locations
 	 */
+    @Override
     protected String[] getConfigLocations()
     {
         if (logger.isDebugEnabled())
@@ -93,5 +95,14 @@ public abstract class BaseSpringTest extends AbstractTransactionalDataSourceSpri
             logger.debug("Getting config locations");
         }
         return ApplicationContextHelper.CONFIG_LOCATIONS;
+    }
+
+    /**
+     * Ignores the key and loads the {@link ApplicationContextHelper application context}.
+     */
+    @Override
+    protected ConfigurableApplicationContext loadContext(Object key) throws Exception
+    {
+        return (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();
     }
 }

@@ -90,6 +90,41 @@
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
+   
+   <tag>
+      <name>pendingSubmissions</name>
+      <tag-class>org.alfresco.web.ui.wcm.tag.PendingSubmissionsTag</tag-class>
+      <body-content>JSP</body-content>
+      <display-name>Pending Submissions List</display-name>
+      <description>Displays the list of pending submissions for a sandbox</description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The component identifier for this component</description>
+      </attribute>
+      
+      <attribute>
+         <name>value</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The sandbox to show the list of pending submissions for</description>
+      </attribute>
+      
+      <attribute>
+         <name>binding</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The value binding expression linking this component to a property in a backing bean</description>
+      </attribute>
+      
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
 
    <tag>
       <name>formProcessor</name>

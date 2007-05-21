@@ -194,6 +194,18 @@
                                  </a:panel>
                               </td>
                            </tr>
+                           <tr>
+                              <td></td>
+                              <td colspan=2>
+                                 <a:panel id="pending-submission-panel" rendered="#{AVMBrowseBean.isManagerRole}" label="#{msg.pending_submissions}"
+                                       progressive="true" expanded="false" styleClass="mainSubTitle">
+                                    <div style='padding-left:16px;padding-top:8px;padding-bottom:4px'>
+                                       <%-- Pending submission list --%>
+                                       <w:pendingSubmissions id="pending-submissions" value="#{AVMBrowseBean.stagingStore}" />
+                                    </div>
+                                 </a:panel>
+                              </td>
+                           </tr>
                         </table>
                         <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "lbgrey"); %>
                         

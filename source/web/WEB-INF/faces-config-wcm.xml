@@ -34,6 +34,11 @@
       <component-class>org.alfresco.web.ui.wcm.component.UIDeployWebsite</component-class>
    </component>
    
+   <component>
+      <component-type>org.alfresco.faces.PendingSubmissions</component-type>
+      <component-class>org.alfresco.web.ui.wcm.component.UIPendingSubmissions</component-class>
+   </component>
+   
    <!-- ==================== CONVERTERS ==================== -->
    
    

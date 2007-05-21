@@ -568,6 +568,14 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    border-color: #DDDDDD;
 }
 
+.pendingSubmissionsList
+{
+   background-color: #f5f5f5;
+   border-width: 1px;
+   border-style: solid;
+   border-color: #DDDDDD;
+}
+
 #pluginBox
 {
    border: 1px solid #babfc5;

@@ -1106,6 +1106,70 @@ public class AVMBrowseBean implements IContextListener
       fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "wizard:createWebContent");
    }
    
+   /**
+    * Event handler that transitions a 'submitpending' task to effectively
+    * bypass the lauch date and immediately submit the items.
+    * 
+    * @param event The event
+    */
+   public void promotePendingSubmission(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String taskId = params.get("taskId");
+      
+      UserTransaction tx = null;
+      try
+      {
+         FacesContext context = FacesContext.getCurrentInstance();
+         tx = Repository.getUserTransaction(context, false);
+         tx.begin();
+
+         // transition the task
+         this.workflowService.endTask(taskId, "launch");
+         
+         // commit the transaction
+         tx.commit();
+      }
+      catch (Throwable err)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
+   }
+   
+   /**
+    * Event handler that cancels a pending submission.
+    * 
+    * @param event The event
+    */
+   public void cancelPendingSubmission(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String workflowId = params.get("workflowInstanceId");
+      
+      UserTransaction tx = null;
+      try
+      {
+         FacesContext context = FacesContext.getCurrentInstance();
+         tx = Repository.getUserTransaction(context, false);
+         tx.begin();
+
+         // cancel the workflow
+         this.workflowService.cancelWorkflow(workflowId);
+         
+         // commit the transaction
+         tx.commit();
+      }
+      catch (Throwable err)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
+   }
    
    // ------------------------------------------------------------------------------
    // Private helpers

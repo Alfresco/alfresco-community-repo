@@ -83,6 +83,7 @@ public class AVMWorkflowUtil extends WorkflowUtil
    public static final QName PROP_FROM_PATH = QName.createQName(WCM_WORKFLOW_MODEL_1_0_URI, "fromPath");
    public static final QName PROP_LABEL = QName.createQName(WCM_WORKFLOW_MODEL_1_0_URI, "label");
    public static final QName PROP_LAUNCH_DATE = QName.createQName(WCM_WORKFLOW_MODEL_1_0_URI, "launchDate");
+   public static final QName ASSOC_WEBPROJECT = QName.createQName(WCM_WORKFLOW_MODEL_1_0_URI, "webproject");
 
    // cached configured lists
    private static List<WorkflowDefinition> configuredWorkflowDefs = null;

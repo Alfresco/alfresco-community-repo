@@ -31,6 +31,7 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.GUID;
 
 /**
@@ -45,16 +46,6 @@ import org.alfresco.util.GUID;
  */
 public abstract class AbstractContentStore implements ContentStore
 {
-    /**
-     * Simple implementation that uses the
-     * {@link ContentReader#exists() reader's exists} method as its implementation.
-     */
-    public boolean exists(String contentUrl) throws ContentIOException
-    {
-        ContentReader reader = getReader(contentUrl);
-        return reader.exists();
-    }
-
     /**
      * Creates a new content URL.  This must be supported by all
      * stores that are compatible with Alfresco.
@@ -126,8 +117,33 @@ public abstract class AbstractContentStore implements ContentStore
         return path;
     }
 
+    /**
+     * Simple implementation that uses the
+     * {@link ContentReader#exists() reader's exists} method as its implementation.
+     */
+    public boolean exists(String contentUrl) throws ContentIOException
+    {
+        ContentReader reader = getReader(contentUrl);
+        return reader.exists();
+    }
+
+    /**
+     * Searches for URLs using null dates.
+     * 
+     * @see ContentStore#getUrls(java.util.Date, java.util.Date)
+     */
     public final Set<String> getUrls() throws ContentIOException
     {
         return getUrls(null, null);
+    }
+
+    /**
+     * @see ContentContext
+     * @see ContentStore#getWriter(ContentContext)
+     */
+    public final ContentWriter getWriter(ContentReader existingContentReader, String newContentUrl) throws ContentIOException
+    {
+        ContentContext ctx = new ContentContext(existingContentReader, newContentUrl);
+        return getWriter(ctx);
     }
 }

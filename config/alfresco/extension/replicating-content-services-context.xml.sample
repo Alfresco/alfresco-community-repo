@@ -74,9 +74,6 @@
          <value>false</value>
       </property>
       <!-- this is required if outbound replication is active, otherwise not -->
-      <property name="transactionService">
-         <ref bean="transactionComponent" />
-      </property>
       <property name="retryingTransactionHelper">
          <ref bean="retryingTransactionHelper"/>
       </property>

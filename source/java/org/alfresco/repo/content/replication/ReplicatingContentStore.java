@@ -35,6 +35,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractContentStore;
+import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -106,7 +107,6 @@ public class ReplicatingContentStore extends AbstractContentStore
     
     private static Log logger = LogFactory.getLog(ReplicatingContentStore.class);
     
-    private TransactionService transactionService;
     private RetryingTransactionHelper transactionHelper;
     private ContentStore primaryStore;
     private List<ContentStore> secondaryStores;
@@ -131,17 +131,17 @@ public class ReplicatingContentStore extends AbstractContentStore
     }
     
     /**
-     * Required to ensure that content listeners are executed in a transaction
-     * 
-     * @param transactionService
+     * @deprecated  Replaced with {@link #setRetryingTransactionHelper(RetryingTransactionHelper)}
      */
     public void setTransactionService(TransactionService transactionService)
     {
-        this.transactionService = transactionService;
+        logger.warn("Property 'transactionService' has been replaced with 'retryingTransactionHelper'.");
     }
 
     /**
      * Set the retrying transaction helper.
+     * 
+     * @since 2.0
      */
     public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
     {
@@ -273,7 +273,8 @@ public class ReplicatingContentStore extends AbstractContentStore
                 return primaryContentReader;
             }
             // get a writer
-            ContentWriter primaryContentWriter = primaryStore.getWriter(existingContentReader, contentUrl);
+            ContentContext ctx = new ContentContext(existingContentReader, contentUrl);
+            ContentWriter primaryContentWriter = primaryStore.getWriter(ctx);
             // copy it over
             primaryContentWriter.putContent(existingContentReader);
             // get a writer to the new content
@@ -287,13 +288,10 @@ public class ReplicatingContentStore extends AbstractContentStore
         }
     }
 
-    /**
-     * 
-     */
-    public ContentWriter getWriter(ContentReader existingContentReader, String newContentUrl) throws ContentIOException
+    public ContentWriter getWriter(ContentContext ctx)
     {
         // get the writer
-        ContentWriter writer = primaryStore.getWriter(existingContentReader, newContentUrl);
+        ContentWriter writer = primaryStore.getWriter(ctx);
         
         // attach a replicating listener if outbound replication is on
         if (outbound)
@@ -434,7 +432,8 @@ public class ReplicatingContentStore extends AbstractContentStore
                         ContentReader reader = writer.getReader();
                         String contentUrl = reader.getContentUrl();
                         // in order to replicate, we have to specify the URL that we are going to write to
-                        ContentWriter replicatedWriter = store.getWriter(null, contentUrl);
+                        ContentContext ctx = new ContentContext(null, contentUrl);
+                        ContentWriter replicatedWriter = store.getWriter(ctx);
                         // write it
                         replicatedWriter.putContent(reader);
                         

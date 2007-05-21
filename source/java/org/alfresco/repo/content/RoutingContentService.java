@@ -77,7 +77,6 @@ public class RoutingContentService implements ContentService
 {
     private static Log logger = LogFactory.getLog(RoutingContentService.class);
     
-    private TransactionService transactionService;
     private DictionaryService dictionaryService;
     private NodeService nodeService;
     private AVMService avmService;
@@ -110,9 +109,12 @@ public class RoutingContentService implements ContentService
         this.tempStore = new FileContentStore(TempFileProvider.getTempDir().getAbsolutePath());
     }
 
+    /**
+     * @deprecated  Replaced by {@link #setRetryingTransactionHelper(RetryingTransactionHelper)}
+     */
     public void setTransactionService(TransactionService transactionService)
     {
-        this.transactionService = transactionService;
+        logger.warn("Property 'transactionService' has been replaced by 'retryingTransactionHelper'.");
     }
     
     public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
@@ -313,7 +315,7 @@ public class RoutingContentService implements ContentService
         }
         String contentUrl = contentData.getContentUrl();
         
-        // TODO: Choose the store to read from at runtime
+        // The context of the read is entirely described by the URL
         ContentReader reader = store.getReader(contentUrl);
         
         // set extra data on the reader
@@ -338,12 +340,11 @@ public class RoutingContentService implements ContentService
 
     public ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update)
     {
-        // TODO: Choose the store to write to at runtime
-        
         if (nodeRef == null)
         {
+            ContentContext ctx = new ContentContext(null, null);
             // for this case, we just give back a valid URL into the content store
-            ContentWriter writer = store.getWriter(null, null);
+            ContentWriter writer = store.getWriter(ctx);
             // done
             return writer;
         }
@@ -353,7 +354,8 @@ public class RoutingContentService implements ContentService
         
         // get the content using the (potentially) existing content - the new content
         // can be wherever the store decides.
-        ContentWriter writer = store.getWriter(existingContentReader, null);
+        ContentContext ctx = new NodeContentContext(existingContentReader, null, nodeRef, propertyQName);
+        ContentWriter writer = store.getWriter(ctx);
 
         // Special case for AVM repository.   
         Serializable contentValue = null;
@@ -395,7 +397,7 @@ public class RoutingContentService implements ContentService
     public ContentWriter getTempWriter()
     {
         // there is no existing content and we don't specify the location of the new content
-        return tempStore.getWriter(null, null);
+        return tempStore.getWriter(ContentContext.NULL_CONTEXT);
     }
 
     /**

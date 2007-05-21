@@ -27,6 +27,7 @@ package org.alfresco.repo.content;
 import java.util.Date;
 import java.util.Set;
 
+import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
@@ -48,6 +49,8 @@ import org.alfresco.service.cmr.repository.ContentWriter;
  *   <li> <b>year</b>: year </li>
  *   <li> <b>month</b>: 1-based month of the year </li>
  *   <li> <b>day</b>: 1-based day of the month </li>
+ *   <li> <b>hour</b>: 0-based hour of the day </li>
+ *   <li> <b>minute</b>: 0-based minute of the hour </li>
  *   <li> <b>GUID</b>: A unique identifier </li>
  * </ul>
  * The old <b>file://</b> prefix must still be supported - and functionality
@@ -77,14 +80,12 @@ public interface ContentStore
     public boolean exists(String contentUrl) throws ContentIOException;
     
     /**
-     * Get the accessor with which to read from the content
-     * at the given URL.  The reader is <b>stateful</b> and
-     * can <b>only be used once</b>.
+     * Get the accessor with which to read from the content at the given URL.
+     * The reader is <b>stateful</b> and can <b>only be used once</b>.
      * 
      * @param contentUrl the path to where the content is located
      * @return Returns a read-only content accessor for the given URL.  There may
      *      be no content at the given URL, but the reader must still be returned.
-     *      The reader may implement the {@link RandomAccessContent random access interface}.
      * @throws ContentIOException
      *
      * @see #exists(String)
@@ -98,21 +99,30 @@ public interface ContentStore
      * <b>only be used once</b>.  The location may be specified but must, in that case,
      * be a valid and unused URL.
      * <p>
+     * The store will ensure that the {@link ContentAccessor#getContentUrl() new content URL} will
+     * be valid for all subsequent read attempts.
+     * <p>
      * By supplying a reader to existing content, the store implementation may
      * enable {@link RandomAccessContent random access}.  The store implementation
      * can enable this by copying the existing content into the new location
      * before supplying a writer onto the new content.
      * 
-     * @param existingContentReader a reader onto any existing content for which
-     *      a writer is required - may be null
-     * @param newContentUrl an unused, valid URL to use - may be null.
-     * @return Returns a write-only content accessor, possibly implementing
-     *      the {@link RandomAccessContent random access interface}
-     * @throws ContentIOException if completely new content storage could not be
-     *      created
+     * @param context                   the context of content.
+     * @return  Returns a write-only content accessor
+     * @throws ContentIOException if completely new content storage could not be created
      *
+     * @see #getWriter(ContentReader, String)
      * @see ContentWriter#addListener(ContentStreamListener)
      * @see ContentWriter#getContentUrl()
+     */
+    public ContentWriter getWriter(ContentContext context) throws ContentIOException;
+    
+    /**
+     * Shortcut method to {@link #getWriter(ContentContext)}.
+     * 
+     * @see #getWriter(ContentContext)
+     * 
+     * @deprecated
      */
     public ContentWriter getWriter(ContentReader existingContentReader, String newContentUrl) throws ContentIOException;
 
@@ -140,13 +150,11 @@ public interface ContentStore
      * <p>
      * A delete cannot be forced since it is much better to have the
      * file remain longer than desired rather than deleted prematurely.
-     * The store implementation should safeguard files for certain
-     * minimum period, in which case all files younger than a certain
-     * age will not be deleted.
      * 
      * @param contentUrl the URL of the content to delete
      * @return Return true if the content was deleted (either by this or
-     *      another operation), otherwise false
+     *      another operation), otherwise false.  If the content no longer
+     *      exists, then <tt>true</tt> is returned.
      * @throws ContentIOException
      */
     public boolean delete(String contentUrl) throws ContentIOException;

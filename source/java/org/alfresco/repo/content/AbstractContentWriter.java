@@ -55,6 +55,7 @@ import org.springframework.util.FileCopyUtils;
  * Implements all the convenience methods of the interface.  The only methods
  * that need to be implemented, i.e. provide low-level content access are:
  * <ul>
+ *   <li>{@link #getReader()} to create a reader to the underlying content</li>
  *   <li>{@link #getDirectWritableChannel()} to write content to the repository</li>
  * </ul>
  * 

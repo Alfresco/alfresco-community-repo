@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractContentStore;
+import org.alfresco.repo.content.ContentContext;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -39,10 +40,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Provides a store of node content directly to the file system.
+ * Provides a store of node content directly to the file system.  The writers
+ * are generated using information from the {@link ContentContext simple content context}.
  * <p>
  * The file names obey, as they must, the URL naming convention
- * as specified in the {@link org.alfresco.repo.content.ContentStore}.
+ * as specified in the {@link org.alfresco.repo.content.ContentStore ContentStore interface}.
  * 
  * @author Derek Hulley
  */
@@ -241,8 +243,10 @@ public class FileContentStore extends AbstractContentStore
     /**
      * @return Returns a writer onto a location based on the date
      */
-    public ContentWriter getWriter(ContentReader existingContentReader, String newContentUrl)
+    public ContentWriter getWriter(ContentContext ctx)
     {
+        ContentReader existingContentReader = ctx.getExistingContentReader();
+        String newContentUrl = ctx.getContentUrl();
         try
         {
             File file = null;

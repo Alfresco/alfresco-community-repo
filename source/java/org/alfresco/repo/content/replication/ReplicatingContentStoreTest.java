@@ -33,9 +33,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.alfresco.repo.content.AbstractContentReadWriteTest;
+import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.filestore.FileContentStore;
-import org.alfresco.repo.transaction.DummyTransactionService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.GUID;
@@ -77,7 +77,6 @@ public class ReplicatingContentStoreTest extends AbstractContentReadWriteTest
             secondaryStores.add(store);
         }
         replicatingStore = new ReplicatingContentStore();
-        replicatingStore.setTransactionService(new DummyTransactionService());
         replicatingStore.setPrimaryStore(primaryStore);
         replicatingStore.setSecondaryStores(secondaryStores);
         replicatingStore.setOutbound(false);
@@ -184,7 +183,7 @@ public class ReplicatingContentStoreTest extends AbstractContentReadWriteTest
         
         // pick a secondary store and write some content to it
         ContentStore secondaryStore = secondaryStores.get(2);
-        ContentWriter writer = secondaryStore.getWriter(null, null);
+        ContentWriter writer = secondaryStore.getWriter(ContentContext.NULL_CONTEXT);
         writer.putContent(SOME_CONTENT);
         String contentUrl = writer.getContentUrl();
         

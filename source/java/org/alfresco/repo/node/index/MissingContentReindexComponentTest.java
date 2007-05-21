@@ -28,6 +28,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.AbstractContentStore;
+import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.search.Indexer;
@@ -148,7 +149,8 @@ public class MissingContentReindexComponentTest extends TestCase
         }
         
         // now put some content in the store
-        ContentWriter writer = contentStore.getWriter(null, contentUrl);
+        ContentContext ctx = new ContentContext(null, contentUrl);
+        ContentWriter writer = contentStore.getWriter(ctx);
         writer.setMimetype("text/plain");
         writer.setEncoding("UTF8");
         writer.putContent("123abc456def");

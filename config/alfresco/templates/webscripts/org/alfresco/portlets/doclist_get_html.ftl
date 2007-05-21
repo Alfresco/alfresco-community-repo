@@ -36,13 +36,16 @@
 <table border=0 cellspacing=0 cellpadding=0 class="docTable">
 <tr>
    <td align=center height=40>
-      <table border=0 cellspacing=8 cellpadding=0>
+      <table border=0 cellspacing=8 cellpadding=0 width=100%>
          <tr>
             <th><a class="docfilterLink <#if filter=0>docfilterLinkSelected</#if>" href="${scripturl("?f=0&p=${path}")}">All Items</a></th>
             <th><a class="docfilterLink <#if filter=1>docfilterLinkSelected</#if>" href="${scripturl("?f=1&p=${path}")}">Word Documents</a></th>
             <th><a class="docfilterLink <#if filter=2>docfilterLinkSelected</#if>" href="${scripturl("?f=2&p=${path}")}">HTML Documents</a></th>
             <th><a class="docfilterLink <#if filter=3>docfilterLinkSelected</#if>" href="${scripturl("?f=3&p=${path}")}">PDF Documents</a></th>
             <th><a class="docfilterLink <#if filter=4>docfilterLinkSelected</#if>" href="${scripturl("?f=4&p=${path}")}">Recently Modified</a></th>
+            <td align=right>
+               <a href="${scripturl("?f=${filter}&p=${path}")}" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px">Refresh</a>
+            </td>
          </tr>
       </table>
    </td>
@@ -139,6 +142,7 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
    height: 320px;
    width: 716px;
    overflow: auto;
+   overflow-y: scroll;
    border-top: 1px solid #CCD4DB;
    border-bottom: 1px solid #CCD4DB;
    visibility: hidden;
@@ -300,6 +304,14 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
    width: 696px;
    height: 150px;
    overflow: hidden;
+}
+
+a.refreshViewLink:link, a.refreshViewLink:visited, a.refreshViewLink:hover
+{
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 12px;
+   color: #515D6B;
+   text-decoration: none;
 }
 
 </STYLE>

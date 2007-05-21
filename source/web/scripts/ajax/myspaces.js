@@ -5,16 +5,48 @@ var MySpaces = {
    DETAIL_MARGIN: 56,
    TITLE_FONT_SIZE: 18,
    fileInput: null,
+   Path: null,
+   Filter: null,
+   Home: null,
    
    start: function()
    {
       if ($('spacePanel'))
       {
-         MySpaces.parseSpacePanels();
-         $('spacePanel').setStyle('visibility', 'visible');
+         // fire off the ajax request to populate the spaces list - the 'myspacespanel' webscript
+         // is responsible for rendering just the contents of the main panel div
+         YAHOO.util.Connect.asyncRequest(
+            "GET",
+            getContextPath() + '/service/myspacespanel?p='+MySpaces.Path+'&f='+MySpaces.Filter+'&h='+MySpaces.Home,
+            { 
+               success: function(response)
+               {
+                  // push the response into the space panel div
+                  $('spacePanel').setHTML(response.responseText);
+                  // extract the count value from a hidden div and display it
+                  $('spaceCount').setHTML($('spaceCountValue').innerHTML);
+                  // wire up all the events and animations
+                  MySpaces.init();
+               },
+               failure: function(response)
+               {
+                  $('spacePanel').setHTML("Sorry, preview currently unavailable.");
+               }
+            }
+         );
       }
    },
+   
+   init: function()
+   {
+      MySpaces.parseSpacePanels();
+      $('spacePanel').setStyle('visibility', 'visible');
+   },
 
+   /**
+    * Perform the operations required to add the events and animations required to anim various
+    * nodes when the user mouseovers and clicks on rows in the space panel
+    */
    parseSpacePanels: function()
    {
       var spaces = $$('#spacePanel .spaceRow');
@@ -256,8 +288,9 @@ var MySpaces = {
    {
       if (error == null)
       {
-         // TODO: refresh!
-         alert("Uploaded: " + fileName);
+         // empty the main panel div and restart by reloading the panel contents
+         $('spacePanel').empty();
+         MySpaces.start();
       }
       else
       {

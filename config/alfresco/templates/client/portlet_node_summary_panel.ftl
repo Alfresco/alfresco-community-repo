@@ -21,17 +21,8 @@
 	   <tr>
 	      <td valign="middle" align="center">
 	         <#assign isImage=node.isDocument && (node.mimetype = "image/gif" || node.mimetype = "image/jpeg" || node.mimetype = "image/png")>
-	         <#assign isVideo=node.isDocument && node.mimetype?starts_with("video/")>
 	         <#if isImage>
 	            <a href="${url.context}${node.url}" target="new"><img src="${url.context}${node.url}" width=120 border=0></a>
-	         <#elseif isVideo>
-	            <object width="320" height="240" border="0" id="player">
-	               <param name="UIMode" value="none" />
-	               <param name="URL" value="${url.context}${node.url}" />
-	               <param name="autoStart" value="true" />
-	               <#--<embed type="application/x-mplayer2" pluginspage="http://microsoft.com/windows/mediaplayer/en/download/" src="${url.context}${node.url}" showcontrols="1" showdisplay="0" showstatusbar="0" autosize="1" autoplay="0" autoStart="0" height="240" width="320"></embed>-->
-	               <embed width="320" height="240" src="${url.context}${node.url}" border="0" showcontrols="1" showdisplay="0" showstatusbar="0" autosize="1" autoplay="0" autoStart="0"></embed>
-	            </object>
 	         <#else>
 	            <table cellspacing="0" cellpadding="0" border="0">
 	               <tr>
@@ -72,7 +63,7 @@
 	      </td>
 	   </tr>
 	   
-	   <#if node.isDocument && !isImage && !isVideo>
+	   <#if node.isDocument && !isImage>
 	      <#assign c=cropContent(node.properties.content, 512)>
 	      <#if c?length != 0>
 	         <tr>

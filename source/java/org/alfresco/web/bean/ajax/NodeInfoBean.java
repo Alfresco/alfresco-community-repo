@@ -26,6 +26,7 @@ package org.alfresco.web.bean.ajax;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,7 +61,8 @@ public class NodeInfoBean
    
    /**
     * Returns information on the node identified by the 'noderef'
-    * parameter found in the ExternalContext.
+    * parameter found in the ExternalContext. If no noderef is supplied, then the template
+    * is executed without context.
     * <p>
     * The result is the formatted HTML to show on the client.
     */
@@ -69,28 +71,26 @@ public class NodeInfoBean
       FacesContext context = FacesContext.getCurrentInstance();
       ResponseWriter out = context.getResponseWriter();
       
-      String strNodeRef = (String)context.getExternalContext().getRequestParameterMap().get("noderef");
-      if (strNodeRef == null || strNodeRef.length() == 0)
-      {
-         throw new IllegalArgumentException("'noderef' parameter is missing");
-      }
-
-      String strTemplate = (String)context.getExternalContext().getRequestParameterMap().get("template");
+      Map<String, String> requestMap = context.getExternalContext().getRequestParameterMap();
+      String strNodeRef = (String)requestMap.get("noderef");
+      String strTemplate = (String)requestMap.get("template");
       if (strTemplate == null || strTemplate.length() == 0)
       {
          strTemplate = "node_summary_panel.ftl";
       }
       
-      NodeRef nodeRef = new NodeRef(strNodeRef);
-      if (this.nodeService.exists(nodeRef))
+      NodeRef nodeRef = null;
+      if (strNodeRef != null && strNodeRef.length() != 0)
       {
-         Repository.getServiceRegistry(context).getTemplateService().processTemplate(
-               "/alfresco/templates/client/" + strTemplate, getModel(nodeRef), out);
+         nodeRef = new NodeRef(strNodeRef);
+         if (this.nodeService.exists(nodeRef) == false)
+         {
+            out.write("<span class='errorMessage'>Node could not be found in the repository!</span>");
+            return;
+         }
       }
-      else
-      {
-         out.write("<span class='errorMessage'>Node could not be found in the repository!</span>");
-      }
+      Repository.getServiceRegistry(context).getTemplateService().processTemplate(
+            "/alfresco/templates/client/" + strTemplate, getModel(nodeRef, requestMap), out);
    }
 
    
@@ -109,7 +109,7 @@ public class NodeInfoBean
    // ------------------------------------------------------------------------------
    // Helper methods
    
-   private Map<String, Object> getModel(NodeRef nodeRef)
+   private Map<String, Object> getModel(NodeRef nodeRef, Map<String, String> requestMap)
    {
       FacesContext context = FacesContext.getCurrentInstance();
       Map<String, Object> model = new HashMap<String, Object>(8, 1.0f);
@@ -119,10 +119,21 @@ public class NodeInfoBean
       model.put("cropContent", new CropContentMethod());
       model.put("url", new BaseTemplateContentServlet.URLHelper(
               context.getExternalContext().getRequestContextPath()));
-      model.put("node", new TemplateNode(
-            nodeRef,
-            Repository.getServiceRegistry(context),
-            this.imageResolver));
+      if (nodeRef != null)
+      {
+         model.put("node", new TemplateNode(
+               nodeRef,
+               Repository.getServiceRegistry(context),
+               this.imageResolver));
+      }
+      
+      // add URL arguments as a map called 'args' to the root of the model
+      Map<String, String> args = new HashMap<String, String>(4, 1.0f);
+      for (String name : requestMap.keySet())
+      {
+         args.put(name, requestMap.get(name));
+      }
+      model.put("args", args);    
       
       return model;
    }

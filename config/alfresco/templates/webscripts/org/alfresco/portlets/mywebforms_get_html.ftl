@@ -81,6 +81,7 @@
    height: 480px;
    width: 716px;
    overflow: auto;
+   overflow-y: scroll;
 }
 
 a.webPreviewLink:link, a.webPreviewLink:visited, a.webPreviewLink:hover

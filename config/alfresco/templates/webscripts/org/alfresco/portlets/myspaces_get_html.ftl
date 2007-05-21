@@ -48,15 +48,15 @@
          </#if>
       </#list>
    </div>
+   <span style="float:right;margin:6px 6px 0 0;"><a href="${scripturl("?f=${filter}&p=${path}")}" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px">Refresh</a></span>
    <div class="spaceTitle">
-      <img src="${url.context}${home.icon16}" width="16" height="16" alt="" style="vertical-align:-25%;padding-right:6px">${home.name?html}
+      <img src="${url.context}${home.icon16}" width="16" height="16" alt="" style="vertical-align:-25%;padding-right:4px">${home.name?html}
    </div>
    <div class="spaceActions">
-      <div class="spaceAction spaceActionUpload" title="Upload a new document" onclick="MySpaces.upload(this);">
-         Upload
-      </div>
+      <#-- TODO: haspermission check! -->
+      <div class="spaceAction spaceActionUpload" title="Upload a new document" onclick="MySpaces.upload(this);">Upload</div>
       <div class="spaceUploadPanel">
-         <#-- TODO: Url encode the path value! -->
+         <#-- Url encode the path value, and encode any single quotes to generate valid string -->
          <input style="margin:4px" type="submit" value="OK" onclick='MySpaces.uploadOK(this, "${path?url?replace("'","_%_")}");'>
          <input style="margin:4px" type="button" value="Cancel" onclick="MySpaces.uploadClose(this);">
       </div>
@@ -75,52 +75,13 @@
       </center>
    </div>
    <div id="spacePanel">
-      <#assign user=person.properties.userName>
-      <#assign count=0>
-      <#list home.children?sort_by('name') as d>
-         <#if (filter=0) ||
-              (filter=1 && d.isContainer) ||
-              (filter=2 && d.isDocument) ||
-              (filter=3 && (d.properties.creator == user || d.properties.modifier == user))>
-         <#assign count=count+1>
-         <div class="spaceRow">
-            <div class="spaceIcon">
-               <#if d.isDocument>
-                  <a href="${url.context}${d.url}" target="new"><img class="spaceIconImage" alt="" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border=0></a>
-               <#else>
-                  <a href="${scripturl("?f=${filter}&p=${path}/${d.name}")}"><img class="spaceIconImage" alt="" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border=0></a>
-               </#if>
-               <div style="display:none"><img class="spaceIconImage64" alt="" width="64" height="64" src="${url.context}${d.icon64}"></div>
-            </div>
-            <div class="spaceItem">
-               ${d.name?html}
-               <span class="spaceInfo" onclick="event.cancelBubble=true; AlfNodeInfoMgr.toggle('${d.nodeRef}',this);">
-                  <img src="${url.context}/images/icons/popup.gif" class="popupImage" width="16" height="16" />
-               </span>
-            </div>
-            <div class="spaceDetail">
-               <table cellpadding="2" cellspacing="0" border="0">
-   	            <tr>
-   	               <td>
-   	                  <span class="spaceMetaprop">Description:</span>&nbsp;<span class="spaceMetadata"><#if d.properties.description?exists>${d.properties.description?html}<#else>&nbsp;</#if></span><br />
-      	               <span class="spaceMetaprop">Modified:</span>&nbsp;<span class="spaceMetadata">${d.properties.modified?datetime}</span><br />
-      	               <span class="spaceMetaprop">Modified By:</span>&nbsp;<span class="spaceMetadata">${d.properties.modifier}</span>
-   	               </td>
-   	               <td width="24">&nbsp;</td>
-   	               <td>
-   	                  <span class="spaceMetaprop">Created:</span>&nbsp;<span class="spaceMetadata">${d.properties.created?datetime}</span><br />
-      	               <span class="spaceMetaprop">Created By:</span>&nbsp;<span class="spaceMetadata">${d.properties.creator}</span><br />
-   	                  <span class="spaceMetaprop">Size:</span>&nbsp;<span class="spaceMetadata">${(d.size/1000)?string("0.##")} KB</span>
-   	               </td>
-   	            </tr>
-   	         </table>
-            </div>
-         </div>
-         </#if>
-      </#list>
+      <#-- populated via an AJAX call myspacecontent webscript -->
+      <#-- resolved path, filter and home.noderef required as arguments! -->
+      <script>MySpaces.Path="${path?replace("\"","\\\"")}";MySpaces.Filter="${filter}";MySpaces.Home="${home.nodeRef}";</script>
    </div>
    <div class="spaceFooter">
-      Showing ${count} items(s)
+      <#-- TODO: get the count value dynamically from the AJAX webscript output above... -->
+      Showing <span id="spaceCount">0</span> items(s)
    </div>
 </div>
 
@@ -172,6 +133,7 @@ a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited
    height: 320px;
    width: 720px;
    overflow: auto;
+   overflow-y: scroll;
    border-top: 1px solid #CCD4DB;
    border-bottom: 1px solid #CCD4DB;
    visibility: hidden;
@@ -307,6 +269,14 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    display: none;
    left: 8px;
    -moz-border-radius: 5px;
+}
+
+a.refreshViewLink:link, a.refreshViewLink:visited, a.refreshViewLink:hover
+{
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 12px;
+   color: #515D6B;
+   text-decoration: none;
 }
 
 </STYLE>

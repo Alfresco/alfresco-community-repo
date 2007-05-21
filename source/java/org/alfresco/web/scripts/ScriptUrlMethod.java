@@ -26,6 +26,7 @@ package org.alfresco.web.scripts;
 
 import java.util.List;
 
+import freemarker.template.TemplateBooleanModel;
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;
 import freemarker.template.TemplateScalarModel;
@@ -64,17 +65,22 @@ public final class ScriptUrlMethod implements TemplateMethodModelEx
     {
         String result = "";
         
-        if (args.size() == 1)
+        if (args.size() != 0)
         {
             Object arg0 = args.get(0);
+            boolean prefixServiceUrl = true;
+            if (args.size() == 2 && args.get(1) instanceof TemplateBooleanModel)
+            {
+               prefixServiceUrl = ((TemplateBooleanModel)args.get(1)).getAsBoolean();
+            }
             if (arg0 instanceof TemplateScalarModel)
             {
                 String arg = ((TemplateScalarModel)arg0).getAsString();
-                String url = req.getServicePath();
+                String url = prefixServiceUrl ? req.getServicePath() : "";
                 url += arg;
-                url += (arg.length() > 0) ? "&" : "";
+                url += (arg.length() != 0) ? "&" : "";
                 url += "guest=" + (req.isGuest() ? "true" : "");                
-                url += (req.getFormat().length() > 0) ? "&format=" + req.getFormat() : "";
+                url += (req.getFormat().length() != 0) ? "&format=" + req.getFormat() : "";
                 result = res.encodeScriptUrl(url);
             }
         }

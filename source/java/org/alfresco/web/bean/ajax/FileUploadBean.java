@@ -55,6 +55,8 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -64,6 +66,17 @@ import org.w3c.dom.Node;
  */
 public class FileUploadBean
 {
+   private static Log logger = LogFactory.getLog(FileUploadBean.class);
+   
+   /**
+    * Ajax method to upload a file. A multi-part form is required as the input.
+    * 
+    * "return-page" = 
+    * "currentPath" = 
+    * and the file item itself
+    * 
+    * @throws Exception
+    */
    @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_HTML)
    public void uploadFile() throws Exception
    {
@@ -76,7 +89,6 @@ public class FileUploadBean
       
       List<FileItem> fileItems = upload.parseRequest(request);
       FileUploadBean bean = new FileUploadBean();
-      String uploadId = null;
       String currentPath = null;
       String filename = null;
       String returnPage = null;
@@ -84,10 +96,6 @@ public class FileUploadBean
       
       for (FileItem item : fileItems)
       {
-         if (item.isFormField() && item.getFieldName().equals("upload-id"))
-         {
-            uploadId = item.getString();
-         }
          if (item.isFormField() && item.getFieldName().equals("return-page"))
          {
             returnPage = item.getString();
@@ -103,10 +111,13 @@ public class FileUploadBean
             item.write(file);
          }
       }
-
+      
+      if (logger.isDebugEnabled())
+         logger.debug("Ajax file upload request: " + filename + " to path: " + currentPath + " return page: " + returnPage);
+      
       try
       {
-         if (file != null)
+         if (file != null && currentPath != null && currentPath.length() != 0)
          {
             // convert cm:name based path to a NodeRef
             StringTokenizer t = new StringTokenizer(currentPath, "/");
@@ -188,6 +199,9 @@ public class FileUploadBean
       Node scriptText = result.createTextNode(returnPage);
       scriptEl.appendChild(scriptText);
 
+      if (logger.isDebugEnabled())
+         logger.debug("File upload request complete.");
+      
       ResponseWriter out = fc.getResponseWriter();
       XMLUtil.print(result, out);
       out.close();

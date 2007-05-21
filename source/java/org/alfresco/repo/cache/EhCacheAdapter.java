@@ -44,7 +44,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * 
  * @author Derek Hulley
  */
-public class EhCacheAdapter<K extends Serializable, V extends Serializable>
+public class EhCacheAdapter<K extends Serializable, V extends Object>
         implements SimpleCache<K, V>
 {
     private net.sf.ehcache.Cache cache;

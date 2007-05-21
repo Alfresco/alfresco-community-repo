@@ -73,7 +73,7 @@ import org.springframework.util.Assert;
  * 
  * @author Derek Hulley
  */
-public class TransactionalCache<K extends Serializable, V extends Serializable>
+public class TransactionalCache<K extends Serializable, V extends Object>
         implements SimpleCache<K, V>, TransactionListener, InitializingBean
 {
     private static final String RESOURCE_KEY_TXN_DATA = "TransactionalCache.TxnData"; 
@@ -85,7 +85,7 @@ public class TransactionalCache<K extends Serializable, V extends Serializable>
     private String name;
     
     /** the shared cache that will get updated after commits */
-    private SimpleCache<Serializable, Serializable> sharedCache;
+    private SimpleCache<Serializable, Object> sharedCache;
 
     /** the manager to control Ehcache caches */
     private CacheManager cacheManager;
@@ -133,7 +133,7 @@ public class TransactionalCache<K extends Serializable, V extends Serializable>
      * 
      * @param sharedCache
      */
-    public void setSharedCache(SimpleCache<Serializable, Serializable> sharedCache)
+    public void setSharedCache(SimpleCache<Serializable, Object> sharedCache)
     {
         this.sharedCache = sharedCache;
     }

@@ -37,7 +37,7 @@ import java.util.Collection;
  * 
  * @author Derek Hulley
  */
-public interface SimpleCache<K extends Serializable, V extends Serializable>
+public interface SimpleCache<K extends Serializable, V extends Object>
 {
     public boolean contains(K key);
     

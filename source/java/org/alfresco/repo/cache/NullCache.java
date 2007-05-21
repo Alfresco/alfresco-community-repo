@@ -37,7 +37,7 @@ import java.util.Collections;
  * 
  * @author Derek Hulley
  */
-public class NullCache<K extends Serializable, V extends Serializable> implements SimpleCache<K, V>
+public class NullCache<K extends Serializable, V extends Object> implements SimpleCache<K, V>
 {
     public NullCache()
     {

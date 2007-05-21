@@ -5,6 +5,7 @@
   <imports>
     <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
     <import uri="http://www.alfresco.org/model/bpm/1.0" prefix="bpm"/>
+    <import uri="http://www.alfresco.org/model/wcmappmodel/1.0" prefix="wca"/>
   </imports>
 
   <namespaces>
@@ -65,6 +66,19 @@
           </constraints>
         </property>
       </properties>
+      <associations>
+        <association name="wcmwf:webproject">
+          <source>
+            <mandatory>false</mandatory>
+            <many>false</many>
+          </source>
+          <target>
+            <class>wca:webfolder</class>
+            <mandatory>true</mandatory>
+            <many>false</many>
+          </target>
+        </association>
+      </associations>
       <mandatory-aspects>
         <aspect>bpm:assignees</aspect>
         <aspect>wcmwf:submission</aspect>

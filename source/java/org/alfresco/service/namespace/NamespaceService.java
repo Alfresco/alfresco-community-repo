@@ -118,6 +118,11 @@ public interface NamespaceService extends NamespacePrefixResolver
     /** WCM Application Model Prefix */
     static final String WCMAPP_MODEL_PREFIX = "wca";
     
+    /** WCM Workflow Model Prefix */
+    static final String WCMWF_MODEL = "wcmwf";
+    
+    /** WCM Workflow Model URI */
+    static final String WCMWF_MODEL_1_0_URI = "http://www.alfresco.org/model/wcmworkflow/1.0";
     
     /**
      * Register a prefix for namespace uri. 

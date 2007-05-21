@@ -1802,8 +1802,7 @@ public class Node implements Serializable, Scopeable
             // TODO: DC: Allow debug output of property values - for now it's disabled as this could potentially
             // follow a large network of nodes. Unfortunately, JBPM issues unprotected debug statements
             // where node.toString is used - will request this is fixed in next release of JBPM.
-            return "Node Type: " + getType() + "\nNode Properties: " + this.getProperties().size() +
-                    "\nNode Aspects: " + this.getAspects().toString();
+            return "Node Type: " + getType() + ", Node Aspects: " + this.getAspects().toString();
         }
         else
         {

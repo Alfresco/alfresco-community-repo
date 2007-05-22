@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
+import org.alfresco.service.cmr.workflow.WorkflowTimer;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -158,7 +159,22 @@ public class WorkflowServiceImpl implements WorkflowService
         }
         return Collections.unmodifiableList(definitions);
     }
-
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#getAllDefinitions()
+     */
+    public List<WorkflowDefinition> getAllDefinitions()
+    {
+        List<WorkflowDefinition> definitions = new ArrayList<WorkflowDefinition>(10);
+        String[] ids = registry.getWorkflowComponents();
+        for (String id: ids)
+        {
+            WorkflowComponent component = registry.getWorkflowComponent(id);
+            definitions.addAll(component.getAllDefinitions());
+        }
+        return Collections.unmodifiableList(definitions);
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.workflow.WorkflowService#getDefinitionById(java.lang.String)
      */
@@ -177,6 +193,16 @@ public class WorkflowServiceImpl implements WorkflowService
         String engineId = BPMEngineRegistry.getEngineId(workflowName);
         WorkflowComponent component = getWorkflowComponent(engineId);
         return component.getDefinitionByName(workflowName);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#getAllDefinitionsByName(java.lang.String)
+     */
+    public List<WorkflowDefinition> getAllDefinitionsByName(String workflowName)
+    {
+        String engineId = BPMEngineRegistry.getEngineId(workflowName);
+        WorkflowComponent component = getWorkflowComponent(engineId);
+        return component.getAllDefinitionsByName(workflowName);
     }
 
     /* (non-Javadoc)
@@ -244,6 +270,16 @@ public class WorkflowServiceImpl implements WorkflowService
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#getPathProperties(java.lang.String)
+     */
+    public Map<QName, Serializable> getPathProperties(String pathId)
+    {
+        String engineId = BPMEngineRegistry.getEngineId(pathId);
+        WorkflowComponent component = getWorkflowComponent(engineId);
+        return component.getPathProperties(pathId);
+    }
+    
+    /* (non-Javadoc)
      * @see org.alfresco.service.cmr.workflow.WorkflowService#cancelWorkflow(java.lang.String)
      */
     public WorkflowInstance cancelWorkflow(String workflowId)
@@ -279,6 +315,26 @@ public class WorkflowServiceImpl implements WorkflowService
         String engineId = BPMEngineRegistry.getEngineId(pathId);
         WorkflowComponent component = getWorkflowComponent(engineId);
         return component.signal(pathId, transition);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#fireEvent(java.lang.String, java.lang.String)
+     */
+    public WorkflowPath fireEvent(String pathId, String event)
+    {
+        String engineId = BPMEngineRegistry.getEngineId(pathId);
+        WorkflowComponent component = getWorkflowComponent(engineId);
+        return component.fireEvent(pathId, event);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#getTimers(java.lang.String)
+     */
+    public List<WorkflowTimer> getTimers(String workflowId)
+    {
+        String engineId = BPMEngineRegistry.getEngineId(workflowId);
+        WorkflowComponent component = getWorkflowComponent(engineId);
+        return component.getTimers(workflowId);
     }
 
     /* (non-Javadoc)

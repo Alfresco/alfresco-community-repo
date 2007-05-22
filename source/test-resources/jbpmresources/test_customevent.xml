@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:testcustomevent">
+
+    <swimlane name="initiator" />
+
+    <start-state name="start">
+        <task name="bpm:startTask" swimlane="initiator" >
+           <event type="where">
+              <script>
+                 System.out.println(taskInstance.name);
+              </script>
+           </event>
+        </task>        
+        <event type="where">
+           <script>
+              System.out.println(node.name);
+           </script>
+        </event>
+        <transition name="" to="customevent" />
+    </start-state>
+
+    <task-node name="customevent">
+        <task swimlane="initiator">
+           <event type="where">
+              <script>
+                 System.out.println(taskInstance.name);
+              </script>
+           </event>
+        </task>
+        <transition name="" to="end" />
+    </task-node>
+
+    <end-state name="end" />
+
+</process-definition>

@@ -37,17 +37,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.i18n.I18NUtil;
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.authority.AuthorityDAO;
+import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.security.authority.AuthorityDAO;
-import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -61,7 +61,9 @@ import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
+import org.alfresco.service.cmr.workflow.WorkflowTimer;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -351,7 +353,22 @@ public class WorkflowInterpreter
             
             else if (command[1].equals("definitions"))
             {
-                List<WorkflowDefinition> defs = workflowService.getDefinitions();
+                List<WorkflowDefinition> defs = null; 
+                if (command.length == 3)
+                {
+                    if (command[2].equals("all"))
+                    {
+                        defs = workflowService.getAllDefinitions();
+                    }
+                    else
+                    {
+                        return "Syntax Error.\n";
+                    }
+                }
+                else
+                {
+                    defs = workflowService.getDefinitions();
+                }
                 for (WorkflowDefinition def : defs)
                 {
                     out.println("id: " + def.id + " , name: " + def.name + " , title: " + def.title + " , version: " + def.version);
@@ -379,12 +396,12 @@ public class WorkflowInterpreter
                 
                 if (id.equals("all"))
                 {
-                    for (WorkflowDefinition def : workflowService.getDefinitions())
+                    for (WorkflowDefinition def : workflowService.getAllDefinitions())
                     {
                         List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(def.id);
                         for (WorkflowInstance workflow : workflows)
                         {
-                            out.println("id: " + workflow.id + " , desc: " + workflow.description + " , start date: " + workflow.startDate + " , def: " + workflow.definition.title);
+                            out.println("id: " + workflow.id + " , desc: " + workflow.description + " , start date: " + workflow.startDate + " , def: " + workflow.definition.name + " v" + workflow.definition.version);
                         }
                     }
                 }
@@ -393,7 +410,7 @@ public class WorkflowInterpreter
                     List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(id);
                     for (WorkflowInstance workflow : workflows)
                     {
-                        out.println("id: " + workflow.id + " , desc: " + workflow.description + " , start date: " + workflow.startDate + " , def: " + workflow.definition.title);
+                        out.println("id: " + workflow.id + " , desc: " + workflow.description + " , start date: " + workflow.startDate + " , def: " + workflow.definition.name);
                     }
                 }
             }
@@ -449,6 +466,54 @@ public class WorkflowInterpreter
                     for (WorkflowTransition transition : path.node.transitions)
                     {
                         out.println(" transition id: " + ((transition.id == null || transition.id.equals("")) ? "[default]" : transition.id) + " , title: " + transition.title);
+                    }
+                }
+            }
+            
+            else if (command[1].equals("timers"))
+            {
+                String id = (currentWorkflowDef != null) ? currentWorkflowDef.id : null;
+                if (id == null && command.length == 2)
+                {
+                    return "workflow definition not in use.  Enter command 'show timers all' or 'use <workflowDefId>'.\n";
+                }
+                if (command.length == 3)
+                {
+                    if (command[2].equals("all"))
+                    {
+                        id = "all";
+                    }
+                    else
+                    {
+                        return "Syntax Error.\n";
+                    }
+                }
+                
+                if (id.equals("all"))
+                {
+                    for (WorkflowDefinition def : workflowService.getAllDefinitions())
+                    {
+                        List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(def.id);
+                        for (WorkflowInstance workflow : workflows)
+                        {
+                            List<WorkflowTimer> timers = workflowService.getTimers(workflow.id);
+                            for (WorkflowTimer timer : timers)
+                            {
+                                out.println("id: " + timer.id + " , name: " + timer.name + " , due date: " + timer.dueDate + " , path: " + timer.path.id + " , node: " + timer.path.node.name + " , process: " + timer.path.instance.id + " , task: " + timer.task.name);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(id);
+                    for (WorkflowInstance workflow : workflows)
+                    {
+                        List<WorkflowTimer> timers = workflowService.getTimers(workflow.id);
+                        for (WorkflowTimer timer : timers)
+                        {
+                            out.println("id: " + timer.id + " , name: " + timer.name + " , due date: " + timer.dueDate + " , path: " + timer.path.id + " , node: " + timer.path.node.name + " , process: " + timer.path.instance.id + " , task: " + timer.task.name);
+                        }
                     }
                 }
             }
@@ -550,6 +615,144 @@ public class WorkflowInterpreter
                 out.println("context: " + workflow.context);
                 out.println("package: " + workflow.workflowPackage);
             }
+            
+            else if (command[1].equals("path"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.\n";
+                }
+                Map<QName, Serializable> properties = workflowService.getPathProperties(command[2]);
+                out.println("path: " + command[1]);
+                out.println("properties: " + properties.size());
+                for (Map.Entry<QName, Serializable> prop : properties.entrySet())
+                {
+                    out.println(" " + prop.getKey() + " = " + prop.getValue());
+                }
+            }
+            
+            else
+            {
+                return "Syntax Error.\n";
+            }
+        }
+        
+        else if (command[0].equals("query"))
+        {
+            if (command.length < 2)
+            {
+                return "Syntax Error.\n";
+            }
+            
+            if (command[1].equals("task"))
+            {
+                // build query
+                WorkflowTaskQuery query = new WorkflowTaskQuery();
+                Map<QName, Object> taskProps = new HashMap<QName, Object>();
+                Map<QName, Object> procProps = new HashMap<QName, Object>();
+                
+                for (int i = 2; i < command.length; i++)
+                {
+                    String[] predicate = command[i].split("=");
+                    if (predicate.length == 1)
+                    {
+                        return "Syntax Error.\n";
+                    }
+                    String[] predicateName = predicate[0].split("\\.");
+                    if (predicateName.length == 1)
+                    {
+                        if (predicate[0].equals("taskId"))
+                        {
+                            query.setTaskId(predicate[1]);
+                        }
+                        else if (predicate[0].equals("taskState"))
+                        {
+                            WorkflowTaskState state = WorkflowTaskState.valueOf(predicate[1]);
+                            if (state == null)
+                            {
+                                return "Syntax Error.  Unknown task state\n";
+                            }
+                            query.setTaskState(state);
+                        }
+                        else if (predicate[0].equals("taskName"))
+                        {
+                            query.setTaskName(QName.createQName(predicate[1], namespaceService));
+                        }
+                        else if (predicate[0].equals("taskActor"))
+                        {
+                            query.setActorId(predicate[1]);
+                        }
+                        else if (predicate[0].equals("processId"))
+                        {
+                            query.setProcessId(predicate[1]);                            
+                        }
+                        else if (predicate[0].equals("processName"))
+                        {
+                            query.setProcessName(QName.createQName(predicate[1], namespaceService));
+                        }
+                        else if (predicate[0].equals("processActive"))
+                        {
+                            Boolean active = Boolean.valueOf(predicate[1]);
+                            query.setActive(active);
+                        }
+                        else if (predicate[0].equals("orderBy"))
+                        {
+                            String[] orderBy = predicate[1].split(",");
+                            WorkflowTaskQuery.OrderBy[] queryOrderBy = new WorkflowTaskQuery.OrderBy[orderBy.length];
+                            for (int iOrderBy = 0; iOrderBy < orderBy.length; iOrderBy++)
+                            {
+                                queryOrderBy[iOrderBy] = WorkflowTaskQuery.OrderBy.valueOf(orderBy[iOrderBy]);
+                                if (queryOrderBy[iOrderBy] == null)
+                                {
+                                    return "Syntax Error.  Unknown orderBy.\n";
+                                }
+                            }
+                            query.setOrderBy(queryOrderBy);
+                        }
+                        else
+                        {
+                            return "Syntax Error.  Unknown query predicate.\n";
+                        }
+                    }
+                    else if (predicateName.length == 2)
+                    {
+                        if (predicateName[0].equals("task"))
+                        {
+                            taskProps.put(QName.createQName(predicateName[1], namespaceService), predicate[1]);
+                        }
+                        else if (predicateName[0].equals("process"))
+                        {
+                            procProps.put(QName.createQName(predicateName[1], namespaceService), predicate[1]);
+                        }
+                        else
+                        {
+                            return "Syntax Error.  Unknown query predicate.\n";
+                        }
+                    }
+                    else
+                    {
+                        return "Syntax Error.\n";
+                    }
+                }
+                
+                if (taskProps.size() > 0)
+                {
+                    query.setTaskCustomProps(taskProps);
+                }
+                if (procProps.size() > 0)
+                {
+                    query.setProcessCustomProps(procProps);
+                }
+                                
+                // execute query
+                List<WorkflowTask> tasks = workflowService.queryTasks(query);
+                out.println("found " + tasks.size() + " tasks.");
+                for (WorkflowTask task : tasks)
+                {
+                    out.println("task id: " + task.id + " , name: " + task.name + " , properties: " + task.properties.size() + ", process id: " + task.path.instance);
+                }
+            }
+            
             else
             {
                 return "Syntax Error.\n";
@@ -591,14 +794,38 @@ public class WorkflowInterpreter
             }
             if (command[1].equals("definition"))
             {
-                if (command.length != 3)
+                if (command.length == 3)
+                {
+                    workflowService.undeployDefinition(command[2]);
+                    currentWorkflowDef = null;
+                    currentPath = null;
+                    out.print(executeCommand("show definitions"));
+                }
+                else if (command.length == 4)
+                {
+                    if (command[2].equals("name"))
+                    {
+                        out.print("undeploying...");
+                        List<WorkflowDefinition> defs = workflowService.getAllDefinitionsByName(command[3]);
+                        for (WorkflowDefinition def: defs)
+                        {
+                            workflowService.undeployDefinition(def.id);
+                            out.print(" v" + def.version);
+                        }
+                        out.println("");
+                        currentWorkflowDef = null;
+                        currentPath = null;
+                        out.print(executeCommand("show definitions all"));
+                    }
+                    else
+                    {
+                        return "Syntax Error.\n";
+                    }
+                }
+                else
                 {
                     return "Syntax Error.\n";
                 }
-                workflowService.undeployDefinition(command[2]);
-                currentWorkflowDef = null;
-                currentPath = null;
-                out.print(executeCommand("show definitions"));
             }
             else
             {
@@ -610,7 +837,7 @@ public class WorkflowInterpreter
         {
             if (command.length == 1)
             {
-                out.println("definition: " + ((currentWorkflowDef == null) ? "None" : currentWorkflowDef.id + " , name: " + currentWorkflowDef.title));
+                out.println("definition: " + ((currentWorkflowDef == null) ? "None" : currentWorkflowDef.id + " , name: " + currentWorkflowDef.title + " , version: " + currentWorkflowDef.version));
                 out.println("workflow: " + ((currentPath == null) ? "None" : currentPath.instance.id + " , active: " + currentPath.instance.active));
                 out.println("path: " + ((currentPath == null) ? "None" : currentPath.id + " , node: " + currentPath.node.title));
             }
@@ -748,6 +975,17 @@ public class WorkflowInterpreter
             out.print(interpretCommand("show transitions"));
         }
         
+        else if (command[0].equals("event"))
+        {
+            if (command.length < 3)
+            {
+                return "Syntax Error.\n";
+            }
+            WorkflowPath path = workflowService.fireEvent(command[1], command[2]);
+            out.println("event " + command[2] + " fired - path id: " + path.id);
+            out.print(interpretCommand("show transitions"));
+        }
+
         else if (command[0].equals("end"))
         {
             if (command.length < 3)
@@ -769,7 +1007,6 @@ public class WorkflowInterpreter
                 }
                 workflowService.cancelWorkflow(workflowId);
                 out.println("workflow " + workflowId + " cancelled.");
-                out.print(interpretCommand("show transitions"));
             }
             else
             {
@@ -807,7 +1044,7 @@ public class WorkflowInterpreter
                     }
                     if (command[3].equals("imeanit"))
                     {
-                        for (WorkflowDefinition def : workflowService.getDefinitions())
+                        for (WorkflowDefinition def : workflowService.getAllDefinitions())
                         {
                             List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(def.id);
                             for (WorkflowInstance workflow : workflows)

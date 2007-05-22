@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTimer;
 import org.alfresco.service.namespace.QName;
 
 
@@ -89,6 +90,14 @@ public interface WorkflowComponent
     public List<WorkflowDefinition> getDefinitions();
     
     /**
+     * Gets all deployed Workflow Definitions (with all previous versions)
+     * 
+     * @return  the deployed (and previous) workflow definitions
+     */
+    @Auditable
+    public List<WorkflowDefinition> getAllDefinitions();
+
+    /**
      * Gets a Workflow Definition by unique Id
      * 
      * @param workflowDefinitionId  the workflow definition id
@@ -103,6 +112,15 @@ public interface WorkflowComponent
      * @return  the deployed workflow definition
      */
     public WorkflowDefinition getDefinitionByName(String workflowName);
+    
+    /**
+     * Gets all (including previous) Workflow Definitions for the given unique name
+     * 
+     * @param workflowName  workflow name e.g. jbpm://review
+     * @return  the deployed workflow definition (or null if not found)
+     */
+    @Auditable(parameters = {"workflowName"})
+    public List<WorkflowDefinition> getAllDefinitionsByName(String workflowName);
     
     /**
      * Gets a graphical view of the Workflow Definition
@@ -153,6 +171,14 @@ public interface WorkflowComponent
     public List<WorkflowPath> getWorkflowPaths(String workflowId);
     
     /**
+     * Gets the properties associated with the specified path (and parent paths)
+     * 
+     * @param pathId  workflow path id
+     * @return  map of path properties
+     */
+    public Map<QName, Serializable> getPathProperties(String pathId); 
+    
+    /**
      * Cancel an "in-fligth" Workflow instance
      * 
      * @param workflowId  the workflow instance to cancel
@@ -179,12 +205,28 @@ public interface WorkflowComponent
     public WorkflowPath signal(String pathId, String transitionId);
     
     /**
+     * Fire custom event against specified path
+     * 
+     * @param pathId  the workflow path to fire event on
+     * @param event  name of event
+     * @return  workflow path (it may have been updated as a result of firing the event
+     */
+    public WorkflowPath fireEvent(String pathId, String event);
+
+    /**
      * Gets all Tasks associated with the specified path
      * 
      * @param pathId  the path id
      * @return  the list of associated tasks
      */    
     public List<WorkflowTask> getTasksForWorkflowPath(String pathId);
+    
+    /**
+     * Gets all active timers for the specified workflow
+     * 
+     * @return  the list of active timers
+     */
+    public List<WorkflowTimer> getTimers(String workflowId);
 
 }
 

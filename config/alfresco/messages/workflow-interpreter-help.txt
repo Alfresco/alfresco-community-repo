@@ -43,9 +43,11 @@ ok> redeploy
 
     Redeploy the last workflow definition.
 
-ok> show definitions 
+ok> show definitions [all]
 
-    List all deployed workflow definitions. 
+    List latest deployed workflow definitions.  Or, display all workflows
+    definitions (including previous versions) with the additional keyword
+    'all'.
 
 ok> use definition [<workflowDefId>] 
 
@@ -60,7 +62,14 @@ ok> undeploy definition <workflowDefId>
     workflows associated with the definition.
     
     If multiple versions of the definition exist, you will have to undeploy
-    each in turn to remove the definition completely.
+    each in turn to remove the definition completely or issue the 'undeploy
+    definition name' command.
+
+ok> undeploy definition name <workflowName>
+
+    Undeploy all versions of a workflow definition.  As with 'undeploy
+    definition', all "in-flight" workflows associated with each version
+    are terminated.
 
 ## 
 ##  Variable Commands 
@@ -140,17 +149,26 @@ ok> start [<varName[=varValue>]]*
 ok> show workflows [all]
 
     Display the list of active workflows for the currently selected workflow 
-    definition.  Or, display the list of all workflows when used with additional
-    keyword 'all'.
+    definition.  Or, display the list of all workflows when used with the 
+    additional keyword 'all'.
 
 ok> use workflow <workflowId>
 
     Use the specified <workflowId>.
 
+ok> desc workflow <workflowId> 
+
+    Describe the specified <workflowId>. 
+
 ok> show paths [<workflowId>] 
 
     Display the workflow paths for the specified <workflowId>.  If <workflowId> 
     is omitted, the paths for the currently started workflow are shown. 
+
+ok> desc path <pathId>
+
+    Describe the specified <pathId>.  Includes the list of properties associated
+    with the path.
 
 ok> show transitions [<workflowId>] 
 
@@ -163,9 +181,9 @@ ok> signal <pathId> [<transitionName>]
     Signal transition on specified <pathId>.  If <transitionName> is omitted, the 
     default transition is taken. 
 
-ok> desc workflow <workflowId> 
+ok> event <pathId> <eventtype>
 
-    Describe the specified <workflowId>. 
+    Fire an event of custom 'eventtype' against the specified path.
 
 ok> end workflow <workflowId> 
 
@@ -178,6 +196,16 @@ ok> delete workflow <workflowId>
 ok> delete all workflows
 
     Force deletion of all "in-flight" workflows.  Use with care!
+
+##
+##  Timer Commands
+##
+
+ok> show timers [all]
+
+    Display the list of active timers for the currently selected workflow 
+    definition.  Or, display the list of all timers when used with the 
+    additional keyword 'all'.
 
 ## 
 ##  Task Commands 
@@ -222,6 +250,44 @@ ok> end task <taskId> [<transitionName>]
 
     End the task identified by <taskId>.  If <transitionName> is omitted, the 
     default transition is taken. 
+   
+ok> query task [predicate]*
+
+    Query for tasks.  If no predicates are provided, all "in-progress" tasks 
+    are returned (across all "active" workflows).
+    
+    Predicates are:
+    
+    taskId=<taskId>
+    taskName=<taskName>              e.g. taskName=wf:reviewTask
+    taskState=IN_PROGRESS|COMPLETED
+    taskActor=<actorId>              e.g. taskActor=admin
+    task.<propqname>=<propvalue>     e.g. task.bpm:outcome=approve
+    processId=<processId>
+    processName=<processName>        e.g. processName=wf:review
+    processActive=true|false         e.g. processActive=true
+    process.<propqname>=<propvalue>  e.g. process.initiator=admin
+    orderBy=<orderBy>*               e.g. orderBy=TaskDue_Desc,TaskActor_Asc
+    
+    Where <orderBy> is one of:
+    
+    TaskId_Asc,
+    TaskId_Desc,
+    TaskCreated_Asc,
+    TaskCreated_Desc,
+    TaskDue_Asc,
+    TaskDue_Desc,
+    TaskName_Asc,
+    TaskName_Desc,
+    TaskActor_Asc,
+    TaskActor_Desc,
+    TaskState_Asc,
+    TaskState_Desc     
+    
+    e.g. query all in-progress pending submissions for web project X, ordered by pending due date, submitter
+    
+    query task taskName=wcmwf:submitpending taskState=IN_PROGRESS \
+      process.wcwmf:webproject=workspace://SpacesStore/projectx orderBy=TaskDue_Desc,TaskActor_Asc
     
 ## 
 ##  end 

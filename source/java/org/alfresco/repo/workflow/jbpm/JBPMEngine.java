@@ -31,8 +31,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.List;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.zip.ZipInputStream;
@@ -70,6 +70,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
+import org.alfresco.service.cmr.workflow.WorkflowTimer;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
@@ -91,11 +92,14 @@ import org.jbpm.context.exe.VariableInstance;
 import org.jbpm.db.GraphSession;
 import org.jbpm.db.TaskMgmtSession;
 import org.jbpm.file.def.FileDefinition;
+import org.jbpm.graph.def.Event;
 import org.jbpm.graph.def.Node;
 import org.jbpm.graph.def.ProcessDefinition;
 import org.jbpm.graph.def.Transition;
+import org.jbpm.graph.exe.ExecutionContext;
 import org.jbpm.graph.exe.ProcessInstance;
 import org.jbpm.graph.exe.Token;
+import org.jbpm.job.Timer;
 import org.jbpm.jpdl.par.ProcessArchive;
 import org.jbpm.jpdl.xml.Problem;
 import org.jbpm.taskmgmt.def.Task;
@@ -139,6 +143,14 @@ public class JBPMEngine extends BPMEngine
         "where ti.actorId = :actorId " +
         "and ti.isOpen = false " +
         "and ti.end is not null";
+
+    // Note: jBPM query which is not provided out-of-the-box
+    // TODO: Check jBPMg future and get this implemented in jBPM
+    private final static String PROCESS_TIMERS_QUERY =
+        "select timer " +
+        "from org.jbpm.job.Timer timer " +
+        "where timer.processInstance = :process ";
+        
     
     // Workflow Path Seperators
     private final static String WORKFLOW_PATH_SEPERATOR = "-";
@@ -364,6 +376,36 @@ public class JBPMEngine extends BPMEngine
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.WorkflowDefinitionComponent#getDefinitions()
+     */
+    @SuppressWarnings("unchecked")
+    public List<WorkflowDefinition> getAllDefinitions()
+    {
+        try
+        {
+            return (List<WorkflowDefinition>)jbpmTemplate.execute(new JbpmCallback()
+            {
+                public Object doInJbpm(JbpmContext context)
+                {
+                    GraphSession graphSession = context.getGraphSession();
+                    List<ProcessDefinition> processDefs = (List<ProcessDefinition>)graphSession.findAllProcessDefinitions();
+                    List<WorkflowDefinition> workflowDefs = new ArrayList<WorkflowDefinition>(processDefs.size());
+                    for (ProcessDefinition processDef : processDefs)
+                    {
+                        WorkflowDefinition workflowDef = createWorkflowDefinition(processDef);
+                        workflowDefs.add(workflowDef);
+                    }
+                    return workflowDefs;
+                }
+            });
+        }
+        catch(JbpmException e)
+        {
+            throw new WorkflowException("Failed to retrieve workflow definitions", e);
+        }
+    }
+
+    /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.WorkflowDefinitionComponent#getDefinitionById(java.lang.String)
      */
     public WorkflowDefinition getDefinitionById(final String workflowDefinitionId)
@@ -410,7 +452,38 @@ public class JBPMEngine extends BPMEngine
             throw new WorkflowException("Failed to retrieve workflow definition '" + workflowName + "'", e);
         }
     }
-    
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.WorkflowComponent#getAllDefinitionsByName(java.lang.String)
+     */
+    @SuppressWarnings("unchecked")
+    public List<WorkflowDefinition> getAllDefinitionsByName(final String workflowName)
+    {
+        try
+        {
+            return (List<WorkflowDefinition>)jbpmTemplate.execute(new JbpmCallback()
+            {
+                @SuppressWarnings("synthetic-access")
+                public Object doInJbpm(JbpmContext context)
+                {
+                    GraphSession graphSession = context.getGraphSession();
+                    List<ProcessDefinition> processDefs = (List<ProcessDefinition>)graphSession.findAllProcessDefinitionVersions(createLocalId(workflowName));
+                    List<WorkflowDefinition> workflowDefs = new ArrayList<WorkflowDefinition>(processDefs.size());
+                    for (ProcessDefinition processDef : processDefs)
+                    {
+                        WorkflowDefinition workflowDef = createWorkflowDefinition(processDef);
+                        workflowDefs.add(workflowDef);
+                    }
+                    return workflowDefs;
+                }
+            });
+        }
+        catch(JbpmException e)
+        {
+            throw new WorkflowException("Failed to retrieve all definitions for workflow '" + workflowName + "'", e);
+        }
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.WorkflowComponent#getDefinitionImage(java.lang.String)
      */
@@ -631,6 +704,55 @@ public class JBPMEngine extends BPMEngine
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.WorkflowComponent#getPathProperties(java.lang.String)
+     */
+    @SuppressWarnings("unchecked")
+    public Map<QName, Serializable> getPathProperties(final String pathId)
+    {
+        try
+        {
+            return (Map<QName, Serializable>) jbpmTemplate.execute(new JbpmCallback()
+            {
+                public Map<QName, Serializable> doInJbpm(JbpmContext context)
+                {
+                    // retrieve jBPM token for workflow position
+                    GraphSession graphSession = context.getGraphSession();
+                    Token token = getWorkflowToken(graphSession, pathId);
+                    ContextInstance instanceContext = token.getProcessInstance().getContextInstance();
+                    Map<QName, Serializable> properties = new HashMap<QName, Serializable>(10);
+                    while (token != null)
+                    {
+
+                        TokenVariableMap varMap = instanceContext.getTokenVariableMap(token);
+                        if (varMap != null)
+                        {
+                            Map<String, Object> tokenVars = varMap.getVariablesLocally();
+                            for (Map.Entry<String, Object> entry : tokenVars.entrySet())
+                            {
+                                String key = entry.getKey();
+                                QName qname = mapNameToQName(key);
+                                
+                                if (!properties.containsKey(key))
+                                {
+                                    Serializable value = convertValue(entry.getValue());
+                                    properties.put(qname, value);
+                                }
+                            }
+                        }
+                        token = token.getParent();
+                    }
+                                        
+                    return properties;
+                }
+            });
+        }
+        catch(JbpmException e)
+        {
+            throw new WorkflowException("Failed to retrieve properties of path '" + pathId + "'", e);
+        }
+    }
+
+    /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.WorkflowComponent#cancelWorkflow(java.lang.String)
      */
     public WorkflowInstance cancelWorkflow(final String workflowId)
@@ -740,6 +862,78 @@ public class JBPMEngine extends BPMEngine
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.WorkflowComponent#fireEvent(java.lang.String, java.lang.String)
+     */
+    public WorkflowPath fireEvent(final String pathId, final String event)
+    {
+        try
+        {
+            return (WorkflowPath) jbpmTemplate.execute(new JbpmCallback()
+            {
+                @SuppressWarnings("unchecked")
+                public Object doInJbpm(JbpmContext context)
+                {
+                    // NOTE: Do not allow jBPM built-in events to be fired
+                    if (event.equals(Event.EVENTTYPE_AFTER_SIGNAL) ||
+                        event.equals(Event.EVENTTYPE_BEFORE_SIGNAL) ||
+                        event.equals(Event.EVENTTYPE_NODE_ENTER) ||
+                        event.equals(Event.EVENTTYPE_NODE_LEAVE) ||
+                        event.equals(Event.EVENTTYPE_PROCESS_END) ||
+                        event.equals(Event.EVENTTYPE_PROCESS_START) ||
+                        event.equals(Event.EVENTTYPE_SUBPROCESS_CREATED) ||
+                        event.equals(Event.EVENTTYPE_SUBPROCESS_END) ||
+                        event.equals(Event.EVENTTYPE_SUPERSTATE_ENTER) ||
+                        event.equals(Event.EVENTTYPE_SUPERSTATE_LEAVE) ||
+                        event.equals(Event.EVENTTYPE_TASK_ASSIGN) ||
+                        event.equals(Event.EVENTTYPE_TASK_CREATE) ||
+                        event.equals(Event.EVENTTYPE_TASK_END) ||
+                        event.equals(Event.EVENTTYPE_TASK_START) ||
+                        event.equals(Event.EVENTTYPE_TIMER) ||
+                        event.equals(Event.EVENTTYPE_TRANSITION))
+                    {
+                        throw new WorkflowException("Event " + event + " is not a valid event");
+                    }
+                    
+                    // retrieve jBPM token for workflow position
+                    GraphSession graphSession = context.getGraphSession();
+                    Token token = getWorkflowToken(graphSession, pathId);
+                    
+                    ExecutionContext executionContext = new ExecutionContext(token);
+                    TaskMgmtSession taskSession = context.getTaskMgmtSession();
+                    List<TaskInstance> tasks = taskSession.findTaskInstancesByToken(token.getId());
+                    if (tasks.size() == 0)
+                    {
+                        // fire the event against current node for the token
+                        Node node = token.getNode();
+                        node.fireEvent(event, executionContext);
+                    }
+                    else
+                    {
+                        // fire the event against tasks associated with the node
+                        // NOTE: this will also propagate the event to the node
+                        for (TaskInstance task : tasks)
+                        {
+                            executionContext.setTaskInstance(task);
+                            task.getTask().fireEvent(event, executionContext);
+                        }
+                    }
+                    
+                    // save
+                    ProcessInstance processInstance = token.getProcessInstance();
+                    context.save(processInstance);
+                    
+                    // return new workflow path
+                    return createWorkflowPath(token);
+                }
+            });
+        }
+        catch(JbpmException e)
+        {
+            throw new WorkflowException("Failed to fire event '" + event + "' on workflow path '" + pathId + "'", e);
+        }
+    }
+
+    /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.WorkflowComponent#getTasksForWorkflowPath(java.lang.String)
      */
     @SuppressWarnings("unchecked")
@@ -772,6 +966,44 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.WorkflowComponent#getTimers(java.lang.String)
+     */
+    @SuppressWarnings("unchecked")
+    public List<WorkflowTimer> getTimers(final String workflowId)
+    {
+        try
+        {
+            return (List<WorkflowTimer>) jbpmTemplate.execute(new JbpmCallback()
+            {
+                public List<WorkflowTimer> doInJbpm(JbpmContext context)
+                {
+                    // retrieve process
+                    GraphSession graphSession = context.getGraphSession();
+                    ProcessInstance process = getProcessInstance(graphSession, workflowId);
+
+                    // retrieve timers for process
+                    Session session = context.getSession();
+                    Query query = session.createQuery(PROCESS_TIMERS_QUERY);
+                    query.setEntity("process", process);
+                    List<Timer> timers = query.list();
+                    
+                    // convert timers to appropriate service response format 
+                    List<WorkflowTimer> workflowTimers = new ArrayList<WorkflowTimer>(timers.size());
+                    for (Timer timer : timers)
+                    {
+                        WorkflowTimer workflowTimer = createWorkflowTimer(timer);
+                        workflowTimers.add(workflowTimer);
+                    }
+                    return workflowTimers;
+                }
+            });
+        }
+        catch(JbpmException e)
+        {
+            throw new JbpmException("Couldn't get timers for process '" + workflowId + "'", e);
+        }
+    }
     
     //
     // Task Management ...
@@ -1562,30 +1794,8 @@ public class JBPMEngine extends BPMEngine
             // add variable, only if part of task definition or locally defined on task
             if (taskProperties.containsKey(qname) || taskAssocs.containsKey(qname) || instance.hasVariableLocally(key))
             {
-	            Object value = entry.getValue();
-	
-	            //
-	            // perform data conversions
-	            //
-	            
-	            // Convert Nodes to NodeRefs
-	            if (value instanceof JBPMNode)
-	            {
-	                value = ((JBPMNode)value).getNodeRef();
-	            }
-	            else if (value instanceof JBPMNodeList)
-	            {
-	                JBPMNodeList nodes = (JBPMNodeList)value;
-	                List<NodeRef> nodeRefs = new ArrayList<NodeRef>(nodes.size());
-	                for (JBPMNode node : nodes)
-	                {
-	                    nodeRefs.add(node.getNodeRef());
-	                }
-	                value = (Serializable)nodeRefs;
-	            }
-	            
-	            // place task variable in map to return
-	            properties.put(qname, (Serializable)value);
+	            Serializable value = convertValue(entry.getValue());
+	            properties.put(qname, value);
             }
         }
 
@@ -1983,6 +2193,45 @@ public class JBPMEngine extends BPMEngine
     }
         
     /**
+     * Convert a jBPM Value to an Alfresco value
+     * 
+     * @param value jBPM value
+     * @return  alfresco value
+     */
+    private Serializable convertValue(Object value)
+    {
+        Serializable alfValue = null;
+        
+        if (value == null)
+        {
+            // NOOP
+        }
+        else if (value instanceof JBPMNode)
+        {
+            alfValue = ((JBPMNode)value).getNodeRef();
+        }
+        else if (value instanceof JBPMNodeList)
+        {
+            JBPMNodeList nodes = (JBPMNodeList)value;
+            List<NodeRef> nodeRefs = new ArrayList<NodeRef>(nodes.size());
+            for (JBPMNode node : nodes)
+            {
+                nodeRefs.add(node.getNodeRef());
+            }
+            alfValue = (Serializable)nodeRefs;
+        }
+        else if (value instanceof Serializable)
+        {
+            alfValue = (Serializable)value;
+        }
+        else
+        {
+            throw new WorkflowException("Unable to convert jBPM value " + value + " to Alfresco Value - not serializable");
+        }
+        return alfValue;
+    }
+    
+    /**
      * Convert a Repository association to JBPMNodeList or JBPMNode
      * 
      * @param isMany true => force conversion to list
@@ -2187,15 +2436,7 @@ public class JBPMEngine extends BPMEngine
         workflowNode.name = node.getName();
         workflowNode.title = getLabel(processName + ".node." + workflowNode.name, TITLE_LABEL, workflowNode.name);
         workflowNode.description = getLabel(processName + ".node." + workflowNode.name, DESC_LABEL, workflowNode.title);
-        if (node instanceof HibernateProxy)
-        {
-            Node realNode = (Node)((HibernateProxy)node).getHibernateLazyInitializer().getImplementation();        
-            workflowNode.type = realNode.getClass().getSimpleName();
-        }
-        else
-        {
-            workflowNode.type = node.getClass().getSimpleName();
-        }
+        workflowNode.type = getRealNode(node).getClass().getSimpleName();
         // TODO: Is there a formal way of determing if task node?
         workflowNode.isTaskNode = workflowNode.type.equals("TaskNode");
         List transitions = node.getLeavingTransitions();
@@ -2359,6 +2600,22 @@ public class JBPMEngine extends BPMEngine
     }
     
     /**
+     * Creates a Workflow Timer
+     * @param timer  jBPM Timer
+     * @return  workflow timer
+     */
+    protected WorkflowTimer createWorkflowTimer(Timer timer)
+    {
+        WorkflowTimer workflowTimer = new WorkflowTimer();
+        workflowTimer.id = createGlobalId(new Long(timer.getId()).toString());
+        workflowTimer.name = timer.getName();
+        workflowTimer.dueDate = timer.getDueDate();
+        workflowTimer.path = createWorkflowPath(timer.getToken());
+        workflowTimer.task = createWorkflowTask(timer.getTaskInstance());
+        return workflowTimer;
+    }
+    
+    /**
      * Get the Workflow Task State for the specified JBoss JBPM Task
      * 
      * @param task  task
@@ -2373,6 +2630,25 @@ public class JBPMEngine extends BPMEngine
         else
         {
             return WorkflowTaskState.IN_PROGRESS;
+        }
+    }
+
+    /**
+     * Helper to retrieve the real jBPM Node
+     * 
+     * @param node  Node
+     * @return  real Node (i.e. the one that's not a Hibernate proxy)
+     */
+    private Node getRealNode(Node node)
+    {
+        if (node instanceof HibernateProxy)
+        {
+            Node realNode = (Node)((HibernateProxy)node).getHibernateLazyInitializer().getImplementation();        
+            return realNode;
+        }
+        else
+        {
+            return node;
         }
     }
 

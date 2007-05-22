@@ -97,13 +97,21 @@ public interface WorkflowService
     public void undeployDefinition(String workflowDefinitionId);
 
     /**
-     * Gets all deployed Workflow Definitions
+     * Gets latest deployed Workflow Definitions
      * 
-     * @return  the deployed workflow definitions
+     * @return  the latest deployed workflow definitions
      */
     @Auditable
     public List<WorkflowDefinition> getDefinitions();
     
+    /**
+     * Gets all deployed Workflow Definitions (with all previous versions)
+     * 
+     * @return  the deployed (and previous) workflow definitions
+     */
+    @Auditable
+    public List<WorkflowDefinition> getAllDefinitions();
+        
     /**
      * Gets a Workflow Definition by unique Id
      * 
@@ -114,13 +122,22 @@ public interface WorkflowService
     public WorkflowDefinition getDefinitionById(String workflowDefinitionId);
 
     /**
-     * Gets a Workflow Definition by unique name
+     * Gets the latest Workflow Definition by unique name
      * 
      * @param workflowName  workflow name e.g. jbpm://review
      * @return  the deployed workflow definition (or null if not found)
      */
     @Auditable(parameters = {"workflowName"})
     public WorkflowDefinition getDefinitionByName(String workflowName);
+
+    /**
+     * Gets all (including previous) Workflow Definitions for the given unique name
+     * 
+     * @param workflowName  workflow name e.g. jbpm://review
+     * @return  the deployed workflow definition (or null if not found)
+     */
+    @Auditable(parameters = {"workflowName"})
+    public List<WorkflowDefinition> getAllDefinitionsByName(String workflowName);
 
     /**
      * Gets a graphical view of the Workflow Definition
@@ -185,6 +202,15 @@ public interface WorkflowService
     public List<WorkflowPath> getWorkflowPaths(String workflowId);
     
     /**
+     * Gets the properties associated with the specified path (and parent paths)
+     * 
+     * @param pathId  workflow path id
+     * @return  map of path properties
+     */
+    @Auditable(parameters = {"pathId"})
+    public Map<QName, Serializable> getPathProperties(String pathId); 
+
+    /**
      * Cancel an "in-fligth" Workflow instance
      * 
      * @param workflowId  the workflow instance to cancel
@@ -216,6 +242,16 @@ public interface WorkflowService
     public WorkflowPath signal(String pathId, String transitionId);
 
     /**
+     * Fire custom event against specified path
+     * 
+     * @param pathId  the workflow path to fire event on
+     * @param event  name of event
+     * @return  workflow path (it may have been updated as a result of firing the event
+     */
+    @Auditable(parameters = {"pathId", "event"})
+    public WorkflowPath fireEvent(String pathId, String event);
+    
+    /**
      * Gets all Tasks associated with the specified path
      * 
      * @param pathId  the path id
@@ -223,8 +259,21 @@ public interface WorkflowService
      */
     @Auditable(parameters = {"pathId"})
     public List<WorkflowTask> getTasksForWorkflowPath(String pathId);
-    
 
+    
+    //
+    // Workflow Timer Management
+    //
+
+    /**
+     * Gets all active timers for the specified workflow
+     * 
+     * @return  the list of active timers
+     */
+    @Auditable(parameters = {"workflowId"})
+    public List<WorkflowTimer> getTimers(String workflowId);
+
+    
     //
     // Task Management
     //
@@ -263,7 +312,7 @@ public interface WorkflowService
      * @param query  the filter by which tasks are queried
      * @return  the list of tasks matching the specified query
      */
-    @Auditable(parameters = {"filter"})
+    @Auditable(parameters = {"query"})
     public List<WorkflowTask> queryTasks(WorkflowTaskQuery query);
     
     /**

@@ -98,18 +98,36 @@ public final class AuthenticationHelper
     * User information is looked up in the Session. If found the ticket is retrieved and validated.
     * If no User info is found or the ticket is invalid then a redirect is performed to the login page. 
     * 
-    * @param guest      True to force a Guest login attempt
+    * @param forceGuest       True to force a Guest login attempt
     * 
     * @return AuthenticationStatus result.
     */
    public static AuthenticationStatus authenticate(
-         ServletContext context, HttpServletRequest httpRequest, HttpServletResponse httpResponse, boolean guest)
+         ServletContext sc, HttpServletRequest req, HttpServletResponse res, boolean forceGuest)
          throws IOException
    {
-      HttpSession session = httpRequest.getSession();
+      return authenticate(sc, req, res, forceGuest, true);
+   }
+   
+   /**
+    * Helper to authenticate the current user using session based Ticket information.
+    * <p>
+    * User information is looked up in the Session. If found the ticket is retrieved and validated.
+    * If no User info is found or the ticket is invalid then a redirect is performed to the login page. 
+    * 
+    * @param forceGuest       True to force a Guest login attempt
+    * @param allowGuest       True to allow the Guest user if no user object represent
+    * 
+    * @return AuthenticationStatus result.
+    */
+   public static AuthenticationStatus authenticate(
+         ServletContext sc, HttpServletRequest req, HttpServletResponse res, boolean forceGuest, boolean allowGuest)
+         throws IOException
+   {
+      HttpSession session = req.getSession();
       
       // retrieve the User object
-      User user = getUser(httpRequest, httpResponse);
+      User user = getUser(req, res);
       
       // get the login bean if we're not in the portal
       LoginBean loginBean = null;
@@ -119,10 +137,10 @@ public final class AuthenticationHelper
       }
       
       // setup the authentication context
-      WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
+      WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
       AuthenticationService auth = (AuthenticationService)wc.getBean(AUTHENTICATION_SERVICE);
       
-      if (user == null || guest)
+      if (user == null || forceGuest)
       {
          // Check for the session invalidated flag - this is set by the Logout action in the LoginBean
          // it signals a forced Logout and means we should not immediately attempt a relogin as Guest.
@@ -130,8 +148,8 @@ public final class AuthenticationHelper
          // the last stored username string is cleared.
          if (session.getAttribute(AuthenticationHelper.SESSION_INVALIDATED) == null)
          {
-            Cookie authCookie = getAuthCookie(httpRequest);
-            if (authCookie == null || guest)
+            Cookie authCookie = getAuthCookie(req);
+            if (allowGuest == true && (authCookie == null || forceGuest))
             {
                // no previous authentication or forced Guest - attempt Guest access
                UserTransaction tx = null;
@@ -140,7 +158,7 @@ public final class AuthenticationHelper
                   auth.authenticateAsGuest();
                   
                   // if we get here then Guest access was allowed and successful
-                  ServiceRegistry services = BaseServlet.getServiceRegistry(context);
+                  ServiceRegistry services = BaseServlet.getServiceRegistry(sc);
                   tx = services.getTransactionService().getUserTransaction();
                   tx.begin();
                   
@@ -166,7 +184,7 @@ public final class AuthenticationHelper
                   session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
                   
                   // Set the current locale
-                  I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
+                  I18NUtil.setLocale(Application.getLanguage(req.getSession()));
                   
                   // remove the session invalidated flag
                   session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
@@ -219,14 +237,14 @@ public final class AuthenticationHelper
          // set last authentication username cookie value
          if (loginBean != null)
          {
-            setUsernameCookie(httpRequest, httpResponse, loginBean.getUsernameInternal());
+            setUsernameCookie(req, res, loginBean.getUsernameInternal());
          }
          
          // Set the current locale
-         I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
+         I18NUtil.setLocale(Application.getLanguage(req.getSession()));
          
          // setup faces context
-         FacesHelper.getFacesContext(httpRequest, httpResponse, context);
+         FacesHelper.getFacesContext(req, res, sc);
          
          if (loginBean != null && (loginBean.getUserPreferencesBean() != null))
          {

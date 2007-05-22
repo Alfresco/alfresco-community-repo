@@ -76,7 +76,7 @@ public class BasicHttpAuthenticator implements WebScriptServletAuthenticator
         }
         
         // authenticate as guest, if service allows
-        if (isGuest)
+        if (isGuest && RequiredAuthentication.guest == required)
         {
             if (logger.isDebugEnabled())
                 logger.debug("Authenticating as Guest");

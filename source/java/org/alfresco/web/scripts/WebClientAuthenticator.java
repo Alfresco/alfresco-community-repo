@@ -83,24 +83,24 @@ public class WebClientAuthenticator implements WebScriptServletAuthenticator, Se
             {
                 if (logger.isDebugEnabled())
                     logger.debug("Authenticating ticket " + ticket);
-    
+                
                 status = AuthenticationHelper.authenticate(context, req, res, ticket);
             }
             else
             {
-                if (isGuest)
+                if (isGuest && RequiredAuthentication.guest == required)
                 {
                     if (logger.isDebugEnabled())
                         logger.debug("Authenticating as Guest");
-    
+                    
                     status = AuthenticationHelper.authenticate(context, req, res, true);
                 }
                 else
                 {
                     if (logger.isDebugEnabled())
                         logger.debug("Authenticating session");
-    
-                    status = AuthenticationHelper.authenticate(context, req, res, false);
+                    
+                    status = AuthenticationHelper.authenticate(context, req, res, false, false);
                 }
             }
     

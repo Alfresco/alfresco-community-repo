@@ -27,13 +27,11 @@ package org.alfresco.repo.model.ml;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-import org.alfresco.repo.model.filefolder.FolderTypeTest;
 import org.alfresco.repo.model.ml.tools.ContentFilterLanguagesMapTest;
 import org.alfresco.repo.model.ml.tools.EmptyTranslationAspectTest;
 import org.alfresco.repo.model.ml.tools.MLContainerTypeTest;
 import org.alfresco.repo.model.ml.tools.MultilingualContentServiceImplTest;
 import org.alfresco.repo.model.ml.tools.MultilingualDocumentAspectTest;
-
 
 /**
  * Multilingual test suite
@@ -56,7 +54,6 @@ public class MultilingualTestSuite extends TestSuite
         suite.addTestSuite(MultilingualContentServiceImplTest.class);
         suite.addTestSuite(MultilingualDocumentAspectTest.class);
         suite.addTestSuite(MLContainerTypeTest.class);
-        suite.addTestSuite(FolderTypeTest.class);
         
         return suite;
     }

@@ -39,30 +39,8 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author yanipig
  */
-public class MLContainerTypeTest extends AbstractMultilingualTestCases {
-
-    
-    public void testDeleteNode() throws Exception
-    {
-        NodeRef pivot = createContent();
-        NodeRef empty; 
-        
-        NodeRef mlContainer = multilingualContentService.makeTranslation(pivot, Locale.FRENCH);
-        empty = multilingualContentService.addEmptyTranslation(pivot, "Empty_" + System.currentTimeMillis(), Locale.ENGLISH);
-        
-        nodeService.deleteNode(mlContainer);
-        
-        // Ensure that the mlContainer is deleted
-        assertFalse("The mlContainer must be deleted", nodeService.exists(mlContainer));
-        // Ensure that the empty translation is deleted
-        assertFalse("The mlEmptyTranslation must be deleted", nodeService.exists(empty));
-        // Ensure that the non-empty document is not deleted
-        assertTrue("The mlDocument must not be deleted", nodeService.exists(pivot));
-        // Ensure that the  mlDocument property of the non-empty document is removed
-        assertFalse("The " + ContentModel.ASPECT_MULTILINGUAL_DOCUMENT + " aspect of the mlDocument must be removed", 
-                nodeService.hasAspect(pivot, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
-    }
-    
+public class MLContainerTypeTest extends AbstractMultilingualTestCases
+{
     @SuppressWarnings("unused")
     public void testEditLocale() throws Exception
     {

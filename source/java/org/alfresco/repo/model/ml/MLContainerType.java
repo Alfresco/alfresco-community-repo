@@ -49,7 +49,6 @@ import org.alfresco.service.namespace.QName;
  * @author yanipig
  */
 public class MLContainerType implements
-        NodeServicePolicies.BeforeDeleteNodePolicy,
         NodeServicePolicies.OnUpdatePropertiesPolicy
 {
      /**
@@ -76,11 +75,6 @@ public class MLContainerType implements
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
                 ContentModel.TYPE_MULTILINGUAL_CONTAINER,
                 new JavaBehaviour(this, "onUpdateProperties"));
-
-        this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
-                ContentModel.TYPE_MULTILINGUAL_CONTAINER,
-                new JavaBehaviour(this, "beforeDeleteNode"));
     }
 
     /**
@@ -109,27 +103,6 @@ public class MLContainerType implements
     }
 
     /**
-      * If a <b>cm:mlContainer<b> is deleted, it can't be archived.
-      *
-      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
-      */
-    public void beforeDeleteNode(NodeRef nodeRef)
-    {
-        Map<Locale, NodeRef> translations = multilingualContentService.getTranslations(nodeRef);
-
-        // add the DELETION_RUNNING property
-        nodeService.setProperty(nodeRef, PROP_NAME_DELETION_RUNNING, Boolean.TRUE);
-
-        for(Map.Entry<Locale, NodeRef> entry : translations.entrySet())
-        {
-            nodeService.removeAspect(entry.getValue(), ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
-        }
-
-        // remove the DELETION_RUNNING property
-        nodeService.removeProperty(nodeRef, PROP_NAME_DELETION_RUNNING);
-    }
-
-    /**
      * The property <b>locale</b> of a <b>cm:mlContainer</b> represents the locale of the pivot translation.
      *
      * Since the pivot must be an existing translation and the pivot can t be empty, some tests must be performed when
@@ -139,6 +112,10 @@ public class MLContainerType implements
      */
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
+        /*
+         * TODO: Move into MultilingualContentService
+         */
+        
         Locale localeAfter  = (Locale) after.get(ContentModel.PROP_LOCALE);
         Locale localeBefore = (Locale) before.get(ContentModel.PROP_LOCALE);
 

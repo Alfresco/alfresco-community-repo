@@ -87,8 +87,11 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
         assertEquals("The restored node would not be restaured to the mlContainer", 2, multilingualContentService.getTranslations(mlContainer).size());
         // Ensure that the restored node doesn't keep the mlDocument aspect
         assertFalse("The restored node can't keep the multilingual aspect", nodeService.hasAspect(restoredNode, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
-        // Ensure that the restored node doesn't keep the locale property  
-        assertNull("The restaured node can't keep the locale property", nodeService.getProperty(restoredNode, ContentModel.PROP_LOCALE));
+// DH: The locale is stored on an aspect that is independent of the ML model.
+//     It is therefore not possible to remove the locale just because the node
+//     is being unhooked from the ML structures
+//        // Ensure that the restored node doesn't keep the locale property  
+//        assertNull("The restaured node can't keep the locale property", nodeService.getProperty(restoredNode, ContentModel.PROP_LOCALE));
     }
     
     public void testDeletePivot() throws Exception
@@ -109,8 +112,10 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
         assertTrue("The last translation would not be removed", nodeService.exists(trans1));
         // Ensure that trans1 has no mlDocument aspect
         assertFalse("The last translation can't keep the multilingual aspect", nodeService.hasAspect(trans1, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
-        // Ensure that trans1 has no locale propety  
-        assertNull("The last translation can't keep the locale property", nodeService.getProperty(trans1, ContentModel.PROP_LOCALE));
+// DH: Here too, the sys:locale property must be left alone as it is independent of the
+//     ML model
+//        // Ensure that trans1 has no locale propety  
+//        assertNull("The last translation can't keep the locale property", nodeService.getProperty(trans1, ContentModel.PROP_LOCALE));
     }
     
     public void testDeleteLastNode() throws Exception

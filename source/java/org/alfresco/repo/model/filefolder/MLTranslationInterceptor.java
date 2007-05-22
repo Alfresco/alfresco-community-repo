@@ -220,8 +220,15 @@ public class MLTranslationInterceptor implements MethodInterceptor
             }
             // Convert the set back to a list
             List<FileInfo> orderedResults = new ArrayList<FileInfo>(fileInfos.size());
+            Set<FileInfo> alreadyPresent = new HashSet<FileInfo>(fileInfos.size() * 2 + 1);
             for (FileInfo info : fileInfos)
             {
+                if (alreadyPresent.contains(info))
+                {
+                    // We've done this one
+                    continue;
+                }
+                alreadyPresent.add(info);
                 orderedResults.add(translatedFileInfos.get(info));
             }
             ret = orderedResults;

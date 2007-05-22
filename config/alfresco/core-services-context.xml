@@ -862,16 +862,6 @@
         </property>
     </bean>
 
-    <!-- Folder -->
-    <bean id="folderType" class="org.alfresco.repo.model.filefolder.FolderType" init-method="init">
-        <property name="policyComponent">
-            <ref bean="policyComponent" />
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-    </bean>
-
     <!-- Referenceable -->
     <bean id="referenceableAspect" class="org.alfresco.repo.node.ReferenceableAspect" init-method="init">
         <property name="policyComponent">

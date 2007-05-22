@@ -69,6 +69,10 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="NodeService_security"/>
+                <!-- Bug prevents use.
+                     Also, the interception of this sort will lead to issues with other clients
+                <idref bean="mlTranslationInterceptor"/>
+                -->
             </list>
         </property>
     </bean>

@@ -74,6 +74,15 @@ public interface MultilingualContentService
     NodeRef makeTranslation(NodeRef contentNodeRef, Locale locale);
 
     /**
+     * Removes the node from any associated translations.  If the translation is the
+     * pivot translation, then the entire set of translations will be unhooked.
+     * 
+     * @param translationNodeRef        an existing <b>cm:mlDocument</b>
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationNodeRef"})
+    void unmakeTranslation(NodeRef translationNodeRef);
+    
+    /**
      * Make a translation out of an existing document.  The necessary translation structures will be created
      * as necessary.
      *

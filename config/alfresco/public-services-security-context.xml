@@ -539,6 +539,7 @@
                 org.alfresco.service.cmr.ml.MultilingualContentService.getPivotTranslation=ACL_NODE.0.sys:base.Read                
                 org.alfresco.service.cmr.ml.MultilingualContentService.isTranslation=ACL_NODE.0.sys:base.Read
                 org.alfresco.service.cmr.ml.MultilingualContentService.makeTranslation=ACL_NODE.0.sys:base.Write
+                org.alfresco.service.cmr.ml.MultilingualContentService.unmakeTranslation=ACL_NODE.0.sys:base.Write
                 org.alfresco.service.cmr.ml.MultilingualContentService.addTranslation=ACL_NODE.0.sys:base.Read,ACL_NODE.1.sys:base.Write
                 org.alfresco.service.cmr.ml.MultilingualContentService.addEmptyTranslation=ACL_NODE.0.sys:base.Read
                 org.alfresco.service.cmr.ml.MultilingualContentService.createEdition=ACL_NODE.0.sys:base.Write

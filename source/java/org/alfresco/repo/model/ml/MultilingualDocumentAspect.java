@@ -55,8 +55,6 @@ public class MultilingualDocumentAspect implements
         CopyServicePolicies.OnCopyNodePolicy,
         CopyServicePolicies.OnCopyCompletePolicy,
         NodeServicePolicies.BeforeDeleteNodePolicy,
-        NodeServicePolicies.BeforeRemoveAspectPolicy,
-        NodeServicePolicies.OnRemoveAspectPolicy,
         NodeServicePolicies.OnUpdatePropertiesPolicy
 {
 
@@ -81,30 +79,19 @@ public class MultilingualDocumentAspect implements
                 new JavaBehaviour(this, "onCopyNode"));
         
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), 
-                ContentModel.ASPECT_MULTILINGUAL_DOCUMENT, 
-                new JavaBehaviour(this, "beforeDeleteNode"));   
-        
-        this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRemoveAspect"), 
-                ContentModel.ASPECT_MULTILINGUAL_DOCUMENT,
-                new JavaBehaviour(this, "beforeRemoveAspect"));
-        
-        this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
-                ContentModel.ASPECT_MULTILINGUAL_DOCUMENT,
-                new JavaBehaviour(this, "onUpdateProperties"));
-        
-        this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete"), 
                 ContentModel.ASPECT_MULTILINGUAL_DOCUMENT,
                 new JavaBehaviour(this, "onCopyComplete"));
         
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"), 
-                ContentModel.ASPECT_MULTILINGUAL_DOCUMENT,
-                new JavaBehaviour(this, "onRemoveAspect"));
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), 
+                ContentModel.ASPECT_MULTILINGUAL_DOCUMENT, 
+                new JavaBehaviour(this, "beforeDeleteNode"));   
         
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
+                ContentModel.ASPECT_MULTILINGUAL_DOCUMENT,
+                new JavaBehaviour(this, "onUpdateProperties"));
     }
     
     /**
@@ -153,72 +140,19 @@ public class MultilingualDocumentAspect implements
     }
     
     /**
-     * If the node is multilingual and it is the pivot translation, then deletion is not allowed unless the
+     * If this is not an empty translation, then ensure that the node is properly
+     * unhooked from the translation mechanism first.
      */
     public void beforeDeleteNode(NodeRef nodeRef) 
-    {    
-//        checkRemoveParentMLContainer(nodeRef);
-        // Remove the aspect
-        nodeService.removeAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
-    }
-    
-    /**
-     * When a pivot translation is deleted, it's <b>cm:mlContainer is deleted too.</b> 
-     * 
-     * <i>Note: When the pivot translation and the mlContainer are deleted, the mlDocument apsect is removed from
-     * the other translations. It will be better to don't allow the deletion of the pivot if other translation is 
-     * available at the client side level.</i>
-     * 
-     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeRemoveAspectPolicy#beforeRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
-    public void beforeRemoveAspect(NodeRef nodeRef, QName aspectTypeQName) 
     {
-        checkRemoveParentMLContainer(nodeRef);
-    }
-    
-    private void checkRemoveParentMLContainer(NodeRef nodeRef)
-    {
-        // Avoid nodes that are no longer translations
-        if (!multilingualContentService.isTranslation(nodeRef))
-        {
-            return;
-        }
-        
-        NodeRef mlContainer = multilingualContentService.getTranslationContainer(nodeRef);
-        
-        // nothing to do if the mlContainer is in a deletion process
-        Boolean inDeleteProcess = (Boolean) nodeService.getProperty(mlContainer, MLContainerType.PROP_NAME_DELETION_RUNNING); 
-        if(inDeleteProcess != null && inDeleteProcess == true)
-        {
-            // TODO: Is this still called?  Can we get rid of the DELETION_RUNNING property?
-            return;
-        }
-                    
-        Locale mlContainerLocale = (Locale) nodeService.getProperty(mlContainer, ContentModel.PROP_LOCALE);
-        Locale nodeRefLocale     = (Locale) nodeService.getProperty(nodeRef,     ContentModel.PROP_LOCALE);
-        
-        nodeService.removeChild(mlContainer, nodeRef);
-        
-        // if last translation or if nodeRef is pivot translation
-        if (multilingualContentService.getTranslations(mlContainer).size() == 0
-                || mlContainerLocale.equals(nodeRefLocale))
-        {
-            // delete the mlContainer
-            nodeService.deleteNode(mlContainer);
-        }            
-    }
-    
-    /** 
-     * Removes the document's locale and the <b>cm:mlEmptyTranslation</b> aspect,
-     * if present. 
-     */
-    public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName) 
-    {
-        nodeService.removeProperty(nodeRef, ContentModel.PROP_LOCALE);
-        // Remove the empty translation aspect if it is present
         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
         {
-            nodeService.removeAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION);
+            // We just let it get deleted
+        }
+        else
+        {
+            // First unhook it
+            multilingualContentService.unmakeTranslation(nodeRef);
         }
     }
     
@@ -232,6 +166,10 @@ public class MultilingualDocumentAspect implements
      */
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after) 
     {
+        /*
+         * TODO: Move this into MultilingualContentService#setTranslationLocale
+         */
+        
         Locale localeBefore = (Locale) before.get(ContentModel.PROP_LOCALE);
         Locale localeAfter;
         

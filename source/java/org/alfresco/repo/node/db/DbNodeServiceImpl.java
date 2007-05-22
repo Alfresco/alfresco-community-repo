@@ -600,10 +600,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public void removeAspect(NodeRef nodeRef, QName aspectTypeQName)
             throws InvalidNodeRefException, InvalidAspectException
     {
-        // Invoke policy behaviours
-        invokeBeforeUpdateNode(nodeRef);
-        invokeBeforeRemoveAspect(nodeRef, aspectTypeQName);
-        
         // get the aspect
         AspectDefinition aspectDef = dictionaryService.getAspect(aspectTypeQName);
         if (aspectDef == null)
@@ -612,56 +608,64 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         // get the node
         Node node = getNodeNotNull(nodeRef);
+        Set<QName> nodeAspects = node.getAspects();
+        
+        if (!nodeAspects.contains(aspectTypeQName))
+        {
+            // The aspect isn't present so just leave it
+            return;
+        }
+        
+        // Invoke policy behaviours
+        invokeBeforeUpdateNode(nodeRef);
+        invokeBeforeRemoveAspect(nodeRef, aspectTypeQName);
         
         // remove the aspect, if present
-        boolean removed = node.getAspects().remove(aspectTypeQName);
-        // if the aspect was present, remove the associated properties and associations
-        if (removed)
+        node.getAspects().remove(aspectTypeQName);
+
+        Map<QName, PropertyValue> nodeProperties = node.getProperties();
+        Map<QName,PropertyDefinition> propertyDefs = aspectDef.getProperties();
+        for (QName propertyName : propertyDefs.keySet())
         {
-            Map<QName, PropertyValue> nodeProperties = node.getProperties();
-            Map<QName,PropertyDefinition> propertyDefs = aspectDef.getProperties();
-            for (QName propertyName : propertyDefs.keySet())
-            {
-                nodeProperties.remove(propertyName);
-            }
-            
-            // Remove child associations
-            Map<QName, ChildAssociationDefinition> childAssocDefs = aspectDef.getChildAssociations();
-            Collection<ChildAssoc> childAssocs = nodeDaoService.getChildAssocs(node);
-            for (ChildAssoc childAssoc : childAssocs)
-            {
-                // Ignore if the association type is not defined by the aspect
-                QName childAssocQName = childAssoc.getTypeQName();
-                if (!childAssocDefs.containsKey(childAssocQName))
-                {
-                    continue;
-                }
-                // The association is of a type that should be removed
-                nodeDaoService.deleteChildAssoc(childAssoc, true);
-            }
-            
-            // Remove regular associations
-            Map<QName, AssociationDefinition> assocDefs = aspectDef.getAssociations();
-            List<NodeAssoc> nodeAssocs = nodeDaoService.getTargetNodeAssocs(node);
-            for (NodeAssoc nodeAssoc : nodeAssocs)
-            {
-                // Ignore if the association type is not defined by the aspect
-                QName nodeAssocQName = nodeAssoc.getTypeQName();
-                if (!assocDefs.containsKey(nodeAssocQName))
-                {
-                    continue;
-                }
-                // Delete the association
-                nodeDaoService.deleteNodeAssoc(nodeAssoc);
-            }
-            
-            // Invoke policy behaviours
-            invokeOnUpdateNode(nodeRef);
-            invokeOnRemoveAspect(nodeRef, aspectTypeQName);
-            
-            // update the node status
-            nodeDaoService.recordChangeId(nodeRef);
+            nodeProperties.remove(propertyName);
         }
+        
+        // Remove child associations
+        Map<QName, ChildAssociationDefinition> childAssocDefs = aspectDef.getChildAssociations();
+        Collection<ChildAssoc> childAssocs = nodeDaoService.getChildAssocs(node);
+        for (ChildAssoc childAssoc : childAssocs)
+        {
+            // Ignore if the association type is not defined by the aspect
+            QName childAssocQName = childAssoc.getTypeQName();
+            if (!childAssocDefs.containsKey(childAssocQName))
+            {
+                continue;
+            }
+            // The association is of a type that should be removed
+            nodeDaoService.deleteChildAssoc(childAssoc, true);
+        }
+        
+        // Remove regular associations
+        Map<QName, AssociationDefinition> assocDefs = aspectDef.getAssociations();
+        List<NodeAssoc> nodeAssocs = nodeDaoService.getTargetNodeAssocs(node);
+        for (NodeAssoc nodeAssoc : nodeAssocs)
+        {
+            // Ignore if the association type is not defined by the aspect
+            QName nodeAssocQName = nodeAssoc.getTypeQName();
+            if (!assocDefs.containsKey(nodeAssocQName))
+            {
+                continue;
+            }
+            // Delete the association
+            nodeDaoService.deleteNodeAssoc(nodeAssoc);
+        }
+        
+        // Invoke policy behaviours
+        invokeOnUpdateNode(nodeRef);
+        invokeOnRemoveAspect(nodeRef, aspectTypeQName);
+        
+        // update the node status
+        nodeDaoService.recordChangeId(nodeRef);
     }
 
     /**

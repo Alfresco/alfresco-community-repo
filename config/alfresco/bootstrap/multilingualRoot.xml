@@ -7,8 +7,8 @@
       <view:acl view:inherit="false">
          <view:ace view:access="ALLOWED">
             <view:authority>GROUP_EVERYONE</view:authority>
-            <view:permission>Coordinator</view:permission>
-         </view:ace>         
+            <view:permission>Consumer</view:permission>
+         </view:ace>
       </view:acl>
    </cm:mlRoot>
 

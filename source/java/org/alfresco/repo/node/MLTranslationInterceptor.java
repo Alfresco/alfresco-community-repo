@@ -150,7 +150,8 @@ public class MLTranslationInterceptor implements MethodInterceptor
                 }                    
             }
                         
-        } else
+        }
+        else
         {
             ret = invocation.proceed();
         }

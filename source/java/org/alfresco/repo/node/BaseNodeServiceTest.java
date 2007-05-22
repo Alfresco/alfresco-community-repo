@@ -875,11 +875,12 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
 
     public void testRemoveSpecificChild() throws Exception
     {
-        NodeRef parentRef = nodeService.createNode(
+        ChildAssociationRef pathPrimaryRef = nodeService.createNode(
                 rootNodeRef,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName("parent_child"),
-                ContentModel.TYPE_CONTAINER).getChildRef();
+                ContentModel.TYPE_CONTAINER);
+        NodeRef parentRef = pathPrimaryRef.getParentRef();
         ChildAssociationRef pathARef = nodeService.createNode(
                 parentRef,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
@@ -890,12 +891,34 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 pathARef.getChildRef(),
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName("pathB"));
+        ChildAssociationRef pathCRef = nodeService.addChild(
+                parentRef,
+                pathARef.getChildRef(),
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathC"));
         
-        // now remove the second association
-        boolean removed = nodeService.removeChildAssociation(pathBRef);
-        assertTrue("Association was not removed", removed);
-        removed = nodeService.removeChildAssociation(pathBRef);
-        assertFalse("Non-existent association was apparently removed", removed);
+        // remove the path B association
+        boolean removedB = nodeService.removeChildAssociation(pathBRef);
+        assertTrue("Association was not removed", removedB);
+        removedB = nodeService.removeChildAssociation(pathBRef);
+        assertFalse("Non-existent association was apparently removed", removedB);
+        
+        // remove the path C association
+        boolean removedC = nodeService.removeChildAssociation(pathCRef);
+        assertTrue("Association was not removed", removedC);
+        removedC = nodeService.removeSeconaryChildAssociation(pathCRef);
+        assertFalse("Non-existent association was apparently removed", removedC);
+        
+        // Now verify that primary associations are caught
+        try
+        {
+            nodeService.removeSeconaryChildAssociation(pathPrimaryRef);
+            fail("Primary association not detected");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected
+        }
     }
     
     public void testRemoveChildByRef() throws Exception

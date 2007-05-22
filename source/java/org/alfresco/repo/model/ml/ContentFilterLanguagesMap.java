@@ -74,11 +74,10 @@ public class ContentFilterLanguagesMap implements ContentFilterLanguagesService
     /**
      * @param configService the config service to use to read languages
      */
-    public ContentFilterLanguagesMap(ConfigService configService)
+    public void setConfigService(ConfigService configService)
     {
         this.configService = configService;
     }
-
 
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.ml.ContentFilterLanguagesService#getFilterLanguages()

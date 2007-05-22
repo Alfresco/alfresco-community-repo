@@ -928,6 +928,14 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     }
 
     /**
+     * TODO: Implement
+     */
+    public boolean removeSeconaryChildAssociation(ChildAssociationRef childAssocRef)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * @param nodeRef
      * @return Returns all properties keyed by their qualified name
      * @throws InvalidNodeRefException if the node could not be found

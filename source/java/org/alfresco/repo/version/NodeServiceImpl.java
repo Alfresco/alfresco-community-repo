@@ -248,6 +248,14 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
+    public boolean removeSeconaryChildAssociation(ChildAssociationRef childAssocRef)
+    {
+        throw new UnsupportedOperationException(MSG_UNSUPPORTED);
+    }
+
+    /**
+     * @throws UnsupportedOperationException always
+     */
     public ChildAssociationRef moveNode(NodeRef nodeToMoveRef, NodeRef newParentRef, QName assocTypeQName, QName assocQName) throws InvalidNodeRefException
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);

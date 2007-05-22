@@ -296,11 +296,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             // Copy the incomming property map since we may need to modify it later
             properties = new HashMap<QName, Serializable>(properties);
         }
-		
-		// Invoke policy behaviour
-		invokeBeforeUpdateNode(parentRef);
-		invokeBeforeCreateNode(parentRef, assocTypeQName, assocQName, nodeTypeQName);
-		invokeBeforeCreateNodeAssociation(parentRef, assocTypeQName, assocQName);
+        
+        // Invoke policy behaviour
+        invokeBeforeUpdateNode(parentRef);
+        invokeBeforeCreateNode(parentRef, assocTypeQName, assocQName, nodeTypeQName);
+        invokeBeforeCreateNodeAssociation(parentRef, assocTypeQName, assocQName);
         
         // get the store that the parent belongs to
         StoreRef storeRef = parentRef.getStoreRef();
@@ -352,16 +352,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         ChildAssociationRef childAssocRef = childAssoc.getChildAssocRef();
         
         // Invoke policy behaviour
-		invokeOnCreateNode(childAssocRef);
-		invokeOnCreateNodeAssociation(childAssocRef);
+        invokeOnCreateNode(childAssocRef);
+        invokeOnCreateNodeAssociation(childAssocRef);
         invokeOnUpdateNode(parentRef);
         if (propertiesAfter != null)
         {
             invokeOnUpdateProperties(childAssocRef.getChildRef(), propertiesBefore, propertiesAfter);
         }
         
-		// done
-		return childAssocRef;
+        // done
+        return childAssocRef;
     }
     
     /**
@@ -464,8 +464,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // invoke policy behaviour
         if (movingStore)
         {
-        	// TODO for now indicate that the node has been archived to prevent the version history from being removed
-        	//      in the future a onMove policy could be added and remove the need for onDelete and onCreate to be fired here
+            // TODO for now indicate that the node has been archived to prevent the version history from being removed
+            //      in the future a onMove policy could be added and remove the need for onDelete and onCreate to be fired here
             invokeOnDeleteNode(oldAssocRef, nodeToMoveTypeQName, nodeToMoveAspects, true);
             invokeOnCreateNode(newAssoc.getChildAssocRef());
         }
@@ -584,9 +584,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // physically attach the aspect to the node
         if (node.getAspects().add(aspectTypeQName) == true)
-        {            		    		
-    		// Invoke policy behaviours
-    		invokeOnUpdateNode(nodeRef);
+        {                                
+            // Invoke policy behaviours
+            invokeOnUpdateNode(nodeRef);
             invokeOnAddAspect(nodeRef, aspectTypeQName);
             
             // update the node status
@@ -600,10 +600,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public void removeAspect(NodeRef nodeRef, QName aspectTypeQName)
             throws InvalidNodeRefException, InvalidAspectException
     {
-		// Invoke policy behaviours
-		invokeBeforeUpdateNode(nodeRef);
+        // Invoke policy behaviours
+        invokeBeforeUpdateNode(nodeRef);
         invokeBeforeRemoveAspect(nodeRef, aspectTypeQName);
-		
+        
         // get the aspect
         AspectDefinition aspectDef = dictionaryService.getAspect(aspectTypeQName);
         if (aspectDef == null)
@@ -691,12 +691,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
     public void deleteNode(NodeRef nodeRef)
     {
-    	  boolean isArchivedNode = false;
+        boolean isArchivedNode = false;
         boolean requiresDelete = false;
-    	
-		  // Invoke policy behaviours
-		  invokeBeforeDeleteNode(nodeRef);
-		
+        
+        // Invoke policy behaviours
+        invokeBeforeDeleteNode(nodeRef);
+        
         // get the node
         Node node = getNodeNotNull(nodeRef);
         // get the primary parent-child relationship before it is gone
@@ -738,17 +738,17 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             archiveNode(nodeRef, archiveStoreRef);
             isArchivedNode = true;
         }
-		
-		// Invoke policy behaviours
-		invokeOnDeleteNode(childAssocRef, nodeTypeQName, nodeAspectQNames, isArchivedNode);
+        
+        // Invoke policy behaviours
+        invokeOnDeleteNode(childAssocRef, nodeTypeQName, nodeAspectQNames, isArchivedNode);
     }
     
     public ChildAssociationRef addChild(NodeRef parentRef, NodeRef childRef, QName assocTypeQName, QName assocQName)
     {
         // Invoke policy behaviours
-		invokeBeforeUpdateNode(parentRef);
+        invokeBeforeUpdateNode(parentRef);
         invokeBeforeCreateChildAssociation(parentRef, childRef, assocTypeQName, assocQName);
-		
+        
         // get the parent node and ensure that it is a container node
         Node parentNode = getNodeNotNull(parentRef);
         // get the child node
@@ -769,10 +769,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // this functionality is provided for free in getPath
         getPaths(childNodeRef, false);
 
-		// Invoke policy behaviours
+        // Invoke policy behaviours
         invokeOnCreateChildAssociation(assocRef);
-		invokeOnUpdateNode(parentRef);
-		
+        invokeOnUpdateNode(parentRef);
+        
         return assoc.getChildAssocRef();
     }
 
@@ -813,9 +813,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             deleteNode(primaryAssocRef.getChildRef());
         }
 
-		// Invoke policy behaviours
-		invokeOnUpdateNode(parentRef);
-		
+        // Invoke policy behaviours
+        invokeOnUpdateNode(parentRef);
+        
         // done
     }
     
@@ -834,6 +834,31 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         // Done
         return deleted;
+    }
+
+    public boolean removeSeconaryChildAssociation(ChildAssociationRef childAssocRef)
+    {
+        Node parentNode = getNodeNotNull(childAssocRef.getParentRef());
+        Node childNode = getNodeNotNull(childAssocRef.getChildRef());
+        QName typeQName = childAssocRef.getTypeQName();
+        QName qname = childAssocRef.getQName();
+        ChildAssoc assoc = nodeDaoService.getChildAssoc(parentNode, childNode, typeQName, qname);
+        if (assoc == null)
+        {
+            // No association exists
+            return false;
+        }
+        if (assoc.getIsPrimary())
+        {
+            throw new IllegalArgumentException(
+                    "removeSeconaryChildAssociation can not be applied to a primary association: \n" +
+                    "   Child Assoc: " + assoc);
+        }
+        // Delete the secondary association
+        nodeDaoService.deleteChildAssoc(assoc, false);
+        invokeOnDeleteChildAssociation(childAssocRef);
+        // Done
+        return true;
     }
 
     /**
@@ -965,7 +990,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Node node = getNodeNotNull(nodeRef);
         
         // Invoke policy behaviours
-		invokeBeforeUpdateNode(nodeRef);
+        invokeBeforeUpdateNode(nodeRef);
 
         // Do the set properties
         Map<QName, Serializable> propertiesBefore = getPropertiesImpl(node);
@@ -973,8 +998,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
         setChildUniqueName(node);         // ensure uniqueness
 
-		// Invoke policy behaviours
-		invokeOnUpdateNode(nodeRef);
+        // Invoke policy behaviours
+        invokeOnUpdateNode(nodeRef);
         invokeOnUpdateProperties(nodeRef, propertiesBefore, propertiesAfter);
     }
     
@@ -1027,8 +1052,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Assert.notNull(qname);
         
         // Invoke policy behaviours
-		invokeBeforeUpdateNode(nodeRef);
-		
+        invokeBeforeUpdateNode(nodeRef);
+        
         // get the node
         Node node = getNodeNotNull(nodeRef);
         
@@ -1041,8 +1066,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             setChildUniqueName(node);         // ensure uniqueness
         }
 
-		// Invoke policy behaviours
-		invokeOnUpdateNode(nodeRef);
+        // Invoke policy behaviours
+        invokeOnUpdateNode(nodeRef);
         invokeOnUpdateProperties(nodeRef, propertiesBefore, propertiesAfter);
     }
     
@@ -1245,8 +1270,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             throws InvalidNodeRefException, AssociationExistsException
     {
         // Invoke policy behaviours
-		invokeBeforeUpdateNode(sourceRef);
-		
+        invokeBeforeUpdateNode(sourceRef);
+        
         Node sourceNode = getNodeNotNull(sourceRef);
         Node targetNode = getNodeNotNull(targetRef);
         // see if it exists
@@ -1259,10 +1284,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         assoc = nodeDaoService.newNodeAssoc(sourceNode, targetNode, assocTypeQName);
         AssociationRef assocRef = assoc.getNodeAssocRef();
 
-		// Invoke policy behaviours
-		invokeOnUpdateNode(sourceRef);
+        // Invoke policy behaviours
+        invokeOnUpdateNode(sourceRef);
         invokeOnCreateAssociation(assocRef);
-		
+        
         return assocRef;
     }
 
@@ -1281,13 +1306,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         AssociationRef assocRef = assoc.getNodeAssocRef();
         
         // Invoke policy behaviours
-		invokeBeforeUpdateNode(sourceRef);
-		
+        invokeBeforeUpdateNode(sourceRef);
+        
         // delete it
         nodeDaoService.deleteNodeAssoc(assoc);
-		
-		// Invoke policy behaviours
-		invokeOnUpdateNode(sourceRef);
+        
+        // Invoke policy behaviours
+        invokeOnUpdateNode(sourceRef);
         invokeOnDeleteAssociation(assocRef);
     }
 

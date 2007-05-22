@@ -240,9 +240,10 @@
                               </td>
                               <td>&nbsp;&#8226;&nbsp;</td>
                               <td width=50%>
+                                 Ray Gauss II,
+                                 Dave Gillen,
                                  Michael Kriske,
                                  Carina Lansing,
-                                 Ray Gauss II,
                                  DMC.de,
                                  Optaros
                               </td>

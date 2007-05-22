@@ -43,6 +43,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
+import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;

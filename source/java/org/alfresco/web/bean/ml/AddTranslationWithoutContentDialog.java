@@ -125,14 +125,13 @@ public class AddTranslationWithoutContentDialog extends BaseDialogBean
       this.userPreferencesBean = userPreferencesBean;
    }
 
-    /**
-     * @param multilingualContentService the multilingualContentService to set
-     */
-    public void setMultilingualContentService(
-            MultilingualContentService multilingualContentService)
-    {
-        this.multilingualContentService = multilingualContentService;
-    }
+   /**
+    * @param multilingualContentService the multilingualContentService to set
+    */
+   public void setMultilingualContentService(MultilingualContentService multilingualContentService)
+   {
+      this.multilingualContentService = multilingualContentService;
+   }
 
 
    /**

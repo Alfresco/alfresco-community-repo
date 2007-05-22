@@ -52,9 +52,15 @@ public class EditDocHttpEvaluator implements ActionEvaluator
       
       boolean result = false;
       
+      // Since the reader returned of an empty translation is the reader of it's pivot translation, it makes 
+      // no sens to edit it on-line.
+      if(node.getAspects().contains(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+      {
+         //result = false
+      }
       // if the node is inline editable, the default http behaviour should 
       // always be used otherwise the configured approach is used
-      if (dd.isSubClass(node.getType(), ContentModel.TYPE_CONTENT))
+      else if (dd.isSubClass(node.getType(), ContentModel.TYPE_CONTENT))
       {
          if (node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) == true ||
              "http".equals(Application.getClientConfig(fc).getEditLinkType()))

@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.web.bean.spaces;
@@ -60,7 +60,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Bean responsible for the create space wizard
- * 
+ *
  * @author gavinc
  */
 public class CreateSpaceWizard extends BaseWizardBean
@@ -68,7 +68,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    public static final String DEFAULT_SPACE_ICON_NAME = "space-icon-default";
    public static final String DEFAULT_SPACE_ICON_PATH = "";
    public static final String DEFAULT_SPACE_TYPE_ICON_PATH = "/images/icons/space.gif";
-   
+
    private static Log logger = LogFactory.getLog(CreateSpaceWizard.class);
 
    protected String spaceType;
@@ -85,27 +85,27 @@ public class CreateSpaceWizard extends BaseWizardBean
    protected List<SelectItem> templates;
    protected List<UIListItem> folderTypes;
    protected List<UIDescription> folderTypeDescriptions;
-   
+
    // the NodeRef of the node created during finish
    protected NodeRef createdNode;
-   
+
    // ------------------------------------------------------------------------------
    // Wizard implementation
-   
+
    /**
     * Initialises the wizard
     */
    public void init(Map<String, String> parameters)
    {
       super.init(parameters);
-      
+
       // clear the cached query results
       if (this.templates != null)
       {
          this.templates.clear();
          this.templates = null;
       }
-      
+
       // reset all variables
       this.createFrom = "scratch";
       this.spaceType = ContentModel.TYPE_FOLDER.toString();
@@ -119,7 +119,7 @@ public class CreateSpaceWizard extends BaseWizardBean
       this.templateName = null;
       this.saveAsTemplate = false;
    }
-   
+
    public String next()
    {
       // if the user has chosen to create the space from an existing
@@ -134,15 +134,15 @@ public class CreateSpaceWizard extends BaseWizardBean
          NodeRef templateNode = new NodeRef(Repository.getStoreRef(), this.templateSpaceId);
          this.spaceType = this.nodeService.getType(templateNode).toString();
       }
-      
+
       return null;
    }
-   
+
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       String newSpaceId = null;
-            
+
       if (this.createFrom.equals("scratch"))
       {
          // create the space (just create a folder for now)
@@ -156,14 +156,14 @@ public class CreateSpaceWizard extends BaseWizardBean
          {
             parentNodeRef = new NodeRef(Repository.getStoreRef(), nodeId);
          }
-         
+
          FileInfo fileInfo = fileFolderService.create(
                parentNodeRef,
                this.name,
                Repository.resolveToQName(this.spaceType));
          NodeRef nodeRef = fileInfo.getNodeRef();
          newSpaceId = nodeRef.getId();
-         
+
          if (logger.isDebugEnabled())
             logger.debug("Created folder node with name: " + this.name);
 
@@ -173,10 +173,10 @@ public class CreateSpaceWizard extends BaseWizardBean
          uiFacetsProps.put(ContentModel.PROP_TITLE, this.title);
          uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, this.description);
          this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
-         
+
          if (logger.isDebugEnabled())
             logger.debug("Added uifacets aspect with properties: " + uiFacetsProps);
-         
+
          // remember the created node
          this.createdNode = nodeRef;
       }
@@ -185,20 +185,20 @@ public class CreateSpaceWizard extends BaseWizardBean
          // copy the selected space and update the name, description and icon
          NodeRef sourceNode = this.existingSpaceId;
          NodeRef parentSpace = new NodeRef(Repository.getStoreRef(), this.navigator.getCurrentNodeId());
-         
+
          // copy from existing
-         NodeRef copiedNode = this.fileFolderService.copy(sourceNode, parentSpace, this.name).getNodeRef(); 
-         
+         NodeRef copiedNode = this.fileFolderService.copy(sourceNode, parentSpace, this.name).getNodeRef();
+
          // also need to set the new title, description and icon properties
          this.nodeService.setProperty(copiedNode, ContentModel.PROP_TITLE, this.title);
          this.nodeService.setProperty(copiedNode, ContentModel.PROP_DESCRIPTION, this.description);
          this.nodeService.setProperty(copiedNode, ApplicationModel.PROP_ICON, this.icon);
-         
+
          newSpaceId = copiedNode.getId();
-            
+
          if (logger.isDebugEnabled())
             logger.debug("Copied space with id of " + sourceNode.getId() + " to " + this.name);
-         
+
          // remember the created node
          this.createdNode = copiedNode;
       }
@@ -213,16 +213,16 @@ public class CreateSpaceWizard extends BaseWizardBean
          this.nodeService.setProperty(copiedNode, ContentModel.PROP_TITLE, this.title);
          this.nodeService.setProperty(copiedNode, ContentModel.PROP_DESCRIPTION, this.description);
          this.nodeService.setProperty(copiedNode, ApplicationModel.PROP_ICON, this.icon);
-         
+
          newSpaceId = copiedNode.getId();
-         
+
          if (logger.isDebugEnabled())
             logger.debug("Copied template space with id of " + sourceNode.getId() + " to " + this.name);
-         
+
          // remember the created node
          this.createdNode = copiedNode;
       }
-      
+
       // if the user selected to save the space as a template space copy the new
       // space to the templates folder
       if (this.saveAsTemplate)
@@ -230,11 +230,11 @@ public class CreateSpaceWizard extends BaseWizardBean
          // get hold of the Templates node
          DynamicNamespacePrefixResolver namespacePrefixResolver = new DynamicNamespacePrefixResolver(null);
          namespacePrefixResolver.registerNamespace(NamespaceService.APP_MODEL_PREFIX, NamespaceService.APP_MODEL_1_0_URI);
-         
+
          String xpath = Application.getRootPath(FacesContext.getCurrentInstance()) + "/" +
                Application.getGlossaryFolderName(FacesContext.getCurrentInstance()) + "/" +
                Application.getSpaceTemplatesFolderName(FacesContext.getCurrentInstance());
-         
+
          NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
          List<NodeRef> templateNodeList = this.searchService.selectNodes(
                rootNodeRef,
@@ -248,13 +248,15 @@ public class CreateSpaceWizard extends BaseWizardBean
             fileFolderService.copy(sourceNode, templateNode, this.templateName);
          }
       }
-   
+
+      setTitle(""); setDescription("");
+
       return outcome;
    }
 
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
-   
+
    /**
     * @return Returns the copyPolicy.
     */
@@ -270,7 +272,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       this.copyPolicy = copyPolicy;
    }
-   
+
    /**
     * @return Returns the createFrom.
     */
@@ -294,14 +296,14 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       return description;
    }
-   
+
    /**
     * @param description The description to set.
     */
    public void setDescription(String description)
    {
       this.description = description;
-   } 
+   }
 
    /**
     * @return Returns the existingSpaceId.
@@ -310,7 +312,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       return existingSpaceId;
    }
-   
+
    /**
     * @param existingSpaceId The existingSpaceId to set.
     */
@@ -318,7 +320,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       this.existingSpaceId = existingSpaceId;
    }
-   
+
    /**
     * @return Returns the icon.
     */
@@ -326,7 +328,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       return icon;
    }
-   
+
    /**
     * @param icon The icon to set.
     */
@@ -334,7 +336,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       this.icon = icon;
    }
-   
+
    /**
     * @return Returns the name.
     */
@@ -342,15 +344,15 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       return name;
    }
-   
+
    /**
     * @param name The name to set.
     */
    public void setName(String name)
    {
-      this.name = name;
+      this.name = name.trim();
    }
-   
+
    /**
     * @return Returns the title.
     */
@@ -358,7 +360,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       return title;
    }
-   
+
    /**
     * @param title The title to set.
     */
@@ -366,7 +368,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       this.title = title;
    }
-   
+
    /**
     * @return Returns the saveAsTemplate.
     */
@@ -374,7 +376,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       return saveAsTemplate;
    }
-   
+
    /**
     * @param saveAsTemplate The saveAsTemplate to set.
     */
@@ -390,7 +392,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       return spaceType;
    }
-   
+
    /**
     * @param spaceType The spaceType to set.
     */
@@ -398,7 +400,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       this.spaceType = spaceType;
    }
-   
+
    /**
     * @return Returns the templateName.
     */
@@ -406,7 +408,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       return templateName;
    }
-   
+
    /**
     * @param templateName The templateName to set.
     */
@@ -414,7 +416,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       this.templateName = templateName;
    }
-   
+
    /**
     * @return Returns the templateSpaceId.
     */
@@ -422,7 +424,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       return templateSpaceId;
    }
-   
+
    /**
     * @param templateSpaceId The templateSpaceId to set.
     */
@@ -430,7 +432,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       this.templateSpaceId = templateSpaceId;
    }
-   
+
    /**
     * @return Returns the summary data for the wizard.
     */
@@ -438,7 +440,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       String summaryCreateType = null;
       ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
-      
+
       if (this.createFrom.equals("scratch"))
       {
          summaryCreateType = bundle.getString("scratch");
@@ -451,11 +453,11 @@ public class CreateSpaceWizard extends BaseWizardBean
       {
          summaryCreateType = bundle.getString("a_template");
       }
-      
+
 //      String summarySaveAsTemplate = this.saveAsTemplate ? bundle.getString("yes") : bundle.getString("no");
 //      bundle.getString("save_as_template"), bundle.getString("template_name")},
 //      summarySaveAsTemplate, this.templateName
-      
+
       String spaceTypeLabel = null;
       for (UIListItem item : this.getFolderTypes())
       {
@@ -465,28 +467,28 @@ public class CreateSpaceWizard extends BaseWizardBean
             break;
          }
       }
-      
+
       return buildSummary(
-            new String[] {bundle.getString("space_type"), bundle.getString("name"), 
+            new String[] {bundle.getString("space_type"), bundle.getString("name"),
                           bundle.getString("description"), bundle.getString("creating_from")},
             new String[] {spaceTypeLabel, this.name, this.description, summaryCreateType});
    }
-   
+
    /**
     * @return Returns a list of template spaces currently in the system
     */
    public List<SelectItem> getTemplateSpaces()
-   {      
+   {
       if (this.templates == null)
       {
          this.templates = new ArrayList<SelectItem>();
-         
+
          FacesContext context = FacesContext.getCurrentInstance();
          String xpath = Application.getRootPath(context) + "/" + Application.getGlossaryFolderName(context) +
                "/" + Application.getSpaceTemplatesFolderName(context) + "/*";
-         NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());         
+         NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
          List<NodeRef> results = this.searchService.selectNodes(rootNodeRef, xpath, null, this.namespaceService, false);
-         
+
          if (results.size() > 0)
          {
             for (NodeRef assocRef : results)
@@ -497,23 +499,23 @@ public class CreateSpaceWizard extends BaseWizardBean
                   this.templates.add(new SelectItem(childNode.getId(), childNode.getName()));
                }
             }
-            
+
             // make sure the list is sorted by the label
             QuickSort sorter = new QuickSort(this.templates, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
             sorter.sort();
          }
-         
+
          // add an entry (at the start) to instruct the user to select a template
          this.templates.add(0, new SelectItem("none", Application.getMessage(FacesContext.getCurrentInstance(), "select_a_template")));
       }
-      
+
       return this.templates;
    }
 
    /**
-    * Returns a list of UIListItem objects representing the folder types 
+    * Returns a list of UIListItem objects representing the folder types
     * and also constructs the list of descriptions for each type
-    * 
+    *
     * @return List of UIListItem components
     */
    @SuppressWarnings("unchecked")
@@ -524,7 +526,7 @@ public class CreateSpaceWizard extends BaseWizardBean
          FacesContext context = FacesContext.getCurrentInstance();
          this.folderTypes = new ArrayList<UIListItem>(2);
          this.folderTypeDescriptions = new ArrayList<UIDescription>(2);
-         
+
          // add the well known 'container space' type to start with
          UIListItem defaultItem = new UIListItem();
          String defaultLabel = Application.getMessage(context, "container");
@@ -533,12 +535,12 @@ public class CreateSpaceWizard extends BaseWizardBean
          defaultItem.setTooltip(defaultLabel);
          defaultItem.setImage(DEFAULT_SPACE_TYPE_ICON_PATH);
          this.folderTypes.add(defaultItem);
-         
+
          UIDescription defaultDesc = new UIDescription();
          defaultDesc.setControlValue(ContentModel.TYPE_FOLDER.toString());
          defaultDesc.setText(Application.getMessage(context, "container_desc"));
          this.folderTypeDescriptions.add(defaultDesc);
-         
+
          // add any configured content sub-types to the list
          Config wizardCfg = Application.getConfigService(FacesContext.getCurrentInstance()).
                getConfig("Space Wizards");
@@ -546,54 +548,54 @@ public class CreateSpaceWizard extends BaseWizardBean
          {
             ConfigElement typesCfg = wizardCfg.getConfigElement("folder-types");
             if (typesCfg != null)
-            {               
+            {
                for (ConfigElement child : typesCfg.getChildren())
                {
                   QName idQName = Repository.resolveToQName(child.getAttribute("name"));
                   TypeDefinition typeDef = this.dictionaryService.getType(idQName);
-                  
+
                   if (typeDef != null)
                   {
                      if (this.dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_FOLDER))
                      {
                         // try and get the label from config
                         String label = Utils.getDisplayLabel(context, child);
-      
+
                         // if there wasn't a client based label try and get it from the dictionary
                         if (label == null)
                         {
                            label = typeDef.getTitle();
                         }
-                        
+
                         // finally use the localname if we still haven't found a label
                         if (label == null)
                         {
                            label = idQName.getLocalName();
                         }
-                        
+
                         // resolve a description string for the type
                         String description = Utils.getDescription(context, child);
-                        
+
                         // if we don't have a local description just use the label
                         if (description == null)
                         {
                            description = label;
                         }
-                        
+
                         // extract the icon to use from the config
                         String icon = child.getAttribute("icon");
                         if (icon == null || icon.length() == 0)
                         {
                            icon = DEFAULT_SPACE_TYPE_ICON_PATH;
                         }
-                        
+
                         UIListItem item = new UIListItem();
                         item.setValue(idQName.toString());
                         item.setLabel(label);
                         item.setTooltip(label);
                         item.setImage(icon);
                         this.folderTypes.add(item);
-                        
+
                         UIDescription desc = new UIDescription();
                         desc.setControlValue(idQName.toString());
                         desc.setText(description);
@@ -601,13 +603,13 @@ public class CreateSpaceWizard extends BaseWizardBean
                      }
                      else
                      {
-                        logger.warn("Failed to add '" + child.getAttribute("name") + 
+                        logger.warn("Failed to add '" + child.getAttribute("name") +
                               "' to the list of folder types as the type is not a subtype of cm:folder");
                      }
                   }
                   else
                   {
-                     logger.warn("Failed to add '" + child.getAttribute("name") + 
+                     logger.warn("Failed to add '" + child.getAttribute("name") +
                            "' to the list of folder types as the type is not recognised");
                   }
                }
@@ -621,15 +623,15 @@ public class CreateSpaceWizard extends BaseWizardBean
          {
             logger.warn("Could not find 'Space Wizards' configuration section");
          }
-         
+
       }
-      
+
       return this.folderTypes;
    }
-   
+
    /**
     * Returns a list of UIDescription objects for the folder types
-    * 
+    *
     * @return A list of UIDescription objects
     */
    public List<UIDescription> getFolderTypeDescriptions()
@@ -639,14 +641,14 @@ public class CreateSpaceWizard extends BaseWizardBean
          // call the getFolderType method to construct the list
          getFolderTypes();
       }
-      
+
       return this.folderTypeDescriptions;
    }
-   
+
    /**
     * Returns a list of icons to allow the user to select from.
     * The list can change according to the type of space being created.
-    * 
+    *
     * @return A list of icons
     */
    @SuppressWarnings("unchecked")
@@ -654,13 +656,13 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       // NOTE: we can't cache this list as it depends on the space type
       //       which the user can change during the advanced space wizard
-      
+
       List<UIListItem> icons = null;
       List<String> iconNames = new ArrayList<String>(8);
-      
+
       QName type = QName.createQName(this.spaceType);
       String typePrefixForm = type.toPrefixString(this.namespaceService);
-      
+
       Config config = Application.getConfigService(FacesContext.getCurrentInstance()).
             getConfig(typePrefixForm + " icons");
       if (config != null)
@@ -673,14 +675,14 @@ public class CreateSpaceWizard extends BaseWizardBean
             {
                String iconName = icon.getAttribute("name");
                String iconPath = icon.getAttribute("path");
-               
+
                if (iconName != null && iconPath != null)
                {
                   if (first)
                   {
-                     // if this is the first icon create the list and make 
+                     // if this is the first icon create the list and make
                      // the first icon in the list the default
-                     
+
                      icons = new ArrayList<UIListItem>(iconsCfg.getChildCount());
                      if (this.icon == null)
                      {
@@ -689,7 +691,7 @@ public class CreateSpaceWizard extends BaseWizardBean
                      }
                      first = false;
                   }
-                  
+
                   UIListItem item = new UIListItem();
                   item.setValue(iconName);
                   item.setImage(iconPath);
@@ -699,36 +701,36 @@ public class CreateSpaceWizard extends BaseWizardBean
             }
          }
       }
-      
+
       // if we didn't find any icons display one default choice
       if (icons == null)
       {
          icons = new ArrayList<UIListItem>(1);
          this.icon = DEFAULT_SPACE_ICON_NAME;
-         
+
          UIListItem item = new UIListItem();
          item.setValue(DEFAULT_SPACE_ICON_NAME);
          item.setImage("/images/icons/space-icon-default.gif");
          icons.add(item);
          iconNames.add(DEFAULT_SPACE_ICON_NAME);
       }
-      
-      // make sure the current value for the icon is valid for the 
+
+      // make sure the current value for the icon is valid for the
       // current list of icons about to be displayed
       if (iconNames.contains(this.icon) == false)
       {
          this.icon = iconNames.get(0);
       }
-      
+
       return icons;
    }
 
    // ------------------------------------------------------------------------------
    // Helper methods
-   
+
    /**
     * Formats the error message to display if an error occurs during finish processing
-    * 
+    *
     * @param exception The exception
     * @return The formatted message
     */
@@ -738,13 +740,13 @@ public class CreateSpaceWizard extends BaseWizardBean
       if (exception instanceof FileExistsException)
       {
          return MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_EXISTS), 
+               FacesContext.getCurrentInstance(), Repository.ERROR_EXISTS),
                ((FileExistsException)exception).getName());
       }
       else
       {
          return MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), "error_space"), 
+               FacesContext.getCurrentInstance(), "error_space"),
                exception.getMessage());
       }
    }

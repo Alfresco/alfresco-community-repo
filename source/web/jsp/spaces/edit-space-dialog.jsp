@@ -31,8 +31,12 @@
 <h:panelGrid columns="1" rowClasses="wizardSectionHeading, paddingRow" 
              cellpadding="2" cellspacing="2" width="100%">
    <h:outputText value="#{msg.space_props}" />
+   
    <r:propertySheetGrid id="space-props" value="#{DialogManager.bean.editableNode}" 
                         var="spaceProps" columns="1" labelStyleClass="propertiesLabel" 
                         externalConfig="true" cellpadding="2" cellspacing="2" />
 </h:panelGrid>
+
+<h:selectBooleanCheckbox value="#{EditSpaceDialog.edit}" id="edit" />
+<h:outputText value="#{msg.create_properties_close}" />
     

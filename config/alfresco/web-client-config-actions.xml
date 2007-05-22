@@ -4,7 +4,7 @@
       <actions>
          <!-- each action is defined individually and then referenced in an 'action-group' block
               via an 'idref' attribute specifing the action definition to use -->
-         
+
          <!-- full example -->
          <action id="example1_edit_doc_http">
             <!-- a list of permissions to evaluate action against before checking other preconditions -->
@@ -41,7 +41,68 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
+         <!-- Make a document multilingual -->
+         <action id="make_doc_multilingual">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.MakeMultilingualEvaluator</evaluator>
+            <label-id>make_multilingual</label-id>
+            <tooltip-id>make_multilingual_tooltip</tooltip-id>
+            <image>/images/icons/make_ml.gif</image>
+            <action>dialog:makeMultilingual</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+
+         <!-- Add a translation -->
+         <action id="add_translation">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.AddTranslationEvaluator</evaluator>
+            <label-id>add_translation</label-id>
+            <tooltip-id>add_translation_tooltip</tooltip-id>
+            <image>/images/icons/add_tranlsation.gif</image>
+            <action-listener>#{AddTranslationDialog.start}</action-listener>
+            <action>addTranslation</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+
+         <!-- Add a translation whithout content -->
+         <action id="add_translation_wc">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.AddTranslationEvaluator</evaluator>
+            <label-id>add_translation_wc</label-id>
+            <tooltip-id>add_translation_wc_tooltip</tooltip-id>
+            <image>/images/icons/add_tranlsation_wc.gif</image>
+            <action>dialog:addTranslationWithoutContent</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+
+         <!-- Manage ml container details  -->
+         <action id="ml_details">
+            <permissions>
+               <permission allow="true">Read</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.MultilingualDetailsEvaluator</evaluator>
+            <label-id>manage_multilingual_details</label-id>
+            <tooltip-id>manage_multilingual_details_tooltip</tooltip-id>
+            <image>/images/icons/multilingual_details.gif</image>
+            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
+            <action>dialog:showMLContainerDetails</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
          <!-- Edit document action to open using normal HTTP access or inline Edit if set -->
          <action id="edit_doc_http">
             <permissions>
@@ -56,7 +117,7 @@
             </params>
             <!-- can also specify style, class etc. but this is better done in 'actions' element -->
          </action>
-         
+
          <!-- Edit document using WebDav access -->
          <action id="edit_doc_webdav">
             <permissions>
@@ -68,7 +129,7 @@
             <!-- NOTE: uses the special 'actionContext' object supplied by the parent actions component -->
             <onclick>javascript:openDoc('#{actionContext.webdavUrl}');</onclick>
          </action>
-         
+
          <!-- Edit document using CIFS access -->
          <action id="edit_doc_cifs">
             <permissions>
@@ -81,7 +142,7 @@
             <href>#{actionContext.cifsPath}</href>
             <target>cifs</target>
          </action>
-         
+
          <!-- Checkin document -->
          <action id="checkin_doc">
             <evaluator>org.alfresco.web.action.evaluator.CheckinDocEvaluator</evaluator>
@@ -93,7 +154,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Checkout document -->
          <action id="checkout_doc">
             <evaluator>org.alfresco.web.action.evaluator.CheckoutDocEvaluator</evaluator>
@@ -105,7 +166,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Cancel checkout document -->
          <action id="cancelcheckout_doc">
             <evaluator>org.alfresco.web.action.evaluator.CancelCheckoutDocEvaluator</evaluator>
@@ -117,7 +178,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- View document details -->
          <action id="details_doc">
             <label-id>view_details</label-id>
@@ -128,7 +189,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- View space details -->
          <action id="details_space">
             <label-id>view_details</label-id>
@@ -139,7 +200,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Preview document in template -->
          <action id="preview_doc">
             <label-id>preview</label-id>
@@ -150,7 +211,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Preview space in template -->
          <action id="preview_space">
             <label-id>preview</label-id>
@@ -161,7 +222,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Delete document -->
          <action id="delete_doc">
             <permissions>
@@ -176,7 +237,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Delete space -->
          <action id="delete_space">
             <permissions>
@@ -190,7 +251,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Update document -->
          <action id="update_doc">
             <permissions>
@@ -205,7 +266,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- 'Approve' workflow step for document -->
          <action id="approve_doc">
             <evaluator>org.alfresco.web.action.evaluator.ApproveDocEvaluator</evaluator>
@@ -217,7 +278,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- 'Reject' workflow step for document -->
          <action id="reject_doc">
             <evaluator>org.alfresco.web.action.evaluator.RejectDocEvaluator</evaluator>
@@ -229,7 +290,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- 'Approve' workflow step for document details page -->
          <action id="approve_doc_details">
             <evaluator>org.alfresco.web.action.evaluator.ApproveDocEvaluator</evaluator>
@@ -241,7 +302,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- 'Reject' workflow step for document details page-->
          <action id="reject_doc_details">
             <evaluator>org.alfresco.web.action.evaluator.RejectDocEvaluator</evaluator>
@@ -253,7 +314,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- 'Approve' workflow step for space -->
          <action id="approve_space">
             <evaluator>org.alfresco.web.action.evaluator.ApproveDocEvaluator</evaluator>
@@ -265,7 +326,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- 'Reject' workflow step for space -->
          <action id="reject_space">
             <evaluator>org.alfresco.web.action.evaluator.RejectDocEvaluator</evaluator>
@@ -277,7 +338,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- 'Approve' workflow step for space details page -->
          <action id="approve_space_details">
             <evaluator>org.alfresco.web.action.evaluator.ApproveDocEvaluator</evaluator>
@@ -289,7 +350,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- 'Reject' workflow step for space details page-->
          <action id="reject_space_details">
             <evaluator>org.alfresco.web.action.evaluator.RejectDocEvaluator</evaluator>
@@ -301,7 +362,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Cut a document or space to the clipboard, from browse or doc details screens -->
          <action id="cut_node">
             <permissions>
@@ -309,6 +370,7 @@
             </permissions>
             <label-id>cut</label-id>
             <image>/images/icons/cut.gif</image>
+            <evaluator>org.alfresco.web.action.evaluator.CutNodeEvaluator</evaluator>
             <action-listener>#{ClipboardBean.cutNode}</action-listener>
             <params>
                <param name="ref">#{actionContext.nodeRef}</param>
@@ -316,7 +378,7 @@
                <!--<param name="parent">#{NavigationBean.currentNodeId}</param>-->
             </params>
          </action>
-         
+
          <!-- Copy a document or space to the clipboard, from browse or doc details screens -->
          <action id="copy_node">
             <label-id>copy</label-id>
@@ -327,7 +389,7 @@
                <!--<param name="parent">#{NavigationBean.currentNodeId}</param>-->
             </params>
          </action>
-         
+
          <!-- Paste All clipboard items into a space -->
          <action id="paste_all">
             <permissions>
@@ -347,7 +409,7 @@
             <image>/images/icons/new_content.gif</image>
             <action>wizard:createContent</action>
          </action>
-         
+
          <!-- Create XML content type -->
          <action id="create_form">
             <evaluator>org.alfresco.web.action.evaluator.CreateFormEvaluator</evaluator>
@@ -370,7 +432,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Create space -->
          <action id="create_space">
             <permissions>
@@ -380,7 +442,18 @@
             <image>/images/icons/create_space.gif</image>
             <action>dialog:createSpace</action>
          </action>
-         
+
+         <!-- Create multilingual space -->
+         <action id="create_multilingual_space">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
+            <label-id>create_multilingual_space</label-id>
+            <image>/images/icons/create_space.gif</image>
+            <action>dialog:createMultilingualSpace</action>
+         </action>
+
+
          <!-- Create Advanced Space Wizard -->
          <action id="create_space_wizard">
             <permissions>
@@ -390,7 +463,7 @@
             <image>/images/icons/create_space.gif</image>
             <action>wizard:createSpace</action>
          </action>
-         
+
          <!-- Create Website Wizard -->
          <action id="create_website_wizard">
             <evaluator>org.alfresco.web.action.evaluator.CreateWebProjectEvaluator</evaluator>
@@ -398,7 +471,7 @@
             <image>/images/icons/create_website.gif</image>
             <action>wizard:createWebsite</action>
          </action>
-         
+
          <!-- Manage Space Users -->
          <action id="manage_space_users">
             <permissions>
@@ -412,7 +485,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Manage Space Rules -->
          <action id="manage_space_rules">
             <permissions>
@@ -426,7 +499,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Email Space Users -->
          <action id="email_space_users">
             <label-id>email_space_users</label-id>
@@ -437,7 +510,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Manage Deleted Items -->
          <action id="manage_deleted_items">
             <evaluator>org.alfresco.web.action.evaluator.ShortcutNodeEvaluator</evaluator>
@@ -445,7 +518,7 @@
             <image>/images/icons/trashcan.gif</image>
             <action>dialog:manageDeletedItems</action>
          </action>
-         
+
          <!-- Take Ownership of document -->
          <action id="take_ownership_doc">
             <permissions>
@@ -456,7 +529,7 @@
             <image>/images/icons/take_ownership.gif</image>
             <action-listener>#{DocumentDetailsBean.takeOwnership}</action-listener>
          </action>
-         
+
          <!-- Take Ownership of space -->
          <action id="take_ownership_space">
             <permissions>
@@ -466,7 +539,7 @@
             <image>/images/icons/take_ownership.gif</image>
             <action-listener>#{SpaceDetailsBean.takeOwnership}</action-listener>
          </action>
-         
+
          <!-- Unlock document -->
          <action id="unlock_doc">
             <permissions>
@@ -477,7 +550,7 @@
             <image>/images/icons/unlock.gif</image>
             <action-listener>#{DocumentDetailsBean.unlock}</action-listener>
          </action>
-         
+
          <!-- Manage Content Users -->
          <action id="manage_content_users">
             <permissions>
@@ -491,7 +564,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Create Shortcut -->
          <action id="create_shortcut">
             <evaluator>org.alfresco.web.action.evaluator.ShortcutNodeEvaluator</evaluator>
@@ -502,18 +575,18 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Run Other Action (e.g. repo action) -->
          <action id="run_action">
             <label-id>other_action</label-id>
             <image>/images/icons/action.gif</image>
-            <action>wizard:runAction</action>   
+            <action>wizard:runAction</action>
             <action-listener>#{WizardManager.setupParameters}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Import into Space -->
          <action id="import_space">
             <permissions>
@@ -527,7 +600,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Export from Space -->
          <action id="export_space">
             <label-id>export</label-id>
@@ -538,38 +611,38 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- ReApply Rules -->
          <action id="reapply-rules">
-         	<label-id>reapply_rules</label-id>
+            <label-id>reapply_rules</label-id>
             <image>/images/icons/reapply_rules.gif</image>
             <action-listener>#{RulesBean.reapplyRules}</action-listener>
          </action>
-         
+
          <!-- Ignore Inherited Rules -->
          <action id="ignore-inherited-rules">
-         	<label>#{RulesBean.ignoreInheritedRulesLabelId}</label>
+            <label>#{RulesBean.ignoreInheritedRulesLabelId}</label>
             <image>/images/icons/reapply_rules.gif</image>
             <action-listener>#{RulesBean.ignoreInheritedRules}</action-listener>
-         </action>         
-         
+         </action>
+
          <!-- Reset Tree -->
          <action id="reset_navigator">
             <label-id>reset_navigator</label-id>
             <image>/images/icons/reset.gif</image>
             <action>#{NavigatorPluginBean.reset}</action>
          </action>
-         
+
          <!-- the 'action-group' elements define unique blocks of actions that reference the actions
               as defined above and can override or supply display elements for the group of actions -->
          <!-- the component is responsible for making the context Node object available with name
               of 'actionContext' so the actions can access it directly to get properties -->
-         
+
          <!-- Actions for a document in the Browse screen -->
          <action-group id="document_browse">
             <show-link>false</show-link>
             <style-class>inlineAction</style-class>
-            
+
             <action idref="edit_doc_http" />
             <action idref="edit_doc_webdav" />
             <action idref="edit_doc_cifs" />
@@ -577,7 +650,7 @@
             <action idref="checkin_doc" />
             <action idref="details_doc" />
             <action idref="delete_doc" />
-            
+
             <!-- Example action defined in-line rather than by reference
             <action id="example2_checkout_doc">
                <permissions>
@@ -589,9 +662,9 @@
                <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
                <action>checkoutFile</action>
             </action>-->
-            
+
          </action-group>
-         
+
          <!-- Actions Menu for a document in the Browse screen -->
          <action-group id="document_browse_menu">
             <action idref="preview_doc" />
@@ -602,7 +675,7 @@
             <action idref="cut_node" />
             <action idref="copy_node" />
          </action-group>
-         
+
          <!-- Actions for a space in the Browse screen -->
          <action-group id="space_browse">
             <show-link>false</show-link>
@@ -612,23 +685,24 @@
             <action idref="details_space" />
             <action idref="delete_space" />
          </action-group>
-         
+
          <!-- Actions Menu for a space in the Browse screen -->
          <action-group id="space_browse_menu">
             <action idref="preview_space" />
             <action idref="approve_space" />
             <action idref="reject_space" />
          </action-group>
-         
+
          <!-- Actions Menu for Create in Browse screen -->
          <action-group id="browse_create_menu">
             <action idref="create_content" />
             <action idref="create_form" />
             <action idref="create_website_wizard" />
             <action idref="create_space" />
+            <action idref= "create_multilingual_space" />
             <action idref="create_space_wizard" />
          </action-group>
-         
+
          <!-- Actions Menu for More Actions in Browse screen -->
          <action-group id="browse_actions_menu">
             <action idref="details_space" />
@@ -641,7 +715,7 @@
             <!-- NOTE: now found on the User Console
             <action idref="manage_deleted_items" />-->
          </action-group>
-         
+
          <!-- Actions Menu for Document Details screen -->
          <action-group id="doc_details_actions">
             <action idref="checkout_doc" />
@@ -665,8 +739,25 @@
             <action idref="create_shortcut" />
             <action idref="preview_doc" />
             <action idref="run_action" />
+            <action idref="make_doc_multilingual" />
+            <action idref="add_translation" />
+            <action idref="add_translation_wc" />
+            <action idref="ml_details" />
          </action-group>
-         
+
+
+         <action-group id="Multilingual_details_actions">
+            <action idref="add_translation" />
+            <action idref="add_translation_wc" />
+            <!--action idref="cut_container" /-->
+            <!--action idref="copy_container" /-->
+            <!--action idref="delete_container" /-->
+            <!--action idref="take_ownership_container" /-->
+            <!--action idref="start_discussion_container" /-->
+            <!--action idref="new_edition_container" /-->
+         </action-group>
+
+
          <!-- Actions Menu for Space Details screen -->
          <action-group id="space_details_actions">
             <action idref="approve_space_details" />
@@ -684,7 +775,7 @@
             <action idref="preview_space" />
             <action idref="run_action" />
          </action-group>
-         
+
          <!-- Actions Menu for File Link Details screen -->
          <action-group id="filelink_details_actions">
             <action idref="cut_node" />
@@ -694,7 +785,7 @@
             <action idref="manage_content_users" />
             <action idref="run_action" />
          </action-group>
-         
+
          <!-- Actions Menu for Folder Link Details screen -->
          <action-group id="spacelink_details_actions">
             <action idref="cut_node" />
@@ -704,18 +795,18 @@
             <action idref="manage_content_users" />
             <action idref="run_action" />
          </action-group>
-         
+
          <!-- Actions Menu for Manage Rules screen -->
          <action-group id="rules_actions_menu">
-         	<action idref="reapply-rules" />
-         	<action idref="ignore-inherited-rules" />
+            <action idref="reapply-rules" />
+            <action idref="ignore-inherited-rules" />
          </action-group>
-         
+
          <!-- Actions for the navigator plugin -->
          <action-group id="navigator_actions">
             <action idref="reset_navigator" />
          </action-group>
-         
+
       </actions>
    </config>
 

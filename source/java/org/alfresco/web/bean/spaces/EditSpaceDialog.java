@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.web.bean.spaces;
@@ -38,34 +38,35 @@ import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 
 /**
  * Dialog bean to edit an existing space.
- * 
+ *
  * @author gavinc
  */
 public class EditSpaceDialog extends CreateSpaceDialog
 {
    protected Node editableNode;
-   
+
    @Override
    public void init(Map<String, String> parameters)
    {
       super.init(parameters);
-      
+
       // setup the space being edited
       this.editableNode = initEditableNode();
       this.spaceType = this.editableNode.getType().toString();
    }
-      
+
    @Override
    public boolean getFinishButtonDisabled()
    {
       return false;
    }
-   
+
    /**
     * Init the editable Node
     */
@@ -73,71 +74,71 @@ public class EditSpaceDialog extends CreateSpaceDialog
    {
       return new Node(this.browseBean.getActionSpace().getNodeRef());
    }
-   
+
    @Override
    public String getFinishButtonLabel()
    {
       return Application.getMessage(FacesContext.getCurrentInstance(), "ok");
    }
-   
+
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       // update the existing node in the repository
       NodeRef nodeRef = this.editableNode.getNodeRef();
       Map<String, Object> editedProps = this.editableNode.getProperties();
-      
+
       // handle the name property separately, perform a rename in case it changed
       String name = (String)editedProps.get(ContentModel.PROP_NAME);
       if (name != null)
       {
          this.fileFolderService.rename(nodeRef, name);
       }
-      
+
       // get the current set of properties from the repository
       Map<QName, Serializable> repoProps = this.nodeService.getProperties(nodeRef);
-      
+
       // add the "uifacets" aspect if required, properties will get set below
       if (this.nodeService.hasAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS) == false)
       {
          this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, null);
       }
-      
+
       // overwrite the current properties with the edited ones
       Iterator<String> iterProps = editedProps.keySet().iterator();
       while (iterProps.hasNext())
       {
          String propName = iterProps.next();
          QName qname = QName.createQName(propName);
-         
+
          // make sure the property is represented correctly
          Serializable propValue = (Serializable)editedProps.get(propName);
-         
+
          // check for empty strings when using number types, set to null in this case
-         if ((propValue != null) && (propValue instanceof String) && 
+         if ((propValue != null) && (propValue instanceof String) &&
              (propValue.toString().length() == 0))
          {
             PropertyDefinition propDef = this.dictionaryService.getProperty(qname);
             if (propDef != null)
             {
-               if (propDef.getDataType().getName().equals(DataTypeDefinition.DOUBLE) || 
+               if (propDef.getDataType().getName().equals(DataTypeDefinition.DOUBLE) ||
                    propDef.getDataType().getName().equals(DataTypeDefinition.FLOAT) ||
-                   propDef.getDataType().getName().equals(DataTypeDefinition.INT) || 
+                   propDef.getDataType().getName().equals(DataTypeDefinition.INT) ||
                    propDef.getDataType().getName().equals(DataTypeDefinition.LONG))
                {
                   propValue = null;
                }
             }
          }
-         
+
          repoProps.put(qname, propValue);
       }
-      
+
       // send the properties back to the repository
       this.nodeService.setProperties(nodeRef, repoProps);
-      
+
       // we also need to persist any association changes that may have been made
-      
+
       // add any associations added in the UI
       Map<String, Map<String, AssociationRef>> addedAssocs = this.editableNode.getAddedAssociations();
       for (Map<String, AssociationRef> typedAssoc : addedAssocs.values())
@@ -147,7 +148,7 @@ public class EditSpaceDialog extends CreateSpaceDialog
             this.nodeService.createAssociation(assoc.getSourceRef(), assoc.getTargetRef(), assoc.getTypeQName());
          }
       }
-      
+
       // remove any association removed in the UI
       Map<String, Map<String, AssociationRef>> removedAssocs = this.editableNode.getRemovedAssociations();
       for (Map<String, AssociationRef> typedAssoc : removedAssocs.values())
@@ -157,7 +158,7 @@ public class EditSpaceDialog extends CreateSpaceDialog
             this.nodeService.removeAssociation(assoc.getSourceRef(), assoc.getTargetRef(), assoc.getTypeQName());
          }
       }
-      
+
       // add any child associations added in the UI
       Map<String, Map<String, ChildAssociationRef>> addedChildAssocs = this.editableNode.getAddedChildAssociations();
       for (Map<String, ChildAssociationRef> typedAssoc : addedChildAssocs.values())
@@ -167,7 +168,7 @@ public class EditSpaceDialog extends CreateSpaceDialog
             this.nodeService.addChild(assoc.getParentRef(), assoc.getChildRef(), assoc.getTypeQName(), assoc.getTypeQName());
          }
       }
-      
+
       // remove any child association removed in the UI
       Map<String, Map<String, ChildAssociationRef>> removedChildAssocs = this.editableNode.getRemovedChildAssociations();
       for (Map<String, ChildAssociationRef> typedAssoc : removedChildAssocs.values())
@@ -177,29 +178,54 @@ public class EditSpaceDialog extends CreateSpaceDialog
             this.nodeService.removeChild(assoc.getParentRef(), assoc.getChildRef());
          }
       }
-            
-      return outcome;
+
+
+     // do nothing by default, subclasses can override if necessary
+      if(isEdit())
+      {
+       this.browseBean.setDocument(this.getEditableNode()); // (this.editableNode.getNodeRef());
+
+       return "dialog:createMultilingualProperties";
+      }
+      else
+      {
+       return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+      }
    }
-   
+
    @Override
    protected String doPostCommitProcessing(FacesContext context, String outcome)
    {
       this.browseBean.getActionSpace().reset();
-      
+
       return outcome;
    }
-   
-   
+
+
    // ------------------------------------------------------------------------------
    // Bean getters and setters
 
    /**
     * Returns the node being edited
-    * 
+    *
     * @return The node being edited
     */
    public Node getEditableNode()
    {
       return this.editableNode;
    }
+
+   public boolean isEdit()
+   {
+    return this.edit;
+   }
+
+   public void setEdit(boolean x)
+   {
+    this.edit=x;
+   }
+
+
+   private boolean edit;
+
 }

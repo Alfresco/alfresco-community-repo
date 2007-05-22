@@ -26,6 +26,7 @@ package org.alfresco.web.action.evaluator;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -62,6 +63,12 @@ public class DiscussionCutCopyEvaluator implements ActionEvaluator
          
          // only allow the action if the association type is not the discussion assoc
          result = (assocType.equals(ForumModel.ASSOC_DISCUSSION) == false);
+      }
+      
+      // impossible to copy a translation without content.
+      if(result && node.getAspects().contains(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+      {
+         result = false;
       }
       
       return result;

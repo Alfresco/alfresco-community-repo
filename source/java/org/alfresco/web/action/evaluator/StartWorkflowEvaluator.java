@@ -26,6 +26,7 @@ package org.alfresco.web.action.evaluator;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.NavigationBean;
@@ -45,6 +46,10 @@ public class StartWorkflowEvaluator implements ActionEvaluator
    {
       NavigationBean nav =
          (NavigationBean)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), NavigationBean.BEAN_NAME);
-      return (nav.getIsGuest() == false);
+      
+      return (
+               nav.getIsGuest() == false 
+                  && node.hasAspect(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION) == false
+            );
    }
 }

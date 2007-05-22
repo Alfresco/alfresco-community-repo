@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.faces.application.FacesMessage;
@@ -79,6 +80,8 @@ public class DocumentDetailsBean extends BaseDetailsBean
    protected LockService lockService;
    protected VersionService versionService;
    protected CheckOutCheckInService cociService;
+   protected MultilingualContentService multilingualContentService;
+   protected ContentFilterLanguagesService contentFilterLanguagesService;
    
    private NodeRef addedCategory;
    private List categories;
@@ -96,6 +99,8 @@ public class DocumentDetailsBean extends BaseDetailsBean
       
       // initial state of some panels that don't use the default
       panels.put("version-history-panel", false);
+      panels.put("ml-info-panel", false);
+      panels.put("related-translation-panel", false);
    }
    
    
@@ -185,6 +190,14 @@ public class DocumentDetailsBean extends BaseDetailsBean
    }
    
    /**
+    * @return true if the current document has the 'inlineeditable' aspect applied
+    */
+   public boolean isMultilingual()
+   {
+      return getDocument().hasAspect(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
+   }
+   
+   /**
     * Returns a list of objects representing the versions of the 
     * current document 
     * 
@@ -219,6 +232,69 @@ public class DocumentDetailsBean extends BaseDetailsBean
       
       return versions;
    }
+   
+   /**
+    * Returns a list of objects representing the editions of the 
+    * logical document  
+    * 
+    * @return List of editions
+    */
+   public List getEditionHistory()
+   {
+      List<MapNode> editions = new ArrayList<MapNode>();
+      
+      if (getDocument().getType().equals(ContentModel.TYPE_MULTILINGUAL_CONTAINER))
+      {
+         
+      }
+      
+      return editions;
+   }
+   
+   /**
+    * Returns a list of objects representing the translations of the 
+    * current document 
+    * 
+    * @return List of translations
+    */
+   public List getTranslations()
+   {
+      List<MapNode> translations = new ArrayList<MapNode>();
+      
+      if (getDocument().hasAspect(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
+      {
+        
+        Map<Locale, NodeRef> translationsMap = this.multilingualContentService.getTranslations(getDocument().getNodeRef());
+   
+         if (translationsMap != null && translationsMap.size() > 0)
+         {
+            for (Map.Entry entry : translationsMap.entrySet())
+            {
+               NodeRef nodeRef = (NodeRef) entry.getValue();              
+               
+               // create a map node representation of the translation
+               MapNode mapNode = new MapNode(nodeRef);   
+               
+               Locale locale = (Locale) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCALE); 
+               
+               String lgge = (locale != null) ?  
+                     // convert the locale into new ISO codes
+                     contentFilterLanguagesService.convertToNewISOCode(locale.getLanguage()).toUpperCase() 
+                     : null ;
+               
+               mapNode.put("name", nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
+               mapNode.put("language", lgge);
+               mapNode.put("url", DownloadContentServlet.generateBrowserURL(nodeRef, mapNode.getName()));
+               
+               // add the client side version to the list
+               translations.add(mapNode);
+            }
+         }
+      }
+      
+      return translations;
+   }
+   
    
    /**
     * Determines whether the current document has any categories applied
@@ -700,6 +776,19 @@ public class DocumentDetailsBean extends BaseDetailsBean
    }
 
    /**
+    * Returns the ml container of the document this bean is currently representing
+    * 
+    * @return The document multilingual container NodeRef
+    */
+   public Node getDocumentMlContainer()
+   {
+      NodeRef nodeRef = getNode().getNodeRef();
+      
+      return new Node(multilingualContentService.getTranslationContainer(nodeRef));
+   }
+   
+
+   /**
     * Sets the lock service instance the bean should use
     * 
     * @param lockService The LockService
@@ -727,5 +816,22 @@ public class DocumentDetailsBean extends BaseDetailsBean
    public void setCheckOutCheckInService(CheckOutCheckInService cociService)
    {
       this.cociService = cociService;
+   }
+
+   /**
+    * @param multilingualContentService the multilingualContentService to set
+    */
+   public void setMultilingualContentService(
+            MultilingualContentService multilingualContentService) 
+   {
+         this.multilingualContentService = multilingualContentService;
+   }
+   
+   /**
+    * @param contentFilterLanguagesService The ContentFilterLanguagesService to set. 
+    */
+   public void setContentFilterLanguagesService(ContentFilterLanguagesService contentFilterLanguagesService)
+   {
+         this.contentFilterLanguagesService = contentFilterLanguagesService;
    }
 }

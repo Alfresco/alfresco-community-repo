@@ -986,6 +986,55 @@
    </tag>
    
    <tag>
+      <name>mlLanguageSelector</name>
+      <tag-class>org.alfresco.web.ui.repo.tag.LanguageSelectorTag</tag-class>
+      <body-content>JSP</body-content>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>binding</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>value</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+
+      <attribute>
+         <name>disabled</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>onlyAvailable</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>      
+      
+      <attribute>
+         <name>returnCurLgge</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+   </tag>
+   
+   <tag>
       <name>shelf</name>
       <tag-class>org.alfresco.web.ui.repo.tag.shelf.ShelfTag</tag-class>
       <body-content>JSP</body-content>

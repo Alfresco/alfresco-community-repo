@@ -75,6 +75,11 @@
    </component>
    
    <component>
+      <component-type>org.alfresco.faces.LanguageSelector</component-type>
+      <component-class>org.alfresco.web.ui.repo.component.UILanguageSelector</component-class>
+   </component>   
+
+   <component>
       <component-type>org.alfresco.faces.SimpleSearch</component-type>
       <component-class>org.alfresco.web.ui.repo.component.UISimpleSearch</component-class>
    </component>
@@ -200,6 +205,11 @@
       <converter-class>org.alfresco.web.ui.repo.converter.MimeTypeConverter</converter-class>
    </converter>
    
+   <converter>
+      <converter-id>org.alfresco.faces.LanguageConverter</converter-id>
+      <converter-class>org.alfresco.web.ui.repo.converter.LanguageConverter</converter-class>
+   </converter>
+
    <converter>
       <converter-id>org.alfresco.faces.DisplayPathConverter</converter-id>
       <converter-class>org.alfresco.web.ui.repo.converter.DisplayPathConverter</converter-class>

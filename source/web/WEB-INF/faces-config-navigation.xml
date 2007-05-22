@@ -50,6 +50,10 @@
          <to-view-id>/jsp/dialog/document-details.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
+         <from-outcome>showMLContainerDetails</from-outcome>
+         <to-view-id>/jsp/ml/ml-container-details.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
          <from-outcome>showSpaceDetails</from-outcome>
          <to-view-id>/jsp/dialog/space-details.jsp</to-view-id>
       </navigation-case>
@@ -61,6 +65,11 @@
          <from-outcome>addContent</from-outcome>
          <to-view-id>/jsp/content/add-content-dialog.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>addTranslation</from-outcome>
+         <to-view-id>/jsp/ml/add-translation-dialog.jsp</to-view-id>
+      </navigation-case>
+      
    </navigation-rule>
    
    <!-- rule to get to the Advanced Search page from anywhere -->
@@ -228,6 +237,14 @@
       <navigation-case>
          <from-outcome>checkoutFile</from-outcome>
          <to-view-id>/jsp/dialog/checkout-file.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+
+   <navigation-rule>
+      <from-view-id>/jsp/ml/*</from-view-id>
+      <navigation-case>
+         <from-outcome>addTranslation</from-outcome>
+         <to-view-id>/jsp/ml/add-translation-dialog.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
 

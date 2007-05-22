@@ -1,9 +1,9 @@
 <alfresco-config>
-   
+
    <config evaluator="node-type" condition="content">
       <property-sheet>
          <show-property name="name" />
-         <show-property name="mimetype" display-label-id="content_type" 
+         <show-property name="mimetype" display-label-id="content_type"
                         component-generator="MimeTypeSelectorGenerator" />
          <!-- NOTE: The following 3 properties are defined here to cover -->
          <!--       the scenario where content is added via CIFS or FTP -->
@@ -14,12 +14,12 @@
                         ignore-if-missing="false" component-generator="TextAreaGenerator" />
          <show-property name="author" display-label-id="author"
                         ignore-if-missing="false" />
-         <show-property name="size" display-label-id="size" 
-                        converter="org.alfresco.faces.ByteSizeConverter" 
+         <show-property name="size" display-label-id="size"
+                        converter="org.alfresco.faces.ByteSizeConverter"
                         show-in-edit-mode="false" />
       </property-sheet>
    </config>
-   
+
    <config evaluator="node-type" condition="folder">
       <property-sheet>
          <show-property name="name"/>
@@ -31,25 +31,25 @@
          <show-property name="description" display-label-id="description"
                         ignore-if-missing="false" component-generator="TextAreaGenerator" />
          <show-property name="app:icon" show-in-view-mode="false" display-label-id="icon"
-                        component-generator="SpaceIconPickerGenerator" 
+                        component-generator="SpaceIconPickerGenerator"
                         ignore-if-missing="false" />
       </property-sheet>
    </config>
 
    <config evaluator="node-type" condition="dictionaryModel">
-      <property-sheet>  
+      <property-sheet>
          <show-property name="name" />
-         <show-property name="mimetype" display-label-id="content_type" 
+         <show-property name="mimetype" display-label-id="content_type"
                         component-generator="MimeTypeSelectorGenerator" />
          <show-property name="title" />
          <show-property name="description" />
-         <show-property name="size" display-label-id="size" 
-                        converter="org.alfresco.faces.ByteSizeConverter" 
-                        show-in-edit-mode="false" />    
-	     <show-property name="modelActive"/>
+         <show-property name="size" display-label-id="size"
+                        converter="org.alfresco.faces.ByteSizeConverter"
+                        show-in-edit-mode="false" />
+        <show-property name="modelActive"/>
       </property-sheet>
    </config>
-   
+
    <config evaluator="node-type" condition="app:filelink">
       <property-sheet>
          <show-property name="name" />
@@ -58,7 +58,7 @@
          <show-property name="destination" converter="org.alfresco.faces.DisplayPathConverter"/>
       </property-sheet>
    </config>
-   
+
    <config evaluator="node-type" condition="app:folderlink">
       <property-sheet>
          <show-property name="name" />
@@ -66,7 +66,7 @@
          <show-property name="destination" converter="org.alfresco.faces.DisplayPathConverter"/>
       </property-sheet>
    </config>
-   
+
    <config evaluator="aspect-name" condition="titled">
       <property-sheet>
          <!-- The 'name' property isn't part of the titled aspect -->
@@ -78,7 +78,7 @@
          <show-property name="description" component-generator="TextAreaGenerator" />
       </property-sheet>
    </config>
-   
+
    <config evaluator="aspect-name" condition="app:uifacets">
       <property-sheet>
          <!-- The 'name' property isn't part of the uifacets aspect -->
@@ -92,13 +92,13 @@
                         component-generator="SpaceIconPickerGenerator" />
       </property-sheet>
    </config>
-   
+
    <config evaluator="aspect-name" condition="author">
       <property-sheet>
          <show-property name="author" />
       </property-sheet>
    </config>
-   
+
    <config evaluator="aspect-name" condition="complianceable">
       <property-sheet>
          <show-property name="removeAfter"/>
@@ -117,27 +117,27 @@
          <show-property name="subject"/>
       </property-sheet>
    </config>
-   
+
    <config evaluator="aspect-name" condition="effectivity">
       <property-sheet>
          <show-property name="from"/>
          <show-property name="to"/>
       </property-sheet>
    </config>
-   
+
    <config evaluator="aspect-name" condition="summarizable">
       <property-sheet>
          <show-property name="summary"/>
       </property-sheet>
    </config>
-   
+
    <config evaluator="aspect-name" condition="versionable">
       <property-sheet>
          <show-property name="versionLabel" show-in-edit-mode="false" />
          <show-property name="autoVersion" converter="org.alfresco.faces.BooleanLabelConverter"/>
       </property-sheet>
    </config>
-   
+
    <config evaluator="aspect-name" condition="translatable">
       <property-sheet>
          <show-association name="translations"/>
@@ -149,7 +149,7 @@
          <show-property name="locale"/>
       </property-sheet>
    </config>
-   
+
    <config evaluator="aspect-name" condition="auditable">
       <property-sheet>
          <show-property name="creator" read-only="true" show-in-edit-mode="false" />
@@ -158,19 +158,19 @@
          <show-property name="modified" read-only="true" show-in-edit-mode="false" />
       </property-sheet>
    </config>
-   
+
    <config evaluator="aspect-name" condition="cm:ownable">
       <property-sheet>
          <show-property name="cm:owner" />
       </property-sheet>
    </config>
-    
+
    <config evaluator="aspect-name" condition="app:inlineeditable">
       <property-sheet>
          <show-property name="app:editInline" converter="org.alfresco.faces.BooleanLabelConverter" />
       </property-sheet>
    </config>
-   
+
    <config evaluator="aspect-name" condition="sys:archived">
       <property-sheet>
          <show-property name="sys:archivedBy" />
@@ -188,11 +188,41 @@
          <show-property name="subjectline" read-only="true"/>
       </property-sheet>
    </config>
-    
+
+    <config evaluator="aspect-name" condition="cm:mlDocument">
+      <property-sheet>
+         <show-property name="author" display-label-id="translator"/>
+         <show-property name="sys:locale"
+               component-generator="LanguageSelectorGenerator" display-label-id="language"/>
+         <show-property name="description" component-generator="TextAreaGenerator" />
+         <!-- Bug issue, icon displays with other properties if visible -->
+       <show-property name="app:icon" show-in-view-mode="false" show-in-edit-mode="false" />
+       <!-- Don't allow mofification of the Auto Version property -->
+       <show-property name="autoVersion" show-in-view-mode="true" show-in-edit-mode="false" />
+      </property-sheet>
+   </config>
+
+   <config evaluator="aspect-name" condition="cm:mlEmptyTranslation">
+      <property-sheet>
+         <show-property name="mimetype" show-in-edit-mode="false" show-in-view-mode="false" />
+      </property-sheet>
+   </config>
+
+   <config evaluator="node-type" condition="cm:mlContainer">
+      <property-sheet>
+         <show-property name="author"/>
+         <show-property name="sys:locale"
+               display-label-id="pivot_translation"
+               component-generator="MlContainerLanguageSelectorGenerator" />
+       <!-- Don't allow mofification of the Auto Version property -->
+       <show-property name="autoVersion" show-in-view-mode="true" show-in-edit-mode="false" />
+      </property-sheet>
+   </config>
+
    <!-- ********************************** -->
    <!-- Configuration for discussion types -->
    <!-- ********************************** -->
-   
+
    <config evaluator="node-type" condition="fm:forums">
       <property-sheet>
          <show-property name="name"/>
@@ -203,7 +233,7 @@
          <show-property name="title" show-in-view-mode="false" show-in-edit-mode="false" />
       </property-sheet>
    </config>
-   
+
    <config evaluator="node-type" condition="fm:forum">
       <property-sheet>
          <show-property name="name"/>
@@ -214,7 +244,7 @@
          <show-property name="title" show-in-view-mode="false" show-in-edit-mode="false" />
       </property-sheet>
    </config>
-   
+
    <config evaluator="node-type" condition="fm:topic">
       <property-sheet>
          <show-property name="name" display-label-id="subject" />
@@ -225,13 +255,13 @@
          <show-property name="title" show-in-view-mode="false" show-in-edit-mode="false" />
       </property-sheet>
    </config>
-   
+
    <!-- ******************************** -->
    <!-- Configuration for workflow types -->
    <!-- ******************************** -->
-   
+
    <!-- Generic workflow task -->
-   
+
    <config evaluator="node-type" condition="bpm:workflowTask" replace="true">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
@@ -242,7 +272,7 @@
          <show-property name="bpm:status" />
       </property-sheet>
    </config>
-   
+
    <config evaluator="node-type" condition="bpm:startTask" replace="true">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
@@ -253,9 +283,9 @@
          <show-association name="bpm:assignee" />
       </property-sheet>
    </config>
-   
+
    <!-- Review and Approve workflow tasks -->
-   
+
    <config evaluator="node-type" condition="wf:submitReviewTask" replace="true">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
@@ -277,7 +307,7 @@
          <show-association name="bpm:groupAssignee" display-label-id="wf_reviewers" />
       </property-sheet>
    </config>
-   
+
    <config evaluator="node-type" condition="wf:reviewTask" replace="true">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
@@ -359,7 +389,7 @@
          <show-property name="wf:actualPercent" read-only="true"/>
       </property-sheet>
    </config>
-   
+
    <!-- Ad hoc workflow tasks -->
 
    <config evaluator="node-type" condition="wf:submitAdhocTask" replace="true">
@@ -373,7 +403,7 @@
          <show-association name="bpm:assignee" display-label-id="wf_adhoc_assign_to" />
       </property-sheet>
    </config>
-   
+
    <config evaluator="node-type" condition="wf:adhocTask" replace="true">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
@@ -384,7 +414,7 @@
          <show-property name="bpm:status" />
       </property-sheet>
    </config>
-   
+
    <config evaluator="node-type" condition="wf:completedAdhocTask" replace="true">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
@@ -396,9 +426,9 @@
          <show-association name="bpm:assignee" display-label-id="wf_adhoc_assignee" read-only="true" />
       </property-sheet>
    </config>
-   
+
    <!-- WCM workflow tasks -->
-   
+
    <config evaluator="node-type" condition="wcmwf:submitReviewTask" replace="true">
       <property-sheet>
          <separator name="sep1" display-label-id="wf_review_options" component-generator="HeaderSeparatorGenerator" />
@@ -407,7 +437,7 @@
          <show-association name="bpm:assignees" display-label-id="wf_reviewers" />
       </property-sheet>
    </config>
-   
+
    <config evaluator="node-type" condition="wcmwf:reviewTask" replace="true">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
@@ -421,7 +451,7 @@
          <show-association name="bpm:assignees" display-label-id="wf_reviewers" read-only="true"/>
       </property-sheet>
    </config>
-   
+
    <config evaluator="node-type" condition="wcmwf:rejectedTask" replace="true">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
@@ -433,7 +463,7 @@
          <show-property name="wcmwf:approveCnt" read-only="true"/>
       </property-sheet>
    </config>
-   
+
    <config evaluator="node-type" condition="wcmwf:submitpendingTask" replace="true">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
@@ -507,7 +537,7 @@
          <show-property name="app:icon" show-in-view-mode="false" show-in-edit-mode="false" />
       </property-sheet>
    </config>
-   
+
    <config evaluator="aspect-name" condition="wca:expires">
       <property-sheet>
          <show-property name="wca:expirationDate" read-only="true" />

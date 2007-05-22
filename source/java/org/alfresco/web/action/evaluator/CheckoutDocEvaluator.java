@@ -51,6 +51,7 @@ public class CheckoutDocEvaluator implements ActionEvaluator
       return dd.isSubClass(node.getType(), ContentModel.TYPE_CONTENT) && 
              ((node.hasPermission(PermissionService.CHECK_OUT) && node.hasPermission(PermissionService.CREATE_CHILDREN) &&
               (node.isLocked() == false &&
-               node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false)));
+               node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false) &&
+               node.hasAspect(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION) == false));
    }
 }

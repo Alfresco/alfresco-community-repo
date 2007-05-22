@@ -24,8 +24,12 @@
  */
 package org.alfresco.web.action.evaluator;
 
+import javax.faces.context.FacesContext;
+
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.web.action.ActionEvaluator;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
 
 /**
@@ -40,7 +44,33 @@ public class DeleteDocEvaluator implements ActionEvaluator
     */
    public boolean evaluate(Node node)
    {
-      return (node.isLocked() == false &&
-              node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false);
+    boolean isPivot = false;
+    
+    // special case for multilingual documents
+    if(node.getAspects().contains(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
+    {
+       FacesContext fc = FacesContext.getCurrentInstance();
+            
+       MultilingualContentService mlservice = 
+            (MultilingualContentService) FacesHelper.getManagedBean(fc, "MultilingualContentService");
+         
+       // if the translation is the last translation, user can delete it
+       if(mlservice.getTranslations(node.getNodeRef()).size() == 1)
+       {
+          isPivot = false;
+       }
+       // Else if the node is the pivot language, user can't delete it
+       else if( mlservice.getPivotTranslation(node.getNodeRef()).getId()
+                 .equalsIgnoreCase(node.getNodeRef().getId()))
+       {
+          isPivot = true;
+       }
+       // finally, the node is not the pivot translation, user can delete it
+    }
+            
+    return (node.isLocked() == false &&
+              node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false &&
+              isPivot == false
+              );
    }
 }

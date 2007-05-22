@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -131,6 +132,15 @@ public class BrowseBean implements IContextListener
    {
       this.searchService = searchService;
    }
+   
+   /**
+    * @param userPreferencesBean The UserPreferencesBean to set.
+    */
+   public void setUserPreferencesBean(UserPreferencesBean userPreferencesBean)
+   {
+      this.userPreferencesBean = userPreferencesBean; 
+   }
+
    
    /**
     * @param lockService The Lock Service to set.
@@ -481,6 +491,7 @@ public class BrowseBean implements IContextListener
       node.addPropertyResolver("fileType16", this.resolverFileType16);
       node.addPropertyResolver("fileType32", this.resolverFileType32);
       node.addPropertyResolver("size", this.resolverSize);
+      node.addPropertyResolver("lang", this.resolverLang);
    }
    
    
@@ -630,7 +641,7 @@ public class BrowseBean implements IContextListener
                   
                   // look for Space folder node
                   if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) == true && 
-                  	 this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
+                      this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
                   {
                      // create our Node representation
                      node = new MapNode(nodeRef, this.nodeService, true);
@@ -659,6 +670,7 @@ public class BrowseBean implements IContextListener
                      node.addPropertyResolver("fileType16", this.resolverFileType16);
                      node.addPropertyResolver("fileType32", this.resolverFileType32);
                      node.addPropertyResolver("size", this.resolverSize);
+                     node.addPropertyResolver("lang", this.resolverLang);
                      
                      this.contentNodes.add(node);
                   }
@@ -823,6 +835,7 @@ public class BrowseBean implements IContextListener
                         node.addPropertyResolver("fileType16", this.resolverFileType16);
                         node.addPropertyResolver("fileType32", this.resolverFileType32);
                         node.addPropertyResolver("size", this.resolverSize);
+                        node.addPropertyResolver("lang", this.resolverLang);
                         node.addPropertyResolver("path", this.resolverPath);
                         node.addPropertyResolver("displayPath", this.resolverDisplayPath);
                         
@@ -1043,6 +1056,39 @@ public class BrowseBean implements IContextListener
       }
    };
    
+   public NodePropertyResolver resolverLang = new NodePropertyResolver() {
+         public Object get(Node node) {
+            
+           String lang = null; 
+            
+           if(node.getAspects().contains(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
+           {
+              Locale locale = (Locale) node.getProperties().get(ContentModel.PROP_LOCALE);
+              
+              // the content filter lang defined by the user
+              String userLang = userPreferencesBean.getContentFilterLanguage();
+              // the node lang 
+              String nodeLang = locale.getLanguage();
+              
+              // if filter equals all languages : display the lang for each translation
+              if(nodeLang == null)
+              {
+                 lang = nodeLang;
+              }
+              
+              // if filter is different : display the lang
+              else if (!nodeLang.equalsIgnoreCase(userLang))
+              {
+                lang = nodeLang; 
+              }
+              
+              // else if the filter is equal to the lang node : nothing to do [lang = null]
+              
+           }
+
+           return lang; 
+         }
+  };
    
    // ------------------------------------------------------------------------------
    // Navigation action event handlers
@@ -1357,6 +1403,7 @@ public class BrowseBean implements IContextListener
             node.addPropertyResolver("fileType32", this.resolverFileType32);
             node.addPropertyResolver("mimetype", this.resolverMimetype);
             node.addPropertyResolver("size", this.resolverSize);
+            node.addPropertyResolver("lang", this.resolverLang);
             
             for (NodeEventListener listener : getNodeEventListeners())
             {
@@ -1726,6 +1773,9 @@ public class BrowseBean implements IContextListener
    
    /** The NavigationBean bean reference */
    protected NavigationBean navigator;
+   
+   /** The UserPreferencesBean to be used by the bean */
+   protected UserPreferencesBean userPreferencesBean;
    
    /** The DictionaryService bean reference */
    protected DictionaryService dictionaryService;

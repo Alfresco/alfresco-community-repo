@@ -498,6 +498,18 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    padding-left: 4px;
 }
 
+.langCode
+{
+   color:#FFFFFF;
+   padding-left:2px;
+   padding-right:2px;
+   letter-spacing:1px;
+   border:1px solid #000000;
+   background-color:#0000FF;
+   font-weight:bolder;
+   text-transform:uppercase;
+}
+
 .userGroupPickerList
 {
    padding: 2px;

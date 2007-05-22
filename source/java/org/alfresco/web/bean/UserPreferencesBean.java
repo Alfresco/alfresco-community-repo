@@ -35,6 +35,10 @@ import javax.faces.model.SelectItem;
 import org.alfresco.config.Config;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
+import org.alfresco.service.cmr.ml.MultilingualContentService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -51,7 +55,12 @@ public class UserPreferencesBean
    private static final String PREF_STARTLOCATION = "start-location";
    
    private static final String PREF_CONTENTFILTERLANGUAGE = "content-filter-language";
-   private static final String MSG_CONTENTALLLANGUAGES = "content_all_languages";
+   
+   /** 
+    * Remplacement message for set the filter at 'all languages'. 
+    * Must be considered as a null value.
+    */
+   public static final String MSG_CONTENTALLLANGUAGES = "content_all_languages";
 
    /** language locale selection */
    private String language = null;
@@ -59,6 +68,14 @@ public class UserPreferencesBean
    /** content language locale selection */
    private String contentFilterLanguage = null;
    
+   /** the injected MultilingualContentService */
+   MultilingualContentService multilingualContentService;
+   
+   /** the injected ContentFilterLanguagesService */
+   ContentFilterLanguagesService contentFilterLanguagesService;
+
+   /** the injected NodeService */
+   NodeService nodeService;
 
    /**
     * @return the list of available languages
@@ -66,7 +83,7 @@ public class UserPreferencesBean
    public SelectItem[] getLanguages()
    {
        // Get the item selection list
-       SelectItem[] items = getLanguageItems(false);
+       SelectItem[] items = getLanguageItems();
        // Change the current language
        if (this.language == null)
        {
@@ -120,48 +137,126 @@ public class UserPreferencesBean
           // Null means All Languages
           if (locale == null)
           {
-              this.contentFilterLanguage = MSG_CONTENTALLLANGUAGES;
+              this.contentFilterLanguage = null;
           }
           else
           {
               this.contentFilterLanguage = locale.toString();
           }
       }
-      return (contentFilterLanguage.equals(MSG_CONTENTALLLANGUAGES)) ? null : contentFilterLanguage;
+      
+      // set the content filter locale on the core                 
+      I18NUtil.setContentLocale(I18NUtil.parseLocale(this.contentFilterLanguage));
+      
+      return this.contentFilterLanguage;
+      //return (contentFilterLanguage.equals(MSG_CONTENTALLLANGUAGES)) ? "en" : contentFilterLanguage;
    }
+   
    
    /**
     * @param languageStr   A valid locale string or {@link #MSG_CONTENTALLLANGUAGES}
     */
-   public void setContentFilterLanguage(String languageStr)
+   public void setContentFilterLanguage(String contentFilterLanguage)
    {
-       this.contentFilterLanguage = languageStr;
+      this.contentFilterLanguage = contentFilterLanguage;
        Locale language = null;
-       if (languageStr.equals(MSG_CONTENTALLLANGUAGES))
+       if (contentFilterLanguage.equals(MSG_CONTENTALLLANGUAGES))
        {
            // The generic "All Languages" was selected - persist this as a null
+          this.contentFilterLanguage = null;
        }
        else
        {
            // It should be a proper locale string
-           language = I18NUtil.parseLocale(languageStr);
+           language = I18NUtil.parseLocale(contentFilterLanguage);
        }
        PreferencesService.getPreferences().setValue(PREF_CONTENTFILTERLANGUAGE, language);
        
+       // set the content filter locale on the core
+      I18NUtil.setContentLocale(language);
+      
        // Ensure a refresh
        UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
    }
    
    /**
-    * @return list of items for the content filtering language selection
+    * @return list of items for the content filtering language selection include the label 'all langaguages'
     */
    public SelectItem[] getContentFilterLanguages()
    {
        // Get the item selection list
-       SelectItem[] items = getLanguageItems(true);
-
-       return items;
+      return getContentFilterLanguages(true);
    }
+   
+   /**
+    * @param includeAllLanguages if true, the list must include the label 'all languages'
+    * @return list of items for the content filtering language selection
+    */
+   public SelectItem[] getContentFilterLanguages(boolean includeAllLanguages)
+   {
+      FacesContext fc = FacesContext.getCurrentInstance();
+      ResourceBundle msg = Application.getBundle(fc);
+      
+      // get the list of filter languages 
+      List<String> languages = contentFilterLanguagesService.getFilterLanguages();
+      
+      // set the item selection list      
+      SelectItem[] items = new SelectItem[(includeAllLanguages) ? languages.size() + 1 : languages.size()];
+      int idx = 0;
+      
+      // include the <All Languages> item if needed
+      if (includeAllLanguages)
+      {
+            String allLanguagesStr = msg.getString(MSG_CONTENTALLLANGUAGES);
+            items[idx] = new SelectItem(MSG_CONTENTALLLANGUAGES, allLanguagesStr);
+            idx++;
+      }
+      
+      for(String lang : languages)
+      {
+         String label = contentFilterLanguagesService.getLabelByCode(lang);
+         
+         items[idx] = new SelectItem(
+               lang,
+               label);
+         
+         idx++;
+      }
+      
+      return items;
+   }
+   
+   
+   
+      /**
+       * return the list of languages in which the given node hasn't be translated yet.  
+       * 
+    * @param translation the translatable node ref
+    * @param returnTranslationLanguage if true, return the language of the given translation.
+    * @return the list of languages
+    */
+   public SelectItem[] getAvailablesContentFilterLanguages(NodeRef translation, boolean returnTranslationLanguage)
+    {
+      // get the list of missing translation of this node
+      List<Locale> missingLocales = multilingualContentService.getMissingTranslations(translation, returnTranslationLanguage);
+      
+      //    set the item selection list      
+      SelectItem[] items = new SelectItem[missingLocales.size()];
+      int idx = 0;
+      
+      for(Locale locale : missingLocales)
+      {
+         String label = contentFilterLanguagesService.getLabelByCode(locale.getLanguage());
+         
+         items[idx] = new SelectItem(
+                     locale.toString(),
+                     label);
+         idx++;
+      }
+      
+      return items;
+   }
+   
    
    /**
     * Helper to return the available language items
@@ -169,7 +264,7 @@ public class UserPreferencesBean
     * @param includeAllLanguages    True to include a marker item for "All Languages"
     * @return Array of SelectItem objects
     */
-   private static SelectItem[] getLanguageItems(boolean includeAllLanguages)
+   private static SelectItem[] getLanguageItems()
    {
       FacesContext fc = FacesContext.getCurrentInstance();
       Config config = Application.getConfigService(fc).getConfig("Languages");
@@ -178,11 +273,7 @@ public class UserPreferencesBean
       
       List<String> languages = langConfig.getLanguages();
       List<SelectItem> items = new ArrayList<SelectItem>(10);
-      if (includeAllLanguages)
-      {
-         String allLanguagesStr = Application.getMessage(fc, MSG_CONTENTALLLANGUAGES);
-         items.add(new SelectItem(MSG_CONTENTALLLANGUAGES, allLanguagesStr));
-      }
+
       for (String locale : languages)
       {
          // get label associated to the locale
@@ -257,5 +348,47 @@ public class UserPreferencesBean
    public boolean getAllowGuestConfig()
    {
       return Application.getClientConfig(FacesContext.getCurrentInstance()).getAllowGuestConfig();
+   }
+
+   /**
+    * @return the multilingualContentService
+    */
+   public MultilingualContentService getMultilingualContentService() 
+   {
+      return multilingualContentService;
+   }
+   
+   /**
+    * @param multilingualContentService the multilingualContentService to set
+    */
+   public void setMultilingualContentService(
+         MultilingualContentService multilingualContentService) 
+   {
+      this.multilingualContentService = multilingualContentService;
+   }
+
+   /**
+    * @return the nodeService
+    */
+   public NodeService getNodeService() 
+   {
+      return nodeService;
+   }
+
+   /**
+    * @param nodeService the nodeService to set
+    */
+   public void setNodeService(NodeService nodeService) 
+   {
+      this.nodeService = nodeService;
+   }
+
+   /**
+    * @param contentFilterLanguagesService the contentFilterLanguagesService to set
+    */
+   public void setContentFilterLanguagesService(
+         ContentFilterLanguagesService contentFilterLanguagesService) 
+   {
+      this.contentFilterLanguagesService = contentFilterLanguagesService;
    }
 }

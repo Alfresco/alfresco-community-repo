@@ -20,7 +20,7 @@
          <!-- Override the cut action to check for discussions, don't allow them to be cut -->
          <!-- Cut a document or space to the clipboard, from browse or doc details screens -->
          <action id="cut_node">
-            <evaluator>org.alfresco.web.action.evaluator.DiscussionCutCopyEvaluator</evaluator>
+            <evaluator>org.alfresco.web.action.evaluator.CutNodeEvaluator</evaluator>
             <permissions>
                <permission allow="true">Delete</permission>
             </permissions>

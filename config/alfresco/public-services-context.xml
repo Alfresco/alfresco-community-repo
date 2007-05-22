@@ -67,9 +67,10 @@
             <list>
                 <idref local="NodeService_transaction"/>
                 <idref local="AuditMethodInterceptor"/>
-                <idref local="mlTranslationInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="NodeService_security"/>
+                <idref bean="mlTranslationInterceptor"/>
+                <idref bean="mlPropertyInterceptor"/>
             </list>
         </property>
     </bean>

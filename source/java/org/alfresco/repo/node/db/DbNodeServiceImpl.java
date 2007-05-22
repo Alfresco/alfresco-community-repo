@@ -691,14 +691,15 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
     public void deleteNode(NodeRef nodeRef)
     {
+        // First get the node to ensure that it exists
+        Node node = getNodeNotNull(nodeRef);
+
         boolean isArchivedNode = false;
         boolean requiresDelete = false;
         
         // Invoke policy behaviours
         invokeBeforeDeleteNode(nodeRef);
         
-        // get the node
-        Node node = getNodeNotNull(nodeRef);
         // get the primary parent-child relationship before it is gone
         ChildAssociationRef childAssocRef = getPrimaryParent(nodeRef);
         // get type and aspect QNames as they will be unavailable after the delete

@@ -52,7 +52,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
     private static Log logger = LogFactory
             .getLog(MLTranslationInterceptor.class);
 
-    private NodeService nodeService;
+    private NodeService directNodeService;
     
     private MultilingualContentService multilingualContentService;
 
@@ -76,7 +76,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
             Locale filterLocale = I18NUtil.getContentLocaleOrNull();
             
             if(filterLocale != null 
-                    &&  nodeService.getType(parent).equals(ContentModel.TYPE_FOLDER)
+                    &&  directNodeService.getType(parent).equals(ContentModel.TYPE_FOLDER)
                     &&     ret != null 
                     &&     !allChildAssoc.isEmpty()
                     )
@@ -92,10 +92,10 @@ public class MLTranslationInterceptor implements MethodInterceptor
                 {
                     NodeRef child = assoc.getChildRef();
                                     
-                    QName type = nodeService.getType(child);
+                    QName type = directNodeService.getType(child);
                                         
                     if(type.equals(ContentModel.TYPE_CONTENT) && 
-                            nodeService.hasAspect(child, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
+                            directNodeService.hasAspect(child, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
                     {                
                         NodeRef container = multilingualContentService.getTranslationContainer(child);
 
@@ -159,24 +159,14 @@ public class MLTranslationInterceptor implements MethodInterceptor
         return ret;
     }
 
-    public MultilingualContentService getMultilingualContentService()
-    {
-        return multilingualContentService;
-    }
-
     public void setMultilingualContentService(
             MultilingualContentService multilingualContentService)
     {
         this.multilingualContentService = multilingualContentService;
     }
 
-    public NodeService getNodeService()
+    public void setDirectNodeService(NodeService nodeService)
     {
-        return nodeService;
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
+        this.directNodeService = nodeService;
     }
 }

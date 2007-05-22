@@ -63,11 +63,10 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
     private TransactionService txnService;
     private NodeDaoService nodeDaoService;
     private DictionaryService dictionaryService;
-    private NodeService mlAwareNodeService;
     
     protected NodeService getNodeService()
     {
-        return (NodeService) applicationContext.getBean("NodeService");
+        return (NodeService) applicationContext.getBean("nodeService");
     }
 
     @Override
@@ -77,7 +76,6 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         txnService = (TransactionService) applicationContext.getBean("transactionComponent");
         nodeDaoService = (NodeDaoService) applicationContext.getBean("nodeDaoService");
         dictionaryService = (DictionaryService) applicationContext.getBean("dictionaryService");
-        mlAwareNodeService = (NodeService) applicationContext.getBean("mlAwareNodeService");
     }
 
     /**
@@ -323,24 +321,8 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
                 BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE,
                 mlTextProperty);
         
-        // Check filterered property retrieval
-        Serializable textValueFiltered = nodeService.getProperty(
-                rootNodeRef,
-                BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
-        assertEquals(
-                "Default locale value not taken for ML text",
-                mlTextProperty.getValue(Locale.ENGLISH),
-                textValueFiltered);
-        
-        // Check filtered mass property retrieval
-        Map<QName, Serializable> propertiesFiltered = nodeService.getProperties(rootNodeRef);
-        assertEquals(
-                "Default locale value not taken for ML text in Map",
-                mlTextProperty.getValue(Locale.ENGLISH),
-                propertiesFiltered.get(BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
-        
-        // Check direct property retrieval
-        Serializable textValueDirect = mlAwareNodeService.getProperty(
+        // Check unfiltered property retrieval
+        Serializable textValueDirect = nodeService.getProperty(
                 rootNodeRef,
                 BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
         assertEquals(
@@ -348,8 +330,8 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
                 mlTextProperty,
                 textValueDirect);
         
-        // Check filtered mass property retrieval
-        Map<QName, Serializable> propertiesDirect = mlAwareNodeService.getProperties(rootNodeRef);
+        // Check unfiltered mass property retrieval
+        Map<QName, Serializable> propertiesDirect = nodeService.getProperties(rootNodeRef);
         assertEquals(
                 "MLText type not returned direct in Map",
                 mlTextProperty,

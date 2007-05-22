@@ -269,6 +269,12 @@
             <ref bean="indexerAndSearcherFactory" />
         </property>
     </bean>
+	
+	<bean id="admSearchService" class="org.alfresco.repo.search.SearcherComponent">
+        <property name="indexerAndSearcherFactory">
+            <ref bean="admLuceneIndexerAndSearcherFactory" />
+        </property>
+    </bean>
 
 
     <!--                                                                               -->
@@ -471,7 +477,7 @@
             <ref bean="ownableService"></ref>
         </property>
         <property name="searchService">
-            <ref bean="searchService"></ref>
+            <ref bean="admSearchService"></ref>
         </property>
     </bean>
 
@@ -491,7 +497,7 @@
             <ref bean="versionCounterService" />
         </property>
         <property name="searcher">
-            <ref bean="searchService" />
+            <ref bean="admSearchService" />
         </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
@@ -675,7 +681,7 @@
             <ref bean="ruleService" />
         </property>
         <property name="searchService">
-            <ref bean="SearchService" />
+            <ref bean="ADMSearchService" />
         </property>
         <property name="permissionService">
             <ref bean="PermissionService" />

@@ -10,7 +10,7 @@
       <property name="dictionaryService"><ref bean="dictionaryService" /></property>
       <property name="nodeService"><ref bean="nodeService" /></property>
       <property name="copyService"><ref bean="copyService" /></property>
-      <property name="searchService"><ref bean="searchService" /></property>
+      <property name="searchService"><ref bean="admSearchService" /></property>
       <property name="contentService"><ref bean="contentService" /></property>
       <property name="multilingualContentService"><ref bean="multilingualContentService" /></property>
       <property name="mimetypeService"><ref bean="mimetypeService" /></property>
@@ -57,7 +57,7 @@
          <ref bean="nodeService" />
       </property>
       <property name="searchService">
-         <ref bean="searchService" />
+         <ref bean="admSearchService" />
       </property>
       <property name="versionService">
          <ref bean="versionService" />

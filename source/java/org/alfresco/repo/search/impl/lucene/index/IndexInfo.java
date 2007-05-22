@@ -1442,7 +1442,7 @@ public class IndexInfo
     {
         public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
-
+            closeDelta(id);
         }
 
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException

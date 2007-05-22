@@ -62,7 +62,7 @@
             <ref bean="namespaceService" />
         </property>
         <property name="searchService">
-            <ref bean="searchService" />
+            <ref bean="admSearchService" />
         </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />

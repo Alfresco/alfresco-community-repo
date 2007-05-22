@@ -38,6 +38,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Factory for AVM indexers and searchers
@@ -47,6 +49,8 @@ import org.alfresco.service.namespace.NamespaceService;
  */
 public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAndSearcherFactory
 {
+    private static Log s_logger = LogFactory.getLog(AVMLuceneIndexerAndSearcherFactory.class);
+    
     private DictionaryService dictionaryService;
 
     private NamespaceService nameSpaceService;
@@ -61,6 +65,11 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
 
     private ContentStore contentStore;
 
+    public AVMLuceneIndexerAndSearcherFactory()
+    {
+        s_logger.error("Creating AVMLuceneIndexerAndSearcherFactory");
+    }
+    
     /**
      * Set the dictionary service
      * @param dictionaryService

@@ -250,6 +250,10 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         {
             return docs;
         }
+        if (desc.isLayeredDirectory() || desc.isLayeredFile())
+        {
+            return docs;
+        }   
         
         List<Pair<Integer, String>> paths = avmService.getHeadPaths(desc);
         if(paths.size() == 0)

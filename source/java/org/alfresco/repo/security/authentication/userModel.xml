@@ -80,6 +80,11 @@
             <property name="usr:members">
                <type>d:text</type>
                <multiple>true</multiple>   
+			   <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
             </property>
          </properties>
          <associations>

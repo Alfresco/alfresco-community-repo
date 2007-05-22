@@ -147,6 +147,23 @@
             </list>
         </property>
     </bean>
+	
+	<bean id="ADMSearchService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.search.SearchService</value>
+        </property>
+        <property name="target">
+            <ref bean="admSearchService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="SearchService_transaction"/>
+                <idref local="AuditMethodInterceptor"/>
+                <idref local="exceptionTranslator"/>
+                <idref bean="SearchService_security"/>
+            </list>
+        </property>
+    </bean>
     
     <bean id="SearchService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
@@ -692,7 +709,7 @@
     
     <bean id="crossRepositoryCopyService" class="org.alfresco.repo.copy.CrossRepositoryCopyServiceImpl">
         <property name="avmService">
-            <ref bean="avmService"/>
+            <ref bean="indexingAVMService"/>
         </property>
         <property name="nodeService">
             <ref bean="nodeService"/>

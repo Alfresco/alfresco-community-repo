@@ -83,18 +83,18 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * indexer for each store within a transaction
      */
 
-    private static Map<Xid, Map<StoreRef, LuceneIndexer>> activeIndexersInGlobalTx = new HashMap<Xid, Map<StoreRef, LuceneIndexer>>();
+    private Map<Xid, Map<StoreRef, LuceneIndexer>> activeIndexersInGlobalTx = new HashMap<Xid, Map<StoreRef, LuceneIndexer>>();
 
     /**
      * Suspended global transactions.
      */
-    private static Map<Xid, Map<StoreRef, LuceneIndexer>> suspendedIndexersInGlobalTx = new HashMap<Xid, Map<StoreRef, LuceneIndexer>>();
+    private Map<Xid, Map<StoreRef, LuceneIndexer>> suspendedIndexersInGlobalTx = new HashMap<Xid, Map<StoreRef, LuceneIndexer>>();
 
     /**
      * Thread local indexers - used outside a global transaction
      */
 
-    private static ThreadLocal<Map<StoreRef, LuceneIndexer>> threadLocalIndexers = new ThreadLocal<Map<StoreRef, LuceneIndexer>>();
+    private ThreadLocal<Map<StoreRef, LuceneIndexer>> threadLocalIndexers = new ThreadLocal<Map<StoreRef, LuceneIndexer>>();
 
     /**
      * The dafault timeout for transactions TODO: Respect this
@@ -311,7 +311,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * @param tx
      * @return - the transaction id
      */
-    private static String getTransactionId(Transaction tx, StoreRef storeRef)
+    private String getTransactionId(Transaction tx, StoreRef storeRef)
     {
         if (tx instanceof SimpleTransaction)
         {

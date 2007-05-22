@@ -17,13 +17,13 @@
 	
 	<bean id="bulkLoader" class="org.alfresco.repo.avm.util.BulkLoader">
 		<property name="avmService">
-			<ref bean="avmService"/>
+			<ref bean="indexingAVMService"/>
 		</property>
 	</bean>
 	
 	<bean id="interactiveConsole" class="org.alfresco.repo.avm.AVMInterpreter">
 		<property name="avmService">
-			<ref bean="avmService"/>
+			<ref bean="indexingAVMService"/>
 		</property>
 		<property name="bulkLoader">
 			<ref bean="bulkLoader"/>

@@ -86,7 +86,7 @@
            <ref bean="namespaceService" />
        </property>
        <property name="searchService">
-           <ref bean="searchService" />
+           <ref bean="admSearchService" />
        </property>
        <property name="userNamesAreCaseSensitive">
           <value>${user.name.caseSensitive}</value>
@@ -182,7 +182,7 @@
 		    <ref bean="nodeService" />
 		</property>
 		<property name="searchService">
-		    <ref bean="searchService" />
+		    <ref bean="admSearchService" />
 		</property>
 		<property name="permissionServiceSPI">
 			<ref bean="permissionServiceImpl" />

@@ -10,7 +10,7 @@
             <ref bean="NodeService" />
         </property>  	   
         <property name="searchService">
-            <ref bean="SearchService" />
+            <ref bean="ADMSearchService" />
         </property>  	   
         <property name="authenticationComponent">
             <ref bean="authenticationComponent" />
@@ -414,7 +414,7 @@
     
     <bean id="simple-avm-submit" class="org.alfresco.repo.avm.actions.SimpleAVMSubmitAction" parent="action-executer">
         <property name="avmService">
-    	    <ref bean="avmService"/>
+    	    <ref bean="indexingAVMService"/>
     	</property>
     	<property name="avmSyncService">
     	    <ref bean="avmSyncService"/>
@@ -468,7 +468,7 @@
     
     <bean id="avm-revert-to-version" class="org.alfresco.repo.avm.actions.AVMRevertToVersionAction" parent = "action-executer">
         <property name="avmService">
-            <ref bean="avmService"/>
+            <ref bean="indexingAVMService"/>
         </property>
         <property name="publicAction">
             <value>false</value>
@@ -477,7 +477,7 @@
     
     <bean id="avm-undo-list" class="org.alfresco.repo.avm.actions.AVMUndoSandboxListAction" parent="action-executer">
     	<property name="avmService">
-    	    <ref bean="avmService"/>
+    	    <ref bean="indexingAVMService"/>
     	</property>
     	<property name="publicAction">
     	    <value>false</value>

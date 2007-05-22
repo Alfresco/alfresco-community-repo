@@ -67,7 +67,7 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
 
     public AVMLuceneIndexerAndSearcherFactory()
     {
-        s_logger.error("Creating AVMLuceneIndexerAndSearcherFactory");
+        //s_logger.error("Creating AVMLuceneIndexerAndSearcherFactory");
     }
     
     /**

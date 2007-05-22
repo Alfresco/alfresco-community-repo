@@ -96,11 +96,6 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
     private ContentService contentService;
 
-    @SuppressWarnings("unused")
-    private int srcVersion = -1;
-
-    private int dstVersion = -1;
-
     private Set<String> indexedPaths = new HashSet<String>();
 
     /**
@@ -170,8 +165,6 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
     public void index(String store, int srcVersion, int dstVersion)
     {
         checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
-        this.srcVersion = srcVersion;
-        this.dstVersion = dstVersion;
 
         String path = store + ":/";
         List<AVMDifference> changeList = avmSyncService.compare(srcVersion, path, dstVersion, path, null);
@@ -194,12 +187,14 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                     {
                         indexDirectory(dstDesc);
                     }
+                    reindexAllAncestors(difference.getDestinationPath());
                 }
                 // New Delete
                 else if (!srcDesc.isDeleted() && ((dstDesc == null) || dstDesc.isDeleted()))
                 {
                     delete(difference.getSourcePath());
                     delete(difference.getDestinationPath());
+                    reindexAllAncestors(difference.getDestinationPath());
                 }
                 // Existing delete
                 else if (srcDesc.isDeleted() && dstDesc.isDeleted())
@@ -213,6 +208,8 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                     // Should only reindex if the path has changed - not anything on a directory
                     reindex(difference.getSourcePath(), srcDesc.isDirectory());
                     reindex(difference.getDestinationPath(), dstDesc.isDirectory());
+                    reindexAllAncestors(difference.getDestinationPath());
+                    reindexAllAncestors(difference.getDestinationPath());
                 }
                 break;
             case AVMDifference.DIRECTORY:
@@ -223,6 +220,35 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                 break;
 
             }
+        }
+    }
+
+    /*
+     * Nasty catch all fix up (as changes imply the parents may all have changed
+     */
+    private void reindexAllAncestors(String destinationPath)
+    {
+        String[] splitPath = splitPath(destinationPath);
+        String store = splitPath[0];
+        String pathInStore = splitPath[1];
+        SimplePath simplePath = new SimplePath(pathInStore);
+        
+        StringBuilder pathBuilder = new StringBuilder();
+        pathBuilder.append(store).append(":/");
+        reindex(pathBuilder.toString(), false);
+        boolean requiresSep = false;
+        for (int i = 0; i < simplePath.size() - 1; i++)
+        {
+            if(requiresSep)
+            {
+                pathBuilder.append("/");
+            }
+            else
+            {
+                requiresSep = true;
+            }
+            pathBuilder.append(simplePath.get(i));
+            reindex(pathBuilder.toString(), false);
         }
     }
 
@@ -244,7 +270,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
     protected List<Document> createDocuments(String stringNodeRef, boolean isNew, boolean indexAllProperties,
             boolean includeDirectoryDocuments)
     {
-        AVMNodeDescriptor desc = avmService.lookup(dstVersion, stringNodeRef);
+        AVMNodeDescriptor desc = avmService.lookup(-1, stringNodeRef);
         List<Document> docs = new ArrayList<Document>();
         if(desc == null)
         {
@@ -280,7 +306,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
             if (desc != null)
             {
 
-                NodeRef nodeRef = AVMNodeConverter.ToNodeRef(dstVersion, stringNodeRef);
+                NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, stringNodeRef);
 
                 Document xdoc = new Document();
                 xdoc.add(new Field("ID", nodeRef.toString(), Field.Store.YES,
@@ -301,7 +327,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
                 boolean isAtomic = true;
 
-                Map<QName, Serializable> properties = getIndexableProperties(desc, node, nodeRef, dstVersion, stringNodeRef);
+                Map<QName, Serializable> properties = getIndexableProperties(desc, node, nodeRef, -1, stringNodeRef);
                 for (QName propertyName : properties.keySet())
                 {
                     Serializable value = properties.get(propertyName);
@@ -430,7 +456,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                     xdoc.add(new Field("TYPE", ISO9075.getXPathName(typeQName), Field.Store.YES,
                             Field.Index.UN_TOKENIZED, Field.TermVector.NO));
 
-                    for (QName classRef : avmService.getAspects(dstVersion, stringNodeRef))
+                    for (QName classRef : avmService.getAspects(-1, stringNodeRef))
                     {
                         xdoc.add(new Field("ASPECT", ISO9075.getXPathName(classRef), Field.Store.YES,
                                 Field.Index.UN_TOKENIZED, Field.TermVector.NO));

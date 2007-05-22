@@ -48,19 +48,31 @@
          </#if>
       </#list>
    </div>
+   <#-- Refresh action -->
    <span style="float:right;margin:6px 6px 0 0;"><a href="${scripturl("?f=${filter}&p=${path}")}" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px">Refresh</a></span>
    <div class="spaceTitle">
       <img src="${url.context}${home.icon16}" width="16" height="16" alt="" style="vertical-align:-25%;padding-right:4px">${home.name?html}
    </div>
    <div class="spaceActions">
-      <#-- TODO: haspermission check! -->
+      <#-- TODO: permission checks on the actions! -->
+      <#-- Upload File action -->
       <div class="spaceAction spaceActionUpload" title="Upload a new document" onclick="MySpaces.upload(this);">Upload</div>
       <div class="spaceUploadPanel">
          <#-- Url encode the path value, and encode any single quotes to generate valid string -->
          <input style="margin:4px" type="submit" value="OK" onclick='MySpaces.uploadOK(this, "${path?url?replace("'","_%_")}");'>
-         <input style="margin:4px" type="button" value="Cancel" onclick="MySpaces.uploadClose(this);">
+         <input style="margin:4px" type="button" value="Cancel" onclick="MySpaces.closePanel(this);">
       </div>
-      <div class="spaceAction spaceActionCreateSpace" title="Create a new Space">Create Space</div>
+      <#-- Create Space action -->
+      <div class="spaceAction spaceActionCreateSpace" title="Create a new Space" onclick="MySpaces.createSpace(this);">Create Space</div>
+      <div class="spaceCreateSpacePanel">
+         <table cellspacing="2" cellpadding="2" border="0">
+            <tr><td>Name:</td><td><input style="margin:4px" type="text" value="" size="32" name="space-name"></td></tr>
+            <tr><td>Title:</td><td><input style="margin:4px" type="text" value="" size="32" name="space-title"></td></tr>
+            <tr><td>Description:</td><td><input style="margin:4px" type="text" value="" size="32" name="space-description"></td></tr>
+         </table>
+         <input style="margin:4px" type="button" value="OK" onclick='MySpaces.createSpaceOK(this, "${path?url?replace("'","_%_")}");'>
+         <input style="margin:4px" type="button" value="Cancel" onclick="MySpaces.closePanel(this);">
+      </div>
    </div>
    <div style="text-align: center;">
       <center>
@@ -75,12 +87,12 @@
       </center>
    </div>
    <div id="spacePanel">
-      <#-- populated via an AJAX call myspacecontent webscript -->
-      <#-- resolved path, filter and home.noderef required as arguments! -->
+      <#-- populated via an AJAX call to 'myspacespanel' webscript -->
+      <#-- resolved path, filter and home.noderef required as arguments -->
       <script>MySpaces.Path="${path?replace("\"","\\\"")}";MySpaces.Filter="${filter}";MySpaces.Home="${home.nodeRef}";</script>
    </div>
    <div class="spaceFooter">
-      <#-- TODO: get the count value dynamically from the AJAX webscript output above... -->
+      <#-- the count value is retrieved and set dynamically from the AJAX webscript output above -->
       Showing <span id="spaceCount">0</span> items(s)
    </div>
 </div>
@@ -264,6 +276,20 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    background-color: #EEF7FB;
    width: 24em;
    height: 4em;
+   padding: 8px;
+   margin: 8px;
+   display: none;
+   left: 8px;
+   -moz-border-radius: 5px;
+}
+
+.spaceCreateSpacePanel
+{
+   position: absolute;
+   border: 1px solid #CCD4DB;
+   background-color: #EEF7FB;
+   width: 24em;
+   height: 11em;
    padding: 8px;
    margin: 8px;
    display: none;

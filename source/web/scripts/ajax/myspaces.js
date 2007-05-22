@@ -17,8 +17,8 @@ var MySpaces = {
          // is responsible for rendering just the contents of the main panel div
          YAHOO.util.Connect.asyncRequest(
             "GET",
-            getContextPath() + '/service/myspacespanel?p='+MySpaces.Path+'&f='+MySpaces.Filter+'&h='+MySpaces.Home,
-            { 
+            getContextPath() + '/service/myspacespanel?p='+MySpaces.Path+'&f='+MySpaces.Filter+'&h='+MySpaces.Home,  //+'&_='+(Math.random())
+            {
                success: function(response)
                {
                   // push the response into the space panel div
@@ -239,6 +239,39 @@ var MySpaces = {
       });
    },
    
+   /**
+    * Display the Create Space pop-up panel
+    */
+   createSpace: function(actionEl)
+   {
+      var panel = $E(".spaceCreateSpacePanel", $(actionEl).getParent());
+      panel.setStyle("opacity", 0);
+      panel.setStyle("display", "inline");
+      var anim = new Fx.Styles(panel, {duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
+      anim.start({'opacity': 1});
+   },
+   
+   /**
+    * OK button click handler for the Create Space pop-up panel
+    */
+   createSpaceOK: function(actionEl, path)
+   {
+      // TODO: ajax call to create space...
+      //path = path.replace("_%_", "'");
+   },
+   
+   /**
+    * Cancel button click handler for various pop-up panels
+    */
+   closePanel: function(actionEl)
+   {
+      var panel = $(actionEl).getParent();
+      panel.setStyle("display", "none");
+   },
+   
+   /**
+    * Display the Upload File pop-up panel
+    */
    upload: function(actionEl)
    {
       var panel = $E(".spaceUploadPanel", $(actionEl).getParent());
@@ -272,22 +305,13 @@ var MySpaces = {
    {
       // call the upload help to perform the upload
       handleUploadHelper(this.fileInput,
-                         "1",   // TODO: generate unique ID (parent space noderef?)
+                         "1",   // TODO: generate unique ID? (parent space noderef?)
                          MySpaces.uploadCompleteHandler,
                          getContextPath(),
                          "/ajax/invoke/FileUploadBean.uploadFile",
                          {currentPath: path.replace("_%_", "'")});   // decode path
       this.fileInput = null;
-      this.uploadClose(actionEl);
-   },
-   
-   /**
-    * Cancel button click handler for the Upload File pop-up panel
-    */
-   uploadClose: function(actionEl)
-   {
-      var panel = $(actionEl).getParent();
-      panel.setStyle("display", "none");
+      this.closePanel(actionEl);
    },
    
    /**

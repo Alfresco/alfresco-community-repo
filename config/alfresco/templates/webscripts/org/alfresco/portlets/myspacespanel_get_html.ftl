@@ -1,10 +1,11 @@
 <#assign user=person.properties.userName>
 <#assign count=0>
-<#list companyhome.nodeByReference[args.h].childAssocs["cm:contains"]?sort_by('name') as d>
-   <#if (args.f="0") ||
-        (args.f="1" && d.isContainer) ||
-        (args.f="2" && d.isDocument) ||
-        (args.f="3" && (d.properties.creator == user || d.properties.modifier == user))>
+<#list companyhome.nodeByReference[args.h].children?sort_by('name') as d>
+   <#if (d.isContainer || d.isDocument) &&
+        ((args.f="0") ||
+         (args.f="1" && d.isContainer) ||
+         (args.f="2" && d.isDocument) ||
+         (args.f="3" && (d.properties.creator == user || d.properties.modifier == user)))>
    <#assign count=count+1>
    <div class="spaceRow">
       <div class="spaceIcon">

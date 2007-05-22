@@ -62,6 +62,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
+ * Bean managing the ajax servlet upload of a multi-part form containing file content
+ * to be added at a specific path in the server. 
+ * 
  * @author Kevin Roast
  */
 public class FileUploadBean
@@ -69,11 +72,11 @@ public class FileUploadBean
    private static Log logger = LogFactory.getLog(FileUploadBean.class);
    
    /**
-    * Ajax method to upload a file. A multi-part form is required as the input.
+    * Ajax method to upload file content. A multi-part form is required as the input.
     * 
-    * "return-page" = 
-    * "currentPath" = 
-    * and the file item itself
+    * "return-page" = javascript to execute on return from the upload request
+    * "currentPath" = the cm:name based server path to upload the content into
+    * and the file item content.
     * 
     * @throws Exception
     */

@@ -27,13 +27,10 @@ package org.alfresco.repo.content;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
@@ -50,7 +47,6 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -63,7 +59,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
@@ -316,66 +311,8 @@ public class RoutingContentService implements ContentService
         // check that the URL is available
         if (contentData == null || contentData.getContentUrl() == null)
         {
-            // if the node is an empty translation, the reader must be the reader of its pivot translation
-            if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT)
-                    && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
-            {
-                // NOTE : don't use the MultilingualContentService here because :  
-                // A valid SecureContext can't be provided in the RequestContext
-                
-                List<ChildAssociationRef> parentAssocRefs = nodeService.getParentAssocs(
-                        nodeRef,
-                        ContentModel.ASSOC_MULTILINGUAL_CHILD,
-                        RegexQNamePattern.MATCH_ALL);
-                
-                if (parentAssocRefs.size() == 1)
-                {
-                    // Get the ml container and its locale
-                    NodeRef container = parentAssocRefs.get(0).getParentRef();
-                    Locale containerLocale = (Locale) nodeService.getProperty(container, ContentModel.PROP_LOCALE);
-                    
-                    // Get each translation
-                    List<ChildAssociationRef> assocRefs = nodeService.getChildAssocs(
-                            container,
-                            ContentModel.ASSOC_MULTILINGUAL_CHILD,
-                            RegexQNamePattern.MATCH_ALL);
-                    
-                    
-                    // found the pivot translation
-                    NodeRef pivot = null;
-                    
-                    for(ChildAssociationRef assoc : assocRefs)
-                    {
-                        pivot = assoc.getChildRef();
-                        Locale pivotLocale = (Locale) nodeService.getProperty(pivot, ContentModel.PROP_LOCALE);
-                        
-                        if(containerLocale.equals(pivotLocale))
-                        {
-                            break; // the pivot is set
-                        }
-                        else
-                        {
-                            pivot = null;
-                        }
-                    }
-                    
-                    // returns the reader of this pivot translation if it's different to 
-                    // the node in parameter
-                    
-                    if (pivot != null && !nodeRef.getId().equals(pivot.getId()))
-                    {
-                        return getReader(pivot, propertyQName, fireContentReadPolicy);        
-                    }
-                    
-                }                    
-            }
-            else
-            {
-                // there is no URL - the interface specifies that this is not an error condition
-                return null;                                
-            }
-            
-            
+            // there is no URL - the interface specifies that this is not an error condition
+            return null;                                
         }
         String contentUrl = contentData.getContentUrl();
         

@@ -694,7 +694,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // First get the node to ensure that it exists
         Node node = getNodeNotNull(nodeRef);
 
-        boolean isArchivedNode = false;
         boolean requiresDelete = false;
         
         // Invoke policy behaviours
@@ -713,7 +712,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
            // the node has the temporary aspect meaning
            // it can not be archived
            requiresDelete = true;
-           isArchivedNode = false;
         }
         else
         {
@@ -731,17 +729,15 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             // perform a normal deletion
             nodeDaoService.deleteNode(node, true);
-            isArchivedNode = false;
+            // Invoke policy behaviours
+            invokeOnDeleteNode(childAssocRef, nodeTypeQName, nodeAspectQNames, false);
         }
         else
         {
             // archive it
             archiveNode(nodeRef, archiveStoreRef);
-            isArchivedNode = true;
+            // The archive performs a move, which will fire the appropriate OnDeleteNode
         }
-        
-        // Invoke policy behaviours
-        invokeOnDeleteNode(childAssocRef, nodeTypeQName, nodeAspectQNames, isArchivedNode);
     }
     
     public ChildAssociationRef addChild(NodeRef parentRef, NodeRef childRef, QName assocTypeQName, QName assocQName)

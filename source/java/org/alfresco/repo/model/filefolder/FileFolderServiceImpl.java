@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -37,6 +38,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -121,6 +123,7 @@ public class FileFolderServiceImpl implements FileFolderService
     private CopyService copyService;
     private SearchService searchService;
     private ContentService contentService;
+    private MultilingualContentService multilingualContentService;
     private MimetypeService mimetypeService;
     
     // TODO: Replace this with a more formal means of identifying "system" folders (i.e. aspect or UUID)
@@ -164,6 +167,11 @@ public class FileFolderServiceImpl implements FileFolderService
         this.contentService = contentService;
     }
 
+    public void setMultilingualContentService(MultilingualContentService multilingualContentService)
+    {
+        this.multilingualContentService = multilingualContentService;
+    }
+
     public void setMimetypeService(MimetypeService mimetypeService)
     {
         this.mimetypeService = mimetypeService;
@@ -198,7 +206,7 @@ public class FileFolderServiceImpl implements FileFolderService
         List<FileInfo> results = new ArrayList<FileInfo>(nodeRefs.size());
         for (NodeRef nodeRef : nodeRefs)
         {
-            FileInfo fileInfo = toFileInfo(nodeRef);
+            FileInfo fileInfo = toFileInfo(nodeRef, true);
             results.add(fileInfo);
         }
         return results;
@@ -207,7 +215,7 @@ public class FileFolderServiceImpl implements FileFolderService
     /**
      * Helper method to convert a node reference instance to a file info
      */
-    private FileInfo toFileInfo(NodeRef nodeRef) throws InvalidTypeException
+    private FileInfo toFileInfo(NodeRef nodeRef, boolean addTranslations) throws InvalidTypeException
     {
         // get the file attributes
         Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
@@ -215,8 +223,33 @@ public class FileFolderServiceImpl implements FileFolderService
         QName typeQName = nodeService.getType(nodeRef);
         boolean isFolder = isFolder(typeQName);
         
+        Map<Locale, FileInfo> translations = null;
+        if (!isFolder && addTranslations)
+        {
+            // Get any translations
+            translations = new HashMap<Locale, FileInfo>(13);
+            // Check for the ML aspect
+            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
+            {
+                // Get all the translations
+                Map<Locale, NodeRef> translationsToConvert = multilingualContentService.getTranslations(nodeRef);
+                for (Map.Entry<Locale, NodeRef> entry : translationsToConvert.entrySet())
+                {
+                    Locale locale = entry.getKey();
+                    NodeRef nodeRefToConvert = entry.getValue();
+                    FileInfo convertedFileInfo = toFileInfo(nodeRefToConvert, false);
+                    // Add to map
+                    translations.put(locale, convertedFileInfo);
+                }
+            }
+        }
+        else
+        {
+            translations = Collections.<Locale, FileInfo>emptyMap();
+        }
+        
         // construct the file info and add to the results
-        FileInfo fileInfo = new FileInfoImpl(nodeRef, isFolder, properties);
+        FileInfo fileInfo = new FileInfoImpl(nodeRef, isFolder, properties, translations);
         // done
         return fileInfo;
     }
@@ -542,7 +575,7 @@ public class FileFolderServiceImpl implements FileFolderService
     private FileInfo moveOrCopy(NodeRef sourceNodeRef, NodeRef targetParentRef, String newName, boolean move) throws FileExistsException, FileNotFoundException
     {
         // get file/folder in its current state
-        FileInfo beforeFileInfo = toFileInfo(sourceNodeRef);
+        FileInfo beforeFileInfo = toFileInfo(sourceNodeRef, true);
         // check the name - null means keep the existing name
         if (newName == null)
         {
@@ -634,7 +667,7 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         
         // get the details after the operation
-        FileInfo afterFileInfo = toFileInfo(targetNodeRef);
+        FileInfo afterFileInfo = toFileInfo(targetNodeRef, true);
         // done
         if (logger.isDebugEnabled())
         {
@@ -705,11 +738,11 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         
         NodeRef nodeRef = assocRef.getChildRef();
-        FileInfo fileInfo = toFileInfo(nodeRef);
+        FileInfo fileInfo = toFileInfo(nodeRef, true);
         // done
         if (logger.isDebugEnabled())
         {
-            FileInfo parentFileInfo = toFileInfo(parentNodeRef);
+            FileInfo parentFileInfo = toFileInfo(parentNodeRef, false);
             logger.debug("Created: \n" +
                     "   parent: " + parentFileInfo + "\n" +
                     "   created: " + fileInfo);
@@ -755,7 +788,7 @@ public class FileFolderServiceImpl implements FileFolderService
             }
         }
         // done
-        FileInfo fileInfo = toFileInfo(currentParentRef);
+        FileInfo fileInfo = toFileInfo(currentParentRef, true);
         return fileInfo;
     }
 
@@ -790,7 +823,7 @@ public class FileFolderServiceImpl implements FileFolderService
                     continue;
                 }
                 // we found the root and expect to be building the path up
-                FileInfo pathInfo = toFileInfo(childNodeRef);
+                FileInfo pathInfo = toFileInfo(childNodeRef, true);
                 results.add(pathInfo);
             }
             // check that we found the root
@@ -861,7 +894,7 @@ public class FileFolderServiceImpl implements FileFolderService
     {
         try
         {
-            return toFileInfo(nodeRef);
+            return toFileInfo(nodeRef, true);
         }
         catch (InvalidTypeException e)
         {
@@ -871,7 +904,7 @@ public class FileFolderServiceImpl implements FileFolderService
 
     public ContentReader getReader(NodeRef nodeRef)
     {
-        FileInfo fileInfo = toFileInfo(nodeRef);
+        FileInfo fileInfo = toFileInfo(nodeRef, false);
         if (fileInfo.isFolder())
         {
             throw new InvalidTypeException("Unable to get a content reader for a folder: " + fileInfo);
@@ -881,7 +914,7 @@ public class FileFolderServiceImpl implements FileFolderService
 
     public ContentWriter getWriter(NodeRef nodeRef)
     {
-        FileInfo fileInfo = toFileInfo(nodeRef);
+        FileInfo fileInfo = toFileInfo(nodeRef, false);
         if (fileInfo.isFolder())
         {
             throw new InvalidTypeException("Unable to get a content writer for a folder: " + fileInfo);

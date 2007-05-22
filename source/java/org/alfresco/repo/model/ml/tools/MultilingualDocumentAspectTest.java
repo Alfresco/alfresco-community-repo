@@ -82,15 +82,13 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
         NodeRef restoredNode = nodeArchiveService.restoreArchivedNode(nodeArchiveService.getArchivedNode(trad3)).getRestoredNodeRef();
 
         // Ensure that the restored node is restored to it s original space 
-        assertEquals("The restaured node must be restaured to the the space", 3, nodeService.getChildAssocs(parent).size());        
+        assertEquals("The restored node must be restaured to the the space", 3, nodeService.getChildAssocs(parent).size());        
         // Ensure that the restored node is not linked to the mlContainer  
-        assertEquals("The restaured node would not be restaured to the mlContainer", 2, multilingualContentService.getTranslations(mlContainer).size());
+        assertEquals("The restored node would not be restaured to the mlContainer", 2, multilingualContentService.getTranslations(mlContainer).size());
         // Ensure that the restored node doesn't keep the mlDocument aspect
-        assertFalse("The restaured node can't keep the multilingual aspect", nodeService.hasAspect(restoredNode, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
+        assertFalse("The restored node can't keep the multilingual aspect", nodeService.hasAspect(restoredNode, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
         // Ensure that the restored node doesn't keep the locale property  
         assertNull("The restaured node can't keep the locale property", nodeService.getProperty(restoredNode, ContentModel.PROP_LOCALE));
-
-        
     }
     
     public void testDeletePivot() throws Exception

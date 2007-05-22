@@ -50,8 +50,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class EmptyTranslationAspect implements 
         CopyServicePolicies.OnCopyNodePolicy,
-        NodeServicePolicies.BeforeDeleteNodePolicy,
-        NodeServicePolicies.OnRemoveAspectPolicy,
+//        NodeServicePolicies.BeforeDeleteNodePolicy,
+//        NodeServicePolicies.OnRemoveAspectPolicy,
         ContentServicePolicies.OnContentUpdatePolicy
 {
     
@@ -77,16 +77,16 @@ public class EmptyTranslationAspect implements
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onContentUpdate"), 
                 ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION, 
                 new JavaBehaviour(this, "onContentUpdate"));
-        
-        this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), 
-                ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION, 
-                new JavaBehaviour(this, "beforeDeleteNode"));
-        
-        this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"), 
-                ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION, 
-                new JavaBehaviour(this, "onRemoveAspect"));
+//        
+//        this.policyComponent.bindClassBehaviour(
+//                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), 
+//                ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION, 
+//                new JavaBehaviour(this, "beforeDeleteNode"));
+//        
+//        this.policyComponent.bindClassBehaviour(
+//                QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"), 
+//                ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION, 
+//                new JavaBehaviour(this, "onRemoveAspect"));
     }
     
     /**
@@ -105,7 +105,7 @@ public class EmptyTranslationAspect implements
     {
         this.nodeService = nodeService;
     }   
-    
+
     /**
      * Copy a <b>cm:mlEmptyTranslation<b> is not permit.
      * 
@@ -123,38 +123,38 @@ public class EmptyTranslationAspect implements
       */
     public void onContentUpdate(NodeRef nodeRef, boolean newContent) 
     {
-        if(newContent)
+        if (newContent)
         {
             nodeService.removeAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION);
+            nodeService.removeAspect(nodeRef, ContentModel.ASPECT_TEMPORARY);
         }
     }
 
-    /** 
-      * If a <b>cm:mlEmptyTranslation<b> is deleted, it can't be archived. 
-      *  
-      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
-      */
-    public void beforeDeleteNode(NodeRef nodeRef) 
-    {
-        // add TEMPORARY ASPECT to force the deleteNode
-        nodeService.addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);        
-    }    
-    
-    /**
-      * If the aspect <b>cm:mlEmptyTranslation<b> is removed <b>and the content url property is null</b>, the node can't be store much time.
-      * 
-      * @see org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)      * 
-      */
-    public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName) 
-    {
-        // if the node is updated, the URL will not be null and the rome aspect don't delete
-        // the translation. It will be a simple mlDocument.
-        if(aspectTypeQName.equals(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION) 
-                && ((ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT)).getContentUrl() == null)
-        {
-            // add TEMPORARY ASPECT to force the deleteNode
-            nodeService.addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);       
-            nodeService.deleteNode(nodeRef);
-        }
-    }
+//    /** 
+//      * If a <b>cm:mlEmptyTranslation<b> is deleted, it can't be archived. 
+//      *  
+//      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
+//      */
+//    public void beforeDeleteNode(NodeRef nodeRef) 
+//    {
+//        // add TEMPORARY ASPECT to force the deleteNode
+//        nodeService.addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);        
+//    }    
+//    
+//    /**
+//      * If the aspect <b>cm:mlEmptyTranslation<b> is removed <b>and the content url property is null</b>, the node can be deleted.
+//      * The other time the aspect is removed is when new content is added, in which case the node must be kept.
+//      * 
+//      * @see org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)      * 
+//      */
+//    public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName) 
+//    {
+//        // Delete the node if the content is empty.
+//        // Keep the node if it has content
+//        ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+//        if(contentData.getContentUrl() == null)
+//        {
+//            nodeService.deleteNode(nodeRef);
+//        }
+//    }
 }

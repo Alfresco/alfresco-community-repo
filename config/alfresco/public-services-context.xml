@@ -69,8 +69,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="NodeService_security"/>
-                <idref bean="mlTranslationInterceptor"/>
-                <idref bean="mlPropertyInterceptor"/>
             </list>
         </property>
     </bean>
@@ -656,6 +654,7 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="FileFolderService_security"/>
+                <idref bean="mlTranslationInterceptor"/>
                 <idref bean="tempFileMarkerInterceptor"/>
             </list>
         </property>
@@ -1166,6 +1165,8 @@
         </property>
         <property name="transactionAttributes">
             <props>
+                <prop key="is*">${server.transaction.mode.readOnly}</prop>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
         </property>

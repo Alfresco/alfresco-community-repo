@@ -12,6 +12,7 @@
       <property name="copyService"><ref bean="copyService" /></property>
       <property name="searchService"><ref bean="searchService" /></property>
       <property name="contentService"><ref bean="contentService" /></property>
+      <property name="multilingualContentService"><ref bean="multilingualContentService" /></property>
       <property name="mimetypeService"><ref bean="mimetypeService" /></property>
 
       <property name="systemPaths">
@@ -26,6 +27,16 @@
          </list>
       </property>
    </bean>
+
+   <bean id="mlTranslationInterceptor" class="org.alfresco.repo.model.filefolder.MLTranslationInterceptor" >
+      <property name="nodeService">
+         <ref bean="nodeService"/>
+      </property>
+      <property name="multilingualContentService">
+         <ref bean="multilingualContentService"/>
+      </property>
+   </bean>
+    
    
    <bean name="tempFileMarkerInterceptor" class="org.alfresco.repo.model.filefolder.TempFileMarkerInterceptor">
       <property name="nodeService">

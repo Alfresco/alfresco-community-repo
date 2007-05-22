@@ -323,7 +323,7 @@
     <bean id="admLuceneIndexerAndSearcherFactory"
         class="org.alfresco.repo.search.impl.lucene.ADMLuceneIndexerAndSearcherFactory">
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="mlAwareNodeService" />
         </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
@@ -845,7 +845,7 @@
             <ref bean="policyComponent" />
         </property>
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="mlAwareNodeService" />
         </property>
     </bean>
 
@@ -855,7 +855,7 @@
             <ref bean="policyComponent" />
         </property>
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="mlAwareNodeService" />
         </property>
         <property name="multilingualContentService">
             <ref bean="multilingualContentService" />

@@ -119,8 +119,6 @@ public class EmptyTranslationAspectTest extends AbstractMultilingualTestCases {
         
         fileFolderService.getWriter(pivot).putContent(contentString);
         
-        // Ensure that the URL property of the empty translation content is null
-        assertNull("The URL property of an empty translation must be null", ((ContentData) nodeService.getProperty(empty, ContentModel.PROP_CONTENT)).getContentUrl());    
         // Ensure that the content retourned by a get reader of the empty document is the same as the pivot
         assertEquals("The content retourned of the empty translation must be the same that the content of the pivot",
                 fileFolderService.getReader(pivot).getContentString(), 

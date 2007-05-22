@@ -246,6 +246,42 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     }
 
     /** @inheritDoc */
+    public boolean isTranslation(NodeRef contentNodeRef)
+    {
+        if (!nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
+        {
+            // It doesn't have the aspect, so it isn't a translation
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Document is not multilingual: " + contentNodeRef);
+            }
+            return false;
+        }
+        // Is there a ML container
+        List<ChildAssociationRef> parentAssocRefs = nodeService.getParentAssocs(
+                contentNodeRef,
+                ContentModel.ASSOC_MULTILINGUAL_CHILD,
+                RegexQNamePattern.MATCH_ALL);
+        if (parentAssocRefs.size() > 0)
+        {
+            // It has the parent required
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Document has ML container parent: " + contentNodeRef);
+            }
+            return true;
+        }
+        else
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Document has no ML container parent: " + contentNodeRef);
+            }
+            return false;
+        }
+    }
+
+    /** @inheritDoc */
     public NodeRef makeTranslation(NodeRef contentNodeRef, Locale locale)
     {
         NodeRef mlContainerNodeRef = makeTranslationImpl(null, contentNodeRef, locale);
@@ -505,7 +541,11 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     }
 
     /**
-     * @inheritDoc */
+     * @inheritDoc
+     * 
+     * TODO: This logic merely creates a file with a specific aspect and is designed to support
+     *       specific use-case in the UI.  Examine if the logic should be here or in the UI.
+     */
     public NodeRef addEmptyTranslation(NodeRef translationOfNodeRef, String name, Locale locale)
     {
         // any node used as reference
@@ -542,8 +582,11 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
 
         // set it empty
         nodeService.addAspect(newTranslationNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION, null);
+        // Initially, the file should be temporary.  This will be changed as soon as some content is added.
+        nodeService.addAspect(newTranslationNodeRef, ContentModel.ASPECT_TEMPORARY, null);
 
         // get the extension and set the ContentData property with an null URL.
+        // TODO: Mimetype must be correct, i.e. taken from the original
         String extension = "";
         int dotIdx;
         if((dotIdx = name.lastIndexOf(".")) > -1 )

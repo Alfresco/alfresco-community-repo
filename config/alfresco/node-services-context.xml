@@ -6,23 +6,33 @@
    
    <bean id="mlPropertyInterceptor" class="org.alfresco.repo.node.MLPropertyInterceptor">
       <property name="directNodeService">
-         <ref bean="nodeService"></ref>
+         <ref bean="mlAwareNodeService" />
+      </property>
+      <property name="directMultilingualContentService">
+         <ref bean="multilingualContentService" />
       </property>
       <property name="dictionaryService">
          <ref bean="dictionaryService" />
       </property>
    </bean>
    
-   <bean id="mlTranslationInterceptor" class="org.alfresco.repo.node.MLTranslationInterceptor">
-      <property name="directNodeService">
-         <ref bean="nodeService"/>
+   <bean id="nodeService" class="org.springframework.aop.framework.ProxyFactoryBean" >
+      <property name="targetName">
+         <value>mlAwareNodeService</value>
       </property>
-      <property name="multilingualContentService">
-         <ref bean="multilingualContentService"/>
+      <property name="proxyInterfaces">
+         <list>
+            <value>org.alfresco.service.cmr.repository.NodeService</value>
+         </list>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <value>mlPropertyInterceptor</value>
+         </list>
       </property>
    </bean>
-    
-   <bean id="nodeService" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
+
+   <bean id="mlAwareNodeService" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
       <property name="proxyInterface">
          <value>org.alfresco.service.cmr.repository.NodeService</value>
       </property>

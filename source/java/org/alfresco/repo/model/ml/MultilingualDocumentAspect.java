@@ -149,21 +149,16 @@ public class MultilingualDocumentAspect implements
      */
     public void onCopyComplete(QName classRef, NodeRef sourceNodeRef, NodeRef destinationRef, boolean copyToNewNode, Map<NodeRef, NodeRef> copyMap) 
     {
-        Map<QName, Serializable> copiedProp = nodeService.getProperties(destinationRef);
-        copiedProp.remove(ContentModel.PROP_LOCALE);
-        nodeService.setProperties(destinationRef, copiedProp);
+        nodeService.removeProperty(destinationRef, ContentModel.PROP_LOCALE);
     }
     
     /**
-     * A <b>cm:mlDocument</b> is pivot translation it is a multilingual document (non empty) if it's language matches the language 
-     * of its <b>cm:mlDocument</b>. And a pivot translation can't be removed if it's not the last translation of the <b>cm:mlContainer</b>.
-     * 
-     * If a translation is deleted, it's multilingual aspect is lost.
-     * 
-     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
+     * If the node is multilingual and it is the pivot translation, then deletion is not allowed unless the
      */
     public void beforeDeleteNode(NodeRef nodeRef) 
     {    
+//        checkRemoveParentMLContainer(nodeRef);
+        // Remove the aspect
         nodeService.removeAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
     }
     
@@ -178,60 +173,52 @@ public class MultilingualDocumentAspect implements
      */
     public void beforeRemoveAspect(NodeRef nodeRef, QName aspectTypeQName) 
     {
-        if(aspectTypeQName.equals(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
+        checkRemoveParentMLContainer(nodeRef);
+    }
+    
+    private void checkRemoveParentMLContainer(NodeRef nodeRef)
+    {
+        // Avoid nodes that are no longer translations
+        if (!multilingualContentService.isTranslation(nodeRef))
         {
-            NodeRef mlContainer = multilingualContentService.getTranslationContainer(nodeRef);
-            
-            //    nothing to do if the mlContainer is in a deletion process
-            Boolean inDeleteProcess = (Boolean) nodeService.getProperty(mlContainer, MLContainerType.PROP_NAME_DELETION_RUNNING); 
-            if(inDeleteProcess != null && inDeleteProcess == true)
-            {
-                return;
-            }
-                        
-            Locale mlContainerLocale = (Locale) nodeService.getProperty(mlContainer, ContentModel.PROP_LOCALE);
-            Locale nodeRefLocale     = (Locale) nodeService.getProperty(nodeRef,     ContentModel.PROP_LOCALE);
-            
-            nodeService.removeChild(mlContainer, nodeRef);
-            
-            // if last translation or if nodeRef is pivot translation
-            if(multilingualContentService.getTranslations(mlContainer).size() == 0
-                    || mlContainerLocale.equals(nodeRefLocale))
-            {
-                // delete the mlContainer
-                nodeService.deleteNode(mlContainer);
-            }            
-        }        
+            return;
+        }
+        
+        NodeRef mlContainer = multilingualContentService.getTranslationContainer(nodeRef);
+        
+        // nothing to do if the mlContainer is in a deletion process
+        Boolean inDeleteProcess = (Boolean) nodeService.getProperty(mlContainer, MLContainerType.PROP_NAME_DELETION_RUNNING); 
+        if(inDeleteProcess != null && inDeleteProcess == true)
+        {
+            // TODO: Is this still called?  Can we get rid of the DELETION_RUNNING property?
+            return;
+        }
+                    
+        Locale mlContainerLocale = (Locale) nodeService.getProperty(mlContainer, ContentModel.PROP_LOCALE);
+        Locale nodeRefLocale     = (Locale) nodeService.getProperty(nodeRef,     ContentModel.PROP_LOCALE);
+        
+        nodeService.removeChild(mlContainer, nodeRef);
+        
+        // if last translation or if nodeRef is pivot translation
+        if (multilingualContentService.getTranslations(mlContainer).size() == 0
+                || mlContainerLocale.equals(nodeRefLocale))
+        {
+            // delete the mlContainer
+            nodeService.deleteNode(mlContainer);
+        }            
     }
     
     /** 
-     * After removing the <b>cm:mlDocument</b> aspect : 
-     *         -    the node is removed is it's a <b>cm:mlEmptyTranslation</b>
-     *         -   if not, only the locale property is removed 
-     * 
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     * Removes the document's locale and the <b>cm:mlEmptyTranslation</b> aspect,
+     * if present. 
      */
     public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName) 
     {
-        if(aspectTypeQName.equals(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
+        nodeService.removeProperty(nodeRef, ContentModel.PROP_LOCALE);
+        // Remove the empty translation aspect if it is present
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
         {
-            
-            if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
-            {
-                // note: if the node has the temporary aspect and the mlEmptyTranslation in a same 
-                // time, it means that the node is being deleted by another process...
-                if(!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY))
-                {
-                    nodeService.deleteNode(nodeRef);    
-                }    
-            }
-            else
-            {
-                Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-                props.remove(ContentModel.PROP_LOCALE);
-                nodeService.setProperties(nodeRef, props);
-
-            }
+            nodeService.removeAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION);
         }
     }
     

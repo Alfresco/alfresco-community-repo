@@ -141,12 +141,18 @@ public class MultilingualContentServiceImplTest extends TestCase
     public void testMakeTranslation() throws Exception
     {
         NodeRef contentNodeRef = createContent();
+        // Check that it is not a translation
+        boolean isTranslation = multilingualContentService.isTranslation(contentNodeRef);
+        assertFalse("New content should not be a translation", isTranslation);
         // Turn the content into a translation with the appropriate structures
         NodeRef mlContainerNodeRef = multilingualContentService.makeTranslation(contentNodeRef, Locale.CHINESE);
         // Check it
         assertNotNull("Container not created", mlContainerNodeRef);
         // Check the container child count
         assertEquals("Incorrect number of child nodes", 1, nodeService.getChildAssocs(mlContainerNodeRef).size());
+        // Check that it registers as a translation
+        isTranslation = multilingualContentService.isTranslation(contentNodeRef);
+        assertTrue("Content should be a translation", isTranslation);
     }
     
     public void testAddTranslationUsingContainer() throws Exception

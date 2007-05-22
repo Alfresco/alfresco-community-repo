@@ -53,6 +53,15 @@ public interface MultilingualContentService
     void renameWithMLExtension(NodeRef localizedNodeRef);
 
     /**
+     * Checks whether an existing document is part of a translation group.
+     * 
+     * @param contentNodeRef            An existing <b>cm:content</b>
+     * @return                          Returns <tt>true</tt> if the document has a <b>cm:mlContainer</b> parent
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contentNodeRef"})
+    boolean isTranslation(NodeRef contentNodeRef);
+    
+    /**
      * Make an existing document into a translation by adding the <b>cm:mlDocument</b> aspect and
      * creating a <b>cm:mlContainer</b> parent.  If it is already a translation, then nothing is done.
      *
@@ -132,12 +141,14 @@ public interface MultilingualContentService
     List<Locale> getMissingTranslations(NodeRef localizedNodeRef, boolean addThisNodeLocale);
             
     /**
-     * Given any node, this returns the pivot translation. The pivot translation is the translation
-     * that its locale is referenced by the locale of the MLContainer. The translation can't be an 
-     * empty translation.  
+     * Given any node, this returns the pivot translation.  All multilingual documents belong to
+     * a group linked by a hidden parent node of type <b>cm:mlContainer</b>.  The pivot language
+     * for the translations is stored on the parent, and the child that has the same locale is the
+     * pivot translation.
      * 
-     * @param nodeRef the node to test
-     * @return the pivot translation
+     * @param nodeRef       a <b>cm:mlDocument</b>
+     * @return              Returns a corresponding <b>cm:mlDocument</b> that matches the locale of
+     *                      of the <b>cm:mlContainer</b>.
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     NodeRef getPivotTranslation(NodeRef nodeRef);

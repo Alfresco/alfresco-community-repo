@@ -26,6 +26,7 @@ package org.alfresco.service.cmr.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.ContentData;
@@ -60,6 +61,15 @@ public interface FileInfo
      * @return Return the reference to the node that this node is linked to
      */
     public NodeRef getLinkNodeRef();
+    
+    /**
+     * Get all translated versions of the file info.  The map will always be empty if this
+     * instance references {@link #isFolder() a folder}.  The map may also be empty if the
+     * file represented is not multilingual.
+     * 
+     * @return      Returns a map of transalations keyed on locale
+     */
+    public Map<Locale, FileInfo> getTranslations();
     
     /**
      * @return Returns the name of the file or folder within the parent folder

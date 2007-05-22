@@ -30,9 +30,11 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -72,6 +74,8 @@ public class MLPropertyInterceptor implements MethodInterceptor
     
     /** Direct access to the NodeService */
     private NodeService directNodeService;
+    /** Direct access to the ML Content Service */
+    private MultilingualContentService directMultilingualContentService;
     /** Used to access property definitions */
     private DictionaryService dictionaryService;
     
@@ -109,6 +113,11 @@ public class MLPropertyInterceptor implements MethodInterceptor
         this.directNodeService = bean;
     }
     
+    public void setDirectMultilingualContentService(MultilingualContentService directMultilingualContentService)
+    {
+        this.directMultilingualContentService = directMultilingualContentService;
+    }
+
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
@@ -136,46 +145,29 @@ public class MLPropertyInterceptor implements MethodInterceptor
             // Don't interfere
             return invocation.proceed();
         }
-        
+
         if (methodName.equals("getProperty"))
         {
-            ret = invocation.proceed();
-            // The return value might need to be converted to a String
-            if (ret != null && ret instanceof MLText)
-            {
-                 MLText mlText = (MLText) ret;
-                 ret = mlText.getClosestValue(contentLocale);
-                // done
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug(
-                            "Converted ML text: \n" +
-                            "   initial: " + mlText + "\n" +
-                            "   converted: " + ret);
-                }
-            }
+            NodeRef nodeRef = (NodeRef) args[0];
+            QName propertyQName = (QName) args[1];
+            
+            Serializable value = (Serializable) invocation.proceed();
+            ret = convertOutboundProperty(contentLocale, nodeRef, propertyQName, value);
         }
         else if (methodName.equals("getProperties"))
         {
+            NodeRef nodeRef = (NodeRef) args[0];
+            
             Map<QName, Serializable> properties = (Map<QName, Serializable>) invocation.proceed();
             Map<QName, Serializable> convertedProperties = new HashMap<QName, Serializable>(properties.size() * 2);
             // Check each return value type
             for (Map.Entry<QName, Serializable> entry : properties.entrySet())
             {
-                QName key = entry.getKey();
+                QName propertyQName = entry.getKey();
                 Serializable value = entry.getValue();
-                if (value != null && value instanceof MLText)
-                {
-                    MLText mlText = (MLText) value;
-                    value = mlText.getClosestValue(contentLocale);
-                    // Store the converted value
-                    convertedProperties.put(key, value);
-                }
-                else
-                {
-                    // The value goes straight back in
-                    convertedProperties.put(key, value);
-                }
+                Serializable convertedValue = convertOutboundProperty(contentLocale, nodeRef, propertyQName, value);
+                // Add it to the return map
+                convertedProperties.put(propertyQName, convertedValue);
             }
             ret = convertedProperties;
             // Done
@@ -212,7 +204,6 @@ public class MLPropertyInterceptor implements MethodInterceptor
         }
         else if (methodName.equals("setProperty"))
         {
-            //check if the property is of type MLText
             NodeRef nodeRef = (NodeRef) args[0];
             QName propertyQName = (QName) args[1];
             Serializable inboundValue = (Serializable) args[2];
@@ -229,6 +220,64 @@ public class MLPropertyInterceptor implements MethodInterceptor
             ret = invocation.proceed();
         }
         // done
+        return ret;
+    }
+    
+    /**
+     * Ensure that content is spoofed for empty translations.
+     */
+    private Serializable convertOutboundProperty(
+            Locale contentLocale,
+            NodeRef nodeRef,
+            QName propertyQName,
+            Serializable outboundValue)
+    {
+        Serializable ret = null;
+        PropertyDefinition propertyDef = this.dictionaryService.getProperty(propertyQName);
+        // Is it content?
+        if (propertyDef != null && propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
+        {
+            // Check if the document is an empty translation
+            if (directNodeService.hasAspect(nodeRef,  ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+            {
+                // Ignore the value and take it directly from the pivot translation
+                NodeRef pivotNodeRef = directMultilingualContentService.getPivotTranslation(nodeRef);
+                if (pivotNodeRef == null)
+                {
+                    // This is very bad, but we don't fail the server for it
+                    logger.warn("No pivot translation found for empty translation: " + nodeRef);
+                    ret = outboundValue;
+                }
+                else
+                {
+                    // Get the corresponding property from the pivot
+                    ret = directNodeService.getProperty(pivotNodeRef, propertyQName);
+                }
+            }
+            else
+            {
+                ret = outboundValue;
+            }
+        }
+        else if (outboundValue != null && outboundValue instanceof MLText)
+        {
+             MLText mlText = (MLText) outboundValue;
+             ret = mlText.getClosestValue(contentLocale);
+        }
+        else
+        {
+            ret = outboundValue;
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Converted outbound property: \n" +
+                    "   NodeRef:        " + nodeRef + "\n" +
+                    "   Property:       " + propertyQName + "\n" +
+                    "   Before:         " + outboundValue + "\n" +
+                    "   After:          " + ret);
+        }
         return ret;
     }
     

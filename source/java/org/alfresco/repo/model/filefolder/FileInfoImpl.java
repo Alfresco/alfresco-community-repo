@@ -25,7 +25,9 @@
 package org.alfresco.repo.model.filefolder;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -44,6 +46,7 @@ public class FileInfoImpl implements FileInfo
 {
     private NodeRef nodeRef;
     private NodeRef linkNodeRef;
+    private Map<Locale, FileInfo> translations;
     private boolean isFolder;
     private boolean isLink;
     private Map<QName, Serializable> properties;
@@ -53,12 +56,33 @@ public class FileInfoImpl implements FileInfo
      */
     /* package */ FileInfoImpl(NodeRef nodeRef, boolean isFolder, Map<QName, Serializable> properties)
     {
+        this(nodeRef, isFolder, properties, Collections.<Locale, FileInfo>emptyMap());
+    }
+    
+    /**
+     * Package-level constructor
+     * 
+     * @param translations      a map of translations including this instance.  It may be null.
+     */
+    /* package */ FileInfoImpl(
+            NodeRef nodeRef,
+            boolean isFolder,
+            Map<QName, Serializable> properties,
+            Map<Locale, FileInfo> translations)
+    {
         this.nodeRef = nodeRef;
         this.isFolder = isFolder;
         this.properties = properties;
+        if (translations == null || isFolder)
+        {
+            this.translations = Collections.<Locale, FileInfo>emptyMap();
+        }
+        else
+        {
+            this.translations = translations;
+        }
         
         // Check if this is a link node
-        
         if ( properties.containsKey( ContentModel.PROP_LINK_DESTINATION))
         {
         	isLink = true;
@@ -66,6 +90,31 @@ public class FileInfoImpl implements FileInfo
         }
     }
     
+    /**
+     * @see #getNodeRef()
+     * @see NodeRef#equals(Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj == null || this.getClass().isInstance(obj))
+        {
+            return false;
+        }
+        FileInfoImpl that = (FileInfoImpl) obj;
+        return (this.getNodeRef().equals(that.getNodeRef()));
+    }
+
+    /**
+     * @see #getNodeRef()
+     * @see NodeRef#hashCode()
+     */
+    @Override
+    public int hashCode()
+    {
+        return getNodeRef().hashCode();
+    }
+
     @Override
     public String toString()
     {
@@ -80,6 +129,8 @@ public class FileInfoImpl implements FileInfo
         	sb.append(", linkref=");
         	sb.append(linkNodeRef);
         }
+        
+        sb.append(", translations=").append(translations.size());
         
         sb.append("]");
         return sb.toString();
@@ -105,6 +156,11 @@ public class FileInfoImpl implements FileInfo
     	return linkNodeRef;
     }
     
+    public Map<Locale, FileInfo> getTranslations()
+    {
+        return translations;
+    }
+
     public String getName()
     {
         return (String) properties.get(ContentModel.PROP_NAME);

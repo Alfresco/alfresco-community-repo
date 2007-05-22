@@ -118,7 +118,7 @@ public class MLContainerType implements
         Map<Locale, NodeRef> translations = multilingualContentService.getTranslations(nodeRef);
 
         // add the DELETION_RUNNING property
-        nodeService.setProperty(nodeRef, PROP_NAME_DELETION_RUNNING, new Boolean(true));
+        nodeService.setProperty(nodeRef, PROP_NAME_DELETION_RUNNING, Boolean.TRUE);
 
         for(Map.Entry<Locale, NodeRef> entry : translations.entrySet())
         {
@@ -126,10 +126,7 @@ public class MLContainerType implements
         }
 
         // remove the DELETION_RUNNING property
-        Map<QName, Serializable> prop = nodeService.getProperties(nodeRef);
-        prop.remove(PROP_NAME_DELETION_RUNNING);
-        nodeService.setProperties(nodeRef, prop);
-
+        nodeService.removeProperty(nodeRef, PROP_NAME_DELETION_RUNNING);
     }
 
     /**

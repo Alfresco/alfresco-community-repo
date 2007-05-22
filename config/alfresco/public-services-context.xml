@@ -67,6 +67,7 @@
             <list>
                 <idref local="NodeService_transaction"/>
                 <idref local="AuditMethodInterceptor"/>
+                <idref local="mlTranslationInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="NodeService_security"/>
             </list>
@@ -120,6 +121,10 @@
     <!-- Mime Type Service -->
     
     <alias name="mimetypeService" alias="MimetypeService"/>
+    
+    <!-- Content Filter Languages Service -->
+    
+    <alias name="contentFilterLanguagesService" alias="ContentFilterLanguagesService"/>
     
     <!-- Search Service -->
     
@@ -655,6 +660,15 @@
         </property>
     </bean>
     
+    <bean id="mlTranslationInterceptor" class="org.alfresco.repo.node.MLTranslationInterceptor">
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="multilingualContentService">
+            <ref bean="multilingualContentService"/>
+        </property>
+    </bean>
+    
     <bean id="FileFolderService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -723,14 +737,14 @@
     <!-- The AVMService -->
     
     <bean id="avmService" class="org.alfresco.repo.avm.AVMServiceImpl">
-	    <property name="avmRepository">
-	    	<ref bean="avmRepository"/>
-	    </property>
-	    <property name="transactionListener">
-	        <ref bean="lookupCacheListener"/>
-	    </property>
-	</bean>
-	
+        <property name="avmRepository">
+            <ref bean="avmRepository"/>
+        </property>
+        <property name="transactionListener">
+            <ref bean="lookupCacheListener"/>
+        </property>
+    </bean>
+    
     <bean id="avmServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
             <ref bean="retryingReadTxnAdvice"/>
@@ -820,7 +834,7 @@
             </list>
         </property>
     </bean>
-	
+    
     <bean id="AVMService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <list>
@@ -838,7 +852,7 @@
             </list>
         </property>
     </bean>
-	
+    
 	 <bean id="indexingAVMService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <list>
@@ -885,21 +899,21 @@
         </property>
         <property name="mappedNames">
             <list>
-            	<value>compare</value>
+                <value>compare</value>
             </list>
         </property>
     </bean>
-	
-	<!-- Write transaction advisor for sync service. -->
+    
+    <!-- Write transaction advisor for sync service. -->
     <bean id="avmSyncServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
             <ref bean="retryingWriteTxnAdvice"/>
         </property>
         <property name="mappedNames">
             <list>
-            	<value>update</value>
-            	<value>flatten</value>
-            	<value>resetLayer</value>
+                <value>update</value>
+                <value>flatten</value>
+                <value>resetLayer</value>
             </list>
         </property>
     </bean>
@@ -921,8 +935,8 @@
         </property>
     </bean>
 
-	<!-- Attribute Service -->
-		
+    <!-- Attribute Service -->
+        
     <!-- Read transaction advisor for attribute service. -->
     <bean id="attributeServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
@@ -930,25 +944,25 @@
         </property>
         <property name="mappedNames">
             <list>
-            	<value>getAttributes</value>
-            	<value>query</value>
-            	<value>getKeys</value>
+                <value>getAttributes</value>
+                <value>query</value>
+                <value>getKeys</value>
             	<value>exists</value>
             	<value>getCount</value>
             </list>
         </property>
     </bean>
-	
-	<!-- Write transaction advisor for attribute service. -->
+    
+    <!-- Write transaction advisor for attribute service. -->
     <bean id="attributeServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
             <ref bean="retryingWriteTxnAdvice"/>
         </property>
         <property name="mappedNames">
             <list>
-            	<value>setAttribute</value>
-            	<value>removeAttribute</value>
-            	<value>addAttribute</value>
+                <value>setAttribute</value>
+                <value>removeAttribute</value>
+                <value>addAttribute</value>
             </list>
         </property>
     </bean>
@@ -970,13 +984,13 @@
         </property>
     </bean>
 
-	 <!-- Deployment Service. -->
-	
-	 <bean id="deploymentService" class="org.alfresco.repo.deploy.DeploymentServiceImpl">
+     <!-- Deployment Service. -->
+    
+     <bean id="deploymentService" class="org.alfresco.repo.deploy.DeploymentServiceImpl">
         <property name="avmService">
             <ref bean="indexingAVMService"/>
         </property>
-	 </bean>
+     </bean>
 
     <!--
     <bean id="deploymentServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
@@ -985,7 +999,7 @@
         </property>
         <property name="mappedNames">
             <list>
-            	<value>deployDifference</value>
+                <value>deployDifference</value>
             </list>
         </property>
     </bean>
@@ -1004,7 +1018,7 @@
 	</bean>
 
     <bean id="DeploymentService" class="org.springframework.aop.framework.ProxyFactoryBean">
-	    <property name="proxyInterfaces">
+        <property name="proxyInterfaces">
             <list>
                 <value>org.alfresco.service.cmr.avm.deploy.DeploymentService</value>
             </list>
@@ -1020,17 +1034,17 @@
     </bean>
 
 
-	<!-- AVM Locking Service. -->
-	
+    <!-- AVM Locking Service. -->
+    
     <bean id="avmLockingServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
             <ref bean="retryingReadTxnAdvice"/>
         </property>
         <property name="mappedNames">
             <list>
-            	<value>getLock</value>
-            	<value>getUserLocks</value>
-            	<value>getWebProjectLocks</value>
+                <value>getLock</value>
+                <value>getUserLocks</value>
+                <value>getWebProjectLocks</value>
             </list>
         </property>
     </bean>
@@ -1041,16 +1055,16 @@
         </property>
         <property name="mappedNames">
             <list>
-            	<value>addWebProject</value>
-            	<value>lockPath</value>
-            	<value>removeLock</value>
-            	<value>removeWebProject</value>
+                <value>addWebProject</value>
+                <value>lockPath</value>
+                <value>removeLock</value>
+                <value>removeWebProject</value>
             </list>
         </property>
     </bean>
 
     <bean id="AVMLockingService" class="org.springframework.aop.framework.ProxyFactoryBean">
-	    <property name="proxyInterfaces">
+        <property name="proxyInterfaces">
             <list>
                 <value>org.alfresco.service.cmr.avm.locking.AVMLockingService</value>
             </list>
@@ -1140,6 +1154,7 @@
             <list>
                 <idref local="MultilingualContentService_transaction"/>
                 <idref local="exceptionTranslator"/>
+                <idref bean="MultilingualContentService_security"/>   
             </list>
         </property>
     </bean>

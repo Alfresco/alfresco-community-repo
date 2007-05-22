@@ -40,11 +40,23 @@
       </property>
    </bean>
    
-   <!-- Multilingual specific service -->
+  <!-- Multilingual specific service -->
    <bean name="multilingualContentService" class="org.alfresco.repo.model.ml.MultilingualContentServiceImpl" >
-      <property name="nodeService"><ref bean="NodeService" /></property>
-      <property name="searchService"><ref bean="SearchService" /></property>
-      <property name="versionService"><ref bean="VersionService" /></property>
+      <property name="nodeService">
+              <ref bean="NodeService" />
+      </property>
+      <property name="searchService">
+              <ref bean="SearchService" />
+      </property>
+      <property name="versionService">
+              <ref bean="VersionService" />
+      </property>
+      <property name="contentFilterLanguagesService">
+              <ref bean="ContentFilterLanguagesService" />
+      </property>
+      <property name="fileFolderService">
+              <ref bean="FileFolderService" />
+      </property>
    </bean>
 
 </beans>

@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.CopyService;
@@ -255,7 +256,7 @@ public class ServiceDescriptorRegistry
      */
     public ActionService getActionService()
     {
-    	return (ActionService)getService(ACTION_SERVICE);
+        return (ActionService)getService(ACTION_SERVICE);
     }
 
     /* (non-Javadoc)
@@ -363,6 +364,14 @@ public class ServiceDescriptorRegistry
     {
         return (AttributeService)getService(ATTRIBUTE_SERVICE);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getContentFilterLanguagesService()
+     */
+     public ContentFilterLanguagesService getContentFilterLanguagesService() 
+     {
+     return (ContentFilterLanguagesService) getService(CONTENT_FILTER_LANGUAGES_SERVICE);
+     }
 
     /* (non-Javadoc)
      * @see org.alfresco.service.ServiceRegistry#getAVMLockingService()

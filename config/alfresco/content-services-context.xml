@@ -30,7 +30,7 @@
          <ref bean="nodeDaoService" />
       </property>
       <property name="avmNodeDAO">
-      	  <ref bean="avmNodeDAO"/>
+            <ref bean="avmNodeDAO"/>
       </property>
       <property name="transactionService" >
          <ref bean="transactionComponent" />
@@ -99,6 +99,24 @@
       </constructor-arg>
    </bean>
    
+    <bean id="contentFilterLanguagesConfigService" class="org.alfresco.config.xml.XMLConfigService" init-method="init">
+        <constructor-arg>
+            <bean class="org.alfresco.config.source.UrlConfigSource">
+                <constructor-arg>
+                    <list>
+                        <value>classpath:alfresco/ml/content-filter-lang.xml</value>
+                    </list>
+                </constructor-arg>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+
+   <bean id="contentFilterLanguagesService" class="org.alfresco.repo.model.ml.ContentFilterLanguagesMap" init-method="init" >
+      <constructor-arg>
+         <ref bean="contentFilterLanguagesConfigService" />
+      </constructor-arg>
+   </bean>
    <bean id="openOfficeConnection" class="net.sf.jooreports.openoffice.connection.SocketOpenOfficeConnection" />
    <bean id="openOfficeConnectionTester" class="org.alfresco.util.OpenOfficeConnectionTester" init-method="checkConnection" >
       <property name="connection">

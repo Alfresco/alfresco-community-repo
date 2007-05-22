@@ -24,6 +24,7 @@
  */
 package org.alfresco.service.cmr.ml;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -117,4 +118,38 @@ public interface MultilingualContentService
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationNodeRef", "locale"})
     NodeRef getTranslationForLocale(NodeRef translationNodeRef, Locale locale);
+    
+    
+    /**
+     * Given <b>cm:mlDocument</b> or a <b>cm:mlContainer</b>, this node returns each 
+     * locale that the node hasn't a translation yet. 
+     * 
+     * @param localizedNodeRef the <b>cm:mlDocument</b> or the <b>cm:mlContainer</b>
+     * @param addThisNodeLocale if true, add the locale of the given <b>cm:mlDocument</b> in the list.  
+     * @return
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"localizedNodeRef", "addThisNodeLocale"})
+    List<Locale> getMissingTranslations(NodeRef localizedNodeRef, boolean addThisNodeLocale);
+            
+    /**
+     * Given any node, this returns the pivot translation. The pivot translation is the translation
+     * that its locale is referenced by the locale of the MLContainer. The translation can't be an 
+     * empty translation.  
+     * 
+     * @param nodeRef the node to test
+     * @return the pivot translation
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    NodeRef getPivotTranslation(NodeRef nodeRef);
+    
+    /**
+     * Make a empty translation out of an existing document.  The necessary translation structures will be created
+     * as necessary.
+     * 
+     * @param translationOfNodeRef      An existing <b>cm:mlDocument</b> or <b>cm:mlContainer</b>
+     * @param name                         The name of the translation to create
+     * @return Returns                     the new created <b>cm:mlEmptyTranslation</b> 
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationOfNodeRef", "name", "locale"})
+    NodeRef addEmptyTranslation(NodeRef translationOfNodeRef, String name, Locale locale);
 }

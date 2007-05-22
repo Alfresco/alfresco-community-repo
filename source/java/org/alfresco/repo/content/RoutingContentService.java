@@ -27,10 +27,13 @@ package org.alfresco.repo.content;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
@@ -47,6 +50,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -59,6 +63,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
@@ -143,9 +148,9 @@ public class RoutingContentService implements ContentService
     }
     
     public void setPolicyComponent(PolicyComponent policyComponent)
-	{
-		this.policyComponent = policyComponent;
-	}
+    {
+        this.policyComponent = policyComponent;
+    }
     
     public void setAvmService(AVMService service)
     {
@@ -162,23 +167,23 @@ public class RoutingContentService implements ContentService
      */
     public void init()
     {
-    	// Bind on update properties behaviour
-    	this.policyComponent.bindClassBehaviour(
-    			QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
-    			this,
-    			new JavaBehaviour(this, "onUpdateProperties"));
-    	
-    	// Register on content update policy
-    	this.onContentUpdateDelegate = this.policyComponent.registerClassPolicy(OnContentUpdatePolicy.class);
+        // Bind on update properties behaviour
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
+                this,
+                new JavaBehaviour(this, "onUpdateProperties"));
+        
+        // Register on content update policy
+        this.onContentUpdateDelegate = this.policyComponent.registerClassPolicy(OnContentUpdatePolicy.class);
         this.onContentReadDelegate = this.policyComponent.registerClassPolicy(OnContentReadPolicy.class);
     }
     
     /**
      * Update properties policy behaviour
      * 
-     * @param nodeRef	the node reference
-     * @param before	the before values of the properties
-     * @param after		the after values of the properties
+     * @param nodeRef    the node reference
+     * @param before    the before values of the properties
+     * @param after        the after values of the properties
      */
     public void onUpdateProperties(
             NodeRef nodeRef,
@@ -274,7 +279,7 @@ public class RoutingContentService implements ContentService
     }
         
     private ContentReader getReader(NodeRef nodeRef, QName propertyQName, boolean fireContentReadPolicy)
-    {
+    {   
         ContentData contentData = null;
         Serializable propValue = nodeService.getProperty(nodeRef, propertyQName);
         if (propValue instanceof Collection)
@@ -293,8 +298,9 @@ public class RoutingContentService implements ContentService
 
         if (contentData == null)
         {
-            // if no value or a value other content, and a property definition has been provided, ensure that it's CONTENT or ANY
             PropertyDefinition contentPropDef = dictionaryService.getProperty(propertyQName);
+            
+            // if no value or a value other content, and a property definition has been provided, ensure that it's CONTENT or ANY            
             if (contentPropDef != null && 
                 (!(contentPropDef.getDataType().getName().equals(DataTypeDefinition.CONTENT) ||
                    contentPropDef.getDataType().getName().equals(DataTypeDefinition.ANY))))
@@ -310,8 +316,66 @@ public class RoutingContentService implements ContentService
         // check that the URL is available
         if (contentData == null || contentData.getContentUrl() == null)
         {
-            // there is no URL - the interface specifies that this is not an error condition
-            return null;
+            // if the node is an empty translation, the reader must be the reader of its pivot translation
+            if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT)
+                    && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+            {
+                // NOTE : don't use the MultilingualContentService here because :  
+                // A valid SecureContext can't be provided in the RequestContext
+                
+                List<ChildAssociationRef> parentAssocRefs = nodeService.getParentAssocs(
+                        nodeRef,
+                        ContentModel.ASSOC_MULTILINGUAL_CHILD,
+                        RegexQNamePattern.MATCH_ALL);
+                
+                if (parentAssocRefs.size() == 1)
+                {
+                    // Get the ml container and its locale
+                    NodeRef container = parentAssocRefs.get(0).getParentRef();
+                    Locale containerLocale = (Locale) nodeService.getProperty(container, ContentModel.PROP_LOCALE);
+                    
+                    // Get each translation
+                    List<ChildAssociationRef> assocRefs = nodeService.getChildAssocs(
+                            container,
+                            ContentModel.ASSOC_MULTILINGUAL_CHILD,
+                            RegexQNamePattern.MATCH_ALL);
+                    
+                    
+                    // found the pivot translation
+                    NodeRef pivot = null;
+                    
+                    for(ChildAssociationRef assoc : assocRefs)
+                    {
+                        pivot = assoc.getChildRef();
+                        Locale pivotLocale = (Locale) nodeService.getProperty(pivot, ContentModel.PROP_LOCALE);
+                        
+                        if(containerLocale.equals(pivotLocale))
+                        {
+                            break; // the pivot is set
+                        }
+                        else
+                        {
+                            pivot = null;
+                        }
+                    }
+                    
+                    // returns the reader of this pivot translation if it's different to 
+                    // the node in parameter
+                    
+                    if (pivot != null && !nodeRef.getId().equals(pivot.getId()))
+                    {
+                        return getReader(pivot, propertyQName, fireContentReadPolicy);        
+                    }
+                    
+                }                    
+            }
+            else
+            {
+                // there is no URL - the interface specifies that this is not an error condition
+                return null;                                
+            }
+            
+            
         }
         String contentUrl = contentData.getContentUrl();
         

@@ -114,10 +114,10 @@
                   value="${alfresco.jmx.dir}/alfresco-jmxrmi.access"/>
     </bean>
 
-	<bean id="FileServerConfig"
-		  class="org.alfresco.filesys.server.config.FileServerConfig">
-		<property name="fileServerConfiguration"><ref bean="fileServerConfiguration"/></property>
-	</bean>
+    <bean id="FileServerConfig"
+          class="org.alfresco.filesys.server.config.FileServerConfig">
+        <property name="fileServerConfiguration"><ref bean="fileServerConfiguration"/></property>
+    </bean>
 
     <!-- Datasource bean -->
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
@@ -155,12 +155,12 @@
     </bean>
     
     <bean id="retryingTransactionHelper" class="org.alfresco.repo.transaction.RetryingTransactionHelper">
-    	<property name="transactionService">
-    	    <ref bean="transactionComponent"/>
-    	</property>
-    	<property name="maxRetries">
-    	    <value>20</value>
-    	</property>
+        <property name="transactionService">
+            <ref bean="transactionComponent"/>
+        </property>
+        <property name="maxRetries">
+            <value>20</value>
+        </property>
     </bean>
 
     <bean id="readWriteTransactionDefinition" class="org.springframework.transaction.support.DefaultTransactionDefinition">
@@ -171,7 +171,7 @@
             <value>false</value>
         </property>
     </bean>
-	
+    
     <bean id="readOnlyTransactionDefinition" class="org.springframework.transaction.support.DefaultTransactionDefinition">
         <property name="propagationBehaviorName">
             <value>PROPAGATION_REQUIRED</value>
@@ -210,24 +210,25 @@
     <!--                        -->
 
     <bean id="resourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
-    	<property name="resourceBundles">
-    		<list>
-    			<value>alfresco.messages.system-messages</value>
-    			<value>alfresco.messages.module-messages</value>
-    			<value>alfresco.messages.dictionary-messages</value>
-    			<value>alfresco.messages.version-service</value>
-    			<value>alfresco.messages.permissions-service</value>
-    			<value>alfresco.messages.content-service</value>
-    			<value>alfresco.messages.coci-service</value>
-    			<value>alfresco.messages.template-service</value>
-    			<value>alfresco.messages.lock-service</value>
-    			<value>alfresco.messages.patch-service</value>
-    			<value>alfresco.messages.schema-update</value>
-    			<value>alfresco.messages.webdav-messages</value>
-    			<value>alfresco.messages.copy-service</value>
-            <value>alfresco.messages.avm-messages</value>
-    		</list>
-    	</property>
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.messages.system-messages</value>
+                <value>alfresco.messages.module-messages</value>
+                <value>alfresco.messages.dictionary-messages</value>
+                <value>alfresco.messages.version-service</value>
+                <value>alfresco.messages.permissions-service</value>
+                <value>alfresco.messages.content-service</value>
+                <value>alfresco.messages.coci-service</value>
+                <value>alfresco.messages.template-service</value>
+                <value>alfresco.messages.lock-service</value>
+                <value>alfresco.messages.patch-service</value>
+                <value>alfresco.messages.schema-update</value>
+                <value>alfresco.messages.webdav-messages</value>
+                <value>alfresco.messages.copy-service</value>
+                <value>alfresco.messages.avm-messages</value>
+                <value>alfresco.messages.content-filter-languages</value>
+            </list>
+        </property>
     </bean>
 
 
@@ -426,10 +427,10 @@
         <property name="lockPollInterval">
             <value>${lucene.lock.poll.interval}</value>
         </property>
-		 <property name="defaultMLIndexAnalysisMode">
+         <property name="defaultMLIndexAnalysisMode">
             <value>EXACT_LANGUAGE_AND_ALL</value>
         </property>
-		<property name="defaultMLSearchAnalysisMode">
+        <property name="defaultMLSearchAnalysisMode">
             <value>EXACT_LANGUAGE_AND_ALL</value>
         </property>
         
@@ -547,23 +548,23 @@
 
     <bean id="namespaceDAO" class="org.alfresco.repo.dictionary.NamespaceDAOImpl" />
 
-	<bean id="dictionaryModelType" class="org.alfresco.repo.dictionary.DictionaryModelType" init-method="init">
-		<property name="dictionaryDAO">
+    <bean id="dictionaryModelType" class="org.alfresco.repo.dictionary.DictionaryModelType" init-method="init">
+        <property name="dictionaryDAO">
             <ref bean="dictionaryDAO" />
-        </property>	
+        </property>    
         <property name="namespaceDAO">
             <ref bean="namespaceDAO" />
         </property>
         <property name="nodeService">
-        	<ref bean="nodeService"/>
+            <ref bean="nodeService"/>
         </property>        
         <property name="contentService">
-        	<ref bean="contentService"/>
+            <ref bean="contentService"/>
         </property>
         <property name="policyComponent">
-        	<ref bean="policyComponent"/>
+            <ref bean="policyComponent"/>
         </property>
-	</bean>
+    </bean>
 
     <bean id="dictionaryDAO" class="org.alfresco.repo.dictionary.DictionaryDAOImpl">
         <constructor-arg index="0">
@@ -585,7 +586,7 @@
     </bean>
 
     <bean id="dictionaryModelBootstrap" class="org.alfresco.repo.dictionary.DictionaryBootstrap" init-method="bootstrap" abstract="true">
-    	<property name="dictionaryDAO"><ref local="dictionaryDAO"/></property>
+        <property name="dictionaryDAO"><ref local="dictionaryDAO"/></property>
     </bean>
 
     <bean id="dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="resourceBundles">
@@ -636,23 +637,23 @@
         </property>
     </bean>
     
-	<bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap" init-method="bootstrap">
-		<property name="dictionaryDAO">
-			<ref local="dictionaryDAO"/>
-		</property>
-		<property name="contentService">
-			<ref bean="contentService"/>
-		</property>
-		<property name="searchService">
-			<ref bean="searchService"/>
-		</property>
+    <bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap" init-method="bootstrap">
+        <property name="dictionaryDAO">
+            <ref local="dictionaryDAO"/>
+        </property>
+        <property name="contentService">
+            <ref bean="contentService"/>
+        </property>
+        <property name="searchService">
+            <ref bean="searchService"/>
+        </property>
         <property name="transactionService">
             <ref bean="transactionComponent"/>
         </property>
-		<property name="authenticationComponent">
-			<ref bean="authenticationComponent"/>
-		</property>
-	</bean>
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponent"/>
+        </property>
+    </bean>
 
     <!--                 -->
     <!-- Copy Service    -->
@@ -822,6 +823,52 @@
         </property>
         <property name="authenticationService">
             <ref bean="authenticationService" />
+        </property>
+    </bean>
+
+    <!-- Multilingual Document-->
+    <bean id="multilingualDocumentAspect" class="org.alfresco.repo.model.ml.MultilingualDocumentAspect" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="multilingualContentService">
+            <ref bean="MultilingualContentService" />
+        </property>
+    </bean>
+    
+    <!-- Empty translation -->
+    <bean id="emptyTranslationAspect" class="org.alfresco.repo.model.ml.EmptyTranslationAspect" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+    </bean>
+
+    <!-- Multilingual Container -->
+    <bean id="mlContainerType" class="org.alfresco.repo.model.ml.MLContainerType" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="multilingualContentService">
+            <ref bean="MultilingualContentService" />
+        </property>
+    </bean>
+
+    <!-- Folder -->
+    <bean id="folderType" class="org.alfresco.repo.model.filefolder.FolderType" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
         </property>
     </bean>
 

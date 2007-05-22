@@ -61,7 +61,7 @@
         <property name="accessCache">
             <ref bean="permissionsAccessCache" />
         </property>
-		<property name="policyComponent">
+        <property name="policyComponent">
             <ref bean="policyComponent" />
         </property>
         <!-- Dynamic authorites are evaluated in the context of a store/node etc -->
@@ -519,6 +519,32 @@
    
     <bean id="VersionService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
     
+    <!-- =============================== -->
+    <!-- Multilingual Content Service    -->
+    <!-- =============================== -->
+   
+    <!-- The version service does not have any restrictions applied at the moment. It    -->
+    <!-- does not use a node service that would apply any permissions.                   -->
+   
+    <bean id="MultilingualContentService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+    <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="objectDefinitionSource">
+            <value>
+                org.alfresco.service.cmr.ml.MultilingualContentService.getTranslationContainer=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.ml.MultilingualContentService.getTranslations=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.ml.MultilingualContentService.getTranslationForLocale=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.ml.MultilingualContentService.getMissingTranslations=ACL_ALLOW
+                org.alfresco.service.cmr.ml.MultilingualContentService.getPivotTranslation=ACL_NODE.0.sys:base.Read                
+                org.alfresco.service.cmr.ml.MultilingualContentService.makeTranslation=ACL_NODE.0.sys:base.Write
+                org.alfresco.service.cmr.ml.MultilingualContentService.addTranslation=ACL_NODE.0.sys:base.Read,ACL_NODE.1.sys:base.Write
+                org.alfresco.service.cmr.ml.MultilingualContentService.addEmptyTranslation=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.ml.MultilingualContentService.createEdition=ACL_NODE.0.sys:base.Write
+                org.alfresco.service.cmr.ml.MultilingualContentService.renameWithMLExtension=ACL_NODE.0.sys:base.Write            
+            </value>
+         </property>
+    </bean>
     <!-- ============================== -->
     <!-- The Check-out/Check-in service -->
     <!-- ============================== -->

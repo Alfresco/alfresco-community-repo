@@ -78,6 +78,12 @@
     <!-- There are no audtiable methods in the mime type service -->
     <Service name="MimetypeService" mode="none" enabled="false"/>
     
+<!-- The ContentFilterLanguagesService -->
+    <Service name="ContentFilterLanguagesService" mode="none" >
+        <Method name="getFilterLanguages" mode="all"/>
+        <Method name="getMissingLanguages" mode="all"/>
+        <Method name="getDefaultLanguage" mode="all"/>
+    </Service>
     <Service name="NodeService" mode="none">
         <Method name="createStore" mode="all"/>
         <Method name="createNode" mode="all"/>

@@ -15,15 +15,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.repo.model.ml;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -33,8 +35,12 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.version.VersionModel;
+import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -52,19 +58,22 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Multilingual support implementation
- * 
+ *
  * @author Derek Hulley
  * @author Philippe Dubois
+ * @author yanipig
  */
 public class MultilingualContentServiceImpl implements MultilingualContentService
 {
     private static Log logger = LogFactory.getLog(MultilingualContentServiceImpl.class);
-    
+
     private NodeService nodeService;
     private SearchService searchService;
     private VersionService versionService;
     private SearchParameters searchParametersMLRoot;
-    
+    private ContentFilterLanguagesService contentFilterLanguagesService;
+    private FileFolderService fileFolderService;
+
     public MultilingualContentServiceImpl()
     {
         searchParametersMLRoot = new SearchParameters();
@@ -73,27 +82,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         searchParametersMLRoot.addStore(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore"));
         searchParametersMLRoot.setQuery("/cm:multilingualRoot");
     }
-    
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
 
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
-    }
-
-    public void setVersionService(VersionService versionService)
-    {
-        this.versionService = versionService;
-    }
-
-    public void renameWithMLExtension(NodeRef translationNodeRef)
-    {
-        throw new UnsupportedOperationException();
-    }
-    
     /**
      * @return Returns a reference to the node that will hold all the <b>cm:mlContainer</b> nodes.
      */
@@ -119,7 +108,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
             rs.close();
         }
     }
-    
+
     private static final QName QNAME_ML_CONTAINER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "mlContainer");
     private static final QName QNAME_ML_TRANSLATION = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "mlTranslation");
     /**
@@ -137,11 +126,11 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         // done
         return assocRef.getChildRef();
     }
-    
+
     /**
      * Retrieve or create a <b>cm:mlDocument</b> container for the given node, which must have the
      * <b>cm:mlDocument</b> already applied.
-     * 
+     *
      * @param mlDocumentNodeRef an existing <b>cm:mlDocument</b>
      * @param allowCreate <tt>true</tt> if a <b>cm:mlContainer</b> must be created if on doesn't exist,
      *      otherwise <tt>false</tt> if a parent <b>cm:mlContainer</b> is expected to exist.
@@ -225,12 +214,15 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
             // The aspect is present, so just ensure that the locale is correct
             nodeService.setProperty(contentNodeRef, ContentModel.PROP_LOCALE, locale);
         }
-        
+
         // Do we make use of an existing container?
         if (mlContainerNodeRef == null)
         {
             // Make one
             mlContainerNodeRef = getOrCreateMLContainer(contentNodeRef, true);
+
+            // set the pivot language
+            nodeService.setProperty(mlContainerNodeRef, ContentModel.PROP_LOCALE, locale);
         }
         else
         {
@@ -240,7 +232,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
             {
                 throw new AlfrescoRuntimeException("Duplicate locale in document pool: " + locale);
             }
-            
+
             // Use the existing container
             nodeService.addChild(
                     mlContainerNodeRef,
@@ -248,6 +240,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
                     ContentModel.ASSOC_MULTILINGUAL_CHILD,
                     QNAME_ML_TRANSLATION);
         }
+
         // done
         return mlContainerNodeRef;
     }
@@ -266,7 +259,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         }
         return mlContainerNodeRef;
     }
-    
+
     /** @inheritDoc */
     public NodeRef addTranslation(NodeRef newTranslationNodeRef, NodeRef translationOfNodeRef, Locale locale)
     {
@@ -307,7 +300,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     /** @inheritDoc */
     public void createEdition( NodeRef translationNodeRef)
     {
-    	NodeRef mlContainerNodeRef = getOrCreateMLContainer(translationNodeRef, false);
+        NodeRef mlContainerNodeRef = getOrCreateMLContainer(translationNodeRef, false);
         // Ensure that the translation given is one of the children
         getOrCreateMLContainer(translationNodeRef, false);
         // Get all the container's children
@@ -315,8 +308,25 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
                 mlContainerNodeRef,
                 ContentModel.ASSOC_MULTILINGUAL_CHILD,
                 RegexQNamePattern.MATCH_ALL);
-        // Version the container and all its children
-        versionService.createVersion(mlContainerNodeRef, null, true);
+
+
+        // Get and store the translation verions associated to the mlContainer
+        List<Version> versions = new ArrayList<Version>(childAssocRefs.size());
+
+        for (ChildAssociationRef childAssoc : childAssocRefs)
+        {
+            versions.add(versionService.getCurrentVersion(childAssoc.getChildRef()));
+        }
+
+        Map<String, Serializable> editionProperties = new HashMap<String, Serializable>();
+        editionProperties.put(
+                VersionModel.PROP_QNAME_TRANSLATION_VERIONS.toString(),
+                (Serializable) versions
+            );
+
+        //     Version the container and all its children
+        versionService.createVersion(mlContainerNodeRef, editionProperties, true);
+
         // Remove all the child documents apart from the given node
         boolean found = false;
         for (ChildAssociationRef childAssoc : childAssocRefs)
@@ -415,5 +425,174 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
                     "   Found locale: " + nearestLocale);
         }
         return nearestNodeRef;
+    }
+
+    /** @inheritDoc */
+    public List<Locale> getMissingTranslations(NodeRef localizedNodeRef, boolean addThisNodeLocale)
+    {
+        List<Locale> foundLocales   = new ArrayList<Locale>(getTranslations(localizedNodeRef).keySet());
+        List<String> foundLanguages = new ArrayList<String>();
+
+
+        // transform locales into languages codes
+        for(Locale locale : foundLocales)
+        {
+            foundLanguages.add(locale.getLanguage());
+        }
+
+        //    add the locale of the given node if required
+        if(addThisNodeLocale)
+        {
+            Locale localeNode = (Locale) nodeService.getProperty(localizedNodeRef, ContentModel.PROP_LOCALE);
+
+            if(localeNode != null)
+            {
+                foundLanguages.remove(localeNode.toString());
+            }
+            else
+            {
+                logger.warn("No locale found for the node " + localizedNodeRef);
+            }
+        }
+
+        List<String> missingLanguages = null;
+
+        if(foundLanguages.size() == 0)
+        {
+            // The given node is the only one available translation and it must
+            // be return.
+            // MissingLanguages become the entire list pf languages.
+            missingLanguages = contentFilterLanguagesService.getFilterLanguages();
+        }
+        else
+        {
+            // get the missing languages form the list of content filter languages
+            missingLanguages = contentFilterLanguagesService.getMissingLanguages(foundLanguages);
+        }
+        // construct a list of locales
+        List<Locale> missingLocales = new ArrayList<Locale>(missingLanguages.size() + 1);
+
+        for(String lang : missingLanguages)
+        {
+            missingLocales.add(I18NUtil.parseLocale(lang));
+        }
+
+        return missingLocales;
+    }
+
+    /** @inheritDoc */
+    public NodeRef getPivotTranslation(NodeRef nodeRef)
+    {
+        if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
+        {
+            NodeRef container = getTranslationContainer(nodeRef);
+            Locale containerLocale = (Locale) nodeService.getProperty(container, ContentModel.PROP_LOCALE);
+
+            return getTranslationForLocale(nodeRef, containerLocale);
+        }
+        else if(ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(nodeService.getType(nodeRef)))
+        {
+            Locale containerLocale = (Locale) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCALE);
+
+            return getTranslationForLocale(getTranslations(nodeRef).get(containerLocale), containerLocale);
+        }
+        else
+        {
+            logger.warn("The node is not multilingual " + nodeRef);
+
+            return null;
+        }
+    }
+
+    /**
+     * @inheritDoc */
+    public NodeRef addEmptyTranslation(NodeRef translationOfNodeRef, String name, Locale locale)
+    {
+        // any node used as reference
+        NodeRef anyTranslation;
+        // the empty document to create
+        NodeRef newTranslationNodeRef = null;
+
+        QName typeQName = nodeService.getType(translationOfNodeRef);
+        if (typeQName.equals(ContentModel.TYPE_MULTILINGUAL_CONTAINER))
+        {
+            // Set the ml container ans get the pivot
+            anyTranslation = getPivotTranslation(translationOfNodeRef);
+        }
+        else if(nodeService.hasAspect(translationOfNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
+        {
+            anyTranslation = translationOfNodeRef;
+        }
+        else
+        {
+            throw new IllegalArgumentException(
+                    "Node must have aspect " + ContentModel.ASPECT_MULTILINGUAL_DOCUMENT + " applied or be a " + ContentModel.TYPE_MULTILINGUAL_CONTAINER);
+        }
+
+        // Create the document in the space of the node of reference
+        NodeRef parentNodeRef = nodeService.getPrimaryParent(anyTranslation).getParentRef();
+
+        newTranslationNodeRef = fileFolderService.create(
+                parentNodeRef,
+                name,
+                ContentModel.TYPE_CONTENT).getNodeRef();
+
+        // add the translation to the container
+        addTranslation(newTranslationNodeRef, translationOfNodeRef, locale);
+
+        // set it empty
+        nodeService.addAspect(newTranslationNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION, null);
+
+        // get the extension and set the ContentData property with an null URL.
+        String extension = "";
+        int dotIdx;
+        if((dotIdx = name.lastIndexOf(".")) > -1 )
+        {
+            extension = name.substring(dotIdx);
+        }
+
+        nodeService.setProperty(newTranslationNodeRef, ContentModel.PROP_CONTENT,
+                new ContentData(null, extension, 0, "UTF-8", locale));
+
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Added an empty translation: \n" +
+                    "   Translation of:  " + translationOfNodeRef + " of type " + typeQName + "\n" +
+                    "   New translation: " + newTranslationNodeRef + "\n" +
+                    "   Locale:          " + locale);
+        }
+
+        return newTranslationNodeRef;
+    }
+
+   public void setNodeService(NodeService nodeService)
+   {
+        this.nodeService = nodeService;
+   }
+
+   public void setSearchService(SearchService searchService)
+   {
+        this.searchService = searchService;
+   }
+
+   public void setVersionService(VersionService versionService)
+   {
+        this.versionService = versionService;
+   }
+
+    public void setContentFilterLanguagesService(ContentFilterLanguagesService contentFilterLanguagesService)
+    {
+        this.contentFilterLanguagesService = contentFilterLanguagesService;
+    }
+
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
+
+    public void renameWithMLExtension(NodeRef translationNodeRef)
+    {
+        throw new UnsupportedOperationException();
     }
 }

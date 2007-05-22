@@ -265,6 +265,9 @@ var MySpaces = {
       anim.start({'opacity': 1});
    },
    
+   /**
+    * OK button click handler for the Upload File pop-up panel
+    */
    uploadOK: function(actionEl, path)
    {
       // call the upload help to perform the upload
@@ -278,18 +281,27 @@ var MySpaces = {
       this.uploadClose(actionEl);
    },
    
+   /**
+    * Cancel button click handler for the Upload File pop-up panel
+    */
    uploadClose: function(actionEl)
    {
       var panel = $(actionEl).getParent();
       panel.setStyle("display", "none");
    },
    
+   /**
+    * Callback function executed after the upload of a new file is complete
+    */
    uploadCompleteHandler: function(id, path, fileName, error)
    {
       if (error == null)
       {
          // empty the main panel div and restart by reloading the panel contents
-         $('spacePanel').empty();
+         var spacePanel = $('spacePanel');
+         spacePanel.setStyle('visibility', 'hidden');
+         spacePanel.empty();
+         spacePanel.removeEvents('mouseleave');
          MySpaces.start();
       }
       else

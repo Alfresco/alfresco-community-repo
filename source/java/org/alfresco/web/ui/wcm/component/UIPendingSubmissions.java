@@ -40,7 +40,10 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.sandbox.SandboxConstants;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
@@ -49,9 +52,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMBrowseBean;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.AVMWorkflowUtil;
 import org.alfresco.web.ui.common.ComponentConstants;
@@ -70,6 +71,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class UIPendingSubmissions extends SelfRenderingComponent
 {
+   private static final String ACT_SHOW_TASK = "showTask";
    private static final String ACT_DETAILS = "pending_details";
    private static final String ACT_PREVIEW = "pending_preview";
    private static final String ACT_DIFF = "pending_diff";
@@ -77,14 +79,16 @@ public class UIPendingSubmissions extends SelfRenderingComponent
    private static final String ACT_ABORT = "pending_abort";
    
    private static final String REQUEST_TASKID = "_taskid";
+   private static final String REQUEST_TASKTYPE = "_tasktype";
+   private static final String REQUEST_LABEL = "_label";
    private static final String REQUEST_PREVIEW_REF = "_prevhref";
    private static final String REQUEST_WORKFLOWID = "_workflowid";
 
    private static Log logger = LogFactory.getLog(UIPendingSubmissions.class);
    
-   private static final String MSG_LABEL = "name";
+   private static final String MSG_LABEL = "label";
    private static final String MSG_DESCRIPTION = "description";
-   private static final String MSG_DATE = "date";
+   private static final String MSG_SUBMITTED = "submitted";
    private static final String MSG_USERNAME = "username";
    private static final String MSG_LAUNCH_DATE = "launch_date";
    private static final String MSG_ACTIONS = "actions";
@@ -163,11 +167,13 @@ public class UIPendingSubmissions extends SelfRenderingComponent
             throw new IllegalArgumentException("Sandbox must be specified.");
          }
          
+         // get the preview url for the sandbox
+         String sandboxPreviewUrl = AVMUtil.buildStoreUrl(sandbox);
+         
          // get the noderef representing the web project
-         // TODO: pass this in via a property from the JSP page
-         AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(
-                  context, "AVMBrowseBean");
-         NodeRef webProject = avmBrowseBean.getWebsite().getNodeRef();
+         PropertyValue val = Repository.getServiceRegistry(context).getAVMService().
+               getStoreProperty(sandbox, SandboxConstants.PROP_WEB_PROJECT_NODE_REF);
+         NodeRef webProject = (NodeRef)val.getValue(DataTypeDefinition.NODE_REF);
          
          // get the list of pending tasks for this project
          WorkflowTaskQuery query = new WorkflowTaskQuery();
@@ -181,7 +187,7 @@ public class UIPendingSubmissions extends SelfRenderingComponent
                   WorkflowTaskQuery.OrderBy.TaskDue_Desc, 
                   WorkflowTaskQuery.OrderBy.TaskActor_Asc });
          List<WorkflowTask> pendingTasks = Repository.getServiceRegistry(context).
-                  getWorkflowService().queryTasks(query); 
+                  getWorkflowService().queryTasks(query);
          
          if (pendingTasks.size() == 0)
          {
@@ -189,15 +195,23 @@ public class UIPendingSubmissions extends SelfRenderingComponent
          }
          else
          {
-            // TODO: apply tag style - removed hardcoded
+            // output the javascript to handle the visual diff
+            out.write("<script type='text/javascript'>");
+            out.write("\nfunction diff(pendingStoreUrl, stagingStoreUrl) {");
+            out.write("\nwindow.open(pendingStoreUrl, 'pendingPreview', ");
+            out.write("'left=40,top=150,width=450,height=300,scrollbars=yes,resizable=yes');");
+            out.write("\nwindow.open(stagingStoreUrl, 'stagingPreview', ");
+            out.write("'left=520,top=150,width=450,height=300,scrollbars=yes,resizable=yes');");
+            out.write("\n}\n</script>");
+            
+            // output header row
             out.write("<table class='pendingSubmissionsList' cellspacing=2 cellpadding=1 border=0 width=100%>");
-            // header row
             out.write("<tr align=left><th>");
-            out.write(bundle.getString(MSG_LABEL));
-            out.write("</th><th>");
             out.write(bundle.getString(MSG_DESCRIPTION));
             out.write("</th><th>");
-            out.write(bundle.getString(MSG_DATE));
+            out.write(bundle.getString(MSG_LABEL));
+            out.write("</th><th>");
+            out.write(bundle.getString(MSG_SUBMITTED));
             out.write("</th><th>");
             out.write(bundle.getString(MSG_USERNAME));
             out.write("</th><th>");
@@ -207,22 +221,45 @@ public class UIPendingSubmissions extends SelfRenderingComponent
             out.write("</th></tr>");
             
             // output the pending submissions and their actions
+            Map requestMap = context.getExternalContext().getRequestMap();
+            
             for (WorkflowTask task : pendingTasks)
             {
                String desc = (String)task.properties.get(WorkflowModel.PROP_DESCRIPTION);
                String label = (String)task.properties.get(AVMWorkflowUtil.PROP_LABEL);
-               String started = Utils.getDateTimeFormat(context).format(task.path.instance.startDate);
+               String submitted = Utils.getDateTimeFormat(context).format(task.path.instance.startDate);
                String username = (String)Repository.getServiceRegistry(context).getNodeService().
                      getProperty(task.path.instance.initiator, ContentModel.PROP_USERNAME);
                Date launchDate = (Date)task.properties.get(AVMWorkflowUtil.PROP_LAUNCH_DATE);
                String launch = Utils.getDateTimeFormat(context).format(launchDate);
                   
                out.write("<tr><td>");
-               out.write(desc == null ? "&nbsp;" : desc);
+               
+               // show task link
+               UIActionLink showTask = findAction(ACT_SHOW_TASK, sandbox);
+               if (showTask == null)
+               {
+                  Map<String, String> params = new HashMap<String, String>(1);
+                  params.put("id", "#{" + REQUEST_TASKID + "}");
+                  params.put("type", "#{" + REQUEST_TASKTYPE + "}");
+                  showTask = createAction(context, sandbox, ACT_SHOW_TASK,
+                           "#{" + REQUEST_LABEL + "}", null, "#{WorkflowBean.setupTaskDialog}",
+                           "dialog:manageTask", null, params);
+               }
+               
+               requestMap.put(REQUEST_LABEL, desc);
+               requestMap.put(REQUEST_TASKID, task.id);
+               requestMap.put(REQUEST_TASKTYPE, 
+                        task.definition.metadata.getName().toString());
+               Utils.encodeRecursive(context, showTask);
+               requestMap.remove(REQUEST_LABEL);
+               requestMap.remove(REQUEST_TASKID);
+               requestMap.remove(REQUEST_TASKTYPE);
+               
                out.write("</td><td>");
                out.write(label);
                out.write("</td><td>");
-               out.write(started);
+               out.write(submitted);
                out.write("</td><td>");
                out.write(username);
                out.write("</td><td>");
@@ -230,30 +267,57 @@ public class UIPendingSubmissions extends SelfRenderingComponent
                out.write("</td><td><nobr>");
                
                // details action
-               // TODO
+               UIActionLink details = findAction(ACT_DETAILS, sandbox);
+               if (details == null)
+               {
+                  Map<String, String> params = new HashMap<String, String>(1);
+                  params.put("id", "#{" + REQUEST_TASKID + "}");
+                  params.put("type", "#{" + REQUEST_TASKTYPE + "}");
+                  details = createAction(context, sandbox, ACT_DETAILS, null,
+                           "/images/icons/Details.gif", "#{WorkflowBean.setupTaskDialog}",
+                           "dialog:manageTask", null, params);
+               }
+               
+               requestMap.put(REQUEST_TASKID, task.id);
+               requestMap.put(REQUEST_TASKTYPE, 
+                        task.definition.metadata.getName().toString());
+               Utils.encodeRecursive(context, details);
+               out.write("&nbsp;&nbsp;");
+               requestMap.remove(REQUEST_TASKID);
+               requestMap.remove(REQUEST_TASKTYPE);
                
                // preview action
                NodeRef pkg = task.path.instance.workflowPackage;
                Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(pkg);
                String workflowStore = AVMUtil.getStoreName(pkgPath.getSecond());
-               String workflowPreviewUrl = AVMUtil.buildStoreUrl(workflowStore);
-               Map requestMap = context.getExternalContext().getRequestMap();
-               requestMap.put(REQUEST_PREVIEW_REF, workflowPreviewUrl);
+               String workflowPreviewUrl = AVMUtil.buildStoreUrl(workflowStore);               
                
                UIActionLink preview = findAction(ACT_PREVIEW, sandbox);
                if (preview == null)
                {
-                  preview = createAction(context, sandbox, ACT_PREVIEW, 
+                  preview = createAction(context, sandbox, ACT_PREVIEW, null,
                            "/images/icons/preview_website.gif", null, null, 
                            "#{" + REQUEST_PREVIEW_REF + "}", null);
                }
-
+               
+               requestMap.put(REQUEST_PREVIEW_REF, workflowPreviewUrl);
                Utils.encodeRecursive(context, preview);
                requestMap.remove(REQUEST_PREVIEW_REF);
                out.write("&nbsp;&nbsp;");
                
-               // visual diff action (only if there is a live deployed snapshot)
-               // TODO
+               // visual diff action
+               out.write("<a href='#' onclick='diff(\"");
+               out.write(workflowPreviewUrl);
+               out.write("\",\"");
+               out.write(sandboxPreviewUrl);
+               out.write("\"); return false;'>");
+               out.write("<img border='0' align='absmiddle' title='");
+               out.write(Application.getMessage(context, ACT_DIFF));
+               out.write("' alt='");
+               out.write(Application.getMessage(context, ACT_DIFF));
+               out.write("' src='");
+               out.write(context.getExternalContext().getRequestContextPath());
+               out.write("/images/icons/diff.gif'/></a>&nbsp;&nbsp;");
                
                // promote action
                UIActionLink promote = findAction(ACT_PROMOTE, sandbox);
@@ -262,7 +326,7 @@ public class UIPendingSubmissions extends SelfRenderingComponent
                   Map<String, String> params = new HashMap<String, String>(1);
                   params.put("taskId", "#{" + REQUEST_TASKID + "}");
                   promote = createAction(context, sandbox, ACT_PROMOTE,
-                           "/images/icons/promote_submission.gif", 
+                           null, "/images/icons/promote_submission.gif", 
                            "#{AVMBrowseBean.promotePendingSubmission}",
                            null, null, params);
                }
@@ -279,7 +343,7 @@ public class UIPendingSubmissions extends SelfRenderingComponent
                   Map<String, String> params = new HashMap<String, String>(1);
                   params.put("workflowInstanceId", "#{" + REQUEST_WORKFLOWID + "}");
                   abort = createAction(context, sandbox, ACT_ABORT,
-                           "/images/icons/abort_submission.gif", 
+                           null, "/images/icons/abort_submission.gif", 
                            "#{AVMBrowseBean.cancelPendingSubmission}",
                            null, null, params);
                }
@@ -338,6 +402,8 @@ public class UIPendingSubmissions extends SelfRenderingComponent
     * @param fc               FacesContext
     * @param sandbox          Root sandbox name
     * @param name             Action name - will be used for I18N message lookup
+    * @param label            The label to use for the action, if null the name
+    *                         will be used to do the I18N lookup
     * @param icon             Icon to display for the actio n
     * @param actionListener   Actionlistener for the action
     * @param outcome          Navigation outcome for the action
@@ -347,8 +413,8 @@ public class UIPendingSubmissions extends SelfRenderingComponent
     * @return UIActionLink child component
     */
    @SuppressWarnings("unchecked")
-   private UIActionLink createAction(FacesContext fc, String sandbox, String name, String icon,
-         String actionListener, String outcome, String url, Map<String, String> params)
+   private UIActionLink createAction(FacesContext fc, String sandbox, String name, String label,
+         String icon, String actionListener, String outcome, String url, Map<String, String> params)
    {
       javax.faces.application.Application facesApp = fc.getApplication();
       UIActionLink control = (UIActionLink)facesApp.createComponent(UIActions.COMPONENT_ACTIONLINK);
@@ -360,7 +426,15 @@ public class UIPendingSubmissions extends SelfRenderingComponent
       
       control.setRendererType(UIActions.RENDERER_ACTIONLINK);
       control.setId(id);
-      control.setValue(Application.getMessage(fc, name));
+      if (label == null)
+      {
+         control.setValue(Application.getMessage(fc, name));
+      }
+      else
+      {
+         ValueBinding vb = facesApp.createValueBinding(label);
+         control.setValueBinding("value", vb);
+      }
       control.setShowLink(icon != null ? false : true);
       control.setImage(icon);
       
@@ -429,7 +503,7 @@ public class UIPendingSubmissions extends SelfRenderingComponent
    // Strongly typed component property accessors
 
    /**
-    * Returns the Sandbox to show the snapshots for
+    * Returns the Sandbox to show the pending submissions for
     *
     * @return The Sandbox name
     */
@@ -445,7 +519,7 @@ public class UIPendingSubmissions extends SelfRenderingComponent
    }
    
    /**
-    * Sets the Sandbox to show the snapshots for
+    * Sets the Sandbox to show the pending submissions for
     *
     * @param value   The Sandbox name
     */

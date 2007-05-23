@@ -710,6 +710,7 @@
             <action idref="cut_node" />
             <action idref="copy_node" />
             <action idref="paste_all" />
+            <action idref="import_space" />
             <action idref="manage_space_users" />
             <action idref="manage_space_rules" />
             <!-- NOTE: now found on the User Console

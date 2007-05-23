@@ -69,7 +69,10 @@
          <from-outcome>addTranslation</from-outcome>
          <to-view-id>/jsp/ml/add-translation-dialog.jsp</to-view-id>
       </navigation-case>
-      
+      <navigation-case>
+         <from-outcome>import</from-outcome>
+         <to-view-id>/jsp/dialog/import.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
    <!-- rule to get to the Advanced Search page from anywhere -->
@@ -223,10 +226,6 @@
          <to-view-id>/jsp/admin/store-browser.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
-         <from-outcome>import</from-outcome>
-         <to-view-id>/jsp/dialog/import.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>export</from-outcome>
          <to-view-id>/jsp/dialog/export.jsp</to-view-id>
       </navigation-case>
@@ -293,10 +292,6 @@
       <navigation-case>
          <from-outcome>manageRules</from-outcome>
          <to-view-id>/jsp/dialog/rules.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>import</from-outcome>
-         <to-view-id>/jsp/dialog/import.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
          <from-outcome>export</from-outcome>
@@ -833,10 +828,6 @@
       <navigation-case>
          <from-outcome>manageInvitedUsers</from-outcome>
          <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>import</from-outcome>
-         <to-view-id>/jsp/dialog/import.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
          <from-outcome>export</from-outcome>

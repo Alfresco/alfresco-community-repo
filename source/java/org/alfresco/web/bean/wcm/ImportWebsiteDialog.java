@@ -25,17 +25,11 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.MessageFormat;
-import java.util.Enumeration;
-import java.util.zip.ZipException;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
@@ -44,6 +38,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.ImporterActionExecuter;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
@@ -62,7 +57,6 @@ import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
-import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
 
 /**
@@ -306,79 +300,17 @@ public class ImportWebsiteDialog
          File tempDir = new File(alfTempDir.getPath() + File.separatorChar + file.getName() + "_unpack");
          try
          {
-            // TODO: improve this code to directly pipe the zip stream output into the repo objects - 
-            //       to remove the need to expand to the filesystem first.
-            extractFile(zipFile, tempDir.getPath());
+            ImporterActionExecuter.extractFile(zipFile, tempDir.getPath());
             importDirectory(tempDir.getPath(), rootRef);
          }
          finally
          {
-            deleteDir(tempDir);
+            ImporterActionExecuter.deleteDir(tempDir);
          }
       }
       catch (IOException e)
       {
          throw new AlfrescoRuntimeException("Unable to process Zip file. File may not be of the expected format.", e);
-      }
-   }
-   
-   /**
-    * Extract the file and folder structure of a ZIP file into the specified directory
-    * 
-    * @param archive       The ZIP archive to extract
-    * @param extractDir    The directory to extract into
-    */
-   private void extractFile(ZipFile archive, String extractDir)
-   {
-      String fileName;
-      String destFileName;
-      byte[] buffer = new byte[BUFFER_SIZE];
-      extractDir = extractDir + File.separator;
-      try
-      {
-         for (Enumeration e = archive.getEntries(); e.hasMoreElements();)
-         {
-            ZipEntry entry = (ZipEntry) e.nextElement();
-            if (!entry.isDirectory())
-            {
-               fileName = entry.getName();
-               fileName = fileName.replace('/', File.separatorChar);
-               destFileName = extractDir + fileName;
-               File destFile = new File(destFileName);
-               String parent = destFile.getParent();
-               if (parent != null)
-               {
-                  File parentFile = new File(parent);
-                  if (!parentFile.exists()) parentFile.mkdirs();
-               }
-               InputStream in = new BufferedInputStream(archive.getInputStream(entry), BUFFER_SIZE);
-               OutputStream out = new BufferedOutputStream(new FileOutputStream(destFileName), BUFFER_SIZE);
-               int count;
-               while ((count = in.read(buffer)) != -1)
-               {
-                  out.write(buffer, 0, count);
-               }
-               in.close();
-               out.close();
-            }
-            else
-            {
-               File newdir = new File(extractDir + entry.getName());
-               newdir.mkdir();
-            }
-         }
-      }
-      catch (ZipException e)
-      {
-         throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
-      }
-      catch (FileNotFoundException e)
-      {
-         throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
-      }
-      catch (IOException e)
-      {
-         throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
       }
    }
    
@@ -463,21 +395,5 @@ public class ImportWebsiteDialog
             throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
          }
       }
-   }
-   
-   /**
-    * Recursively delete a dir of files and directories
-    * 
-    * @param dir directory to delete
-    */
-   private void deleteDir(File dir)
-   {
-      File elenco = new File(dir.getPath());
-      for (File file : elenco.listFiles())
-      {
-         if (file.isFile()) file.delete();
-         else deleteDir(file);
-      }
-      dir.delete();
    }
 }

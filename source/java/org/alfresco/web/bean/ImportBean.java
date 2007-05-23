@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -70,6 +71,7 @@ public class ImportBean
    protected NodeService nodeService;
    protected ActionService actionService;
    protected ContentService contentService;
+   protected MimetypeService mimetypeService;
    
    private File file;
    private String fileName;
@@ -101,14 +103,14 @@ public class ImportBean
                tx = Repository.getUserTransaction(context);
                tx.begin();
                
-               // first of all we need to add the uploaded ACP file to the repository
-               NodeRef acpNodeRef = addACPToRepository(context);
+               // first of all we need to add the uploaded ACP/ZIP file to the repository
+               NodeRef acpNodeRef = addFileToRepository(context);
                
                // build the action params map based on the bean's current state
-               Map<String, Serializable> params = new HashMap<String, Serializable>(3);
+               Map<String, Serializable> params = new HashMap<String, Serializable>(2, 1.0f);
                params.put(ImporterActionExecuter.PARAM_DESTINATION_FOLDER, this.browseBean.getActionSpace().getNodeRef());
                params.put(ImporterActionExecuter.PARAM_ENCODING, this.encoding);
-                
+               
                // build the action to execute
                Action action = this.actionService.createAction(ImporterActionExecuter.NAME, params);
                action.setExecuteAsynchronously(this.runInBackground);
@@ -292,12 +294,22 @@ public class ImportBean
    }
    
    /**
-    * Adds the uploaded ACP file to the repository
+    * Sets the mimetype sevice
+    * 
+    * @param mimetypeService the mimetype service
+    */
+   public void setMimetypeService(MimetypeService mimetypeService)
+   {
+      this.mimetypeService = mimetypeService;
+   }
+   
+   /**
+    * Adds the uploaded ACP/ZIP file to the repository
     *  
     * @param context Faces context
-    * @return NodeRef representing the ACP file in the repository
+    * @return NodeRef representing the ACP/ZIP file in the repository
     */
-   private NodeRef addACPToRepository(FacesContext context)
+   private NodeRef addFileToRepository(FacesContext context)
    {
       // set the name for the new node
       Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>(1);
@@ -311,19 +323,23 @@ public class ImportBean
            ContentModel.TYPE_CONTENT, contentProps);
       
       NodeRef acpNodeRef = assocRef.getChildRef();
-     
+      
       // apply the titled aspect to behave in the web client
-      Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(3, 1.0f);
+      String mimetype = this.mimetypeService.guessMimetype(this.fileName);
+      Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(2, 1.0f);
       titledProps.put(ContentModel.PROP_TITLE, this.fileName);
-      titledProps.put(ContentModel.PROP_DESCRIPTION, Application.getMessage(context, "import_package_description"));
+      titledProps.put(ContentModel.PROP_DESCRIPTION,
+            MimetypeMap.MIMETYPE_ACP.equals(mimetype) ?
+               Application.getMessage(context, "import_acp_description") :
+               Application.getMessage(context, "import_zip_description"));
       this.nodeService.addAspect(acpNodeRef, ContentModel.ASPECT_TITLED, titledProps);
-     
+      
       // add the content to the node
       ContentWriter writer = this.contentService.getWriter(acpNodeRef, ContentModel.PROP_CONTENT, true);
       writer.setEncoding(this.encoding);
-      writer.setMimetype(MimetypeMap.MIMETYPE_ACP);
+      writer.setMimetype(mimetype);
       writer.putContent(this.file);
-            
+      
       return acpNodeRef;
    }
 }

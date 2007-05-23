@@ -75,6 +75,13 @@
     ##  Variable Commands 
     ## 
     
+    Note: The following variables are defined automatically when the console
+          starts.  They may be deleted or modified.
+          
+          var bpm:package package 1       (test package of one document)
+          var bpm:assignee person admin   (test assignee who is admin)
+    
+
     ok> var 
     
         Show all defined variables. 

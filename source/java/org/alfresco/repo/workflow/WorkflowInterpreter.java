@@ -70,6 +70,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 
@@ -78,7 +79,7 @@ import org.springframework.core.io.ClassPathResource;
  * 
  * @author davidc
  */
-public class WorkflowInterpreter
+public class WorkflowInterpreter implements InitializingBean
 {
     // Service dependencies    
     private WorkflowService workflowService;
@@ -120,6 +121,7 @@ public class WorkflowInterpreter
      * Main entry point.
      */
     public static void main(String[] args)
+        throws IOException
     {
         ApplicationContext context = ApplicationContextHelper.getApplicationContext();
         WorkflowInterpreter console = (WorkflowInterpreter)context.getBean("workflowInterpreter");
@@ -133,6 +135,15 @@ public class WorkflowInterpreter
     public WorkflowInterpreter()
     {
         fIn = new BufferedReader(new InputStreamReader(System.in));
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     */
+    public void afterPropertiesSet() throws Exception
+    {
+        interpretCommand("var bpm:package package 1");
+        interpretCommand("var bpm:assignee person admin");
     }
 
     /**
@@ -499,7 +510,7 @@ public class WorkflowInterpreter
                             List<WorkflowTimer> timers = workflowService.getTimers(workflow.id);
                             for (WorkflowTimer timer : timers)
                             {
-                                out.println("id: " + timer.id + " , name: " + timer.name + " , due date: " + timer.dueDate + " , path: " + timer.path.id + " , node: " + timer.path.node.name + " , process: " + timer.path.instance.id + " , task: " + timer.task.name);
+                                out.println("id: " + timer.id + " , name: " + timer.name + " , due date: " + timer.dueDate + " , path: " + timer.path.id + " , node: " + timer.path.node.name + " , process: " + timer.path.instance.id + " , task: " + timer.task.name + "(" + timer.task.id + ")");
                             }
                         }
                     }
@@ -512,7 +523,7 @@ public class WorkflowInterpreter
                         List<WorkflowTimer> timers = workflowService.getTimers(workflow.id);
                         for (WorkflowTimer timer : timers)
                         {
-                            out.println("id: " + timer.id + " , name: " + timer.name + " , due date: " + timer.dueDate + " , path: " + timer.path.id + " , node: " + timer.path.node.name + " , process: " + timer.path.instance.id + " , task: " + timer.task.name);
+                            out.println("id: " + timer.id + " , name: " + timer.name + " , due date: " + timer.dueDate + " , path: " + timer.path.id + " , node: " + timer.path.node.name + " , process: " + timer.path.instance.id + " , task: " + timer.task.name + "(" + timer.task.id + ")");
                         }
                     }
                 }

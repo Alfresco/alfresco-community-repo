@@ -869,12 +869,11 @@
             <list>
                 <value>avmServiceWriteTxnAdvisor</value>
                 <value>avmServiceReadTxnAdvisor</value>
-				<value>avmSnapShotTriggeredIndexingMethodInterceptor</value>
+                <value>avmSnapShotTriggeredIndexingMethodInterceptor</value>
             </list>
         </property>
     </bean>
-    
-	 <bean id="indexingAVMService" class="org.springframework.aop.framework.ProxyFactoryBean">
+    <bean id="indexingAVMService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <list>
                 <value>org.alfresco.service.cmr.avm.AVMService</value>
@@ -885,23 +884,23 @@
         </property>
         <property name="interceptorNames">
             <list>
-				<value>avmSnapShotTriggeredIndexingMethodInterceptor</value>
+                <value>avmSnapShotTriggeredIndexingMethodInterceptor</value>
             </list>
         </property>
     </bean>
-	
-	<bean id="avmSnapShotTriggeredIndexingMethodInterceptor" class="org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor">
-		<property name="avmService">
-			<ref bean="avmService" />
-		</property>
-		<property name="indexerAndSearcher">
-			<ref bean="avmLuceneIndexerAndSearcherFactory" />
-		</property>
-		<property name="enableIndexing">
-			<value>true</value>
-		</property>
-	</bean>
-	
+    
+    <bean id="avmSnapShotTriggeredIndexingMethodInterceptor" class="org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor">
+        <property name="avmService">
+            <ref bean="avmService" />
+        </property>
+        <property name="indexerAndSearcher">
+            <ref bean="avmLuceneIndexerAndSearcherFactory" />
+        </property>
+        <property name="enableIndexing">
+            <value>true</value>
+        </property>
+    </bean>
+    
     <!-- The AVMSyncService -->
     
     <bean id="avmSyncService" class="org.alfresco.repo.avm.AVMSyncServiceImpl">
@@ -968,8 +967,8 @@
                 <value>getAttributes</value>
                 <value>query</value>
                 <value>getKeys</value>
-            	<value>exists</value>
-            	<value>getCount</value>
+                <value>exists</value>
+                <value>getCount</value>
             </list>
         </property>
     </bean>
@@ -1024,19 +1023,19 @@
             </list>
         </property>
     </bean>
-	-->
-	
-	<bean id="deploymentServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
-	    <property name="advice">
-	        <ref bean="retryingWriteTxnAdvice"/>
-	    </property>
-	    <property name="mappedNames">
-	        <list>
-	            <value>deployDifferenceFS</value>
-	            <value>deployDifference</value>
-	        </list>
-	    </property>
-	</bean>
+    -->
+    
+    <bean id="deploymentServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>deployDifferenceFS</value>
+                <value>deployDifference</value>
+            </list>
+        </property>
+    </bean>
 
     <bean id="DeploymentService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
@@ -1278,4 +1277,62 @@
         </property>
     </bean>
     
+
+
+
+    <!-- LinkValidationService -->
+    <!-- Read transaction advisor for link validation service. -->
+    <bean id="linkValidationServiceReadTxnAdvisor" 
+          class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingReadTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <!-- Takes a value to a collection of webapps -->
+                <!-- (e.g.:   mysite:/www/avm_webapps)        -->
+                <!-- or a specific webapp within a store      -->
+                <!-- (e.g.:   mysite:/www/avm_webapps/ROOT)   -->
+                <value>getBrokenHrefs</value>
+            </list>
+        </property>
+    </bean>
+    
+    <!-- Write transaction advisor for link validation service. -->
+    <bean id="linkValidationServiceWriteTxnAdvisor" 
+          class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <!-- Takes a value to a collection of webapps -->
+                <!-- (e.g.:   mysite:/www/avm_webapps)        -->
+                <!-- or a specific webapp within a store      -->
+                <!-- (e.g.:   mysite:/www/avm_webapps/ROOT)   -->
+
+                <value>updateHrefInfo</value>
+
+            </list>
+        </property>
+    </bean>
+
+    <bean id="LinkValidationService" 
+          class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.linkvalidation.LinkValidationService</value>
+            </list>
+        </property>
+        <property name="targetName">
+            <value>linkValidationService</value>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <value>linkValidationServiceWriteTxnAdvisor</value>
+                <value>linkValidationServiceReadTxnAdvisor</value>
+            </list>
+        </property>
+    </bean>
+
 </beans>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
+	"http://www.springframework.org/dtd/spring-beans.dtd">
+	
+<beans>
+    <bean id="linkValidationService" 
+          class="org.alfresco.linkvalidation.LinkValidationServiceImpl">
+        <property name="attributeService">
+            <ref bean="attributeService"/>
+        </property>
+        <property name="avmRemote">
+            <ref bean="avmRemote"/>
+        </property>
+        <property name="virtServerRegistry">
+            <ref bean="VirtServerRegistry"/>
+        </property>
+    </bean>
+</beans>

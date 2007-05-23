@@ -39,6 +39,7 @@ import javax.faces.el.ValueBinding;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMWorkflowModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.workflow.WorkflowModel;
@@ -181,7 +182,7 @@ public class UIPendingSubmissions extends SelfRenderingComponent
                   "submitpendingTask"));
          query.setTaskState(WorkflowTaskState.IN_PROGRESS);
          Map<QName, Object> processProps = new HashMap<QName, Object>();
-         processProps.put(AVMWorkflowUtil.ASSOC_WEBPROJECT, webProject);
+         processProps.put(WCMWorkflowModel.ASSOC_WEBPROJECT, webProject);
          query.setProcessCustomProps(processProps);
          query.setOrderBy(new WorkflowTaskQuery.OrderBy[] { 
                   WorkflowTaskQuery.OrderBy.TaskDue_Desc, 
@@ -226,11 +227,11 @@ public class UIPendingSubmissions extends SelfRenderingComponent
             for (WorkflowTask task : pendingTasks)
             {
                String desc = (String)task.properties.get(WorkflowModel.PROP_DESCRIPTION);
-               String label = (String)task.properties.get(AVMWorkflowUtil.PROP_LABEL);
+               String label = (String)task.properties.get(WCMWorkflowModel.PROP_LABEL);
                String submitted = Utils.getDateTimeFormat(context).format(task.path.instance.startDate);
                String username = (String)Repository.getServiceRegistry(context).getNodeService().
                      getProperty(task.path.instance.initiator, ContentModel.PROP_USERNAME);
-               Date launchDate = (Date)task.properties.get(AVMWorkflowUtil.PROP_LAUNCH_DATE);
+               Date launchDate = (Date)task.properties.get(WCMWorkflowModel.PROP_LAUNCH_DATE);
                String launch = Utils.getDateTimeFormat(context).format(launchDate);
                   
                out.write("<tr><td>");

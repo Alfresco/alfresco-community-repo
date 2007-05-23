@@ -42,6 +42,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.model.WCMWorkflowModel;
 import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.wf.AVMSubmittedAspect;
@@ -325,11 +326,11 @@ public class SubmitDialog extends BaseDialogBean
                      
                      // add submission parameters
                      params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, getComment());
-                     params.put(AVMWorkflowUtil.PROP_LABEL, getLabel());
-                     params.put(AVMWorkflowUtil.PROP_FROM_PATH, 
+                     params.put(WCMWorkflowModel.PROP_LABEL, getLabel());
+                     params.put(WCMWorkflowModel.PROP_FROM_PATH, 
                               AVMUtil.buildStoreRootPath(this.avmBrowseBean.getSandbox()));
-                     params.put(AVMWorkflowUtil.PROP_LAUNCH_DATE, this.launchDate);
-                     params.put(AVMWorkflowUtil.ASSOC_WEBPROJECT, 
+                     params.put(WCMWorkflowModel.PROP_LAUNCH_DATE, this.launchDate);
+                     params.put(WCMWorkflowModel.ASSOC_WEBPROJECT, 
                               this.avmBrowseBean.getWebsite().getNodeRef());
                      
                      // update start task with submit parameters

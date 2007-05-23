@@ -45,6 +45,7 @@ import org.alfresco.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.model.WCMWorkflowModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.wf.AVMSubmittedAspect;
 import org.alfresco.repo.content.MimetypeMap;
@@ -405,11 +406,11 @@ public class CreateWebContentWizard extends BaseContentWizard
 
                   parameters.put(WorkflowModel.ASSOC_PACKAGE, packageNodeRef);
                   // TODO: capture label and comment?
-                  parameters.put(AVMWorkflowUtil.PROP_LABEL, 
+                  parameters.put(WCMWorkflowModel.PROP_LABEL, 
                                  MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null 
                                  ? this.formInstanceData.getName() 
                                  : this.getFileName());
-                  parameters.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMUtil.buildStoreRootPath(sandboxName));
+                  parameters.put(WCMWorkflowModel.PROP_FROM_PATH, AVMUtil.buildStoreRootPath(sandboxName));
                     
                   // update start task with submit parameters
                   this.workflowService.updateTask(startTask.id, parameters, null, null);

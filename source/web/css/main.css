@@ -588,6 +588,16 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    border-color: #DDDDDD;
 }
 
+.workflowHistoryList
+{
+   margin-left: 18px;
+   margin-top: 6px;
+   background-color: #f5f5f5;
+   border-width: 1px;
+   border-style: solid;
+   border-color: #DDDDDD;
+}
+
 #pluginBox
 {
    border: 1px solid #babfc5;

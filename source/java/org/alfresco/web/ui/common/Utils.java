@@ -1276,6 +1276,7 @@ public final class Utils
                {
                   // not found, save the default image for this extension instead
                   s_fileExtensionMap.put(key, defaultImage);
+                  image = defaultImage;
                }
             }
          }

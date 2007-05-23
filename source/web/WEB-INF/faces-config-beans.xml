@@ -273,6 +273,10 @@
          <property-name>fileFolderService</property-name>
          <value>#{FileFolderService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>userPreferencesBean</property-name>
+         <value>#{UserPreferencesBean}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>
@@ -404,6 +408,110 @@
       <managed-property>
          <property-name>namespaceService</property-name>
          <value>#{NamespaceService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>The bean that backs up the properties of Create Multilingual Space Dialog</description>
+      <managed-bean-name>CreateMultilingualPropertiesBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.CreateMultilingualPropertiesBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+         <managed-property>
+         <property-name>userPreferencesBean</property-name>
+         <value>#{UserPreferencesBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+   </managed-bean>
+    
+       
+   <managed-bean>
+      <description>
+         The bean that backs up the Create Multilingual Space Dialog
+      </description>
+      <managed-bean-name>CreateMultilingualSpaceDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.spaces.CreateMultilingualSpaceDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>fileFolderService</property-name>
+         <value>#{FileFolderService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>namespaceService</property-name>
+         <value>#{NamespaceService}</value>
+      </managed-property>
+      <managed-property>
+       <property-name>userPreferencesBean</property-name>
+       <value>#{UserPreferencesBean}</value>
+      </managed-property>
+   </managed-bean>
+   
+        
+   <managed-bean>
+      <description>
+         The bean that backs up the Create Multilingual Space Dialog
+      </description>
+      <managed-bean-name>CreateMultilingualPropertiesDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.spaces.CreateMultilingualPropertiesDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>fileFolderService</property-name>
+         <value>#{FileFolderService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>namespaceService</property-name>
+         <value>#{NamespaceService}</value>
+      </managed-property>
+      <managed-property>
+       <property-name>userPreferencesBean</property-name>
+       <value>#{UserPreferencesBean}</value>
+      </managed-property>
+   </managed-bean>
+
+   <managed-bean>
+      <description>
+         The bean that backs up the Create Space Wizard with multilingual elements
+      </description>
+      <managed-bean-name>CreateMultilingualSpaceWizard</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.spaces.CreateMultilingualSpaceWizard</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+       <property-name>loginBean</property-name>
+        <value>#{LoginBean}</value>
       </managed-property>
    </managed-bean>
    
@@ -1242,6 +1350,14 @@
       <managed-property>
          <property-name>navigator</property-name>
          <value>#{NavigationBean}</value>
+      </managed-property>
+	  <managed-property>
+         <property-name>multilingualContentService</property-name>
+         <value>#{MultilingualContentService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>contentFilterLanguagesService</property-name>
+         <value>#{ContentFilterLanguagesService}</value>
       </managed-property>
    </managed-bean>
    
@@ -2253,6 +2369,18 @@
       <managed-bean-name>UserPreferencesBean</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.UserPreferencesBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>multilingualContentService</property-name>
+         <value>#{MultilingualContentService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>contentFilterLanguagesService</property-name>
+         <value>#{ContentFilterLanguagesService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>
@@ -3324,6 +3452,41 @@
       <managed-bean-name>MimeTypeSelectorGenerator</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.generator.MimeTypeSelectorGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Bean that generates a languages selector component
+      </description>
+      <managed-bean-name>LanguageSelectorGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.LanguageSelectorGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+      <managed-property>
+         <property-name>userPreferencesBean</property-name>
+         <value>#{UserPreferencesBean}</value>
+      </managed-property>
+
+   </managed-bean>
+
+   <managed-bean>
+      <description>
+         Bean that generates a languages selector component for ML container
+      </description>
+      <managed-bean-name>MlContainerLanguageSelectorGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.MlContainerLanguageSelectorGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+      <managed-property>
+         <property-name>multilingualContentService</property-name>
+         <value>#{MultilingualContentService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>contentFilterLanguagesService</property-name>
+         <value>#{ContentFilterLanguagesService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>

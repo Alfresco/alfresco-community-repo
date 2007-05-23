@@ -32,64 +32,58 @@ import org.alfresco.web.bean.CreateMultilingualPropertiesBean;
 
 public class CreateMultilingualSpaceDialog extends CreateMultilingualSpaceWizard
 {
-     // ------------------------------------------------------------------------------
-      // Wizard implementation
+   // ------------------------------------------------------------------------------
+   // Wizard implementation
 
-      @Override
-      public String getFinishButtonLabel()
+   @Override
+   public String getFinishButtonLabel()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), "create_multilingual_space");
+   }
+
+   @Override
+   protected String getDefaultCancelOutcome()
+   {
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+   }
+
+   @Override
+   protected String getDefaultFinishOutcome()
+   {
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+   }
+
+   protected String doPostCommitProcessing(FacesContext context, String outcome)
+   {
+      // do nothing by default, subclasses can override if necessary
+      if(isEdit())
       {
-         return Application.getMessage(FacesContext.getCurrentInstance(), "create_multilingual_space");
+         return "dialog:createMultilingualProperties";
       }
-
-      @Override
-      protected String getDefaultCancelOutcome()
+      else
       {
          return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
       }
+   }
 
-      @Override
-      protected String getDefaultFinishOutcome()
-      {
-         return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
-      }
+   public void setCreateMultilingualPropertiesBean(CreateMultilingualPropertiesBean x)
+   {
+      this.createMultilingualPropertiesBean = x;
+   }
 
+   public boolean isEdit()
+   {
+      return this.edit;
+   }
 
+   public void setEdit(boolean x)
+   {
+      this.edit=x;
+   }
 
-      protected String doPostCommitProcessing(FacesContext context, String outcome)
-      {
-          // do nothing by default, subclasses can override if necessary
-         if(isEdit())
-         {
-          return "dialog:createMultilingualProperties";
-         }
-         else
-         {
-          return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
-         }
-      }
+   private boolean edit;
 
+   public CreateMultilingualPropertiesBean getCreateMultilingualPropertiesBean(){return this.createMultilingualPropertiesBean;}
 
-      public void setCreateMultilingualPropertiesBean(CreateMultilingualPropertiesBean x)
-      {
-       this.createMultilingualPropertiesBean = x;
-      }
-
-      public boolean isEdit()
-      {
-        return this.edit;
-      }
-
-      public void setEdit(boolean x)
-      {
-        this.edit=x;
-      }
-
-
-      private boolean edit;
-
-      public CreateMultilingualPropertiesBean getCreateMultilingualPropertiesBean(){return this.createMultilingualPropertiesBean;}
-
-  protected CreateMultilingualPropertiesBean createMultilingualPropertiesBean;
-
+   protected CreateMultilingualPropertiesBean createMultilingualPropertiesBean;
 }
-

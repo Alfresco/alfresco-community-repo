@@ -43,54 +43,50 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class EditMLContainerDialog extends  BaseDialogBean
 {
-   
    MultilingualContentService multilingualContentService;
-   
+
    private Node editableNode;
-  
+
    @Override
    public void init(Map<String, String> parameters)
    {
       super.init(parameters);
-     
+
       this.editableNode = initEditableNode();
-                 
    }
-      
+
    @Override
    public boolean getFinishButtonDisabled()
    {
       return false;
    }
-   
-  
-   
+
    @Override
    public String getFinishButtonLabel()
    {
       return Application.getMessage(FacesContext.getCurrentInstance(), "ok");
    }
-   
+
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {      
       // get the container node ref
       NodeRef container = editableNode.getNodeRef();
-      
+
       // get the modified properties
       Map<String, Object> editProperties = this.editableNode.getProperties();
-      
+
       // modify the properties of the container with the user modified properties
       for(Map.Entry<String, Object> entry : editProperties.entrySet())
       {
          QName qname = QName.createQName(entry.getKey());
-         
+
          nodeService.setProperty(container, qname, (Serializable) entry.getValue());
       }
-      
-       return outcome;
+
+      return outcome;
    }
-   
+
    /**
     * Init the editable Node
     */
@@ -99,25 +95,26 @@ public class EditMLContainerDialog extends  BaseDialogBean
       return new Node(
             multilingualContentService.getTranslationContainer(
                   this.browseBean.getDocument().getNodeRef())
-            );
+      );
    }
-   
+
    /**
     * @return the editableNode
     */
-   public Node getEditableNode() {
+   public Node getEditableNode()
+   {
       return editableNode;
    }
-   
+
    @Override
    protected String doPostCommitProcessing(FacesContext context, String outcome)
    {
       this.browseBean.getDocument().reset();
-      
+
       return outcome;
    }
-   
-   
+
+
    // ------------------------------------------------------------------------------
    // Bean getters and setters
 
@@ -127,7 +124,7 @@ public class EditMLContainerDialog extends  BaseDialogBean
    public MultilingualContentService getMultilingualContentService() {
       return multilingualContentService;
    }
-   
+
    /**
     * @param multilingualContentService the multilingualContentService to set
     */
@@ -135,6 +132,4 @@ public class EditMLContainerDialog extends  BaseDialogBean
          MultilingualContentService multilingualContentService) {
       this.multilingualContentService = multilingualContentService;
    }
-
-
 }

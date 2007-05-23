@@ -166,10 +166,10 @@
                                            <f:facet name="header">
                                              <h:outputText value=""/>
                                            </f:facet>
-                                           <h:graphicImage url="/images/icons/space_small.gif" />
+                                           <h:graphicImage url="/images/filetypes/_default.gif" />
                                        </a:column>
                               
-                              <%-- Name Columns --%>
+                                       <%-- Name Columns --%>
                                        <a:column id="col21"  width="300" style="text-align:left">
                                            <f:facet name="header">
                                               <a:sortLink label="#{msg.name}" value="Name" mode="case-insensitive" styleClass="header"/>

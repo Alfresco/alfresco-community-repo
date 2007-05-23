@@ -48,7 +48,6 @@ import org.alfresco.web.ui.common.Utils;
  */
 public class AddTranslationWithoutContentDialog extends BaseDialogBean
 {
-
    public static String LOCALE_REGEX = "%locale%";
    public static String EMPTY_DOCUMENT_EXTENSION = "." + LOCALE_REGEX + "_properties";
 
@@ -65,7 +64,6 @@ public class AddTranslationWithoutContentDialog extends BaseDialogBean
    private String language;
 
 
-
    @Override
    public void init(Map<String, String> parameters)
    {
@@ -76,7 +74,6 @@ public class AddTranslationWithoutContentDialog extends BaseDialogBean
       description = null;
       author = null;
       language = null;
-
    }
 
    @Override
@@ -132,7 +129,6 @@ public class AddTranslationWithoutContentDialog extends BaseDialogBean
    {
       this.multilingualContentService = multilingualContentService;
    }
-
 
    /**
     * @return the author

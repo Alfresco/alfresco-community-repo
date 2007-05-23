@@ -308,16 +308,16 @@
                  title-id="create_web_content_title" description-id="create_web_content_desc"
                  icon="/images/icons/new_content_large.gif">
             <step name="details" 
-		  title-id="create_web_content_details_title" 
-		  description-id="create_content_step1_desc">
+         		  title-id="create_web_content_details_title" 
+         		  description-id="create_content_step1_desc">
                <page path="/jsp/wcm/create-web-content-wizard/details.jsp" 
                      title-id="create_web_content_details_step_title"
                      description-id="create_content_step1_desc"
                      instruction-id="default_instruction" />
             </step>
             <step name="content" 
-		  title-id="create_web_content_enter_content_title" 
-		  description-id="create_content_step2_desc">
+         		  title-id="create_web_content_enter_content_title" 
+         		  description-id="create_content_step2_desc">
                <condition if="#{CreateWebContentWizard.mimeType == 'text/html'}">
                   <page path="/jsp/wcm/create-web-content-wizard/create-html.jsp"
                         title-id="create_web_content_enter_content_step_title"
@@ -338,11 +338,11 @@
             </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">
                <condition if="#{CreateWebContentWizard.mimeType == 'text/xml'}">
-		 <page path="/jsp/wcm/create-web-content-wizard/summary.jsp"
-                       title-id="summary"
-                       description-id="create_web_content_summary_desc"
-                       instruction-id="content_finish_instruction" />
-	       </condition>
+   		         <page path="/jsp/wcm/create-web-content-wizard/summary.jsp"
+                          title-id="summary"
+                          description-id="create_web_content_summary_desc"
+                          instruction-id="content_finish_instruction" />
+	            </condition>
                <page path="/jsp/wizard/summary.jsp"
                      title-id="summary"
                      description-id="summary_desc"
@@ -473,4 +473,3 @@
    </config>
    
 </alfresco-config>
-

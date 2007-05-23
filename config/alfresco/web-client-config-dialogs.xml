@@ -14,7 +14,7 @@
                  icon="/images/icons/make_ml_large.gif" title-id="make_multilingual" 
                  description-id="make_multilingual_description" error-message-id="error_make_multilingual_dialog" />
        
-       <!-- Definition of the add translation dialog dialog -->         
+         <!-- Definition of the add translation dialog dialog -->         
          <dialog name="addTranslationWithoutContent" page="/jsp/ml/add-translation-without-content.jsp" managed-bean="AddTranslationWithoutContentDialog"
                  icon="/images/icons/add_tranlsation_wc_large.gif" title-id="add_translation_wc" 
                  description-id="add_translation_wc_description" error-message-id="error_add_translation_wc_dialog" />
@@ -29,7 +29,7 @@
          <!-- Content and Space Dialogs -->
          
          <!-- Definition of the create space dialog -->
-         <dialog name="createSpace" page="/jsp/spaces/create-space-dialog.jsp" managed-bean="CreateMultilingualSpaceDialog"
+         <dialog name="createSpace" page="/jsp/spaces/create-space-dialog.jsp" managed-bean="CreateSpaceDialog"
                  icon="/images/icons/create_space_large.gif" title-id="create_space" 
                  description-id="create_space_description" error-message-id="error_create_space_dialog" />
          
@@ -38,7 +38,7 @@
                  icon="/images/icons/create_space_large.gif" title-id="create_multilingual_space" 
                  description-id="create_multilingual_space_description" error-message-id="error_create_space_dialog" />
                  
-        <!-- Definition of the create multilingual properties dialog -->
+         <!-- Definition of the create multilingual properties dialog -->
          <dialog name="createMultilingualProperties" page="/jsp/spaces/ml/create-multilingual-properties-dialog.jsp"  managed-bean="CreateMultilingualPropertiesDialog"
                  icon="/images/icons/create_space_large.gif"  title-id="create_multilingual_space" 
                  description-id="create_multilingual_space_description" error-message-id="error_create_multilingual_space_dialog" />

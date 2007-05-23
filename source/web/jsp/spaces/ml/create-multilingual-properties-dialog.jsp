@@ -63,14 +63,14 @@ function validate()
 
 <table cellpadding="2" cellspacing="2" border="0" width="100%">
  <tr>
-  <td colspan="3" class="wizardSectionHeading">
+  <td colspan="4" class="wizardSectionHeading">
    </f:verbatim>
    <h:outputText value="#{msg.properties}" />
    <f:verbatim>
   </td>
  </tr>
  <tr>
-  <td >
+  <td>
    </f:verbatim>
    <f:verbatim>
   </td>
@@ -84,13 +84,13 @@ function validate()
    <h:inputText id="title" value="#{CreateMultilingualPropertiesBean.title}" size="35" maxlength="1024" onkeyup="javascript:checkButtonState();" onchange="javascript:checkButtonState();" /> 
    <f:verbatim>
   </td>
-  <td>
-   <f:verbatim>
+  <td width=100%>
+   </f:verbatim>
    <%-- existing properties --%>
    <h:selectOneMenu id="existingpropertiestitle" value="#{CreateMultilingualPropertiesBean.language}" style="width:150px" >
     <f:selectItems value="#{CreateMultilingualPropertiesBean.listAllTitlesProperties}" />
    </h:selectOneMenu>
-   </f:verbatim>
+   <f:verbatim>
   </td>
  </tr>
  
@@ -107,41 +107,27 @@ function validate()
    <f:verbatim>
   </td>
   <td>
-   <f:verbatim>
+   </f:verbatim>
    <%-- existing properties --%>
    <h:selectOneMenu id="existingproperties" value="#{CreateMultilingualPropertiesBean.language}" style="width:150px" >
     <f:selectItems value="#{CreateMultilingualPropertiesBean.listAllDescriptionsProperties}" />
    </h:selectOneMenu>
-   </f:verbatim>
+   <f:verbatim>
   </td>
-  
-  </br>
-
  </tr>
 </table>
-</f:verbatim>  
 
 <table cellpadding="2" cellspacing="2" border="0" width="100%">
  <tr>
-  <td colspan="3" style="padding-left:22px">
-
-
-  <td style="padding-left" >
-
+  <td>
+    </f:verbatim>
+    <h:outputText value="#{msg.properties_close}:" />
     <h:selectBooleanCheckbox value="#{CreateMultilingualPropertiesBean.add_new_properties}" id="editnewproperties" />
-    
-    <span style="vertical-align:20%"></span>
-    <h:outputText value=" " />
-    
     <h:selectOneMenu id="newlanguage" immediate="true" value="#{CreateMultilingualPropertiesBean.newlanguage}" style="width:80px" >
      <f:selectItems value="#{CreateMultilingualPropertiesBean.contentFilterLanguages}" />
     </h:selectOneMenu>
-   
-    <h:outputText value=" " />   
-    <h:outputText value="#{msg.properties_close}" />
+    <f:verbatim>
   </td>
 </tr>
 </table>
-  
-
-
+</f:verbatim>

@@ -103,6 +103,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
+         
          <!-- Edit document action to open using normal HTTP access or inline Edit if set -->
          <action id="edit_doc_http">
             <permissions>

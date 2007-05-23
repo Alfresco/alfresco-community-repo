@@ -41,62 +41,58 @@ import org.alfresco.web.bean.UserPreferencesBean;
 
 public class CreateMultilingualPropertiesWizard extends CreateSpaceWizard
 {
-      @Override
-      protected String finishImpl(FacesContext context, String outcome) throws Exception
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
+   {
+      MLText title, description;
+
+      // bind to the bean
+      CreateMultilingualPropertiesBean createMultilingualPropertiesBean = (CreateMultilingualPropertiesBean) FacesHelper.getManagedBean(context, "CreateMultilingualPropertiesBean");
+      UserPreferencesBean              userPreferencesBean              = (UserPreferencesBean)              FacesHelper.getManagedBean(context, "UserPreferencesBean");
+
+      if (this.createFrom.equals("scratch"))
       {
-        MLText title, description;
+         // create the space (just create a folder for now)
+         NodeRef nodeRef = this.browseBean.getDocument().getNodeRef();
+         // Add aspect (PropertyMap is a extension of HashMap with key LOCALE)
+         PropertyMap properties = new PropertyMap();
 
-         // bind to the bean
-         CreateMultilingualPropertiesBean createMultilingualPropertiesBean = (CreateMultilingualPropertiesBean) FacesHelper.getManagedBean(context, "CreateMultilingualPropertiesBean");
-         UserPreferencesBean              userPreferencesBean              = (UserPreferencesBean)              FacesHelper.getManagedBean(context, "UserPreferencesBean");
+         // Modification du casting de l objet r�cup�r� des getters de MLText en Text
+         MLPropertyInterceptor.setMLAware(true);
 
-          if (this.createFrom.equals("scratch"))
-          {
-          // create the space (just create a folder for now)
-          NodeRef nodeRef = this.browseBean.getDocument().getNodeRef();
-            // Add aspect (PropertyMap is a extension of HashMap with key LOCALE)
-            PropertyMap properties = new PropertyMap();
+         // MLText is a HashMap composed by key and description The Function addValue is the same that the function put() but the key is the Locale value
+         Serializable oTitle       = nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE);
+         Serializable oDescription = nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION);
 
-            // Modification du casting de l objet r�cup�r� des getters de MLText en Text
-            MLPropertyInterceptor.setMLAware(true);
+         if(oTitle instanceof MLText)
+         {
+            title = (MLText) oTitle;
+         }
+         else
+         {
+            title = new MLText();
+            title.addValue(I18NUtil.parseLocale(userPreferencesBean.getContentFilterLanguage()), oTitle.toString());
+         }
 
-            // MLText is a HashMap composed by key and description The Function addValue is the same that the function put() but the key is the Locale value
-            Serializable oTitle       = nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE);
-            Serializable oDescription = nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION);
+         if(oDescription instanceof MLText)
+         {
+            description = (MLText) oDescription;
+         }
+         else
+         {
+            description = new MLText();
+            title.addValue(I18NUtil.parseLocale(userPreferencesBean.getContentFilterLanguage()), oDescription.toString());
+         }
 
+         title.addValue(I18NUtil.parseLocale(createMultilingualPropertiesBean.getNewlanguage()), createMultilingualPropertiesBean.getTitle());
+         description.addValue(I18NUtil.parseLocale(createMultilingualPropertiesBean.getNewlanguage()), createMultilingualPropertiesBean.getDescription());
 
-            if(oTitle instanceof MLText)
-            {
-             title = (MLText) oTitle;
-            }
-            else
-            {
-             title = new MLText();
-             title.addValue(I18NUtil.parseLocale(userPreferencesBean.getContentFilterLanguage()), oTitle.toString());
-            }
+         properties.put(ContentModel.PROP_TITLE, title);
+         properties.put(ContentModel.PROP_DESCRIPTION, description);
 
-
-
-            if(oDescription instanceof MLText)
-            {
-             description = (MLText) oDescription;
-            }
-            else
-            {
-             description = new MLText();
-             title.addValue(I18NUtil.parseLocale(userPreferencesBean.getContentFilterLanguage()), oDescription.toString());
-            }
-
-             title.addValue(I18NUtil.parseLocale(createMultilingualPropertiesBean.getNewlanguage()), createMultilingualPropertiesBean.getTitle());
-             description.addValue(I18NUtil.parseLocale(createMultilingualPropertiesBean.getNewlanguage()), createMultilingualPropertiesBean.getDescription());
-
-             properties.put(ContentModel.PROP_TITLE, title);
-            properties.put(ContentModel.PROP_DESCRIPTION, description);
-
-
-            // Ajout de l'aspect multilingue sur le titre
-            this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, properties);
-/*
+         // Ajout de l'aspect multilingue sur le titre
+         this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, properties);
+         /*
              MLText descriptionss = (MLText) nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION);
 
              List<SelectItem> sel = new ArrayList();
@@ -108,53 +104,51 @@ public class CreateMultilingualPropertiesWizard extends CreateSpaceWizard
 
              SelectItem[] items = new SelectItem[sel.size()];
              sel.toArray(items);
-*/
-             // Modification du casting de l objet r�cup�r� des getters de MLText en Text
-             MLPropertyInterceptor.setMLAware(false);
-          }
-          else if (this.createFrom.equals("existing"))
-          {
-          }
-          else if (this.createFrom.equals("template"))
-          {
-          }
-
-
-          if (createMultilingualPropertiesBean.isAdd_new_properties())
-          {
-          createMultilingualPropertiesBean.setTitle("");
-          createMultilingualPropertiesBean.setDescription("");
-          createMultilingualPropertiesBean.setAdd_new_properties(false);
-
-          return "dialog:createMultilingualProperties";
-          }
-          else
-          {
-          return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
-          }
+          */
+         // Modification du casting de l objet r�cup�r� des getters de MLText en Text
+         MLPropertyInterceptor.setMLAware(false);
       }
-
-
-      /**
-       * @param preferences   The UserPreferencesBean to set
-       */
-      public void setUserPreferencesBean(UserPreferencesBean preferences)
+      else if (this.createFrom.equals("existing"))
       {
-         this.preferences = preferences;
       }
-
-      /**
-       *
-       * @return the preferences of the user
-       */
-      public UserPreferencesBean getUserPreferencesBean()
+      else if (this.createFrom.equals("template"))
       {
-         return preferences;
       }
 
+      if (createMultilingualPropertiesBean.isAdd_new_properties())
+      {
+         createMultilingualPropertiesBean.setTitle("");
+         createMultilingualPropertiesBean.setDescription("");
+         createMultilingualPropertiesBean.setAdd_new_properties(false);
 
-      /** The user preferences bean reference */
-      protected UserPreferencesBean              preferences;
-      protected CreateMultilingualPropertiesBean createMultilingualPropertiesBean;
+         return "dialog:createMultilingualProperties";
+      }
+      else
+      {
+         return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
+      }
+   }
+
+   /**
+    * @param preferences   The UserPreferencesBean to set
+    */
+   public void setUserPreferencesBean(UserPreferencesBean preferences)
+   {
+      this.preferences = preferences;
+   }
+
+   /**
+    *
+    * @return the preferences of the user
+    */
+   public UserPreferencesBean getUserPreferencesBean()
+   {
+      return preferences;
+   }
+
+
+   /** The user preferences bean reference */
+   protected UserPreferencesBean              preferences;
+   protected CreateMultilingualPropertiesBean createMultilingualPropertiesBean;
 }
 

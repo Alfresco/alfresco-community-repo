@@ -29,44 +29,37 @@ import javax.faces.context.FacesContext;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 
-
 public class CreateMultilingualPropertiesDialog  extends CreateMultilingualPropertiesWizard
 {
-     // ------------------------------------------------------------------------------
-      // Wizard implementation
+   // ------------------------------------------------------------------------------
+   // Wizard implementation
 
-      @Override
-      public String getFinishButtonLabel()
-      {
-         return Application.getMessage(FacesContext.getCurrentInstance(), "create_multilingual_space");
-      }
+   @Override
+   public String getFinishButtonLabel()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), "create_multilingual_space");
+   }
 
-      @Override
-      protected String getDefaultCancelOutcome()
-      {
-          return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
+   @Override
+   protected String getDefaultCancelOutcome()
+   {
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
 
-//         return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
-      }
+//    return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+   }
 
-      @Override
-      protected String getDefaultFinishOutcome()
-      {
-//       return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
+   @Override
+   protected String getDefaultFinishOutcome()
+   {
+//    return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
 
-       return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
-      }
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+   }
 
-
-
-      protected String doPostCommitProcessing(FacesContext context, String outcome)
-      {
-         // do nothing by default, subclasses can override if necessary
-
-         return outcome;
-      }
-
-
-
+   protected String doPostCommitProcessing(FacesContext context, String outcome)
+   {
+      // do nothing by default, subclasses can override if necessary
+      return outcome;
+   }
 }
 

@@ -45,7 +45,6 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class AddTranslationlDialog extends AddContentDialog
 {
-
    private MultilingualContentService multilingualContentService;
    private UserPreferencesBean userPreferencesBean;
 
@@ -57,6 +56,7 @@ public class AddTranslationlDialog extends AddContentDialog
 
    //  languages available in the ML container yet
    private SelectItem[] unusedLanguages;
+
 
    /* (non-Javadoc)
     * @see org.alfresco.web.bean.content.AddContentDialog#init(java.util.Map)
@@ -70,7 +70,6 @@ public class AddTranslationlDialog extends AddContentDialog
       setMlContainer(this.browseBean.getDocument().getNodeRef());
       setFileName(null);
       unusedLanguages = null;
-
    }
 
    /* (non-Javadoc)
@@ -79,7 +78,6 @@ public class AddTranslationlDialog extends AddContentDialog
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-
       // add the new file to the repository
       outcome = super.finishImpl(context, outcome);
 
@@ -94,7 +92,6 @@ public class AddTranslationlDialog extends AddContentDialog
    @Override
    protected String getDefaultFinishOutcome()
    {
-
       return "showDocDetails";
    }
 
@@ -139,7 +136,7 @@ public class AddTranslationlDialog extends AddContentDialog
     * Set the Multilingual container where the translation will be associated.
     *
     * @param mlContainer mlContainer is a MLDocument, the the MLContainer will
-     * become it's own MLContainer
+    * become it's own MLContainer
     */
    public void setMlContainer(NodeRef mlContainer)
    {
@@ -149,15 +146,17 @@ public class AddTranslationlDialog extends AddContentDialog
       {
          type = nodeService.getType(mlContainer);
 
-         if(ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(type)){
+         if(ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(type))
+         {
             this.mlContainer = mlContainer;
          }
-         else if(ContentModel.TYPE_CONTENT.equals(type)
-               && nodeService.hasAspect(mlContainer, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT)){
-
+         else if (ContentModel.TYPE_CONTENT.equals(type)
+               && nodeService.hasAspect(mlContainer, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
+         {
             this.mlContainer = multilingualContentService.getTranslationContainer(mlContainer);
          }
-         else{
+         else
+         {
             this.mlContainer = null;
          }
       }
@@ -179,7 +178,6 @@ public class AddTranslationlDialog extends AddContentDialog
 
    public SelectItem[] getUnusedLanguages()
    {
-
       if(unusedLanguages == null)
       {
          unusedLanguages = userPreferencesBean.getAvailablesContentFilterLanguages(getMlContainer(), false);
@@ -189,15 +187,15 @@ public class AddTranslationlDialog extends AddContentDialog
    }
 
    public MultilingualContentService getMultilingualContentService()
-    {
-        return multilingualContentService;
-    }
+   {
+      return multilingualContentService;
+   }
 
-    public void setMultilingualContentService(
-            MultilingualContentService multilingualContentService)
-    {
-        this.multilingualContentService = multilingualContentService;
-    }
+   public void setMultilingualContentService(
+         MultilingualContentService multilingualContentService)
+   {
+      this.multilingualContentService = multilingualContentService;
+   }
 
    public UserPreferencesBean getUserPreferencesBean()
    {

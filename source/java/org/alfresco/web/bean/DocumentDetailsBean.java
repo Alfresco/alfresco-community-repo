@@ -262,32 +262,31 @@ public class DocumentDetailsBean extends BaseDetailsBean
    public List getTranslations()
    {
       List<MapNode> translations = new ArrayList<MapNode>();
-      
+
       if (getDocument().hasAspect(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
       {
-        
-        Map<Locale, NodeRef> translationsMap = this.multilingualContentService.getTranslations(getDocument().getNodeRef());
-   
+         Map<Locale, NodeRef> translationsMap = this.multilingualContentService.getTranslations(getDocument().getNodeRef());
+
          if (translationsMap != null && translationsMap.size() > 0)
          {
             for (Map.Entry entry : translationsMap.entrySet())
             {
                NodeRef nodeRef = (NodeRef) entry.getValue();              
-               
+
                // create a map node representation of the translation
                MapNode mapNode = new MapNode(nodeRef);   
-               
+
                Locale locale = (Locale) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCALE); 
-               
+
                String lgge = (locale != null) ?  
                      // convert the locale into new ISO codes
                      contentFilterLanguagesService.convertToNewISOCode(locale.getLanguage()).toUpperCase() 
-                     : null ;
+                     : null;
                
                mapNode.put("name", nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
                mapNode.put("language", lgge);
                mapNode.put("url", DownloadContentServlet.generateBrowserURL(nodeRef, mapNode.getName()));
-               
+
                // add the client side version to the list
                translations.add(mapNode);
             }
@@ -789,7 +788,6 @@ public class DocumentDetailsBean extends BaseDetailsBean
       return new Node(multilingualContentService.getTranslationContainer(nodeRef));
    }
    
-
    /**
     * Sets the lock service instance the bean should use
     * 
@@ -824,16 +822,16 @@ public class DocumentDetailsBean extends BaseDetailsBean
     * @param multilingualContentService the multilingualContentService to set
     */
    public void setMultilingualContentService(
-            MultilingualContentService multilingualContentService) 
+         MultilingualContentService multilingualContentService) 
    {
-         this.multilingualContentService = multilingualContentService;
+      this.multilingualContentService = multilingualContentService;
    }
-   
+
    /**
     * @param contentFilterLanguagesService The ContentFilterLanguagesService to set. 
     */
    public void setContentFilterLanguagesService(ContentFilterLanguagesService contentFilterLanguagesService)
    {
-         this.contentFilterLanguagesService = contentFilterLanguagesService;
+      this.contentFilterLanguagesService = contentFilterLanguagesService;
    }
 }

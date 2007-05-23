@@ -32,47 +32,45 @@
 <script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js"> </script>
 
 <script type="text/javascript">
-var finishButtonPressed = false;
-window.onload = pageLoaded;
-
-function pageLoaded()
-{
-document.getElementById("dialog:dialog-body:name").focus();
-document.getElementById("dialog").onsubmit = validate;
-document.getElementById("dialog:finish-button").onclick = function() {finishButtonPressed = true; clear_dialog();}
-checkButtonState();
-}
-
-function checkButtonState()
-{
-if (document.getElementById("dialog:dialog-body:name").value.length == 0 )
-{
-document.getElementById("dialog:finish-button").disabled = true;
-}
-else
-{
-document.getElementById("dialog:finish-button").disabled = false;
-}
-}
-
-function validate()
-{
-if (finishButtonPressed)
-{
-finishButtonPressed = false;
-
-var retour = "";
-var val    = document.getElementById("dialog:dialog-body:name");
-for(i=0;i < val.length;i++) if(val.charAt(i) != " ") {retour += val.charAt(i)}
-return validateName(retour,
-'</f:verbatim><a:outputText value="#{msg.validation_invalid_character}" /><f:verbatim>',
-true);
-}
-else
-{
-return true;
-}
-}
+   var finishButtonPressed = false;
+   window.onload = pageLoaded;
+   
+   function pageLoaded()
+   {
+      document.getElementById("dialog:dialog-body:name").focus();
+      document.getElementById("dialog").onsubmit = validate;
+      document.getElementById("dialog:finish-button").onclick = function() {finishButtonPressed = true; clear_dialog();}
+      checkButtonState();
+   }
+   
+   function checkButtonState()
+   {
+      if (document.getElementById("dialog:dialog-body:name").value.length == 0 )
+      {
+         document.getElementById("dialog:finish-button").disabled = true;
+      }
+      else
+      {
+         document.getElementById("dialog:finish-button").disabled = false;
+      }
+   }
+   
+   function validate()
+   {
+      if (finishButtonPressed)
+      {
+         finishButtonPressed = false;
+         var retour = "";
+         var val    = document.getElementById("dialog:dialog-body:name");
+         for(i=0;i < val.length;i++) if(val.charAt(i) != " ") {retour += val.charAt(i)}
+         return validateName(retour,
+         '</f:verbatim><a:outputText value="#{msg.validation_invalid_character}" /><f:verbatim>', true);
+      }
+      else
+      {
+         return true;
+      }
+   }
 
 </script>
 
@@ -136,38 +134,30 @@ onkeyup="javascript:checkButtonState();" onchange="javascript:checkButtonState()
 <f:verbatim>
 </td>
 <td>
-<table border="0" cellpadding="0" cellspacing="0"><tr><td>
-</f:verbatim>
-<a:imagePickerRadioPanel id="space-icon" columns="6" spacing="4" value="#{DialogManager.bean.icon}"
-panelBorder="greyround" panelBgcolor="#F5F5F5">
-<a:listItems value="#{DialogManager.bean.icons}" />
-</a:imagePickerRadioPanel>
-
+   <table border="0" cellpadding="0" cellspacing="0">
+      <tr>
+         <td>
+            </f:verbatim>
+            <a:imagePickerRadioPanel id="space-icon" columns="6" spacing="4" value="#{DialogManager.bean.icon}"
+            panelBorder="greyround" panelBgcolor="#F5F5F5">
+            <a:listItems value="#{DialogManager.bean.icons}" />
+            </a:imagePickerRadioPanel>
+            <f:verbatim>
+         </td>
+      </tr>
+   </table>
 </td>
 </tr>
-
-
-  <td style="padding-left">
-   <h:outputText value="#{msg.properties_close}:" />
-   <h:outputText value=" " />
+<tr>
+<td></td><td colspan=2>
+   </f:verbatim>
+   <h:outputText value="#{msg.properties_close}:" style="padding-right:8px" />
    <h:selectBooleanCheckbox value="#{CreateMultilingualSpaceDialog.edit}" id="Nedit" />
-  </td>
-
-  <td>
    <h:selectOneMenu id="newlanguage" immediate="true" value="#{CreateMultilingualPropertiesBean.newlanguage}" style="width:80px" >
     <f:selectItems value="#{CreateMultilingualPropertiesBean.contentFilterLanguages}" />
    </h:selectOneMenu>
-  </td>
-
-
-
-</table>
+   <f:verbatim>
 </td>
 </tr>
 </table>
-
-
-
-
-
-
+</f:verbatim>

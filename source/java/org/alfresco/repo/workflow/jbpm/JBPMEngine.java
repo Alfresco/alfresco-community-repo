@@ -31,8 +31,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.zip.ZipInputStream;
@@ -96,6 +96,7 @@ import org.jbpm.graph.def.Event;
 import org.jbpm.graph.def.Node;
 import org.jbpm.graph.def.ProcessDefinition;
 import org.jbpm.graph.def.Transition;
+import org.jbpm.graph.exe.Comment;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.jbpm.graph.exe.ProcessInstance;
 import org.jbpm.graph.exe.Token;
@@ -1809,6 +1810,14 @@ public class JBPMEngine extends BPMEngine
         properties.put(ContentModel.PROP_CREATED, instance.getCreate());
         properties.put(ContentModel.PROP_OWNER, instance.getActorId());
         
+        // map jBPM comments
+        // NOTE: Only use first comment in list
+        List<Comment> comments = instance.getComments();
+        if (comments != null && comments.size() > 0)
+        {
+            properties.put(WorkflowModel.PROP_COMMENT, comments.get(0).getMessage());
+        }
+        
         // map jBPM task instance collections to associations
         Set pooledActors = instance.getPooledActors();
         if (pooledActors != null)
@@ -1916,6 +1925,37 @@ public class JBPMEngine extends BPMEngine
                         throw new WorkflowException("Task priority '" + value + "' is invalid");
                     }
                     instance.setPriority((Integer)value);
+                    continue;
+                }
+                else if (key.equals(WorkflowModel.PROP_COMMENT))
+                {
+                    if (!(value instanceof String))
+                    {
+                        throw new WorkflowException("Task comment '" + value + "' is invalid");
+                    }
+                        
+                    // NOTE: Only use first comment in list
+                    final List<Comment> comments = instance.getComments();
+                    if (comments != null && comments.size() > 0)
+                    {
+                        // remove existing comments
+                        // TODO: jBPM does not provide assistance here
+                        jbpmTemplate.execute(new JbpmCallback()
+                        {
+                            public Object doInJbpm(JbpmContext context)
+                            {
+                                Session session = context.getSession();
+                                for (Comment comment : comments)
+                                {
+                                    comment.getToken().getComments().remove(comment);
+                                    session.delete(comment);
+                                }
+                                comments.clear();
+                                return null;
+                            }
+                        });
+                    }
+                    instance.addComment((String)value);
                     continue;
                 }
                 else if (key.equals(ContentModel.PROP_OWNER))

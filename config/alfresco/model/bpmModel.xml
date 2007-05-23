@@ -135,7 +135,9 @@
                 <!--             -->
                 <!--  Task Notes -->
                 <!--             -->
-                <!--  Note: Implemented via cm:content property : see 'fm:post' -->
+                <property name="bpm:comment">
+                    <type>d:text</type>
+                </property>
 
             </properties>
 
@@ -180,7 +182,8 @@
 
                 <!--  Task Outcome -->
                 <property name="bpm:outcome">
-                    <type>d:text</type><!-- Transition id -->
+                    <!-- NOTE: Transition id -->
+                    <type>d:text</type>  
                 </property>
 
                 <!--  Items within package marked as complete -->
@@ -393,12 +396,6 @@
                 <!--        search within Alfresco e.g. task info, workflow info ...     -->
 
             </properties>
-
-            <!--  Commentary -->
-            <!--  Note: Implement tracking of comments via fm:discussable aspect        -->
-            <!--  Note: Haven't made this aspect mandatory as this would force creation -->
-            <!--        of forum folder against each package, even if there aren't any  -->
-            <!--        comments                                                        -->
 
         </aspect>
 

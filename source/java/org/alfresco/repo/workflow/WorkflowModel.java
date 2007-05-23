@@ -48,6 +48,7 @@ public interface WorkflowModel
     static final QName PROP_STATUS = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "status");
     static final QName PROP_PERCENT_COMPLETE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "percentComplete");
     static final QName PROP_COMPLETED_ITEMS = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "completedItems");
+    static final QName PROP_COMMENT = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "comment");
     static final QName ASSOC_POOLED_ACTORS = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "pooledActors");
 
     // workflow task contstants

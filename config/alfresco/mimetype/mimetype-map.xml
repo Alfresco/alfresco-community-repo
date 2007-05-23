@@ -292,7 +292,10 @@
             <extension>z</extension>
          </mimetype>
          <mimetype mimetype="application/zip" display="ZIP">
-            <extension>zip</extension>
+            <extension display="ZIP" default="true">zip</extension>
+            <extension display="WAR">war</extension>
+            <extension display="JAR">jar</extension>
+            <extension display="EAR">ear</extension>
          </mimetype>
          <mimetype mimetype="image/x-dwg" display="AutoCAD Drawing">
             <extension>dwg</extension>

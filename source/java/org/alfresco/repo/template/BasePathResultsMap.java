@@ -70,7 +70,18 @@ public abstract class BasePathResultsMap extends BaseTemplateMap
         if (xpath.length() != 0)
         {
             if (logger.isDebugEnabled())
-                logger.debug("Executing xpath: " + xpath);
+            {
+                String out = "Executing xpath: " + xpath;
+                if (params != null)
+                {
+                   out += " with params:";
+                   for (QueryParameterDefinition p : params)
+                   {
+                      out += " " + p.getDefault();
+                   }
+                }
+                logger.debug(out);
+            }
             
             List<NodeRef> nodes = this.services.getSearchService().selectNodes(
                     this.parent.getNodeRef(),

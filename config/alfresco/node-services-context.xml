@@ -5,11 +5,8 @@
 <beans>
    
    <bean id="mlPropertyInterceptor" class="org.alfresco.repo.node.MLPropertyInterceptor">
-      <property name="directNodeService">
+      <property name="nodeService">
          <ref bean="mlAwareNodeService" />
-      </property>
-      <property name="directMultilingualContentService">
-         <ref bean="multilingualContentService" />
       </property>
       <property name="dictionaryService">
          <ref bean="dictionaryService" />

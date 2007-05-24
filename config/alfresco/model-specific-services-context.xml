@@ -36,6 +36,18 @@
          <ref bean="multilingualContentService"/>
       </property>
    </bean>
+
+   <bean id="mlContentInterceptor" class="org.alfresco.repo.model.ml.MLContentInterceptor" >
+      <property name="nodeService">
+         <ref bean="nodeService"/>
+      </property>
+      <property name="contentService">
+         <ref bean="contentService"/>
+      </property>
+      <property name="multilingualContentService">
+         <ref bean="multilingualContentService"/>
+      </property>
+   </bean>
     
    
    <bean name="tempFileMarkerInterceptor" class="org.alfresco.repo.model.filefolder.TempFileMarkerInterceptor">

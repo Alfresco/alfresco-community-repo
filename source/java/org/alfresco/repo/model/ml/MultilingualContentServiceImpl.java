@@ -142,6 +142,39 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     }
 
     /**
+     * Get the ML Container of the given node, allowing null
+     * @param mlDocumentNodeRef     the translation
+     * @param allowNull             true if a null value may be returned
+     * @return                      Returns the <b>cm:mlContainer</b> or null if there isn't one
+     * @throws AlfrescoRuntimeException if there is no container
+     */
+    private NodeRef getMLContainer(NodeRef mlDocumentNodeRef, boolean allowNull)
+    {
+        NodeRef mlContainerNodeRef = null;
+        List<ChildAssociationRef> parentAssocRefs = nodeService.getParentAssocs(
+                mlDocumentNodeRef,
+                ContentModel.ASSOC_MULTILINGUAL_CHILD,
+                RegexQNamePattern.MATCH_ALL);
+        if (parentAssocRefs.size() == 0)
+        {
+            if (!allowNull)
+            {
+                throw new AlfrescoRuntimeException(
+                        "No multilingual container exists for document node: " + mlDocumentNodeRef);
+            }
+            mlContainerNodeRef = null;
+        }
+        else if (parentAssocRefs.size() >= 1)
+        {
+            // Just get it
+            ChildAssociationRef toKeepAssocRef = parentAssocRefs.get(0);
+            mlContainerNodeRef = toKeepAssocRef.getParentRef();
+        }
+        // Done
+        return mlContainerNodeRef;
+    }
+    
+    /**
      * Retrieve or create a <b>cm:mlDocument</b> container for the given node, which must have the
      * <b>cm:mlDocument</b> already applied.
      *
@@ -324,12 +357,21 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     /** @inheritDoc */
     public void unmakeTranslation(NodeRef translationNodeRef)
     {
-        boolean isPivot = isPivotTranslation(translationNodeRef);
-        
-        if (isPivot)
+        // Get the container
+        NodeRef containerNodeRef = getMLContainer(translationNodeRef, true);
+        if (containerNodeRef == null)
         {
-            // Get the container
-            NodeRef containerNodeRef = getOrCreateMLContainer(translationNodeRef, false);
+            if (nodeService.hasAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+            {
+                nodeService.deleteNode(translationNodeRef);
+            }
+            else
+            {
+                nodeService.removeAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
+            }
+        }
+        else if (isPivotTranslation(translationNodeRef))
+        {
             // Get all translation child associations
             List<ChildAssociationRef> mlChildAssocs = nodeService.getChildAssocs(
                     containerNodeRef,
@@ -360,7 +402,6 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
             else
             {
                 // Get the container and break the association to it
-                NodeRef containerNodeRef = getOrCreateMLContainer(translationNodeRef, false);
                 nodeService.removeChild(containerNodeRef, translationNodeRef);
                 nodeService.removeAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
             }

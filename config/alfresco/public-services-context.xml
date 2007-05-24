@@ -105,6 +105,7 @@
                 <idref local="ContentService_transaction"/>
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
+                <idref bean="mlContentInterceptor"/>
                 <idref bean="ContentService_security"/>
             </list>
         </property>
@@ -676,17 +677,9 @@
                 <idref local="exceptionTranslator"/>
                 <idref bean="FileFolderService_security"/>
                 <idref bean="mlTranslationInterceptor"/>
+                <idref bean="mlContentInterceptor"/>
                 <idref bean="tempFileMarkerInterceptor"/>
             </list>
-        </property>
-    </bean>
-    
-    <bean id="mlTranslationInterceptor" class="org.alfresco.repo.node.MLTranslationInterceptor">
-        <property name="nodeService">
-            <ref bean="nodeService"/>
-        </property>
-        <property name="multilingualContentService">
-            <ref bean="multilingualContentService"/>
         </property>
     </bean>
     

@@ -30,11 +30,9 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.i18n.I18NUtil;
-import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -73,9 +71,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
     private static ThreadLocal<Boolean> mlAware = new ThreadLocal<Boolean>();
     
     /** Direct access to the NodeService */
-    private NodeService directNodeService;
-    /** Direct access to the ML Content Service */
-    private MultilingualContentService directMultilingualContentService;
+    private NodeService nodeService;
     /** Used to access property definitions */
     private DictionaryService dictionaryService;
     
@@ -108,16 +104,11 @@ public class MLPropertyInterceptor implements MethodInterceptor
         }
     }
     
-    public void setDirectNodeService(NodeService bean)
+    public void setNodeService(NodeService bean)
     {
-        this.directNodeService = bean;
+        this.nodeService = bean;
     }
     
-    public void setDirectMultilingualContentService(MultilingualContentService directMultilingualContentService)
-    {
-        this.directMultilingualContentService = directMultilingualContentService;
-    }
-
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
@@ -184,7 +175,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
             NodeRef nodeRef = (NodeRef) args[0];
             Map<QName, Serializable> newProperties =(Map<QName, Serializable>) args[1];
             // Get the current properties for the node
-            Map<QName, Serializable> currentProperties = directNodeService.getProperties(nodeRef);
+            Map<QName, Serializable> currentProperties = nodeService.getProperties(nodeRef);
             // Convert all properties
             Map<QName, Serializable> convertedProperties = new HashMap<QName, Serializable>(newProperties.size() * 2);              
             for (Map.Entry<QName, Serializable> entry : newProperties.entrySet())
@@ -199,7 +190,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
                  convertedProperties.put(propertyQName, inboundValue);
             }
             // Now complete the call by passing the converted properties
-            directNodeService.setProperties(nodeRef, convertedProperties);
+            nodeService.setProperties(nodeRef, convertedProperties);
             // Done
         }
         else if (methodName.equals("setProperty"))
@@ -212,7 +203,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
             inboundValue = convertInboundProperty(contentLocale, nodeRef, propertyQName, inboundValue, null);
             
             // Pass this through to the node service
-            directNodeService.setProperty(nodeRef, propertyQName, inboundValue);
+            nodeService.setProperty(nodeRef, propertyQName, inboundValue);
             // Done
         }
         else
@@ -233,36 +224,12 @@ public class MLPropertyInterceptor implements MethodInterceptor
             Serializable outboundValue)
     {
         Serializable ret = null;
-        PropertyDefinition propertyDef = this.dictionaryService.getProperty(propertyQName);
         // Is it content?
-        if (propertyDef != null && propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
+        if (outboundValue != null && outboundValue instanceof MLText)
         {
-            // Check if the document is an empty translation
-            if (directNodeService.hasAspect(nodeRef,  ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
-            {
-                // Ignore the value and take it directly from the pivot translation
-                NodeRef pivotNodeRef = directMultilingualContentService.getPivotTranslation(nodeRef);
-                if (pivotNodeRef == null)
-                {
-                    // This is very bad, but we don't fail the server for it
-                    logger.warn("No pivot translation found for empty translation: " + nodeRef);
-                    ret = outboundValue;
-                }
-                else
-                {
-                    // Get the corresponding property from the pivot
-                    ret = directNodeService.getProperty(pivotNodeRef, propertyQName);
-                }
-            }
-            else
-            {
-                ret = outboundValue;
-            }
-        }
-        else if (outboundValue != null && outboundValue instanceof MLText)
-        {
-             MLText mlText = (MLText) outboundValue;
-             ret = mlText.getClosestValue(contentLocale);
+            // It is MLText
+            MLText mlText = (MLText) outboundValue;
+            ret = mlText.getClosestValue(contentLocale);
         }
         else
         {
@@ -310,7 +277,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
                 // Get the current value from the node service, if not provided
                 if (currentValue == null)
                 {
-                    currentValue = directNodeService.getProperty(nodeRef, propertyQName);
+                    currentValue = nodeService.getProperty(nodeRef, propertyQName);
                 }
                 MLText returnMLValue = new MLText();
                 if (currentValue != null)

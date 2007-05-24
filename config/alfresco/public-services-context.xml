@@ -1311,7 +1311,8 @@
     </bean>
 
     <bean id="LinkValidationService" 
-          class="org.springframework.aop.framework.ProxyFactoryBean">
+          class="org.springframework.aop.framework.ProxyFactoryBean"
+          lazy-init="true">
         <property name="proxyInterfaces">
             <list>
                 <value>org.alfresco.linkvalidation.LinkValidationService</value>

@@ -4,7 +4,8 @@
 	
 <beans>
     <bean id="linkValidationService" 
-          class="org.alfresco.linkvalidation.LinkValidationServiceImpl">
+          class="org.alfresco.linkvalidation.LinkValidationServiceImpl"
+          lazy-init="true">
         <property name="attributeService">
             <ref bean="attributeService"/>
         </property>

@@ -122,17 +122,7 @@ public class FileUploadBean
       {
          if (file != null && currentPath != null && currentPath.length() != 0)
          {
-            // convert cm:name based path to a NodeRef
-            StringTokenizer t = new StringTokenizer(currentPath, "/");
-            int tokenCount = t.countTokens();
-            String[] elements = new String[tokenCount];
-            for (int i=0; i<tokenCount; i++)
-            {
-               elements[i] = t.nextToken();
-            }
-            
-            NodeRef containerRef = BaseServlet.resolveWebDAVPath(fc, elements, false);
-            
+            NodeRef containerRef = pathToNodeRef(fc, currentPath);
             if (containerRef != null)
             {
                // Try and extract metadata from the file
@@ -208,5 +198,18 @@ public class FileUploadBean
       ResponseWriter out = fc.getResponseWriter();
       XMLUtil.print(result, out);
       out.close();
+   }
+   
+   static NodeRef pathToNodeRef(FacesContext fc, String path)
+   {
+      // convert cm:name based path to a NodeRef
+      StringTokenizer t = new StringTokenizer(path, "/");
+      int tokenCount = t.countTokens();
+      String[] elements = new String[tokenCount];
+      for (int i=0; i<tokenCount; i++)
+      {
+         elements[i] = t.nextToken();
+      }
+      return BaseServlet.resolveWebDAVPath(fc, elements, false);
    }
 }

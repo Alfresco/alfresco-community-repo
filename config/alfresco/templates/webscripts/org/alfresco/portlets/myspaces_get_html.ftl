@@ -66,9 +66,9 @@
       <div class="spaceAction spaceActionCreateSpace" title="Create a new Space" onclick="MySpaces.createSpace(this);">Create Space</div>
       <div class="spaceCreateSpacePanel">
          <table cellspacing="2" cellpadding="2" border="0">
-            <tr><td>Name:</td><td><input style="margin:4px" type="text" value="" size="32" name="space-name"></td></tr>
-            <tr><td>Title:</td><td><input style="margin:4px" type="text" value="" size="32" name="space-title"></td></tr>
-            <tr><td>Description:</td><td><input style="margin:4px" type="text" value="" size="32" name="space-description"></td></tr>
+            <tr><td>Name:</td><td><input style="margin:4px" type="text" size="32" maxlength="1024" id="space-name"></td></tr>
+            <tr><td>Title:</td><td><input style="margin:4px" type="text" size="32" maxlength="1024" id="space-title"></td></tr>
+            <tr><td>Description:</td><td><input style="margin:4px" type="text" size="32" maxlength="1024" id="space-description"></td></tr>
          </table>
          <input style="margin:4px" type="button" value="OK" onclick='MySpaces.createSpaceOK(this, "${path?url?replace("'","_%_")}");'>
          <input style="margin:4px" type="button" value="Cancel" onclick="MySpaces.closePanel(this);">
@@ -301,7 +301,7 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    border: 1px solid #CCD4DB;
    background-color: #EEF7FB;
    width: 24em;
-   height: 11em;
+   height: 11.4em;
    padding: 8px;
    margin: 8px;
    display: none;

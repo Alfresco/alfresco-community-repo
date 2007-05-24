@@ -30,7 +30,7 @@ var MySpaces = {
                },
                failure: function(response)
                {
-                  $('spacePanel').setHTML("Sorry, preview currently unavailable.");
+                  $('spacePanel').setHTML("Sorry, list data currently unavailable.");
                }
             }
          );
@@ -249,6 +249,7 @@ var MySpaces = {
       var panel = $E(".spaceCreateSpacePanel", $(actionEl).getParent());
       panel.setStyle("opacity", 0);
       panel.setStyle("display", "inline");
+      panel.getElementById("space-name").focus();
       var anim = new Fx.Styles(panel, {duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
       anim.start({'opacity': 1});
    },
@@ -258,8 +259,43 @@ var MySpaces = {
     */
    createSpaceOK: function(actionEl, path)
    {
-      // TODO: ajax call to create space...
-      //path = path.replace("_%_", "'");
+      // gather the input data
+      var panel = $(actionEl).getParent();
+      var spaceName = panel.getElementById("space-name").value;
+      var spaceTitle = panel.getElementById("space-title").value;
+      var spaceDesc = panel.getElementById("space-description").value;
+      
+      if (spaceName.length != 0)
+      {
+         // ajax call to create space
+         YAHOO.util.Connect.asyncRequest(
+            "POST",
+            getContextPath() + '/ajax/invoke/MySpacesBean.createSpace',
+            {
+               success: function(response)
+               {
+                  if (response.responseText.indexOf("OK:") == 0)
+                  {
+                     MySpaces.refreshList();
+                  }
+                  else
+                  {
+                     alert("Error during creation of new space: " + response.responseText);
+                  }
+                  MySpaces.closePanel(actionEl);
+               },
+               failure: function(response)
+               {
+                  alert("Error during creation of new space: " + response.responseText);
+                  MySpaces.closePanel(actionEl);
+               }
+            }, 
+            "path=" + path.replace("_%_", "'") +
+            "&name=" + escape(spaceName) +
+            "&title=" + escape(spaceTitle) +
+            "&description=" + escape(spaceDesc)
+         );
+      }
    },
    
    /**
@@ -323,19 +359,27 @@ var MySpaces = {
    {
       if (error == null)
       {
-         // empty the main panel div and restart by reloading the panel contents
-         var spacePanel = $('spacePanel');
-         spacePanel.setStyle('visibility', 'hidden');
-         // show the ajax wait panel
-         $('spacePanelOverlay').setStyle('visibility', 'visible');
-         spacePanel.empty();
-         spacePanel.removeEvents('mouseleave');
-         MySpaces.start();
+         MySpaces.refreshList();
       }
       else
       {
          alert("ERROR: " + error);
       }
+   },
+   
+   /**
+    * Refresh the main data list contents within the spacePanel container
+    */
+   refreshList: function()
+   {
+      // empty the main panel div and restart by reloading the panel contents
+      var spacePanel = $('spacePanel');
+      spacePanel.setStyle('visibility', 'hidden');
+      // show the ajax wait panel
+      $('spacePanelOverlay').setStyle('visibility', 'visible');
+      spacePanel.empty();
+      spacePanel.removeEvents('mouseleave');
+      MySpaces.start();
    }
 };
 

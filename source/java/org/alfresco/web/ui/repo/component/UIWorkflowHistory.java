@@ -63,6 +63,7 @@ public class UIWorkflowHistory extends SelfRenderingComponent
    private static final String MSG_ID = "id";
    private static final String MSG_CREATED = "created";
    private static final String MSG_ASSIGNEE = "assignee";
+   private static final String MSG_COMMENT = "comment";
    private static final String MSG_DATE_COMPLETED = "completed_on";
    private static final String MSG_OUTCOME = "outcome";
    private static final String MSG_NO_HISTORY = "no_workflow_history";
@@ -120,22 +121,6 @@ public class UIWorkflowHistory extends SelfRenderingComponent
          List<WorkflowTask> tasks = Repository.getServiceRegistry(context).
                   getWorkflowService().queryTasks(query);
          
-         // output surrounding table and style if necessary
-         out.write("<table cellspacing='2' cellpadding='1' border='0' width='100%'");
-         if (this.getAttributes().get("style") != null)
-         {
-            out.write(" style=\"");
-            out.write((String)this.getAttributes().get("style"));
-            out.write("\"");
-         }
-         if (this.getAttributes().get("styleClass") != null)
-         {
-            out.write(" class=\"");
-            out.write((String)this.getAttributes().get("styleClass"));
-            out.write("\"");
-         }
-         out.write(">");
-         
          if (tasks.size() == 0)
          {
             out.write("<div style='margin-left:18px;margin-top: 6px;'>");
@@ -144,6 +129,22 @@ public class UIWorkflowHistory extends SelfRenderingComponent
          }
          else
          {
+            // output surrounding table and style if necessary
+            out.write("<table cellspacing='2' cellpadding='1' border='0' width='100%'");
+            if (this.getAttributes().get("style") != null)
+            {
+               out.write(" style=\"");
+               out.write((String)this.getAttributes().get("style"));
+               out.write("\"");
+            }
+            if (this.getAttributes().get("styleClass") != null)
+            {
+               out.write(" class=\"");
+               out.write((String)this.getAttributes().get("styleClass"));
+               out.write("\"");
+            }
+            out.write(">");
+            
             // output a header row
             out.write("<tr align=left><th>");
             out.write(bundle.getString(MSG_DESCRIPTION));
@@ -155,6 +156,8 @@ public class UIWorkflowHistory extends SelfRenderingComponent
             out.write(bundle.getString(MSG_CREATED));
             out.write("</th><th>");
             out.write(bundle.getString(MSG_ASSIGNEE));
+            out.write("</th><th>");
+            out.write(bundle.getString(MSG_COMMENT));
             out.write("</th><th>");
             out.write(bundle.getString(MSG_DATE_COMPLETED));
             out.write("</th><th>");
@@ -168,6 +171,7 @@ public class UIWorkflowHistory extends SelfRenderingComponent
                String desc = (String)task.properties.get(WorkflowModel.PROP_DESCRIPTION);
                Date createdDate = (Date)task.properties.get(ContentModel.PROP_CREATED);
                String owner = (String)task.properties.get(ContentModel.PROP_OWNER);
+               String comment = (String)task.properties.get(WorkflowModel.PROP_COMMENT);
                Date completedDate = (Date)task.properties.get(WorkflowModel.PROP_COMPLETION_DATE);
                String transition = (String)task.properties.get(WorkflowModel.PROP_OUTCOME);
                String outcome = "";
@@ -194,16 +198,18 @@ public class UIWorkflowHistory extends SelfRenderingComponent
                out.write(Utils.getDateTimeFormat(context).format(createdDate));
                out.write("</td><td>");
                out.write(owner);
+               out.write("</td><td width='200'>");
+               out.write(comment == null ? "" : comment);
                out.write("</td><td>");
                out.write(Utils.getDateTimeFormat(context).format(completedDate));
                out.write("</td><td>");
                out.write(outcome);
                out.write("</td></tr>");
             }
+            
+            // output the end of the table
+            out.write("</table>");
          }
-         
-         // output the end of the table
-         out.write("</table>");
       }
    }
 

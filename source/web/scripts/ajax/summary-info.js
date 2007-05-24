@@ -162,7 +162,13 @@ Alfresco.InfoPanel.prototype =
       panel.loading = false;
       
       // drag-drop object
-      new Drag.Move(div);
+      new Drag.Move(div,
+         {
+            onStart : function(el)
+            {
+               el.setStyle("zIndex", _zIndex++);
+            }
+         });
       
       // keep track of the div element we created
       panel.popupElement = div;

@@ -34,6 +34,10 @@ import java.util.Locale;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.attributes.Attribute;
+import org.alfresco.repo.attributes.MapAttributeValue;
+import org.alfresco.repo.attributes.StringAttribute;
+import org.alfresco.repo.attributes.StringAttributeValue;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.VersionNumber;
@@ -144,6 +148,32 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals(Locale.FRANCE, DefaultTypeConverter.INSTANCE.convert(Locale.class, "fr_FR_"));
         
         assertEquals(new VersionNumber("1.2.3"), DefaultTypeConverter.INSTANCE.convert(VersionNumber.class, "1.2.3"));
+    }
+    
+    String localeStrEn = DefaultTypeConverter.INSTANCE.convert(String.class, Locale.ENGLISH);
+    String localeStrFr = DefaultTypeConverter.INSTANCE.convert(String.class, Locale.FRENCH);
+    public void testToMLText()
+    {
+        StringAttribute stringAttributeEn = new StringAttributeValue("English text");
+        StringAttribute stringAttributeFr = new StringAttributeValue("French text");
+        MapAttributeValue mapAttributeValue = new MapAttributeValue();
+        mapAttributeValue.put(localeStrEn, stringAttributeEn);
+        mapAttributeValue.put(localeStrFr, stringAttributeFr);
+        
+        MLText mlText = DefaultTypeConverter.INSTANCE.convert(MLText.class, mapAttributeValue);
+        assertEquals("MapAttribute to MLText failed", "English text", mlText.getValue(Locale.ENGLISH));
+        assertEquals("MapAttribute to MLText failed", "French text", mlText.getValue(Locale.FRENCH));
+    }
+    
+    public void testFromMLText()
+    {
+        MLText mlText = new MLText();
+        mlText.put(Locale.ENGLISH, "English");
+        mlText.put(Locale.FRENCH, "French");
+        Attribute attribute = DefaultTypeConverter.INSTANCE.convert(Attribute.class, mlText);
+        assertTrue("Attribute is of the wrong type", attribute instanceof MapAttributeValue);
+        assertNotNull("ML value not mapped", attribute.get(localeStrEn));
+        assertNotNull("ML value not mapped", attribute.get(localeStrFr));
     }
 
     public void testPrimativeAccessors()

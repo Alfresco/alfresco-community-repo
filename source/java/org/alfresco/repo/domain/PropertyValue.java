@@ -34,10 +34,13 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.attributes.Attribute;
+import org.alfresco.repo.attributes.AttributeConverter;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -49,8 +52,6 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Immutable property value storage class.
- * <p>
- * The 
  * 
  * @author Derek Hulley
  */
@@ -160,12 +161,38 @@ public class PropertyValue implements Cloneable, Serializable
                 return DefaultTypeConverter.INSTANCE.convert(Date.class, value);
             }
         },
+        DB_ATTRIBUTE
+        {
+            /** class that is able to convert from persisted attributes to normal attributes */
+            private AttributeConverter attributeConverter = new AttributeConverter();
+            
+            @Override
+            Serializable convert(Serializable value)
+            {
+                Attribute attribute = DefaultTypeConverter.INSTANCE.convert(Attribute.class, value);
+                return attributeConverter.toPersistent(attribute);
+            }
+        },
         SERIALIZABLE
         {
             @Override
             Serializable convert(Serializable value)
             {
                 return value;
+            }
+        },
+        MLTEXT
+        {
+            @Override
+            protected ValueType getPersistedType(Serializable value)
+            {
+                return ValueType.DB_ATTRIBUTE;
+            }
+
+            @Override
+            Serializable convert(Serializable value)
+            {
+                return DefaultTypeConverter.INSTANCE.convert(MLText.class, value);
             }
         },
         CONTENT
@@ -292,6 +319,9 @@ public class PropertyValue implements Cloneable, Serializable
         }
         
         /**
+         * Converts a value to this type.  The implementation must be able to cope with any legitimate
+         * source value.
+         * 
          * @see DefaultTypeConverter.INSTANCE#convert(Class, Object)
          */
         abstract Serializable convert(Serializable value);
@@ -389,6 +419,14 @@ public class PropertyValue implements Cloneable, Serializable
         {
             return ValueType.VERSION_NUMBER;
         }
+        else if (value instanceof Attribute)
+        {
+            return ValueType.DB_ATTRIBUTE;
+        }
+        else if (value instanceof MLText)
+        {
+            return ValueType.MLTEXT;
+        }
         else
         {
             // type is not recognised as belonging to any particular slot
@@ -412,8 +450,7 @@ public class PropertyValue implements Cloneable, Serializable
         valueTypesByPropertyType.put(DataTypeDefinition.CATEGORY, ValueType.NODEREF);
         valueTypesByPropertyType.put(DataTypeDefinition.CONTENT, ValueType.CONTENT);
         valueTypesByPropertyType.put(DataTypeDefinition.TEXT, ValueType.STRING);
-        // TODO: Re-examine storage of MLTEXT data type
-        valueTypesByPropertyType.put(DataTypeDefinition.MLTEXT, ValueType.SERIALIZABLE);
+        valueTypesByPropertyType.put(DataTypeDefinition.MLTEXT, ValueType.MLTEXT);
         valueTypesByPropertyType.put(DataTypeDefinition.NODE_REF, ValueType.NODEREF);
         valueTypesByPropertyType.put(DataTypeDefinition.CHILD_ASSOC_REF, ValueType.CHILD_ASSOC_REF);
         valueTypesByPropertyType.put(DataTypeDefinition.ASSOC_REF, ValueType.ASSOC_REF);
@@ -434,6 +471,7 @@ public class PropertyValue implements Cloneable, Serializable
     private Float floatValue;
     private Double doubleValue;
     private String stringValue;
+    private Attribute attributeValue;
     private Serializable serializableValue;
     
     /**
@@ -534,6 +572,7 @@ public class PropertyValue implements Cloneable, Serializable
                     EqualsHelper.nullSafeEquals(this.floatValue, that.floatValue) &&
                     EqualsHelper.nullSafeEquals(this.doubleValue, that.doubleValue) &&
                     EqualsHelper.nullSafeEquals(this.stringValue, that.stringValue) &&
+                    EqualsHelper.nullSafeEquals(this.attributeValue, that.attributeValue) &&
                     EqualsHelper.nullSafeEquals(this.serializableValue, that.serializableValue)
                     );
             
@@ -636,6 +675,9 @@ public class PropertyValue implements Cloneable, Serializable
             case STRING:
                 this.stringValue = (String) value;
                 break;
+            case DB_ATTRIBUTE:
+                this.attributeValue = (Attribute) value;
+                break;
             case SERIALIZABLE:
                 this.serializableValue = (Serializable) value;
                 break;
@@ -679,6 +721,8 @@ public class PropertyValue implements Cloneable, Serializable
                 {
                     return this.stringValue;
                 }
+            case DB_ATTRIBUTE:
+                return this.attributeValue;
             case SERIALIZABLE:
                 return this.serializableValue;
             default:
@@ -817,6 +861,15 @@ public class PropertyValue implements Cloneable, Serializable
     public void setStringValue(String value)
     {
         this.stringValue = value;
+    }
+    
+    public Attribute getAttributeValue()
+    {
+        return attributeValue;
+    }
+    public void setAttributeValue(Attribute value)
+    {
+        this.attributeValue = value;
     }
     
     public Serializable getSerializableValue()

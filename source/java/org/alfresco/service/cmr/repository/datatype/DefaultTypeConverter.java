@@ -37,9 +37,15 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.repo.attributes.Attribute;
+import org.alfresco.repo.attributes.MapAttribute;
+import org.alfresco.repo.attributes.MapAttributeValue;
+import org.alfresco.repo.attributes.StringAttribute;
+import org.alfresco.repo.attributes.StringAttributeValue;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -73,7 +79,6 @@ import org.alfresco.util.VersionNumber;
  */
 public class DefaultTypeConverter
 {
-
     /**
      * Default Type Converter
      */
@@ -295,6 +300,41 @@ public class DefaultTypeConverter
             }
         });
 
+        //
+        // Attributes
+        //
+        INSTANCE.addConverter(MapAttribute.class, MLText.class, new TypeConverter.Converter<MapAttribute, MLText>()
+        {
+            public MLText convert(MapAttribute source)
+            {
+                MLText ret = new MLText();
+                for (Map.Entry<String, Attribute> entry : source.entrySet())
+                {
+                    String localeStr = entry.getKey();
+                    Locale locale;
+                    try
+                    {
+                        locale = INSTANCE.convert(Locale.class, localeStr);
+                    }
+                    catch (TypeConversionException e)
+                    {
+                        throw new TypeConversionException(
+                                "MapAttribute string key cannot be converted to a locales:" + localeStr, e);
+                    }
+                    Attribute valueAttribute = entry.getValue();
+                    if (valueAttribute instanceof StringAttribute)
+                    {
+                        ret.put(locale, valueAttribute.getStringValue());
+                    }
+                    else
+                    {
+                        throw new TypeConversionException(
+                                "MapAttribute must contain Locale-String mappings to convert to MLText");
+                    }
+                }
+                return ret;
+            }
+        });
         
         //
         // From Locale
@@ -339,6 +379,20 @@ public class DefaultTypeConverter
             }
         });
 
+        INSTANCE.addConverter(MLText.class, Attribute.class, new TypeConverter.Converter<MLText, Attribute>()
+        {
+            public Attribute convert(MLText source)
+            {
+                Attribute attribute = new MapAttributeValue();
+                for (Map.Entry<Locale, String> entry : source.entrySet())
+                {
+                    String localeStr = INSTANCE.convert(String.class, entry.getKey());
+                    Attribute stringAttribute = new StringAttributeValue(entry.getValue());
+                    attribute.put(localeStr, stringAttribute);
+                }
+                return attribute;
+            }
+        });
         
         //
         // From enum

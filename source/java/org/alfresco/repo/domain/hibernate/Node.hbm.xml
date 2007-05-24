@@ -70,6 +70,7 @@
             <property name="floatValue" column="float_value" type="float" />
             <property name="doubleValue" column="double_value" type="double" />
             <property name="stringValue" column="string_value" type="string" length="1024"/>
+            <many-to-one name="attributeValue" column="attribute_value" class="org.alfresco.repo.attributes.AttributeImpl" />
             <property name="serializableValue" column="serializable_value" type="serializable" length="16384"/>
          </composite-element>
       </map>

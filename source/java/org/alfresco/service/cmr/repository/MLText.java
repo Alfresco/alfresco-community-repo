@@ -50,8 +50,6 @@ public class MLText extends HashMap<Locale, String>
 {
     private static final long serialVersionUID = -3696135175650511841L;
 
-    private Locale defaultLocale;
-    
     public MLText()
     {
         super(3, 0.75F);
@@ -82,7 +80,6 @@ public class MLText extends HashMap<Locale, String>
     public MLText(Locale locale, String value)
     {
         super(3, 0.75F);
-        defaultLocale = locale;
         super.put(locale, value);
     }
 
@@ -164,7 +161,7 @@ public class MLText extends HashMap<Locale, String>
         if (match == null)
         {
             // No close matches for the locale - go for the default locale
-            locale = defaultLocale;
+            locale = I18NUtil.getLocale();
             match = I18NUtil.getNearestLocale(locale, options);
             if (match == null)
             {

@@ -61,7 +61,6 @@ public class ContentTestSuite extends TestSuite
         TestSuite suite = new TestSuite();
         
         suite.addTestSuite(ContentStoreCleanerTest.class);
-        suite.addTestSuite(ContentStoreCleanerTest.class);
         suite.addTestSuite(FileContentStoreTest.class);
         suite.addTestSuite(NoRandomAccessFileContentStoreTest.class);
         suite.addTestSuite(MappingMetadataExtracterTest.class);

@@ -654,25 +654,28 @@ public class ManageTaskDialog extends BaseDialogBean
 
             if (this.workflowPackage.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
             {
-               final NodeRef stagingNodeRef = (NodeRef)
-                  this.nodeService.getProperty(this.workflowPackage,
-                                              WCMModel.PROP_AVM_DIR_INDIRECTION);
-               final String stagingAvmPath = AVMNodeConverter.ToAVMVersionPath(stagingNodeRef).getSecond();
-               final String packageAvmPath = AVMNodeConverter.ToAVMVersionPath(this.workflowPackage).getSecond();
-               if (LOGGER.isDebugEnabled())
-                  LOGGER.debug("comparing " + packageAvmPath + " with " + stagingAvmPath);
-               for (AVMDifference d : this.avmSyncService.compare(-1, packageAvmPath,
-                                                                  -1, stagingAvmPath,
-                                                                  null))
+               if (this.nodeService.exists(this.workflowPackage))
                {
+                  final NodeRef stagingNodeRef = (NodeRef)
+                     this.nodeService.getProperty(this.workflowPackage,
+                                                 WCMModel.PROP_AVM_DIR_INDIRECTION);
+                  final String stagingAvmPath = AVMNodeConverter.ToAVMVersionPath(stagingNodeRef).getSecond();
+                  final String packageAvmPath = AVMNodeConverter.ToAVMVersionPath(this.workflowPackage).getSecond();
                   if (LOGGER.isDebugEnabled())
-                     LOGGER.debug("got difference " + d);
-                  if (d.getDifferenceCode() == AVMDifference.NEWER ||
-                      d.getDifferenceCode() == AVMDifference.CONFLICT)
+                     LOGGER.debug("comparing " + packageAvmPath + " with " + stagingAvmPath);
+                  for (AVMDifference d : this.avmSyncService.compare(-1, packageAvmPath,
+                                                                     -1, stagingAvmPath,
+                                                                     null))
                   {
-                     this.addAVMNode(new AVMNode(this.avmService.lookup(d.getSourceVersion(),
-                                                                        d.getSourcePath(),
-                                                                        true)));
+                     if (LOGGER.isDebugEnabled())
+                        LOGGER.debug("got difference " + d);
+                     if (d.getDifferenceCode() == AVMDifference.NEWER ||
+                         d.getDifferenceCode() == AVMDifference.CONFLICT)
+                     {
+                        this.addAVMNode(new AVMNode(this.avmService.lookup(d.getSourceVersion(),
+                                                                           d.getSourcePath(),
+                                                                           true)));
+                     }
                   }
                }
             }

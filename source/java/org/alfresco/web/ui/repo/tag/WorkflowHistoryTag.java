@@ -35,6 +35,9 @@ import org.alfresco.web.ui.common.tag.HtmlComponentTag;
  */
 public class WorkflowHistoryTag extends HtmlComponentTag
 {
+   private String value;
+   private String completedMode;
+
    /**
     * @see javax.faces.webapp.UIComponentTag#getComponentType()
     */
@@ -59,6 +62,7 @@ public class WorkflowHistoryTag extends HtmlComponentTag
       super.setProperties(component);
       
       setStringProperty(component, "value", this.value);
+      setBooleanProperty(component, "completedMode", this.completedMode);
    }
    
    /**
@@ -68,6 +72,7 @@ public class WorkflowHistoryTag extends HtmlComponentTag
    {
       super.release();
       this.value = null;
+      this.completedMode = null;
    }
    
    /**
@@ -80,6 +85,13 @@ public class WorkflowHistoryTag extends HtmlComponentTag
       this.value = value;
    }
    
-   /** the value (binding to the workflow instance) */
-   private String value;
+   /**
+    * Sets whether the component is showing history for a completed workflow
+    * 
+    * @param completedMode 
+    */
+   public void setCompletedMode(String completedMode)
+   {
+      this.completedMode = completedMode;
+   }
 }

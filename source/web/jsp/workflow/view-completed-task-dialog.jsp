@@ -107,4 +107,11 @@
 
    <r:workflowSummary id="workflow-summary" value="#{DialogManager.bean.workflowInstance}" styleClass="workflowSummary" />
 
+	<f:verbatim><div style="padding-left:9px;padding-top:8px;padding-bottom:4px"></f:verbatim>
+      <a:panel id="pending-submission-panel" label="#{msg.workflow_history}" progressive="true" 
+            expanded="false" styleClass="mainSubTitle">
+         <r:workflowHistory id="workflow-history" value="#{DialogManager.bean.workflowInstance}" 
+                            styleClass="workflowHistoryList" completedMode="true" />
+      </a:panel>
+   <f:verbatim></div></f:verbatim>
 </a:panel>

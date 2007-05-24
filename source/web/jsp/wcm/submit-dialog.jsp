@@ -88,7 +88,7 @@
    <h:panelGroup rendered="#{DialogManager.bean.workflowListSize != 0}">
       <h:outputText value="#{msg.submit_workflow_selection}" />
       <h:panelGrid columns="2" cellpadding="2" cellpadding="2">
-         <a:selectList id="workflow-list" multiSelect="false" styleClass="selectListTable" itemStyleClass="selectListItem"
+         <a:selectList id="workflow-list" multiSelect="false" styleClass="noBrColumn" itemStyle="padding-top: 3px;"
                value="#{DialogManager.bean.workflowSelectedValue}">
             <a:listItems value="#{DialogManager.bean.workflowList}" />
          </a:selectList>
@@ -106,7 +106,7 @@
    </h:panelGroup>
 </h:panelGrid>
 
-<h:panelGrid columns="1" cellpadding="2" style="padding-top:10px;padding-bottom:4px;"
+<h:panelGrid columns="1" cellpadding="2" style="padding-top:6px;padding-bottom:4px;"
       width="100%" rowClasses="wizardSectionHeading">
    <h:outputText value="&nbsp;#{msg.content_launch}" escape="false" />
 </h:panelGrid>

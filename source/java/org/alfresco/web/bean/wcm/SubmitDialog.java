@@ -575,10 +575,15 @@ public class SubmitDialog extends BaseDialogBean
             WorkflowDefinition workflowDef = this.workflowService.getDefinitionByName(wrapper.name);
             UIListItem item = new UIListItem();
             item.setValue(workflowDef.getName());
-            item.setLabel(workflowDef.getTitle());
-            item.setDescription(workflowDef.getDescription());
-            item.setImage(WebResources.IMAGE_WORKFLOW_32);
+            String label = workflowDef.getTitle();
+            String desc = workflowDef.getDescription();
+            if (desc != null && desc.length() > 0)
+            {
+               label = label + "(" + desc + ")";
+            }
+            item.setLabel(label);
             items.add(item);
+
             // add first workflow as default selection
             if (workflowSelectedValue == null)
             {

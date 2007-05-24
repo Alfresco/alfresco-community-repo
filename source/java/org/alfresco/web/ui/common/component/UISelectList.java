@@ -400,12 +400,14 @@ public class UISelectList extends UIInput implements NamingContainer
       Utils.outputAttribute(out, getAttributes().get("itemStyleClass"), "class");
       out.write("><div style='padding:2px'>");
       out.write(item.getLabel());
-      out.write("</div><div style='padding:2px'>");
+      out.write("</div>");
       if (description != null)
       {
+         out.write("<div style='padding:2px'>");
          out.write(description);
+         out.write("</div>");
       }
-      out.write("</div></td>");
+      out.write("</td>");
       
       if (activeSelect)
       {

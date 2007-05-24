@@ -68,10 +68,11 @@ import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.core.io.ClassPathResource;
 
 /**
@@ -79,7 +80,7 @@ import org.springframework.core.io.ClassPathResource;
  * 
  * @author davidc
  */
-public class WorkflowInterpreter implements InitializingBean
+public class WorkflowInterpreter extends AbstractLifecycleBean
 {
     // Service dependencies    
     private WorkflowService workflowService;
@@ -138,14 +139,31 @@ public class WorkflowInterpreter implements InitializingBean
     }
 
     /* (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
      */
-    public void afterPropertiesSet() throws Exception
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
     {
-        interpretCommand("var bpm:package package 1");
-        interpretCommand("var bpm:assignee person admin");
+        try
+        {
+            interpretCommand("var bpm:package package 1");
+            interpretCommand("var bpm:assignee person admin");
+        }
+        catch(IOException e)
+        {
+            throw new WorkflowException("Failed to initialise WorkflowInterpreter", e);
+        }
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+     */
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
+        // NOOP
+    }
+    
     /**
      * @param workflowService The Workflow Service
      */

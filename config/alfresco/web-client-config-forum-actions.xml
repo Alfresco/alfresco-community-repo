@@ -20,7 +20,7 @@
          <!-- Override the cut action to check for discussions, don't allow them to be cut -->
          <!-- Cut a document or space to the clipboard, from browse or doc details screens -->
          <action id="cut_node">
-            <evaluator>org.alfresco.web.action.evaluator.CutNodeEvaluator</evaluator>
+            <evaluator>org.alfresco.web.action.evaluator.DiscussionCutEvaluator</evaluator>
             <permissions>
                <permission allow="true">Delete</permission>
             </permissions>
@@ -36,7 +36,7 @@
          <!-- Override the copy action to check for discussions, don't allow them to be copied -->
          <!-- Copy a document or space to the clipboard, from browse or doc details screens -->
          <action id="copy_node">
-            <evaluator>org.alfresco.web.action.evaluator.DiscussionCutCopyEvaluator</evaluator>
+            <evaluator>org.alfresco.web.action.evaluator.DiscussionCopyEvaluator</evaluator>
             <label-id>copy</label-id>
             <image>/images/icons/copy.gif</image>
             <action-listener>#{ClipboardBean.copyNode}</action-listener>

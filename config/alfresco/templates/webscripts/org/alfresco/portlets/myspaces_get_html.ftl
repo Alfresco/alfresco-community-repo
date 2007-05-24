@@ -86,6 +86,7 @@
       </table>
       </center>
    </div>
+   <div id="spacePanelOverlay"></div>
    <div id="spacePanel">
       <#-- populated via an AJAX call to 'myspacespanel' webscript -->
       <#-- resolved path, filter and home.noderef required as arguments -->
@@ -149,6 +150,17 @@ a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited
    border-top: 1px solid #CCD4DB;
    border-bottom: 1px solid #CCD4DB;
    visibility: hidden;
+}
+
+#spacePanelOverlay
+{
+   background-image: url(${url.context}/images/icons/ajax_anim.gif);
+   background-position: center;
+   background-repeat: no-repeat;
+   position: absolute;
+   height: 320px;
+   width: 720px;
+   overflow: hidden;
 }
 
 .spaceRow

@@ -42,68 +42,6 @@
             </params>
          </action>
 
-         <!-- Make a document multilingual -->
-         <action id="make_doc_multilingual">
-            <permissions>
-               <permission allow="true">Write</permission>
-            </permissions>
-            <evaluator>org.alfresco.web.action.evaluator.MakeMultilingualEvaluator</evaluator>
-            <label-id>make_multilingual</label-id>
-            <tooltip-id>make_multilingual_tooltip</tooltip-id>
-            <image>/images/icons/make_ml.gif</image>
-            <action>dialog:makeMultilingual</action>
-            <params>
-               <param name="id">#{actionContext.id}</param>
-            </params>
-         </action>
-
-         <!-- Add a translation -->
-         <action id="add_translation">
-            <permissions>
-               <permission allow="true">Write</permission>
-            </permissions>
-            <evaluator>org.alfresco.web.action.evaluator.AddTranslationEvaluator</evaluator>
-            <label-id>add_translation</label-id>
-            <tooltip-id>add_translation_tooltip</tooltip-id>
-            <image>/images/icons/add_tranlsation.gif</image>
-            <action-listener>#{AddTranslationDialog.start}</action-listener>
-            <action>addTranslation</action>
-            <params>
-               <param name="id">#{actionContext.id}</param>
-            </params>
-         </action>
-
-         <!-- Add a translation whithout content -->
-         <action id="add_translation_wc">
-            <permissions>
-               <permission allow="true">Write</permission>
-            </permissions>
-            <evaluator>org.alfresco.web.action.evaluator.AddTranslationEvaluator</evaluator>
-            <label-id>add_translation_wc</label-id>
-            <tooltip-id>add_translation_wc_tooltip</tooltip-id>
-            <image>/images/icons/add_tranlsation_wc.gif</image>
-            <action>dialog:addTranslationWithoutContent</action>
-            <params>
-               <param name="id">#{actionContext.id}</param>
-            </params>
-         </action>
-
-         <!-- Manage ml container details  -->
-         <action id="ml_details">
-            <permissions>
-               <permission allow="true">Read</permission>
-            </permissions>
-            <evaluator>org.alfresco.web.action.evaluator.MultilingualDetailsEvaluator</evaluator>
-            <label-id>manage_multilingual_details</label-id>
-            <tooltip-id>manage_multilingual_details_tooltip</tooltip-id>
-            <image>/images/icons/multilingual_details.gif</image>
-            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
-            <action>dialog:showMLContainerDetails</action>
-            <params>
-               <param name="id">#{actionContext.id}</param>
-            </params>
-         </action>
-         
          <!-- Edit document action to open using normal HTTP access or inline Edit if set -->
          <action id="edit_doc_http">
             <permissions>
@@ -633,6 +571,68 @@
             <image>/images/icons/reset.gif</image>
             <action>#{NavigatorPluginBean.reset}</action>
          </action>
+         
+         <!-- Make a document multilingual -->
+         <action id="make_doc_multilingual">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.MakeMultilingualEvaluator</evaluator>
+            <label-id>make_multilingual</label-id>
+            <tooltip-id>make_multilingual_tooltip</tooltip-id>
+            <image>/images/icons/make_ml.gif</image>
+            <action>dialog:makeMultilingual</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+
+         <!-- Add a translation -->
+         <action id="add_translation">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.AddTranslationEvaluator</evaluator>
+            <label-id>add_translation</label-id>
+            <tooltip-id>add_translation_tooltip</tooltip-id>
+            <image>/images/icons/add_tranlsation.gif</image>
+            <action-listener>#{AddTranslationDialog.start}</action-listener>
+            <action>addTranslation</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+
+         <!-- Add a translation whithout content -->
+         <action id="add_translation_wc">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.AddTranslationEvaluator</evaluator>
+            <label-id>add_translation_wc</label-id>
+            <tooltip-id>add_translation_wc_tooltip</tooltip-id>
+            <image>/images/icons/add_tranlsation_wc.gif</image>
+            <action>dialog:addTranslationWithoutContent</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+
+         <!-- Manage ml container details  -->
+         <action id="ml_details">
+            <permissions>
+               <permission allow="true">Read</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.MultilingualDetailsEvaluator</evaluator>
+            <label-id>manage_multilingual_details</label-id>
+            <tooltip-id>manage_multilingual_details_tooltip</tooltip-id>
+            <image>/images/icons/multilingual_details.gif</image>
+            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
+            <action>dialog:showMLContainerDetails</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
 
          <!-- the 'action-group' elements define unique blocks of actions that reference the actions
               as defined above and can override or supply display elements for the group of actions -->
@@ -747,18 +747,10 @@
             <action idref="ml_details" />
          </action-group>
 
-
-         <action-group id="Multilingual_details_actions">
+         <action-group id="multilingual_details_actions">
             <action idref="add_translation" />
             <action idref="add_translation_wc" />
-            <!--action idref="cut_container" /-->
-            <!--action idref="copy_container" /-->
-            <!--action idref="delete_container" /-->
-            <!--action idref="take_ownership_container" /-->
-            <!--action idref="start_discussion_container" /-->
-            <!--action idref="new_edition_container" /-->
          </action-group>
-
 
          <!-- Actions Menu for Space Details screen -->
          <action-group id="space_details_actions">

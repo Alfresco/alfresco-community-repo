@@ -43,28 +43,24 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class AddTranslationEvaluator implements ActionEvaluator
 {
+   public boolean evaluate(Node node)
+   {
+      FacesContext fc = FacesContext.getCurrentInstance();
 
-    public boolean evaluate(Node node)
-    {
-       FacesContext fc = FacesContext.getCurrentInstance();
-          
-       MultilingualContentService mlservice = 
-          (MultilingualContentService) FacesHelper.getManagedBean(fc, "MultilingualContentService");
-       
-          UserPreferencesBean userprefs = 
-          (UserPreferencesBean) FacesHelper.getManagedBean(fc, "UserPreferencesBean");
-          
-          // the number of translation of this document 
-        int availableTranslationCount    = mlservice.getTranslations(node.getNodeRef()).size();
-        // the total number of available languages for the translation
-        int contentFilterLanguagesCount  = userprefs.getContentFilterLanguages(false).length;
-          
-        return (
-                 node.isLocked() == false &&
-                 node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false &&
-                 node.hasAspect(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT) == true &&
-                 availableTranslationCount < contentFilterLanguagesCount                                                              
-              );
-    }
+      MultilingualContentService mlservice = 
+         (MultilingualContentService) FacesHelper.getManagedBean(fc, "MultilingualContentService");
 
+      UserPreferencesBean userprefs = 
+         (UserPreferencesBean) FacesHelper.getManagedBean(fc, "UserPreferencesBean");
+
+      // the number of translation of this document 
+      int availableTranslationCount    = mlservice.getTranslations(node.getNodeRef()).size();
+      // the total number of available languages for the translation
+      int contentFilterLanguagesCount  = userprefs.getContentFilterLanguages(false).length;
+
+      return (node.isLocked() == false &&
+              node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false &&
+              node.hasAspect(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT) == true &&
+              availableTranslationCount < contentFilterLanguagesCount);
+   }
 }

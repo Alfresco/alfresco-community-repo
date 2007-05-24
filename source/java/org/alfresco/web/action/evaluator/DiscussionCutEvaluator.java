@@ -36,23 +36,23 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 
 /**
- * Evaluates whether the cut or copy action should be visible. 
+ * Evaluates whether the cut action should be visible. 
  * 
  * If the node is a discussion don't allow the action.
  * 
  * @author gavinc
  */
-public class DiscussionCutCopyEvaluator implements ActionEvaluator
+public class DiscussionCutEvaluator extends CutNodeEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */
    public boolean evaluate(Node node)
    {
-      boolean result = true;
+      boolean result = super.evaluate(node);
       
       // if the node in question is a forum...
-      if (node.getType().equals(ForumModel.TYPE_FORUM))
+      if (result && node.getType().equals(ForumModel.TYPE_FORUM))
       {
          // get the association type
          FacesContext context = FacesContext.getCurrentInstance();
@@ -63,12 +63,6 @@ public class DiscussionCutCopyEvaluator implements ActionEvaluator
          
          // only allow the action if the association type is not the discussion assoc
          result = (assocType.equals(ForumModel.ASSOC_DISCUSSION) == false);
-      }
-      
-      // impossible to copy a translation without content.
-      if(result && node.getAspects().contains(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
-      {
-         result = false;
       }
       
       return result;

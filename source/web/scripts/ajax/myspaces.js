@@ -40,6 +40,8 @@ var MySpaces = {
    init: function()
    {
       MySpaces.parseSpacePanels();
+      // hide the ajax wait panel and show the main spaces panel
+      $('spacePanelOverlay').setStyle('visibility', 'hidden');
       $('spacePanel').setStyle('visibility', 'visible');
    },
 
@@ -324,6 +326,8 @@ var MySpaces = {
          // empty the main panel div and restart by reloading the panel contents
          var spacePanel = $('spacePanel');
          spacePanel.setStyle('visibility', 'hidden');
+         // show the ajax wait panel
+         $('spacePanelOverlay').setStyle('visibility', 'visible');
          spacePanel.empty();
          spacePanel.removeEvents('mouseleave');
          MySpaces.start();

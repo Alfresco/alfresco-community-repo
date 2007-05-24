@@ -27,49 +27,50 @@ package org.alfresco.web.action.evaluator;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.ml.MultilingualContentService;
+import org.alfresco.model.ForumModel;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.action.ActionEvaluator;
-import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 
 /**
- * UI Action Evaluator - Delete document.
+ * Evaluates whether the copy action should be visible. 
  * 
- * @author Kevin Roast
+ * If the node is a discussion don't allow the action.
+ * 
+ * @author gavinc
  */
-public class DeleteDocEvaluator implements ActionEvaluator
+public class DiscussionCopyEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */
    public boolean evaluate(Node node)
    {
-      boolean isPivot = false;
-
-      // special case for multilingual documents
-      if (node.getAspects().contains(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
+      boolean result = true;
+      
+      // if the node in question is a forum...
+      if (node.getType().equals(ForumModel.TYPE_FORUM))
       {
-         FacesContext fc = FacesContext.getCurrentInstance();
-
-         MultilingualContentService mlservice = 
-            (MultilingualContentService) FacesHelper.getManagedBean(fc, "MultilingualContentService");
-
-         // if the translation is the last translation, user can delete it
-         if (mlservice.getTranslations(node.getNodeRef()).size() == 1)
-         {
-            isPivot = false;
-         }
-         // Else if the node is the pivot language, user can't delete it
-         else if (mlservice.getPivotTranslation(node.getNodeRef()).getId()
-                  .equalsIgnoreCase(node.getNodeRef().getId()))
-         {
-            isPivot = true;
-         }
-         // finally, the node is not the pivot translation, user can delete it
+         // get the association type
+         FacesContext context = FacesContext.getCurrentInstance();
+         NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
+         
+         ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(node.getNodeRef());
+         QName assocType = parentAssoc.getTypeQName();
+         
+         // only allow the action if the association type is not the discussion assoc
+         result = (assocType.equals(ForumModel.ASSOC_DISCUSSION) == false);
       }
       
-      return (node.isLocked() == false &&
-              node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false &&
-              isPivot == false);
+      // impossible to copy a translation without content.
+      if (result && node.getAspects().contains(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+      {
+         result = false;
+      }
+      
+      return result;
    }
 }

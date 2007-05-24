@@ -40,20 +40,22 @@ import org.alfresco.web.bean.repository.Node;
  *  
  * @author yanipig
  */
-public class CutNodeEvaluator extends DiscussionCutCopyEvaluator
+public class CutNodeEvaluator implements ActionEvaluator
 {
-
    public boolean evaluate(Node node)
-    {
-       boolean eval = super.evaluate(node);
-       
-       if(eval == true)
-       {
-          eval = !node.getAspects().contains(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);               
-       }
-       
-       return eval; 
-       
-    }
+   {
+      boolean eval = true;
 
+      // impossible to cut/copy a translation without content.
+      if (node.getAspects().contains(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+      {
+         eval = false;
+      }
+      else
+      {
+         eval = !node.getAspects().contains(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);               
+      }
+      
+      return eval; 
+   }
 }

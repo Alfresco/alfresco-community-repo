@@ -52,7 +52,6 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
@@ -1055,40 +1054,40 @@ public class BrowseBean implements IContextListener
          return (content != null ? new Long(content.getSize()) : 0L);
       }
    };
-   
-   public NodePropertyResolver resolverLang = new NodePropertyResolver() {
-         public Object get(Node node) {
-            
-           String lang = null; 
-            
-           if(node.getAspects().contains(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
-           {
-              Locale locale = (Locale) node.getProperties().get(ContentModel.PROP_LOCALE);
-              
-              // the content filter lang defined by the user
-              String userLang = userPreferencesBean.getContentFilterLanguage();
-              // the node lang 
-              String nodeLang = locale.getLanguage();
-              
-              // if filter equals all languages : display the lang for each translation
-              if(nodeLang == null)
-              {
-                 lang = nodeLang;
-              }
-              
-              // if filter is different : display the lang
-              else if (!nodeLang.equalsIgnoreCase(userLang))
-              {
-                lang = nodeLang; 
-              }
-              
-              // else if the filter is equal to the lang node : nothing to do [lang = null]
-              
-           }
 
-           return lang; 
+   public NodePropertyResolver resolverLang = new NodePropertyResolver() {
+      public Object get(Node node) {
+         
+         String lang = null; 
+         
+         if (node.getAspects().contains(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
+         {
+            Locale locale = (Locale) node.getProperties().get(ContentModel.PROP_LOCALE);
+            
+            // the content filter lang defined by the user
+            String userLang = userPreferencesBean.getContentFilterLanguage();
+            // the node lang 
+            String nodeLang = locale.getLanguage();
+            
+            // if filter equals all languages : display the lang for each translation
+            if (nodeLang == null)
+            {
+               lang = nodeLang;
+            }
+            
+            // if filter is different : display the lang
+            else if (!nodeLang.equalsIgnoreCase(userLang))
+            {
+               lang = nodeLang; 
+            }
+            
+            // else if the filter is equal to the lang node : nothing to do [lang = null]
          }
-  };
+
+         return lang; 
+      }
+   };
+   
    
    // ------------------------------------------------------------------------------
    // Navigation action event handlers

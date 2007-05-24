@@ -216,7 +216,7 @@ Alfresco.InfoPanel.prototype =
       if (this.popupElement != null && this.visible == true)
       {
          // fade out and set the visiblilty flag on complete of the anim
-         var fxAnim = new Fx.Style(this.popupElement, 'opacity',
+         /*var fxAnim = new Fx.Style(this.popupElement, 'opacity',
          {
             duration: 300,
             transition: Fx.Transitions.linear,
@@ -225,7 +225,10 @@ Alfresco.InfoPanel.prototype =
                this.element.panel.visible = false;
             }
          });
-         fxAnim.start(1, 0);
+         fxAnim.start(1, 0);*/
+         this.popupElement.setStyle("opacity", 0);
+         this.popupElement.setStyle("display", "none");
+         this.popupElement.panel.visible = false;
       }
    }
 }

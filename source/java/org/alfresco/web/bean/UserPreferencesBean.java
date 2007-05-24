@@ -53,9 +53,9 @@ import org.alfresco.web.config.LanguagesConfigElement;
 public class UserPreferencesBean
 {
    private static final String PREF_STARTLOCATION = "start-location";
-   
+
    private static final String PREF_CONTENTFILTERLANGUAGE = "content-filter-language";
-   
+
    /** 
     * Remplacement message for set the filter at 'all languages'. 
     * Must be considered as a null value.
@@ -64,13 +64,13 @@ public class UserPreferencesBean
 
    /** language locale selection */
    private String language = null;
-   
+
    /** content language locale selection */
    private String contentFilterLanguage = null;
-   
+
    /** the injected MultilingualContentService */
    MultilingualContentService multilingualContentService;
-   
+
    /** the injected ContentFilterLanguagesService */
    ContentFilterLanguagesService contentFilterLanguagesService;
 
@@ -82,28 +82,28 @@ public class UserPreferencesBean
     */
    public SelectItem[] getLanguages()
    {
-       // Get the item selection list
-       SelectItem[] items = getLanguageItems();
-       // Change the current language
-       if (this.language == null)
-       {
-           // first try to get the language that the current user is using
-           Locale lastLocale = Application.getLanguage(FacesContext.getCurrentInstance());
-           if (lastLocale != null)
-           {
-              this.language = lastLocale.toString();
-           }
-           // else we default to the first item in the list
-           else if (items.length > 0)
-           {
-              this.language = (String) items[0].getValue();
-           }
-           else
-           {
-               throw new AlfrescoRuntimeException("The language list is empty");
-           }
-       }
-       return items;
+      // Get the item selection list
+      SelectItem[] items = getLanguageItems();
+      // Change the current language
+      if (this.language == null)
+      {
+         // first try to get the language that the current user is using
+         Locale lastLocale = Application.getLanguage(FacesContext.getCurrentInstance());
+         if (lastLocale != null)
+         {
+            this.language = lastLocale.toString();
+         }
+         // else we default to the first item in the list
+         else if (items.length > 0)
+         {
+            this.language = (String) items[0].getValue();
+         }
+         else
+         {
+            throw new AlfrescoRuntimeException("The language list is empty");
+         }
+      }
+      return items;
    }
 
    /**
@@ -121,11 +121,11 @@ public class UserPreferencesBean
    {
       this.language = language;
       Application.setLanguage(FacesContext.getCurrentInstance(), language);
-      
+
       // Set the current locale in the server
       I18NUtil.setLocale(I18NUtil.parseLocale(language));
    }
-   
+
    /**
     * @return current content filter language, or <tt>null</tt> if all languages was selected
     */
@@ -133,61 +133,59 @@ public class UserPreferencesBean
    {
       if (this.contentFilterLanguage == null)
       {
-          Locale locale = (Locale) PreferencesService.getPreferences().getValue(PREF_CONTENTFILTERLANGUAGE);
-          // Null means All Languages
-          if (locale == null)
-          {
-              this.contentFilterLanguage = null;
-          }
-          else
-          {
-              this.contentFilterLanguage = locale.toString();
-          }
+         Locale locale = (Locale) PreferencesService.getPreferences().getValue(PREF_CONTENTFILTERLANGUAGE);
+         // Null means All Languages
+         if (locale == null)
+         {
+            this.contentFilterLanguage = null;
+         }
+         else
+         {
+            this.contentFilterLanguage = locale.toString();
+         }
       }
-      
+
       // set the content filter locale on the core                 
       I18NUtil.setContentLocale(I18NUtil.parseLocale(this.contentFilterLanguage));
-      
+
       return this.contentFilterLanguage;
-      //return (contentFilterLanguage.equals(MSG_CONTENTALLLANGUAGES)) ? "en" : contentFilterLanguage;
    }
-   
-   
+
    /**
     * @param languageStr   A valid locale string or {@link #MSG_CONTENTALLLANGUAGES}
     */
    public void setContentFilterLanguage(String contentFilterLanguage)
    {
       this.contentFilterLanguage = contentFilterLanguage;
-       Locale language = null;
-       if (contentFilterLanguage.equals(MSG_CONTENTALLLANGUAGES))
-       {
-           // The generic "All Languages" was selected - persist this as a null
-          this.contentFilterLanguage = null;
-       }
-       else
-       {
-           // It should be a proper locale string
-           language = I18NUtil.parseLocale(contentFilterLanguage);
-       }
-       PreferencesService.getPreferences().setValue(PREF_CONTENTFILTERLANGUAGE, language);
-       
-       // set the content filter locale on the core
+      Locale language = null;
+      if (contentFilterLanguage.equals(MSG_CONTENTALLLANGUAGES))
+      {
+         // The generic "All Languages" was selected - persist this as a null
+         this.contentFilterLanguage = null;
+      }
+      else
+      {
+         // It should be a proper locale string
+         language = I18NUtil.parseLocale(contentFilterLanguage);
+      }
+      PreferencesService.getPreferences().setValue(PREF_CONTENTFILTERLANGUAGE, language);
+
+      // set the content filter locale on the core
       I18NUtil.setContentLocale(language);
-      
-       // Ensure a refresh
-       UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
+
+      // Ensure a refresh
+      UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
    }
-   
+
    /**
     * @return list of items for the content filtering language selection include the label 'all langaguages'
     */
    public SelectItem[] getContentFilterLanguages()
    {
-       // Get the item selection list
+      // Get the item selection list
       return getContentFilterLanguages(true);
    }
-   
+
    /**
     * @param includeAllLanguages if true, the list must include the label 'all languages'
     * @return list of items for the content filtering language selection
@@ -196,68 +194,61 @@ public class UserPreferencesBean
    {
       FacesContext fc = FacesContext.getCurrentInstance();
       ResourceBundle msg = Application.getBundle(fc);
-      
+
       // get the list of filter languages 
       List<String> languages = contentFilterLanguagesService.getFilterLanguages();
-      
+
       // set the item selection list      
       SelectItem[] items = new SelectItem[(includeAllLanguages) ? languages.size() + 1 : languages.size()];
       int idx = 0;
-      
+
       // include the <All Languages> item if needed
       if (includeAllLanguages)
       {
-            String allLanguagesStr = msg.getString(MSG_CONTENTALLLANGUAGES);
-            items[idx] = new SelectItem(MSG_CONTENTALLLANGUAGES, allLanguagesStr);
-            idx++;
-      }
-      
-      for(String lang : languages)
-      {
-         String label = contentFilterLanguagesService.getLabelByCode(lang);
-         
-         items[idx] = new SelectItem(
-               lang,
-               label);
-         
+         String allLanguagesStr = msg.getString(MSG_CONTENTALLLANGUAGES);
+         items[idx] = new SelectItem(MSG_CONTENTALLLANGUAGES, allLanguagesStr);
          idx++;
       }
-      
+
+      for (String lang : languages)
+      {
+         String label = contentFilterLanguagesService.getLabelByCode(lang);
+         items[idx++] = new SelectItem(lang, label);
+         idx++;
+      }
+
       return items;
    }
-   
-   
-   
-      /**
-       * return the list of languages in which the given node hasn't be translated yet.  
-       * 
+
+   /**
+    * return the list of languages in which the given node hasn't be translated yet.  
+    * 
     * @param translation the translatable node ref
     * @param returnTranslationLanguage if true, return the language of the given translation.
     * @return the list of languages
     */
    public SelectItem[] getAvailablesContentFilterLanguages(NodeRef translation, boolean returnTranslationLanguage)
-    {
+   {
       // get the list of missing translation of this node
       List<Locale> missingLocales = multilingualContentService.getMissingTranslations(translation, returnTranslationLanguage);
-      
+
       //    set the item selection list      
       SelectItem[] items = new SelectItem[missingLocales.size()];
       int idx = 0;
-      
+
       for(Locale locale : missingLocales)
       {
          String label = contentFilterLanguagesService.getLabelByCode(locale.getLanguage());
-         
+
          items[idx] = new SelectItem(
-                     locale.toString(),
-                     label);
+               locale.toString(),
+               label);
          idx++;
       }
-      
+
       return items;
    }
-   
-   
+
    /**
     * Helper to return the available language items
     * 
@@ -270,7 +261,7 @@ public class UserPreferencesBean
       Config config = Application.getConfigService(fc).getConfig("Languages");
       LanguagesConfigElement langConfig = (LanguagesConfigElement)config.getConfigElement(
             LanguagesConfigElement.CONFIG_ELEMENT_ID);
-      
+
       List<String> languages = langConfig.getLanguages();
       List<SelectItem> items = new ArrayList<SelectItem>(10);
 
@@ -280,10 +271,10 @@ public class UserPreferencesBean
          String label = langConfig.getLabelForLanguage(locale);
          items.add(new SelectItem(locale, label));
       }
-      
+
       return items.toArray(new SelectItem[items.size()]);
    }
-   
+
    /**
     * @return the start location for this user (@see NavigationBean)
     */
@@ -297,7 +288,7 @@ public class UserPreferencesBean
       }
       return location;
    }
-   
+
    /**
     * @param location   The current start location for this user (@see NavigationBean)
     */
@@ -305,7 +296,7 @@ public class UserPreferencesBean
    {
       PreferencesService.getPreferences().setValue(PREF_STARTLOCATION, location);
    }
-   
+
    /**
     * @return the list of available start locations
     */
@@ -314,34 +305,34 @@ public class UserPreferencesBean
       FacesContext fc = FacesContext.getCurrentInstance();
       NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, "NavigationBean");
       ResourceBundle msg = Application.getBundle(fc);
-      
+
       List<SelectItem> locations = new ArrayList<SelectItem>(4);
-      
+
       // add My Alfresco location
       locations.add(new SelectItem(
             NavigationBean.LOCATION_MYALFRESCO, msg.getString(NavigationBean.MSG_MYALFRESCO)));
-      
+
       // add My Home location
       locations.add(new SelectItem(
             NavigationBean.LOCATION_HOME, msg.getString(NavigationBean.MSG_MYHOME)));
-      
+
       // add Company Home location if visible
       if (navigator.getCompanyHomeVisible())
       {
          locations.add(new SelectItem(
                NavigationBean.LOCATION_COMPANY, msg.getString(NavigationBean.MSG_COMPANYHOME)));
       }
-      
+
       // add Guest Home location if visible
       if (navigator.getGuestHomeVisible())
       {
          locations.add(new SelectItem(
                NavigationBean.LOCATION_GUEST, msg.getString(NavigationBean.MSG_GUESTHOME)));
       }
-      
+
       return locations.toArray(new SelectItem[locations.size()]);
    }
-   
+
    /**
     * @return true if the Guest user is allowed to configure the user preferences
     */
@@ -357,7 +348,7 @@ public class UserPreferencesBean
    {
       return multilingualContentService;
    }
-   
+
    /**
     * @param multilingualContentService the multilingualContentService to set
     */

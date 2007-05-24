@@ -37,12 +37,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class MultilingualDetailsEvaluator implements ActionEvaluator
 {
-
-    public boolean evaluate(Node node)
-    {
-       return (
-                 node.hasAspect(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT) == true                                                 
-              );
-    }
-
+   public boolean evaluate(Node node)
+   {
+      return (node.hasAspect(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT) == true);
+   }
 }

@@ -422,8 +422,7 @@
                            </f:facet>
                            <a:actionLink id="col10-act2" value="#{r.name}" href="#{r.url}" target="new" />
                            <r:lockIcon id="col10-lock" value="#{r.nodeRef}" align="absmiddle" />
-                           <h:outputLabel value="  " rendered="#{r.lang != null}"/>
-                           <h:outputLabel value="#{r.lang}" styleClass="langCode" rendered="#{r.lang != null}"/>
+                           <h:outputLabel id="col10-lang" value="#{r.lang}" styleClass="langCode" rendered="#{r.lang != null}" />
                            <r:nodeInfo id="col10-info" value="#{r.id}">
                               <h:graphicImage id="col10-img" url="/images/icons/popup.gif" styleClass="popupImage" width="16" height="16" />
                            </r:nodeInfo>
@@ -436,8 +435,7 @@
                            </f:facet>
                            <a:actionLink id="col11-act2" value="#{r.name}" href="#{r.url}" target="new" styleClass="header" />
                            <r:lockIcon id="col11-lock" value="#{r.nodeRef}" align="absmiddle" />
-                           <h:outputLabel value="  " rendered="#{r.lang != null}"/>
-                           <h:outputLabel value="#{r.lang}" styleClass="langCode" rendered="#{r.lang != null}"/>
+                           <h:outputLabel id="col11-lang" value="#{r.lang}" styleClass="langCode" rendered="#{r.lang != null}"/>
                            <r:nodeInfo id="col11-info" value="#{r.id}">
                               <h:graphicImage id="col11-img" url="/images/icons/popup.gif" styleClass="popupImage" width="16" height="16" />
                            </r:nodeInfo>
@@ -450,8 +448,7 @@
                            </f:facet>
                            <a:actionLink id="col12-act2" value="#{r.name}" href="#{r.url}" target="new" styleClass="title" />
                            <r:lockIcon id="col12-lock" value="#{r.nodeRef}" align="absmiddle" />
-                           <h:outputLabel value="  " rendered="#{r.lang != null}"/>
-                           <h:outputLabel value="#{r.lang}" styleClass="langCode" rendered="#{r.lang != null}"/>
+                           <h:outputLabel id="col12-lang" value="#{r.lang}" styleClass="langCode" rendered="#{r.lang != null}"/>
                            <r:nodeInfo id="col12-info" value="#{r.id}">
                               <h:graphicImage id="col12-img" url="/images/icons/popup.gif" styleClass="popupImage" width="16" height="16" />
                            </r:nodeInfo>

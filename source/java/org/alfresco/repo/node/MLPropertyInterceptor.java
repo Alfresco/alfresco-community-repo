@@ -67,7 +67,6 @@ public class MLPropertyInterceptor implements MethodInterceptor
 {
     private static Log logger = LogFactory.getLog(MLPropertyInterceptor.class);
     
-
     private static ThreadLocal<Boolean> mlAware = new ThreadLocal<Boolean>();
     
     /** Direct access to the NodeService */
@@ -118,25 +117,26 @@ public class MLPropertyInterceptor implements MethodInterceptor
     @SuppressWarnings("unchecked")
     public Object invoke(MethodInvocation invocation) throws Throwable
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Intercepting method " + invocation.getMethod().getName() + " using content filter " + I18NUtil.getContentLocale());
+        }
+        
+        // If isMLAware then no treatment is done, just return
+        if (isMLAware())
+        {    
+            // Don't interfere
+            return invocation.proceed();
+        }
+        
+        Object ret = null;
+        
         String methodName = invocation.getMethod().getName();
         Object[] args = invocation.getArguments();
 
         // What locale must be used for filtering
         Locale contentLocale = I18NUtil.getContentLocale();
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Intercepting method " + methodName + " using content filter " + contentLocale);
-        }
         
-        Object ret = null;
-        
-        // If isMLAware then no treatment is done, just return
-        if(isMLAware())
-        {    
-            // Don't interfere
-            return invocation.proceed();
-        }
-
         if (methodName.equals("getProperty"))
         {
             NodeRef nodeRef = (NodeRef) args[0];

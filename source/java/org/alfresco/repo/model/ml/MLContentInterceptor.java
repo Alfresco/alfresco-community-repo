@@ -74,12 +74,13 @@ public class MLContentInterceptor implements MethodInterceptor
     public Object invoke(MethodInvocation invocation) throws Throwable
     {
         String methodName = invocation.getMethod().getName();
-        Object[] args = invocation.getArguments();
 
         Object ret = null;
         
         if (methodName.equals("getReader"))
         {
+            Object[] args = invocation.getArguments();
+            
             NodeRef nodeRef = (NodeRef) args[0];
             
             // Shortcut it if the node is not an empty translation

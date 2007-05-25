@@ -213,7 +213,7 @@ public class UserPreferencesBean
       for (String lang : languages)
       {
          String label = contentFilterLanguagesService.getLabelByCode(lang);
-         items[idx++] = new SelectItem(lang, label);
+         items[idx] = new SelectItem(lang, label);
          idx++;
       }
 

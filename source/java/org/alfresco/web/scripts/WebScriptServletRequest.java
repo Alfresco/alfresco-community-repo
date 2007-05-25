@@ -28,6 +28,8 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.alfresco.web.config.ServerConfigElement;
+
 
 /**
  * HTTP Servlet Web Script Request
@@ -36,6 +38,9 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class WebScriptServletRequest implements WebScriptRequest
 {
+    /** Server Config */
+    private ServerConfigElement serverConfig;
+    
     /** HTTP Request */
     private HttpServletRequest req;
     
@@ -51,10 +56,23 @@ public class WebScriptServletRequest implements WebScriptRequest
      */
     WebScriptServletRequest(HttpServletRequest req, WebScriptMatch serviceMatch)
     {
+        this(null, req, serviceMatch);
+    }
+
+    /**
+     * Construct
+     *
+     * @param serverConfig
+     * @param req
+     * @param serviceMatch
+     */
+    WebScriptServletRequest(ServerConfigElement serverConfig, HttpServletRequest req, WebScriptMatch serviceMatch)
+    {
+        this.serverConfig = serverConfig;
         this.req = req;
         this.serviceMatch = serviceMatch;
     }
-
+    
     /**
      * Gets the HTTP Servlet Request
      * 
@@ -84,7 +102,7 @@ public class WebScriptServletRequest implements WebScriptRequest
      */
     public String getServerPath()
     {
-        return req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
+        return getServerScheme() + "://" + getServerName() + ":" + getServerPort();
     }
 
     /* (non-Javadoc)
@@ -219,6 +237,63 @@ public class WebScriptServletRequest implements WebScriptRequest
             }
         }
         return null;
+    }
+
+    /**
+     * Get Server Scheme
+     * 
+     * @return  server scheme
+     */
+    private String getServerScheme()
+    {
+        String scheme = null;
+        if (serverConfig != null)
+        {
+            scheme = serverConfig.getScheme();
+        }
+        if (scheme == null)
+        {
+            scheme = req.getScheme();
+        }
+        return scheme;
+    }
+
+    /**
+     * Get Server Name
+     * 
+     * @return  server name
+     */
+    private String getServerName()
+    {
+        String name = null;
+        if (serverConfig != null)
+        {
+            name = serverConfig.getHostName();
+        }
+        if (name == null)
+        {
+            name = req.getServerName();
+        }
+        return name;
+    }
+
+    /**
+     * Get Server Port
+     * 
+     * @return  server name
+     */
+    private int getServerPort()
+    {
+        Integer port = null;
+        if (serverConfig != null)
+        {
+            port = serverConfig.getPort();
+        }
+        if (port == null)
+        {
+            port = req.getServerPort();
+        }
+        return port;
     }
 
 }

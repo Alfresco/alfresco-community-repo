@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.web.config.ServerConfigElement;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 
 
@@ -41,6 +42,7 @@ public class WebScriptServletRuntime extends WebScriptRuntime
     private HttpServletRequest req;
     private HttpServletResponse res;
     private WebScriptServletAuthenticator authenticator;
+    private ServerConfigElement serverConfig;
     
 
     /**
@@ -52,12 +54,14 @@ public class WebScriptServletRuntime extends WebScriptRuntime
      * @param req
      * @param res
      */
-    public WebScriptServletRuntime(WebScriptRegistry registry, TransactionService transactionService, WebScriptServletAuthenticator authenticator, HttpServletRequest req, HttpServletResponse res)
+    public WebScriptServletRuntime(WebScriptRegistry registry, TransactionService transactionService, WebScriptServletAuthenticator authenticator,
+            HttpServletRequest req, HttpServletResponse res, ServerConfigElement serverConfig)
     {
         super(registry, transactionService);
         this.req = req;
         this.res = res;
         this.authenticator = authenticator;
+        this.serverConfig = serverConfig;
     }
     
     /* (non-Javadoc)
@@ -84,7 +88,7 @@ public class WebScriptServletRuntime extends WebScriptRuntime
     @Override
     protected WebScriptRequest createRequest(WebScriptMatch match)
     {
-        return new WebScriptServletRequest(req, match);
+        return new WebScriptServletRequest(serverConfig, req, match);
     }
 
     /* (non-Javadoc)

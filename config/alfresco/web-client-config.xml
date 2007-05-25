@@ -7,6 +7,7 @@
       </evaluators>
       <element-readers>
          <element-reader element-name="client" class="org.alfresco.web.config.ClientElementReader"/>
+         <element-reader element-name="server" class="org.alfresco.web.config.ServerElementReader"/>
          <element-reader element-name="property-sheet" class="org.alfresco.web.config.PropertySheetElementReader"/>
          <element-reader element-name="navigation" class="org.alfresco.web.config.NavigationElementReader" />
          <element-reader element-name="languages" class="org.alfresco.web.config.LanguagesElementReader" />
@@ -81,6 +82,17 @@
          <clipboard-status-visible>true</clipboard-status-visible>
          <paste-all-and-clear>true</paste-all-and-clear>
       </client>
+   </config>
+
+   <config evaluator="string-compare" condition="Server">
+      <!-- The public web server hosting this web client -->
+      <server>
+         <!-- Enable and adjust the following settings to allow for proxied use of Alfresco 
+         <scheme>http</scheme>
+         <hostname>localhost</hostname>
+         <port>8080</port>
+         -->
+      </server>
    </config>
 
    <config evaluator="string-compare" condition="Languages">

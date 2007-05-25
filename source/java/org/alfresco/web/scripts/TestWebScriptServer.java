@@ -33,9 +33,12 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import org.alfresco.config.Config;
+import org.alfresco.config.ConfigService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.web.config.ServerConfigElement;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -54,6 +57,10 @@ public class TestWebScriptServer
     // dependencies
     protected TransactionService transactionService;
     protected DeclarativeWebScriptRegistry registry;
+    protected ConfigService configService;
+    
+    /** Server Configuration */
+    private ServerConfigElement serverConfig;
     
     /** The reader for interaction. */
     private BufferedReader fIn;
@@ -87,6 +94,16 @@ public class TestWebScriptServer
     {
         this.registry = registry;
     }
+
+    /**
+     * Sets the Config Service
+     * 
+     * @param configService
+     */
+    public void setConfigService(ConfigService configService)
+    {
+        this.configService = configService;
+    }
     
     
     /**
@@ -110,6 +127,8 @@ public class TestWebScriptServer
     public void init()
     {
         registry.initWebScripts();
+        Config config = configService.getConfig("Server");
+        serverConfig = (ServerConfigElement)config.getConfigElement(ServerConfigElement.CONFIG_ELEMENT_ID);
     }
     
     /**
@@ -142,7 +161,13 @@ public class TestWebScriptServer
      */
     public static TestWebScriptServer getTestServer()
     {
-        String[] CONFIG_LOCATIONS = new String[] { "classpath:alfresco/application-context.xml", "classpath:alfresco/web-scripts-application-context.xml", "classpath:alfresco/web-scripts-application-context-test.xml" };
+        String[] CONFIG_LOCATIONS = new String[]
+        {
+            "classpath:alfresco/application-context.xml",
+            "classpath:alfresco/web-scripts-application-context.xml",
+            "classpath:alfresco/web-client-application-context.xml",
+            "classpath:alfresco/web-scripts-application-context-test.xml"
+        };
         ApplicationContext context = new ClassPathXmlApplicationContext(CONFIG_LOCATIONS);
         TestWebScriptServer testServer = (TestWebScriptServer)context.getBean("webscripts.test");
         testServer.init();
@@ -163,7 +188,7 @@ public class TestWebScriptServer
         MockHttpServletRequest req = createRequest("get", uri);
         MockHttpServletResponse res = new MockHttpServletResponse();
         
-        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, null, req, res);
+        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, null, req, res, serverConfig);
         runtime.executeScript();
 
         return res;

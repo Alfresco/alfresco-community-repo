@@ -10,6 +10,7 @@
    <bean id="webscripts.test" class="org.alfresco.web.scripts.TestWebScriptServer">
       <property name="registry" ref="webscripts.registry" />
       <property name="transactionService" ref="transactionComponent" />
+      <property name="configService" ref="webClientConfigService" />
       <property name="messages">
          <bean class="org.springframework.context.support.ResourceBundleMessageSource">
             <property name="basenames">

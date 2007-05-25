@@ -31,7 +31,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.config.Config;
+import org.alfresco.config.ConfigService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.web.config.ServerConfigElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -54,8 +57,11 @@ public class WebScriptServlet extends HttpServlet
     private DeclarativeWebScriptRegistry registry;
     private TransactionService transactionService;
     private WebScriptServletAuthenticator authenticator;
-    
-    
+    protected ConfigService configService;
+
+    /** Host Server Configuration */
+    private static ServerConfigElement serverConfig;
+
     
     @Override
     public void init() throws ServletException
@@ -64,6 +70,7 @@ public class WebScriptServlet extends HttpServlet
         ApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
         registry = (DeclarativeWebScriptRegistry)context.getBean("webscripts.registry");
         transactionService = (TransactionService)context.getBean("transactionComponent");
+        configService = (ConfigService)context.getBean("webClientConfigService");
 
         // retrieve authenticator via servlet initialisation parameter
         String authenticatorId = getInitParameter("authenticator");
@@ -77,6 +84,10 @@ public class WebScriptServlet extends HttpServlet
             throw new ServletException("Initialisation parameter 'authenticator' does not refer to a Web Script authenticator (" + authenticatorId + ")");
         }
         authenticator = (WebScriptServletAuthenticator)bean;
+        
+        // retrieve host server configuration 
+        Config config = configService.getConfig("Server");
+        serverConfig = (ServerConfigElement)config.getConfigElement(ServerConfigElement.CONFIG_ELEMENT_ID);
     }
 
 
@@ -94,7 +105,7 @@ public class WebScriptServlet extends HttpServlet
         res.setHeader("Cache-Control", "no-cache");
         res.setHeader("Pragma", "no-cache");
         
-        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, authenticator, req, res);
+        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, authenticator, req, res, serverConfig);
         runtime.executeScript();
     }
     

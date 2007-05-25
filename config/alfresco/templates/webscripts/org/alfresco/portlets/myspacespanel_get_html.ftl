@@ -1,11 +1,13 @@
 <#assign user=person.properties.userName>
 <#assign count=0>
+<#assign weekms=1000*60*60*24*7>
 <#list companyhome.nodeByReference[args.h].children?sort_by('name') as d>
    <#if (d.isContainer || d.isDocument) &&
         ((args.f="0") ||
          (args.f="1" && d.isContainer) ||
          (args.f="2" && d.isDocument) ||
-         (args.f="3" && (d.properties.creator == user || d.properties.modifier == user)))>
+         (args.f="3" && (d.properties.creator == user || d.properties.modifier == user)) ||
+         (args.f="4" && (dateCompare(d.properties["cm:modified"],date,weekms) == 1 || dateCompare(d.properties["cm:created"], date, weekms) == 1)))>
    <#assign count=count+1>
    <div class="spaceRow">
       <div class="spaceIcon">
@@ -39,6 +41,7 @@
             </tr>
          </table>
       </div>
+      <div class="spaceResource spacesAjaxWait" id="${d.nodeRef}"></div>
    </div>
    </#if>
 </#list>

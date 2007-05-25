@@ -15,7 +15,7 @@
 </script>
 
 <#-- get the filter mode from the passed in args -->
-<#-- filters: 0=all, 1=spaces, 2=docs, 3=mine -->
+<#-- filters: 0=all, 1=spaces, 2=docs, 3=mine, 4=recent -->
 <#if args.f?exists && args.f?length!=0><#assign filter=args.f?number><#else><#assign filter=0></#if>
 
 <#-- get the path location from the passed in args, remove trailing slash -->
@@ -48,22 +48,20 @@
          </#if>
       </#list>
    </div>
-   <#-- Refresh action -->
-   <span style="float:right;margin:6px 6px 0 0;"><a href="${scripturl("?f=${filter}&p=${path}")}" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px">Refresh</a></span>
    <div class="spaceTitle">
-      <img src="${url.context}${home.icon16}" width="16" height="16" alt="" style="vertical-align:-25%;padding-right:4px">${home.name?html}
+      <img src="${url.context}${home.icon16}" width="16" height="16" alt="" class="spaceImageIcon">${home.name?html}
    </div>
-   <div class="spaceActions">
+   <div class="spaceToolbar">
       <#-- TODO: permission checks on the actions! -->
       <#-- Upload File action -->
-      <div class="spaceAction spaceActionUpload" title="Upload a new document" onclick="MySpaces.upload(this);">Upload</div>
+      <div class="spaceToolbarAction spaceToolbarActionUpload" title="Upload a new document" onclick="MySpaces.upload(this);">Upload</div>
       <div class="spaceUploadPanel">
          <#-- Url encode the path value, and encode any single quotes to generate valid string -->
          <input class="spaceFormItem" type="submit" value="OK" onclick='MySpaces.uploadOK(this, "${path?url?replace("'","_%_")}");'>
          <input class="spaceFormItem" type="button" value="Cancel" onclick="MySpaces.closePopupPanel();">
       </div>
       <#-- Create Space action -->
-      <div class="spaceAction spaceActionCreateSpace" title="Create a new Space" onclick="MySpaces.createSpace(this);">Create Space</div>
+      <div class="spaceToolbarAction spaceToolbarActionCreateSpace" title="Create a new Space" onclick="MySpaces.createSpace(this);">Create Space</div>
       <div class="spaceCreateSpacePanel">
          <table cellspacing="2" cellpadding="2" border="0">
             <tr><td class="spaceFormLabel">Name:</td><td><input class="spaceFormItem" type="text" size="32" maxlength="1024" id="space-name"></td></tr>
@@ -74,17 +72,19 @@
          <input class="spaceFormItem" type="button" value="Cancel" onclick="MySpaces.closePopupPanel();">
       </div>
    </div>
-   <div style="text-align: center;">
-      <center>
-      <table border=0 cellspacing=8 cellpadding=0>
+   <div>
+      <table border=0 cellspacing=8 cellpadding=0 width=100%>
          <tr>
             <th><a class="spacefilterLink <#if filter=0>spacefilterLinkSelected</#if>" href="${scripturl("?f=0&p=${path}")}">All Items</a></th>
             <th><a class="spacefilterLink <#if filter=1>spacefilterLinkSelected</#if>" href="${scripturl("?f=1&p=${path}")}">Spaces</a></th>
             <th><a class="spacefilterLink <#if filter=2>spacefilterLinkSelected</#if>" href="${scripturl("?f=2&p=${path}")}">Documents</a></th>
             <th><a class="spacefilterLink <#if filter=3>spacefilterLinkSelected</#if>" href="${scripturl("?f=3&p=${path}")}">My Items</a></th>
+            <th><a class="spacefilterLink <#if filter=4>spacefilterLinkSelected</#if>" href="${scripturl("?f=4&p=${path}")}">Recently Modified</a></th>
+            <td align=right>
+               <a href="${scripturl("?f=${filter}&p=${path}")}" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" class="spaceImageIcon">Refresh</a>
+            </td>
          </tr>
       </table>
-      </center>
    </div>
    <div id="spacePanelOverlay"></div>
    <div id="spacePanel">
@@ -213,6 +213,28 @@ a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited
    padding-left: 16px;
 }
 
+.spaceResource
+{
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 12px;
+   background-color: #bad7e4;
+   color: #000000;
+   margin: 0px;
+   border-top: 1px dotted #0092dd;
+   visibility: hidden;
+   overflow: hidden;
+}
+
+.spacesAjaxWait
+{
+   background-image: url(${url.context}/images/icons/ajax_anim.gif);
+   background-position: center;
+   background-repeat: no-repeat;
+   width: 696px;
+   height: 150px;
+   overflow: hidden;
+}
+
 .spaceItemSelected
 {
    background-color: #CCE7F3 !important;
@@ -263,14 +285,14 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    border: 1px solid #CCD4DB;
 }
 
-.spaceActions
+.spaceToolbar
 {
    background-color: #EEF7FB;
    height: 4em;
    border-bottom: 1px solid #CCD4DB;
 }
 
-.spaceAction
+.spaceToolbarAction
 {
    background-repeat: no-repeat;
    background-position: 2px;
@@ -286,14 +308,88 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    border: 1px dashed #CCD4DB;
 }
 
-.spaceActionUpload
+.spaceToolbarActionUpload
 {
    background-image: url(${url.context}/images/icons/doclist_action_upload.png);
 }
 
-.spaceActionCreateSpace
+.spaceToolbarActionCreateSpace
 {
    background-image: url(${url.context}/images/icons/doclist_action_createspace.png);
+}
+
+.spaceAction
+{
+   color: #515D6B;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 9pt;
+   font-weight: bolder;
+   background-color: #c3dce7;
+   background-repeat: no-repeat;
+   background-position: left;
+   width: 87px;
+   height: 28px;
+   border: 1px solid #ffffff;
+   float: left;
+   display: block;
+   padding: 10px 0px 0px 36px;
+   cursor: pointer;
+}
+
+.docActionCheckout
+{
+   background-image: url(${url.context}/images/icons/doclist_action_checkout.png);
+   border-bottom: none;
+   border-right: none;
+}
+
+.docActionEditDetails
+{
+   background-image: url(${url.context}/images/icons/doclist_action_edit.png);
+   border-bottom: none;
+}
+
+.docActionUpdate
+{
+   background-image: url(${url.context}/images/icons/doclist_action_update.png);
+   border-bottom: none;
+   border-right: none;
+}
+
+.docActionViewContent
+{
+   background-image: url(${url.context}/images/icons/doclist_action_view.png);
+   border-bottom: none;
+}
+
+.docActionDelete
+{
+   background-image: url(${url.context}/images/icons/doclist_action_delete.png);
+   border-right: none;
+}
+
+.docActionMoreActions
+{
+   padding-left: 20px;
+   padding-right: 16px;
+}
+
+.spaceActionMoreActions
+{
+   padding-left: 20px;
+   padding-right: 16px;
+   border-top: none;
+}
+
+.spaceActionEditDetails
+{
+   background-image: url(${url.context}/images/icons/doclist_action_edit.png);
+}
+
+.spaceActionDelete
+{
+   background-image: url(${url.context}/images/icons/doclist_action_delete.png);
+   border-left: none;
 }
 
 .spaceUploadPanel
@@ -330,6 +426,28 @@ a.refreshViewLink:link, a.refreshViewLink:visited, a.refreshViewLink:hover
    font-size: 12px;
    color: #515D6B;
    text-decoration: none;
+}
+
+.spacePreview
+{
+   color: #515D6B;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   overflow: hidden;
+   height: 144px;
+   width: 410px;
+   border: 1px solid #0092dd;
+}
+
+a.childSpaceLink:link, a.childSpaceLink:visited, a.childSpaceLink:hover
+{
+   color: #5A5741;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+}
+
+img.spaceImageIcon
+{
+   vertical-align: -25%;
+   padding-right:4px;
 }
 
 </STYLE>

@@ -35,7 +35,7 @@
 
 <table border=0 cellspacing=0 cellpadding=0 class="docTable">
 <tr>
-   <td align=center height=40>
+   <td height=40>
       <table border=0 cellspacing=8 cellpadding=0 width=100%>
          <tr>
             <th><a class="docfilterLink <#if filter=0>docfilterLinkSelected</#if>" href="${scripturl("?f=0&p=${path}")}">All Items</a></th>
@@ -211,7 +211,7 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
    font-size: 12px;
    background-color: #bad7e4;
    color: #000000;
-   margin: 0px 0px 0px 0px;
+   margin: 0px;
    border-top: 1px dotted #0092dd;
    visibility: hidden;
    overflow: hidden;
@@ -230,12 +230,12 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
    font-weight: bolder;
 }
 
-.docMetapreview
+.docPreview
 {
    color: #515D6B;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    overflow: hidden;
-   height: 140px;
+   height: 144px;
    width: 410px;
    border: 1px solid #0092dd;
 }

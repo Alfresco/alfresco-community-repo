@@ -4,6 +4,7 @@ var MySpaces = {
    ANIM_LENGTH: 300,
    DETAIL_MARGIN: 56,
    TITLE_FONT_SIZE: 18,
+   RESOURCE_PANEL_HEIGHT: 150,
    fileInput: null,
    Path: null,
    Filter: null,
@@ -59,10 +60,40 @@ var MySpaces = {
       var icons = $$('#spacePanel .spaceIcon');
       var imgs = $$('#spacePanel .spaceIconImage');
       var imgs64 = $$('#spacePanel .spaceIconImage64');
+      var resources = $$('#spacePanel .spaceResource');
       var fxItem = new Fx.Elements(items, {wait: false, duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
       var fxDetail = new Fx.Elements(details, {wait: false, duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
       var fxInfo = new Fx.Elements(infos, {wait: false, duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
       var fxIcon = new Fx.Elements(icons, {wait: false, duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
+      var fxResource = new Fx.Elements(resources,
+      {
+         wait: false,
+         duration: 500,
+         transition: Fx.Transitions.linear,
+         onComplete: function()
+         {
+            this.elements.each(function(resource, i)
+            {
+               if (resource.parentNode.isOpen)
+               {
+                  if (resource.isLoaded)
+                  {
+                     resource.needsOverflow = false;
+                     var elePrev = $E('.spacePreview', resource)
+                     if (elePrev)
+                     {
+                        elePrev.setStyle('overflow', 'auto');
+                     }
+                  }
+                  else
+                  {
+                     // defer style change to ajax complete event
+                     resource.needsOverflow = true;
+                  }
+               }
+            });
+         }
+      });
       var fxImage = new Fx.Elements(imgs,
       {
          wait: false,
@@ -82,7 +113,8 @@ var MySpaces = {
          var item = items[i],
              info = infos[i],
              detail = details[i],
-             img = imgs[i];
+             img = imgs[i],
+             resource = resources[i];
 
          // animated elements defaults
          item.defMarginLeft = item.getStyle('margin-left').toInt();
@@ -100,6 +132,8 @@ var MySpaces = {
          }
          img.defSrc = img.src;
          img.bigSrc = imgs64[i].src;
+         resource.defHeight = 1;
+         resource.setStyle('height', resource.defHeight);
          
          // register 'mouseenter' (subclassed mouseover) event for each space
          space.addEvent('mouseenter', function(e)
@@ -174,6 +208,172 @@ var MySpaces = {
                   }
                }
             });
+            fxItem.start(animItem);
+            fxDetail.start(animDetail);
+            fxInfo.start(animInfo);
+            fxImage.start(animImage);
+         });
+
+         space.addEvent('click', function(e)
+         {
+            var animItem = {},
+               animDetail = {},
+               animInfo = {};
+               animImage = {},
+               animResource = {},
+               resourceHeight = resource.getStyle('height').toInt();
+            
+            if (!space.isOpen)
+            {
+               if (!resource.isLoaded)
+               {
+                  // fire off the ajax request to get the resources for this task
+                  YAHOO.util.Connect.asyncRequest(
+                     "POST",
+                     getContextPath() + '/ajax/invoke/NodeInfoBean.sendNodeInfo',
+                     { 
+                        success: function(response)
+                        {
+                           // remove the ajax waiting animation class
+                           resource.removeClass("spacesAjaxWait");
+                           // populate the resource div with the result
+                           resource.innerHTML = response.responseText;
+                           // flag this resource as loaded
+                           resource.isLoaded = true;
+                           // deferred from transition complete event
+                           if (resource.needsOverflow)
+                           {
+                              var elePrev = $E('.spacePreview', resource)
+                              if (elePrev)
+                              {
+                                 elePrev.setStyle('overflow', 'auto');
+                              }
+                           }
+                        },
+                        failure: function(response)
+                        {
+                           resource.innerHTML = "Sorry, preview currently unavailable.";
+                        },
+                        argument: [resource]
+                     }, 
+                     "noderef=" + resource.id + "&template=myspaces_preview_panel.ftl"
+                  );
+               }
+               
+               // open up this space's resources
+               // flag this space as open
+               space.isOpen = true;
+               
+               // slide and fade in the resources panel
+               animResource[i] = {
+                  'height': [resourceHeight, resource.defHeight + MySpaces.RESOURCE_PANEL_HEIGHT],
+                  'opacity': [resource.getStyle('opacity'), 1]};
+   
+               // close other open space and toggle this one if it's already open
+               spaces.each(function(otherSpace, j)
+               {
+                  var otherResource = resources[j],
+                      otherItem = items[j],
+                      otherInfo = infos[j],
+                      otherDetail = details[j],
+                      otherImg = imgs[j];
+                  
+                  if (otherSpace == space)
+                  {
+                     // continue animations that may have been going on before the click
+                     // move the item title to the right
+                     animItem[j] = {
+                        'margin-left': [otherItem.getStyle('margin-left').toInt(), MySpaces.DETAIL_MARGIN],
+                        'font-size': [otherItem.getStyle('font-size').toInt(), MySpaces.TITLE_FONT_SIZE]
+                     };
+                     // fade in the info button
+                     animInfo[j] = {'opacity': [otherInfo.getStyle('opacity'), 1]};
+                     // slide and fade in the details panel
+                     animDetail[j] = {
+                        'height': [otherDetail.getStyle('height').toInt(), otherDetail.defHeight + MySpaces.IMG_LARGE],
+                        'opacity': [otherDetail.getStyle('opacity'), 1]
+                     };
+                     // grow the type image
+                     animImage[j] = {
+                        'height': [otherImg.getStyle('height').toInt(), MySpaces.IMG_LARGE],
+                        'width': [otherImg.getStyle('width').toInt(), MySpaces.IMG_LARGE]
+                     };
+                  }
+                  else
+                  {
+                     // close any other open space
+                     otherSpace.isOpen = false;
+
+                     // reset selected class?
+                     otherSpace.removeClass('spaceItemSelected');
+                     // move the title back to the left?
+                     var ml = otherItem.getStyle('margin-left').toInt();
+                     if (ml != otherItem.defMarginLeft)
+                     {
+                        animItem[j] = {
+                           'margin-left': [ml, otherItem.defMarginLeft],
+                           'font-size': [otherItem.getStyle('font-size').toInt(), otherItem.defFontSize]
+                        };
+                     }
+                     // does this space detail panel need resetting back to it's default height?
+                     var h = otherDetail.getStyle('height').toInt();
+                     if (h != otherDetail.defHeight)
+                     {
+                        animDetail[j] = {
+                           'height': [h, otherDetail.defHeight],
+                           'opacity': [otherDetail.getStyle('opacity'), 0]};
+                     }
+                     // does the info button need fading out
+                     var o = otherInfo.getStyle('opacity');
+                     if (o != 0)
+                     {
+                        animInfo[j] = {'opacity': [o, 0]};
+                     }
+                     // does the image need shrinking?
+                     var ih = otherImg.getStyle('height').toInt();
+                     if (ih != MySpaces.IMG_SMALL)
+                     {
+                        animImage[j] = {
+                           'height': [ih, MySpaces.IMG_SMALL],
+                           'width': [ih, MySpaces.IMG_SMALL]
+                        };
+                     }
+   
+                     // does this space resource panel need resetting back to it's default height?
+                     var otherHeight = otherResource.getStyle('height').toInt();
+                     if (otherHeight != otherResource.defHeight)
+                     {
+                        animResource[j] = {
+                           'height': [otherHeight, otherResource.defHeight],
+                           'opacity': [otherResource.getStyle('opacity'), 0]};
+                     }
+                     
+                     var otherMeta = $E('.spacePreview', otherResource)
+                     if (otherMeta)
+                     {
+                        otherMeta.setStyle('overflow', 'hidden');
+                     }
+                  }
+               });
+            }
+            else
+            {
+               // close this space panel
+               // flag this space as closed
+               space.isOpen = false;
+               
+               // reset resource panel back to it's default height
+               animResource[i] = {
+                  'height': [resourceHeight, resource.defHeight],
+                  'opacity': [resource.getStyle('opacity'), 0]};
+               
+               var elePrev = $E('.spacePreview', resource)
+               if (elePrev)
+               {
+                 elePrev.setStyle('overflow', 'hidden');
+               }
+            }
+            fxResource.start(animResource);
             fxItem.start(animItem);
             fxDetail.start(animDetail);
             fxInfo.start(animInfo);

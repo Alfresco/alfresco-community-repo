@@ -43,7 +43,7 @@ var MyDocs = {
                   if (resource.isLoaded)
                   {
                      resource.needsOverflow = false;
-                     var elePrev = $E('.docMetapreview', resource)
+                     var elePrev = $E('.docPreview', resource)
                      if (elePrev)
                      {
                         elePrev.setStyle('overflow', 'auto');
@@ -207,7 +207,7 @@ var MyDocs = {
                            // deferred from transition complete event
                            if (resource.needsOverflow)
                            {
-                              var elePrev = $E('.docMetapreview', resource)
+                              var elePrev = $E('.docPreview', resource)
                               if (elePrev)
                               {
                                  elePrev.setStyle('overflow', 'auto');
@@ -312,7 +312,7 @@ var MyDocs = {
                            'opacity': [otherResource.getStyle('opacity'), 0]};
                      }
                      
-                     var otherMeta = $E('.docMetapreview', otherResource)
+                     var otherMeta = $E('.docPreview', otherResource)
                      if (otherMeta)
                      {
                         otherMeta.setStyle('overflow', 'hidden');
@@ -331,7 +331,7 @@ var MyDocs = {
                   'height': [resourceHeight, resource.defHeight],
                   'opacity': [resource.getStyle('opacity'), 0]};
                
-               var elePrev = $E('.docMetapreview', resource)
+               var elePrev = $E('.docPreview', resource)
                if (elePrev)
                {
                  elePrev.setStyle('overflow', 'hidden');

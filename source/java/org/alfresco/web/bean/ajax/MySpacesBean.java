@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.bean.ajax;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -31,15 +33,18 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
 import org.alfresco.filesys.server.filesys.FileExistsException;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.servlet.BaseServlet;
 import org.alfresco.web.app.servlet.ajax.InvokeCommand;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.spaces.CreateSpaceWizard;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -80,6 +85,14 @@ public class MySpacesBean
                FileInfo folderInfo = ffService.create(containerRef, name, ContentModel.TYPE_FOLDER);
                if (logger.isDebugEnabled())
                   logger.debug("Created new folder: " + folderInfo.getNodeRef().toString());
+               
+               // apply the uifacets aspect - icon, title and description properties
+               Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(4, 1.0f);
+               uiFacetsProps.put(ApplicationModel.PROP_ICON, CreateSpaceWizard.DEFAULT_SPACE_ICON_NAME);
+               uiFacetsProps.put(ContentModel.PROP_TITLE, title);
+               uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, description);
+               nodeService.addAspect(folderInfo.getNodeRef(), ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
+               
                out.write("OK: " + folderInfo.getNodeRef().toString());
             }
          }

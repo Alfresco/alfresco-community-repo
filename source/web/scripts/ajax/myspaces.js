@@ -8,6 +8,7 @@ var MySpaces = {
    Path: null,
    Filter: null,
    Home: null,
+   popupPanel: null,
    
    start: function()
    {
@@ -246,12 +247,26 @@ var MySpaces = {
     */
    createSpace: function(actionEl)
    {
+      if (this.popupPanel != null) return;
+      
       var panel = $E(".spaceCreateSpacePanel", $(actionEl).getParent());
       panel.setStyle("opacity", 0);
       panel.setStyle("display", "inline");
-      panel.getElementById("space-name").focus();
-      var anim = new Fx.Styles(panel, {duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
+      var anim = new Fx.Styles(
+         panel,
+         {
+            duration: MySpaces.ANIM_LENGTH,
+            transition: Fx.Transitions.linear,
+            onComplete: function()
+            {
+               var nameInput = this.element.getElementById("space-name");
+               nameInput.focus();
+               nameInput.select();
+            }
+         });
       anim.start({'opacity': 1});
+      
+      this.popupPanel = panel;
    },
    
    /**
@@ -282,12 +297,12 @@ var MySpaces = {
                   {
                      alert("Error during creation of new space: " + response.responseText);
                   }
-                  MySpaces.closePanel(actionEl);
+                  MySpaces.closePopupPanel();
                },
                failure: function(response)
                {
                   alert("Error during creation of new space: " + response.responseText);
-                  MySpaces.closePanel(actionEl);
+                  MySpaces.closePopupPanel();
                }
             }, 
             "path=" + path.replace("_%_", "'") +
@@ -301,10 +316,13 @@ var MySpaces = {
    /**
     * Cancel button click handler for various pop-up panels
     */
-   closePanel: function(actionEl)
+   closePopupPanel: function()
    {
-      var panel = $(actionEl).getParent();
-      panel.setStyle("display", "none");
+      if (this.popupPanel != null)
+      {
+         this.popupPanel.setStyle("display", "none");
+         this.popupPanel = null;
+      }
    },
    
    /**
@@ -312,6 +330,8 @@ var MySpaces = {
     */
    upload: function(actionEl)
    {
+      if (this.popupPanel != null) return;
+      
       var panel = $E(".spaceUploadPanel", $(actionEl).getParent());
       panel.setStyle("opacity", 0);
       panel.setStyle("display", "inline");
@@ -328,12 +348,15 @@ var MySpaces = {
          fileInput.name = "_upload";
          fileInput.size = "35";
          fileInput.setStyle("width", "100%");
+         fileInput.addClass("spaceFormItem");
          fileInput.injectTop(panel);
          this.fileInput = fileInput;
       }
       
       var anim = new Fx.Styles(panel, {duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
       anim.start({'opacity': 1});
+      
+      this.popupPanel = panel;
    },
    
    /**
@@ -349,7 +372,7 @@ var MySpaces = {
                          "/ajax/invoke/FileUploadBean.uploadFile",
                          {currentPath: path.replace("_%_", "'")});   // decode path
       this.fileInput = null;
-      this.closePanel(actionEl);
+      this.closePopupPanel();
    },
    
    /**

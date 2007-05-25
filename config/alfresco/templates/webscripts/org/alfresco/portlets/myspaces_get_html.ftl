@@ -59,19 +59,19 @@
       <div class="spaceAction spaceActionUpload" title="Upload a new document" onclick="MySpaces.upload(this);">Upload</div>
       <div class="spaceUploadPanel">
          <#-- Url encode the path value, and encode any single quotes to generate valid string -->
-         <input style="margin:4px" type="submit" value="OK" onclick='MySpaces.uploadOK(this, "${path?url?replace("'","_%_")}");'>
-         <input style="margin:4px" type="button" value="Cancel" onclick="MySpaces.closePanel(this);">
+         <input class="spaceFormItem" type="submit" value="OK" onclick='MySpaces.uploadOK(this, "${path?url?replace("'","_%_")}");'>
+         <input class="spaceFormItem" type="button" value="Cancel" onclick="MySpaces.closePopupPanel();">
       </div>
       <#-- Create Space action -->
       <div class="spaceAction spaceActionCreateSpace" title="Create a new Space" onclick="MySpaces.createSpace(this);">Create Space</div>
       <div class="spaceCreateSpacePanel">
          <table cellspacing="2" cellpadding="2" border="0">
-            <tr><td>Name:</td><td><input style="margin:4px" type="text" size="32" maxlength="1024" id="space-name"></td></tr>
-            <tr><td>Title:</td><td><input style="margin:4px" type="text" size="32" maxlength="1024" id="space-title"></td></tr>
-            <tr><td>Description:</td><td><input style="margin:4px" type="text" size="32" maxlength="1024" id="space-description"></td></tr>
+            <tr><td class="spaceFormLabel">Name:</td><td><input class="spaceFormItem" type="text" size="32" maxlength="1024" id="space-name"></td></tr>
+            <tr><td class="spaceFormLabel">Title:</td><td><input class="spaceFormItem" type="text" size="32" maxlength="1024" id="space-title"></td></tr>
+            <tr><td class="spaceFormLabel">Description:</td><td><input class="spaceFormItem" type="text" size="32" maxlength="1024" id="space-description"></td></tr>
          </table>
-         <input style="margin:4px" type="button" value="OK" onclick='MySpaces.createSpaceOK(this, "${path?url?replace("'","_%_")}");'>
-         <input style="margin:4px" type="button" value="Cancel" onclick="MySpaces.closePanel(this);">
+         <input class="spaceFormItem" type="button" value="OK" onclick='MySpaces.createSpaceOK(this, "${path?url?replace("'","_%_")}");'>
+         <input class="spaceFormItem" type="button" value="Cancel" onclick="MySpaces.closePopupPanel();">
       </div>
    </div>
    <div style="text-align: center;">
@@ -248,6 +248,21 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    text-decoration: none;
 }
 
+.spaceFormLabel
+{
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   color: #515D6B;
+}
+
+.spaceFormItem
+{
+   margin: 4px;
+   padding: 2px;
+   background-color: #F8FCFD;
+   border: 1px solid #CCD4DB;
+}
+
 .spaceActions
 {
    background-color: #EEF7FB;
@@ -287,7 +302,7 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    border: 1px solid #CCD4DB;
    background-color: #EEF7FB;
    width: 24em;
-   height: 4em;
+   height: 5em;
    padding: 8px;
    margin: 8px;
    display: none;

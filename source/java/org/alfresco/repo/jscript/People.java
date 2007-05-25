@@ -223,9 +223,10 @@ public final class People extends BaseScopableProcessorExtension
     /**
      * Gets the members (people) of a group (including all sub-groups)
      * 
-     * @param group  the group to retrieve members for
-     * @param recurse  recurse into sub-groups
-     * @return  the members of the group
+     * @param group        the group to retrieve members for
+     * @param recurse      recurse into sub-groups
+     * 
+     * @return the members of the group
      */
     public Node[] getMembers(Node group)
     {
@@ -236,9 +237,10 @@ public final class People extends BaseScopableProcessorExtension
     /**
      * Gets the members (people) of a group
      * 
-     * @param group  the group to retrieve members for
-     * @param recurse  recurse into sub-groups
-     * @return  the members of the group
+     * @param group        the group to retrieve members for
+     * @param recurse      recurse into sub-groups
+     * 
+     * @return the members of the group
      */
     public Node[] getMembers(Node group, boolean recurse)
     {
@@ -247,12 +249,41 @@ public final class People extends BaseScopableProcessorExtension
     }
     
     /**
+     * Gets the groups that contain the specified authority
+     * 
+     * @param person       the user (cm:person) to get the containing groups for
+     * 
+     * @return the containing groups, can be null
+     */
+    public Node[] getContainerGroups(Node person)
+    {
+        ParameterCheck.mandatory("Person", person);
+        Node[] parents = null;
+        Set<String> authorities = this.authorityService.getContainingAuthorities(
+                AuthorityType.GROUP,
+                (String)person.getProperties().get(ContentModel.PROP_USERNAME),
+                false);
+        parents = new Node[authorities.size()];
+        int i = 0;
+        for (String authority : authorities)
+        {
+            Node group = getGroup(authority);
+            if (group != null)
+            {
+                parents[i++] = group; 
+            }
+        }
+        return parents;
+    }
+
+    /**
      * Get Contained Authorities
      * 
      * @param container  authority containers
-     * @param type  authority type to filter by
-     * @param recurse  recurse into sub-containers
-     * @return  contained authorities
+     * @param type       authority type to filter by
+     * @param recurse    recurse into sub-containers
+     * 
+     * @return contained authorities or null if none found
      */
     private Node[] getContainedAuthorities(Node container, AuthorityType type, boolean recurse)
     {
@@ -286,5 +317,4 @@ public final class People extends BaseScopableProcessorExtension
         }
         return members;
     }
-    
 }

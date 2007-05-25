@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -58,7 +59,6 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -617,14 +617,13 @@ public class BrowseBean implements IContextListener
             parentRef = new NodeRef(Repository.getStoreRef(), parentNodeId);
          }
 
-         List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(parentRef, 
-               ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-         this.containerNodes = new ArrayList<Node>(childRefs.size());
-         this.contentNodes = new ArrayList<Node>(childRefs.size());
-         for (ChildAssociationRef ref: childRefs)
+         List<FileInfo> children = this.fileFolderService.list(parentRef);
+         this.containerNodes = new ArrayList<Node>(children.size());
+         this.contentNodes = new ArrayList<Node>(children.size());
+         for (FileInfo fileInfo : children)
          {
             // create our Node representation from the NodeRef
-            NodeRef nodeRef = ref.getChildRef();
+            NodeRef nodeRef = fileInfo.getNodeRef();
             
             if (this.nodeService.exists(nodeRef))
             {

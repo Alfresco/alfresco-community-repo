@@ -1433,7 +1433,6 @@ public class AVMRepository
             if (store != null)
             {
                 addPath(components, -1, store.getName(), paths);
-                return;
             }
             VersionRoot vr = fVersionRootDAO.getByRoot(node);
             if (vr != null)

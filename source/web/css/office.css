@@ -1,0 +1,130 @@
+html, body {
+    height: 100%;
+    overflow:hidden;
+    font-family: tahoma, sans-serif;
+    font-size: 11px;
+    color: #0073e6;
+    background: url("../images/taskpane/view_bg.gif") top;
+}
+
+body {margin:0px;padding:0px;}
+
+#tabBar {
+      float:left;
+      width:100%;
+      background:#d4eaff url("../images/taskpane/bg.gif") repeat-x bottom;
+      font-size:93%;
+      line-height:normal;
+      }
+#tabBar ul {
+      margin:0;
+      padding:10px 10px 0;
+      list-style:none;
+      }
+    #tabBar li {
+      float:left;
+      background:url("../images/taskpane/norm_left.gif") no-repeat left top;
+      margin:0;
+      padding:0 0 0 9px;
+      }
+    #tabBar a {
+      display:block;
+      background:url("../images/taskpane/norm_right.gif") no-repeat right top;
+      padding:5px 15px 4px 6px;
+      text-decoration:none;
+      font-weight:bold;
+      color:#765;
+      }
+    #tabBar a:hover {
+      color:#333;
+      }
+    #tabBar #current {
+      background-image:url("../images/taskpane/norm_left_on.gif");
+      }
+    #tabBar #current a {
+      background-image:url("../images/taskpane/norm_right_on.gif");
+      color:#333;
+      padding-bottom:5px;
+      }
+
+#spaceListHeader {width:100%;
+        height:auto;
+        padding:6px;}
+
+#mycheckedoutdocsListHeader {width:100%;
+        height:auto;
+        padding:6px;}
+
+#mytodoListHeader {width:100%;
+        height:auto;
+        padding:6px;}
+
+#contentListHeader {width:100%;
+        height:auto;padding:6px;}
+
+#searchResultsListHeader {width:100%;
+        height:auto;padding:6px;}
+
+#detailsListHeader {width:100%;
+        height:auto;padding:6px;}
+
+#versionListHeader {width:100%;
+        height:auto;padding:6px;}
+
+#advWorkflowListHeader {width:100%;
+        height:auto;padding:6px;}
+
+#myTasksListHeader {width:100%;
+        height:auto;padding:6px;}
+
+#simpleWorkflowHeader {width:100%;
+        height:auto;padding:6px;}
+
+#currentSpaceInfo {width:100%;
+                  padding: 6px}
+
+#simpleWorkflowInfo {width:100%;
+                  padding: 6px}
+
+#spaceList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
+#mycheckedoutdocsList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
+#mytodoList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
+#contentList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
+#searchResultsList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
+#detailsList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
+#versionList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
+#advWorkflowList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
+#myTasksList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
+
+TABLE {border:0px;
+padding:2px;}
+
+A {color:#0073e6; }
+
+#bottomMargin {height:6px;}
+
+#documentActions ul {
+      margin:0;
+      padding:10px 10px 0;
+      list-style:none;
+      }
+
+#documentActions {width:97%;margin-left:6px;padding-top:6px;padding-bottom:6px;}
+
+#search {padding: 24px 0px 0px 10px;}
+
+input.button{
+   color:#0073e6;
+   font-size:11px;
+   font-weight:bold;
+   background-color:#cce6ff;
+   border:1px solid;
+   border-top-color:#0073e6;
+   border-left-color:#0073e6;
+   border-right-color:#0073e6;
+   border-bottom-color:#0073e6;
+   filter:progid:DXImageTransform.Microsoft.Gradient
+      (GradientType=0,StartColorStr='#ffffffff',EndColorStr='#6fb7ff');
+   cursor:pointer;
+   margin-left:6px;
+   }

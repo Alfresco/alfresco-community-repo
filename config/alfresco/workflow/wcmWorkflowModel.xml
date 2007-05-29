@@ -246,7 +246,7 @@
         <property name="wcmwf:reviewCycle">
           <title>Reviewer Cycle</title>
           <type>d:int</type>
-          <mandatory>true</mandatory>
+          <mandatory>false</mandatory>
         </property>
       </properties>
     </aspect>

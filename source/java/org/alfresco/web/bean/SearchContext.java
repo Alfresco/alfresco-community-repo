@@ -803,7 +803,14 @@ public final class SearchContext implements Serializable
     */
    public void setSimpleSearchAdditionalAttributes(List<QName> attrs)
    {
-	   this.simpleSearchAdditionalAttrs = attrs;
+      if (attrs == null)
+      {
+         this.simpleSearchAdditionalAttrs = new ArrayList<QName>(4);
+      }
+      else
+      {
+         this.simpleSearchAdditionalAttrs = attrs;
+      }
    }
    
    /**

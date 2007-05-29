@@ -64,7 +64,7 @@
                       </view:properties>
                       <view:associations>
                         <cm:contains>
-                          <cm:content view:childName="cm:categorysearch_get.js">
+                          <cm:content view:childName="cm:categorysearch.get.js">
                             <view:aspects>
                               <cm:titled></cm:titled>
                               <app:inlineeditable></app:inlineeditable>
@@ -73,14 +73,14 @@
                             <view:properties>
                               <app:editInline>true</app:editInline>
                               <cm:description></cm:description>
-                              <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/categorysearch_get.js|mimetype=application/x-javascript|size=121|encoding=UTF-8|locale=en_US_</cm:content>
-                              <cm:title>categorysearch_get.js</cm:title>
+                              <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/categorysearch.get.js|mimetype=application/x-javascript|size=121|encoding=UTF-8|locale=en_US_</cm:content>
+                              <cm:title>categorysearch.get.js</cm:title>
                               <cm:author></cm:author>
-                              <cm:name>categorysearch_get.js</cm:name>
+                              <cm:name>categorysearch.get.js</cm:name>
                             </view:properties>
                             <view:associations></view:associations>
                           </cm:content>
-                          <cm:content view:childName="cm:categorysearch_get_atom.ftl">
+                          <cm:content view:childName="cm:categorysearch.get.atom.ftl">
                             <view:aspects>
                               <cm:titled></cm:titled>
                               <cm:author></cm:author>
@@ -89,15 +89,15 @@
                             <view:properties>
                               <app:editInline>true</app:editInline>
                               <cm:description></cm:description>
-                              <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/categorysearch_get_atom.ftl|mimetype=text/plain|size=778|encoding=UTF-8|locale=en_US_</cm:content>
-                              <cm:title>categorysearch_get_atom.ftl</cm:title>
+                              <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/categorysearch.get.atom.ftl|mimetype=text/plain|size=778|encoding=UTF-8|locale=en_US_</cm:content>
+                              <cm:title>categorysearch.get.atom.ftl</cm:title>
                               <cm:author></cm:author>
                               <sys:store-protocol>workspace</sys:store-protocol>
-                              <cm:name>categorysearch_get_atom.ftl</cm:name>
+                              <cm:name>categorysearch.get.atom.ftl</cm:name>
                             </view:properties>
                             <view:associations></view:associations>
                           </cm:content>
-                          <cm:content view:childName="cm:categorysearch_get_desc.xml">
+                          <cm:content view:childName="cm:categorysearch.get.desc.xml">
                             <view:aspects>
                               <cm:titled></cm:titled>
                               <cm:author></cm:author>
@@ -106,14 +106,14 @@
                             <view:properties>
                               <app:editInline>true</app:editInline>
                               <cm:description></cm:description>
-                              <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/categorysearch_get_desc.xml|mimetype=text/xml|size=375|encoding=UTF-8|locale=en_US_</cm:content>
-                              <cm:title>categorysearch_get_desc.xml</cm:title>
+                              <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/categorysearch.get.desc.xml|mimetype=text/xml|size=375|encoding=UTF-8|locale=en_US_</cm:content>
+                              <cm:title>categorysearch.get.desc.xml</cm:title>
                               <cm:author></cm:author>
-                              <cm:name>categorysearch_get_desc.xml</cm:name>
+                              <cm:name>categorysearch.get.desc.xml</cm:name>
                             </view:properties>
                             <view:associations></view:associations>
                           </cm:content>
-                          <cm:content view:childName="cm:categorysearch_get_html.ftl">
+                          <cm:content view:childName="cm:categorysearch.get.html.ftl">
                             <view:aspects>
                               <cm:titled></cm:titled>
                               <cm:author></cm:author>
@@ -122,10 +122,10 @@
                             <view:properties>
                               <app:editInline>true</app:editInline>
                               <cm:description></cm:description>
-                              <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/categorysearch_get_html.ftl|mimetype=text/plain|size=364|encoding=UTF-8|locale=en_US_</cm:content>
-                              <cm:title>categorysearch_get_html.ftl</cm:title>
+                              <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/categorysearch.get.html.ftl|mimetype=text/plain|size=364|encoding=UTF-8|locale=en_US_</cm:content>
+                              <cm:title>categorysearch.get.html.ftl</cm:title>
                               <cm:author></cm:author>
-                              <cm:name>categorysearch_get_html.ftl</cm:name>
+                              <cm:name>categorysearch.get.html.ftl</cm:name>
                             </view:properties>
                             <view:associations></view:associations>
                           </cm:content>

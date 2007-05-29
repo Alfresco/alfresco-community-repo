@@ -1275,23 +1275,18 @@
 
     <!-- LinkValidationService -->
     <!-- Read transaction advisor for link validation service. -->
-    <bean id="linkValidationServiceReadTxnAdvisor" 
+<!--    <bean id="linkValidationServiceReadTxnAdvisor" 
           class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
             <ref bean="retryingReadTxnAdvice"/>
         </property>
         <property name="mappedNames">
             <list>
-                <!-- Takes a value to a collection of webapps -->
-                <!-- (e.g.:   mysite:/www/avm_webapps)        -->
-                <!-- or a specific webapp within a store      -->
-                <!-- (e.g.:   mysite:/www/avm_webapps/ROOT)   -->
                 <value>getBrokenHrefs</value>
             </list>
         </property>
-    </bean>
+    </bean> 
     
-    <!-- Write transaction advisor for link validation service. -->
     <bean id="linkValidationServiceWriteTxnAdvisor" 
           class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
@@ -1299,11 +1294,6 @@
         </property>
         <property name="mappedNames">
             <list>
-                <!-- Takes a value to a collection of webapps -->
-                <!-- (e.g.:   mysite:/www/avm_webapps)        -->
-                <!-- or a specific webapp within a store      -->
-                <!-- (e.g.:   mysite:/www/avm_webapps/ROOT)   -->
-
                 <value>updateHrefInfo</value>
 
             </list>
@@ -1327,6 +1317,6 @@
                 <value>linkValidationServiceReadTxnAdvisor</value>
             </list>
         </property>
-    </bean>
+    </bean>  -->
 
 </beans>

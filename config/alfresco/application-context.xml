@@ -29,7 +29,7 @@
     <import resource="classpath:alfresco/avm-services-context.xml" />
     <import resource="classpath:alfresco/audit-services-context.xml" />
     <import resource="classpath:alfresco/attributes-service-context.xml"/>
-    <import resource="classpath:alfresco/linkvalidation-service-context.xml"/>
+<!--    <import resource="classpath:alfresco/linkvalidation-service-context.xml"/>  -->
     <import resource="classpath:alfresco/remote-services-context.xml"/>
     <import resource="classpath*:alfresco/patch/*-context.xml" />
     <import resource="classpath*:alfresco/domain/*-context.xml" />

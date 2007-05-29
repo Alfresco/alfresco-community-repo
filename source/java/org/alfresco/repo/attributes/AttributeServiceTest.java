@@ -25,7 +25,10 @@
 
 package org.alfresco.repo.attributes;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.service.cmr.attributes.AttrAndQuery;
 import org.alfresco.service.cmr.attributes.AttrNotQuery;
@@ -113,6 +116,13 @@ public class AttributeServiceTest extends TestCase
             }
             fService.setAttribute("", "string", new StringAttributeValue("This is another string."));
             assertEquals("This is another string.", fService.getAttribute("string").getStringValue());
+            Map<String, Attribute> hmap = new HashMap<String, Attribute>();
+            hmap.put("foo", new StringAttributeValue("I do walk."));
+            hmap.put("pismo", new StringAttributeValue("There's trees now in the desert since you moved out, and I don't sleep on a bed of bones."));
+            fService.setAttributes("map", hmap);
+            Attribute out = fService.getAttribute("map");
+            System.out.println(out);
+            assertEquals(6, out.size());
         }
         catch (Exception e)
         {
@@ -319,6 +329,13 @@ public class AttributeServiceTest extends TestCase
             fService.setAttribute("", "map", map);
             assertEquals("donuts", fService.getAttribute("map/list/5/b").getStringValue());
             assertEquals(3, fService.getCount("map/list/5"));
+            List<Attribute> values = new ArrayList<Attribute>();
+            values.add(new StringAttributeValue("Death is your art."));
+            values.add(new StringAttributeValue("You make it with your hands, day after day."));
+            fService.addAttributes("dummy", values);
+            found = fService.getAttribute("dummy");
+            System.out.println(found);
+            assertEquals(7, found.size());
         }
         catch (Exception e)
         {

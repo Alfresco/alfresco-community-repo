@@ -211,4 +211,13 @@ public class MapAttributeValue extends AttributeValue implements MapAttribute
         builder.append('}');
         return builder.toString();
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.AttributeValue#size()
+     */
+    @Override
+    public int size()
+    {
+        return fData.size();
+    }
 }

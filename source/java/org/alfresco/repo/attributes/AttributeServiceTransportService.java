@@ -26,6 +26,7 @@
 package org.alfresco.repo.attributes;
 
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.service.cmr.attributes.AttrQuery;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -242,5 +243,41 @@ public class AttributeServiceTransportService implements
     {
         fAuthService.validate(ticket);
         return fService.getCount(path);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AttributeServiceTransport#addAttributes(java.lang.String, java.util.List, java.util.List)
+     */
+    public void addAttributes(String ticket, List<String> keys, List<Attribute> values)
+    {
+        fAuthService.validate(ticket);
+        fService.addAttributes(keys, values);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AttributeServiceTransport#addAttributes(java.lang.String, java.lang.String, java.util.List)
+     */
+    public void addAttributes(String ticket, String path, List<Attribute> values)
+    {
+        fAuthService.validate(ticket);
+        fService.addAttributes(path, values);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AttributeServiceTransport#setAttributes(java.lang.String, java.util.List, java.util.Map)
+     */
+    public void setAttributes(String ticket, List<String> keys, Map<String, Attribute> entries)
+    {
+        fAuthService.validate(ticket);
+        fService.setAttributes(keys, entries);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AttributeServiceTransport#setAttributes(java.lang.String, java.lang.String, java.util.Map)
+     */
+    public void setAttributes(String ticket, String path, Map<String, Attribute> entries)
+    {
+        fAuthService.validate(ticket);
+        fService.setAttributes(path, entries);
     }
 }

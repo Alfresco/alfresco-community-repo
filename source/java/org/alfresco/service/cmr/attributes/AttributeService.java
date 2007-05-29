@@ -26,6 +26,7 @@
 package org.alfresco.service.cmr.attributes;
 
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.util.Pair;
@@ -101,6 +102,20 @@ public interface AttributeService
     public void setAttribute(List<String> keys, String name, Attribute value);
     
     /**
+     * Set a set of attributes on a map.
+     * @param path The path to the map.
+     * @param entries The entries to set.
+     */
+    public void setAttributes(String path, Map<String, Attribute> entries);
+    
+    /**
+     * Set a set of attributes on a map.
+     * @param keys The List of path keys to the map.
+     * @param entries The entries to set.
+     */
+    public void setAttributes(List<String> keys, Map<String, Attribute> entries);
+    
+    /**
      * Set an attribute in a list.
      *
      * @param path The path to the {@link org.alfresco.repo.attributes.ListAttribute ListAttribute}.
@@ -132,6 +147,20 @@ public interface AttributeService
      * @param value The Attribute to add to the {@link org.alfresco.repo.attributes.ListAttribute ListAttribute}
      */
     public void addAttribute(List<String> keys, Attribute value);
+    
+    /**
+     * Add a list of attributes to the end of a list.
+     * @param path The path to the list.
+     * @param values The values to add.
+     */
+    public void addAttributes(String path, List<Attribute> values);
+    
+    /**
+     * Add a list of attributes to the end of a list.
+     * @param keys The List of path keys to the list.
+     * @param values The values to add.
+     */
+    public void addAttributes(List<String> keys, List<Attribute> values);
     
     /**
      * Remove an Attribute.

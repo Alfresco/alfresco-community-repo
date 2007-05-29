@@ -26,6 +26,7 @@
 package org.alfresco.repo.remote;
 
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.service.cmr.attributes.AttrQuery;
@@ -216,5 +217,37 @@ public class AttributeServiceRemote implements AttributeService
     public int getCount(String path)
     {
         return fTransport.getCount(fTicketHolder.getTicket(), path);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#addAttributes(java.util.List, java.util.List)
+     */
+    public void addAttributes(List<String> keys, List<Attribute> values)
+    {
+        fTransport.addAttributes(fTicketHolder.getTicket(), keys, values);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#addAttributes(java.lang.String, java.util.List)
+     */
+    public void addAttributes(String path, List<Attribute> values)
+    {
+        fTransport.addAttributes(fTicketHolder.getTicket(), path, values);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#setAttributes(java.util.List, java.util.Map)
+     */
+    public void setAttributes(List<String> keys, Map<String, Attribute> entries)
+    {
+        fTransport.setAttributes(fTicketHolder.getTicket(), keys, entries);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#setAttributes(java.lang.String, java.util.Map)
+     */
+    public void setAttributes(String path, Map<String, Attribute> entries)
+    {
+        fTransport.setAttributes(fTicketHolder.getTicket(), path, entries);
     }
 }

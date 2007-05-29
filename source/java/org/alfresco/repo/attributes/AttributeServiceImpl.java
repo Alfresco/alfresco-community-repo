@@ -27,6 +27,7 @@ package org.alfresco.repo.attributes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.attributes.Attribute.Type;
 import org.alfresco.service.cmr.attributes.AttrQuery;
@@ -523,6 +524,101 @@ public class AttributeServiceImpl implements AttributeService
         }
         List<String> keys = parsePath(path);
         return getCount(keys);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#addAttributes(java.util.List, java.util.List)
+     */
+    public void addAttributes(List<String> keys, List<Attribute> values)
+    {
+        if (keys == null || values == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        if (keys.size() == 0)
+        {
+            throw new AVMBadArgumentException("Zero length keys.");
+        }
+        Attribute list = getAttributeFromPath(keys);
+        if (list.getType() != Attribute.Type.LIST)
+        {
+            throw new AVMWrongTypeException("Attribute not list: " + list.getType());
+        }
+        for (Attribute value : values)
+        {
+            Attribute persistent = fAttributeConverter.toPersistent(value);
+            list.add(persistent);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#addAttributes(java.lang.String, java.util.List)
+     */
+    public void addAttributes(String path, List<Attribute> values)
+    {
+        if (path == null || values == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        List<String> keys = parsePath(path);
+        addAttributes(keys, values);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#setAttributes(java.util.List, java.util.Map)
+     */
+    public void setAttributes(List<String> keys, Map<String, Attribute> entries)
+    {
+        if (keys == null || entries == null)
+        {
+            throw new AVMBadArgumentException("Null argument.");
+        }
+        if (keys.size() == 0)
+        {
+            for (Map.Entry<String, Attribute> entry : entries.entrySet())
+            {
+                String name = entry.getKey();
+                Attribute value = entry.getValue();
+                Attribute toSave = fAttributeConverter.toPersistent(value);
+                GlobalAttributeEntry found = fGlobalAttributeEntryDAO.get(name);
+                if (found == null)
+                {
+                    found = new GlobalAttributeEntryImpl(name, toSave);
+                    fGlobalAttributeEntryDAO.save(found);
+                    return;
+                }
+                found.setAttribute(toSave);
+            }
+            return;
+        }
+        Attribute found = getAttributeFromPath(keys);
+        if (found == null)
+        {
+            throw new AVMNotFoundException("Attribute Not Found: " + keys);
+        }
+        if (found.getType() != Type.MAP)
+        {
+            throw new AVMWrongTypeException("Not a Map: " + keys);
+        }
+        for (Map.Entry<String, Attribute> entry : entries.entrySet())
+        {
+            String name = entry.getKey();
+            Attribute value = entry.getValue();
+            found.put(name, fAttributeConverter.toPersistent(value));
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#setAttributes(java.lang.String, java.util.Map)
+     */
+    public void setAttributes(String path, Map<String, Attribute> entries)
+    {
+        if (path == null || entries == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        List<String> keys = parsePath(path);
+        setAttributes(keys, entries);
     }
 }
 

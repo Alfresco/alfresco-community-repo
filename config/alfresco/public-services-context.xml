@@ -991,8 +991,10 @@
         <property name="mappedNames">
             <list>
                 <value>setAttribute</value>
+                <value>setAttributes</value>
                 <value>removeAttribute</value>
                 <value>addAttribute</value>
+                <value>addAttributes</value>
             </list>
         </property>
     </bean>

@@ -26,6 +26,7 @@
 package org.alfresco.service.cmr.remote;
 
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.service.cmr.attributes.AttrQuery;
@@ -198,4 +199,36 @@ public interface AttributeServiceTransport
      * @return Whether the attribute exists.
      */
     public boolean exists(String ticket, String path);
+
+    /**
+     * Add a list of attributes.
+     * @param ticket
+     * @param keys
+     * @param values
+     */
+    public void addAttributes(String ticket, List<String> keys, List<Attribute> values);
+
+    /**
+     * Add a list of attributes.
+     * @param ticket
+     * @param path
+     * @param values
+     */
+    public void addAttributes(String ticket, String path, List<Attribute> values);
+
+    /**
+     * Add a set of attributes.
+     * @param ticket
+     * @param keys
+     * @param entries
+     */
+    public void setAttributes(String ticket, List<String> keys, Map<String, Attribute> entries);
+
+    /**
+     * Add a set of attributes.
+     * @param ticket
+     * @param path
+     * @param entries
+     */
+    public void setAttributes(String ticket, String path, Map<String, Attribute> entries);
 }

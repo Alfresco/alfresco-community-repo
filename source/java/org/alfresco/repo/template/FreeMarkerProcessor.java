@@ -299,7 +299,7 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
                     }
                     else
                     {
-                        // Just add the objec to the free marker model
+                        // Just add the object to the free marker model
                         freeMarkerModel.put(key, ((Map)model).get(key));
                     }
                 }

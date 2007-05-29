@@ -192,6 +192,20 @@ public interface AttributeService
     public void removeAttribute(List<String> keys, int index);
     
     /**
+     * Remove entries from the designated map which match the given query.
+     * @param keys The list of attribute path entries.
+     * @param query The attribute query.
+     */
+    public void removeEntries(List<String> keys, AttrQuery query);
+    
+    /**
+     * Remove entries from the designated map which match the given query.
+     * @param path The path to the map.
+     * @param query The attribute query.
+     */
+    public void removeEntries(String path, AttrQuery query);
+    
+    /**
      * Query for the list of attributes that is contained in the map
      * defined by the given path and meet the query criteria.
      *

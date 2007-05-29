@@ -421,6 +421,44 @@ public class AttributeServiceImpl implements AttributeService
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#removeEntries(java.util.List, org.alfresco.service.cmr.attributes.AttrQuery)
+     */
+    public void removeEntries(List<String> keys, AttrQuery query)
+    {
+        if (keys == null || query == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        if (keys.size() == 0)
+        {
+            throw new AVMBadArgumentException("Illegal zero length key path.");
+        }
+        Attribute map = getAttributeFromPath(keys);
+        if (map == null)
+        {
+            throw new AVMNotFoundException("Could not find attribute: " + keys);
+        }
+        if (map.getType() != Attribute.Type.MAP)
+        {
+            throw new AVMWrongTypeException("Not a map: " + keys);
+        }
+        fAttributeDAO.delete((MapAttribute)map, query);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#removeEntries(java.lang.String, org.alfresco.service.cmr.attributes.AttrQuery)
+     */
+    public void removeEntries(String path, AttrQuery query)
+    {
+        if (path == null || query == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        List<String> keys = parsePath(path);
+        removeEntries(keys, query);
+    }
+
+    /* (non-Javadoc)
      * @see org.alfresco.service.cmr.attributes.AttributeService#setAttribute(java.util.List, int, org.alfresco.repo.attributes.Attribute)
      */
     public void setAttribute(List<String> keys, int index, Attribute value)

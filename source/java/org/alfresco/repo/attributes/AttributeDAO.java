@@ -54,5 +54,12 @@ public interface AttributeDAO
      * @param query The AttrQuery.
      * @return A List of key, attribute value pairs.
      */
-    List<Pair<String,Attribute>> find(MapAttribute map, AttrQuery query);
+    public List<Pair<String,Attribute>> find(MapAttribute map, AttrQuery query);
+    
+    /**
+     * Delete entries from a map that match the given query.
+     * @param map
+     * @param query
+     */
+    public void delete(MapAttribute map, AttrQuery query);
 }

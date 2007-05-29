@@ -126,6 +126,18 @@ public class AttributeDAOHibernate extends HibernateDaoSupport implements
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.AttributeDAO#delete(org.alfresco.repo.attributes.MapAttribute, org.alfresco.service.cmr.attributes.AttrQuery)
+     */
+    public void delete(MapAttribute map, AttrQuery query)
+    {
+        List<Pair<String, Attribute>> result = find(map, query);
+        for (Pair<String, Attribute> entry : result)
+        {
+            map.remove(entry.getFirst());
+        }
+    }
+
+    /* (non-Javadoc)
      * @see org.alfresco.repo.attributes.AttributeDAO#save(org.alfresco.repo.attributes.Attribute)
      */
     public void save(Attribute attr)

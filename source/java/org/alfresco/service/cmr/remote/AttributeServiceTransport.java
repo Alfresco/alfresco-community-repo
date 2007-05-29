@@ -231,4 +231,20 @@ public interface AttributeServiceTransport
      * @param entries
      */
     public void setAttributes(String ticket, String path, Map<String, Attribute> entries);
+
+    /**
+     * Remove entries from a map that match a query.
+     * @param ticket
+     * @param keys
+     * @param query
+     */
+    public void removeEntries(String ticket, List<String> keys, AttrQuery query);
+
+    /**
+     * Remove entries from a map that match a query.
+     * @param ticket
+     * @param path
+     * @param query
+     */
+    public void removeEntries(String ticket, String path, AttrQuery query);
 }

@@ -250,4 +250,20 @@ public class AttributeServiceRemote implements AttributeService
     {
         fTransport.setAttributes(fTicketHolder.getTicket(), path, entries);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#removeEntries(java.util.List, org.alfresco.service.cmr.attributes.AttrQuery)
+     */
+    public void removeEntries(List<String> keys, AttrQuery query)
+    {
+        fTransport.removeEntries(fTicketHolder.getTicket(), keys, query);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttributeService#removeEntries(java.lang.String, org.alfresco.service.cmr.attributes.AttrQuery)
+     */
+    public void removeEntries(String path, AttrQuery query)
+    {
+        fTransport.removeEntries(fTicketHolder.getTicket(), path, query);
+    }
 }

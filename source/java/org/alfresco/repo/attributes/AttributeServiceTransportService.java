@@ -280,4 +280,22 @@ public class AttributeServiceTransportService implements
         fAuthService.validate(ticket);
         fService.setAttributes(path, entries);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AttributeServiceTransport#removeEntries(java.lang.String, java.util.List, org.alfresco.service.cmr.attributes.AttrQuery)
+     */
+    public void removeEntries(String ticket, List<String> keys, AttrQuery query)
+    {
+        fAuthService.validate(ticket);
+        fService.removeEntries(keys, query);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AttributeServiceTransport#removeEntries(java.lang.String, java.lang.String, org.alfresco.service.cmr.attributes.AttrQuery)
+     */
+    public void removeEntries(String ticket, String path, AttrQuery query)
+    {
+        fAuthService.validate(ticket);
+        fService.removeEntries(path, query);
+    }
 }

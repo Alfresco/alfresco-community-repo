@@ -995,6 +995,7 @@
                 <value>removeAttribute</value>
                 <value>addAttribute</value>
                 <value>addAttributes</value>
+                <value>removeEntries</value>
             </list>
         </property>
     </bean>

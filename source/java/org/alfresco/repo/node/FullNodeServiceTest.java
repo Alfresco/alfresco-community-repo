@@ -84,4 +84,16 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
                 mlTextProperty.getValue(Locale.ENGLISH),
                 propertiesFiltered.get(BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
     }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * This instance modifies the ML text value to be just the default locale string.
+     */
+    protected void getExpectedPropertyValues(Map<QName, Serializable> checkProperties)
+    {
+        MLText mlTextValue = (MLText) checkProperties.get(PROP_QNAME_ML_TEXT_VALUE);
+        String strValue = mlTextValue.getDefaultValue();
+        checkProperties.put(PROP_QNAME_ML_TEXT_VALUE, strValue);
+    }
 }

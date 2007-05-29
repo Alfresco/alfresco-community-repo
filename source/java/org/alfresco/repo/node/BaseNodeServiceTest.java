@@ -1110,7 +1110,35 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     }
     
     /**
-     * Check that properties go in and come out in the correct format
+     * Apply any changes to the PROP_QNAME_XXX_VALUE used for checking the following:
+     * <pre>
+        properties.put(PROP_QNAME_BOOLEAN_VALUE, true);
+        properties.put(PROP_QNAME_INTEGER_VALUE, 123);
+        properties.put(PROP_QNAME_LONG_VALUE, 123L);
+        properties.put(PROP_QNAME_FLOAT_VALUE, 123.0F);
+        properties.put(PROP_QNAME_DOUBLE_VALUE, 123.0);
+        properties.put(PROP_QNAME_STRING_VALUE, "123.0");
+        properties.put(PROP_QNAME_ML_TEXT_VALUE, new MLText("This is ML text in the default language"));
+        properties.put(PROP_QNAME_DATE_VALUE, new Date());
+        properties.put(PROP_QNAME_SERIALIZABLE_VALUE, "456");
+        properties.put(PROP_QNAME_NODEREF_VALUE, rootNodeRef);
+        properties.put(PROP_QNAME_QNAME_VALUE, TYPE_QNAME_TEST_CONTENT);
+        properties.put(PROP_QNAME_PATH_VALUE, pathProperty);
+        properties.put(PROP_QNAME_CONTENT_VALUE, new ContentData("url", "text/plain", 88L, "UTF-8"));
+        properties.put(PROP_QNAME_CATEGORY_VALUE, rootNodeRef);
+        properties.put(PROP_QNAME_LOCALE_VALUE, Locale.CHINESE);
+        properties.put(PROP_QNAME_NULL_VALUE, null);
+        properties.put(PROP_QNAME_MULTI_VALUE, listProperty);
+        </pre>
+     */
+    protected void getExpectedPropertyValues(Map<QName, Serializable> checkProperties)
+    {
+        // Do nothing with them by default
+    }
+    
+    /**
+     * Check that properties go in and come out in the correct format.
+     * @see #getCheckPropertyValues(Map)
      */
     public void testPropertyTypes() throws Exception
     {
@@ -1139,6 +1167,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         properties.put(PROP_QNAME_LOCALE_VALUE, Locale.CHINESE);
         properties.put(PROP_QNAME_NULL_VALUE, null);
         properties.put(PROP_QNAME_MULTI_VALUE, listProperty);
+        // Get the check values
+        Map<QName, Serializable> expectedProperties = new HashMap<QName, Serializable>(properties);
+        getExpectedPropertyValues(expectedProperties);
         
         // create a new node
         NodeRef nodeRef = nodeService.createNode(
@@ -1154,9 +1185,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // get the properties back
         Map<QName, Serializable> checkProperties = nodeService.getProperties(nodeRef);
         // check
-        for (QName qname : properties.keySet())
+        for (QName qname : expectedProperties.keySet())
         {
-            Serializable value = properties.get(qname);
+            Serializable value = expectedProperties.get(qname);
             Serializable checkValue = checkProperties.get(qname);
             assertEquals("Property mismatch - " + qname, value, checkValue);
         }

@@ -197,7 +197,6 @@ public class FileUploadBean
       
       ResponseWriter out = fc.getResponseWriter();
       XMLUtil.print(result, out);
-      out.close();
    }
    
    static NodeRef pathToNodeRef(FacesContext fc, String path)

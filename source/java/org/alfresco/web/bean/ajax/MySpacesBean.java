@@ -105,6 +105,27 @@ public class MySpacesBean
       {
          out.write("ERROR: " + err.getMessage());
       }
-      out.close();
+   }
+   
+   @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_HTML)
+   public void deleteItem() throws Exception
+   {
+      FacesContext fc = FacesContext.getCurrentInstance();
+      ResponseWriter out = fc.getResponseWriter();
+      
+      Map<String, String> requestMap = fc.getExternalContext().getRequestParameterMap();
+      String strNodeRef = (String)requestMap.get("noderef");
+      if (strNodeRef != null && strNodeRef.length() != 0)
+      {
+         try
+         {
+            Repository.getServiceRegistry(fc).getFileFolderService().delete(new NodeRef(strNodeRef));
+            out.write("OK: " + strNodeRef);
+         }
+         catch (Throwable err)
+         {
+            out.write("ERROR: " + err.getMessage());
+         }
+      }
    }
 }

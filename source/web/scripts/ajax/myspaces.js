@@ -227,7 +227,7 @@ var MySpaces = {
             {
                if (!resource.isLoaded)
                {
-                  // fire off the ajax request to get the resources for this task
+                  // fire off the ajax request to get the preview panel content and actions
                   YAHOO.util.Connect.asyncRequest(
                      "POST",
                      getContextPath() + '/ajax/invoke/NodeInfoBean.sendNodeInfo',
@@ -514,18 +514,6 @@ var MySpaces = {
    },
    
    /**
-    * Cancel button click handler for various pop-up panels
-    */
-   closePopupPanel: function()
-   {
-      if (this.popupPanel != null)
-      {
-         this.popupPanel.setStyle("display", "none");
-         this.popupPanel = null;
-      }
-   },
-   
-   /**
     * Display the Upload File pop-up panel
     */
    upload: function(actionEl)
@@ -587,6 +575,51 @@ var MySpaces = {
       else
       {
          alert("ERROR: " + error);
+      }
+   },
+   
+   /**
+    * Delete a space/document item
+    */
+   deleteItem: function(name, noderef)
+   {
+      if (confirm("Are you sure you want to delete: " + name))
+      {
+         // ajax call to create space
+         YAHOO.util.Connect.asyncRequest(
+            "POST",
+            getContextPath() + '/ajax/invoke/MySpacesBean.deleteItem',
+            {
+               success: function(response)
+               {
+                  if (response.responseText.indexOf("OK:") == 0)
+                  {
+                     MySpaces.refreshList();
+                  }
+                  else
+                  {
+                     alert("Error during delete of item: " + response.responseText);
+                  }
+               },
+               failure: function(response)
+               {
+                  alert("Error during delete of item: " + response.responseText);
+               }
+            }, 
+            "noderef=" + noderef
+         );
+      }
+   },
+   
+   /**
+    * Cancel button click handler for various pop-up panels
+    */
+   closePopupPanel: function()
+   {
+      if (this.popupPanel != null)
+      {
+         this.popupPanel.setStyle("display", "none");
+         this.popupPanel = null;
       }
    },
    

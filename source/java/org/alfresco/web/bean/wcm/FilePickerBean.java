@@ -180,7 +180,6 @@ public class FilePickerBean
 
       final ResponseWriter out = facesContext.getResponseWriter();
       XMLUtil.print(result, out);
-      out.close();
    }
    
    @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_HTML)
@@ -272,7 +271,6 @@ public class FilePickerBean
 
       final ResponseWriter out = facesContext.getResponseWriter();
       XMLUtil.print(result, out);
-      out.close();
    }
 
    private String getCurrentAVMPath()

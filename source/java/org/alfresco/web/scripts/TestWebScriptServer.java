@@ -323,6 +323,12 @@ public class TestWebScriptServer
             out.println();
         }
         
+        else if (command[0].equals("reset"))
+        {
+            registry.reset();
+            out.println("Registry reset.");
+        }
+        
         else
         {
             return "Syntax Error.\n";

@@ -104,7 +104,12 @@ public abstract class WebScriptRuntime
                     {
                         String user = AuthenticationUtil.getCurrentUserName();
                         String locale = I18NUtil.getLocale().toString();
-                        logger.debug("Invoking Web Script "  + description.getId() + (user == null ? " (unauthenticated)" : " (authenticated as " + user + ")" + " (" + locale + ")"));
+                        String reqFormat = scriptReq.getFormat();
+                        String format = (reqFormat == null || reqFormat.length() == 0) ? "default" : scriptReq.getFormat();
+                        WebScriptDescription desc = scriptReq.getServiceMatch().getWebScript().getDescription();
+                        logger.debug("Format style: " + desc.getFormatStyle());
+                        logger.debug("Default format: " + desc.getDefaultFormat());
+                        logger.debug("Invoking Web Script "  + description.getId() + (user == null ? " (unauthenticated)" : " (authenticated as " + user + ") (format " + format + ") (" + locale + ")"));
                     }
                     
                     if (description.getRequiredTransaction() == RequiredTransaction.none)

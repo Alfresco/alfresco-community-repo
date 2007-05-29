@@ -44,8 +44,8 @@ import org.alfresco.web.scripts.WebScriptRegistry;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
 import org.alfresco.web.scripts.WebScriptRuntime;
+import org.alfresco.web.scripts.WebScriptURLRequest;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
-import org.alfresco.web.scripts.portlet.WebScriptPortletRequest;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -228,7 +228,7 @@ public class UIWebScript extends SelfRenderingComponent
          super(registry, txnService);
          this.fc = fc;
          this.scriptUrl = scriptUrl;
-         this.script = WebScriptPortletRequest.getScriptUrlParts(scriptUrl)[2];
+         this.script = WebScriptURLRequest.splitURL(scriptUrl)[2];
       }
 
       /**
@@ -248,7 +248,7 @@ public class UIWebScript extends SelfRenderingComponent
       @Override
       protected WebScriptRequest createRequest(WebScriptMatch match)
       {
-         return new WebScriptJSFRequest(fc, match, this.scriptUrl);
+         return new WebScriptJSFRequest(this.scriptUrl, match);
       }
 
       /**

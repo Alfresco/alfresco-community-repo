@@ -45,6 +45,7 @@ public class WebScriptDescriptionImpl implements WebScriptDescription
     private String description;
     private RequiredAuthentication requiredAuthentication;
     private RequiredTransaction requiredTransaction;
+    private FormatStyle formatStyle;
     private String httpMethod;
     private URI[] uris;
     private String defaultFormat;
@@ -204,6 +205,24 @@ public class WebScriptDescriptionImpl implements WebScriptDescription
         return this.requiredTransaction;
     }
 
+    /**
+     * Sets the format style
+     * 
+     * @param formatStyle
+     */
+    public void setFormatStyle(FormatStyle formatStyle)
+    {
+        this.formatStyle = formatStyle;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptDescription#getFormatStyle()
+     */
+    public FormatStyle getFormatStyle()
+    {
+        return this.formatStyle;
+    }
+    
     /**
      * Sets the service http method
      * 

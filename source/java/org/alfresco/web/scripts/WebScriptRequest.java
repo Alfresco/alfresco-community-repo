@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.scripts;
 
+import org.alfresco.web.scripts.WebScriptDescription.FormatStyle;
+
 
 /**
  * Web Script Request
@@ -77,6 +79,13 @@ public interface WebScriptRequest
     public String getURL();
 
     /**
+     * Gets the service specific path
+     * 
+     * @return  request path e.g. /search/keyword
+     */
+    public String getPathInfo();
+    
+    /**
      * Gets the query String
      * 
      * @return  query string  e.g. q=alfresco&format=atom
@@ -125,6 +134,13 @@ public interface WebScriptRequest
      */
     public String getFormat();
  
+    /**
+     * Get the style the Format was specified in
+     * 
+     * @return  format style (excludes any)
+     */
+    public FormatStyle getFormatStyle();
+    
     /**
      * Get User Agent
      * 

@@ -36,7 +36,7 @@ import org.alfresco.web.config.ServerConfigElement;
  * 
  * @author davidc
  */
-public class WebScriptServletRequest implements WebScriptRequest
+public class WebScriptServletRequest extends WebScriptRequestImpl
 {
     /** Server Config */
     private ServerConfigElement serverConfig;
@@ -82,23 +82,17 @@ public class WebScriptServletRequest implements WebScriptRequest
     {
         return req;
     }
-    
-    /**
-     * Gets the matching API Service for this request
-     * 
-     * @return  the service match
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequest#getServiceMatch()
      */
     public WebScriptMatch getServiceMatch()
     {
         return serviceMatch;
     }
-    
-    /**
-     * Get server portion of the request
-     *
-     * e.g. scheme://host:port
-     *  
-     * @return  server path
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequest#getServerPath()
      */
     public String getServerPath()
     {
@@ -112,35 +106,37 @@ public class WebScriptServletRequest implements WebScriptRequest
     {
         return req.getContextPath();
     }
-    
-    /**
-     * Gets the Alfresco Web Script Context Path
-     * 
-     * @return  service url  e.g. /alfresco/service
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequest#getServiceContextPath()
      */
     public String getServiceContextPath()
     {
         return req.getContextPath() + req.getServletPath();
     }
 
-    /**
-     * Gets the Alfresco Service Path
-     * 
-     * @return  service url  e.g. /alfresco/service/search/keyword
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequest#getServicePath()
      */
     public String getServicePath()
     {
         return getServiceContextPath() + req.getPathInfo();
     }
 
-    /**
-     * Gets the full request URL
-     * 
-     * @return  request url e.g. /alfresco/service/search/keyword?q=term
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequest#getURL()
      */
     public String getURL()
     {
         return getServicePath() + (req.getQueryString() != null ? "?" + req.getQueryString() : "");
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequest#getPathInfo()
+     */
+    public String getPathInfo()
+    {
+       return req.getPathInfo(); 
     }
 
     /* (non-Javadoc)
@@ -169,52 +165,7 @@ public class WebScriptServletRequest implements WebScriptRequest
     {
         return req.getParameter(name);
     }
-    
-    /**
-     * Gets the path extension beyond the path registered for this service
-     * 
-     * e.g.
-     * a) service registered path = /search/engine
-     * b) request path = /search/engine/external
-     * 
-     * => /external
-     * 
-     * @return  extension path
-     */
-    public String getExtensionPath()
-    {
-        String servicePath = serviceMatch.getPath();
-        String extensionPath = req.getPathInfo();
-        int extIdx = extensionPath.indexOf(servicePath);
-        if (extIdx != -1)
-        {
-            int extLength = (servicePath.endsWith("/") ? servicePath.length() : servicePath.length() + 1);
-            extensionPath = extensionPath.substring(extIdx + extLength);
-        }
-        return extensionPath;
-    }
 
-    /**
-     * Determine if Guest User?
-     * 
-     * @return  true => guest user
-     */
-    public boolean isGuest()
-    {
-        return Boolean.valueOf(getParameter("guest"));
-    }
-    
-    /**
-     * Get Requested Format
-     * 
-     * @return  content type requested
-     */
-    public String getFormat()
-    {
-        String format = getParameter("format");
-        return (format == null || format.length() == 0) ? "" : format;
-    }
- 
     /**
      * Get User Agent
      * 

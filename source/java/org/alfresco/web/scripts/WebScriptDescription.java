@@ -55,6 +55,15 @@ public interface WebScriptDescription
         requiresnew
     }
 
+    /**
+     * Enumeration of ways to specify format 
+     */
+    public enum FormatStyle
+    {
+        any,          // any of the following styles
+        extension,    // /a/b/c.x
+        argument      // /a/b/c?format=x
+    }
     
     /**
      * Gets the root path of the store of this web script
@@ -131,6 +140,13 @@ public interface WebScriptDescription
      * @return  array of URIs in order specified in service description document
      */
     public URI[] getURIs();
+
+    /**
+     * Gets the style of Format discriminator supported by this web script
+     * 
+     * @return  format style
+     */
+    public FormatStyle getFormatStyle();
 
     /**
      * Gets a URI by format

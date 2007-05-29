@@ -47,6 +47,7 @@ import org.alfresco.web.scripts.WebScriptMatch;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
 import org.alfresco.web.scripts.WebScriptRuntime;
+import org.alfresco.web.scripts.WebScriptURLRequest;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -211,7 +212,7 @@ public class WebScriptPortlet implements Portlet
             super(registry, transactionService);
             this.req = req;
             this.res = res;
-            this.requestUrlParts = WebScriptPortletRequest.getScriptUrlParts(requestUrl);
+            this.requestUrlParts = WebScriptURLRequest.splitURL(requestUrl);
         }
         
         /* (non-Javadoc)

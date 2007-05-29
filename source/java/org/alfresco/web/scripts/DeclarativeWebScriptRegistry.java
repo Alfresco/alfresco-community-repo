@@ -40,6 +40,7 @@ import javax.servlet.ServletContext;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.util.AbstractLifecycleBean;
+import org.alfresco.web.scripts.WebScriptDescription.FormatStyle;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredTransaction;
 import org.alfresco.web.scripts.WebScriptDescription.URI;
@@ -238,7 +239,9 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                 serviceImpl.init(this);
                 
                 if (logger.isDebugEnabled())
-                    logger.debug("Found Web Script " + id +  " (desc: " + serviceDescPath + ", impl: " + serviceImplName + ", auth: " + serviceDesc.getRequiredAuthentication() + ", trx: " + serviceDesc.getRequiredTransaction() + ")");
+                    logger.debug("Found Web Script " + id +  " (desc: " + serviceDescPath + ", impl: " + serviceImplName + ", auth: " + 
+                                 serviceDesc.getRequiredAuthentication() + ", trx: " + serviceDesc.getRequiredTransaction() + ", format: " + 
+                                 serviceDesc.getFormatStyle() + ")");
                 
                 // register service and its urls
                 webscriptsById.put(id, serviceImpl);
@@ -255,6 +258,14 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                     if (tokenIdx != -1)
                     {
                         uriTemplate = uriTemplate.substring(0, tokenIdx);
+                    }
+                    if (serviceDesc.getFormatStyle() != WebScriptDescription.FormatStyle.argument)
+                    {
+                        int extIdx = uriTemplate.lastIndexOf(".");
+                        if (extIdx != -1)
+                        {
+                            uriTemplate = uriTemplate.substring(0, extIdx);
+                        }
                     }
                     
                     // index service by static part of url (ensuring no other service has already claimed the url)
@@ -338,7 +349,7 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
             List urlElements = rootElement.elements("url");
             if (urlElements == null || urlElements.size() == 0)
             {
-                throw new WebScriptException("Expected at one <url> element");
+                throw new WebScriptException("Expected at least one <url> element");
             }
             List<WebScriptDescription.URI> uris = new ArrayList<WebScriptDescription.URI>();
             Iterator iterElements = urlElements.iterator();
@@ -402,6 +413,28 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                 }
             }
             
+            // retrieve format
+            String defaultFormat = uris.get(0).getFormat();
+            FormatStyle formatStyle = FormatStyle.any;
+            Element formatElement = rootElement.element("format");
+            if (formatElement != null)
+            {
+                String formatStyleStr = formatElement.getTextTrim();
+                if (formatStyleStr != null && formatStyleStr.length() > 0)
+                {
+                    formatStyle = FormatStyle.valueOf(formatStyleStr);
+                    if (formatStyle == null)
+                    {
+                        throw new WebScriptException("Format Style '" + formatStyle + "' is not a valid value");
+                    }
+                }
+                String defaultFormatStr = formatElement.attributeValue("default");
+                if (defaultFormatStr != null && defaultFormatStr.length() > 0)
+                {
+                    defaultFormat = defaultFormatStr;
+                }
+            }
+            
             // construct service description
             WebScriptDescriptionImpl serviceDesc = new WebScriptDescriptionImpl();
             serviceDesc.setStore(store);
@@ -414,7 +447,8 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
             serviceDesc.setRequiredTransaction(reqTrx);
             serviceDesc.setMethod(method);
             serviceDesc.setUris(uris.toArray(new WebScriptDescription.URI[uris.size()]));
-            serviceDesc.setDefaultFormat(uris.get(0).getFormat());
+            serviceDesc.setDefaultFormat(defaultFormat);
+            serviceDesc.setFormatStyle(formatStyle);
             return serviceDesc;
         }
         catch(DocumentException e)

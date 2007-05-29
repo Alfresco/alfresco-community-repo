@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.transaction.TransactionService;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import junit.framework.TestCase;
@@ -79,6 +80,8 @@ public class AVMServiceTestBase extends TestCase
      */
     private long fStartTime;
 
+    protected TransactionService fTransactionService;
+
     protected static IndexerAndSearcher fIndexerAndSearcher;
     
     /**
@@ -96,6 +99,7 @@ public class AVMServiceTestBase extends TestCase
             fReaper = (OrphanReaper)fContext.getBean("orphanReaper");
             fSyncService = (AVMSyncService)fContext.getBean("AVMSyncService");
             fIndexerAndSearcher = (IndexerAndSearcher)fContext.getBean("indexerAndSearcherFactory");
+            fTransactionService = (TransactionService)fContext.getBean("transactionComponent");
             AuthenticationService authService = (AuthenticationService)fContext.getBean("AuthenticationService");
             authService.authenticate("admin", "admin".toCharArray());
             CreateStoreTxnListener cstl = (CreateStoreTxnListener)fContext.getBean("createStoreTxnListener");

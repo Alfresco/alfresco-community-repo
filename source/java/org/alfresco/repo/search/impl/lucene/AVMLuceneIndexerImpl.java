@@ -51,6 +51,10 @@ import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.search.IndexMode;
+import org.alfresco.repo.search.impl.lucene.analysis.NumericEncoder;
+import org.alfresco.repo.search.impl.lucene.fts.FTSIndexerAware;
+import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -72,11 +76,16 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.GUID;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.Hits;
+import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.search.Searcher;
 
 /**
  * Update the index after a snap shot to an AVM store. (Revert is dealt with as a new snap shot is created)
@@ -85,6 +94,10 @@ import org.apache.lucene.document.Field;
  */
 public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> implements AVMLuceneIndexer
 {
+    private static String SNAP_SHOT_ID = "SnapShotId_";
+
+    private static String SNAP_SHOT_STORE = "SnapShotStore";
+
     static Logger s_logger = Logger.getLogger(AVMLuceneIndexerImpl.class);
 
     private AVMService avmService;
@@ -98,8 +111,19 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
     private Set<String> indexedPaths = new HashSet<String>();
 
+    private FTSIndexerAware callBack;
+
+    private FullTextSearchIndexer fullTextSearchIndexer;
+
+    private int remainingCount;
+    
+    private int startVersion = -1;
+    
+    private int endVersion = -1;
+
     /**
      * Set the AVM Service
+     * 
      * @param avmService
      */
     public void setAvmService(AVMService avmService)
@@ -109,6 +133,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
     /**
      * Set the AVM sync service
+     * 
      * @param avmSyncService
      */
     public void setAvmSyncService(AVMSyncService avmSyncService)
@@ -118,6 +143,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
     /**
      * Set the content service
+     * 
      * @param contentStore
      */
     public void setContentStore(ContentStore contentStore)
@@ -162,10 +188,55 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
      * @param srcVersion
      * @param dstVersion
      */
-    public void index(String store, int srcVersion, int dstVersion)
+    public void index(String store, int srcVersion, int dstVersion, IndexMode mode)
     {
         checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
+        try
+        {
+            switch (mode)
+            {
+            case ASYNCHRONOUS:
+                asynchronousIndex(store, srcVersion, dstVersion);
+                break;
+            case SYNCHRONOUS:
+                synchronousIndex(store, srcVersion, dstVersion);
+                break;
+            case UNINDEXED:
+                // nothing to do
+                break;
+            }
+        }
+        catch (LuceneIndexException e)
+        {
+            setRollbackOnly();
+            throw new LuceneIndexException("snapshot index failed", e);
+        }
+    }
 
+    public void asynchronousIndex(String store, int srcVersion, int dstVersion)
+    {
+        if(s_logger.isDebugEnabled())
+        {
+            s_logger.debug("Async index for "+store + " from " + srcVersion + " to " + dstVersion);
+        }
+        index("\u0000BG:STORE:" + store + ":" + srcVersion + ":" + dstVersion + ":" + GUID.generate());
+        fullTextSearchIndexer.requiresIndex(AVMNodeConverter.ToStoreRef(store));
+    }
+
+    public void synchronousIndex(String store, int srcVersion, int dstVersion)
+    {
+        if(startVersion == -1)
+        {
+            startVersion = srcVersion;
+        }
+       
+        endVersion = dstVersion;
+            
+        
+        if(s_logger.isDebugEnabled())
+        {
+            s_logger.debug("Sync index for "+store + " from " + srcVersion + " to "+dstVersion);
+        }
         String path = store + ":/";
         List<AVMDifference> changeList = avmSyncService.compare(srcVersion, path, dstVersion, path, null);
         for (AVMDifference difference : changeList)
@@ -221,6 +292,8 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
             }
         }
+        // record the snap shotid
+        reindex(SNAP_SHOT_ID + store, false);
     }
 
     /*
@@ -232,14 +305,14 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         String store = splitPath[0];
         String pathInStore = splitPath[1];
         SimplePath simplePath = new SimplePath(pathInStore);
-        
+
         StringBuilder pathBuilder = new StringBuilder();
         pathBuilder.append(store).append(":/");
         reindex(pathBuilder.toString(), false);
         boolean requiresSep = false;
         for (int i = 0; i < simplePath.size() - 1; i++)
         {
-            if(requiresSep)
+            if (requiresSep)
             {
                 pathBuilder.append("/");
             }
@@ -270,25 +343,64 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
     protected List<Document> createDocuments(String stringNodeRef, boolean isNew, boolean indexAllProperties,
             boolean includeDirectoryDocuments)
     {
-        AVMNodeDescriptor desc = avmService.lookup(-1, stringNodeRef);
         List<Document> docs = new ArrayList<Document>();
-        if(desc == null)
+        if (stringNodeRef.startsWith("\u0000"))
+        {
+            Document idoc = new Document();
+            idoc.add(new Field("ID", stringNodeRef, Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            docs.add(idoc);
+            return docs;
+        }
+        else if (stringNodeRef.startsWith(SNAP_SHOT_ID))
+        {
+            Document sdoc = new Document();
+            sdoc.add(new Field("ID", stringNodeRef, Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            String storeName = stringNodeRef.substring(SNAP_SHOT_ID.length());
+            sdoc.add(new Field(SNAP_SHOT_ID, NumericEncoder.encode(avmService.getLatestSnapshotID(storeName)),
+                    Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            sdoc.add(new Field(SNAP_SHOT_STORE, NumericEncoder.encode(avmService.getLatestSnapshotID(storeName)),
+                    Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            docs.add(sdoc);
+            return docs;
+        }
+
+        AVMNodeDescriptor desc = avmService.lookup(endVersion, stringNodeRef);
+        if (desc == null)
         {
             return docs;
         }
         if (desc.isLayeredDirectory() || desc.isLayeredFile())
         {
             return docs;
-        }   
-        
-        List<Pair<Integer, String>> paths = avmService.getHeadPaths(desc);
+        }
+
+        List<Pair<Integer, String>> allPaths = avmService.getPaths(desc);
+        List<Pair<Integer, String>> paths = new ArrayList<Pair<Integer, String>> ();
+        for(Pair<Integer, String> pair: allPaths)
+        {
+            if(pair.getFirst().intValue() == endVersion)
+            {
+                paths.add(pair);
+            }
+        }
         if(paths.size() == 0)
+        {
+            for(Pair<Integer, String> pair: allPaths)
+            {
+                if(pair.getFirst().intValue() == -1)
+                {
+                    paths.add(pair);
+                }
+            }
+        }
+            
+        if (paths.size() == 0)
         {
             return docs;
         }
         for (Pair<Integer, String> path : paths)
         {
-            if(indexedPaths.contains(path.getSecond()))
+            if (indexedPaths.contains(path.getSecond()))
             {
                 return docs;
             }
@@ -297,37 +409,35 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         {
             indexedPaths.add(path.getSecond());
         }
-            
+
         AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(desc.getId());
-       
 
         if (paths.size() > 0)
         {
             if (desc != null)
             {
 
-                NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, stringNodeRef);
+                NodeRef nodeRef = AVMNodeConverter.ToNodeRef(endVersion, stringNodeRef);
 
                 Document xdoc = new Document();
-                xdoc.add(new Field("ID", nodeRef.toString(), Field.Store.YES,
-                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                xdoc.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.UN_TOKENIZED,
+                        Field.TermVector.NO));
                 for (Pair<Integer, String> path : paths)
                 {
 
                     String[] splitPath = splitPath(path.getSecond());
                     @SuppressWarnings("unused")
                     String pathInStore = splitPath[1];
-                    xdoc.add(new Field("ID", path.getSecond(),
-                            Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                    xdoc.add(new Field("ID", path.getSecond(), Field.Store.YES, Field.Index.UN_TOKENIZED,
+                            Field.TermVector.NO));
                 }
-              
 
                 xdoc.add(new Field("TX", AlfrescoTransactionSupport.getTransactionId(), Field.Store.YES,
                         Field.Index.UN_TOKENIZED, Field.TermVector.NO));
 
                 boolean isAtomic = true;
 
-                Map<QName, Serializable> properties = getIndexableProperties(desc, node, nodeRef, -1, stringNodeRef);
+                Map<QName, Serializable> properties = getIndexableProperties(desc, node, nodeRef, endVersion, stringNodeRef);
                 for (QName propertyName : properties.keySet())
                 {
                     Serializable value = properties.get(propertyName);
@@ -357,9 +467,9 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                         String store = splitPath[0];
                         String pathInStore = splitPath[1];
                         SimplePath simplePath = new SimplePath(pathInStore);
-                        
+
                         StringBuilder xpathBuilder = new StringBuilder();
-                        for(int i = 0; i < simplePath.size(); i++)
+                        for (int i = 0; i < simplePath.size(); i++)
                         {
                             xpathBuilder.append("/{}").append(simplePath.get(i));
                         }
@@ -379,7 +489,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                         boolean requiresSep = false;
                         for (int i = 0; i < simplePath.size() - 1; i++)
                         {
-                            if(requiresSep)
+                            if (requiresSep)
                             {
                                 pathBuilder.append("/");
                             }
@@ -393,8 +503,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
                         qNameBuffer.append(ISO9075.getXPathName(QName.createQName("", simplePath
                                 .get(simplePath.size() - 1))));
-                        xdoc.add(new Field("PARENT",
-                                ancestors.get(ancestors.size() - 1), Field.Store.YES,
+                        xdoc.add(new Field("PARENT", ancestors.get(ancestors.size() - 1), Field.Store.YES,
                                 Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                         // TODO: Categories and LINKASPECT
 
@@ -407,20 +516,19 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                                 Document directoryEntry = new Document();
                                 directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES,
                                         Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-                               
-                                directoryEntry.add(new Field("ID", path.getSecond(),
-                                            Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-                                
-                                
-                                directoryEntry.add(new Field("PATH", xpath, Field.Store.YES,
-                                        Field.Index.TOKENIZED, Field.TermVector.NO));
+
+                                directoryEntry.add(new Field("ID", path.getSecond(), Field.Store.YES,
+                                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+
+                                directoryEntry.add(new Field("PATH", xpath, Field.Store.YES, Field.Index.TOKENIZED,
+                                        Field.TermVector.NO));
 
                                 // Find all parent nodes.
 
                                 for (String toAdd : ancestors)
                                 {
-                                    directoryEntry.add(new Field("ANCESTOR", toAdd,
-                                            Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                                    directoryEntry.add(new Field("ANCESTOR", toAdd, Field.Store.NO,
+                                            Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                                 }
                                 directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES,
                                         Field.Index.UN_TOKENIZED, Field.TermVector.NO));
@@ -456,7 +564,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                     xdoc.add(new Field("TYPE", ISO9075.getXPathName(typeQName), Field.Store.YES,
                             Field.Index.UN_TOKENIZED, Field.TermVector.NO));
 
-                    for (QName classRef : avmService.getAspects(-1, stringNodeRef))
+                    for (QName classRef : avmService.getAspects(endVersion, stringNodeRef))
                     {
                         xdoc.add(new Field("ASPECT", ISO9075.getXPathName(classRef), Field.Store.YES,
                                 Field.Index.UN_TOKENIZED, Field.TermVector.NO));
@@ -534,11 +642,11 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         result.put(ContentModel.PROP_STORE_IDENTIFIER, nodeRef.getStoreRef().getIdentifier());
         if (desc.isLayeredDirectory())
         {
-            result.put(WCMModel.PROP_AVM_DIR_INDIRECTION, AVMNodeConverter.ToNodeRef(-1, desc.getIndirection()));
+            result.put(WCMModel.PROP_AVM_DIR_INDIRECTION, AVMNodeConverter.ToNodeRef(endVersion, desc.getIndirection()));
         }
         if (desc.isLayeredFile())
         {
-            result.put(WCMModel.PROP_AVM_FILE_INDIRECTION, AVMNodeConverter.ToNodeRef(-1, desc.getIndirection()));
+            result.put(WCMModel.PROP_AVM_FILE_INDIRECTION, AVMNodeConverter.ToNodeRef(endVersion, desc.getIndirection()));
         }
         if (desc.isFile())
         {
@@ -873,13 +981,32 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
     @Override
     protected void doCommit() throws IOException
     {
+        if (indexUpdateStatus == IndexUpdateStatus.ASYNCHRONOUS)
+        {
+            setInfo(docs, getDeletions(), false);
+            // FTS does not trigger indexing request
+        }
+        else
+        {
+            setInfo(docs, getDeletions(), false);
+            // TODO: only register if required
+            fullTextSearchIndexer.requiresIndex(store);
+        }
+        if (callBack != null)
+        {
+            callBack.indexCompleted(store, remainingCount, null);
+        }
+
         setInfo(docs, deletions, false);
     }
 
     @Override
     protected void doRollBack() throws IOException
     {
-
+        if (callBack != null)
+        {
+            callBack.indexCompleted(store, 0, null);
+        }
     }
 
     @Override
@@ -1014,34 +1141,192 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
     }
 
-    public void deleteIndex(String store)
+    public void deleteIndex(String store, IndexMode mode)
     {
         checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
         {
-            deleteAll();
+            switch (mode)
+            {
+            case ASYNCHRONOUS:
+                asyncronousDeleteIndex(store);
+                break;
+            case SYNCHRONOUS:
+                syncronousDeleteIndex(store);
+                break;
+            case UNINDEXED:
+                // nothing to do
+                break;
+            }
         }
         catch (LuceneIndexException e)
         {
             setRollbackOnly();
             throw new LuceneIndexException("Delete index failed", e);
         }
-
     }
 
-    public void createIndex(String store)
+    public void syncronousDeleteIndex(String store)
+    {
+
+        if(s_logger.isDebugEnabled())
+        {
+            s_logger.debug("Sync delete for "+store);
+        }
+        deleteAll();
+    }
+
+    public void asyncronousDeleteIndex(String store)
+    {
+        if(s_logger.isDebugEnabled())
+        {
+            s_logger.debug("Async delete for "+store);
+        }
+        index("\u0000BG:DELETE:" + store+":"+GUID.generate());
+        fullTextSearchIndexer.requiresIndex(AVMNodeConverter.ToStoreRef(store));
+    }
+
+    public void createIndex(String store, IndexMode mode)
     {
         checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
         {
-            @SuppressWarnings("unused")
-            AVMNodeDescriptor rootDesc = avmService.getStoreRoot(-1, store);
-            index(store+":/");
+            switch (mode)
+            {
+            case ASYNCHRONOUS:
+                asyncronousCreateIndex(store);
+                break;
+            case SYNCHRONOUS:
+                syncronousCreateIndex(store);
+                break;
+            case UNINDEXED:
+                // nothing to do
+                break;
+            }
         }
         catch (LuceneIndexException e)
         {
             setRollbackOnly();
             throw new LuceneIndexException("Create index failed", e);
         }
+    }
+
+    public void syncronousCreateIndex(String store)
+    {
+
+        if(s_logger.isDebugEnabled())
+        {
+            s_logger.debug("Sync create for "+store);
+        }
+        @SuppressWarnings("unused")
+        AVMNodeDescriptor rootDesc = avmService.getStoreRoot(-1, store);
+        index(store + ":/");
+
+    }
+
+    public void asyncronousCreateIndex(String store)
+    {
+        if(s_logger.isDebugEnabled())
+        {
+            s_logger.debug("Async create for "+store);
+        }
+        index("\u0000BG:CREATE:" + store+":"+GUID.generate());
+        fullTextSearchIndexer.requiresIndex(AVMNodeConverter.ToStoreRef(store));
+    }
+
+    public void registerCallBack(FTSIndexerAware callBack)
+    {
+        this.callBack = callBack;
+    }
+
+    public int updateFullTextSearch(int size)
+    {
+        checkAbleToDoWork(IndexUpdateStatus.ASYNCHRONOUS);
+
+        try
+        {
+            PrefixQuery query = new PrefixQuery(new Term("ID", "\u0000BG:"));
+
+            String action = null;
+
+            Searcher searcher = null;
+            try
+            {
+                searcher = getSearcher(null);
+                // commit on another thread - appears like there is no index ...try later
+                if (searcher == null)
+                {
+                    remainingCount = size;
+                    return 0;
+                }
+                Hits hits;
+                try
+                {
+                    hits = searcher.search(query);
+                }
+                catch (IOException e)
+                {
+                    throw new LuceneIndexException(
+                            "Failed to execute query to find content which needs updating in the index", e);
+                }
+
+                if (hits.length() > 0)
+                {
+                    Document doc = hits.doc(0);
+                    action = doc.getField("ID").stringValue();
+                    String[] split = action.split(":");
+                    if(split[1].equals("DELETE"))
+                    {
+                        deleteAll("\u0000BG:");
+                    }
+                    else if(split[1].equals("CREATE"))
+                    {
+                        syncronousCreateIndex(split[2]);
+                    }
+                    else if(split[1].equals("STORE"))
+                    {
+                        synchronousIndex(split[2], Integer.parseInt(split[3]), Integer.parseInt(split[4]));
+                    }
+                    deletions.add(action);
+                    remainingCount = hits.length() - 1;
+                    return 1;
+                }
+                else
+                {
+                    remainingCount = 0;
+                    return 0;
+                }
+
+            }
+            finally
+            {
+                if (searcher != null)
+                {
+                    try
+                    {
+                        searcher.close();
+                    }
+                    catch (IOException e)
+                    {
+                        throw new LuceneIndexException("Failed to close searcher", e);
+                    }
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            setRollbackOnly();
+            throw new LuceneIndexException("Failed FTS update", e);
+        }
+        catch (LuceneIndexException e)
+        {
+            setRollbackOnly();
+            throw new LuceneIndexException("Failed FTS update", e);
+        }
+    }
+
+    public void setFullTextSearchIndexer(FullTextSearchIndexer fullTextSearchIndexer)
+    {
+        this.fullTextSearchIndexer = fullTextSearchIndexer;
     }
 }

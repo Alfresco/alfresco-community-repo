@@ -63,15 +63,15 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
         /**
          * An index
          */
-        INDEX, 
+        INDEX,
         /**
          * A reindex
          */
-        REINDEX, 
+        REINDEX,
         /**
          * A delete
          */
-        DELETE, 
+        DELETE,
         /**
          * A cascaded reindex (ensures directory structre is ok)
          */
@@ -83,13 +83,13 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
         /**
          * Inde is unchanged
          */
-        UNMODIFIED, 
+        UNMODIFIED,
         /**
-         * Index is being changein in TX 
+         * Index is being changein in TX
          */
-        SYNCRONOUS, 
+        SYNCRONOUS,
         /**
-         * Index is eiong changed by a background upate 
+         * Index is eiong changed by a background upate
          */
         ASYNCHRONOUS;
     }
@@ -379,7 +379,8 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
 
     /**
      * Commit this index
-     * @throws LuceneIndexException 
+     * 
+     * @throws LuceneIndexException
      */
     public void commit() throws LuceneIndexException
     {
@@ -441,7 +442,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
      * serialisation against the index as would a data base transaction.
      * 
      * @return the tx state
-     * @throws LuceneIndexException 
+     * @throws LuceneIndexException
      */
     public int prepare() throws LuceneIndexException
     {
@@ -498,7 +499,8 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
 
     /**
      * Roll back the index changes (this just means they are never added)
-     * @throws LuceneIndexException 
+     * 
+     * @throws LuceneIndexException
      */
     public void rollback() throws LuceneIndexException
     {
@@ -819,6 +821,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
 
     /**
      * Are we deleting leaves only (not meta data)
+     * 
      * @return - deleting only nodes.
      */
     public boolean getDeleteOnlyNodes()
@@ -828,6 +831,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
 
     /**
      * Get the deletions
+     * 
      * @return - the ids to delete
      */
     public Set<String> getDeletions()
@@ -837,9 +841,18 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
 
     /**
      * Delete all entries from the index.
-     *
      */
     public void deleteAll()
+    {
+        deleteAll(null);
+    }
+
+    /**
+     * Delete all index entries which do not start with the goven prefix
+     * 
+     * @param prefix
+     */
+    public void deleteAll(String prefix)
     {
         IndexReader mainReader = null;
         try
@@ -851,7 +864,10 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
                 {
                     Document document = mainReader.document(doc);
                     String[] ids = document.getValues("ID");
-                    deletions.add(ids[ids.length - 1]);
+                    if ((prefix == null) || nonStartwWith(ids, prefix))
+                    {
+                        deletions.add(ids[ids.length - 1]);
+                    }
                 }
             }
 
@@ -875,6 +891,18 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
                 }
             }
         }
+    }
+
+    private boolean nonStartwWith(String[] values, String prefix)
+    {
+        for (String value : values)
+        {
+            if (value.startsWith(prefix))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

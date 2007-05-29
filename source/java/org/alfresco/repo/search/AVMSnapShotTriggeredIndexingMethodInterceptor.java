@@ -24,25 +24,68 @@
  */
 package org.alfresco.repo.search;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.search.impl.lucene.AVMLuceneIndexer;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
 /**
  * Method interceptor for atomic indexing of AVM entries
  * 
+ * The proeprties can defined how stores are indexed based on type (as set by Alfresco the Web site management UI)
+ * or based on the name of the store.
+ * 
+ * Creates and deletes are indexed synchronously.
+ * 
+ * Updates may be asynchronous, synchronous or ignored by the index.
+ * 
  * @author andyh
  */
 public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInterceptor
 {
+    // Copy of store properties used to tag avm stores (a store propertry)
+
+    public final static QName PROP_SANDBOX_STAGING_MAIN = QName.createQName(null, ".sandbox.staging.main");
+
+    public final static QName PROP_SANDBOX_STAGING_PREVIEW = QName.createQName(null, ".sandbox.staging.preview");
+
+    public final static QName PROP_SANDBOX_AUTHOR_MAIN = QName.createQName(null, ".sandbox.author.main");
+
+    public final static QName PROP_SANDBOX_AUTHOR_PREVIEW = QName.createQName(null, ".sandbox.author.preview");
+
+    public final static QName PROP_SANDBOX_WORKFLOW_MAIN = QName.createQName(null, ".sandbox.workflow.main");
+
+    public final static QName PROP_SANDBOX_WORKFLOW_PREVIEW = QName.createQName(null, ".sandbox.workflow.preview");
+
+    public final static QName PROP_SANDBOX_AUTHOR_WORKFLOW_MAIN = QName.createQName(null,
+            ".sandbox.author.workflow.main");
+
+    public final static QName PROP_SANDBOX_AUTHOR_WORKFLOW_PREVIEW = QName.createQName(null,
+            ".sandbox.author.workflow.preview");
+
     private AVMService avmService;
 
     private IndexerAndSearcher indexerAndSearcher;
 
     private boolean enableIndexing = true;
+
+    private IndexMode defaultMode = IndexMode.ASYNCHRONOUS;
+
+    private Map<String, IndexMode> modeCache = new HashMap<String, IndexMode>();
+
+    private List<IndexingDefinition> indexingDefinitions = new ArrayList<IndexingDefinition>();
 
     public Object invoke(MethodInvocation mi) throws Throwable
     {
@@ -50,20 +93,40 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
         {
             if (mi.getMethod().getName().equals("createSnapshot"))
             {
-                String store = (String) mi.getArguments()[0];
-                int before = avmService.getLatestSnapshotID(store);
-                Object returnValue = mi.proceed();
-                int after = avmService.getLatestSnapshotID(store);
-                StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
-                Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
-                if (indexer instanceof AVMLuceneIndexer)
+                // May cause any number of other stores to do snap shot under the covers via layering or do nothing
+                // So we have to watch what actually changes 
+
+                List<AVMStoreDescriptor> stores = avmService.getStores();
+                Map<String, Integer> initialStates = new HashMap<String, Integer>(stores.size(), 1.0f);
+                for (AVMStoreDescriptor desc : stores)
                 {
-                    AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
-                    avmIndexer.index(store, before, after);
+                    String store = desc.getName();
+                    Integer state = Integer.valueOf(avmService.getLatestSnapshotID(store));
+                    initialStates.put(store, state);
+                }
+
+                Object returnValue = mi.proceed();
+
+                // Index any stores that have moved on
+                for (AVMStoreDescriptor desc : stores)
+                {
+                    String store = desc.getName();
+                    int after = avmService.getLatestSnapshotID(store);
+                    int before = initialStates.get(store).intValue();
+                    if (after > before)
+                    {
+
+                        StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
+                        Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
+                        if (indexer instanceof AVMLuceneIndexer)
+                        {
+                            AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
+                            avmIndexer.index(store, before, after, getIndexMode(store));
+                        }
+                    }
                 }
                 return returnValue;
             }
-            // TODO: Purge store
             else if (mi.getMethod().getName().equals("purgeStore"))
             {
                 String store = (String) mi.getArguments()[0];
@@ -73,7 +136,7 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
                 if (indexer instanceof AVMLuceneIndexer)
                 {
                     AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
-                    avmIndexer.deleteIndex(store);
+                    avmIndexer.deleteIndex(store, IndexMode.SYNCHRONOUS);
                 }
                 return returnValue;
             }
@@ -86,7 +149,7 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
                 if (indexer instanceof AVMLuceneIndexer)
                 {
                     AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
-                    avmIndexer.createIndex(store);
+                    avmIndexer.createIndex(store, IndexMode.SYNCHRONOUS);
                 }
                 return returnValue;
             }
@@ -104,15 +167,15 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
                 if (indexer instanceof AVMLuceneIndexer)
                 {
                     AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
-                    avmIndexer.deleteIndex(from);
+                    avmIndexer.deleteIndex(from, IndexMode.SYNCHRONOUS);
                 }
 
                 indexer = indexerAndSearcher.getIndexer(toRef);
                 if (indexer instanceof AVMLuceneIndexer)
                 {
                     AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
-                    avmIndexer.createIndex(to);
-                    avmIndexer.index(to, 0, after);
+                    avmIndexer.createIndex(to, IndexMode.SYNCHRONOUS);
+                    avmIndexer.index(to, 0, after, getIndexMode(to));
                 }
 
                 return returnValue;
@@ -157,7 +220,147 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
     {
         this.enableIndexing = enableIndexing;
     }
-    
-    
 
+    /**
+     * Set the index modes.... Strings of the form ... (ASYNCHRONOUS | SYNCHRONOUS | UNINDEXED):(NAME | TYPE):regexp
+     * 
+     * @param definitions
+     */
+    public void setIndexingDefinitions(List<String> definitions)
+    {
+        indexingDefinitions.clear();
+        for (String def : definitions)
+        {
+            IndexingDefinition id = new IndexingDefinition(def);
+            indexingDefinitions.add(id);
+        }
+    }
+
+    /**
+     * Set the default index mode = used when there are no matches
+     * 
+     * @param defaultMode
+     */
+    public void setDefaultMode(IndexMode defaultMode)
+    {
+        this.defaultMode = defaultMode;
+    }
+
+    private synchronized IndexMode getIndexMode(String store)
+    {
+        IndexMode mode = modeCache.get(store);
+        if (mode == null)
+        {
+            for (IndexingDefinition def : indexingDefinitions)
+            {
+                if (def.definitionType == DefinitionType.NAME)
+                {
+                    if (def.pattern.matcher(store).matches())
+                    {
+                        mode = def.indexMode;
+                        modeCache.put(store, mode);
+                        break;
+                    }
+                }
+                else
+                {
+                    String storeType = getStoreType(store).toString();
+                    if (def.pattern.matcher(storeType).matches())
+                    {
+                        mode = def.indexMode;
+                        modeCache.put(store, mode);
+                        break;
+                    }
+
+                }
+            }
+        }
+        // No definition
+        if (mode == null)
+        {
+            mode = defaultMode;
+            modeCache.put(store, mode);
+        }
+        return mode;
+    }
+
+    private class IndexingDefinition
+    {
+        IndexMode indexMode;
+
+        DefinitionType definitionType;
+
+        Pattern pattern;
+
+        IndexingDefinition(String definition)
+        {
+            String[] split = definition.split(":", 3);
+            if (split.length != 3)
+            {
+                throw new AlfrescoRuntimeException(
+                        "Invalid index defintion. Must be of of the form IndexMode:DefinitionType:regular expression");
+            }
+            indexMode = IndexMode.valueOf(split[0].toUpperCase());
+            definitionType = DefinitionType.valueOf(split[1].toUpperCase());
+            pattern = Pattern.compile(split[2]);
+        }
+    }
+
+    private StoreType getStoreType(String name)
+    {
+        if (avmService.getStore(name) != null)
+        {
+            Map<QName, PropertyValue> storeProperties = avmService.getStoreProperties(name);
+            if (storeProperties.containsKey(PROP_SANDBOX_STAGING_MAIN))
+            {
+                return StoreType.STAGING;
+            }
+            else if (storeProperties.containsKey(PROP_SANDBOX_STAGING_PREVIEW))
+            {
+                return StoreType.STAGING_PREVIEW;
+            }
+            else if (storeProperties.containsKey(PROP_SANDBOX_AUTHOR_MAIN))
+            {
+                return StoreType.AUTHOR;
+            }
+            else if (storeProperties.containsKey(PROP_SANDBOX_AUTHOR_PREVIEW))
+            {
+                return StoreType.AUTHOR_PREVIEW;
+            }
+            else if (storeProperties.containsKey(PROP_SANDBOX_WORKFLOW_MAIN))
+            {
+                return StoreType.WORKFLOW;
+            }
+            else if (storeProperties.containsKey(PROP_SANDBOX_WORKFLOW_PREVIEW))
+            {
+                return StoreType.WORKFLOW_PREVIEW;
+            }
+            else if (storeProperties.containsKey(PROP_SANDBOX_AUTHOR_WORKFLOW_MAIN))
+            {
+                return StoreType.AUTHOR_WORKFLOW;
+            }
+            else if (storeProperties.containsKey(PROP_SANDBOX_AUTHOR_WORKFLOW_PREVIEW))
+            {
+                return StoreType.AUTHOR_WORKFLOW_PREVIEW;
+            }
+            else
+            {
+                return StoreType.UNKNOWN;
+            }
+        }
+        else
+        {
+            return StoreType.UNKNOWN;
+        }
+    }
+
+    private enum DefinitionType
+    {
+        NAME, TYPE;
+    }
+
+    private enum StoreType
+    {
+        STAGING, STAGING_PREVIEW, AUTHOR, AUTHOR_PREVIEW, WORKFLOW, WORKFLOW_PREVIEW, AUTHOR_WORKFLOW, AUTHOR_WORKFLOW_PREVIEW, UNKNOWN;
+    }
 }

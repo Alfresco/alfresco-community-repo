@@ -892,6 +892,23 @@
         <property name="enableIndexing">
             <value>true</value>
         </property>
+		<property name="defaultMode">
+            <value>SYNCHRONOUS</value>
+        </property>
+		<property name="indexingDefinitions">
+			<list>
+				<value>SYNCHRONOUS:TYPE:STAGING</value>
+				<value>UNINDEXED:TYPE:STAGING_PREVIEW</value>
+				<value>UNINDEXED:TYPE:AUTHOR</value>
+				<value>UNINDEXED:TYPE:AUTHOR_PREVIEW</value>
+				<value>UNINDEXED:TYPE:WORKFLOW</value>
+				<value>UNINDEXED:TYPE:WORKFLOW_PREVIEW</value>
+				<value>UNINDEXED:TYPE:AUTHOR_WORKFLOW</value>
+				<value>UNINDEXED:TYPE:AUTHOR_WORKFLOW_PREVIEW</value>
+				<value>ASYNCHRONOUS:NAME:avmAsynchronousTest</value>
+				<value>SYNCHRONOUS:NAME:.*</value>
+			</list>
+		</property>
     </bean>
     
     <!-- The AVMSyncService -->
@@ -1310,6 +1327,7 @@
         </property>
     </bean>
 
+	<!--
     <bean id="LinkValidationService" 
           class="org.springframework.aop.framework.ProxyFactoryBean"
           lazy-init="true">
@@ -1328,5 +1346,6 @@
             </list>
         </property>
     </bean>
+		 -->
 
 </beans>

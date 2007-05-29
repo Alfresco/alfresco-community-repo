@@ -30,6 +30,8 @@ import java.util.List;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.search.SearcherException;
+import org.alfresco.repo.search.SupportsBackgroundIndexing;
+import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
@@ -47,7 +49,7 @@ import org.apache.commons.logging.LogFactory;
  * @author andyh
  *
  */
-public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAndSearcherFactory
+public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAndSearcherFactory implements SupportsBackgroundIndexing
 {
     private static Log s_logger = LogFactory.getLog(AVMLuceneIndexerAndSearcherFactory.class);
     
@@ -64,6 +66,8 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
     private NodeService nodeService;
 
     private ContentStore contentStore;
+
+    private FullTextSearchIndexer fullTextSearchIndexer;
 
     public AVMLuceneIndexerAndSearcherFactory()
     {
@@ -145,6 +149,7 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
         indexer.setAvmService(avmService);
         indexer.setAvmSyncService(avmSyncService);
         indexer.setContentStore(contentStore);
+        indexer.setFullTextSearchIndexer(fullTextSearchIndexer);
         return indexer;
     }
 
@@ -172,6 +177,15 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
         searcher.setDictionaryService(dictionaryService);
         searcher.setQueryRegister(getQueryRegister());
         return searcher;
+    }
+
+    /** 
+     * Register the full text searcher (done by the seracher bean to break cyclic bean defs) 
+     * 
+     */
+    public void setFullTextSearchIndexer(FullTextSearchIndexer fullTextSearchIndexer)
+    {
+        this.fullTextSearchIndexer = fullTextSearchIndexer;
     }
 
 }

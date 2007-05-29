@@ -24,13 +24,16 @@
  */
 package org.alfresco.repo.search.impl.lucene;
 
+import org.alfresco.repo.search.BackgroundIndexerAware;
+import org.alfresco.repo.search.IndexMode;
+
 /**
  * AVM specific indxer support
  * 
  * @author andyh
  *
  */
-public interface AVMLuceneIndexer extends LuceneIndexer
+public interface AVMLuceneIndexer extends LuceneIndexer, BackgroundIndexerAware
 {
     /**
      * Index a specified change to a store between two snapshots 
@@ -38,21 +41,24 @@ public interface AVMLuceneIndexer extends LuceneIndexer
      * @param store - the name of the store
      * @param srcVersion - the id of the snapshot before the changeset
      * @param dstVersion - the id of the snapshot created by the change set
+     * @param mode 
      */
-    public void index(String store, int srcVersion, int dstVersion);
+    public void index(String store, int srcVersion, int dstVersion, IndexMode mode);
     
     /**
      * Delete the index for the specified store.
      * 
      * @param store
+     * @param mode 
      */
-    public void deleteIndex(String store);
+    public void deleteIndex(String store, IndexMode mode);
     
     /**
      * Create an index for the specified store.
      * This makes sure that the root node for the store is indexed correctly.
      * 
      * @param store
+     * @param mode
      */
-    public void createIndex(String store);
+    public void createIndex(String store, IndexMode mode);
 }

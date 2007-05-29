@@ -54,29 +54,36 @@ public interface WebScriptDescription
         required,
         requiresnew
     }
-    
+
     
     /**
-     * Gets the source document of this web script
+     * Gets the root path of the store of this web script
      * 
-     * @return  source document
+     * @return  root path of store
      */
-    public InputStream getSourceDocument()
-        throws IOException;
-    
+    public String getStorePath();
+        
     /**
-     * Gets the store this web script is located in
+     * Gets the path within the store of this web script
      * 
-     * @return  path to store
+     * @return  path within store
      */
-    public String getSourceStore();
+    public String getScriptPath();
     
     /**
-     * Gets the source document location of this service description
+     * Gets the path of the description xml document for this web script
      * 
      * @return  document location (path)
      */
-    public String getSourceLocation();
+    public String getDescPath();
+
+    /**
+     * Gets the description xml document for this web script
+     * 
+     * @return  source document
+     */
+    public InputStream getDescDocument()
+        throws IOException;
     
     /**
      * Gets the id of this service

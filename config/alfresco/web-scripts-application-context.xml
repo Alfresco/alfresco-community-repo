@@ -106,7 +106,7 @@
             <prop key="rss">application/rss+xml</prop>
             <prop key="json">application/json</prop>
             <prop key="opensearchdescription">application/opensearchdescription+xml</prop>
-            <prop key="wiki">text/plain</prop>
+            <prop key="mediawiki">text/plain</prop>
             <prop key="portlet">text/html</prop>
          </props>
       </property>
@@ -165,27 +165,27 @@
    <!--  -->
 
    <!--  List of available Web APIs -->
-   <bean id="webscript.org.alfresco.index_get" class="org.alfresco.web.scripts.bean.Index" parent="webscript" />
+   <bean id="webscript.org.alfresco.index.get" class="org.alfresco.web.scripts.bean.Index" parent="webscript" />
 
    <!--  Maintain list of available Web APIs -->
-   <bean id="webscript.org.alfresco.index_post" class="org.alfresco.web.scripts.bean.IndexUpdate" parent="webscript" />
+   <bean id="webscript.org.alfresco.index.post" class="org.alfresco.web.scripts.bean.IndexUpdate" parent="webscript" />
 
    <!--  Retrieve Web Script Description Document -->
-   <bean id="webscript.org.alfresco.scriptdescription_get" class="org.alfresco.web.scripts.bean.ServiceDescription" parent="webscript" />
+   <bean id="webscript.org.alfresco.scriptdescription.get" class="org.alfresco.web.scripts.bean.ServiceDescription" parent="webscript" />
 
    <!--  List of registered (OpenSearch) search engines -->
-   <bean id="webscript.org.alfresco.repository.searchengines_get" class="org.alfresco.web.scripts.bean.SearchEngines" parent="webscript">
+   <bean id="webscript.org.alfresco.repository.searchengines.get" class="org.alfresco.web.scripts.bean.SearchEngines" parent="webscript">
       <property name="configService" ref="webscripts.config" />
-      <property name="searchProxy" ref="webscript.org.alfresco.repository.searchproxy_get" />
+      <property name="searchProxy" ref="webscript.org.alfresco.repository.searchproxy.get" />
    </bean>
 
    <!--  Alfresco Web Client Keyword Search (OpenSearch) -->
-   <bean id="webscript.org.alfresco.repository.keywordsearch_get" class="org.alfresco.web.scripts.bean.KeywordSearch" parent="webscript">
+   <bean id="webscript.org.alfresco.repository.keywordsearch.get" class="org.alfresco.web.scripts.bean.KeywordSearch" parent="webscript">
       <property name="searchService" ref="SearchService" />
    </bean>
 
    <!--  Alfresco (OpenSearch) Proxy -->
-   <bean id="webscript.org.alfresco.repository.searchproxy_get" class="org.alfresco.web.scripts.bean.SearchProxy" parent="webscript">
+   <bean id="webscript.org.alfresco.repository.searchproxy.get" class="org.alfresco.web.scripts.bean.SearchProxy" parent="webscript">
       <property name="configService" ref="webscripts.config" />
       <property name="formatRegistry" ref="webscripts.formatregistry" />
    </bean>

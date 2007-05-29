@@ -268,14 +268,17 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
                         int baseDirLength = baseDir.length() +1;
                         List<String> documentPaths = new ArrayList<String>();
                         
-                        String query = "PATH:\"" + repoPath + "//*\" AND @cm\\:name:\"*_desc.xml\"";
+                        String query = "PATH:\"" + repoPath + "//*\" AND @cm\\:name:\"*desc.xml\"";
                         ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
                         List<NodeRef> nodes = resultSet.getNodeRefs();
                         for (NodeRef nodeRef : nodes)
                         {
                             String nodeDir = getPath(nodeRef);
-                            String documentPath = nodeDir.substring(baseDirLength);
-                            documentPaths.add(documentPath);
+                            if (nodeDir.endsWith(".desc.xml"))
+                            {
+                                String documentPath = nodeDir.substring(baseDirLength);
+                                documentPaths.add(documentPath);
+                            }
                         }
                         
                         return documentPaths.toArray(new String[documentPaths.size()]);

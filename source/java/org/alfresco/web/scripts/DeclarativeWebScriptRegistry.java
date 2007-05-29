@@ -222,8 +222,8 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                     {
                         WebScript existingService = webscriptsById.get(id);
                         WebScriptDescription existingDesc = existingService.getDescription();
-                        String msg = "Web Script description document " + serviceDesc.getSourceStore() + "/" + serviceDesc.getSourceLocation();
-                        msg += " overridden by " + existingDesc.getSourceStore() + "/" + existingDesc.getSourceLocation();
+                        String msg = "Web Script description document " + serviceDesc.getStorePath() + "/" + serviceDesc.getDescPath();
+                        msg += " overridden by " + existingDesc.getStorePath() + "/" + existingDesc.getDescPath();
                         logger.debug(msg);
                     }
                     continue;
@@ -231,13 +231,14 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                 
                 // construct service implementation
                 ApplicationContext applicationContext = getApplicationContext();
-                String serviceImplName = (applicationContext.containsBean("webscript." + id)) ? "webscript." + id : defaultWebScript;
+                String beanName = "webscript." + id.replace('/', '.');
+                String serviceImplName = (applicationContext.containsBean(beanName)) ? beanName : defaultWebScript;
                 AbstractWebScript serviceImpl = (AbstractWebScript)applicationContext.getBean(serviceImplName);
                 serviceImpl.setDescription(serviceDesc);
                 serviceImpl.init(this);
                 
                 if (logger.isDebugEnabled())
-                    logger.debug("Found Web Script " + serviceDescPath + " (id: " + id + ", impl: " + serviceImplName + ", auth: " + serviceDesc.getRequiredAuthentication() + ", trx: " + serviceDesc.getRequiredTransaction() + ")");
+                    logger.debug("Found Web Script " + id +  " (desc: " + serviceDescPath + ", impl: " + serviceImplName + ", auth: " + serviceDesc.getRequiredAuthentication() + ", trx: " + serviceDesc.getRequiredTransaction() + ")");
                 
                 // register service and its urls
                 webscriptsById.put(id, serviceImpl);
@@ -263,7 +264,7 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                         WebScript existingService = webscriptsByURL.get(uriIdx);
                         if (!existingService.getDescription().getId().equals(serviceDesc.getId()))
                         {
-                            String msg = "Web Script document " + serviceDesc.getSourceLocation() + " is attempting to define the url '" + uriIdx + "' already defined by " + existingService.getDescription().getSourceLocation();
+                            String msg = "Web Script document " + serviceDesc.getDescPath() + " is attempting to define the url '" + uriIdx + "' already defined by " + existingService.getDescription().getDescPath();
                             throw new WebScriptException(msg);
                         }
                     }
@@ -303,16 +304,19 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                 throw new WebScriptException("Expected <webscript> root element - found <" + rootElement.getName() + ">");
             }
 
-            // retrieve id
-            String id = serviceDescPath.substring(0, serviceDescPath.lastIndexOf("_desc.xml")).replace('/', '.');
+            // retrieve script path
+            String scriptPath = serviceDescPath.substring(0, serviceDescPath.lastIndexOf('/'));
+            
+            // retrieve script id
+            String id = serviceDescPath.substring(0, serviceDescPath.lastIndexOf(".desc.xml"));
             
             // retrieve http method
-            int methodIdx = id.lastIndexOf('_');
+            int methodIdx = id.lastIndexOf('.');
             if (methodIdx == id.length() - 1)
             {
-                throw new WebScriptException("Unable to establish HTTP Method from web script description: naming convention must be <name>_<method>_desc.xml");
+                throw new WebScriptException("Unable to establish HTTP Method from web script description: naming convention must be <name>.<method>.desc.xml");
             }
-            String method = id.substring(id.lastIndexOf('_') + 1).toUpperCase();
+            String method = id.substring(id.lastIndexOf('.') + 1).toUpperCase();
             
             // retrieve short name
             Element shortNameElement = rootElement.element("shortname");
@@ -400,8 +404,9 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
             
             // construct service description
             WebScriptDescriptionImpl serviceDesc = new WebScriptDescriptionImpl();
-            serviceDesc.setSourceStore(store);
-            serviceDesc.setSourceLocation(serviceDescPath);
+            serviceDesc.setStore(store);
+            serviceDesc.setScriptPath(scriptPath);
+            serviceDesc.setDescPath(serviceDescPath);
             serviceDesc.setId(id);
             serviceDesc.setShortName(shortName);
             serviceDesc.setDescription(description);

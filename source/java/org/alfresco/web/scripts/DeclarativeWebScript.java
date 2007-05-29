@@ -53,7 +53,7 @@ public class DeclarativeWebScript extends AbstractWebScript
     // Logger
     private static final Log logger = LogFactory.getLog(DeclarativeWebScript.class);
 
-    private String baseTemplatePath;
+    private String basePath;
     private ScriptLocation executeScript;
     
 
@@ -64,10 +64,10 @@ public class DeclarativeWebScript extends AbstractWebScript
     public void init(WebScriptRegistry apiRegistry)
     {
         super.init(apiRegistry);
-        baseTemplatePath = getDescription().getId().replace('.', '/');     
+        basePath = getDescription().getId();
         
         // Test for "execute" script
-        String scriptPath = baseTemplatePath + ".js";
+        String scriptPath = basePath + ".js";
         executeScript = getWebScriptRegistry().getScriptProcessor().findScript(scriptPath);
     }
 
@@ -210,7 +210,7 @@ public class DeclarativeWebScript extends AbstractWebScript
     final protected void renderFormatTemplate(String format, Map<String, Object> model, Writer writer)
     {
         format = (format == null) ? "" : format;
-        String templatePath = baseTemplatePath + "_" + format + ".ftl";
+        String templatePath = basePath + "." + format + ".ftl";
 
         if (logger.isDebugEnabled())
             logger.debug("Rendering template '" + templatePath + "'");

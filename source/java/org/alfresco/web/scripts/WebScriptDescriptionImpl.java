@@ -37,8 +37,9 @@ import java.util.Map;
  */
 public class WebScriptDescriptionImpl implements WebScriptDescription
 {
-    private WebScriptStore sourceStore;
-    private String sourceLocation;
+    private WebScriptStore store;
+    private String scriptPath;
+    private String descPath;
     private String id;
     private String shortName;
     private String description;
@@ -51,48 +52,66 @@ public class WebScriptDescriptionImpl implements WebScriptDescription
 
     
     /**
-     * Sets the source store
+     * Sets the web description store
      * 
-     * @param store  source store
+     * @param store  store
      */
-    public void setSourceStore(WebScriptStore store)
+    public void setStore(WebScriptStore store)
     {
-        this.sourceStore = store;
+        this.store = store;
     }
-
+    
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptDescription#getSourceDocument()
+     * @see org.alfresco.web.scripts.WebScriptDescription#getStorePath()
      */
-    public InputStream getSourceDocument()
-        throws IOException
+    public String getStorePath()
     {
-        return this.sourceStore.getDescriptionDocument(sourceLocation);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptDescription#getSourceStore()
-     */
-    public String getSourceStore()
-    {
-        return this.sourceStore.getBasePath();
+        return store.getBasePath();
     }
 
     /**
-     * Sets the source location
+     * Sets the script path
      * 
-     * @param sourceLocation
+     * @param scriptPath
      */
-    public void setSourceLocation(String sourceLocation)
+    public void setScriptPath(String scriptPath)
     {
-        this.sourceLocation = sourceLocation;
+        this.scriptPath = scriptPath;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptDescription#getSourceLocation()
+     * @see org.alfresco.web.scripts.WebScriptDescription#getScriptPath()
      */
-    public String getSourceLocation()
+    public String getScriptPath()
     {
-        return this.sourceLocation;
+        return scriptPath;
+    }
+
+    /**
+     * Sets the desc path
+     * 
+     * @param descPath
+     */
+    public void setDescPath(String descPath)
+    {
+        this.descPath = descPath;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptDescription#getDescPath()
+     */
+    public String getDescPath()
+    {
+        return descPath;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptDescription#getDescDocument()
+     */
+    public InputStream getDescDocument()
+        throws IOException
+    {
+        return store.getDescriptionDocument(descPath);
     }
 
     /**

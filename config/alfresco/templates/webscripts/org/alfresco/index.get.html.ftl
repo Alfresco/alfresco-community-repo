@@ -33,9 +33,8 @@
       <tr><td>Authentication:<td>${desc.requiredAuthentication}
       <tr><td>Transaction:<td>${desc.requiredTransaction}
       <tr><td>
-      <tr><td>Store:<td>${desc.sourceStore}
-      <tr><td>Location:<td><a href="${url.serviceContext}/description/${desc.id?replace(".", "/")}">${desc.sourceLocation}</a>
       <tr><td>Id:<td>${desc.id}
+      <tr><td>Description:<td><a href="${url.serviceContext}/description/${desc.id}">${desc.storePath}/${desc.descPath}</a>
     </table>
     <br>
     </#list>

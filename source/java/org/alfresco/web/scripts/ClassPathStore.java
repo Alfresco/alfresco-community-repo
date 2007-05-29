@@ -96,7 +96,7 @@ public class ClassPathStore implements WebScriptStore, InitializingBean
         {
             int filePathLength = fileDir.getAbsolutePath().length() +1;
             List<String> documentPaths = new ArrayList<String>();
-            Resource[] resources = resolver.getResources("classpath*:" + classPath + "/**/*_desc.xml");
+            Resource[] resources = resolver.getResources("classpath*:" + classPath + "/**/*.desc.xml");
             for (Resource resource : resources)
             {
                 if (resource instanceof FileSystemResource)

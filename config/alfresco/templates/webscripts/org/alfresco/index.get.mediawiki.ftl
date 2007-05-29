@@ -31,8 +31,7 @@ Requirements:
 * Transaction: ${desc.requiredTransaction}
 
 Definition:
-* Store: ${desc.sourceStore}
-* Location: ${desc.sourceLocation}
 * Id: ${desc.id}
+* Store: ${desc.storePath}/${desc.descPath}
 
 </#list>

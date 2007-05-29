@@ -48,12 +48,11 @@ public class ServiceDescription extends AbstractWebScript
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
         // extract web script id
-        String extensionPath = req.getExtensionPath();
-        if (extensionPath == null || extensionPath.length() == 0)
+        String scriptId = req.getExtensionPath();
+        if (scriptId == null || scriptId.length() == 0)
         {
             throw new WebScriptException("Web Script Id not provided");
         }
-        String scriptId = extensionPath.replace("/", ".");
         
         // locate web script
         WebScript script = getWebScriptRegistry().getWebScript(scriptId);
@@ -67,7 +66,7 @@ public class ServiceDescription extends AbstractWebScript
         InputStream serviceDescIS = null;
         try
         {
-            serviceDescIS = desc.getSourceDocument();
+            serviceDescIS = desc.getDescDocument();
             OutputStream out = res.getOutputStream();
             res.setContentType(MimetypeMap.MIMETYPE_XML + ";charset=UTF-8");
             byte[] buffer = new byte[2048];

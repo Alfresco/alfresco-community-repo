@@ -126,7 +126,6 @@ public class TestWebScriptServer
      */
     public void init()
     {
-        registry.initWebScripts();
         Config config = configService.getConfig("Server");
         serverConfig = (ServerConfigElement)config.getConfigElement(ServerConfigElement.CONFIG_ELEMENT_ID);
     }

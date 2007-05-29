@@ -62,6 +62,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -1127,7 +1128,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         properties.put(PROP_QNAME_FLOAT_VALUE, 123.0F);
         properties.put(PROP_QNAME_DOUBLE_VALUE, 123.0);
         properties.put(PROP_QNAME_STRING_VALUE, "123.0");
-        properties.put(PROP_QNAME_ML_TEXT_VALUE, "This is ML text in the default language");
+        properties.put(PROP_QNAME_ML_TEXT_VALUE, new MLText("This is ML text in the default language"));
         properties.put(PROP_QNAME_DATE_VALUE, new Date());
         properties.put(PROP_QNAME_SERIALIZABLE_VALUE, "456");
         properties.put(PROP_QNAME_NODEREF_VALUE, rootNodeRef);

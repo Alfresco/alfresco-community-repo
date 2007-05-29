@@ -123,13 +123,13 @@ public interface MultilingualContentService
     /**
      * Given a <b>cm:mlDocument</b>, this method attempts to find the best translation for the given
      * locale.  If there is not even a
-     * {@link org.alfresco.i18n.I18NUtil#getNearestLocale(Locale, Set) partial match}, then <tt>null</tt>
-     * is returned.
+     * {@link org.alfresco.i18n.I18NUtil#getNearestLocale(Locale, Set) partial match}, then the
+     * {@link #getPivotTranslation(NodeRef) pivot translation} is used.  If that also gives no results
+     * then the translation itself is returned.
      * 
      * @param translationNodeRef        the <b>cm:mlDocument</b>
      * @param locale                    the target locale
-     * @return Returns                  Returns the best match for the locale, or <tt>null</tt> if there
-     *                                  is no near match.
+     * @return                          Returns the best match for the locale (never <tt>null</tt>)
      * 
      * @see #getTranslations(NodeRef)
      * @see org.alfresco.i18n.I18NUtil#getNearestLocale(Locale, Set)
@@ -157,7 +157,8 @@ public interface MultilingualContentService
      * 
      * @param nodeRef       a <b>cm:mlDocument</b>
      * @return              Returns a corresponding <b>cm:mlDocument</b> that matches the locale of
-     *                      of the <b>cm:mlContainer</b>.
+     *                      of the <b>cm:mlContainer</b>.  <tt>null</tt> is returned if there is no
+     *                      pivot translation.
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     NodeRef getPivotTranslation(NodeRef nodeRef);

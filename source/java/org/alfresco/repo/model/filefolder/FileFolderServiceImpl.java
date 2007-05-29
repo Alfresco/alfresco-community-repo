@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -123,7 +122,6 @@ public class FileFolderServiceImpl implements FileFolderService
     private CopyService copyService;
     private SearchService searchService;
     private ContentService contentService;
-    private MultilingualContentService multilingualContentService;
     private MimetypeService mimetypeService;
     
     // TODO: Replace this with a more formal means of identifying "system" folders (i.e. aspect or UUID)
@@ -165,11 +163,6 @@ public class FileFolderServiceImpl implements FileFolderService
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
-    }
-
-    public void setMultilingualContentService(MultilingualContentService multilingualContentService)
-    {
-        this.multilingualContentService = multilingualContentService;
     }
 
     public void setMimetypeService(MimetypeService mimetypeService)
@@ -217,40 +210,15 @@ public class FileFolderServiceImpl implements FileFolderService
      */
     private FileInfo toFileInfo(NodeRef nodeRef, boolean addTranslations) throws InvalidTypeException
     {
-        // get the file attributes
+        // Get the file attributes
         Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-        // is it a folder
+        // Is it a folder
         QName typeQName = nodeService.getType(nodeRef);
         boolean isFolder = isFolder(typeQName);
         
-        Map<Locale, FileInfo> translations = null;
-        if (!isFolder && addTranslations)
-        {
-            // Get any translations
-            translations = new HashMap<Locale, FileInfo>(13);
-            // Check for the ML aspect
-            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
-            {
-                // Get all the translations
-                Map<Locale, NodeRef> translationsToConvert = multilingualContentService.getTranslations(nodeRef);
-                for (Map.Entry<Locale, NodeRef> entry : translationsToConvert.entrySet())
-                {
-                    Locale locale = entry.getKey();
-                    NodeRef nodeRefToConvert = entry.getValue();
-                    FileInfo convertedFileInfo = toFileInfo(nodeRefToConvert, false);
-                    // Add to map
-                    translations.put(locale, convertedFileInfo);
-                }
-            }
-        }
-        else
-        {
-            translations = Collections.<Locale, FileInfo>emptyMap();
-        }
-        
-        // construct the file info and add to the results
-        FileInfo fileInfo = new FileInfoImpl(nodeRef, isFolder, properties, translations);
-        // done
+        // Construct the file info and add to the results
+        FileInfo fileInfo = new FileInfoImpl(nodeRef, isFolder, properties);
+        // Done
         return fileInfo;
     }
 

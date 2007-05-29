@@ -13,15 +13,6 @@
       </property>
    </bean>
    
-   <bean id="mlTranslationInterceptor" class="org.alfresco.repo.node.MLTranslationInterceptor">
-      <property name="directNodeService">
-         <ref bean="mlAwareNodeService" />
-      </property>
-      <property name="directMultilingualContentService">
-         <ref bean="multilingualContentService" />
-      </property>
-   </bean>
-   
    <bean id="nodeService" class="org.springframework.aop.framework.ProxyFactoryBean" >
       <property name="targetName">
          <value>mlAwareNodeService</value>

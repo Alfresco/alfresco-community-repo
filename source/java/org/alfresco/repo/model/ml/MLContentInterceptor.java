@@ -103,18 +103,26 @@ public class MLContentInterceptor implements MethodInterceptor
             }
             // Get the pivot translation
             NodeRef pivotNodeRef = multilingualContentService.getPivotTranslation(nodeRef);
-            // Get the reader from that
-            ContentReader pivotContentReader = contentService.getReader(pivotNodeRef, propertyQName);
-            // Done
-            if (logger.isDebugEnabled())
+            if (pivotNodeRef == null)
             {
-                logger.debug(
-                        "Converted reader for empty translation: \n" +
-                        "   Empty Translation: " + nodeRef + "\n" +
-                        "   Pivot Translation: " + pivotNodeRef + "\n" +
-                        "   Reader:            " + pivotContentReader);
+                // This is technically possible
+                ret = invocation.proceed();
             }
-            ret = pivotContentReader;
+            else
+            {
+                // Get the reader from that
+                ContentReader pivotContentReader = contentService.getReader(pivotNodeRef, propertyQName);
+                // Done
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(
+                            "Converted reader for empty translation: \n" +
+                            "   Empty Translation: " + nodeRef + "\n" +
+                            "   Pivot Translation: " + pivotNodeRef + "\n" +
+                            "   Reader:            " + pivotContentReader);
+                }
+                ret = pivotContentReader;
+            }
         }
         else
         {

@@ -63,15 +63,6 @@ public interface FileInfo
     public NodeRef getLinkNodeRef();
     
     /**
-     * Get all translated versions of the file info.  The map will always be empty if this
-     * instance references {@link #isFolder() a folder}.  The map may also be empty if the
-     * file represented is not multilingual.
-     * 
-     * @return      Returns a map of transalations keyed on locale
-     */
-    public Map<Locale, FileInfo> getTranslations();
-    
-    /**
      * @return Returns the name of the file or folder within the parent folder
      */
     public String getName();

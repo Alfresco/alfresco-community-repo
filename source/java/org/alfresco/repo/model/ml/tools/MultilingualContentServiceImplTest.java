@@ -137,31 +137,51 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         assertFalse("Missing Translation List false. Locale " + loc2 + " or " + loc3 + " found", missing.contains(loc2.toString()) || missing.contains(loc3.toString()));
     }
     
-    @SuppressWarnings("unused") 
-    public void testPivotTranslation() throws Exception
+    public void testGetTranslationForLocale() throws Exception
     {
         NodeRef chineseContentNodeRef = createContent();
+        NodeRef mlContainerNodeRef = multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
+        NodeRef frenchContentNodeRef = createContent();        
+        multilingualContentService.addTranslation(frenchContentNodeRef, chineseContentNodeRef, Locale.FRENCH);
         
+        // Get the chinese translation
+        assertEquals("Chinese translation should be present",
+                chineseContentNodeRef,
+                multilingualContentService.getTranslationForLocale(mlContainerNodeRef, Locale.CHINESE));
+        // Get the french translation
+        assertEquals("French translation should be present",
+                frenchContentNodeRef,
+                multilingualContentService.getTranslationForLocale(mlContainerNodeRef, Locale.FRENCH));
+        // The Italian should return the pivot
+        assertEquals("French translation should be present",
+                chineseContentNodeRef,
+                multilingualContentService.getTranslationForLocale(mlContainerNodeRef, Locale.ITALIAN));
+    }
+    
+    @SuppressWarnings("unused") 
+    public void testGetPivotTranslation() throws Exception
+    {
+        NodeRef chineseContentNodeRef = createContent();
         NodeRef mlContainerNodeRef = multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
         
         //  make sure that the pivot language is set
         assertNotNull("Pivot language not set", nodeService.getProperty(mlContainerNodeRef, ContentModel.PROP_LOCALE));
         
         //  make sure that the pivot language is correctly set
-        assertTrue("Pivot language not correctly set", nodeService.getProperty(mlContainerNodeRef, ContentModel.PROP_LOCALE).equals(Locale.CHINESE));        
+        assertEquals("Pivot language not correctly set", Locale.CHINESE, nodeService.getProperty(mlContainerNodeRef, ContentModel.PROP_LOCALE));        
         
         NodeRef frenchContentNodeRef = createContent();        
         multilingualContentService.addTranslation(frenchContentNodeRef, chineseContentNodeRef, Locale.FRENCH);
         
         //  make sure that the pivot noderef is correct
-        assertTrue("Pivot node ref not correct", multilingualContentService.getPivotTranslation(mlContainerNodeRef).equals(chineseContentNodeRef));        
+        assertEquals("Unable to get pivot from container", chineseContentNodeRef, multilingualContentService.getPivotTranslation(mlContainerNodeRef));        
+        assertEquals("Unable to get pivot from translation", chineseContentNodeRef, multilingualContentService.getPivotTranslation(frenchContentNodeRef));        
         
         // modify the pivot language 
         nodeService.setProperty(mlContainerNodeRef, ContentModel.PROP_LOCALE, Locale.FRENCH);
         
         //  make sure that the modified pivot noderef is correct
-        assertTrue("Pivot node ref not correct", multilingualContentService.getPivotTranslation(mlContainerNodeRef).equals(frenchContentNodeRef));
-        
+        assertEquals("Pivot node ref not correct", frenchContentNodeRef, multilingualContentService.getPivotTranslation(mlContainerNodeRef));
     }
     
     @SuppressWarnings("unused") 

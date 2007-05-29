@@ -22,7 +22,6 @@
  * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
-
 package org.alfresco.repo.model.ml;
 
 import java.io.Serializable;
@@ -51,17 +50,8 @@ import org.alfresco.service.namespace.QName;
 public class MLContainerType implements
         NodeServicePolicies.OnUpdatePropertiesPolicy
 {
-     /**
-      * set a property with this QName when the deletion process is running on the mlContainer. In this case
-      * the policies of the remove aspect of mlDocument don't delete one more time the mlContainer.
-      */
-    /*package*/ static QName PROP_NAME_DELETION_RUNNING = QName.createQName("__MLContanier_", "Deletion_Running");
-
-    //     Dependencies
     private PolicyComponent policyComponent;
-
     private NodeService nodeService;
-
     private MultilingualContentService multilingualContentService;
 
     /**

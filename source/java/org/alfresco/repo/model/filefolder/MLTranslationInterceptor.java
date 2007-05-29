@@ -97,6 +97,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
 
     private NodeService nodeService;
     private MultilingualContentService multilingualContentService;
+    private FileFolderService fileFolderService;
     
     /**
      * Constructor.
@@ -113,6 +114,11 @@ public class MLTranslationInterceptor implements MethodInterceptor
     public void setMultilingualContentService(MultilingualContentService multilingualContentService)
     {
         this.multilingualContentService = multilingualContentService;
+    }
+
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
     }
 
     /**
@@ -133,13 +139,14 @@ public class MLTranslationInterceptor implements MethodInterceptor
         {
             return nodeRef;
         }
-        // Find the translation
-        Map<Locale, NodeRef> translations = multilingualContentService.getTranslations(nodeRef);
         Locale filterLocale = I18NUtil.getContentLocaleOrNull();
-        Set<Locale> possibleLocales = translations.keySet();
-        Locale localeToUse = I18NUtil.getNearestLocale(filterLocale, possibleLocales);
-        // Select the node
-        NodeRef translatedNodeRef = translations.get(localeToUse);
+        if (filterLocale == null)
+        {
+            // We aren't doing any filtering
+            return nodeRef;
+        }
+        // Find the best translation.  This won't return null.
+        NodeRef translatedNodeRef = multilingualContentService.getTranslationForLocale(nodeRef, filterLocale);
         // Done
         if (logger.isDebugEnabled())
         {
@@ -152,7 +159,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
                 logger.debug("NodeRef substitution: " + nodeRef + " (no change)");
             }
         }
-        return nodeRef;
+        return translatedNodeRef;
     }
     
     /**
@@ -160,8 +167,6 @@ public class MLTranslationInterceptor implements MethodInterceptor
      * 
      * @param fileInfo      the basic file or folder info
      * @return              Returns a replacement if required
-     * 
-     * @see FileInfo#getTranslations()
      */
     private FileInfo getTranslatedFileInfo(FileInfo fileInfo)
     {
@@ -175,28 +180,20 @@ public class MLTranslationInterceptor implements MethodInterceptor
         {
             return fileInfo;
         }
-        // Ignore files without translations
-        Map<Locale, FileInfo> translations = fileInfo.getTranslations();
-        if (translations.size() == 0)
+        NodeRef nodeRef = fileInfo.getNodeRef();
+        // Get the best translation for the node
+        NodeRef translatedNodeRef = getTranslatedNodeRef(nodeRef);
+        // Convert to FileInfo, if required
+        FileInfo translatedFileInfo = null;
+        if (nodeRef.equals(translatedNodeRef))
         {
-            return fileInfo;
+            // No need to do any more work
+            translatedFileInfo = fileInfo;
         }
-        // Get the locale to use
-        Set<Locale> possibleLocales = translations.keySet();
-        Locale filterLocale = I18NUtil.getContentLocaleOrNull();
-        Locale localeToUse = I18NUtil.getNearestLocale(filterLocale, possibleLocales);
-        FileInfo translatedFileInfo = translations.get(localeToUse);
-        // Done
-        if (logger.isDebugEnabled())
+        else
         {
-            if (fileInfo.equals(translatedFileInfo))
-            {
-                logger.debug("FileInfo substitution: " + fileInfo + " --> " + translatedFileInfo);
-            }
-            else
-            {
-                logger.debug("FileInfo substitution: " + fileInfo + " (no change)");
-            }
+            // Get the FileInfo
+            translatedFileInfo = fileFolderService.getFileInfo(translatedNodeRef);
         }
         return translatedFileInfo;
     }
@@ -207,7 +204,12 @@ public class MLTranslationInterceptor implements MethodInterceptor
         Object ret = null;
         String methodName = invocation.getMethod().getName();
         
-        if (METHOD_NAMES_LIST.contains(methodName))
+        if (I18NUtil.getContentLocaleOrNull() == null)
+        {
+            // This can shortcut anything as there is no filtering going on
+            return invocation.proceed();
+        }
+        else if (METHOD_NAMES_LIST.contains(methodName))
         {
             List<FileInfo> fileInfos = (List<FileInfo>) invocation.proceed();
             // Compile a set to ensure we don't get duplicates
@@ -223,13 +225,14 @@ public class MLTranslationInterceptor implements MethodInterceptor
             Set<FileInfo> alreadyPresent = new HashSet<FileInfo>(fileInfos.size() * 2 + 1);
             for (FileInfo info : fileInfos)
             {
-                if (alreadyPresent.contains(info))
+                FileInfo translatedFileInfo = translatedFileInfos.get(info);
+                if (alreadyPresent.contains(translatedFileInfo))
                 {
                     // We've done this one
                     continue;
                 }
-                alreadyPresent.add(info);
-                orderedResults.add(translatedFileInfos.get(info));
+                alreadyPresent.add(translatedFileInfo);
+                orderedResults.add(translatedFileInfo);
             }
             ret = orderedResults;
         }

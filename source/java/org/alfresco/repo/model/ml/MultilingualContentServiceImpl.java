@@ -561,6 +561,16 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         Set<Locale> locales = nodeRefsByLocale.keySet();
         Locale nearestLocale = I18NUtil.getNearestLocale(locale, locales);
         NodeRef nearestNodeRef = nodeRefsByLocale.get(nearestLocale);
+        if (nearestNodeRef == null)
+        {
+            // There is no translation for the locale, so get the pivot translation
+            nearestNodeRef = getPivotTranslation(translationNodeRef);
+            if (nearestNodeRef == null)
+            {
+                // There is no pivot translation, so just use the given node
+                nearestNodeRef = translationNodeRef;
+            }
+        }
         // Done
         if (logger.isDebugEnabled())
         {
@@ -629,23 +639,33 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     /** @inheritDoc */
     public NodeRef getPivotTranslation(NodeRef nodeRef)
     {
+        Locale containerLocale = null;
         if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
         {
             NodeRef container = getTranslationContainer(nodeRef);
-            Locale containerLocale = (Locale) nodeService.getProperty(container, ContentModel.PROP_LOCALE);
-
-            return getTranslationForLocale(nodeRef, containerLocale);
+            containerLocale = (Locale) nodeService.getProperty(container, ContentModel.PROP_LOCALE);
         }
         else if(ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(nodeService.getType(nodeRef)))
         {
-            Locale containerLocale = (Locale) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCALE);
-            return getTranslationForLocale(nodeRef, containerLocale);
+            containerLocale = (Locale) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCALE);
         }
         else
         {
             logger.warn("The node is not multilingual " + nodeRef);
-
+        }
+        // Get all the translations
+        Map<Locale, NodeRef> nodeRefsByLocale = getTranslations(nodeRef);
+        // Get the closest matching locale
+        Set<Locale> locales = nodeRefsByLocale.keySet();
+        Locale nearestLocale = I18NUtil.getNearestLocale(containerLocale, locales);
+        if (nearestLocale == null)
+        {
+            // There is pivot translation
             return null;
+        }
+        else
+        {
+            return nodeRefsByLocale.get(nearestLocale);
         }
     }
     

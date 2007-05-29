@@ -12,7 +12,6 @@
       <property name="copyService"><ref bean="copyService" /></property>
       <property name="searchService"><ref bean="admSearchService" /></property>
       <property name="contentService"><ref bean="contentService" /></property>
-      <property name="multilingualContentService"><ref bean="multilingualContentService" /></property>
       <property name="mimetypeService"><ref bean="mimetypeService" /></property>
 
       <property name="systemPaths">
@@ -34,6 +33,9 @@
       </property>
       <property name="multilingualContentService">
          <ref bean="multilingualContentService"/>
+      </property>
+      <property name="fileFolderService">
+         <ref bean="fileFolderService"/>
       </property>
    </bean>
 

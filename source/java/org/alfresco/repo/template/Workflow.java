@@ -164,6 +164,11 @@ public class Workflow extends BaseTemplateProcessorExtension
             return this.task.title;
         }
         
+        public String getQnameType()
+        {
+           return this.task.definition.metadata.getName().toString();
+        }
+        
         public String getName()
         {
             return this.task.description;

@@ -505,8 +505,8 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    padding-right: 2px;
    margin-left: 4px;
    letter-spacing: 1px;
-   border: 1px solid #000000;
-   background-color: #0000FF;
+   border: 1px solid #444444;
+   background-color: #2222FF;
    font-weight: bolder;
    text-transform: uppercase;
 }

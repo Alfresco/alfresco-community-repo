@@ -284,100 +284,90 @@
 
                               <div style="padding:4px"></div>
 
-                              <%-- Multlingual properties --%>
+                              <%-- Multilingual properties --%>
                               <h:panelGroup id="ml-props-panel-facets">
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write">
                                        <a:actionLink id="titleLinkMl" value="#{msg.modify}" showLink="false" image="/images/icons/edit_properties.gif"
                                                      action="dialog:editMlContainer" />
-                                     </r:permissionEvaluator>
+                                    </r:permissionEvaluator>
                                   </f:facet>
                               </h:panelGroup>
 
-                              <%-- Panel if  the node has the multinlingual aspect--%>
+                              <%-- Panel if the node has the multilingual aspect--%>
                               <a:panel label="#{msg.ml_content_info}" facetsId="ml-props-panel-facets" id="ml-info-panel" progressive="true"
                                        border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" rendered="#{DocumentDetailsBean.multilingual}"
                                        expanded='#{DocumentDetailsBean.panels["ml-info-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}">
 
-                              <%-- properties for Ml container --%>
-                              <div style="padding:4px"></div>
-                              <h:outputText value="#{msg.properties}" styleClass="nodeWorkflowInfoTitle" style="padding:20px;"/>
-                              <div style="padding:4px"></div>
+                                 <%-- properties for Ml container --%>
+                                 <div style="padding:4px"></div>
+                                 <h:outputText value="#{msg.properties}" styleClass="nodeWorkflowInfoTitle" style="padding:20px;"/>
+                                 <div style="padding:4px"></div>
+   
+                                 <r:propertySheetGrid id="ml-container-props-sheet" value="#{DocumentDetailsBean.documentMlContainer}"
+                                          var="mlContainerProps" columns="1" labelStyleClass="propertiesLabel"
+                                          externalConfig="true" cellpadding="2" cellspacing="2" mode="view"/>
+   
+                                 <div style="padding:8px"></div>
+   
+                                 <a:panel label="#{msg.related_translations}" id="related-translation-panel" progressive="true"
+                                          expanded='#{DocumentDetailsBean.panels["related-translation-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}" styleClass="nodeWorkflowInfoTitle">
+   
+                                    <div style="padding:4px"></div>
+                                    <%-- list of translations --%>
+                                    <a:richList id="TranslationList" viewMode="details" value="#{DocumentDetailsBean.translations}"
+                                               var="r" styleClass="recordSet" headerStyleClass="recordSetHeader"
+                                               rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
+                                               pageSize="10" initialSortColumn="Name" initialSortDescending="false">
 
-                              <r:propertySheetGrid id="ml-container-props-sheet" value="#{DocumentDetailsBean.documentMlContainer}"
-                                       var="mlContainerProps" columns="1" labelStyleClass="propertiesLabel"
-                                       externalConfig="true" cellpadding="2" cellspacing="2" mode="view"/>
-
-
-                              <div style="padding:8px"></div>
-
-                              <a:panel label="#{msg.related_translations}" id="related-translation-panel" progressive="true"
-                                       expanded='#{DocumentDetailsBean.panels["related-translation-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}" styleClass="nodeWorkflowInfoTitle">
-
-                              <div style="padding:4px"></div>
-                              <%-- list of translations --%>
-                              <a:richList id="TranslationList" viewMode="details" value="#{DocumentDetailsBean.translations}"
-                                         var="r" styleClass="recordSet" headerStyleClass="recordSetHeader"
-                                         rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
-                                         pageSize="10" initialSortColumn="Name" initialSortDescending="false">
-
-                                    <%-- Name and icon columns --%>
-                                    <a:column id="col21" primary="true" width="300" style="text-align:left">
-                                       <f:facet name="small-icon">
-                                          <h:graphicImage url="/images/filetypes/_default.gif" width="16" height="16"/>
-                                       </f:facet>
-                                       <f:facet name="header">
-                                          <a:sortLink label="#{msg.name}" value="Name" mode="case-insensitive" styleClass="header"/>
-                                       </f:facet>
-                                       <a:actionLink id="view-name" value="#{r.name}" href="#{r.url}" target="new" />
-                                    </a:column>
-
-                                    <%-- Language columns --%>
-                                    <a:column id="col22" width="50" style="text-align:left">
-                                       <f:facet name="header">
-                                          <a:sortLink label="#{msg.language}" value="language" mode="case-insensitive" styleClass="header"/>
-                                       </f:facet>
-                                       <a:actionLink id="view-language" value="#{r.language}" href="#{r.url}" target="new" />
-                                    </a:column>
-
-                                    <%-- view actions --%>
-                                    <a:column id="col25" style="text-align: left">
-                                       <f:facet name="header">
-                                          <h:outputText value="#{msg.actions}"/>
-                                       </f:facet>
-                                       <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" />
-                                    </a:column>
-
-                                    <a:dataPager styleClass="pager" />
-                               </a:richList>
-                               </a:panel>
-                                 <%-- Actions add translation --%>
-                                 <table width="100%" cellspacing="2" cellpadding="15" border="0" align="center">
-                                    <tr>
-                                       <td>
-                                          <a:actionLink id="act-add-trans-with-c"    value="#{msg.add_translation}"    action="addTranslation" actionListener="#{AddTranslationDialog.start}" showLink="true" image="/images/icons/add_tranlsation.gif"  />
-                                       </td>
-                                       <td>
-                                          <a:actionLink id="act-add-trans-without-c" value="#{msg.add_translation_wc}" action="dialog:addTranslationWithoutContent" showLink="true" image="/images/icons/add_tranlsation_wc.gif" />
-                                       </td>
-                                    </tr>
-                                 </table>
+                                       <%-- Name and icon columns --%>
+                                       <a:column id="col21" primary="true" width="300" style="text-align:left">
+                                          <f:facet name="small-icon">
+                                             <h:graphicImage url="/images/filetypes/_default.gif" width="16" height="16"/>
+                                          </f:facet>
+                                          <f:facet name="header">
+                                             <a:sortLink label="#{msg.name}" value="Name" mode="case-insensitive" styleClass="header"/>
+                                          </f:facet>
+                                          <a:actionLink id="view-name" value="#{r.name}" href="#{r.url}" target="new" />
+                                       </a:column>
+   
+                                       <%-- Language columns --%>
+                                       <a:column id="col22" width="50" style="text-align:left">
+                                          <f:facet name="header">
+                                             <a:sortLink label="#{msg.language}" value="language" mode="case-insensitive" styleClass="header"/>
+                                          </f:facet>
+                                          <a:actionLink id="view-language" value="#{r.language}" href="#{r.url}" target="new" />
+                                       </a:column>
+   
+                                       <%-- view actions --%>
+                                       <a:column id="col25" style="text-align: left">
+                                          <f:facet name="header">
+                                             <h:outputText value="#{msg.actions}"/>
+                                          </f:facet>
+                                          <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" />
+                                       </a:column>
+   
+                                       <a:dataPager styleClass="pager" />
+                                    </a:richList>
+                                 </a:panel>
+                               
+                                 <%-- Actions - Add Translation, Add Translation with Content --%>
+                                 <div style="padding:16px">
+                                    <a:actionLink id="act-add-trans-with-c"    value="#{msg.add_translation}"    action="addTranslation" actionListener="#{AddTranslationDialog.start}" showLink="true" image="/images/icons/add_tranlsation.gif"  />
+                                    <span style="padding-left:16px">
+                                       <a:actionLink id="act-add-trans-without-c" value="#{msg.add_translation_wc}" action="dialog:addTranslationWithoutContent" showLink="true" image="/images/icons/add_tranlsation_wc.gif" />
+                                    </span>
+                                 </div>
                               </a:panel>
 
-                              <%-- Panel if the node has not the multinlingual aspect--%>
+                              <%-- Panel if the node has not the multilingual aspect--%>
                               <a:panel label="#{msg.ml_content_info}" id="no-ml-info-panel" progressive="true"
                                        border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
                                        rendered="#{DocumentDetailsBean.multilingual == false}"
                                        expanded='#{DocumentDetailsBean.panels["ml-info-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}">
-                                 <h:outputText id="no-ml-msg" value="#{msg.not_multilingual}<br/><br/>" escape="false" />
-                                  <%-- Actions add translation --%>
-                                 <table width="100%" cellspacing="2" cellpadding="15" border="0" align="center">
-                                    <tr>
-                                       <td>
-                                 <a:actionLink id="act-make-multilingual" value="#{msg.make_multilingual}" action="dialog:makeMultilingual" showLink="true" image="/images/icons/make_ml.gif" />
-                                       </td>
-                                    </tr>
-                                 </table>
+                                 <h:outputText id="no-ml-msg" value="#{msg.not_multilingual}" />
+                                 <%-- Action - Add Translation --%>
+                                 <div style="padding:16px"><a:actionLink id="act-make-multilingual" value="#{msg.make_multilingual}" action="dialog:makeMultilingual" showLink="true" image="/images/icons/make_ml.gif" /></div>
                               </a:panel>
 
                               <div style="padding:4px"></div>

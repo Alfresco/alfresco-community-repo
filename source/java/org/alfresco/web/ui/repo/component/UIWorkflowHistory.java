@@ -202,7 +202,7 @@ public class UIWorkflowHistory extends SelfRenderingComponent
                out.write(Utils.getDateTimeFormat(context).format(createdDate));
                out.write("</td><td>");
                out.write(owner);
-               out.write("</td><td width='200'>");
+               out.write("</td><td>");
                out.write(comment == null ? "" : comment);
                out.write("</td><td>");
                out.write(Utils.getDateTimeFormat(context).format(completedDate));

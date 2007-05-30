@@ -34,71 +34,11 @@
    <td width=4 class="paperEdgeRight"><td>
 </tr>
 <tr><td bgcolor="#F9F3B0">&nbsp;</td><td>
+   <div id="taskPanelOverlay"></div>
    <div id="taskPanel">
-      <#assign weekms=1000*60*60*24*7>
-      <#assign count=0>
-      <#list workflow.assignedTasks?sort_by('startDate') as t>
-         <#-- TODO: is it better to use a js script to pre-filter the list? -->
-         <#assign hasDue=t.properties["bpm:dueDate"]?exists>
-         <#if hasDue>
-            <#assign due=t.properties["bpm:dueDate"]>
-         </#if>
-         <#if (filter=0) ||
-              (filter=3 && !hasDue) ||
-              (filter=1 && hasDue && (dateCompare(date?date, due?date, 0, "==") == 1)) ||
-              (filter=2 && hasDue && (dateCompare(due?date, date?date) == 1 && dateCompare(date?date, due?date, weekms) == 1)) ||
-              (filter=4 && hasDue && (dateCompare(date?date, due?date) == 1))>
-         <#assign count=count+1>
-         <div class="taskRow" id="${t.id}">
-            <div class="taskTitle">
-               <div class="taskIndicator">
-               <#if hasDue>
-                  <#-- items due today? -->
-                  <#if (filter=0 || filter=1) && (dateCompare(date?date, due?date, 0, "==") == 1)>
-                     <img src="${url.context}/images/icons/task_today.gif"></div><div class="taskItem taskItemToday">
-                  <#-- items overdue? -->
-                  <#elseif (filter=0 || filter=4) && (dateCompare(date?date, due?date) == 1)>
-                     <img src="${url.context}/images/icons/task_overdue.gif"></div><div class="taskItem taskItemOverdue">
-                  <#else>
-                     </div><div class="taskItem">
-                  </#if>
-               <#else>
-                  </div><div class="taskItem">
-               </#if>
-                  ${t.description?html} (${t.type?html})
-                  <#if hasDue>
-                     (Due: ${due?date})
-                  </#if>
-                  <span class="taskInfo" onclick="event.cancelBubble=true; TaskInfoMgr.toggle('${t.id}',this);">
-                     <img src="${url.context}/images/icons/popup.gif" class="popupImage" width="16" height="16" />
-                  </span>
-               </div>
-            </div>
-            <div class="taskDetail">
-               <div style="float:left">
-                  <table cellpadding='2' cellspacing='0' style="margin-left:32px;margin-top:16px">
-                     <tr><td class="taskMetaprop">Status:</td><td class="taskMetadata">${t.properties["bpm:status"]}</td>
-                     <tr><td class="taskMetaprop">Priority:</td><td class="taskMetadata">${t.properties["bpm:priority"]}</td>
-                     <tr><td class="taskMetaprop">Start Date:</td><td class="taskMetadata">${t.startDate?date}</td></tr>
-      	            <tr><td class="taskMetaprop">Type:</td><td class="taskMetadata">${t.type?html}</td></tr>
-                     <tr><td class="taskMetaprop">Complete:</td><td class="taskMetadata">${t.properties["bpm:percentComplete"]}%</td>
-      	         </table>
-   	         </div>
-   	         <div class="taskResourceHeader">${t.name?html}:</div>
-   	         <div class="taskResources"></div>
-   	         <div>
-      	         <table class="taskActions" style="padding-left:16px">
-      	            <tr>
-      	               <#list t.transitions as wt>
-      	               <td><a class="taskAction" href="#" onclick="MyTasks.transitionTask('/command/task/end/${t.id}/${wt.id}', '${scripturl("?f=${filter}")}', 'Workflow action \'${wt.label?html}\' completed.');">${wt.label?html}</a></td>
-      	               </#list>
-      	            </tr>
-      	         </table>
-      	      </div>
-            </div>
-         </div>
-         </#if>
-      </#list>
+      <#-- populated via an AJAX call to 'mytaskspanel' webscript -->
+      <#-- resolved filter required as argument -->
+      <script>MyTasks.Filter="${filter}";</script>
    </div>
 </td>
 <td width=4 class="paperEdgeRight"><td>
@@ -107,7 +47,8 @@
 <td bgcolor="#F9F3B0">&nbsp;</td>
 <td>
    <div id="taskFooter">
-      Showing ${count} <#if filter=4>overdue</#if> task(s)<#if filter=1> due today</#if><#if filter=2> due next week</#if><#if filter=3> with no due date set</#if>.
+      <#-- the count value is retrieved and set dynamically from the AJAX webscript output above -->
+      Showing <span id="taskCount">0</span> <#if filter=4>overdue</#if> task(s)<#if filter=1> due today</#if><#if filter=2> due next week</#if><#if filter=3> with no due date set</#if>.
    </div>
 </td>
 <td class="paperEdgeRight"><td>
@@ -118,9 +59,6 @@
 <td class="paperRightCorner"></td>
 </tr>
 </table>
-
-<#-- display status message if provided -->
-<#if args.m?exists><script>window.addEvent('load', MyTasks.displayMessage("${args.m}"));</script></#if>
 
 <STYLE type="text/css">
 a.taskfilterLink:link, a.taskfilterLink:visited
@@ -163,6 +101,20 @@ a.taskfilterLinkSelected:link, a.taskfilterLinkSelected:visited
    overflow: auto;
    border-top: 1px solid #EBE398;
    border-left: 1px solid #F6DEA0;
+   visibility: hidden;
+}
+
+#taskPanelOverlay
+{
+   background-image: url(${url.context}/images/icons/ajax_anim.gif);
+   background-position: center;
+   background-repeat: no-repeat;
+   position: absolute;
+   border-top: 1px solid #EBE398;
+   border-left: 1px solid #F6DEA0;
+   height: 300px;
+   width: 716px;
+   overflow: hidden;
 }
 
 .taskRow

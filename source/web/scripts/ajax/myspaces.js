@@ -19,7 +19,7 @@ var MySpaces = {
          // is responsible for rendering just the contents of the main panel div
          YAHOO.util.Connect.asyncRequest(
             "GET",
-            getContextPath() + '/service/myspacespanel?p='+MySpaces.Path+'&f='+MySpaces.Filter+'&h='+MySpaces.Home,  //+'&_='+(Math.random())
+            getContextPath() + '/service/myspacespanel?p='+MySpaces.Path+'&f='+MySpaces.Filter+'&h='+MySpaces.Home,
             {
                success: function(response)
                {
@@ -32,7 +32,7 @@ var MySpaces = {
                },
                failure: function(response)
                {
-                  $('spacePanel').setHTML("Sorry, list data currently unavailable.");
+                  $('spacePanel').setHTML("Sorry, data currently unavailable.");
                }
             }
          );

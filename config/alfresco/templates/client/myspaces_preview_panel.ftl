@@ -33,13 +33,13 @@
                <td class="spaceAction docActionViewContent">View Content</td>
             </tr>
             <tr>
-               <td class="spaceAction docActionDelete" onclick='event.cancelBubble=true;MySpaces.deleteItem("${node.name}", "${node.nodeRef}");'>Delete</td>
+               <td class="spaceAction docActionDelete" <#if node.hasPermission("Delete")>onclick='event.cancelBubble=true;MySpaces.deleteItem("${node.name}", "${node.nodeRef}");'</#if>>Delete</td>
                <td class="spaceAction docActionMoreActions">More Actions...</td>
             </tr>
             <#else>
             <tr>
                <td class="spaceAction spaceActionEditDetails">Edit Details</td>
-               <td class="spaceAction spaceActionDelete" onclick='event.cancelBubble=true;MySpaces.deleteItem("${node.name}", "${node.nodeRef}");'>Delete</td>
+               <td class="spaceAction spaceActionDelete" <#if node.hasPermission("Delete")>onclick='event.cancelBubble=true;MySpaces.deleteItem("${node.name}", "${node.nodeRef}");'</#if>>Delete</td>
             </tr>
             <tr>
                <td class="spaceAction spaceActionMoreActions">More Actions...</td>

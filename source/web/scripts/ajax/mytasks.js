@@ -1,13 +1,42 @@
 var MyTasks = {
    ANIM_LENGTH: 300,
    DETAIL_PANEL_HEIGHT: 132,
+   Filter: null,
    
    start: function()
    {
       if ($('taskPanel'))
       {
-         MyTasks.parseTaskPanels();
+         // fire off the ajax request to populate the task panel - the 'mytaskspanel' webscript
+         // is responsible for rendering just the contents of the main panel div
+         YAHOO.util.Connect.asyncRequest(
+            "GET",
+            getContextPath() + '/service/mytaskspanel?f='+MyTasks.Filter,
+            {
+               success: function(response)
+               {
+                  // push the response into the task panel div
+                  $('taskPanel').setHTML(response.responseText);
+                  // extract the count value from a hidden div and display it
+                  $('taskCount').setHTML($('taskCountValue').innerHTML);
+                  // wire up all the events and animations
+                  MyTasks.init();
+               },
+               failure: function(response)
+               {
+                  $('taskPanel').setHTML("Sorry, data currently unavailable.");
+               }
+            }
+         );
       }
+   },
+   
+   init: function()
+   {
+      MyTasks.parseTaskPanels();
+      // hide the ajax wait panel and show the main task panel
+      $('taskPanelOverlay').setStyle('visibility', 'hidden');
+      $('taskPanel').setStyle('visibility', 'visible');
    },
 
    parseTaskPanels: function()
@@ -237,21 +266,20 @@ var MyTasks = {
       });
    },
    
-   transitionTask: function(tUrl, rUrl, successMessage)
+   transitionTask: function(commandUrl, successMessage)
    {
       YAHOO.util.Connect.asyncRequest(
          "GET",
-         getContextPath() + tUrl,
+         getContextPath() + commandUrl,
          { 
             success: function(response)
             {
-               window.location.href = rUrl + "&_rand=" + Math.floor(Math.random()*99999) +
-                                      "&" + "m=" + successMessage;
+               MyTasks.displayMessage(successMessage);
+               MyTasks.refreshList();
             },
             failure: function(e)
             {
                alert(e.status + " : ERROR failed to transition task.");
-               window.location.href = rUrl + "&_rand=" + Math.floor(Math.random()*99999);
             }
          }
       );
@@ -260,7 +288,26 @@ var MyTasks = {
    displayMessage: function(message)
    {
       var footer = $('taskFooter');
-      footer.innerHTML = message + ' ' + footer.innerHTML
+      if (footer.oldMessage == undefined)
+      {
+         footer.oldMessage = footer.innerHTML;
+      }
+      footer.innerHTML = message + ' ' + footer.oldMessage;
+   },
+   
+   /**
+    * Refresh the main data list contents within the taskPanel container
+    */
+   refreshList: function()
+   {
+      // empty the main panel div and restart by reloading the panel contents
+      var taskPanel = $('taskPanel');
+      taskPanel.setStyle('visibility', 'hidden');
+      // show the ajax wait panel
+      $('taskPanelOverlay').setStyle('visibility', 'visible');
+      taskPanel.empty();
+      taskPanel.removeEvents('mouseleave');
+      MyTasks.start();
    }
 };
 

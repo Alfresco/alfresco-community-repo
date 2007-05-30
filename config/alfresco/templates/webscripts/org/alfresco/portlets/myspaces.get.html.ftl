@@ -54,14 +54,14 @@
    <div class="spaceToolbar">
       <#-- TODO: permission checks on the actions! -->
       <#-- Upload File action -->
-      <div class="spaceToolbarAction spaceToolbarActionUpload" title="Upload a new document" onclick="MySpaces.upload(this);">Upload</div>
+      <div class="spaceToolbarAction spaceToolbarActionUpload" title="Upload a new document" <#if home.hasPermission("CreateChildren")>onclick="MySpaces.upload(this);"</#if>>Upload</div>
       <div class="spaceUploadPanel">
          <#-- Url encode the path value, and encode any single quotes to generate valid string -->
          <input class="spaceFormItem" type="submit" value="OK" onclick='MySpaces.uploadOK(this, "${path?url?replace("'","_%_")}");'>
          <input class="spaceFormItem" type="button" value="Cancel" onclick="MySpaces.closePopupPanel();">
       </div>
       <#-- Create Space action -->
-      <div class="spaceToolbarAction spaceToolbarActionCreateSpace" title="Create a new Space" onclick="MySpaces.createSpace(this);">Create Space</div>
+      <div class="spaceToolbarAction spaceToolbarActionCreateSpace" title="Create a new Space" <#if home.hasPermission("CreateChildren")>onclick="MySpaces.createSpace(this);"</#if>>Create Space</div>
       <div class="spaceCreateSpacePanel">
          <table cellspacing="2" cellpadding="2" border="0">
             <tr><td class="spaceFormLabel">Name:</td><td><input class="spaceFormItem" type="text" size="32" maxlength="1024" id="space-name"></td></tr>

@@ -50,6 +50,9 @@
          </div>
          <div class="taskResourceHeader">${t.name?html}:</div>
          <div class="taskResources"></div>
+         <div style="float:right;margin-right:48px;margin-top:-48px;">
+            <a class="taskAction" style="padding-top:6px" onclick="event.cancelBubble=true;" href="${url.context}/command/ui/managetask?id=${t.id}&type=${t.qnameType}" target="new"><img src="${url.context}/images/icons/manage_workflow_task.gif" width="16" height="16" border="0" alt="Manage Task Details" title="Manage Task Details"></a>
+         </div>
          <div>
 	         <table class="taskActions" style="padding-left:16px">
 	            <tr>

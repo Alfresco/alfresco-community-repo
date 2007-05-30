@@ -25,6 +25,7 @@
 package org.alfresco.web.bean.workflow;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +42,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ParameterCheck;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
@@ -68,6 +70,9 @@ public class WorkflowBean
    protected List<Node> completedTasks;
    
    private static final Log logger = LogFactory.getLog(WorkflowBean.class);
+   
+   public static final String BEAN_NAME = "WorkflowBean";
+   
    
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
@@ -251,6 +256,7 @@ public class WorkflowBean
       this.nodeService = nodeService;
    }
    
+   
    // ------------------------------------------------------------------------------
    // Navigation handlers
    
@@ -268,6 +274,23 @@ public class WorkflowBean
       // pass on parameters for the dialog
       Application.getDialogManager().setupParameters(event);
    }
+   
+   public void setupTaskDialog(String id, String type)
+   {
+      ParameterCheck.mandatoryString("Task ID", id);
+      ParameterCheck.mandatoryString("Task Type", type);
+      
+      // setup the dispatch context with the task we're opening a dialog for
+      TransientNode node = new TransientNode(QName.createQName(type), id, null);
+      this.navigationBean.setupDispatchContext(node);
+      
+      // pass on parameters for the dialog
+      Map<String, String> params = new HashMap<String, String>(2, 1.0f);
+      params.put("id", id);
+      params.put("type", type);
+      Application.getDialogManager().setupParameters(params);
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Helper methods

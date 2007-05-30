@@ -26,8 +26,10 @@ package org.alfresco.repo.node.index;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.node.BaseNodeServiceTest;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -35,6 +37,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.perf.PerformanceMonitor;
 
 /**
@@ -67,6 +70,18 @@ public class NodeIndexerTest extends BaseNodeServiceTest
             localStoreRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_Persisted" + System.currentTimeMillis());
             localRootNode = nodeService.getRootNode(localStoreRef);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * This instance modifies the ML text value to be just the default locale string.
+     */
+    protected void getExpectedPropertyValues(Map<QName, Serializable> checkProperties)
+    {
+        MLText mlTextValue = (MLText) checkProperties.get(PROP_QNAME_ML_TEXT_VALUE);
+        String strValue = mlTextValue.getDefaultValue();
+        checkProperties.put(PROP_QNAME_ML_TEXT_VALUE, strValue);
     }
 
     public void testCommitQueryData() throws Exception

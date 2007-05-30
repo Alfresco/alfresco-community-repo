@@ -33,6 +33,7 @@ import javax.faces.model.SelectItem;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.UserPreferencesBean;
@@ -48,9 +49,6 @@ import org.alfresco.web.ui.common.Utils;
  */
 public class AddTranslationWithoutContentDialog extends BaseDialogBean
 {
-   public static String LOCALE_REGEX = "%locale%";
-   public static String EMPTY_DOCUMENT_EXTENSION = "." + LOCALE_REGEX + "_properties";
-
    private MultilingualContentService multilingualContentService;
    private UserPreferencesBean userPreferencesBean;
 
@@ -85,10 +83,6 @@ public class AddTranslationWithoutContentDialog extends BaseDialogBean
       // get the required properties to create the new node and to make it multilingual
       Locale locale = I18NUtil.parseLocale(language);
 
-      // rename the translation like [name].[lang]_properties
-      String extension = EMPTY_DOCUMENT_EXTENSION.replaceAll(LOCALE_REGEX, language);
-      this.name += extension;
-
       // add the empty translation
       newTranslation = multilingualContentService.addEmptyTranslation(refNode, name, locale);
 
@@ -97,17 +91,18 @@ public class AddTranslationWithoutContentDialog extends BaseDialogBean
       nodeService.setProperty(newTranslation, ContentModel.PROP_AUTHOR, author);
       nodeService.setProperty(newTranslation, ContentModel.PROP_TITLE, title);
 
+      // Get the content data of the 
+      ContentData newTranslationContentData = fileFolderService.getReader(newTranslation).getContentData();
+      
       // set the current browse node
       Node browse = new Node(newTranslation);
 
-      // get the content data of the pivot translation
-      NodeRef pivot = multilingualContentService.getPivotTranslation(refNode);
-
       Map<String, Object> browseProp = browse.getProperties();
-      browseProp.put("size", 0);
-      browseProp.put("mimetype", extension);
+      browseProp.put("size", newTranslationContentData.getSize());
+      browseProp.put("mimetype", newTranslationContentData.getMimetype());
+      browseProp.put("cm:content", newTranslationContentData);
       browseProp.put("fileType32", Utils.getFileTypeImage(name, false));
-      browseProp.put("url", DownloadContentServlet.generateDownloadURL(pivot, name));
+      browseProp.put("url", DownloadContentServlet.generateDownloadURL(newTranslation, name));
 
       this.browseBean.setDocument(browse);
 

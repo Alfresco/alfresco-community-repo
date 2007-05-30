@@ -311,6 +311,9 @@
         <property name="virtServerRegistry">
             <ref bean="VirtServerRegistry" />
         </property>
+        <property name="searchService">
+            <ref bean="SearchService" />
+        </property>
     </bean>
 
 	<!-- AVM Locking. -->

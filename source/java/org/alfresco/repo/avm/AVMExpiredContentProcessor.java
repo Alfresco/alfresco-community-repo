@@ -27,6 +27,7 @@ package org.alfresco.repo.avm;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +53,9 @@ import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -63,6 +67,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.DNSNameMangler;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -88,6 +93,7 @@ public class AVMExpiredContentProcessor
     protected PermissionService permissionService;
     protected TransactionService transactionService;
     protected VirtServerRegistry virtServerRegistry;
+    protected SearchService searchService;
     
     private static Log logger = LogFactory.getLog(AVMExpiredContentProcessor.class);
 
@@ -147,8 +153,13 @@ public class AVMExpiredContentProcessor
     {
         this.virtServerRegistry = virtServerRegistry;
     }
+    
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
 
-   /**
+    /**
      * Executes the expired content processor.
      * The work is performed within a transaction running as the system user.
      */
@@ -207,12 +218,36 @@ public class AVMExpiredContentProcessor
                 if (logger.isDebugEnabled())
                     logger.debug("Searching store '" + storeName + "' for expired content...");
                 
-                // crawl the whole directory tree looking for nodes with the 
-                // content expiration aspect.
-                // TODO: This would be a LOT better and effecient using a search
-                //       but it doesn't exist yet!
-                AVMNodeDescriptor rootNode = this.avmService.getStoreRoot(-1, storeName);
-                processFolder(storeName, rootNode);
+                // find ant nodes with an expiration *date* of today or before
+                Calendar cal = Calendar.getInstance();
+                StringBuilder query = new StringBuilder("@wca\\:expirationDate:[0001\\-01\\-01T00:00:00 TO ");
+                query.append(cal.get(Calendar.YEAR));
+                query.append("\\-");
+                query.append((cal.get(Calendar.MONTH)+1));
+                query.append("\\-");
+                query.append(cal.get(Calendar.DAY_OF_MONTH));
+                query.append("T00:00:00]");
+                
+                // do the query
+                StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_AVM, storeName);
+                ResultSet results = this.searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, 
+                         query.toString());
+
+                if (logger.isDebugEnabled())
+                      logger.debug("Found " + results.length() + " potential expired item(s) in store '" + storeName + "'");
+                
+                if (results.length() > 0)
+                {
+                   for (NodeRef resultNode : results.getNodeRefs())
+                   {
+                      // get the AVMNodeDescriptor object for each node found
+                      Pair<Integer, String> path = AVMNodeConverter.ToAVMVersionPath(resultNode);
+                      AVMNodeDescriptor node = this.avmService.lookup(path.getFirst(), path.getSecond());
+                      
+                      // process the node to see whether the date and time has passed
+                      processNode(storeName, node);
+                   }
+                }
             }
             else
             {
@@ -249,41 +284,12 @@ public class AVMExpiredContentProcessor
     }
     
     /**
-     * Recursively processes the given folder looking for expired content.
-     * 
-     * @param storeName The name of the store the folder belongs to
-     * @param folder The folder to start the search in
-     */
-    private void processFolder(String storeName, AVMNodeDescriptor folder)
-    {
-       // check supplied node is a folder
-       if (folder.isDirectory())
-       {
-          // get listing of contents of supplied folder
-          Map<String, AVMNodeDescriptor> nodes = this.avmService.getDirectoryListing(folder);
-          for (AVMNodeDescriptor node: nodes.values())
-          {
-             if (node.isDirectory())
-             {
-                // recurse through folders
-                processFolder(storeName, node);
-             }
-             else
-             {
-                // process the node
-                processNode(storeName, node);
-             }
-          }
-       }
-    }
-    
-    /**
      * Processes the given node.
      * <p>
-     * If the 'wca:expires' aspect is applied and the wca:expired property
-     * is false the wca:expirationDate property is checked. If the date is 
-     * today's date or prior to today the last modifier of the node is retrieved
-     * and the node's path added to the users list of expired content.
+     * This method is called if the node has been identified as being expired, 
+     * the date and time is checked to make sure it has actually passed i.e. the
+     * date maybe todat but the time set to later in the day. If the item is
+     * indeed expired it's added to the expired list and the date reset.
      * </p>
      * 
      * @param storeName The name of the store the folder belongs to
@@ -296,52 +302,49 @@ public class AVMExpiredContentProcessor
         {
             // check for existence of expires aspect
             String nodePath = node.getPath();
-            if (this.avmService.hasAspect(-1, nodePath, WCMAppModel.ASPECT_EXPIRES))
-            {
-                PropertyValue expirationDateProp = this.avmService.getNodeProperty(-1, nodePath, 
-                         WCMAppModel.PROP_EXPIRATIONDATE);
+            PropertyValue expirationDateProp = this.avmService.getNodeProperty(-1, nodePath, 
+                     WCMAppModel.PROP_EXPIRATIONDATE);
                 
-                if (logger.isDebugEnabled())
-                    logger.debug("Examining expiration date for '" + nodePath + "': " + 
-                             expirationDateProp.getStringValue());
+             if (logger.isDebugEnabled())
+                 logger.debug("Examining expiration date for '" + nodePath + "': " + 
+                          expirationDateProp.getStringValue());
+             
+             if (expirationDateProp != null)
+             {
+                 Date now = new Date();
+                 Date expirationDate = (Date)expirationDateProp.getValue(DataTypeDefinition.DATETIME);
                 
-                if (expirationDateProp != null)
-                {
-                    Date now = new Date();
-                    Date expirationDate = (Date)expirationDateProp.getValue(DataTypeDefinition.DATETIME);
+                 if (expirationDate != null && expirationDate.before(now))
+                 {
+                     // get the map of expired content for the store
+                     Map<String, List<String>> storeExpiredContent = this.expiredContent.get(storeName);
+                     if (storeExpiredContent == null)
+                     {
+                         storeExpiredContent = new HashMap<String, List<String>>(4);
+                         this.expiredContent.put(storeName, storeExpiredContent);
+                     }
                    
-                    if (expirationDate != null && expirationDate.before(now))
-                    {
-                        // get the map of expired content for the store
-                        Map<String, List<String>> storeExpiredContent = this.expiredContent.get(storeName);
-                        if (storeExpiredContent == null)
-                        {
-                            storeExpiredContent = new HashMap<String, List<String>>(4);
-                            this.expiredContent.put(storeName, storeExpiredContent);
-                        }
-                      
-                        // get the list of expired content for the last modifier of the node
-                        String modifier = node.getLastModifier();
-                        List<String> userExpiredContent = storeExpiredContent.get(modifier);
-                        if (userExpiredContent == null)
-                        {
-                            userExpiredContent = new ArrayList<String>(4);
-                            storeExpiredContent.put(modifier, userExpiredContent);
-                        }
-                      
-                        // add the content to the user's list for the current store
-                        userExpiredContent.add(nodePath);
-                      
-                        if (logger.isDebugEnabled())
-                            logger.debug("Added " + nodePath + " to " + modifier + "'s list of expired content");
-                      
-                        // reset the expiration date
-                        this.avmService.setNodeProperty(nodePath, WCMAppModel.PROP_EXPIRATIONDATE, 
-                                 new PropertyValue(DataTypeDefinition.DATETIME, null));
-                      
-                        if (logger.isDebugEnabled())
-                            logger.debug("Reset expiration date for: " + nodePath);
-                    }
+                     // get the list of expired content for the last modifier of the node
+                     String modifier = node.getLastModifier();
+                     List<String> userExpiredContent = storeExpiredContent.get(modifier);
+                     if (userExpiredContent == null)
+                     {
+                         userExpiredContent = new ArrayList<String>(4);
+                         storeExpiredContent.put(modifier, userExpiredContent);
+                     }
+                   
+                     // add the content to the user's list for the current store
+                     userExpiredContent.add(nodePath);
+                   
+                     if (logger.isDebugEnabled())
+                         logger.debug("Added " + nodePath + " to " + modifier + "'s list of expired content");
+                   
+                     // reset the expiration date
+                     this.avmService.setNodeProperty(nodePath, WCMAppModel.PROP_EXPIRATIONDATE, 
+                              new PropertyValue(DataTypeDefinition.DATETIME, null));
+                   
+                     if (logger.isDebugEnabled())
+                         logger.debug("Reset expiration date for: " + nodePath);
                 }
             }
         }
@@ -385,6 +388,7 @@ public class AVMExpiredContentProcessor
                                      storeCreator + "' as they created store '" + storeName + "'");
                          
                         userName = storeCreator;
+                        userStore = storeName + STORE_SEPARATOR + userName;
                     }
              
                     // lookup the NodeRef for the user
@@ -399,8 +403,8 @@ public class AVMExpiredContentProcessor
                     // create the workflow parameters map
                     Map<QName, Serializable> params = new HashMap<QName, Serializable>(5);
                     params.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
-                    params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, workflowTitle);
                     params.put(WorkflowModel.ASSOC_ASSIGNEE, assignee);
+                    params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, workflowTitle);
                     
                     // transition the workflow to send it to the users inbox
                     this.workflowService.updateTask(startTask.id, params, null, null);

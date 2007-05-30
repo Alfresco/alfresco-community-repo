@@ -30,10 +30,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 
@@ -187,17 +188,57 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
     @SuppressWarnings("unused") 
     public void testCreateEmptyTranslation() throws Exception
     {
-        NodeRef chineseContentNodeRef = createContent();
+        NodeRef chineseContentNodeRef = createContent("Document.txt");
         NodeRef mlContainerNodeRef = multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
         
-        NodeRef empty = multilingualContentService.addEmptyTranslation(chineseContentNodeRef, "" + System.currentTimeMillis(), Locale.CANADA);
+        // This should use the pivot language
+        NodeRef emptyNodeRef = multilingualContentService.addEmptyTranslation(mlContainerNodeRef, "Document.txt", Locale.CANADA);
         
         // Ensure that the empty translation is not null
-        assertNotNull("The creation of the empty document failed ", empty);
+        assertNotNull("The creation of the empty document failed ", emptyNodeRef);
         // Ensure that the empty translation has the mlDocument aspect
-        assertTrue("The empty document must have the mlDocument aspect", nodeService.hasAspect(empty, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
+        assertTrue("The empty document must have the mlDocument aspect",
+                nodeService.hasAspect(emptyNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
         // Ensure that the empty translation has the mlEmptyTranslation aspect 
-        assertTrue("The empty document must have the mlEmptyTranslation aspect", nodeService.hasAspect(empty, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION));                
+        assertTrue("The empty document must have the mlEmptyTranslation aspect",
+                nodeService.hasAspect(emptyNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION));
+        // Check that the auto renaming worked
+        String emptyName = DefaultTypeConverter.INSTANCE.convert(String.class,
+                nodeService.getProperty(emptyNodeRef, ContentModel.PROP_NAME));
+        assertEquals("Empty auto-rename didn't work for same-named document", "Document_en_CA.txt", emptyName);
+        
+        // Check that the content is identical
+        ContentData chineseContentData = fileFolderService.getReader(chineseContentNodeRef).getContentData();
+        ContentData emptyContentData = fileFolderService.getReader(emptyNodeRef).getContentData();
+    }
+    
+    public void testCreateEmptyTranslationNames() throws Exception
+    {
+        NodeRef chineseContentNodeRef = createContent("Document.txt");
+        NodeRef mlContainerNodeRef = multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
+        NodeRef koreanContentNodeRef = createContent("Document_ko.txt");
+        multilingualContentService.addTranslation(koreanContentNodeRef, chineseContentNodeRef, Locale.KOREAN);
+        // Create with a null name, and off a non-pivot just to be sure
+        NodeRef nullNameNodeRef = multilingualContentService.addEmptyTranslation(
+                koreanContentNodeRef,
+                null,
+                Locale.CANADA);
+        String nullName = fileFolderService.getFileInfo(nullNameNodeRef).getName();
+        assertEquals("Empty translation name not generated correctly.", "Document_en_CA.txt", nullName);
+        // Create with the same name
+        NodeRef sameNameNodeRef = multilingualContentService.addEmptyTranslation(
+                mlContainerNodeRef,
+                "Document.txt",
+                Locale.CANADA_FRENCH);
+        String sameName = fileFolderService.getFileInfo(sameNameNodeRef).getName();
+        assertEquals("Empty translation name not generated correctly.", "Document_fr_CA.txt", sameName);
+        // Create with a different name
+        NodeRef differentNameNodeRef = multilingualContentService.addEmptyTranslation(
+                mlContainerNodeRef,
+                "Document2.txt",
+                Locale.JAPANESE);
+        String differentName = fileFolderService.getFileInfo(differentNameNodeRef).getName();
+        assertEquals("Empty translation name not generated correctly.", "Document2.txt", differentName);
     }
     
     @SuppressWarnings("unused") 

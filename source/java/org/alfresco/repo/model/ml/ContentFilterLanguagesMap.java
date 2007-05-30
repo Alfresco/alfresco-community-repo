@@ -59,7 +59,6 @@ public class ContentFilterLanguagesMap implements ContentFilterLanguagesService
     private static final String DEFAULT_LANGUAGE_LIST_STANDARD = "ISO 639-1";
 
     private static final String ATTR_CODE = "code";
-    private static final String ATTR_ORDER = "order";
     private static final String ATTR_DEFAULT = "default";
 
     private static final Log logger = LogFactory.getLog(ContentFilterLanguagesMap.class);
@@ -210,11 +209,10 @@ public class ContentFilterLanguagesMap implements ContentFilterLanguagesService
         for (ConfigElement langElem : languages)
         {
             String code  = convertToOldISOCode(langElem.getAttribute(ATTR_CODE));
-            String order = langElem.getAttribute(ATTR_ORDER);
             String value = langElem.getValue();
             String def   = langElem.getAttribute(ATTR_DEFAULT);
 
-            orderedLangCodes.add(Integer.parseInt(order) - 1, code);
+            orderedLangCodes.add(code);
 
             languagesByCode.put(code, value);
 

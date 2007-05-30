@@ -118,9 +118,15 @@ public abstract class AbstractMultilingualTestCases extends TestCase
     
     protected NodeRef createContent()
     {
+        String name = "" + System.currentTimeMillis();
+        return createContent(name);
+    }
+   
+    protected NodeRef createContent(String name)
+    {
         NodeRef contentNodeRef = fileFolderService.create(
                 folderNodeRef,
-                "" + System.currentTimeMillis(),
+                name,
                 ContentModel.TYPE_CONTENT).getNodeRef();
         // add some content
         ContentWriter contentWriter = fileFolderService.getWriter(contentNodeRef);
@@ -128,7 +134,7 @@ public abstract class AbstractMultilingualTestCases extends TestCase
         // done
         return contentNodeRef;
     }
-   
+    
     public void testSetup() throws Exception
     {
         // Ensure that content can be created

@@ -39,6 +39,7 @@ import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -674,55 +675,94 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
      */
     public NodeRef addEmptyTranslation(NodeRef translationOfNodeRef, String name, Locale locale)
     {
-        // any node used as reference
-        NodeRef anyTranslation;
-        // the empty document to create
-        NodeRef newTranslationNodeRef = null;
-
         QName typeQName = nodeService.getType(translationOfNodeRef);
-        if (typeQName.equals(ContentModel.TYPE_MULTILINGUAL_CONTAINER))
+        boolean hasMLAspect = nodeService.hasAspect(translationOfNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
+        if (hasMLAspect || typeQName.equals(ContentModel.TYPE_MULTILINGUAL_CONTAINER))
         {
-            // Set the ml container ans get the pivot
-            anyTranslation = getPivotTranslation(translationOfNodeRef);
-        }
-        else if(nodeService.hasAspect(translationOfNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
-        {
-            anyTranslation = translationOfNodeRef;
+            // Get the pivot translation
+            NodeRef pivotTranslationNodeRef = getPivotTranslation(translationOfNodeRef);
+            if (pivotTranslationNodeRef != null)
+            {
+                // We found a pivot translation, so use it
+                translationOfNodeRef = pivotTranslationNodeRef;
+            }
+            else
+            {
+                // We use the given translation, provided it is an actual translation
+                if (!hasMLAspect)
+                {
+                    throw new IllegalArgumentException(
+                            "The node provided is not associated with a pivot translation " +
+                            "and is not in itself a translation: \n" +
+                            "   Translation: " + translationOfNodeRef + "\n" +
+                            "   Locale:      " + locale);
+                }
+            }
         }
         else
         {
             throw new IllegalArgumentException(
-                    "Node must have aspect " + ContentModel.ASPECT_MULTILINGUAL_DOCUMENT + " applied or be a " + ContentModel.TYPE_MULTILINGUAL_CONTAINER);
+                    "Node must have aspect " + ContentModel.ASPECT_MULTILINGUAL_DOCUMENT +
+                    " or be a " + ContentModel.TYPE_MULTILINGUAL_CONTAINER + ": \n" +
+                    "   Translation: " + translationOfNodeRef + "\n" +
+                    "   Locale:      " + locale);
+        }
+        
+        FileInfo translationOfFileInfo = fileFolderService.getFileInfo(translationOfNodeRef);
+        String translationOfName = translationOfFileInfo.getName();
+        // If name is null, supply one
+        if (name == null)
+        {
+            name = translationOfName;
+        }
+        // If there is a name clash, add the locale to the main portion of the filename
+        if (name.equals(translationOfName))
+        {
+            String localeStr = locale.toString();
+            if (localeStr.endsWith("_"))
+            {
+                localeStr = localeStr.substring(0, localeStr.length() - 1);
+            }
+            String rawName;
+            String extension;
+            int index = name.lastIndexOf('.');
+            if (index > 0)
+            {
+                rawName = name.substring(0, index);
+                extension = "." + name.substring(index + 1);
+            }
+            else
+            {
+                rawName = name;
+                extension = "";                 // No extension
+            }
+            name = rawName + "_" + localeStr + extension;
         }
 
         // Create the document in the space of the node of reference
-        NodeRef parentNodeRef = nodeService.getPrimaryParent(anyTranslation).getParentRef();
+        NodeRef parentNodeRef = nodeService.getPrimaryParent(translationOfNodeRef).getParentRef();
 
-        newTranslationNodeRef = fileFolderService.create(
+        // Create the empty translation
+        NodeRef newTranslationNodeRef = fileFolderService.create(
                 parentNodeRef,
                 name,
                 ContentModel.TYPE_CONTENT).getNodeRef();
-
+        
         // add the translation to the container
         addTranslation(newTranslationNodeRef, translationOfNodeRef, locale);
+
+        // Although the content is spoofed from the pivot translation, it isn't done for all services
+        // TODO: Fix http://issues.alfresco.com/browse/AR-1487
+        ContentData translationOfContentData = (ContentData) nodeService.getProperty(translationOfNodeRef, ContentModel.PROP_CONTENT);
+        if (translationOfContentData != null)
+        {
+            nodeService.setProperty(newTranslationNodeRef, ContentModel.PROP_CONTENT, translationOfContentData);
+        }
 
         // set it empty
         nodeService.addAspect(newTranslationNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION, null);
         // Initially, the file should be temporary.  This will be changed as soon as some content is added.
         nodeService.addAspect(newTranslationNodeRef, ContentModel.ASPECT_TEMPORARY, null);
-
-        // get the extension and set the ContentData property with an null URL.
-        // TODO: Mimetype must be correct, i.e. taken from the original
-        String extension = "";
-        int dotIdx;
-        if((dotIdx = name.lastIndexOf(".")) > -1 )
-        {
-            extension = name.substring(dotIdx);
-        }
-
-        nodeService.setProperty(newTranslationNodeRef, ContentModel.PROP_CONTENT,
-                new ContentData(null, extension, 0, "UTF-8", locale));
-
 
         if (logger.isDebugEnabled())
         {

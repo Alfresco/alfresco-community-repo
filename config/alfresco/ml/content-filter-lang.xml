@@ -9,7 +9,7 @@
     </config>
 
     <!--  
-        Define a ordered map of languages matched by his unique language code.
+        Define a ordered map of languages matched by the unique language code.
     -->
     <config evaluator="string-compare" condition="Languages Filter Map">
         
@@ -19,216 +19,192 @@
                 The list is ordered by language code ascending. 
             -->
             <ISO_639-1>
-                <lang order="1" code="aa">Afar</lang>
-                <lang order="2" code="ab">Abkhazian</lang>
-                <lang order="3" code="ae">Avestan</lang>
-                <lang order="4" code="af">Afrikaans</lang>
-                <lang order="5" code="ak">Akan</lang>
-                <lang order="6" code="am">Amharic</lang>
-                <lang order="7" code="an">Aragonese</lang>
-                <lang order="8" code="ar">Arabic</lang>
-                <lang order="9" code="as">Assamese</lang>
-                <lang order="10" code="av">Avaric</lang>
-                <lang order="11" code="ay">Aymara</lang>
-                <lang order="12" code="az">Azerbaijani</lang>
-                <lang order="13" code="ba">Bashkir</lang>
-                <lang order="14" code="be">Belarusian</lang>
-                <lang order="15" code="bg">Bulgarian</lang>
-                <lang order="16" code="bh">Bihari</lang>
-                <lang order="17" code="bi">Bislama</lang>
-                <lang order="18" code="bm">Bambara</lang>
-                <lang order="19" code="bn">Bengali</lang>
-                <lang order="20" code="bo">Tibetan</lang>
-                <lang order="21" code="br">Breton</lang>
-                <lang order="22" code="bs">Bosnian</lang>
-                <lang order="23" code="ca">Catalan; Valencian</lang>
-                <lang order="24" code="ce">Chechen</lang>
-                <lang order="25" code="ch">Chamorro</lang>
-                <lang order="26" code="co">Corsican</lang>
-                <lang order="27" code="cr">Cree</lang>
-                <lang order="28" code="cs">Czech</lang>
-                <lang order="29" code="cu">
-                    Church Slavic; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic
-                </lang>
-                <lang order="30" code="cv">Chuvash</lang>
-                <lang order="31" code="cy">Welsh</lang>
-                <lang order="32" code="da">Danish</lang>
-                <lang order="33" code="de">German</lang>
-                <lang order="34" code="dv">
-                    Divehi; Dhivehi; Maldivian
-                </lang>
-                <lang order="35" code="dz">Dzongkha</lang>
-                <lang order="36" code="ee">Ewe</lang>
-                <lang order="37" code="el">Greek</lang>
-                <lang order="38" code="en">English</lang>
-                <lang order="39" code="eo">Esperanto</lang>
-                <lang order="40" code="es">Spanish</lang>
-                <lang order="41" code="et">Estonian</lang>
-                <lang order="42" code="eu">Basque</lang>
-                <lang order="43" code="fa">Persian</lang>
-                <lang order="44" code="ff">Fulah</lang>
-                <lang order="45" code="fi">Finnish</lang>
-                <lang order="46" code="fj">Fijian</lang>
-                <lang order="47" code="fo">Faroese</lang>
-                <lang order="48" code="fr">French</lang>
-                <lang order="49" code="fy">Western Frisian</lang>
-                <lang order="50" code="ga">Irish</lang>
-                <lang order="51" code="gd">
-                    Gaelic; Scottish Gaelic
-                </lang>
-                <lang order="52" code="gl">Galician</lang>
-                <lang order="53" code="gn">Guarani</lang>
-                <lang order="54" code="gu">Gujarati</lang>
-                <lang order="55" code="gv">Manx</lang>
-                <lang order="56" code="ha">Hausa</lang>
-                <lang order="57" code="he">Hebrew</lang>
-                <lang order="58" code="hi">Hindi</lang>
-                <lang order="59" code="ho">Hiri Motu</lang>
-                <lang order="60" code="hr">Croatian</lang>
-                <lang order="61" code="ht">
-                    Haitian; Haitian Creole
-                </lang>
-                <lang order="62" code="hu">Hungarian</lang>
-                <lang order="63" code="hy">Armenian</lang>
-                <lang order="64" code="hz">Herero</lang>
-                <lang order="65" code="ia">
-                    Interlingua (International Auxiliary Language Association)
-                </lang>
-                <lang order="66" code="id">Indonesian</lang>
-                <lang order="67" code="ie">Interlingue</lang>
-                <lang order="68" code="ig">Igbo</lang>
-                <lang order="69" code="ii">Sichuan Yi</lang>
-                <lang order="70" code="ik">Inupiaq</lang>
-                <lang order="71" code="io">Ido</lang>
-                <lang order="72" code="is">Icelandic</lang>
-                <lang order="73" code="it">Italian</lang>
-                <lang order="74" code="iu">Inuktitut</lang>
-                <lang order="75" code="ja">Japanese</lang>
-                <lang order="76" code="jv">Javanese</lang>
-                <lang order="77" code="ka">Georgian</lang>
-                <lang order="78" code="kg">Kongo</lang>
-                <lang order="79" code="ki">Kikuyu; Gikuyu</lang>
-                <lang order="80" code="kj">Kuanyama; Kwanyama</lang>
-                <lang order="81" code="kk">Kazakh</lang>
-                <lang order="82" code="kl">
-                    Kalaallisut; Greenlandic
-                </lang>
-                <lang order="83" code="km">Khmer</lang>
-                <lang order="84" code="kn">Kannada</lang>
-                <lang order="85" code="ko">Korean</lang>
-                <lang order="86" code="kr">Kanuri</lang>
-                <lang order="87" code="ks">Kashmiri</lang>
-                <lang order="88" code="ku">Kurdish</lang>
-                <lang order="89" code="kv">Komi</lang>
-                <lang order="90" code="kw">Cornish</lang>
-                <lang order="91" code="ky">Kirghiz</lang>
-                <lang order="92" code="la">Latin</lang>
-                <lang order="93" code="lb">
-                    Luxembourgish; Letzeburgesch
-                </lang>
-                <lang order="94" code="lg">Ganda</lang>
-                <lang order="95" code="li">
-                    Limburgan; Limburger; Limburgish
-                </lang>
-                <lang order="96" code="ln">Lingala</lang>
-                <lang order="97" code="lo">Lao</lang>
-                <lang order="98" code="lt">Lithuanian</lang>
-                <lang order="99" code="lu">Luba-Katanga</lang>
-                <lang order="100" code="lv">Latvian</lang>
-                <lang order="101" code="mg">Malagasy</lang>
-                <lang order="102" code="mh">Marshallese</lang>
-                <lang order="103" code="mi">Maori</lang>
-                <lang order="104" code="mk">Macedonian</lang>
-                <lang order="105" code="ml">Malayalam</lang>
-                <lang order="106" code="mn">Mongolian</lang>
-                <lang order="107" code="mo">Moldavian</lang>
-                <lang order="108" code="mr">Marathi</lang>
-                <lang order="109" code="ms">Malay</lang>
-                <lang order="110" code="mt">Maltese</lang>
-                <lang order="111" code="my">Burmese</lang>
-                <lang order="112" code="na">Nauru</lang>
-                <lang order="113" code="nb">Norvégien Bokmål</lang>
-                <lang order="114" code="nd">
-                    Ndebele, North; North Ndebele
-                </lang>
-                <lang order="115" code="ne">Nepali</lang>
-                <lang order="116" code="ng">Ndonga</lang>
-                <lang order="117" code="nl">Dutch</lang>
-                <lang order="118" code="nn">Norwegian Nynorsk</lang>
-                <lang order="119" code="no">Norwegian</lang>
-                <lang order="120" code="nr">
-                    Ndebele, South; South Ndebele
-                </lang>
-                <lang order="121" code="nv">Navajo; Navaho</lang>
-                <lang order="122" code="ny">
-                    Chichewa; Chewa; Nyanja
-                </lang>
-                <lang order="123" code="oc">
-                    Occitan (post 1500); Provençal
-                </lang>
-                <lang order="124" code="oj">Ojibwa</lang>
-                <lang order="125" code="om">Oromo</lang>
-                <lang order="126" code="or">Oriya</lang>
-                <lang order="127" code="os">Ossetian; Ossetic</lang>
-                <lang order="128" code="pa">Panjabi; Punjabi</lang>
-                <lang order="129" code="pi">Pali</lang>
-                <lang order="130" code="pl">Polish</lang>
-                <lang order="131" code="ps">Pushto</lang>
-                <lang order="132" code="pt">Portuguese</lang>
-                <lang order="133" code="qu">Quechua</lang>
-                <lang order="134" code="rm">Raeto-Romance</lang>
-                <lang order="135" code="rn">Rundi</lang>
-                <lang order="136" code="ro">Romanian</lang>
-                <lang order="137" code="ru">Russian</lang>
-                <lang order="138" code="rw">Kinyarwanda</lang>
-                <lang order="139" code="sa">Sanskrit</lang>
-                <lang order="140" code="sc">Sardinian</lang>
-                <lang order="141" code="sd">Sindhi</lang>
-                <lang order="142" code="se">Northern Sami</lang>
-                <lang order="143" code="sg">Sango</lang>
-                <lang order="144" code="si">Sinhala; Sinhalese</lang>
-                <lang order="145" code="sk">Slovak</lang>
-                <lang order="146" code="sl">Slovenian</lang>
-                <lang order="147" code="sm">Samoan</lang>
-                <lang order="148" code="sn">Shona</lang>
-                <lang order="149" code="so">Somali</lang>
-                <lang order="150" code="sq">Albanian</lang>
-                <lang order="151" code="sr">Serbian</lang>
-                <lang order="152" code="ss">Swati</lang>
-                <lang order="153" code="st">Sotho, Southern</lang>
-                <lang order="154" code="su">Sundanese</lang>
-                <lang order="155" code="sv">Swedish</lang>
-                <lang order="156" code="sw">Swahili</lang>
-                <lang order="157" code="ta">Tamil</lang>
-                <lang order="158" code="te">Telugu</lang>
-                <lang order="159" code="tg">Tajik</lang>
-                <lang order="160" code="th">Thai</lang>
-                <lang order="161" code="ti">Tigrinya</lang>
-                <lang order="162" code="tk">Turkmen</lang>
-                <lang order="163" code="tl">Tagalog</lang>
-                <lang order="164" code="tn">Tswana</lang>
-                <lang order="165" code="to">Tonga (Tonga Islands)</lang>
-                <lang order="166" code="tr">Turkish</lang>
-                <lang order="167" code="tr">Turkish</lang>
-                <lang order="168" code="ts">Tsonga</lang>
-                <lang order="169" code="tt">Tatar</lang>
-                <lang order="170" code="tw">Twi</lang>
-                <lang order="171" code="ty">Tahitian</lang>
-                <lang order="172" code="ug">Uighur; Uyghur</lang>
-                <lang order="173" code="uk">Ukrainian</lang>
-                <lang order="174" code="ur">Urdu</lang>
-                <lang order="175" code="uz">Uzbek</lang>
-                <lang order="176" code="ve">Venda</lang>
-                <lang order="177" code="vi">Vietnamese</lang>
-                <lang order="178" code="vo">Volapük</lang>
-                <lang order="179" code="wa">Walloon</lang>
-                <lang order="180" code="wo">Wolof</lang>
-                <lang order="181" code="xh">Xhosa</lang>
-                <lang order="182" code="yi">Yiddish</lang>
-                <lang order="183" code="yo">Yoruba</lang>
-                <lang order="184" code="za">Zhuang; Chuang</lang>
-                <lang order="185" code="zh">Chinese</lang>
-                <lang order="186" code="zu">Zulu</lang>
+                <lang code="aa">Afar</lang>
+                <lang code="ab">Abkhazian</lang>
+                <lang code="ae">Avestan</lang>
+                <lang code="af">Afrikaans</lang>
+                <lang code="ak">Akan</lang>
+                <lang code="am">Amharic</lang>
+                <lang code="an">Aragonese</lang>
+                <lang code="ar">Arabic</lang>
+                <lang code="as">Assamese</lang>
+                <lang code="av">Avaric</lang>
+                <lang code="ay">Aymara</lang>
+                <lang code="az">Azerbaijani</lang>
+                <lang code="ba">Bashkir</lang>
+                <lang code="be">Belarusian</lang>
+                <lang code="bg">Bulgarian</lang>
+                <lang code="bh">Bihari</lang>
+                <lang code="bi">Bislama</lang>
+                <lang code="bm">Bambara</lang>
+                <lang code="bn">Bengali</lang>
+                <lang code="bo">Tibetan</lang>
+                <lang code="br">Breton</lang>
+                <lang code="bs">Bosnian</lang>
+                <lang code="ca">Catalan; Valencian</lang>
+                <lang code="ce">Chechen</lang>
+                <lang code="ch">Chamorro</lang>
+                <lang code="co">Corsican</lang>
+                <lang code="cr">Cree</lang>
+                <lang code="cs">Czech</lang>
+                <lang code="cu">Slavic</lang>
+                <lang code="cv">Chuvash</lang>
+                <lang code="cy">Welsh</lang>
+                <lang code="da">Danish</lang>
+                <lang code="de">German</lang>
+                <lang code="dv">Maldivian</lang>
+                <lang code="dz">Dzongkha</lang>
+                <lang code="ee">Ewe</lang>
+                <lang code="el">Greek</lang>
+                <lang code="en">English</lang>
+                <lang code="eo">Esperanto</lang>
+                <lang code="es">Spanish</lang>
+                <lang code="et">Estonian</lang>
+                <lang code="eu">Basque</lang>
+                <lang code="fa">Persian</lang>
+                <lang code="ff">Fulah</lang>
+                <lang code="fi">Finnish</lang>
+                <lang code="fj">Fijian</lang>
+                <lang code="fo">Faroese</lang>
+                <lang code="fr">French</lang>
+                <lang code="fy">Western Frisian</lang>
+                <lang code="ga">Irish</lang>
+                <lang code="gd">Gaelic</lang>
+                <lang code="gl">Galician</lang>
+                <lang code="gn">Guarani</lang>
+                <lang code="gu">Gujarati</lang>
+                <lang code="gv">Manx</lang>
+                <lang code="ha">Hausa</lang>
+                <lang code="he">Hebrew</lang>
+                <lang code="hi">Hindi</lang>
+                <lang code="ho">Hiri Motu</lang>
+                <lang code="hr">Croatian</lang>
+                <lang code="ht">Haitian</lang>
+                <lang code="hu">Hungarian</lang>
+                <lang code="hy">Armenian</lang>
+                <lang code="hz">Herero</lang>
+                <lang code="ia">Interlingua</lang>
+                <lang code="id">Indonesian</lang>
+                <lang code="ie">Interlingue</lang>
+                <lang code="ig">Igbo</lang>
+                <lang code="ii">Sichuan Yi</lang>
+                <lang code="ik">Inupiaq</lang>
+                <lang code="io">Ido</lang>
+                <lang code="is">Icelandic</lang>
+                <lang code="it">Italian</lang>
+                <lang code="iu">Inuktitut</lang>
+                <lang code="ja">Japanese</lang>
+                <lang code="jv">Javanese</lang>
+                <lang code="ka">Georgian</lang>
+                <lang code="kg">Kongo</lang>
+                <lang code="ki">Kikuyu; Gikuyu</lang>
+                <lang code="kj">Kuanyama; Kwanyama</lang>
+                <lang code="kk">Kazakh</lang>
+                <lang code="kl">Kalaallisut; Greenlandic</lang>
+                <lang code="km">Khmer</lang>
+                <lang code="kn">Kannada</lang>
+                <lang code="ko">Korean</lang>
+                <lang code="kr">Kanuri</lang>
+                <lang code="ks">Kashmiri</lang>
+                <lang code="ku">Kurdish</lang>
+                <lang code="kv">Komi</lang>
+                <lang code="kw">Cornish</lang>
+                <lang code="ky">Kirghiz</lang>
+                <lang code="la">Latin</lang>
+                <lang code="lb">Luxembourgish; Letzeburgesch</lang>
+                <lang code="lg">Ganda</lang>
+                <lang code="li">Limburgan; Limburger; Limburgish</lang>
+                <lang code="ln">Lingala</lang>
+                <lang code="lo">Lao</lang>
+                <lang code="lt">Lithuanian</lang>
+                <lang code="lu">Luba-Katanga</lang>
+                <lang code="lv">Latvian</lang>
+                <lang code="mg">Malagasy</lang>
+                <lang code="mh">Marshallese</lang>
+                <lang code="mi">Maori</lang>
+                <lang code="mk">Macedonian</lang>
+                <lang code="ml">Malayalam</lang>
+                <lang code="mn">Mongolian</lang>
+                <lang code="mo">Moldavian</lang>
+                <lang code="mr">Marathi</lang>
+                <lang code="ms">Malay</lang>
+                <lang code="mt">Maltese</lang>
+                <lang code="my">Burmese</lang>
+                <lang code="na">Nauru</lang>
+                <lang code="nb">Norvégien Bokmål</lang>
+                <lang code="nd">North Ndebele</lang>
+                <lang code="ne">Nepali</lang>
+                <lang code="ng">Ndonga</lang>
+                <lang code="nl">Dutch</lang>
+                <lang code="nn">Norwegian Nynorsk</lang>
+                <lang code="no">Norwegian</lang>
+                <lang code="nr">South Ndebele</lang>
+                <lang code="nv">Navajo; Navaho</lang>
+                <lang code="ny">Chichewa; Chewa; Nyanja</lang>
+                <lang code="oc">Occitan (post 1500); Provençal</lang>
+                <lang code="oj">Ojibwa</lang>
+                <lang code="om">Oromo</lang>
+                <lang code="or">Oriya</lang>
+                <lang code="os">Ossetian; Ossetic</lang>
+                <lang code="pa">Panjabi; Punjabi</lang>
+                <lang code="pi">Pali</lang>
+                <lang code="pl">Polish</lang>
+                <lang code="ps">Pushto</lang>
+                <lang code="pt">Portuguese</lang>
+                <lang code="qu">Quechua</lang>
+                <lang code="rm">Raeto-Romance</lang>
+                <lang code="rn">Rundi</lang>
+                <lang code="ro">Romanian</lang>
+                <lang code="ru">Russian</lang>
+                <lang code="rw">Kinyarwanda</lang>
+                <lang code="sa">Sanskrit</lang>
+                <lang code="sc">Sardinian</lang>
+                <lang code="sd">Sindhi</lang>
+                <lang code="se">Northern Sami</lang>
+                <lang code="sg">Sango</lang>
+                <lang code="si">Sinhala; Sinhalese</lang>
+                <lang code="sk">Slovak</lang>
+                <lang code="sl">Slovenian</lang>
+                <lang code="sm">Samoan</lang>
+                <lang code="sn">Shona</lang>
+                <lang code="so">Somali</lang>
+                <lang code="sq">Albanian</lang>
+                <lang code="sr">Serbian</lang>
+                <lang code="ss">Swati</lang>
+                <lang code="st">Sotho, Southern</lang>
+                <lang code="su">Sundanese</lang>
+                <lang code="sv">Swedish</lang>
+                <lang code="sw">Swahili</lang>
+                <lang code="ta">Tamil</lang>
+                <lang code="te">Telugu</lang>
+                <lang code="tg">Tajik</lang>
+                <lang code="th">Thai</lang>
+                <lang code="ti">Tigrinya</lang>
+                <lang code="tk">Turkmen</lang>
+                <lang code="tl">Tagalog</lang>
+                <lang code="tn">Tswana</lang>
+                <lang code="to">Tonga (Tonga Islands)</lang>
+                <lang code="tr">Turkish</lang>
+                <lang code="tr">Turkish</lang>
+                <lang code="ts">Tsonga</lang>
+                <lang code="tt">Tatar</lang>
+                <lang code="tw">Twi</lang>
+                <lang code="ty">Tahitian</lang>
+                <lang code="ug">Uighur; Uyghur</lang>
+                <lang code="uk">Ukrainian</lang>
+                <lang code="ur">Urdu</lang>
+                <lang code="uz">Uzbek</lang>
+                <lang code="ve">Venda</lang>
+                <lang code="vi">Vietnamese</lang>
+                <lang code="vo">Volapük</lang>
+                <lang code="wa">Walloon</lang>
+                <lang code="wo">Wolof</lang>
+                <lang code="xh">Xhosa</lang>
+                <lang code="yi">Yiddish</lang>
+                <lang code="yo">Yoruba</lang>
+                <lang code="za">Zhuang; Chuang</lang>
+                <lang code="zh">Chinese</lang>
+                <lang code="zu">Zulu</lang>
             </ISO_639-1>
         
         
@@ -238,216 +214,192 @@
                 The list is ordered for the European Commission needs. 
             -->
             <ISO_639-1_EU-Order>
-                <lang order="1" code="bg">Bulgarian</lang>
-                <lang order="2" code="cs">Czech</lang>
-                <lang order="3" code="da">Danish</lang>
-                <lang order="4" code="de">German</lang>
-                <lang order="5" code="et">Estonian</lang>
-                <lang order="6" code="el">Greek</lang>
-                <lang order="7" code="en" default="true">English</lang>
-                <lang order="8" code="es">Spanish</lang>
-                <lang order="9" code="fr">French</lang>
-                <lang order="10" code="ga">Irish</lang>
-                <lang order="11" code="it">Italian</lang>
-                <lang order="12" code="lv">Latvian</lang>
-                <lang order="13" code="lt">Lithuanian</lang>
-                <lang order="14" code="hu">Hungarian</lang>
-                <lang order="15" code="mt">Maltese</lang>
-                <lang order="16" code="nl">Dutch</lang>
-                <lang order="17" code="pl">Polish</lang>
-                <lang order="18" code="pt">Portuguese</lang>
-                <lang order="19" code="ro">Romanian</lang>
-                <lang order="20" code="sk">Slovak</lang>
-                <lang order="21" code="sl">Slovenian</lang>
-                <lang order="22" code="fi">Finnish</lang>
-                <lang order="23" code="sv">Swedish</lang>
-                <lang order="24" code="hr">Croatian</lang>
-                <lang order="25" code="tr">Turkish</lang>
-                <lang order="26" code="aa">Afar</lang>
-                <lang order="27" code="ab">Abkhazian</lang>
-                <lang order="28" code="af">Afrikaans</lang>
-                <lang order="29" code="ak">Akan</lang>
-                <lang order="30" code="sq">Albanian</lang>
-                <lang order="31" code="am">Amharic</lang>
-                <lang order="32" code="ar">Arabic</lang>
-                <lang order="33" code="an">Aragonese</lang>
-                <lang order="34" code="hy">Armenian</lang>
-                <lang order="35" code="as">Assamese</lang>
-                <lang order="36" code="av">Avaric</lang>
-                <lang order="37" code="ae">Avestan</lang>
-                <lang order="38" code="ay">Aymara</lang>
-                <lang order="39" code="az">Azerbaijani</lang>
-                <lang order="40" code="ba">Bashkir</lang>
-                <lang order="41" code="bm">Bambara</lang>
-                <lang order="42" code="eu">Basque</lang>
-                <lang order="43" code="be">Belarusian</lang>
-                <lang order="44" code="bn">Bengali</lang>
-                <lang order="45" code="bh">Bihari</lang>
-                <lang order="46" code="bi">Bislama</lang>
-                <lang order="47" code="bs">Bosnian</lang>
-                <lang order="48" code="br">Breton</lang>
-                <lang order="49" code="my">Burmese</lang>
-                <lang order="50" code="ca">Catalan; Valencian</lang>
-                <lang order="51" code="ch">Chamorro</lang>
-                <lang order="52" code="ce">Chechen</lang>
-                <lang order="53" code="zh">Chinese</lang>
-                <lang order="54" code="cu">
-                    Church Slavic; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic
-                </lang>
-                <lang order="55" code="cv">Chuvash</lang>
-                <lang order="56" code="kw">Cornish</lang>
-                <lang order="57" code="co">Corsican</lang>
-                <lang order="58" code="cr">Cree</lang>
-                <lang order="59" code="dv">
-                    Divehi; Dhivehi; Maldivian
-                </lang>
-                <lang order="60" code="dz">Dzongkha</lang>
-                <lang order="61" code="eo">Esperanto</lang>
-                <lang order="62" code="ee">Ewe</lang>
-                <lang order="63" code="fo">Faroese</lang>
-                <lang order="64" code="fj">Fijian</lang>
-                <lang order="65" code="fy">Western Frisian</lang>
-                <lang order="66" code="ff">Fulah</lang>
-                <lang order="67" code="ka">Georgian</lang>
-                <lang order="68" code="gd">
-                    Gaelic; Scottish Gaelic
-                </lang>
-                <lang order="69" code="gl">Galician</lang>
-                <lang order="70" code="gv">Manx</lang>
-                <lang order="71" code="gn">Guarani</lang>
-                <lang order="72" code="gu">Gujarati</lang>
-                <lang order="73" code="ht">
-                    Haitian; Haitian Creole
-                </lang>
-                <lang order="74" code="ha">Hausa</lang>
-                <lang order="75" code="he">Hebrew</lang>
-                <lang order="76" code="hz">Herero</lang>
-                <lang order="77" code="hi">Hindi</lang>
-                <lang order="78" code="ho">Hiri Motu</lang>
-                <lang order="79" code="ig">Igbo</lang>
-                <lang order="80" code="is">Icelandic</lang>
-                <lang order="81" code="io">Ido</lang>
-                <lang order="82" code="ii">Sichuan Yi</lang>
-                <lang order="83" code="iu">Inuktitut</lang>
-                <lang order="84" code="ie">Interlingue</lang>
-                <lang order="85" code="ia">
-                    Interlingua (International Auxiliary Language Association)
-                </lang>
-                <lang order="86" code="id">Indonesian</lang>
-                <lang order="87" code="ik">Inupiaq</lang>
-                <lang order="88" code="jv">Javanese</lang>
-                <lang order="89" code="ja">Japanese</lang>
-                <lang order="90" code="kl">
-                    Kalaallisut; Greenlandic
-                </lang>
-                <lang order="91" code="kn">Kannada</lang>
-                <lang order="92" code="ks">Kashmiri</lang>
-                <lang order="93" code="kr">Kanuri</lang>
-                <lang order="94" code="kk">Kazakh</lang>
-                <lang order="95" code="km">Khmer</lang>
-                <lang order="96" code="ki">Kikuyu; Gikuyu</lang>
-                <lang order="97" code="rw">Kinyarwanda</lang>
-                <lang order="98" code="ky">Kirghiz</lang>
-                <lang order="99" code="kv">Komi</lang>
-                <lang order="100" code="kg">Kongo</lang>
-                <lang order="101" code="ko">Korean</lang>
-                <lang order="102" code="kj">Kuanyama; Kwanyama</lang>
-                <lang order="103" code="ku">Kurdish</lang>
-                <lang order="104" code="lo">Lao</lang>
-                <lang order="105" code="la">Latin</lang>
-                <lang order="106" code="li">
-                    Limburgan; Limburger; Limburgish
-                </lang>
-                <lang order="107" code="ln">Lingala</lang>
-                <lang order="108" code="lb">
-                    Luxembourgish; Letzeburgesch
-                </lang>
-                <lang order="109" code="lu">Luba-Katanga</lang>
-                <lang order="110" code="lg">Ganda</lang>
-                <lang order="111" code="mk">Macedonian</lang>
-                <lang order="112" code="mh">Marshallese</lang>
-                <lang order="113" code="ml">Malayalam</lang>
-                <lang order="114" code="mi">Maori</lang>
-                <lang order="115" code="mr">Marathi</lang>
-                <lang order="116" code="ms">Malay</lang>
-                <lang order="117" code="mg">Malagasy</lang>
-                <lang order="118" code="mo">Moldavian</lang>
-                <lang order="119" code="mn">Mongolian</lang>
-                <lang order="120" code="na">Nauru</lang>
-                <lang order="121" code="nv">Navajo; Navaho</lang>
-                <lang order="122" code="nr">
-                    Ndebele, South; South Ndebele
-                </lang>
-                <lang order="123" code="nd">
-                    Ndebele, North; North Ndebele
-                </lang>
-                <lang order="124" code="ng">Ndonga</lang>
-                <lang order="125" code="ne">Nepali</lang>
-                <lang order="126" code="nn">Norwegian Nynorsk</lang>
-                <lang order="127" code="nb">Norvégien Bokmål</lang>
-                <lang order="128" code="no">Norwegian</lang>
-                <lang order="129" code="ny">
-                    Chichewa; Chewa; Nyanja
-                </lang>
-                <lang order="130" code="oc">
-                    Occitan (post 1500); Provençal
-                </lang>
-                <lang order="131" code="oj">Ojibwa</lang>
-                <lang order="132" code="or">Oriya</lang>
-                <lang order="133" code="om">Oromo</lang>
-                <lang order="134" code="os">Ossetian; Ossetic</lang>
-                <lang order="135" code="pa">Panjabi; Punjabi</lang>
-                <lang order="136" code="fa">Persian</lang>
-                <lang order="137" code="pi">Pali</lang>
-                <lang order="138" code="ps">Pushto</lang>
-                <lang order="139" code="qu">Quechua</lang>
-                <lang order="140" code="rm">Raeto-Romance</lang>
-                <lang order="141" code="rn">Rundi</lang>
-                <lang order="142" code="ru">Russian</lang>
-                <lang order="143" code="sg">Sango</lang>
-                <lang order="144" code="sa">Sanskrit</lang>
-                <lang order="145" code="sr">Serbian</lang>
-                <lang order="146" code="si">Sinhala; Sinhalese</lang>
-                <lang order="147" code="se">Northern Sami</lang>
-                <lang order="148" code="sm">Samoan</lang>
-                <lang order="149" code="sn">Shona</lang>
-                <lang order="150" code="sd">Sindhi</lang>
-                <lang order="151" code="so">Somali</lang>
-                <lang order="152" code="st">Sotho, Southern</lang>
-                <lang order="153" code="sc">Sardinian</lang>
-                <lang order="154" code="ss">Swati</lang>
-                <lang order="155" code="su">Sundanese</lang>
-                <lang order="156" code="sw">Swahili</lang>
-                <lang order="157" code="ty">Tahitian</lang>
-                <lang order="158" code="ta">Tamil</lang>
-                <lang order="159" code="tt">Tatar</lang>
-                <lang order="160" code="te">Telugu</lang>
-                <lang order="161" code="tg">Tajik</lang>
-                <lang order="162" code="tl">Tagalog</lang>
-                <lang order="163" code="th">Thai</lang>
-                <lang order="164" code="bo">Tibetan</lang>
-                <lang order="165" code="ti">Tigrinya</lang>
-                <lang order="166" code="to">Tonga (Tonga Islands)</lang>
-                <lang order="167" code="tn">Tswana</lang>
-                <lang order="168" code="ts">Tsonga</lang>
-                <lang order="169" code="tk">Turkmen</lang>
-                <lang order="170" code="tr">Turkish</lang>
-                <lang order="171" code="tw">Twi</lang>
-                <lang order="172" code="ug">Uighur; Uyghur</lang>
-                <lang order="173" code="uk">Ukrainian</lang>
-                <lang order="174" code="ur">Urdu</lang>
-                <lang order="175" code="uz">Uzbek</lang>
-                <lang order="176" code="ve">Venda</lang>
-                <lang order="177" code="vi">Vietnamese</lang>
-                <lang order="178" code="vo">Volapük</lang>
-                <lang order="179" code="cy">Welsh</lang>
-                <lang order="180" code="wa">Walloon</lang>
-                <lang order="181" code="wo">Wolof</lang>
-                <lang order="182" code="xh">Xhosa</lang>
-                <lang order="183" code="yi">Yiddish</lang>
-                <lang order="184" code="yo">Yoruba</lang>
-                <lang order="185" code="za">Zhuang; Chuang</lang>
-                <lang order="186" code="zu">Zulu</lang>
+                <lang code="bg">Bulgarian</lang>
+                <lang code="cs">Czech</lang>
+                <lang code="da">Danish</lang>
+                <lang code="de">German</lang>
+                <lang code="et">Estonian</lang>
+                <lang code="el">Greek</lang>
+                <lang code="en" default="true">English</lang>
+                <lang code="es">Spanish</lang>
+                <lang code="fr">French</lang>
+                <lang code="ga">Irish</lang>
+                <lang code="it">Italian</lang>
+                <lang code="lv">Latvian</lang>
+                <lang code="lt">Lithuanian</lang>
+                <lang code="hu">Hungarian</lang>
+                <lang code="mt">Maltese</lang>
+                <lang code="nl">Dutch</lang>
+                <lang code="pl">Polish</lang>
+                <lang code="pt">Portuguese</lang>
+                <lang code="ro">Romanian</lang>
+                <lang code="sk">Slovak</lang>
+                <lang code="sl">Slovenian</lang>
+                <lang code="fi">Finnish</lang>
+                <lang code="sv">Swedish</lang>
+                <lang code="hr">Croatian</lang>
+                <lang code="tr">Turkish</lang>
+                <lang code="aa">Afar</lang>
+                <lang code="ab">Abkhazian</lang>
+                <lang code="af">Afrikaans</lang>
+                <lang code="ak">Akan</lang>
+                <lang code="sq">Albanian</lang>
+                <lang code="am">Amharic</lang>
+                <lang code="ar">Arabic</lang>
+                <lang code="an">Aragonese</lang>
+                <lang code="hy">Armenian</lang>
+                <lang code="as">Assamese</lang>
+                <lang code="av">Avaric</lang>
+                <lang code="ae">Avestan</lang>
+                <lang code="ay">Aymara</lang>
+                <lang code="az">Azerbaijani</lang>
+                <lang code="ba">Bashkir</lang>
+                <lang code="bm">Bambara</lang>
+                <lang code="eu">Basque</lang>
+                <lang code="be">Belarusian</lang>
+                <lang code="bn">Bengali</lang>
+                <lang code="bh">Bihari</lang>
+                <lang code="bi">Bislama</lang>
+                <lang code="bs">Bosnian</lang>
+                <lang code="br">Breton</lang>
+                <lang code="my">Burmese</lang>
+                <lang code="ca">Catalan; Valencian</lang>
+                <lang code="ch">Chamorro</lang>
+                <lang code="ce">Chechen</lang>
+                <lang code="zh">Chinese</lang>
+                <lang code="cu">Slavic</lang>
+                <lang code="cv">Chuvash</lang>
+                <lang code="kw">Cornish</lang>
+                <lang code="co">Corsican</lang>
+                <lang code="cr">Cree</lang>
+                <lang code="dv">Divehi; Dhivehi; Maldivian</lang>
+                <lang code="dz">Dzongkha</lang>
+                <lang code="eo">Esperanto</lang>
+                <lang code="ee">Ewe</lang>
+                <lang code="fo">Faroese</lang>
+                <lang code="fj">Fijian</lang>
+                <lang code="fy">Western Frisian</lang>
+                <lang code="ff">Fulah</lang>
+                <lang code="ka">Georgian</lang>
+                <lang code="gd">Gaelic</lang>
+                <lang code="gl">Galician</lang>
+                <lang code="gv">Manx</lang>
+                <lang code="gn">Guarani</lang>
+                <lang code="gu">Gujarati</lang>
+                <lang code="ht">Haitian</lang>
+                <lang code="ha">Hausa</lang>
+                <lang code="he">Hebrew</lang>
+                <lang code="hz">Herero</lang>
+                <lang code="hi">Hindi</lang>
+                <lang code="ho">Hiri Motu</lang>
+                <lang code="ig">Igbo</lang>
+                <lang code="is">Icelandic</lang>
+                <lang code="io">Ido</lang>
+                <lang code="ii">Sichuan Yi</lang>
+                <lang code="iu">Inuktitut</lang>
+                <lang code="ie">Interlingue</lang>
+                <lang code="ia">Interlingua</lang>
+                <lang code="id">Indonesian</lang>
+                <lang code="ik">Inupiaq</lang>
+                <lang code="jv">Javanese</lang>
+                <lang code="ja">Japanese</lang>
+                <lang code="kl">Kalaallisut; Greenlandic</lang>
+                <lang code="kn">Kannada</lang>
+                <lang code="ks">Kashmiri</lang>
+                <lang code="kr">Kanuri</lang>
+                <lang code="kk">Kazakh</lang>
+                <lang code="km">Khmer</lang>
+                <lang code="ki">Kikuyu; Gikuyu</lang>
+                <lang code="rw">Kinyarwanda</lang>
+                <lang code="ky">Kirghiz</lang>
+                <lang code="kv">Komi</lang>
+                <lang code="kg">Kongo</lang>
+                <lang code="ko">Korean</lang>
+                <lang code="kj">Kuanyama; Kwanyama</lang>
+                <lang code="ku">Kurdish</lang>
+                <lang code="lo">Lao</lang>
+                <lang code="la">Latin</lang>
+                <lang code="li">Limburgan; Limburger; Limburgish</lang>
+                <lang code="ln">Lingala</lang>
+                <lang code="lb">Luxembourgish; Letzeburgesch</lang>
+                <lang code="lu">Luba-Katanga</lang>
+                <lang code="lg">Ganda</lang>
+                <lang code="mk">Macedonian</lang>
+                <lang code="mh">Marshallese</lang>
+                <lang code="ml">Malayalam</lang>
+                <lang code="mi">Maori</lang>
+                <lang code="mr">Marathi</lang>
+                <lang code="ms">Malay</lang>
+                <lang code="mg">Malagasy</lang>
+                <lang code="mo">Moldavian</lang>
+                <lang code="mn">Mongolian</lang>
+                <lang code="na">Nauru</lang>
+                <lang code="nv">Navajo; Navaho</lang>
+                <lang code="nr">South Ndebele</lang>
+                <lang code="nd">North Ndebele</lang>
+                <lang code="ng">Ndonga</lang>
+                <lang code="ne">Nepali</lang>
+                <lang code="nn">Norwegian Nynorsk</lang>
+                <lang code="nb">Norvégien Bokmål</lang>
+                <lang code="no">Norwegian</lang>
+                <lang code="ny">Chichewa; Chewa; Nyanja</lang>
+                <lang code="oc">Occitan (post 1500); Provençal</lang>
+                <lang code="oj">Ojibwa</lang>
+                <lang code="or">Oriya</lang>
+                <lang code="om">Oromo</lang>
+                <lang code="os">Ossetian; Ossetic</lang>
+                <lang code="pa">Panjabi; Punjabi</lang>
+                <lang code="fa">Persian</lang>
+                <lang code="pi">Pali</lang>
+                <lang code="ps">Pushto</lang>
+                <lang code="qu">Quechua</lang>
+                <lang code="rm">Raeto-Romance</lang>
+                <lang code="rn">Rundi</lang>
+                <lang code="ru">Russian</lang>
+                <lang code="sg">Sango</lang>
+                <lang code="sa">Sanskrit</lang>
+                <lang code="sr">Serbian</lang>
+                <lang code="si">Sinhala; Sinhalese</lang>
+                <lang code="se">Northern Sami</lang>
+                <lang code="sm">Samoan</lang>
+                <lang code="sn">Shona</lang>
+                <lang code="sd">Sindhi</lang>
+                <lang code="so">Somali</lang>
+                <lang code="st">Sotho, Southern</lang>
+                <lang code="sc">Sardinian</lang>
+                <lang code="ss">Swati</lang>
+                <lang code="su">Sundanese</lang>
+                <lang code="sw">Swahili</lang>
+                <lang code="ty">Tahitian</lang>
+                <lang code="ta">Tamil</lang>
+                <lang code="tt">Tatar</lang>
+                <lang code="te">Telugu</lang>
+                <lang code="tg">Tajik</lang>
+                <lang code="tl">Tagalog</lang>
+                <lang code="th">Thai</lang>
+                <lang code="bo">Tibetan</lang>
+                <lang code="ti">Tigrinya</lang>
+                <lang code="to">Tonga (Tonga Islands)</lang>
+                <lang code="tn">Tswana</lang>
+                <lang code="ts">Tsonga</lang>
+                <lang code="tk">Turkmen</lang>
+                <lang code="tr">Turkish</lang>
+                <lang code="tw">Twi</lang>
+                <lang code="ug">Uighur; Uyghur</lang>
+                <lang code="uk">Ukrainian</lang>
+                <lang code="ur">Urdu</lang>
+                <lang code="uz">Uzbek</lang>
+                <lang code="ve">Venda</lang>
+                <lang code="vi">Vietnamese</lang>
+                <lang code="vo">Volapük</lang>
+                <lang code="cy">Welsh</lang>
+                <lang code="wa">Walloon</lang>
+                <lang code="wo">Wolof</lang>
+                <lang code="xh">Xhosa</lang>
+                <lang code="yi">Yiddish</lang>
+                <lang code="yo">Yoruba</lang>
+                <lang code="za">Zhuang; Chuang</lang>
+                <lang code="zu">Zulu</lang>
             </ISO_639-1_EU-Order>
     </config>
 </alfresco-config>

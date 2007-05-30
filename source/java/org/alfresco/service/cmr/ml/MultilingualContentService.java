@@ -164,12 +164,20 @@ public interface MultilingualContentService
     NodeRef getPivotTranslation(NodeRef nodeRef);
     
     /**
-     * Make a empty translation out of an existing document.  The necessary translation structures will be created
-     * as necessary.
+     * Make a empty translation out of an existing pivot translation.  The given translation or
+     * container will be used to find the pivot translation.  Failing this, the given translation
+     * will be used directly.  If no name is provided or if the name is the same as the original's
+     * then the locale will be added to the main portion of the filename, i.e.
+     * <pre>
+     *    Document.txt --> Document_fr.txt
+     * </pre>
+     * <p/>
+     * The necessary translation structures will be created as necessary.
      * 
      * @param translationOfNodeRef      An existing <b>cm:mlDocument</b> or <b>cm:mlContainer</b>
-     * @param name                         The name of the translation to create
-     * @return Returns                     the new created <b>cm:mlEmptyTranslation</b> 
+     * @param name                      The name of the file to create, or <tt>null</tt> to use
+     *                                  the default naming convention.
+     * @return Returns                  the new created <b>cm:mlEmptyTranslation</b> 
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationOfNodeRef", "name", "locale"})
     NodeRef addEmptyTranslation(NodeRef translationOfNodeRef, String name, Locale locale);

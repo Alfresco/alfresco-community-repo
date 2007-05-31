@@ -32,8 +32,6 @@ public interface AuthenticationComponent
     /**
      * Authenticate
      * 
-     * @param userName
-     * @param password
      * @throws AuthenticationException
      */     
     public void authenticate(String userName, char[] password) throws AuthenticationException;
@@ -71,70 +69,53 @@ public interface AuthenticationComponent
     
     /**
      * 
-     * @return
      * @throws AuthenticationException
      */
     public Authentication getCurrentAuthentication() throws AuthenticationException;
     
     /**
      * Set the system user as the current user.
-     * 
-     * @return
      */
     public Authentication setSystemUserAsCurrentUser();
     
     
     /**
      * Set the guest user as the current user.
-     * 
-     * @return
      */
     public Authentication setGuestUserAsCurrentUser();
     
     
     /**
      * True if Guest user authentication is allowed, false otherwise
-     * 
-     * @return
      */
     public boolean guestUserAuthenticationAllowed();
     
     
     /**
      * Get the name of the system user
-     * 
-     * @return
      */
     public String getSystemUserName();
     
     
     /**
      * Get the name of the guest user
-     * 
-     * @return
      */
     public String getGuestUserName();
     
     /**
      * Get the current user name.
      * 
-     * @return
      * @throws AuthenticationException
      */
     public String getCurrentUserName() throws AuthenticationException;
     
     /**
      * Get the enum that describes NTLM integration
-     * 
-     * @return
      */
     public NTLMMode getNTLMMode();
     
     /**
      * Get the MD4 password hash, as required by NTLM based authentication methods.
-     * 
-     * @param userName
-     * @return
      */
     public String getMD4HashedPassword(String userName);
 }

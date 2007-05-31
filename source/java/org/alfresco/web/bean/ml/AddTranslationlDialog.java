@@ -30,10 +30,8 @@ import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
 import org.alfresco.i18n.I18NUtil;
-import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.UserPreferencesBean;
 import org.alfresco.web.bean.content.AddContentDialog;
 import org.alfresco.web.bean.repository.Node;
@@ -49,7 +47,7 @@ public class AddTranslationlDialog extends AddContentDialog
    private UserPreferencesBean userPreferencesBean;
 
    // the multilingual container where to add this translation
-   protected NodeRef mlContainer;
+   protected NodeRef mlTranslation;
 
    // Locale of the new translation
    private String language;
@@ -67,7 +65,7 @@ public class AddTranslationlDialog extends AddContentDialog
       super.init(parameters);
 
       this.language = null;
-      setMlContainer(this.browseBean.getDocument().getNodeRef());
+      this.mlTranslation = this.browseBean.getDocument().getNodeRef();
       setFileName(null);
       unusedLanguages = null;
    }
@@ -82,7 +80,7 @@ public class AddTranslationlDialog extends AddContentDialog
       outcome = super.finishImpl(context, outcome);
 
       // add a new translation
-      multilingualContentService.addTranslation(this.createdNode, this.mlContainer, I18NUtil.parseLocale(this.language));
+      multilingualContentService.addTranslation(this.createdNode, this.mlTranslation, I18NUtil.parseLocale(this.language));
 
       this.browseBean.setDocument(new Node(this.createdNode));
 
@@ -125,44 +123,6 @@ public class AddTranslationlDialog extends AddContentDialog
    }
 
    /**
-    * @return the Multilingual container where the translation will be associated
-    */
-   public NodeRef getMlContainer()
-   {
-      return mlContainer;
-   }
-
-   /**
-    * Set the Multilingual container where the translation will be associated.
-    *
-    * @param mlContainer mlContainer is a MLDocument, the the MLContainer will
-    * become it's own MLContainer
-    */
-   public void setMlContainer(NodeRef mlContainer)
-   {
-      QName type = null;
-
-      if(mlContainer != null)
-      {
-         type = nodeService.getType(mlContainer);
-
-         if(ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(type))
-         {
-            this.mlContainer = mlContainer;
-         }
-         else if (ContentModel.TYPE_CONTENT.equals(type)
-               && nodeService.hasAspect(mlContainer, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
-         {
-            this.mlContainer = multilingualContentService.getTranslationContainer(mlContainer);
-         }
-         else
-         {
-            this.mlContainer = null;
-         }
-      }
-   }
-
-   /**
     * @param unusedLanguages
     */
    public void setUnusedLanguages(SelectItem[] unusedLanguages)
@@ -180,7 +140,7 @@ public class AddTranslationlDialog extends AddContentDialog
    {
       if(unusedLanguages == null)
       {
-         unusedLanguages = userPreferencesBean.getAvailablesContentFilterLanguages(getMlContainer(), false);
+         unusedLanguages = userPreferencesBean.getAvailablesContentFilterLanguages(this.mlTranslation, false);
       }
 
       return unusedLanguages;

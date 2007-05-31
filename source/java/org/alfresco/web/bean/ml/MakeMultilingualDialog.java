@@ -120,15 +120,13 @@ public class MakeMultilingualDialog extends BaseDialogBean
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      Locale loc = I18NUtil.parseLocale(getLanguage());
+      Locale locale = I18NUtil.parseLocale(getLanguage());
 
       NodeRef nodeRef = this.editableNode.getNodeRef();
 
       // make this node multilingual
-      NodeRef mlContainer = multilingualContentService.makeTranslation(nodeRef, loc);
-
-      // set the local of the current node.
-      nodeService.setProperty(nodeRef, ContentModel.PROP_LOCALE, getLanguage());
+      multilingualContentService.makeTranslation(nodeRef, locale);
+      NodeRef mlContainer = multilingualContentService.getTranslationContainer(nodeRef);
 
       // if the author of the node is not set, set it with the default author name of
       // the new ML Container
@@ -138,7 +136,6 @@ public class MakeMultilingualDialog extends BaseDialogBean
 
       // set properties of the ml container
       nodeService.setProperty(mlContainer, ContentModel.PROP_AUTHOR, getAuthor());
-      nodeService.setProperty(mlContainer, ContentModel.PROP_LOCALE, getLanguage());
 
       return outcome;
    }

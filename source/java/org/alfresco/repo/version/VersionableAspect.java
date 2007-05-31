@@ -198,7 +198,8 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
             
             if (initialVersion == true)
             {
-                Map<NodeRef, NodeRef> versionedNodeRefs = (Map)AlfrescoTransactionSupport.getResource(KEY_VERSIONED_NODEREFS);
+                @SuppressWarnings("unchecked")
+                Map<NodeRef, NodeRef> versionedNodeRefs = (Map<NodeRef, NodeRef>) AlfrescoTransactionSupport.getResource(KEY_VERSIONED_NODEREFS);
                 if (versionedNodeRefs == null || versionedNodeRefs.containsKey(nodeRef) == false)           
                 {
                     // Queue create version action

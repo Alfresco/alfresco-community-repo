@@ -44,7 +44,8 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
     public void testCopy() throws Exception
     {
         NodeRef original = createContent();
-        NodeRef mlContainer = multilingualContentService.makeTranslation(original, Locale.FRENCH);
+        multilingualContentService.makeTranslation(original, Locale.FRENCH);
+        NodeRef mlContainer = multilingualContentService.getTranslationContainer(original);
         
         NodeRef copy = 
                 fileFolderService.copy(original, nodeService.getPrimaryParent(original).getParentRef(), "COPY" + System.currentTimeMillis()).getNodeRef();
@@ -67,7 +68,7 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
         
         NodeRef parent = nodeService.getPrimaryParent(trad1).getParentRef();
         
-        NodeRef mlContainer = multilingualContentService.makeTranslation(trad1, Locale.FRENCH);
+        multilingualContentService.makeTranslation(trad1, Locale.FRENCH);
         multilingualContentService.addTranslation(trad2, trad1, Locale.GERMAN);
         multilingualContentService.addTranslation(trad3, trad1, Locale.ITALIAN);
         
@@ -76,7 +77,7 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
         // Ensure that the deleted node is romoved from its space
         assertEquals("The deleted node must be removed to the space", 2, nodeService.getChildAssocs(parent).size());        
         // Ensure that the mlContainer doesn't keep an association to the deleted node 
-        assertEquals("The deleted node must be removed to the child associations of the mlContainer", 2, multilingualContentService.getTranslations(mlContainer).size());
+        assertEquals("The deleted node must be removed to the child associations of the mlContainer", 2, multilingualContentService.getTranslations(trad1).size());
 
         // retore the deleted node
         NodeRef restoredNode = nodeArchiveService.restoreArchivedNode(nodeArchiveService.getArchivedNode(trad3)).getRestoredNodeRef();
@@ -84,21 +85,17 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
         // Ensure that the restored node is restored to it s original space 
         assertEquals("The restored node must be restaured to the the space", 3, nodeService.getChildAssocs(parent).size());        
         // Ensure that the restored node is not linked to the mlContainer  
-        assertEquals("The restored node would not be restaured to the mlContainer", 2, multilingualContentService.getTranslations(mlContainer).size());
+        assertEquals("The restored node would not be restaured to the mlContainer", 2, multilingualContentService.getTranslations(trad1).size());
         // Ensure that the restored node doesn't keep the mlDocument aspect
         assertFalse("The restored node can't keep the multilingual aspect", nodeService.hasAspect(restoredNode, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
-// DH: The locale is stored on an aspect that is independent of the ML model.
-//     It is therefore not possible to remove the locale just because the node
-//     is being unhooked from the ML structures
-//        // Ensure that the restored node doesn't keep the locale property  
-//        assertNull("The restaured node can't keep the locale property", nodeService.getProperty(restoredNode, ContentModel.PROP_LOCALE));
     }
     
     public void testDeletePivot() throws Exception
     {
         NodeRef pivot  = createContent();
         NodeRef trans1 = createContent();
-        NodeRef mlContainer = multilingualContentService.makeTranslation(pivot, Locale.FRENCH);
+        multilingualContentService.makeTranslation(pivot, Locale.FRENCH);
+        NodeRef mlContainer = multilingualContentService.getTranslationContainer(pivot);
         multilingualContentService.addTranslation(trans1, pivot, Locale.KOREAN);
         
         //nodeService.deleteNode(trans1);
@@ -112,16 +109,13 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
         assertTrue("The last translation would not be removed", nodeService.exists(trans1));
         // Ensure that trans1 has no mlDocument aspect
         assertFalse("The last translation can't keep the multilingual aspect", nodeService.hasAspect(trans1, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
-// DH: Here too, the sys:locale property must be left alone as it is independent of the
-//     ML model
-//        // Ensure that trans1 has no locale propety  
-//        assertNull("The last translation can't keep the locale property", nodeService.getProperty(trans1, ContentModel.PROP_LOCALE));
     }
     
     public void testDeleteLastNode() throws Exception
     {
         NodeRef pivot  = createContent();
-        NodeRef mlContainer = multilingualContentService.makeTranslation(pivot, Locale.FRENCH);
+        multilingualContentService.makeTranslation(pivot, Locale.FRENCH);
+        NodeRef mlContainer = multilingualContentService.getTranslationContainer(pivot);
         
         nodeService.deleteNode(pivot);
         
@@ -139,7 +133,8 @@ public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCase
     {
         NodeRef pivot  = createContent();
         NodeRef trans1 = createContent();
-        NodeRef mlContainer = multilingualContentService.makeTranslation(pivot, Locale.FRENCH);
+        multilingualContentService.makeTranslation(pivot, Locale.FRENCH);
+        NodeRef mlContainer = multilingualContentService.getTranslationContainer(pivot);
         multilingualContentService.addTranslation(trans1, pivot, Locale.KOREAN);
         
         // modify the locale for the translation

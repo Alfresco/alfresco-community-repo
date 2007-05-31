@@ -30,11 +30,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import net.sf.acegisecurity.Authentication;
+
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 
@@ -49,45 +53,30 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
     
     public void testMakeTranslation() throws Exception
     {
-        NodeRef contentNodeRef = createContent();
+        NodeRef chineseContentNodeRef = createContent();
         // Turn the content into a translation with the appropriate structures
-        NodeRef mlContainerNodeRef = multilingualContentService.makeTranslation(contentNodeRef, Locale.CHINESE);
+        multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
+        NodeRef mlContainerNodeRef = multilingualContentService.getTranslationContainer(chineseContentNodeRef);
         // Check it
         assertNotNull("Container not created", mlContainerNodeRef);
         // Check the container child count
         assertEquals("Incorrect number of child nodes", 1, nodeService.getChildAssocs(mlContainerNodeRef).size());
     }
     
-    public void testAddTranslationUsingContainer() throws Exception
-    {
-        // Make a container with a single translation
-        NodeRef chineseContentNodeRef = createContent();
-        NodeRef mlContainerNodeRef = multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
-        // Create some more content
-        NodeRef frenchContentNodeRef = createContent();
-        // Make this a translation of the Chinese
-        NodeRef newMLContainerNodeRef = multilingualContentService.addTranslation(
-                frenchContentNodeRef,
-                mlContainerNodeRef,
-                Locale.FRENCH);
-        // Make sure that the original container was used
-        assertEquals("Existing container should have been used", mlContainerNodeRef, newMLContainerNodeRef);
-        // Check the container child count
-        assertEquals("Incorrect number of child nodes", 2, nodeService.getChildAssocs(mlContainerNodeRef).size());
-    }
-    
     public void testAddTranslationUsingContent() throws Exception
     {
         // Make a container with a single translation
         NodeRef chineseContentNodeRef = createContent();
-        NodeRef mlContainerNodeRef = multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
+        multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
+        NodeRef mlContainerNodeRef = multilingualContentService.getTranslationContainer(chineseContentNodeRef);
         // Create some more content
         NodeRef frenchContentNodeRef = createContent();
         // Make this a translation of the Chinese
-        NodeRef newMLContainerNodeRef = multilingualContentService.addTranslation(
+        multilingualContentService.addTranslation(
                 frenchContentNodeRef,
                 chineseContentNodeRef,
                 Locale.FRENCH);
+        NodeRef newMLContainerNodeRef = multilingualContentService.getTranslationContainer(frenchContentNodeRef);
         // Make sure that the original container was used
         assertEquals("Existing container should have been used", mlContainerNodeRef, newMLContainerNodeRef);
         // Check the container child count
@@ -113,9 +102,9 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         NodeRef nodeRef2 = createContent();
         NodeRef nodeRef3 = createContent();
         
-        NodeRef mlContainerNodeRef = multilingualContentService.makeTranslation(nodeRef1, loc1);
+        multilingualContentService.makeTranslation(nodeRef1, loc1);
         
-        List<Locale> missing = multilingualContentService.getMissingTranslations(mlContainerNodeRef, false); 
+        List<Locale> missing = multilingualContentService.getMissingTranslations(nodeRef1, false); 
         
         // make sure that the missing language list size is correct 
         assertFalse("Missing Translation Size false. " +
@@ -124,13 +113,13 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         // make sure that the missing language list is correct
         assertFalse("Missing Translation List false. Locale " + loc1 + " found", missing.contains(loc1.toString()));
         
-        multilingualContentService.addTranslation(nodeRef2, mlContainerNodeRef, loc2);
-        multilingualContentService.addTranslation(nodeRef3, mlContainerNodeRef, loc3);
+        multilingualContentService.addTranslation(nodeRef2, nodeRef1, loc2);
+        multilingualContentService.addTranslation(nodeRef3, nodeRef1, loc3);
         
+        // Add the missing translations in
+        missing = multilingualContentService.getMissingTranslations(nodeRef1, false);
         
-        missing = multilingualContentService.getMissingTranslations(mlContainerNodeRef, false);
-        
-        //   make sure that the missing language list size is correct 
+        // Make sure that the missing language list size is correct 
         assertFalse("Missing Translation Size false. " +
                 "Real size : " + missing.size() + ". Normal Size " + (langListSize - 3), missing.size() != (langListSize - 3));
         
@@ -141,29 +130,30 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
     public void testGetTranslationForLocale() throws Exception
     {
         NodeRef chineseContentNodeRef = createContent();
-        NodeRef mlContainerNodeRef = multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
+        multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
         NodeRef frenchContentNodeRef = createContent();        
         multilingualContentService.addTranslation(frenchContentNodeRef, chineseContentNodeRef, Locale.FRENCH);
         
         // Get the chinese translation
         assertEquals("Chinese translation should be present",
                 chineseContentNodeRef,
-                multilingualContentService.getTranslationForLocale(mlContainerNodeRef, Locale.CHINESE));
+                multilingualContentService.getTranslationForLocale(chineseContentNodeRef, Locale.CHINESE));
         // Get the french translation
         assertEquals("French translation should be present",
                 frenchContentNodeRef,
-                multilingualContentService.getTranslationForLocale(mlContainerNodeRef, Locale.FRENCH));
+                multilingualContentService.getTranslationForLocale(chineseContentNodeRef, Locale.FRENCH));
         // The Italian should return the pivot
         assertEquals("French translation should be present",
                 chineseContentNodeRef,
-                multilingualContentService.getTranslationForLocale(mlContainerNodeRef, Locale.ITALIAN));
+                multilingualContentService.getTranslationForLocale(chineseContentNodeRef, Locale.ITALIAN));
     }
     
     @SuppressWarnings("unused") 
     public void testGetPivotTranslation() throws Exception
     {
         NodeRef chineseContentNodeRef = createContent();
-        NodeRef mlContainerNodeRef = multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
+        multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
+        NodeRef mlContainerNodeRef = multilingualContentService.getTranslationContainer(chineseContentNodeRef);
         
         //  make sure that the pivot language is set
         assertNotNull("Pivot language not set", nodeService.getProperty(mlContainerNodeRef, ContentModel.PROP_LOCALE));
@@ -189,10 +179,10 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
     public void testCreateEmptyTranslation() throws Exception
     {
         NodeRef chineseContentNodeRef = createContent("Document.txt");
-        NodeRef mlContainerNodeRef = multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
+        multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
         
         // This should use the pivot language
-        NodeRef emptyNodeRef = multilingualContentService.addEmptyTranslation(mlContainerNodeRef, "Document.txt", Locale.CANADA);
+        NodeRef emptyNodeRef = multilingualContentService.addEmptyTranslation(chineseContentNodeRef, "Document.txt", Locale.CANADA);
         
         // Ensure that the empty translation is not null
         assertNotNull("The creation of the empty document failed ", emptyNodeRef);
@@ -215,7 +205,7 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
     public void testCreateEmptyTranslationNames() throws Exception
     {
         NodeRef chineseContentNodeRef = createContent("Document.txt");
-        NodeRef mlContainerNodeRef = multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
+        multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
         NodeRef koreanContentNodeRef = createContent("Document_ko.txt");
         multilingualContentService.addTranslation(koreanContentNodeRef, chineseContentNodeRef, Locale.KOREAN);
         // Create with a null name, and off a non-pivot just to be sure
@@ -227,14 +217,14 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         assertEquals("Empty translation name not generated correctly.", "Document_en_CA.txt", nullName);
         // Create with the same name
         NodeRef sameNameNodeRef = multilingualContentService.addEmptyTranslation(
-                mlContainerNodeRef,
+                chineseContentNodeRef,
                 "Document.txt",
                 Locale.CANADA_FRENCH);
         String sameName = fileFolderService.getFileInfo(sameNameNodeRef).getName();
         assertEquals("Empty translation name not generated correctly.", "Document_fr_CA.txt", sameName);
         // Create with a different name
         NodeRef differentNameNodeRef = multilingualContentService.addEmptyTranslation(
-                mlContainerNodeRef,
+                chineseContentNodeRef,
                 "Document2.txt",
                 Locale.JAPANESE);
         String differentName = fileFolderService.getFileInfo(differentNameNodeRef).getName();
@@ -249,9 +239,11 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         NodeRef frenchContentNodeRef = createContent();
         NodeRef japaneseContentNodeRef = createContent();
         // Add to container
-        NodeRef mlContainerNodeRef = multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
-        multilingualContentService.addTranslation(frenchContentNodeRef, mlContainerNodeRef, Locale.FRENCH);
-        multilingualContentService.addTranslation(japaneseContentNodeRef, mlContainerNodeRef, Locale.JAPANESE);
+        multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
+        multilingualContentService.addTranslation(frenchContentNodeRef, chineseContentNodeRef, Locale.FRENCH);
+        multilingualContentService.addTranslation(japaneseContentNodeRef, chineseContentNodeRef, Locale.JAPANESE);
+
+        NodeRef mlContainerNodeRef = multilingualContentService.getTranslationContainer(chineseContentNodeRef);
         // Check the container child count
         assertEquals("Incorrect number of child nodes", 3, nodeService.getChildAssocs(mlContainerNodeRef).size());
 
@@ -288,6 +280,66 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
                     versionedMLContainerNodeRef);
             // Count the children
             int count = translationsByLocale.size();
+        }
+    }
+    
+    public void testGetTranslationContainerPermissions() throws Exception
+    {
+        // Grant the guest user rights to our working folder
+        PermissionService permissionService = serviceRegistry.getPermissionService();
+        AuthenticationComponent authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        permissionService.setPermission(
+                folderNodeRef,
+                PermissionService.GUEST_AUTHORITY,
+                PermissionService.ALL_PERMISSIONS,
+                true);
+        // Get the current authentication
+        Authentication authentication = authenticationComponent.getCurrentAuthentication();
+        try
+        {
+            authenticationComponent.setGuestUserAsCurrentUser();
+            // Create some documents
+            NodeRef chineseContentNodeRef = createContent();
+            // Make a translation
+            multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
+            multilingualContentService.getTranslationContainer(chineseContentNodeRef);
+        }
+        finally
+        {
+            try { authenticationComponent.setCurrentAuthentication(authentication); } catch (Throwable e) {}
+        }
+    }
+    
+    /**
+     * Check whether non-admin users can take part in ML document manipulation
+     */
+    public void testPermissions() throws Exception
+    {
+        // Grant the guest user rights to our working folder
+        PermissionService permissionService = serviceRegistry.getPermissionService();
+        AuthenticationComponent authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        permissionService.setPermission(
+                folderNodeRef,
+                PermissionService.GUEST_AUTHORITY,
+                PermissionService.ALL_PERMISSIONS,
+                true);
+        // Get the current authentication
+        Authentication authentication = authenticationComponent.getCurrentAuthentication();
+        try
+        {
+            authenticationComponent.setGuestUserAsCurrentUser();
+            // Create some documents
+            NodeRef chineseContentNodeRef = createContent();
+            NodeRef frenchContentNodeRef = createContent();
+            // Do ML work
+            multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
+            multilingualContentService.addTranslation(frenchContentNodeRef, chineseContentNodeRef, Locale.FRENCH);
+            multilingualContentService.addEmptyTranslation(chineseContentNodeRef, null, Locale.JAPANESE);
+            multilingualContentService.createEdition(chineseContentNodeRef);
+        }
+        finally
+        {
+            try { authenticationComponent.setCurrentAuthentication(authentication); } catch (Throwable e) {}
         }
     }
 }

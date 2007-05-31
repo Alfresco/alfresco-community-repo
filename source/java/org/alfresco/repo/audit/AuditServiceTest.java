@@ -52,6 +52,10 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 
+/**
+ * @author Andy Hind
+ */
+@SuppressWarnings("unused")
 public class AuditServiceTest extends BaseSpringTest
 {
 

@@ -43,16 +43,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface MultilingualContentService
 {
     /**
-     * Rename an existing <b>sys:localized</b> by adding locale suffixes to the base name.
-     * Where there are name clashes with existing documents, a numerical naming scheme will be
-     * adopted.
-     *
-     * @param localizedNodeRef          An existing <b>sys:localized</b>
-     */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"localizedNodeRef"})
-    void renameWithMLExtension(NodeRef localizedNodeRef);
-
-    /**
      * Checks whether an existing document is part of a translation group.
      * 
      * @param contentNodeRef            An existing <b>cm:content</b>
@@ -66,12 +56,11 @@ public interface MultilingualContentService
      * creating a <b>cm:mlContainer</b> parent.  If it is already a translation, then nothing is done.
      *
      * @param contentNodeRef            An existing <b>cm:content</b>
-     * @return                          Returns the <b>cm:mlContainer</b> translation parent
      * 
      * @see org.alfresco.model.ContentModel#ASPECT_MULTILINGUAL_DOCUMENT
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"contentNodeRef", "locale"})
-    NodeRef makeTranslation(NodeRef contentNodeRef, Locale locale);
+    void makeTranslation(NodeRef contentNodeRef, Locale locale);
 
     /**
      * Removes the node from any associated translations.  If the translation is the
@@ -87,14 +76,15 @@ public interface MultilingualContentService
      * as necessary.
      *
      * @param newTranslationNodeRef     An existing <b>cm:content</b>
-     * @param translationOfNodeRef      An existing <b>cm:mlDocument</b> or <b>cm:mlContainer</b>
-     * @return                          Returns the <b>cm:mlContainer</b> translation parent
+     * @param translationOfNodeRef      An existing <b>cm:mlDocument</b>
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"newTranslationNodeRef", "translationOfNodeRef", "locale"})
-    NodeRef addTranslation(NodeRef newTranslationNodeRef, NodeRef translationOfNodeRef, Locale locale);
+    void addTranslation(NodeRef newTranslationNodeRef, NodeRef translationOfNodeRef, Locale locale);
 
     /**
+     * Convenience method for super user.
      *
+     * @param translationNodeRef        An existing <b>cm:mlDocument</b>
      * @return                          Returns the <b>cm:mlContainer</b> translation parent
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationNodeRef"})
@@ -139,12 +129,12 @@ public interface MultilingualContentService
     
     
     /**
-     * Given <b>cm:mlDocument</b> or a <b>cm:mlContainer</b>, this node returns each 
-     * locale that the node hasn't a translation yet. 
+     * Given a <b>cm:mlDocument</b> or <b>cm:mlContainer</b> this node returns each locale for
+     * which there isn't a translation. 
      * 
-     * @param localizedNodeRef the <b>cm:mlDocument</b> or the <b>cm:mlContainer</b>
-     * @param addThisNodeLocale if true, add the locale of the given <b>cm:mlDocument</b> in the list.  
-     * @return
+     * @param localizedNodeRef          the <b>cm:mlDocument</b> or <b>cm:mlContainer</b>
+     * @param addThisNodeLocale         if true, add the locale of the given <b>cm:mlDocument</b> in the list.  
+     * @return                          Returns a list of missng locales
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"localizedNodeRef", "addThisNodeLocale"})
     List<Locale> getMissingTranslations(NodeRef localizedNodeRef, boolean addThisNodeLocale);
@@ -155,7 +145,8 @@ public interface MultilingualContentService
      * for the translations is stored on the parent, and the child that has the same locale is the
      * pivot translation.
      * 
-     * @param nodeRef       a <b>cm:mlDocument</b>
+     * @param nodeRef       a <b>cm:mlDocument</b> translation or <b>cm:mlContainer</b> translation
+     *                      container
      * @return              Returns a corresponding <b>cm:mlDocument</b> that matches the locale of
      *                      of the <b>cm:mlContainer</b>.  <tt>null</tt> is returned if there is no
      *                      pivot translation.
@@ -174,7 +165,7 @@ public interface MultilingualContentService
      * <p/>
      * The necessary translation structures will be created as necessary.
      * 
-     * @param translationOfNodeRef      An existing <b>cm:mlDocument</b> or <b>cm:mlContainer</b>
+     * @param translationOfNodeRef      An existing <b>cm:mlDocument</b>
      * @param name                      The name of the file to create, or <tt>null</tt> to use
      *                                  the default naming convention.
      * @return Returns                  the new created <b>cm:mlEmptyTranslation</b> 

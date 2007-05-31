@@ -49,7 +49,8 @@ public class MLContainerTypeTest extends AbstractMultilingualTestCases
         NodeRef trans3 = createContent();
         NodeRef empty  = null;
         
-        NodeRef mlContainer = multilingualContentService.makeTranslation(trans1, Locale.FRENCH);
+        multilingualContentService.makeTranslation(trans1, Locale.FRENCH);
+        NodeRef mlContainer = multilingualContentService.getTranslationContainer(trans1);
         multilingualContentService.addTranslation(trans2, trans1, Locale.GERMAN);
         multilingualContentService.addTranslation(trans3, trans1, Locale.ITALIAN);
         empty = multilingualContentService.addEmptyTranslation(trans1, "EMPTY_" + System.currentTimeMillis(), Locale.JAPANESE);

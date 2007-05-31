@@ -76,6 +76,9 @@
       <property name="versionService">
          <ref bean="versionService" />
       </property>
+      <property name="permissionService">
+         <ref bean="permissionService" />
+      </property>
       <property name="contentFilterLanguagesService">
          <ref bean="contentFilterLanguagesService" />
       </property>

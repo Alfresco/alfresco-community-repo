@@ -108,7 +108,8 @@ public class EmptyTranslationAspectTest extends AbstractMultilingualTestCases {
         
         NodeRef empty = null;
         
-        NodeRef mlContainer = multilingualContentService.makeTranslation(pivot, Locale.FRENCH);
+        multilingualContentService.makeTranslation(pivot, Locale.FRENCH);
+        NodeRef mlContainer = multilingualContentService.getTranslationContainer(pivot);
         multilingualContentService.addTranslation(otherTranslation, pivot, Locale.KOREAN);
         
         empty = multilingualContentService.addEmptyTranslation(pivot, "empty_" + System.currentTimeMillis(), Locale.CHINESE);

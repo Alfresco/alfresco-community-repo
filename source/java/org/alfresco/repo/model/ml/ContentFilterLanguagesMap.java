@@ -212,19 +212,29 @@ public class ContentFilterLanguagesMap implements ContentFilterLanguagesService
             String value = langElem.getValue();
             String def   = langElem.getAttribute(ATTR_DEFAULT);
 
-            orderedLangCodes.add(code);
-
             languagesByCode.put(code, value);
 
-            if(def != null && Boolean.parseBoolean(def))
+            boolean isDefault = (def != null && Boolean.parseBoolean(def));
+            if(isDefault)
             {
                 if(defaultLanguage != null)
                 {
-                    logger.warn("Ignoring default attribute is not unique le last matched will be used");
+                    logger.warn("Content filter default language is not unique: " + code);
                 }
-
-                this.defaultLanguage = code;
+                else
+                {
+                    this.defaultLanguage = code;
+                }
             }
+            if (defaultLanguage == code)
+            {
+                orderedLangCodes.add(0, code);
+            }
+            else
+            {
+                orderedLangCodes.add(code);
+            }
+
         }
 
         // make the collections read-only

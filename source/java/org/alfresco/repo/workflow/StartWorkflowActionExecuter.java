@@ -156,7 +156,6 @@ public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase
         Boolean endStartTask = (Boolean)ruleAction.getParameterValue(PARAM_END_START_TASK);
         String startTaskTransition = (String)ruleAction.getParameterValue(PARAM_START_TASK_TRANSITION);
         endStartTask = (endStartTask == null) ? true : false;
-        startTaskTransition = (startTaskTransition == null) ? "" : startTaskTransition;
         
         // auto-end the start task with the provided transition (if one)
         if (endStartTask)

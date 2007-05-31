@@ -43,6 +43,22 @@
           <value>${index.recovery.mode}</value>
       </property>
    </bean>
+	
+   <bean
+         id="avmIndexRecoveryComponent"
+         class="org.alfresco.repo.node.index.AVMFullIndexRecoveryComponent"
+         parent="indexRecoveryComponentBase">
+      <property name="recoveryMode">
+          <value>${index.recovery.mode}</value>
+      </property>
+	   <property name="avmService">
+          <ref bean="avmService" />
+      </property>
+	   <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
+		   <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
+      </property>
+   </bean>
+	
 
    <!-- Bean that attempts to index content that was previously missing -->
    <bean

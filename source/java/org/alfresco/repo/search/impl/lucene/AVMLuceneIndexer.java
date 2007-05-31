@@ -61,4 +61,42 @@ public interface AVMLuceneIndexer extends LuceneIndexer, BackgroundIndexerAware
      * @param mode
      */
     public void createIndex(String store, IndexMode mode);
+    
+    /**
+     * Get the id of the last snapshot added to the index
+     * @param store 
+     * 
+     * @param mode 
+     *    - IndexMode.SYNCHRONOUS - the last searchable snapshop
+     *    - IndexMode.ASYNCHRONOUS - the last pending snapshot to be indexed. It may or may not be searchable.
+     * @return - the snapshot id
+     */
+    public int getLastIndexedSnapshot(String store);
+    
+    /**
+     * Is the snapshot applied to the index?
+     *      
+     * Is there an entry for any node that was added OR have all the nodes in the transaction been deleted as expected?
+     *      
+     * @param store
+     * @param id
+     * @return - true if applied, false if not
+     */
+    public boolean isSnapshotIndexed(String store, int id);
+    
+    /**
+     * Is snapshot searchable
+     * @param store 
+     * @param id 
+     * @return - true if snapshot has been fully indexed, false if pending or unindexed.
+     */
+    public boolean isSnapshotSearchable(String store, int id);
+
+    /**
+     * Has the index been ceated
+     * 
+     * @param store
+     * @return
+     */
+    public boolean hasIndexBeenCreated(String store);
 }

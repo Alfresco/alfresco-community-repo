@@ -271,6 +271,13 @@
        </property>
     </bean>
     
+	<bean id="avmIndexRecoveryBootstrap" class="org.alfresco.repo.node.index.IndexRecoveryBootstrapBean" >
+       <property name="indexRecoveryComponent">
+           <ref bean="avmIndexRecoveryComponent"/>
+       </property>
+    </bean>
+
+	
     <!-- This component checks the interconnection between the metadata, indexes and content -->
     <bean id="configurationChecker" class="org.alfresco.repo.admin.ConfigurationChecker">
        <property name="strict">

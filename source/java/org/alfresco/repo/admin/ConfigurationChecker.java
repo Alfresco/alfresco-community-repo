@@ -211,10 +211,10 @@ public class ConfigurationChecker extends AbstractLifecycleBean
         for (StoreRef storeRef : storeRefs)
         {
             // TODO: For now, do not check existence of index for AVM stores
-            if (storeRef.getProtocol().equals(StoreRef.PROTOCOL_AVM))
-            {
-                continue;
-            }
+            //if (storeRef.getProtocol().equals(StoreRef.PROTOCOL_AVM))
+            //{
+            //    continue;
+            //}
             
             NodeRef rootNodeRef = null;
             try
@@ -237,7 +237,7 @@ public class ConfigurationChecker extends AbstractLifecycleBean
                 SearchParameters sp = new SearchParameters();
                 sp.addStore(storeRef);
                 sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-                sp.setQuery("ID:" + LuceneQueryParser.escape(rootNodeRef.toString()));
+                sp.setQuery("ISROOT:T");
                 
                 ResultSet results = null;
                 int size = 0;

@@ -39,6 +39,22 @@ import org.alfresco.service.cmr.repository.TemplateImageResolver;
 public interface WebScriptRegistry
 {
     /**
+     * Gets a Web Script Package
+     * 
+     * @param packagePath
+     * @return  web script path representing package
+     */
+    public WebScriptPath getPackage(String packagePath);
+    
+    /**
+     * Gets a Web Script URL
+     * 
+     * @param uriPath
+     * @return  web script path representing uri
+     */
+    public WebScriptPath getUri(String uriPath);
+    
+    /**
      * Gets all Web Scripts
      * 
      * @return  web scripts

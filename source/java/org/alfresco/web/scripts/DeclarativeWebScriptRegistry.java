@@ -83,7 +83,13 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
     // NOTE: The map is sorted by url (descending order)
     private Map<String, WebScript> webscriptsByURL = new TreeMap<String, WebScript>(Collections.reverseOrder());
     
+    // map of web script packages by path
+    private Map<String, Path> packageByPath = new TreeMap<String, Path>();
 
+    // map of web script uris by path
+    private Map<String, Path> uriByPath = new TreeMap<String, Path>();
+
+    
     //
     // Initialisation
     // 
@@ -180,6 +186,10 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
         // clear currently registered services
         webscriptsById.clear();
         webscriptsByURL.clear();
+        packageByPath.clear();
+        packageByPath.put("/", new Path("/"));
+        uriByPath.clear();
+        uriByPath.put("/", new Path("/"));
         
         // register services
         for (WebScriptStore apiStore : storage.getStores())
@@ -287,6 +297,10 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                             logger.debug("Registered Web Script URL '" + uriIdx + "'");
                     }
                 }
+
+                // build path indexes to web script
+                registerPackage(serviceImpl);
+                registerURIs(serviceImpl);
             }
         }
         
@@ -294,6 +308,63 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
             logger.debug("Registered " + webscriptsById.size() + " Web Scripts; " + webscriptsByURL.size() + " URLs");
     }
 
+    /**
+     * Register a Web Script Package
+     * 
+     * @param script
+     */
+    private void registerPackage(WebScript script)
+    {
+        WebScriptDescription desc = script.getDescription();
+        Path path = packageByPath.get("/");
+        String[] parts = desc.getScriptPath().split("/");
+        for (String part : parts)
+        {
+            Path subpath = packageByPath.get(Path.concatPath(path.getPath(), part));
+            if (subpath == null)
+            {
+                subpath = path.createChildPath(part);
+                packageByPath.put(subpath.getPath(), subpath);
+                if (logger.isDebugEnabled())
+                    logger.debug("Registered Web Script package " + subpath.getPath());
+            }      
+            path = subpath;
+        }
+        path.addScript(script);
+    }
+    
+    /**
+     * Register a Web Script URI
+     * 
+     * @param script
+     */
+    private void registerURIs(WebScript script)
+    {
+        WebScriptDescription desc = script.getDescription();
+        for (URI uri : desc.getURIs())
+        {
+            Path path = uriByPath.get("/");
+            String[] parts = uri.getURI().split("/");
+            for (String part : parts)
+            {
+                if (part.indexOf("?") != -1)
+                {
+                    part = part.substring(0, part.indexOf("?"));
+                }
+                Path subpath = uriByPath.get(Path.concatPath(path.getPath(), part));
+                if (subpath == null)
+                {
+                    subpath = path.createChildPath(part);
+                    uriByPath.put(subpath.getPath(), subpath);
+                    if (logger.isDebugEnabled())
+                        logger.debug("Registered Web Script URI " + subpath.getPath());
+                }
+                path = subpath;
+            }
+            path.addScript(script);
+        }
+    }
+    
     /**
      * Create an Web Script Description
      * 
@@ -462,6 +533,22 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRegistry#getPackage(java.lang.String)
+     */
+    public WebScriptPath getPackage(String scriptPackage)
+    {
+        return packageByPath.get(scriptPackage);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRegistry#getUri(java.lang.String)
+     */
+    public WebScriptPath getUri(String scriptUri)
+    {
+        return uriByPath.get(scriptUri);
+    }
+    
+    /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptRegistry#getWebScripts()
      */
     public Collection<WebScript> getWebScripts()
@@ -576,5 +663,5 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
             return service;
         }
     }
-
+    
 }

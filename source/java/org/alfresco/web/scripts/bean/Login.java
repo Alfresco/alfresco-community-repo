@@ -27,30 +27,60 @@ package org.alfresco.web.scripts.bean;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.web.scripts.DeclarativeWebScript;
+import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
 
 
 /**
- * Index of all Web Scripts
+ * Login and establish a ticket
  * 
  * @author davidc
  */
-public class Index extends DeclarativeWebScript
+public class Login extends DeclarativeWebScript
 {
-
+    // dependencies
+    private AuthenticationService authenticationService;
+    
+    /**
+     * @param authenticationService
+     */
+    public void setAuthenticationService(AuthenticationService authenticationService)
+    {
+        this.authenticationService = authenticationService;
+    }
+    
+    
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptResponse res)
     {
-        Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
-        model.put("webscripts",  getWebScriptRegistry().getWebScripts());
-        model.put("rooturl", getWebScriptRegistry().getUri("/"));
-        model.put("rootpackage", getWebScriptRegistry().getPackage("/"));
-        return model;
+        // extract username and password
+        String username = req.getParameter("u");
+        if (username == null || username.length() == 0)
+        {
+            throw new WebScriptException("Username has not been specified");
+        }
+        String password = req.getParameter("pw");
+        
+        // get ticket
+        authenticationService.authenticate(username, password == null ? null : password.toCharArray());
+        
+        // add ticket to model for javascript and template access
+        try
+        {
+            Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
+            model.put("ticket",  authenticationService.getCurrentTicket());
+            return model;
+        }
+        finally
+        {
+            authenticationService.clearCurrentSecurityContext();
+        }
     }
 
 }

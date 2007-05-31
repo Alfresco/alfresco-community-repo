@@ -28,16 +28,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.web.scripts.DeclarativeWebScript;
+import org.alfresco.web.scripts.WebScriptException;
+import org.alfresco.web.scripts.WebScriptPath;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
 
 
 /**
- * Index of all Web Scripts
+ * Index of a Web Script Package
  * 
  * @author davidc
  */
-public class Index extends DeclarativeWebScript
+public class IndexPackage extends DeclarativeWebScript
 {
 
     /* (non-Javadoc)
@@ -46,10 +48,26 @@ public class Index extends DeclarativeWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptResponse res)
     {
+        // extract web script package
+        String packagePath = req.getExtensionPath();
+        if (packagePath == null || packagePath.length() == 0)
+        {
+            packagePath = "/";
+        }
+        if (!packagePath.startsWith("/"))
+        {
+            packagePath = "/" + packagePath;
+        }
+        
+        // locate web script package
+        WebScriptPath path = getWebScriptRegistry().getPackage(packagePath);
+        if (path == null)
+        {
+            throw new WebScriptException("Web Script Package '" + packagePath + "' not found");
+        }
+        
         Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
-        model.put("webscripts",  getWebScriptRegistry().getWebScripts());
-        model.put("rooturl", getWebScriptRegistry().getUri("/"));
-        model.put("rootpackage", getWebScriptRegistry().getPackage("/"));
+        model.put("package",  path);
         return model;
     }
 

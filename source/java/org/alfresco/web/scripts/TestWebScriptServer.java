@@ -35,8 +35,11 @@ import java.io.StringWriter;
 
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigService;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.config.ServerConfigElement;
 import org.springframework.context.ApplicationContext;
@@ -55,6 +58,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 public class TestWebScriptServer
 {
     // dependencies
+    protected AuthenticationService authenticationService;
     protected TransactionService transactionService;
     protected DeclarativeWebScriptRegistry registry;
     protected ConfigService configService;
@@ -105,6 +109,13 @@ public class TestWebScriptServer
         this.configService = configService;
     }
     
+    /**
+     * @param authenticationService
+     */
+    public void setAuthenticationService(AuthenticationService authenticationService)
+    {
+        this.authenticationService = authenticationService;
+    }
     
     /**
      * Sets the Messages resource bundle
@@ -184,7 +195,7 @@ public class TestWebScriptServer
     public MockHttpServletResponse submitRequest(String method, String uri)
         throws IOException
     {
-        MockHttpServletRequest req = createRequest("get", uri);
+        MockHttpServletRequest req = createRequest(method, uri);
         MockHttpServletResponse res = new MockHttpServletResponse();
         
         WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, null, req, res, serverConfig);
@@ -211,7 +222,7 @@ public class TestWebScriptServer
                 {
                     return;
                 }
-                
+                                
                 // execute command in context of currently selected user
                 long startms = System.currentTimeMillis();
                 System.out.print(interpretCommand(line));
@@ -234,6 +245,33 @@ public class TestWebScriptServer
     private String interpretCommand(final String line)
         throws IOException
     {
+        try
+        {
+            if (username.startsWith("TICKET_"))
+            {
+                try
+                {
+                    TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<Object>()
+                    {
+                        public Object doWork() throws Throwable
+                        {
+                            authenticationService.validate(username);
+                            return null;
+                        }
+                    });
+                    return executeCommand(line);
+                }
+                finally
+                {
+                    authenticationService.clearCurrentSecurityContext();
+                }
+            }
+        }
+        catch(AuthenticationException e)
+        {
+            executeCommand("user admin");
+        }
+        
         // execute command in context of currently selected user
         return AuthenticationUtil.runAs(new RunAsWork<String>()
         {
@@ -310,7 +348,10 @@ public class TestWebScriptServer
             out.println("using user " + username);
         }
         
-        else if (command[0].equals("get"))
+        else if (command[0].equals("get") ||
+                 command[0].equals("put") ||
+                 command[0].equals("post") ||
+                 command[0].equals("delete"))
         {
             if (command.length < 2)
             {
@@ -318,11 +359,11 @@ public class TestWebScriptServer
             }
 
             String uri = command[1];
-            MockHttpServletResponse res = submitRequest("get", uri);
+            MockHttpServletResponse res = submitRequest(command[0], uri);
             bout.write(res.getContentAsByteArray());
             out.println();
         }
-        
+
         else if (command[0].equals("reset"))
         {
             registry.reset();
@@ -349,7 +390,7 @@ public class TestWebScriptServer
      */
     private MockHttpServletRequest createRequest(String method, String uri)
     {
-        MockHttpServletRequest req = new MockHttpServletRequest("get", uri);
+        MockHttpServletRequest req = new MockHttpServletRequest(method, uri);
 
         // set parameters
         int iArgIndex = uri.indexOf('?');

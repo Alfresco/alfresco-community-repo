@@ -157,7 +157,7 @@
    </bean>
 
    <!--  Scripted API Service -->
-   <bean id="webscript_default" parent="webscript" class="org.alfresco.web.scripts.DeclarativeWebScript" singleton="false" />
+   <bean id="webscript_default" parent="webscript" class="org.alfresco.web.scripts.DeclarativeWebScript" singleton="false"/>
 
 
    <!--  -->
@@ -165,11 +165,26 @@
    <!--  -->
 
    <!--  List of available Web APIs -->
-   <bean id="webscript.org.alfresco.index.get" class="org.alfresco.web.scripts.bean.Index" parent="webscript" />
+   <bean id="webscript.org.alfresco.index.get" class="org.alfresco.web.scripts.bean.Index" parent="webscript" singleton="false"/>
+   <alias name="webscript.org.alfresco.index.get" alias="webscript.org.alfresco.indexall.get"/>
+   <bean id="webscript.org.alfresco.indexuri.get" class="org.alfresco.web.scripts.bean.IndexURI" parent="webscript" />
+   <bean id="webscript.org.alfresco.indexpackage.get" class="org.alfresco.web.scripts.bean.IndexPackage" parent="webscript" />
 
    <!--  Maintain list of available Web APIs -->
    <bean id="webscript.org.alfresco.index.post" class="org.alfresco.web.scripts.bean.IndexUpdate" parent="webscript" />
 
+   <!--  Authentication APIs -->
+   <bean id="webscript.org.alfresco.repository.login.get" class="org.alfresco.web.scripts.bean.Login" parent="webscript">
+      <property name="authenticationService" ref="authenticationService" />
+   </bean>
+   <bean id="webscript.org.alfresco.repository.loginticket.get" class="org.alfresco.web.scripts.bean.LoginTicket" parent="webscript">
+      <property name="ticketComponent" ref="ticketComponent" />
+   </bean>
+   <bean id="webscript.org.alfresco.repository.loginticket.delete" class="org.alfresco.web.scripts.bean.LoginTicketDelete" parent="webscript">
+      <property name="authenticationService" ref="authenticationService" />
+      <property name="ticketComponent" ref="ticketComponent" />
+   </bean>
+   
    <!--  Retrieve Web Script Description Document -->
    <bean id="webscript.org.alfresco.scriptdescription.get" class="org.alfresco.web.scripts.bean.ServiceDescription" parent="webscript" />
 

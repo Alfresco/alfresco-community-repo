@@ -22,35 +22,49 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.web.scripts.bean;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.alfresco.web.scripts.DeclarativeWebScript;
-import org.alfresco.web.scripts.WebScriptRequest;
-import org.alfresco.web.scripts.WebScriptResponse;
+package org.alfresco.web.scripts;
 
 
 /**
- * Index of all Web Scripts
+ * Web Script Path
  * 
  * @author davidc
  */
-public class Index extends DeclarativeWebScript
+public interface WebScriptPath
 {
-
-    /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
+    /**
+     * Gets the full path
+     * 
+     * @return  path
      */
-    @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptResponse res)
-    {
-        Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
-        model.put("webscripts",  getWebScriptRegistry().getWebScripts());
-        model.put("rooturl", getWebScriptRegistry().getUri("/"));
-        model.put("rootpackage", getWebScriptRegistry().getPackage("/"));
-        return model;
-    }
+    public String getPath();
 
+    /**
+     * Gets the name of the path (last path segment)
+     *  
+     * @return  name
+     */
+    public String getName();
+    
+    /**
+     * Gets the parent path
+     * 
+     * @return  path
+     */
+    public WebScriptPath getParent();
+    
+    /**
+     * Gets the child paths
+     * 
+     * @return  child paths
+     */
+    public WebScriptPath[] getChildren();
+    
+    /**
+     * Gets Web Scripts associated with this path
+     * 
+     * @return  web scripts
+     */
+    public WebScript[] getScripts();
+    
 }

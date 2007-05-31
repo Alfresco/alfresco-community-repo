@@ -12,13 +12,18 @@ This page provides reference documentation for the Alfresco [[HTTP API]].
 
 Generated on ${date?datetime} from
 
- GET <nowiki>http://</nowiki><host>:<port>/alfresco/service/index?format=wiki
+ GET <nowiki>http://</nowiki><host>:<port>/alfresco/service/indexall.mediawiki
 
 = API Reference =
-<#list webscripts as webscript>
+
+The following reference provides a list of all available Web Scripts organised by Web Script package.
+<#macro recursepackage package>
+<#if package.scripts?size &gt; 0>
+== Package: ${package.path} ==
+<#list package.scripts as webscript>
 <#assign desc = webscript.description>
 
-== ${desc.shortName} ==
+=== ${desc.shortName} ===
 
 <#if desc.description??><#if desc.description?ends_with(".")>${desc.description}<#else>${desc.description}.</#if><#else></#if>
 
@@ -29,9 +34,16 @@ Generated on ${date?datetime} from
 Requirements:
 * Authentication: ${desc.requiredAuthentication}
 * Transaction: ${desc.requiredTransaction}
+* Format Style: ${desc.formatStyle}
 
 Definition:
 * Id: ${desc.id}
-* Store: ${desc.storePath}/${desc.descPath}
-
+* Description: ${desc.storePath}/${desc.descPath}
 </#list>
+</#if>
+<#list package.children as childpath>
+  <@recursepackage package=childpath/>
+</#list>
+</#macro>
+    
+<@recursepackage package=rootpackage/>

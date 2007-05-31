@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>All Web Scripts Index</shortname>
+  <description>Retrieve an index of all Web Scripts</description>
+  <url format="html" template="/index/all" />
+  <url format="mediawiki" template="/index/all.mediawiki" />
+</webscript>

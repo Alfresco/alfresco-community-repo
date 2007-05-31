@@ -27,29 +27,65 @@ package org.alfresco.web.scripts.bean;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.TicketComponent;
 import org.alfresco.web.scripts.DeclarativeWebScript;
+import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
 
 
 /**
- * Index of all Web Scripts
+ * Login Ticket
  * 
  * @author davidc
  */
-public class Index extends DeclarativeWebScript
+public class LoginTicket extends DeclarativeWebScript
 {
-
+    // dependencies
+    private TicketComponent ticketComponent;
+    
+    /**
+     * @param ticketComponent
+     */
+    public void setTicketComponent(TicketComponent ticketComponent)
+    {
+        this.ticketComponent = ticketComponent;
+    }
+    
+    
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptResponse res)
     {
+        // retrieve ticket from request and current ticket
+        String ticket = req.getExtensionPath();
+        if (ticket == null && ticket.length() == 0)
+        {
+            throw new WebScriptException("Ticket not specified");
+        }
+        
+        try
+        {
+            String ticketUser = ticketComponent.validateTicket(ticket);
+
+            // do not go any further if tickets are different
+            if (!AuthenticationUtil.getCurrentUserName().equals(ticketUser))
+            {
+                // TODO: 404 error
+                throw new WebScriptException("Ticket not found");
+            }
+        }
+        catch(AuthenticationException e)
+        {
+            throw new WebScriptException("Ticket not found");
+        }
+        
         Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
-        model.put("webscripts",  getWebScriptRegistry().getWebScripts());
-        model.put("rooturl", getWebScriptRegistry().getUri("/"));
-        model.put("rootpackage", getWebScriptRegistry().getPackage("/"));
+        model.put("ticket",  ticket);
         return model;
     }
 

@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>Web Script URI Index</shortname>
+  <description>Provide an index of Web Scripts for the specified Web Script URI</description>
+  <url format="html" template="/index/uri/{uri}" />
+  <format>argument</format>
+</webscript>

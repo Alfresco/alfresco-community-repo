@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Login Ticket</shortname>
+  <description>Login Ticket</description>
+  <url format="xml" template="/login/ticket/{ticket}"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

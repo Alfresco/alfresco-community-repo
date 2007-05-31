@@ -13,7 +13,9 @@ ok> r
 ok> user [<userName>] 
 
     Switch to specified <userName>.  If <userName> is omitted, the currently 
-    selected user is shown. 
+    selected user is shown.
+    
+    A ticket may be specified instead of username. 
 
 ok> quit | exit
 
@@ -31,6 +33,27 @@ ok> get <path>
     <path> URL relative to /alfresco/service
     
     e.g. get /blog/category?c=Web20
+
+ok> put <path>
+
+    Issue a HTTP PUT request to the Web Script located at <path>.  The response
+    is dumped to the console.
+    
+    <path> URL relative to /alfresco/service
+    
+ok> post <path>
+
+    Issue a HTTP POST request to the Web Script located at <path>.  The response
+    is dumped to the console.
+    
+    <path> URL relative to /alfresco/service
+
+ok> delete <path>
+
+    Issue a HTTP DELETE request to the Web Script located at <path>.  The response
+    is dumped to the console.
+    
+    <path> URL relative to /alfresco/service
     
 ## 
 ##  end 

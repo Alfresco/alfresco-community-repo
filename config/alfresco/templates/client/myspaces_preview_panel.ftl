@@ -1,20 +1,22 @@
 <#assign isImage=node.isDocument && (node.mimetype = "image/gif" || node.mimetype = "image/jpeg" || node.mimetype = "image/png")>
-<table width="100%" cellpadding="2" cellspacing="0" border="0">
+<table width="100%" cellpadding="2" cellspacing="0" border="0" onclick="event.cancelBubble=true;">
    <tr>
       <td>
          <div class="spacePreview">
       	   <#if node.isDocument && !isImage>
-      	      <#assign c=cropContent(node.properties.content, 512)>
+      	      <#assign c=cropContent(node.properties.content, 2048)>
       	      <#if c?length != 0>
-                  ${c?html?replace('$', '<br>', 'rm')}<#if (c?length >= 512)>...</#if>
+                  ${c?html?replace('$', '<br>', 'rm')}<#if (c?length >= 2048)>...</#if>
+               <#else>
+                  Sorry, no preview currently available for this document.
       	      </#if>
             <#elseif isImage>
-	            <center><a href="${url.context}${node.url}" target="new" onclick="event.cancelBubble=true;"><img src="${url.context}${node.url}" height=140 border=0></a></center>
+	            <center><a href="${url.context}${node.url}" target="new"><img src="${url.context}${node.url}" height=140 border=0></a></center>
 	         <#elseif node.isContainer>
 	            <#list node.children?sort_by('name') as c>
 	               <#--if (c_index >= 25)><div>...</div><#break></#if>-->
 	               <#if c.isDocument || c.isContainer>
-	               <div style="padding:2px"><a class="childSpaceLink" onclick="event.cancelBubble=true;" href="${url.context}${c.url}" target="new"><img class="spaceImageIcon" src="${url.context}${c.icon16}" border="0">${c.name}</a></div>
+	               <div style="padding:2px"><a class="childSpaceLink" href="${url.context}${c.url}" target="new"><img class="spaceImageIcon" src="${url.context}${c.icon16}" border="0">${c.name}</a></div>
 	               </#if>
 	            </#list>
       	   </#if>

@@ -20,17 +20,24 @@
 
 <#-- get the path location from the passed in args -->
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
-<#-- resolve the path (from Company Home) into a node or fall back to userhome-->
-<#if path?starts_with("/Company Home")>
-   <#if path?length=13>
-      <#assign home=companyhome>
-   <#elseif companyhome.childByNamePath[args.p[14..]]?exists>
-      <#assign home=companyhome.childByNamePath[args.p[14..]]>
+
+<#-- see if lucene query specified - this overrides any path argument -->
+<#if !args.q?exists || args.q?length=0>
+   <#assign query="">
+   <#-- resolve the path (from Company Home) into a node or fall back to userhome-->
+   <#if path?starts_with("/Company Home")>
+      <#if path?length=13>
+         <#assign home=companyhome>
+      <#elseif companyhome.childByNamePath[args.p[14..]]?exists>
+         <#assign home=companyhome.childByNamePath[args.p[14..]]>
+      <#else>
+         <#assign home=userhome>
+      </#if>
    <#else>
       <#assign home=userhome>
    </#if>
 <#else>
-   <#assign home=userhome>
+   <#assign query=args.q>
 </#if>
 
 <table border=0 cellspacing=0 cellpadding=0 class="docTable">
@@ -38,13 +45,13 @@
    <td height=40>
       <table border=0 cellspacing=8 cellpadding=0 width=100%>
          <tr>
-            <th><a class="docfilterLink <#if filter=0>docfilterLinkSelected</#if>" href="${scripturl("?f=0&p=${path}")}">All Items</a></th>
-            <th><a class="docfilterLink <#if filter=1>docfilterLinkSelected</#if>" href="${scripturl("?f=1&p=${path}")}">Word Documents</a></th>
-            <th><a class="docfilterLink <#if filter=2>docfilterLinkSelected</#if>" href="${scripturl("?f=2&p=${path}")}">HTML Documents</a></th>
-            <th><a class="docfilterLink <#if filter=3>docfilterLinkSelected</#if>" href="${scripturl("?f=3&p=${path}")}">PDF Documents</a></th>
-            <th><a class="docfilterLink <#if filter=4>docfilterLinkSelected</#if>" href="${scripturl("?f=4&p=${path}")}">Recently Modified</a></th>
+            <th><a class="docfilterLink <#if filter=0>docfilterLinkSelected</#if>" href="${scripturl("?f=0&p=${path?url}&q=${query?url}")}">All Items</a></th>
+            <th><a class="docfilterLink <#if filter=1>docfilterLinkSelected</#if>" href="${scripturl("?f=1&p=${path?url}&q=${query?url}")}">Word Documents</a></th>
+            <th><a class="docfilterLink <#if filter=2>docfilterLinkSelected</#if>" href="${scripturl("?f=2&p=${path?url}&q=${query?url}")}">HTML Documents</a></th>
+            <th><a class="docfilterLink <#if filter=3>docfilterLinkSelected</#if>" href="${scripturl("?f=3&p=${path?url}&q=${query?url}")}">PDF Documents</a></th>
+            <th><a class="docfilterLink <#if filter=4>docfilterLinkSelected</#if>" href="${scripturl("?f=4&p=${path?url}&q=${query?url}")}">Recently Modified</a></th>
             <td align=right>
-               <a href="${scripturl("?f=${filter}&p=${path}")}" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px">Refresh</a>
+               <a href="${scripturl("?f=${filter}&p=${path?url}&q=${query?url}")}" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px">Refresh</a>
             </td>
          </tr>
       </table>
@@ -54,7 +61,12 @@
    <div id="docPanel">
       <#assign weekms=1000*60*60*24*7>
       <#assign count=0>
-      <#list home.children?sort_by('name') as d>
+      <#if home?exists>
+         <#assign docs=home.children?sort_by('name')>
+      <#else>
+         <#assign docs=companyhome.childrenByLuceneSearch[args.q]?sort_by('name')>
+      </#if>
+      <#list docs as d>
          <#if d.isDocument>
             <#if (filter=0) ||
                  (filter=1 && d.mimetype="application/msword") ||

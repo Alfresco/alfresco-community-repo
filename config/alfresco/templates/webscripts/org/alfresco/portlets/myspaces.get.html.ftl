@@ -43,7 +43,7 @@
       <#list crumbs as c>
          <#if c?length != 0>
             <#assign bcpath=bcpath+c+"/">
-            <a class="spaceBreadcrumbLink" href="${scripturl("?f=${filter}&p=${bcpath}")}"><img src="${url.context}/images/icons/space-icon-default-16.png" border="0" width="16" height="16" alt="" style="vertical-align:-25%;padding-right:2px">${c}</a>
+            <a class="spaceBreadcrumbLink" href="${scripturl("?f=${filter}&p=${bcpath?url}")}"><img src="${url.context}/images/icons/space-icon-default-16.png" border="0" width="16" height="16" alt="" style="vertical-align:-25%;padding-right:2px">${c}</a>
             <#if c_index < (crumbs?size - 1)>&nbsp;&gt;&nbsp;</#if>
          </#if>
       </#list>
@@ -75,13 +75,13 @@
    <div>
       <table border=0 cellspacing=8 cellpadding=0 width=100%>
          <tr>
-            <th><a class="spacefilterLink <#if filter=0>spacefilterLinkSelected</#if>" href="${scripturl("?f=0&p=${path}")}">All Items</a></th>
-            <th><a class="spacefilterLink <#if filter=1>spacefilterLinkSelected</#if>" href="${scripturl("?f=1&p=${path}")}">Spaces</a></th>
-            <th><a class="spacefilterLink <#if filter=2>spacefilterLinkSelected</#if>" href="${scripturl("?f=2&p=${path}")}">Documents</a></th>
-            <th><a class="spacefilterLink <#if filter=3>spacefilterLinkSelected</#if>" href="${scripturl("?f=3&p=${path}")}">My Items</a></th>
-            <th><a class="spacefilterLink <#if filter=4>spacefilterLinkSelected</#if>" href="${scripturl("?f=4&p=${path}")}">Recently Modified</a></th>
+            <th><a class="spacefilterLink <#if filter=0>spacefilterLinkSelected</#if>" href="${scripturl("?f=0&p=${path?url}")}">All Items</a></th>
+            <th><a class="spacefilterLink <#if filter=1>spacefilterLinkSelected</#if>" href="${scripturl("?f=1&p=${path?url}")}">Spaces</a></th>
+            <th><a class="spacefilterLink <#if filter=2>spacefilterLinkSelected</#if>" href="${scripturl("?f=2&p=${path?url}")}">Documents</a></th>
+            <th><a class="spacefilterLink <#if filter=3>spacefilterLinkSelected</#if>" href="${scripturl("?f=3&p=${path?url}")}">My Items</a></th>
+            <th><a class="spacefilterLink <#if filter=4>spacefilterLinkSelected</#if>" href="${scripturl("?f=4&p=${path?url}")}">Recently Modified</a></th>
             <td align=right>
-               <a href="${scripturl("?f=${filter}&p=${path}")}" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" class="spaceImageIcon">Refresh</a>
+               <a href="${scripturl("?f=${filter}&p=${path?url}")}" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" class="spaceImageIcon">Refresh</a>
             </td>
          </tr>
       </table>

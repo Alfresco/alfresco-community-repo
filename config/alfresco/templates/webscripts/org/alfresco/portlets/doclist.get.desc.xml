@@ -1,7 +1,7 @@
 <webscript>
   <shortname>Document List</shortname>
   <description>Generate the Document list portlet page</description>
-  <url format="html" template="/doclist?f={filter?}&amp;p={path?}"/>
+  <url format="html" template="/doclist?f={filter?}&amp;p={path?}&amp;q={query?}"/>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

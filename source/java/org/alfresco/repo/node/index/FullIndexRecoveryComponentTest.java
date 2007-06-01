@@ -39,9 +39,13 @@ public class FullIndexRecoveryComponentTest extends TestCase
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private FullIndexRecoveryComponent indexRecoverer;
+
+    private AVMFullIndexRecoveryComponent avmIndexRecoveryComponent;
     public void setUp() throws Exception
     {
         indexRecoverer = (FullIndexRecoveryComponent) ctx.getBean("indexRecoveryComponent");
+        avmIndexRecoveryComponent = (AVMFullIndexRecoveryComponent) ctx.getBean("avmIndexRecoveryComponent");
+        
     }
     
     public void testSetup() throws Exception
@@ -60,13 +64,23 @@ public class FullIndexRecoveryComponentTest extends TestCase
                 indexRecoverer.reindex();
             }
         };
+        Thread avmReindexThread = new Thread()
+        {
+            public void run()
+            {
+                avmIndexRecoveryComponent.reindex();
+            }
+        };
         reindexThread.setDaemon(true);
+        avmReindexThread.setDaemon(true);
         reindexThread.start();
+        avmReindexThread.start();
 //        reindexThread.run();
         
         // wait a bit and then terminate
-        wait(10000);
+        wait(20000);
         indexRecoverer.setShutdown(true);
-        wait(10000);
+        avmIndexRecoveryComponent.setShutdown(true);
+        wait(20000);
     }
 }

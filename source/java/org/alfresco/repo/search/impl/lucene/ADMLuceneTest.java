@@ -50,7 +50,6 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryNamespaceComponent;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.NamespaceDAOImpl;
-import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.QueryParameterDefImpl;
@@ -1039,8 +1038,6 @@ public class ADMLuceneTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                // Disable resource management
-                SessionSizeResourceManager.setDisableInTransaction();
                 for (int i = 0; i < 100; i++)
                 {
                     HashSet<ChildAssociationRef> refs = new HashSet<ChildAssociationRef>();

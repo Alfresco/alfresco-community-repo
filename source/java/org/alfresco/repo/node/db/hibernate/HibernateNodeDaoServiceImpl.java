@@ -32,7 +32,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.zip.CRC32;
 
@@ -72,18 +71,13 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.FlushMode;
-import org.hibernate.LockMode;
 import org.hibernate.ObjectDeletedException;
 import org.hibernate.Query;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
-import org.hibernate.exception.LockAcquisitionException;
-import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -95,7 +89,6 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements NodeDaoService, TransactionalDao
 {
     private static final String QUERY_GET_ALL_STORES = "store.GetAllStores";
-    private static final String UPDATE_SET_CHILD_ASSOC_NAME = "node.updateChildAssocName";
     private static final String QUERY_GET_PRIMARY_CHILD_NODE_STATUSES = "node.GetPrimaryChildNodeStatuses";
     private static final String QUERY_GET_CHILD_ASSOCS = "node.GetChildAssocs";
     private static final String QUERY_GET_CHILD_ASSOCS_BY_ALL = "node.GetChildAssocsByAll";
@@ -115,12 +108,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     
     /** a uuid identifying this unique instance */
     private final String uuid;
-    /** the number of lock retries against the parent node to ensure child uniqueness */
-    private int maxLockRetries;
     
     private static TransactionAwareSingleton<Long> serverIdSingleton = new TransactionAwareSingleton<Long>();
     private final String ipAddress;
-    private Random randomWaitTime;
 
     /** used for debugging */
     private Set<String> changeTxnIdSet;
@@ -131,7 +121,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public HibernateNodeDaoServiceImpl()
     {
         this.uuid = GUID.generate();
-        this.maxLockRetries = 20;
         try
         {
             ipAddress = InetAddress.getLocalHost().getHostAddress();
@@ -140,7 +129,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             throw new AlfrescoRuntimeException("Failed to get server IP address", e);
         }
-        randomWaitTime = new Random(System.currentTimeMillis());
         
         changeTxnIdSet = new HashSet<String>(0);
     }
@@ -168,16 +156,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public int hashCode()
     {
         return uuid.hashCode();
-    }
-
-    /**
-     * Set the maximum number of retries when attempting to get a lock on a parent node
-     * 
-     * @param maxLockRetries    the retry count
-     */
-    public void setMaxLockRetries(int maxLockRetries)
-    {
-        this.maxLockRetries = maxLockRetries;
     }
 
     /**
@@ -718,8 +696,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_PRIMARY_CHILD_NODE_STATUSES)
-                    .setLong("parentId", parentNode.getId())
-                    .setFlushMode(FlushMode.MANUAL);
+                    .setLong("parentId", parentNode.getId());
                 return query.list();
             }
         };
@@ -736,7 +713,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOCS)
-                    .setFlushMode(FlushMode.MANUAL)
                     .setLong("parentId", parentNode.getId());
                 return query.list();
             }
@@ -754,7 +730,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_REFS)
-                    .setFlushMode(FlushMode.MANUAL)
                     .setLong("parentId", parentNode.getId());
                 return query.list();
             }
@@ -774,7 +749,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_REFS_BY_QNAME)
-                    .setFlushMode(FlushMode.MANUAL)
                     .setLong("parentId", parentNode.getId())
                     .setParameter("childAssocQName", assocQName);
                 return query.list();

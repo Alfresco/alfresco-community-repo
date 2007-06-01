@@ -34,7 +34,8 @@ import java.util.StringTokenizer;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -44,7 +45,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -69,7 +69,7 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
     protected String baseDir;
 
     // dependencies
-    protected TransactionService transactionService;
+    protected RetryingTransactionHelper retryingTransactionHelper;
     protected SearchService searchService;
     protected NodeService nodeService;
     protected ContentService contentService;
@@ -77,19 +77,15 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
 
     
     /**
-     * Sets transaction service
-     * 
-     * @param transactionService
+     * Sets helper that provides transaction callbacks
      */
-    public void setTransactionService(TransactionService transactionService)
+    public void setTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
     {
-        this.transactionService = transactionService;
+        this.retryingTransactionHelper = retryingTransactionHelper;
     }
     
     /**
      * Sets the search service
-     * 
-     * @param searchService
      */
     public void setSearchService(SearchService searchService)
     {
@@ -98,8 +94,6 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
     
     /**
      * Sets the node service
-     * 
-     * @param nodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -108,8 +102,6 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
 
     /**
      * Sets the content service
-     * 
-     * @param contentService
      */
     public void setContentService(ContentService contentService)
     {
@@ -118,8 +110,6 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
 
     /**
      * Sets the namespace service
-     * 
-     * @param namespaceService
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -128,8 +118,6 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
     
     /**
      * Sets the repo store
-     * 
-     * @param repoStore
      */
     public void setStore(String repoStore)
     {
@@ -188,9 +176,9 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
         {
             public Object doWork() throws Exception
             {
-                return TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<Object>()
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
                 {
-                    public Object doWork() throws Exception
+                    public Object execute() throws Exception
                     {
                         String query = "PATH:\"" + repoPath + "\"";
                         ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
@@ -261,9 +249,9 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
         {
             public String[] doWork() throws Exception
             {
-                return TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<String[]>()
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<String[]>()
                 {
-                    public String[] doWork() throws Exception
+                    public String[] execute() throws Exception
                     {
                         int baseDirLength = baseDir.length() +1;
                         List<String> documentPaths = new ArrayList<String>();
@@ -298,9 +286,9 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
         {
             public InputStream doWork() throws Exception
             {
-                return TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<InputStream>()
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<InputStream>()
                 {
-                    public InputStream doWork() throws Exception
+                    public InputStream execute() throws Exception
                     {
                         NodeRef nodeRef = findNodeRef(documentPath);
                         if (nodeRef == null)
@@ -348,9 +336,9 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
             {
                 public Object doWork() throws Exception
                 {
-                    return TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<Object>()
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
                     {
-                        public Object doWork() throws Exception
+                        public Object execute() throws Exception
                         {
                             RepoTemplateSource source = null;
                             NodeRef nodeRef = findNodeRef(name);
@@ -450,9 +438,9 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
             {
                 public Long doWork() throws Exception
                 {
-                    return TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<Long>()
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Long>()
                     {
-                        public Long doWork() throws Exception
+                        public Long execute() throws Exception
                         {
                             ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
                             return reader.getLastModified();
@@ -474,9 +462,9 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
             {
                 public Reader doWork() throws Exception
                 {
-                    return TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<Reader>()
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Reader>()
                     {
-                        public Reader doWork() throws Exception
+                        public Reader execute() throws Exception
                         {
                             ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
                             return new InputStreamReader(reader.getContentInputStream());
@@ -503,9 +491,9 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
             {
                 public ScriptLocation doWork() throws Exception
                 {
-                    return TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<ScriptLocation>()
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<ScriptLocation>()
                     {
-                        public ScriptLocation doWork() throws Exception
+                        public ScriptLocation execute() throws Exception
                         {
                             ScriptLocation location = null;
                             NodeRef nodeRef = findNodeRef(path);
@@ -551,9 +539,9 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
             {
                 public InputStream doWork() throws Exception
                 {
-                    return TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<InputStream>()
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<InputStream>()
                     {
-                        public InputStream doWork() throws Exception
+                        public InputStream execute() throws Exception
                         {
                             ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
                             return reader.getContentInputStream();

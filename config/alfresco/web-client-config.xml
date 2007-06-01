@@ -226,10 +226,12 @@
                   jsp="/jsp/dashboards/dashlets/opensearch.jsp" />
             <dashlet id="doclist-webscript" label="Document List" description="Document List WebScript"
                   jsp="/jsp/dashboards/dashlets/doclist-webscript.jsp" />
+            <dashlet id="myspaces-webscript" label="My Spaces List" description="My Spaces WebScript"
+                  jsp="/jsp/dashboards/dashlets/myspaces-webscript.jsp" />
             <dashlet id="mytasks-webscript" label="My Tasks" description="My Tasks WebScript"
                   jsp="/jsp/dashboards/dashlets/mytasks-webscript.jsp" />
             <dashlet id="mywebforms-webscript" label="My Web Forms" description="My Web Forms WebScript"
-                  jsp="/jsp/dashboards/dashlets/mywebforms-webscript.jsp" />                  
+                  jsp="/jsp/dashboards/dashlets/mywebforms-webscript.jsp" /> 
          </dashlets>
          <!-- set true allow the Guest user to configure the dashboard view - false by default -->
          <allow-guest-config>false</allow-guest-config>

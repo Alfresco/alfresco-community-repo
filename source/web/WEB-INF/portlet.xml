@@ -63,6 +63,27 @@
             <short-title>Document List</short-title>
         </portlet-info>
     </portlet>
+    
+    <portlet>
+        <description>My Spaces</description>
+        <portlet-name>AlfrescoMySpaces</portlet-name>
+        <portlet-class>org.alfresco.web.scripts.portlet.WebScriptPortlet</portlet-class>
+        
+        <init-param>
+           <name>scriptUrl</name>
+           <value>/alfresco/service/myspaces</value>
+        </init-param>
+
+        <supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>VIEW</portlet-mode>
+        </supports>
+        
+        <portlet-info>
+            <title>My Spaces</title>
+            <short-title>My Spaces</short-title>
+        </portlet-info>
+    </portlet>
 
     <portlet>
         <description>My Web Forms</description>

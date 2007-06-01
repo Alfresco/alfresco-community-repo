@@ -270,10 +270,8 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                     }
                     else                                                        // node created
                     {
-                        // get the primary assoc for the node
-                        ChildAssociationRef primaryAssocRef = nodeService.getPrimaryParent(nodeRef);
                         // reindex
-                        indexer.createNode(primaryAssocRef);
+                        indexer.updateNode(nodeRef);
                     }
                 }
                 // done

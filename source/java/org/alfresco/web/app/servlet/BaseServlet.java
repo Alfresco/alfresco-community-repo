@@ -189,6 +189,15 @@ public abstract class BaseServlet extends HttpServlet
    }
    
    /**
+    * Apply the headers required to disallow caching of the response in the browser
+    */
+   public static void setNoCacheHeaders(HttpServletResponse res)
+   {
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Pragma", "no-cache");
+   }
+   
+   /**
     * Returns true if the specified JSP file is valid for a redirect after login.
     * Only a specific sub-set of the available JSPs are valid to jump directly too after a
     * clean login attempt - e.g. those that do not require JSF bean context setup. This is

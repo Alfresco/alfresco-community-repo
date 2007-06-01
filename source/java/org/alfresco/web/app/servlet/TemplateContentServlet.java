@@ -114,6 +114,8 @@ public class TemplateContentServlet extends BaseTemplateContentServlet
          return;
       }
       
+      setNoCacheHeaders(res);
+      
       processTemplateRequest(req, res, true);
    }
    

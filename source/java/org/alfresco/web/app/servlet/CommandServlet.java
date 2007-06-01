@@ -96,6 +96,8 @@ public class CommandServlet extends BaseServlet
          return;
       }
       
+      setNoCacheHeaders(res);
+      
       uri = uri.substring(req.getContextPath().length());
       StringTokenizer t = new StringTokenizer(uri, "/");
       int tokenCount = t.countTokens();

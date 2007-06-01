@@ -33,7 +33,7 @@
    </bean>
 
    <bean id="webscripts.repostore" class="org.alfresco.web.scripts.RepoStore" abstract="true">
-      <property name="transactionService" ref="transactionComponent" />
+      <property name="transactionHelper" ref="retryingTransactionHelper" />
       <property name="nodeService" ref="nodeService" />
       <property name="namespaceService" ref="namespaceService" />
       <property name="contentService" ref="contentService" />

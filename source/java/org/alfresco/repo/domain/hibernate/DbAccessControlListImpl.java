@@ -51,7 +51,8 @@ public class DbAccessControlListImpl extends LifecycleAdapter
 
     private static Log logger = LogFactory.getLog(DbAccessControlListImpl.class);
 
-    private long id;
+    private Long id;
+    private Long version;
     private Set<DbAccessControlEntry> entries;
     private boolean inherits;
     
@@ -94,7 +95,7 @@ public class DbAccessControlListImpl extends LifecycleAdapter
         return (inherits == false ? 0 : 17);
     }
 
-    public long getId()
+    public Long getId()
     {
         return id;
     }
@@ -103,9 +104,23 @@ public class DbAccessControlListImpl extends LifecycleAdapter
      * Hibernate use
      */
     @SuppressWarnings("unused")
-    private void setId(long id)
+    private void setId(Long id)
     {
         this.id = id;
+    }
+
+    public Long getVersion()
+    {
+        return version;
+    }
+
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setVersion(Long version)
+    {
+        this.version = version;
     }
 
     public Set<DbAccessControlEntry> getEntries()

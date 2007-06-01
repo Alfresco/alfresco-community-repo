@@ -40,8 +40,7 @@ import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -143,9 +142,9 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         endTransaction();
 
         // change property - check status
-        TransactionWork<Object> changePropertiesWork = new TransactionWork<Object>()
+        RetryingTransactionCallback<Object> changePropertiesWork = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork()
+            public Object execute()
             {
                 nodeService.setProperty(n6Ref, ContentModel.PROP_CREATED, new Date());
                 return null;
@@ -154,9 +153,9 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         executeAndCheck(n6Ref, changePropertiesWork);
         
         // add an aspect
-        TransactionWork<Object> addAspectWork = new TransactionWork<Object>()
+        RetryingTransactionCallback<Object> addAspectWork = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork()
+            public Object execute()
             {
                 nodeService.addAspect(n6Ref, ASPECT_QNAME_TEST_MARKER, null);
                 return null;
@@ -165,9 +164,9 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         executeAndCheck(n6Ref, addAspectWork);
         
         // remove an aspect
-        TransactionWork<Object> removeAspectWork = new TransactionWork<Object>()
+        RetryingTransactionCallback<Object> removeAspectWork = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork()
+            public Object execute()
             {
                 nodeService.removeAspect(n6Ref, ASPECT_QNAME_TEST_MARKER);
                 return null;
@@ -176,9 +175,9 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         executeAndCheck(n6Ref, removeAspectWork);
         
         // move the node
-        TransactionWork<Object> moveNodeWork = new TransactionWork<Object>()
+        RetryingTransactionCallback<Object> moveNodeWork = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork()
+            public Object execute()
             {
                 nodeService.moveNode(
                         n6Ref,
@@ -191,9 +190,9 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         executeAndCheck(n6Ref, moveNodeWork);
         
         // delete the node
-        TransactionWork<Object> deleteNodeWork = new TransactionWork<Object>()
+        RetryingTransactionCallback<Object> deleteNodeWork = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork()
+            public Object execute()
             {
                 nodeService.deleteNode(n6Ref);
                 return null;
@@ -202,9 +201,9 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         executeAndCheck(n6Ref, deleteNodeWork);
         
         // check cascade-deleted nodes
-        TransactionWork<Object> checkCascadeWork = new TransactionWork<Object>()
+        RetryingTransactionCallback<Object> checkCascadeCallback = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork()
+            public Object execute()
             {
                 // check n6
                 NodeStatus n6Status = nodeDaoService.getNodeStatus(n6Ref, false);
@@ -221,12 +220,12 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
                 return null;
             }
         };
-        TransactionUtil.executeInUserTransaction(txnService, checkCascadeWork);
+        retryingTransactionHelper.doInTransaction(checkCascadeCallback);
         
         // check node recreation
-        TransactionWork<Object> checkRecreateWork = new TransactionWork<Object>()
+        RetryingTransactionCallback<Object> checkRecreateCallback = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork()
+            public Object execute()
             {
                 properties.put(ContentModel.PROP_STORE_PROTOCOL, n6Ref.getStoreRef().getProtocol());
                 properties.put(ContentModel.PROP_STORE_IDENTIFIER, n6Ref.getStoreRef().getIdentifier());
@@ -242,10 +241,10 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
                 return null;
             }
         };
-        TransactionUtil.executeInUserTransaction(txnService, checkRecreateWork);
+        retryingTransactionHelper.doInTransaction(checkRecreateCallback);
     }
     
-    private void executeAndCheck(NodeRef nodeRef, TransactionWork<Object> work) throws Throwable
+    private void executeAndCheck(NodeRef nodeRef, RetryingTransactionCallback<Object> callback) throws Throwable
     {
         UserTransaction txn = txnService.getUserTransaction();
         txn.begin();
@@ -257,7 +256,7 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         assertNotSame(currentTxnId, currentStatus.getChangeTxnId());
         try
         {
-            work.doWork();
+            callback.execute();
             // get the status
             NodeRef.Status newStatus = nodeService.getNodeStatus(nodeRef);
             assertNotNull(newStatus);
@@ -361,5 +360,21 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         nodeService.getPrimaryParent(n8Ref);
         // Get it again
         nodeService.getPrimaryParent(n8Ref);
+    }
+    
+    /**
+     * It would appear that an issue has arisen with creating and deleting nodes
+     * in the same transaction.
+     */
+    public void testInTransactionCreateAndDelete() throws Exception
+    {
+        // Create a node
+        NodeRef nodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName(NAMESPACE, this.getName()),
+                TYPE_QNAME_TEST_CONTENT).getChildRef();
+        // Delete the node
+        nodeService.deleteNode(nodeRef);
     }
 }

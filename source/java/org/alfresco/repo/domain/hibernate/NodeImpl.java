@@ -56,6 +56,7 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
     private static final long serialVersionUID = -2101330674810283053L;
 
     private Long id;
+    private Long version;
     private Store store;
     private String uuid;
     private QName typeQName;
@@ -177,6 +178,20 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
     private void setId(Long id)
     {
         this.id = id;
+    }
+
+    public Long getVersion()
+    {
+        return version;
+    }
+
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setVersion(Long version)
+    {
+        this.version = version;
     }
 
     public Store getStore()

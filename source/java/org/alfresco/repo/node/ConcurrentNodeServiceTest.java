@@ -27,15 +27,14 @@ package org.alfresco.repo.node;
 import java.io.InputStream;
 import java.util.Map;
 
-import javax.transaction.UserTransaction;
-
 import junit.framework.TestCase;
 
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -78,6 +77,7 @@ public class ConcurrentNodeServiceTest extends TestCase
     private NodeService nodeService;
 
     private TransactionService transactionService;
+    private RetryingTransactionHelper retryingTransactionHelper;
 
     private NodeRef rootNodeRef;
 
@@ -107,23 +107,24 @@ public class ConcurrentNodeServiceTest extends TestCase
 
         nodeService = (NodeService) ctx.getBean("dbNodeService");
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
+        retryingTransactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
         luceneFTS = (FullTextSearchIndexer) ctx.getBean("LuceneFullTextSearchIndexer");
         this.authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
 
         this.authenticationComponent.setSystemUserAsCurrentUser();
 
         // create a first store directly
-        TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<Object>()
+        RetryingTransactionCallback<Object> createRootNodeCallback =  new RetryingTransactionCallback<Object>()
         {
-
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_"
                         + System.currentTimeMillis());
                 rootNodeRef = nodeService.getRootNode(storeRef);
                 return null;
             }
-        });
+        };
+        retryingTransactionHelper.doInTransaction(createRootNodeCallback);
     }
 
     @Override
@@ -140,17 +141,17 @@ public class ConcurrentNodeServiceTest extends TestCase
 
     protected Map<QName, ChildAssociationRef> commitNodeGraph() throws Exception
     {
-        return TransactionUtil.executeInUserTransaction(transactionService,
-                new TransactionUtil.TransactionWork<Map<QName, ChildAssociationRef>>()
-                {
+        RetryingTransactionCallback<Map<QName, ChildAssociationRef>> buildGraphCallback =
+            new RetryingTransactionCallback<Map<QName, ChildAssociationRef>>()
+        {
+            public Map<QName, ChildAssociationRef> execute() throws Exception
+            {
 
-                    public Map<QName, ChildAssociationRef> doWork() throws Exception
-                    {
-
-                        Map<QName, ChildAssociationRef> answer = buildNodeGraph();
-                        return answer;
-                    }
-                });
+                Map<QName, ChildAssociationRef> answer = buildNodeGraph();
+                return answer;
+            }
+        };
+        return retryingTransactionHelper.doInTransaction(buildGraphCallback);
     }
 
     public void xtest1() throws Exception
@@ -231,10 +232,10 @@ public class ConcurrentNodeServiceTest extends TestCase
             }
         }
 
-        TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<Object>()
+        // Test it
+        RetryingTransactionCallback<Object> testCallback = new RetryingTransactionCallback<Object>()
         {
-
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 // There are two nodes at the base level in each test
                 assertEquals(2 * ((COUNT * REPEATS) + 1), nodeService.getChildAssocs(rootNodeRef).size());
@@ -276,9 +277,8 @@ public class ConcurrentNodeServiceTest extends TestCase
 
                 return null;
             }
-
-        });
-
+        };
+        retryingTransactionHelper.doInTransaction(testCallback);
     }
 
     /**

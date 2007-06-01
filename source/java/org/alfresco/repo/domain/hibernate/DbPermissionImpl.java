@@ -48,7 +48,8 @@ public class DbPermissionImpl extends LifecycleAdapter
     
     private static Log logger = LogFactory.getLog(DbPermissionImpl.class);
 
-    private long id;
+    private Long id;
+    private Long version;
     private QName typeQname;
     private String name;
 
@@ -120,7 +121,7 @@ public class DbPermissionImpl extends LifecycleAdapter
         return super.onDelete(session);
     }
 
-    public long getId()
+    public Long getId()
     {
         return id;
     }
@@ -129,9 +130,23 @@ public class DbPermissionImpl extends LifecycleAdapter
      * For Hibernate use
      */
     @SuppressWarnings("unused")
-    private void setId(long id)
+    private void setId(Long id)
     {
         this.id = id;
+    }
+
+    public Long getVersion()
+    {
+        return version;
+    }
+
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setVersion(Long version)
+    {
+        this.version = version;
     }
 
     public QName getTypeQname()

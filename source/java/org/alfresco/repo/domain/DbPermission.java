@@ -38,7 +38,12 @@ public interface DbPermission extends Serializable
     /**
      * @return Returns the automatically assigned ID
      */
-    public long getId();
+    public Long getId();
+    
+    /**
+     * @return  Returns the version number for optimistic locking
+     */
+    public Long getVersion();
     
     /**
      * @return Returns the qualified name of this permission

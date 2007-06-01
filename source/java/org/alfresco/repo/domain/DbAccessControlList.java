@@ -36,8 +36,13 @@ import org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl;
  */
 public interface DbAccessControlList
 {
-    public long getId();
+    public Long getId();
 
+    /**
+     * @return  Returns the version number for optimistic locking
+     */
+    public Long getVersion();
+    
     /**
      * 
      * @return Returns the access control entries for this access control list 

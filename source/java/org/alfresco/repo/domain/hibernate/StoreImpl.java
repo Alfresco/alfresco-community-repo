@@ -44,6 +44,7 @@ public class StoreImpl implements Store, Serializable
     private static final long serialVersionUID = -6135740209100885890L;
 
     private StoreKey key;
+    private Long version;
     private Node rootNode;
 
     private transient ReadLock refReadLock;
@@ -148,6 +149,20 @@ public class StoreImpl implements Store, Serializable
         }
     }
     
+    public Long getVersion()
+    {
+        return version;
+    }
+
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setVersion(Long version)
+    {
+        this.version = version;
+    }
+
     public Node getRootNode()
     {
         return rootNode;

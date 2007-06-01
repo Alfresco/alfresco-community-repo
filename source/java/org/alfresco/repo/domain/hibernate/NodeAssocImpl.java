@@ -44,7 +44,8 @@ public class NodeAssocImpl implements NodeAssoc, Serializable
 {
     private static final long serialVersionUID = 864534636913524867L;
 
-    private long id;
+    private Long id;
+    private Long version;
     private Node source;
     private Node target;
     private QName typeQName;
@@ -149,7 +150,7 @@ public class NodeAssocImpl implements NodeAssoc, Serializable
         return (typeQName == null ? 0 : typeQName.hashCode());
     }
 
-    public long getId()
+    public Long getId()
     {
         return id;
     }
@@ -161,6 +162,20 @@ public class NodeAssocImpl implements NodeAssoc, Serializable
     private void setId(long id)
     {
         this.id = id;
+    }
+
+    public Long getVersion()
+    {
+        return version;
+    }
+
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setVersion(Long version)
+    {
+        this.version = version;
     }
 
     public Node getSource()

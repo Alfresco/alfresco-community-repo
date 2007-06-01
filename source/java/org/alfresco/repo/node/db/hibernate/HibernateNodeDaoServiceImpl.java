@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.zip.CRC32;
 
@@ -72,13 +73,17 @@ import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.FlushMode;
+import org.hibernate.LockMode;
 import org.hibernate.ObjectDeletedException;
 import org.hibernate.Query;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
+import org.hibernate.exception.LockAcquisitionException;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -94,6 +99,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_PRIMARY_CHILD_NODE_STATUSES = "node.GetPrimaryChildNodeStatuses";
     private static final String QUERY_GET_CHILD_ASSOCS = "node.GetChildAssocs";
     private static final String QUERY_GET_CHILD_ASSOCS_BY_ALL = "node.GetChildAssocsByAll";
+    private static final String QUERY_GET_CHILD_ASSOC_BY_NAME = "node.GetChildAssocByShortName";
     private static final String QUERY_GET_CHILD_ASSOC_BY_TYPE_AND_NAME = "node.GetChildAssocByTypeAndName";
     private static final String QUERY_GET_CHILD_ASSOC_REFS = "node.GetChildAssocRefs";
     private static final String QUERY_GET_CHILD_ASSOC_REFS_BY_QNAME = "node.GetChildAssocRefsByQName";
@@ -105,12 +111,16 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_SERVER_BY_IPADDRESS = "server.getServerByIpAddress";
     
     private static Log logger = LogFactory.getLog(HibernateNodeDaoServiceImpl.class);
+    private static Log loggerChildAssoc = LogFactory.getLog(HibernateNodeDaoServiceImpl.class.getName() + ".ChildAssoc");
     
     /** a uuid identifying this unique instance */
     private final String uuid;
+    /** the number of lock retries against the parent node to ensure child uniqueness */
+    private int maxLockRetries;
     
     private static TransactionAwareSingleton<Long> serverIdSingleton = new TransactionAwareSingleton<Long>();
     private final String ipAddress;
+    private Random randomWaitTime;
 
     /** used for debugging */
     private Set<String> changeTxnIdSet;
@@ -121,6 +131,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public HibernateNodeDaoServiceImpl()
     {
         this.uuid = GUID.generate();
+        this.maxLockRetries = 20;
         try
         {
             ipAddress = InetAddress.getLocalHost().getHostAddress();
@@ -129,6 +140,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             throw new AlfrescoRuntimeException("Failed to get server IP address", e);
         }
+        randomWaitTime = new Random(System.currentTimeMillis());
         
         changeTxnIdSet = new HashSet<String>(0);
     }
@@ -156,6 +168,16 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public int hashCode()
     {
         return uuid.hashCode();
+    }
+
+    /**
+     * Set the maximum number of retries when attempting to get a lock on a parent node
+     * 
+     * @param maxLockRetries    the retry count
+     */
+    public void setMaxLockRetries(int maxLockRetries)
+    {
+        this.maxLockRetries = maxLockRetries;
     }
 
     /**
@@ -515,8 +537,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         nodeStatus.getTransaction().setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
         // finally delete the node
         getHibernateTemplate().delete(node);
-        // flush to ensure constraints can't be violated
-        getSession().flush();
+//        // flush to ensure constraints can't be violated
+//        getSession().flush();
         // done
     }
     
@@ -584,13 +606,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public void setChildNameUnique(final ChildAssoc childAssoc, String childName)
     {
         /*
-         * As the Hibernate session is rendered useless when an exception is
-         * bubbled up, we go direct to the database to update the child association.
-         * This preserves the session and client code can catch the resulting
-         * exception and react to it whilst in the same transaction.
-         * 
-         * We ensure that case-insensitivity is maintained by persisting
-         * the lowercase version of the child node name.
+         * Work out if there has been any change in the name
          */
         
         String childNameNew = null;
@@ -621,40 +637,75 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             }
         }
         
+        /*
+         * The parent node is explicitly locked.  A query is then issued to ensure that there
+         * are no duplicates in the index on the child assoc table.  The child association is
+         * then modified, although not directly in the database.  The lock guards against other
+         * transactions modifying the unique index without this transaction's knowledge.
+         */
+        final Node parentNode = childAssoc.getParent();
+//        if (loggerChildAssoc.isDebugEnabled())
+//        {
+//            loggerChildAssoc.debug(
+//                    "Locking parent node for modifying child assoc: \n" +
+//                    "   Parent:      " + parentNode + "\n" +
+//                    "   Child Assoc: " + childAssoc + "\n" +
+//                    "   New Name:    " + childNameNew);
+//        }
+//        for (int i = 0; i < maxLockRetries; i++)
+//        {
+//            try
+//            {
+//                getSession().lock(parentNode, LockMode.UPGRADE);
+//                // The lock was good, proceed
+//                break;
+//            }
+//            catch (LockAcquisitionException e) {}
+//            catch (ConcurrencyFailureException e) {}
+//            // We can retry after a short pause that gets potentially longer each time
+//            try { Thread.sleep(randomWaitTime.nextInt(500 * i + 500)); } catch (InterruptedException ee) {}
+//        }
+        // We have the lock, so issue the query to check
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
-                session.flush();
                 Query query = session
-                    .getNamedQuery(HibernateNodeDaoServiceImpl.UPDATE_SET_CHILD_ASSOC_NAME)
-                    .setString("newName", childNameNewShort)
-                    .setLong("newNameCrc", childNameNewCrc)
-                    .setLong("childAssocId", childAssoc.getId());
-                return (Integer) query.executeUpdate();
+                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_BY_NAME)
+                    .setLong("parentId", parentNode.getId())
+                    .setParameter("childNodeName", childNameNewShort)
+                    .setLong("childNodeNameCrc", childNameNewCrc);
+                return query.uniqueResult();
             }
         };
-        try
+        ChildAssoc childAssocExisting = (ChildAssoc) getHibernateTemplate().execute(callback);
+        if (childAssocExisting != null)
         {
-            Integer count = (Integer) getHibernateTemplate().execute(callback);
-            // refresh the entity directly
-            if (count.intValue() == 0)
+            // There is already an entity
+            if (loggerChildAssoc.isDebugEnabled())
             {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("ChildAssoc not updated: " + childAssoc.getId());
-                }
+                loggerChildAssoc.debug(
+                        "Duplicate child association detected: \n" +
+                        "   Child Assoc:          " + childAssoc + "\n" +
+                        "   Existing Child Assoc: " + childName);
             }
-            else
-            {
-                getHibernateTemplate().refresh(childAssoc);
-            }
+            throw new DuplicateChildNodeNameException(
+                    parentNode.getNodeRef(),
+                    childAssoc.getTypeQName(),
+                    childName);
         }
-        catch (DataIntegrityViolationException e)
+        // We got past that, so we can just update the entity and know that no other transaction
+        // can lock the parent.
+        childAssoc.setChildNodeName(childNameNewShort);
+        childAssoc.setChildNodeNameCrc(childNameNewCrc);
+        
+        // Done
+        if (loggerChildAssoc.isDebugEnabled())
         {
-            NodeRef parentNodeRef = childAssoc.getParent().getNodeRef();
-            QName assocTypeQName = childAssoc.getTypeQName();
-            throw new DuplicateChildNodeNameException(parentNodeRef, assocTypeQName, childName);
+            loggerChildAssoc.debug(
+                    "Updated child association: \n" +
+                    "   Parent:      " + parentNode + "\n" +
+                    "   Child Assoc: " + childAssoc);
         }
     }
     
@@ -868,9 +919,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             return;
         }
         
-        if (logger.isDebugEnabled())
+        if (loggerChildAssoc.isDebugEnabled())
         {
-            logger.debug(
+            loggerChildAssoc.debug(
                     "Deleting parent-child association " + assoc.getId() +
                     (cascade ? " with" : " without") + " cascade:" +
                     assoc.getParent().getId() + " -> " + assoc.getChild().getId());
@@ -894,10 +945,10 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
              * duplicate call will be received to do this
              */
         }
-        
-        // To ensure the validity of the constraint enforcement by the database,
-        // we have to flush here
-        getSession().flush();
+//        
+//        // To ensure the validity of the constraint enforcement by the database,
+//        // we have to flush here.  It is possible to delete and recreate the instance
+//        getSession().flush();
     }
 
     /**
@@ -1117,9 +1168,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     {
         // Remove instance
         getHibernateTemplate().delete(assoc);
-        // Flush to ensure that the database constraints aren't violated if the assoc
-        // is recreated in the transaction
-        getSession().flush();
+//        // Flush to ensure that the database constraints aren't violated if the assoc
+//        // is recreated in the transaction
+//        getSession().flush();
     }
 
     public List<Serializable> getPropertyValuesByActualType(DataTypeDefinition actualDataTypeDefinition)

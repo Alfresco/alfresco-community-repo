@@ -42,18 +42,14 @@ public class DbAccessControlEntryImpl extends LifecycleAdapter
 {
     private static final long serialVersionUID = -418837862334064582L;
 
-    /** The object id */
-    private long id;
-    
+    private Long id;
+    private Long version;
     /** The container of these entries */
     private DbAccessControlList accessControlList;
-
     /** The permission to which this applies (non null - all is a special string) */
     private DbPermission permission;
-
     /** The recipient to which this applies (non null - all is a special string) */
     private DbAuthority authority;
-
     /** Is this permission allowed? */
     private boolean allowed;
 
@@ -113,7 +109,7 @@ public class DbAccessControlEntryImpl extends LifecycleAdapter
         return hashCode;
     }
     
-    public long getId()
+    public Long getId()
     {
         return id;
     }
@@ -121,9 +117,24 @@ public class DbAccessControlEntryImpl extends LifecycleAdapter
     /**
      * For Hibernate use
      */
-    /* package */ void setId(long id)
+    @SuppressWarnings("unused")
+    private void setId(Long id)
     {
         this.id = id;
+    }
+
+    public Long getVersion()
+    {
+        return version;
+    }
+
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setVersion(Long version)
+    {
+        this.version = version;
     }
 
     public DbAccessControlList getAccessControlList()

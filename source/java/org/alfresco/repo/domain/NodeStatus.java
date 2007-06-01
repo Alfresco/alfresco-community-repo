@@ -45,6 +45,11 @@ public interface NodeStatus
      */
     public void setKey(NodeKey key);
     
+    /**
+     * @return  Returns the current version number
+     */
+    public Long getVersion();
+    
     public Node getNode();
     
     public void setNode(Node node);

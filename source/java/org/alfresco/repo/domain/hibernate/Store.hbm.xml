@@ -19,6 +19,8 @@
          <key-property name="protocol" length="50" />
          <key-property name="identifier" length="100" />
       </composite-id>
+      <!-- Optimistic locking -->
+      <version column="version" name="version" type="long" />
       <!-- forward assoc to root node -->
       <many-to-one
             name="rootNode"

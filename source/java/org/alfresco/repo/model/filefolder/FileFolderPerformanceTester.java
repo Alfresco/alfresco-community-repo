@@ -35,8 +35,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -47,7 +47,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
@@ -71,7 +70,7 @@ public class FileFolderPerformanceTester extends TestCase
     
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
-    private TransactionService transactionService;
+    private RetryingTransactionHelper retryingTransactionHelper;
     private AuthenticationComponent authenticationComponent;
     private NodeService nodeService;
     private FileFolderService fileFolderService;
@@ -82,7 +81,7 @@ public class FileFolderPerformanceTester extends TestCase
     public void setUp() throws Exception
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        transactionService = serviceRegistry.getTransactionService();
+        retryingTransactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         nodeService = serviceRegistry.getNodeService();
         fileFolderService = serviceRegistry.getFileFolderService();
@@ -138,9 +137,9 @@ public class FileFolderPerformanceTester extends TestCase
             final int fileCount,
             final double[] dumpPoints)
     {
-        TransactionWork<NodeRef[]> createFoldersWork = new TransactionWork<NodeRef[]>()
+        RetryingTransactionCallback<NodeRef[]> createFoldersCallback = new RetryingTransactionCallback<NodeRef[]>()
         {
-            public NodeRef[] doWork() throws Exception
+            public NodeRef[] execute() throws Exception
             {
                 NodeRef[] folders = new NodeRef[folderCount];
                 for (int i = 0; i < folderCount; i++)
@@ -155,9 +154,7 @@ public class FileFolderPerformanceTester extends TestCase
                 return folders;
             }
         };
-        final NodeRef[] folders = TransactionUtil.executeInUserTransaction(
-                transactionService,
-                createFoldersWork);
+        final NodeRef[] folders = retryingTransactionHelper.doInTransaction(createFoldersCallback);
         // the worker that will load the files into the folders
         Runnable runnable = new Runnable()
         {
@@ -192,9 +189,9 @@ public class FileFolderPerformanceTester extends TestCase
                     for (int j = 0; j < folders.length; j++)
                     {
                         final NodeRef folderRef = folders[j];
-                        TransactionWork<FileInfo> createFileWork = new TransactionWork<FileInfo>()
+                        RetryingTransactionCallback<FileInfo> createFileCallback = new RetryingTransactionCallback<FileInfo>()
                         {
-                            public FileInfo doWork() throws Exception
+                            public FileInfo execute() throws Exception
                             {
                                 FileInfo fileInfo = fileFolderService.create(
                                         folderRef,
@@ -208,7 +205,7 @@ public class FileFolderPerformanceTester extends TestCase
                                 return fileInfo;
                             }
                         };
-                        TransactionUtil.executeInUserTransaction(transactionService, createFileWork);
+                        retryingTransactionHelper.doInTransaction(createFileCallback);
                     }
                 }
                 dumpResults(fileCount);
@@ -257,6 +254,7 @@ public class FileFolderPerformanceTester extends TestCase
         }
     }
     
+    @SuppressWarnings("unused")
     private void readStructure(
             final NodeRef parentNodeRef,
             final int threadCount,
@@ -277,9 +275,9 @@ public class FileFolderPerformanceTester extends TestCase
                     for (ChildAssociationRef childAssociationRef : children)
                     {
                         final NodeRef folderRef = childAssociationRef.getChildRef();
-                        TransactionWork<Object> readWork = new TransactionWork<Object>()
+                        RetryingTransactionCallback<Object> readCallback = new RetryingTransactionCallback<Object>()
                         {
-                            public Object doWork() throws Exception
+                            public Object execute() throws Exception
                             {
                                 // read the child associations of the folder
                                 nodeService.getChildAssocs(folderRef);
@@ -289,7 +287,7 @@ public class FileFolderPerformanceTester extends TestCase
                                 return null;
                             };
                         };
-                        TransactionUtil.executeInUserTransaction(transactionService, readWork, true);
+                        retryingTransactionHelper.doInTransaction(readCallback, true);
                     }
                 }
             }            
@@ -337,16 +335,16 @@ public class FileFolderPerformanceTester extends TestCase
 //    {
 //        buildStructure(rootFolderRef, 4, true, 10, 100, new double[] {0.25, 0.50, 0.75});
 //    }
-    public void test_1_ordered_100_100() throws Exception
-    {
-        buildStructure(
-                rootFolderRef,
-                1,
-                false,
-                100,
-                100,
-                new double[] {0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
-    }
+//    public void test_1_ordered_100_100() throws Exception
+//    {
+//        buildStructure(
+//                rootFolderRef,
+//                1,
+//                false,
+//                100,
+//                100,
+//                new double[] {0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
+//    }
 //    public void test_1_shuffled_10_400() throws Exception
 //    {
 //        buildStructure(
@@ -357,16 +355,16 @@ public class FileFolderPerformanceTester extends TestCase
 //                400,
 //                new double[] {0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
 //    }
-//    public void test_4_shuffled_10_100() throws Exception
-//    {
-//        buildStructure(
-//                rootFolderRef,
-//                4,
-//                true,
-//                10,
-//                100,
-//                new double[] {0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
-//    }
+    public void test_4_shuffled_10_100() throws Exception
+    {
+        buildStructure(
+                rootFolderRef,
+                4,
+                true,
+                10,
+                100,
+                new double[] {0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
+    }
 //    public void test_1_ordered_1_50000() throws Exception
 //    {
 //        buildStructure(

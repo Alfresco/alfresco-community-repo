@@ -41,6 +41,7 @@ public class ServerImpl extends LifecycleAdapter implements Server, Serializable
     private static final long serialVersionUID = 8063452519040344479L;
 
     private Long id;
+    private Long version;
     private String ipAddress;
     
     public ServerImpl()
@@ -75,6 +76,20 @@ public class ServerImpl extends LifecycleAdapter implements Server, Serializable
     public String getIpAddress()
     {
         return ipAddress;
+    }
+
+    public Long getVersion()
+    {
+        return version;
+    }
+
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setVersion(Long version)
+    {
+        this.version = version;
     }
 
     public void setIpAddress(String ipAddress)

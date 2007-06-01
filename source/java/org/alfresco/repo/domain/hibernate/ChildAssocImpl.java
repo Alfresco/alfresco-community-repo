@@ -33,6 +33,7 @@ import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 
 /**
  * @author Derek Hulley
@@ -42,6 +43,7 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
     private static final long serialVersionUID = -8993272236626580410L;
 
     private Long id;
+    private Long version;
     private Node parent;
     private Node child;
     private QName typeQName;
@@ -127,6 +129,32 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
         }
     }
 
+    public boolean equals(Object obj)
+    {
+        if (obj == null)
+        {
+            return false;
+        }
+        else if (obj == this)
+        {
+            return true;
+        }
+        else if (!(obj instanceof ChildAssoc))
+        {
+            return false;
+        }
+        ChildAssoc that = (ChildAssoc) obj;
+        return (EqualsHelper.nullSafeEquals(this.getTypeQName(), that.getTypeQName())
+                && EqualsHelper.nullSafeEquals(this.getQname(), that.getQname())
+                && EqualsHelper.nullSafeEquals(this.getChild(), that.getChild())
+                && EqualsHelper.nullSafeEquals(this.getParent(), that.getParent()));
+    }
+    
+    public int hashCode()
+    {
+        return (child == null ? 0 : child.hashCode());
+    }
+
     public String toString()
     {
         StringBuffer sb = new StringBuffer(32);
@@ -190,6 +218,20 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
     private void setId(Long id)
     {
         this.id = id;
+    }
+
+    public Long getVersion()
+    {
+        return version;
+    }
+
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setVersion(Long version)
+    {
+        this.version = version;
     }
 
     public Node getParent()

@@ -42,6 +42,7 @@ public class TransactionImpl extends LifecycleAdapter implements Transaction, Se
     private static final long serialVersionUID = -8264339795578077552L;
 
     private Long id;
+    private Long version;
     private String changeTxnId;
     private Server server;
     
@@ -72,6 +73,20 @@ public class TransactionImpl extends LifecycleAdapter implements Transaction, Se
     private void setId(Long id)
     {
         this.id = id;
+    }
+
+    public Long getVersion()
+    {
+        return version;
+    }
+
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setVersion(Long version)
+    {
+        this.version = version;
     }
 
     public String getChangeTxnId()

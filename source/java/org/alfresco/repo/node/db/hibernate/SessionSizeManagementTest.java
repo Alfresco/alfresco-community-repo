@@ -136,9 +136,6 @@ public class SessionSizeManagementTest extends BaseNodeServiceTest
         }
         
         createNodes(nodeService, LOAD_COUNT, true);
-        // Check the session size
-        int entityCount = getSession().getStatistics().getEntityCount();
-        assertTrue("Manual flush:  Entity count should be less than " + LOAD_COUNT, entityCount < LOAD_COUNT);
         
         // Now flush integrity to be sure things are not broken
         AlfrescoTransactionSupport.flush();

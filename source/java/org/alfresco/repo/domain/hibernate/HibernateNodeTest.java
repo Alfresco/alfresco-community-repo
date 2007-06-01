@@ -49,6 +49,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
@@ -178,6 +179,8 @@ public class HibernateNodeTest extends BaseSpringTest
            //  Sybase
             // expected
         }
+        // Just clear out any pending changes
+        getSession().clear();
     }
 
     /**
@@ -583,5 +586,59 @@ public class HibernateNodeTest extends BaseSpringTest
         // flush it
         getSession().flush();
         getSession().clear();
+    }
+    
+    public void testDeletesAndFlush() throws Exception
+    {
+        // Create parent node
+        Node parentNode = new NodeImpl();
+        parentNode.setStore(store);
+        parentNode.setUuid(GUID.generate());
+        parentNode.setTypeQName(ContentModel.TYPE_CONTAINER);
+        Long nodeIdOne = (Long) getSession().save(parentNode);
+        // Create child node
+        Node childNode = new NodeImpl();
+        childNode.setStore(store);
+        childNode.setUuid(GUID.generate());
+        childNode.setTypeQName(ContentModel.TYPE_CONTENT);
+        Long nodeIdTwo = (Long) getSession().save(childNode);
+        // Get them into the database
+        getSession().flush();
+        
+        // Now create a loads of associations
+        int assocCount = 1000;
+        List<Long> assocIds = new ArrayList<Long>(assocCount);
+        for (int i = 0; i < assocCount; i++)
+        {
+            ChildAssoc assoc = new ChildAssocImpl();
+            assoc.buildAssociation(parentNode, childNode);
+            assoc.setIsPrimary(false);
+            assoc.setTypeQName(QName.createQName(null, "TYPE"));
+            assoc.setQname(QName.createQName(null, "" + System.nanoTime()));
+            assoc.setChildNodeName(GUID.generate());                        // It must be unique
+            assoc.setChildNodeNameCrc(-1L);
+            Long assocId = (Long) getSession().save(assoc);
+            assocIds.add(assocId);
+        }
+        // Flush and clear the lot
+        getSession().flush();
+        getSession().clear();
+        
+        // Now we delete the entities, flushing and clearing every 100 deletes
+        int count = 0;
+        for (Long assocId : assocIds)
+        {
+            // Load the entity
+            ChildAssoc assoc = (ChildAssoc) getSession().get(ChildAssocImpl.class, assocId);
+            assertNotNull("Entity should exist", assoc);
+            getSession().delete(assoc);
+            // Do we flush and clear
+            if (count % 100 == 0)
+            {
+                getSession().flush();
+                getSession().clear();
+            }
+            count++;
+        }
     }
 }

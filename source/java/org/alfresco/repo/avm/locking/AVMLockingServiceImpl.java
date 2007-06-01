@@ -34,7 +34,7 @@ import org.alfresco.repo.attributes.ListAttributeValue;
 import org.alfresco.repo.attributes.MapAttributeValue;
 import org.alfresco.repo.attributes.StringAttributeValue;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.Callback;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.attributes.AttrQueryEquals;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.avm.AVMExistsException;
@@ -88,7 +88,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
     
     public void init()
     {
-        Callback callback = new Callback()
+        RetryingTransactionCallback callback = new RetryingTransactionCallback()
         {
             public Object execute()
             {

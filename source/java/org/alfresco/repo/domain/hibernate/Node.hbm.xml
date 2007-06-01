@@ -38,6 +38,9 @@
          <!-- the store-unique identifier -->
          <property name="uuid" column="uuid" type="string" length="36" />
       </natural-id>
+      <!-- Optimistic locking -->
+      <version column="version" name="version" type="long" />
+      
       <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" />
       <!-- forward assoc to access control list (optional) -->
       <many-to-one
@@ -115,6 +118,8 @@
          <key-property name="identifier" length="100" />
          <key-property name="guid" length="36" />
       </composite-id>
+      <!-- Optimistic locking -->
+      <version column="version" name="version" type="long" />
       <!-- forward assoc to transaction -->
       <many-to-one
             name="transaction"
@@ -148,13 +153,15 @@
       <id name="id" column="id" type="long" >
          <generator class="native" />
       </id>
+      <!-- Optimistic locking -->
+      <version column="version" name="version" type="long" />
       <!-- forward assoc to parent node -->
       <many-to-one 
             name="parent"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
             lazy="proxy"
             fetch="select"
-            optimistic-lock="true"
+            optimistic-lock="false"
             not-null="true"
             unique-key="UIDX_CHILD_NAME" >
          <column name="parent_node_id" not-null="true" />
@@ -165,7 +172,7 @@
             lazy="proxy"
             fetch="select"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
-            optimistic-lock="true"
+            optimistic-lock="false"
             not-null="true" >
          <column name="child_node_id" not-null="true"/>
       </many-to-one>
@@ -190,6 +197,7 @@
          <many-to-one
                name="source"
                class="org.alfresco.repo.domain.hibernate.NodeImpl"
+               optimistic-lock="false"
                lazy="false"
                fetch="join"
                not-null="true" >
@@ -199,6 +207,7 @@
          <many-to-one
                name="target"
                class="org.alfresco.repo.domain.hibernate.NodeImpl"
+               optimistic-lock="false"
                lazy="false"
                fetch="join"
                not-null="true" >
@@ -206,6 +215,8 @@
          </many-to-one>
          <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" />
       </natural-id>
+      <!-- Optimistic locking -->
+      <version column="version" name="version" type="long" />
    </class>
    
    <query name="store.GetAllStores">
@@ -270,6 +281,17 @@
       order by
          assoc.index,
          assoc.id
+   </query>
+   
+   <query name="node.GetChildAssocByShortName">
+      select
+         assoc
+      from
+         org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
+      where
+         assoc.parent.id = :parentId and
+         assoc.childNodeName = :childNodeName and
+         assoc.childNodeNameCrc = :childNodeNameCrc
    </query>
    
    <query name="node.GetChildAssocByTypeAndName">

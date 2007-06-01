@@ -47,6 +47,7 @@ public class DbAuthorityImpl extends LifecycleAdapter
     
     private static Log logger = LogFactory.getLog(DbAuthorityImpl.class);
 
+    private Long version;
     private String recipient;
     private Set<String> externalKeys;
 
@@ -103,6 +104,20 @@ public class DbAuthorityImpl extends LifecycleAdapter
     {
         deleteEntries();
         return super.onDelete(session);
+    }
+
+    public Long getVersion()
+    {
+        return version;
+    }
+
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setVersion(Long version)
+    {
+        this.version = version;
     }
 
     public String getRecipient()

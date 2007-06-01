@@ -34,6 +34,11 @@ import java.util.Set;
 public interface DbAuthority extends Serializable 
 {
     /**
+     * @return  Returns the version number for optimistic locking
+     */
+    public Long getVersion();
+    
+    /**
      * @return Returns the recipient
      */
     public String getRecipient();

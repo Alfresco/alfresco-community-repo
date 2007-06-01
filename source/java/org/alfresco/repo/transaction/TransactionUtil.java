@@ -37,7 +37,9 @@ import org.apache.commons.logging.LogFactory;
 /**
  * Class containing transactions helper methods and interfaces.
  * 
- * @author Roy Wetherall
+ * @deprecated  Use a {@link RetryingTransactionHelper} instance
+ * 
+ * @author Derek Hulley
  */
 public class TransactionUtil
 {
@@ -48,6 +50,9 @@ public class TransactionUtil
      * <p>
      * This interface encapsulates a unit of work that should be done within a
      * transaction.
+     * 
+     * @deprecated
+     * @see RetryingTransactionHelper.RetryingTransactionCallback
      */
     public interface TransactionWork<Result>
     {
@@ -74,6 +79,8 @@ public class TransactionUtil
      * @param transactionWork the transaction work
      * 
      * @throws java.lang.RuntimeException if the transaction was rolled back
+     * 
+     * @deprecated  Use a {@link RetryingTransactionHelper} instance
      */
     public static <R> R executeInUserTransaction(
             TransactionService transactionService,
@@ -91,6 +98,8 @@ public class TransactionUtil
      * @param readOnly true if the transaction should be read-only
      * 
      * @throws java.lang.RuntimeException if the transaction was rolled back
+     * 
+     * @deprecated  Use a {@link RetryingTransactionHelper} instance
      */
     public static <R> R executeInUserTransaction(
             TransactionService transactionService,
@@ -108,6 +117,8 @@ public class TransactionUtil
      * @param transactionWork the transaction work
      * 
      * @throws java.lang.RuntimeException if the transaction was rolled back
+     * 
+     * @deprecated  Use a {@link RetryingTransactionHelper} instance
      */
     public static <R> R executeInNonPropagatingUserTransaction(
             TransactionService transactionService,
@@ -125,6 +136,8 @@ public class TransactionUtil
      * @param readOnly true if the transaction should be read-only
      * 
      * @throws java.lang.RuntimeException if the transaction was rolled back
+     * 
+     * @deprecated  Use a {@link RetryingTransactionHelper} instance
      */
     public static <R> R executeInNonPropagatingUserTransaction(
             TransactionService transactionService,

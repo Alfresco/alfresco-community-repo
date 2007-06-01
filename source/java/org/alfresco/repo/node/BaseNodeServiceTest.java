@@ -51,6 +51,7 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -140,6 +141,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     protected PolicyComponent policyComponent;
     protected DictionaryService dictionaryService;
     protected TransactionService transactionService;
+    protected RetryingTransactionHelper retryingTransactionHelper;
     protected AuthenticationComponent authenticationComponent;
     protected NodeDaoService nodeDaoService;
     protected NodeService nodeService;
@@ -151,6 +153,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     {
         super.onSetUpInTransaction();
         transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
+        retryingTransactionHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
         policyComponent = (PolicyComponent) applicationContext.getBean("policyComponent");
         authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         

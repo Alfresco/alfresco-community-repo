@@ -19,6 +19,8 @@
       <id name="id" column="id" type="long" >
          <generator class="native" />
       </id>
+      <!-- Optimistic locking -->
+      <version column="version" name="version" type="long" />
       <!-- forward assoc to server IP -->
       <many-to-one
             name="server"
@@ -48,6 +50,8 @@
       <natural-id>
          <property name="ipAddress" column="ip_address" type="string" length="15" not-null="true" />
       </natural-id>
+      <!-- Optimistic locking -->
+      <version column="version" name="version" type="long" />
    </class>
 
    <query name="server.getServerByIpAddress">

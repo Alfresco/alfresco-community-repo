@@ -5247,7 +5247,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            class TxnCallback implements RetryingTransactionHelper.Callback
+            class TxnCallback implements RetryingTransactionHelper.RetryingTransactionCallback
             {
                 public Object execute()
                 {

@@ -38,6 +38,7 @@ import java.util.Locale;
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -251,8 +252,7 @@ public abstract class AbstractContentAccessor implements ContentAccessor
                 // nothing to do
                 return;
             }
-            RetryingTransactionHelper.Callback cb = 
-            new RetryingTransactionHelper.Callback()
+            RetryingTransactionCallback<Object> cb = new RetryingTransactionCallback<Object>()
             {
                 public Object execute()
                 {
@@ -274,7 +274,7 @@ public abstract class AbstractContentAccessor implements ContentAccessor
                 {
                     cb.execute();       
                 }
-                catch (Exception e)
+                catch (Throwable e)
                 {
                     throw new ContentIOException("Failed to executed channel close callbacks", e);
                 }
@@ -347,8 +347,7 @@ public abstract class AbstractContentAccessor implements ContentAccessor
             }
             // We're now doing this in a retrying transaction, which means
             // that the body of execute() must be idempotent.
-            RetryingTransactionHelper.Callback cb =
-            new RetryingTransactionHelper.Callback()
+            RetryingTransactionCallback<Object> cb = new RetryingTransactionCallback<Object>()
             {
                 public Object execute()
                 {
@@ -372,7 +371,7 @@ public abstract class AbstractContentAccessor implements ContentAccessor
                 {
                     cb.execute();
                 }
-                catch (Exception e)
+                catch (Throwable e)
                 {
                     throw new ContentIOException("Failed to executed channel close callbacks", e);
                 }

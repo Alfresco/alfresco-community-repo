@@ -35,8 +35,6 @@ import org.alfresco.service.namespace.QName;
  */
 public interface NodeAssoc
 {
-    public long getId();
-
     /**
      * Wires up the necessary bits on the source and target nodes so that the association
      * is immediately bidirectional.
@@ -52,6 +50,13 @@ public interface NodeAssoc
 
     public AssociationRef getNodeAssocRef();
     
+    public Long getId();
+    
+    /**
+     * @return  Returns the current version number
+     */
+    public Long getVersion();
+
     public Node getSource();
 
     public Node getTarget();

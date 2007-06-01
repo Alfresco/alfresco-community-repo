@@ -52,6 +52,11 @@ public interface Node
      */
     public Long getId();
     
+    /**
+     * @return  Returns the current version number
+     */
+    public Long getVersion();
+    
     public Store getStore();
     
     public void setStore(Store store);

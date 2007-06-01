@@ -33,6 +33,8 @@ public interface Transaction
 {
     public Long getId();
     
+    public Long getVersion();
+    
     public String getChangeTxnId();
     
     public void setChangeTxnId(String changeTxnId);

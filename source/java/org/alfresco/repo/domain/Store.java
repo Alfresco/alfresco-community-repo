@@ -38,6 +38,11 @@ public interface Store
      * @return Returns the key for the class
      */
     public StoreKey getKey();
+    
+    /**
+     * @return  Returns the current version number used for optimistic locking
+     */
+    public Long getVersion();
 
     /**
      * @param key the key uniquely identifying this store

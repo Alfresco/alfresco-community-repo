@@ -59,6 +59,11 @@ public interface ChildAssoc extends Comparable<ChildAssoc>
 
     public Long getId();
 
+    /**
+     * @return  Return the current version number
+     */
+    public Long getVersion();
+    
     public Node getParent();
 
     public Node getChild();

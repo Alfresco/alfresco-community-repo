@@ -35,6 +35,8 @@ public interface Server
 {
     public Long getId();
     
+    public Long getVersion();
+    
     public String getIpAddress();
     
     public void setIpAddress(String ipAddress);

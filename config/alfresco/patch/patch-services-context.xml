@@ -753,4 +753,16 @@
 	        <ref bean="avmNodeDAO"/>
 	    </property>
 	</bean>
+
+    <bean id="patch.db-V2.1-VersionColumns" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.1-VersionColumns</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>53</value></property>
+        <property name="targetSchema"><value>54</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.1/${db.script.dialect}/AlfrescoSchemaUpdate-2.1-VersionColumns.sql</value>
+        </property>
+    </bean>
+	
 </beans>

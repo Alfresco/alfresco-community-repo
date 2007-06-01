@@ -50,6 +50,7 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryNamespaceComponent;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.NamespaceDAOImpl;
+import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.QueryParameterDefImpl;
@@ -59,6 +60,8 @@ import org.alfresco.repo.search.results.ChildAssocRefResultSet;
 import org.alfresco.repo.search.results.DetachedResultSet;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -67,7 +70,6 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MLText;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -120,6 +122,7 @@ public class ADMLuceneTest extends TestCase
     QName aspectWithChildren = QName.createQName(TEST_NAMESPACE, "aspectWithChildren");
 
     TransactionService transactionService;
+    RetryingTransactionHelper retryingTransactionHelper;
 
     NodeService nodeService;
 
@@ -205,6 +208,8 @@ public class ADMLuceneTest extends TestCase
         indexerAndSearcher = (LuceneIndexerAndSearcher) ctx.getBean("admLuceneIndexerAndSearcherFactory");
         ((AbstractLuceneIndexerAndSearcherFactory)indexerAndSearcher).setMaxAtomicTransformationTime(1000000);
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
+        retryingTransactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
+        
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
 
         namespaceDao = (NamespaceDAOImpl) ctx.getBean("namespaceDAO");
@@ -1030,25 +1035,31 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
 
-        UserTransaction tx1 = transactionService.getUserTransaction();
-        tx1.begin();
-        for (int i = 0; i < 100; i++)
+        RetryingTransactionCallback<Object> createAndDeleteCallback = new RetryingTransactionCallback<Object>()
         {
-            HashSet<ChildAssociationRef> refs = new HashSet<ChildAssociationRef>();
-            for (int j = 0; j < i; j++)
+            public Object execute() throws Throwable
             {
-                ChildAssociationRef test = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName
-                        .createQName("{namespace}test"), testSuperType);
-                refs.add(test);
-            }
+                // Disable resource management
+                SessionSizeResourceManager.setDisableInTransaction();
+                for (int i = 0; i < 100; i++)
+                {
+                    HashSet<ChildAssociationRef> refs = new HashSet<ChildAssociationRef>();
+                    for (int j = 0; j < i; j++)
+                    {
+                        ChildAssociationRef test = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName
+                                .createQName("{namespace}test"), testSuperType);
+                        refs.add(test);
+                    }
 
-            for (ChildAssociationRef car : refs)
-            {
-                nodeService.deleteNode(car.getChildRef());
+                    for (ChildAssociationRef car : refs)
+                    {
+                        nodeService.deleteNode(car.getChildRef());
+                    }
+                }
+                return null;
             }
-
-        }
-        tx1.commit();
+        };
+        retryingTransactionHelper.doInTransaction(createAndDeleteCallback);
 
         UserTransaction tx3 = transactionService.getUserTransaction();
         tx3.begin();
@@ -1134,29 +1145,34 @@ public class ADMLuceneTest extends TestCase
             try
             {
                 System.out.println("Start " + this.getName());
-                UserTransaction tx1 = transactionService.getUserTransaction();
-                tx1.begin();
-                for (int i = 0; i < 20; i++)
+                RetryingTransactionCallback<Object> createAndDeleteCallback = new RetryingTransactionCallback<Object>()
                 {
-                    HashSet<ChildAssociationRef> refs = new HashSet<ChildAssociationRef>();
-                    for (int j = 0; j < i; j++)
+                    public Object execute() throws Throwable
                     {
-                        ChildAssociationRef test = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
-                                QName.createQName("{namespace}test_" + getName() + "_" + i + "_" +j), testSuperType);
-                        refs.add(test);
-                    }
+                        for (int i = 0; i < 20; i++)
+                        {
+                            HashSet<ChildAssociationRef> refs = new HashSet<ChildAssociationRef>();
+                            for (int j = 0; j < i; j++)
+                            {
+                                ChildAssociationRef test = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                                        QName.createQName("{namespace}test_" + getName() + "_" + i + "_" +j), testSuperType);
+                                refs.add(test);
+                            }
 
-                    for (ChildAssociationRef car : refs)
-                    {
-                        nodeService.deleteNode(car.getChildRef());
+                            for (ChildAssociationRef car : refs)
+                            {
+                                nodeService.deleteNode(car.getChildRef());
+                            }
+                        }
+                        return null;
                     }
-
-                }
-                tx1.commit();
+                };
+                retryingTransactionHelper.doInTransaction(createAndDeleteCallback);
                 System.out.println("End " + this.getName());
             }
             catch (Exception e)
             {
+                System.out.println("End " + this.getName() + " with error " + e.getMessage());
                 e.printStackTrace();
             }
             finally

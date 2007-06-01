@@ -37,7 +37,12 @@ public interface DbAccessControlEntry
     /**
      * @return Returns the identifier for this object
      */
-    public long getId();
+    public Long getId();
+    
+    /**
+     * @return  Returns the version number for optimistic locking
+     */
+    public Long getVersion();
     
     /**
      * @return Returns the containing access control list

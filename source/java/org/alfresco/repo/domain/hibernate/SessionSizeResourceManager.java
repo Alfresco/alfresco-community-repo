@@ -27,6 +27,7 @@ package org.alfresco.repo.domain.hibernate;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.util.resource.MethodResourceManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,11 +51,50 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  */
 public class SessionSizeResourceManager extends HibernateDaoSupport implements MethodResourceManager
 {
+    /** key to store the local flag to disable resource control during the current transaction */
+    private static final String KEY_DISABLE_IN_TRANSACTION = "SessionSizeResourceManager.DisableInTransaction";
+
     private static Log logger = LogFactory.getLog(SessionSizeResourceManager.class);
     
     /** Default 1000 */
-    private int threshold = 1000;
+    private int threshold;
 
+    /**
+     * Disable resource management for the duration of the current transaction.  This is temporary
+     * and relies on an active transaction.
+     */
+    public static void setDisableInTransaction()
+    {
+        AlfrescoTransactionSupport.bindResource(KEY_DISABLE_IN_TRANSACTION, Boolean.TRUE);
+    }
+
+    /**
+     * @return Returns true if the resource management must be ignored in the current transaction.
+     *      If <code>false</code>, the global setting will take effect.
+     * 
+     * @see #setDisableInTransaction()
+     */
+    public static boolean isDisableInTransaction()
+    {
+        Boolean disableInTransaction = (Boolean) AlfrescoTransactionSupport.getResource(KEY_DISABLE_IN_TRANSACTION);
+        if (disableInTransaction == null || disableInTransaction == Boolean.FALSE)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    
+    /**
+     * Default public constructor required for bean instantiation.
+     */
+    public SessionSizeResourceManager()
+    {
+        this.threshold = 1000;
+    }
+    
     /**
      * Set the {@link Session#clear()} threshold.  If the number of entities and collections in the
      * current session exceeds this number, then the session will be cleared.  Have you read the
@@ -74,6 +114,12 @@ public class SessionSizeResourceManager extends HibernateDaoSupport implements M
             long transactionElapsedTimeNs,
             Method currentMethod)
     {
+        if (isDisableInTransaction())
+        {
+            // Don't do anything
+            return;
+        }
+        // We are go for interfering
         Session session = getSession(false);
         SessionStatistics stats = session.getStatistics();
         int entityCount = stats.getEntityCount();

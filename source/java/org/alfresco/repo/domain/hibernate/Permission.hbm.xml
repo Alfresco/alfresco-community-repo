@@ -19,6 +19,8 @@
            <generator class="native" />
         </id>
 
+        <version column="version" name="version" type="long" />
+
         <set name="entries"
                inverse="true"
                lazy="false" 
@@ -74,6 +76,8 @@
                    not-null="true" /> 
         </natural-id>
         
+        <version column="version" name="version" type="long" />
+
         <property name="allowed" column="allowed" type="boolean" not-null="true" />
 
     </class>
@@ -97,6 +101,8 @@
            <property name="name" type="string" length="100" column="name" />
         </natural-id>
 
+        <version column="version" name="version" type="long" />
+
     </class>
     
     <class
@@ -110,6 +116,8 @@
         optimistic-lock="version" >
         
         <id name="recipient" column="recipient" type="string" length="100" />
+
+        <version column="version" name="version" type="long" />
 
         <set
             name="externalKeys"

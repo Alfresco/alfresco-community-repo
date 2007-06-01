@@ -42,6 +42,7 @@ public class NodeStatusImpl implements NodeStatus, Serializable
     private static final long serialVersionUID = -802747893314715639L;
 
     private NodeKey key;
+    private Long version;
     private Node node;
     private Transaction transaction;
     
@@ -83,6 +84,20 @@ public class NodeStatusImpl implements NodeStatus, Serializable
     public void setKey(NodeKey key)
     {
         this.key = key;
+    }
+
+    public Long getVersion()
+    {
+        return version;
+    }
+
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setVersion(Long version)
+    {
+        this.version = version;
     }
 
     public Node getNode()

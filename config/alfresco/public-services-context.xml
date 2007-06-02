@@ -1302,11 +1302,14 @@
         </property>
         <property name="mappedNames">
             <list>
-                <!-- Takes a value to a collection of webapps -->
-                <!-- (e.g.:   mysite:/www/avm_webapps)        -->
-                <!-- or a specific webapp within a store      -->
-                <!-- (e.g.:   mysite:/www/avm_webapps/ROOT)   -->
-                <value>getBrokenHrefs</value>
+                <value>getBrokenHrefConcordance</value>
+                <value>getHrefConcordance</value>
+
+                <value>getBrokenHrefManifests</value>
+                <value>getHrefManifests</value>
+
+                <value>getBrokenHrefManifest</value>
+                <value>getHrefManifest</value>
             </list>
         </property>
     </bean>
@@ -1319,18 +1322,11 @@
         </property>
         <property name="mappedNames">
             <list>
-                <!-- Takes a value to a collection of webapps -->
-                <!-- (e.g.:   mysite:/www/avm_webapps)        -->
-                <!-- or a specific webapp within a store      -->
-                <!-- (e.g.:   mysite:/www/avm_webapps/ROOT)   -->
-
                 <value>updateHrefInfo</value>
-
             </list>
         </property>
     </bean>
 
-	<!--
     <bean id="LinkValidationService" 
           class="org.springframework.aop.framework.ProxyFactoryBean"
           lazy-init="true">
@@ -1349,6 +1345,5 @@
             </list>
         </property>
     </bean>
-		 -->
 
 </beans>

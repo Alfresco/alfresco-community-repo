@@ -440,7 +440,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
             for (QName aspect : aspects)
             {
                 AspectDefinition aspectDef = getAspect(aspect);
-                if (typeDef == null)
+                if (aspectDef == null)
                 {
                     throw new DictionaryException("d_dictionary.model.err.aspect_not_found", aspect);
                 }

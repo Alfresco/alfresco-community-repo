@@ -188,13 +188,18 @@
    </servlet>
    
    <servlet>
+      <servlet-name>uploadContent</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.UploadContentServlet</servlet-class>
+   </servlet>
+   
+   <servlet>
       <servlet-name>downloadContent</servlet-name>
       <servlet-class>org.alfresco.web.app.servlet.DownloadContentServlet</servlet-class>
    </servlet>
    
    <servlet>
-      <servlet-name>uploadContent</servlet-name>
-      <servlet-class>org.alfresco.web.app.servlet.UploadContentServlet</servlet-class>
+      <servlet-name>downloadRawContent</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.DownloadRawContentServlet</servlet-class>
    </servlet>
    
    <servlet>
@@ -294,6 +299,11 @@
    <servlet-mapping>
       <servlet-name>downloadContent</servlet-name>
       <url-pattern>/d/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>downloadRawContent</servlet-name>
+      <url-pattern>/dr</url-pattern>
    </servlet-mapping>
    
    <servlet-mapping>

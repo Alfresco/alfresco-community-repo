@@ -169,7 +169,7 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
       
       if (logger.isDebugEnabled())
       {
-         logger.debug("Found NodeRef: " + nodeRef.toString());
+         logger.debug("Found NodeRef: " + nodeRef);
          logger.debug("Will use filename: " + filename);
          logger.debug("For property: " + propertyQName);
          logger.debug("With attachment mode: " + attachment);

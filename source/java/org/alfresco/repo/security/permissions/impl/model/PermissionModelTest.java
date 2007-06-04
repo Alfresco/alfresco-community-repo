@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.security.permissions.impl.model;
 
+import java.util.Collections;
 import java.util.Set;
 
 import org.alfresco.repo.security.permissions.PermissionEntry;
@@ -104,12 +105,12 @@ public class PermissionModelTest extends AbstractPermissionTest
         Set<PermissionReference> granters = permissionModelDAO.getGrantingPermissions(new SimplePermissionReference(QName.createQName("sys", "base",
                 namespacePrefixResolver), "ReadProperties"));
         // NB This has gone from 10 to 14 because of the new WCM roles, I believe.
-        assertEquals(16, granters.size());
+        assertEquals(14, granters.size());
         
         granters = permissionModelDAO.getGrantingPermissions(new SimplePermissionReference(QName.createQName("sys", "base",
                 namespacePrefixResolver), "_ReadProperties"));
         // NB 11 to 15 as above.
-        assertEquals(17, granters.size());
+        assertEquals(15, granters.size());
     }
     
     public void testGlobalPermissions()
@@ -118,4 +119,38 @@ public class PermissionModelTest extends AbstractPermissionTest
         assertEquals(5, globalPermissions.size());
     }
     
+    public void testRequiredPermissions()
+    {
+        Set<PermissionReference> required = permissionModelDAO.getRequiredPermissions(new SimplePermissionReference(QName.createQName("sys", "base",
+                namespacePrefixResolver), "Read"), QName.createQName("sys", "base",
+                namespacePrefixResolver), Collections.<QName>emptySet(), On.NODE);
+        assertEquals(3, required.size());
+        
+        required = permissionModelDAO.getRequiredPermissions(new SimplePermissionReference(QName.createQName("sys", "base",
+                namespacePrefixResolver), "ReadContent"), QName.createQName("sys", "base",
+                namespacePrefixResolver), Collections.<QName>emptySet(), On.NODE);
+        assertEquals(1, required.size());
+        
+        required = permissionModelDAO.getRequiredPermissions(new SimplePermissionReference(QName.createQName("sys", "base",
+                namespacePrefixResolver), "_ReadContent"), QName.createQName("sys", "base",
+                namespacePrefixResolver), Collections.<QName>emptySet(), On.NODE);
+        assertEquals(0, required.size());
+        
+        
+        
+        required = permissionModelDAO.getRequiredPermissions(new SimplePermissionReference(QName.createQName("cm", "cmobject",
+                namespacePrefixResolver), "Coordinator"), QName.createQName("cm", "cmobject",
+                        namespacePrefixResolver), Collections.<QName>emptySet(), On.NODE);
+        assertEquals(17, required.size());
+        
+        
+        required = permissionModelDAO.getRequiredPermissions(new SimplePermissionReference(QName.createQName("sys", "base",
+                namespacePrefixResolver), "FullControl"), QName.createQName("sys", "base",
+                        namespacePrefixResolver), Collections.<QName>emptySet(), On.NODE);
+        assertEquals(17, required.size());
+        
+        
+        
+        
+    }
 }

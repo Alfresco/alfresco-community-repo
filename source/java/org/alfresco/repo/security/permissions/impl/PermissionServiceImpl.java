@@ -44,6 +44,7 @@ import org.alfresco.repo.security.permissions.NodePermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
+import org.alfresco.repo.security.permissions.impl.model.PermissionModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -61,7 +62,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * The Alfresco implementation of a permissions service against our APIs for the permissions model and permissions persistence.
+ * The Alfresco implementation of a permissions service against our APIs for the permissions model and permissions
+ * persistence.
  * 
  * @author andyh
  */
@@ -459,8 +461,8 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     }
 
     /**
-     * Key for a cache object is built from all the known Authorities (which can change dynamically so they must all be used) the NodeRef ID and the permission reference itself.
-     * This gives a unique key for each permission test.
+     * Key for a cache object is built from all the known Authorities (which can change dynamically so they must all be
+     * used) the NodeRef ID and the permission reference itself. This gives a unique key for each permission test.
      */
     static Serializable generateKey(Set<String> auths, NodeRef nodeRef, PermissionReference perm, CacheType type)
     {
@@ -694,8 +696,16 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             this.aspectQNames = aspectQNames;
 
             // Set the required node permissions
-            nodeRequirements = modelDAO.getRequiredPermissions(required, typeQName, aspectQNames,
-                    RequiredPermission.On.NODE);
+            if (required.equals(getPermissionReference(ALL_PERMISSIONS)))
+            {
+                nodeRequirements = modelDAO.getRequiredPermissions(getPermissionReference(PermissionService.FULL_CONTROL), typeQName, aspectQNames,
+                        RequiredPermission.On.NODE);
+            }
+            else
+            {
+                nodeRequirements = modelDAO.getRequiredPermissions(required, typeQName, aspectQNames,
+                        RequiredPermission.On.NODE);
+            }
 
             parentRequirements = modelDAO.getRequiredPermissions(required, typeQName, aspectQNames,
                     RequiredPermission.On.PARENT);
@@ -705,7 +715,8 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
             // Find all the permissions that grant the allowed permission
             // All permissions are treated specially.
-            granters = modelDAO.getGrantingPermissions(required);
+            granters = new LinkedHashSet<PermissionReference>(128, 1.0f);
+            granters.addAll(modelDAO.getGrantingPermissions(required));
             granters.add(getAllPermissionReference());
             granters.add(OLD_ALL_PERMISSIONS_REFERENCE);
         }
@@ -747,7 +758,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
             // Check the required permissions but not for sets they rely on
             // their underlying permissions
-            if (required.equals(getPermissionReference(ALL_PERMISSIONS)) || modelDAO.checkPermission(required))
+            if (modelDAO.checkPermission(required))
             {
                 if (parentRequirements.contains(required))
                 {
@@ -861,17 +872,14 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
         public boolean hasSinglePermission(Set<String> authorisations, NodeRef nodeRef)
         {
-            Serializable key = generateKey(
-                    authorisations,
-                    nodeRef,
-                    this.required, CacheType.SINGLE_PERMISSION_GLOBAL);
-            
+            Serializable key = generateKey(authorisations, nodeRef, this.required, CacheType.SINGLE_PERMISSION_GLOBAL);
+
             AccessStatus status = accessCache.get(key);
             if (status != null)
             {
                 return status == AccessStatus.ALLOWED;
             }
-            
+
             // Check global permission
 
             if (checkGlobalPermissions(authorisations))
@@ -883,7 +891,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             Set<Pair<String, PermissionReference>> denied = new HashSet<Pair<String, PermissionReference>>();
 
             return hasSinglePermission(authorisations, nodeRef, denied);
-                 
+
         }
 
         public boolean hasSinglePermission(Set<String> authorisations, NodeRef nodeRef,
@@ -935,7 +943,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
                 NodePermissionEntry nodePermissions = permissionsDaoComponent.getPermissions(nodeRef);
                 if ((nodePermissions == null) || (nodePermissions.inheritPermissions()))
                 {
-                    if(hasSinglePermission(authorisations, car.getParentRef(), denied))
+                    if (hasSinglePermission(authorisations, car.getParentRef(), denied))
                     {
                         if (key != null)
                         {

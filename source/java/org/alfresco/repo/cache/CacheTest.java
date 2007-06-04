@@ -55,6 +55,7 @@ public class CacheTest extends TestCase
     private SimpleCache<String, Serializable> standaloneCache;
     private SimpleCache<String, Serializable> backingCache;
     private SimpleCache<String, Serializable> transactionalCache;
+    private SimpleCache<String, Object> objectCache;
     
     @SuppressWarnings("unchecked")
     @Override
@@ -64,6 +65,7 @@ public class CacheTest extends TestCase
         standaloneCache = (SimpleCache<String, Serializable>) ctx.getBean("ehCache1");
         backingCache = (SimpleCache<String, Serializable>) ctx.getBean("backingCache");
         transactionalCache = (SimpleCache<String, Serializable>) ctx.getBean("transactionalCache");
+        objectCache = (SimpleCache<String, Object>) ctx.getBean("objectCache");
     }
     
     @Override
@@ -86,6 +88,14 @@ public class CacheTest extends TestCase
         assertNotNull(backingCache);
         assertNotNull(standaloneCache);
         assertNotNull(transactionalCache);
+        assertNotNull(objectCache);
+    }
+    
+    public void testObjectCache() throws Exception
+    {
+        objectCache.put("A", this);
+        Object obj = objectCache.get("A");
+        assertTrue("Object not cached properly", this == obj);
     }
     
     public void testEhcacheAdaptors() throws Exception

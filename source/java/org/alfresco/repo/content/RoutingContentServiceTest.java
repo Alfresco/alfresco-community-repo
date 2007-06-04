@@ -269,6 +269,21 @@ public class RoutingContentServiceTest extends TestCase
         assertNull("Reader must be null if the content URL is null", reader);
     }
     
+    public void testGetRawReader() throws Exception
+    {
+        ContentReader reader = contentService.getRawReader("blah");
+        assertNotNull("A reader is expected with content URL referencing no content", reader);
+        assertFalse("Reader should not have any content", reader.exists());
+        // Now write something
+        ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, false);
+        writer.putContent("ABC from " + getName());
+        // Try again
+        String contentUrl = writer.getContentUrl();
+        reader = contentService.getRawReader(contentUrl);
+        assertNotNull("Expected reader for live, raw content", reader);
+        assertEquals("Content sizes don't match", writer.getSize(), reader.getSize());
+    }
+    
     /**
      * Checks what happens when the physical content disappears
      */

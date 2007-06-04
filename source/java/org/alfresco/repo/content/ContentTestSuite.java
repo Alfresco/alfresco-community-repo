@@ -84,6 +84,7 @@ public class ContentTestSuite extends TestSuite
         suite.addTestSuite(ContentDataTest.class);
         suite.addTestSuite(MimetypeMapTest.class);
         suite.addTestSuite(RoutingContentServiceTest.class);
+        suite.addTestSuite(RoutingContentStoreTest.class);
                 
         return suite;
     }

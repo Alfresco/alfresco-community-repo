@@ -102,7 +102,8 @@ public abstract class AbstractContentReadWriteTest extends TestCase
      */
     protected final ContentWriter getWriter()
     {
-        return getStore().getWriter(null, contentUrl);
+        ContentContext contentCtx = new ContentContext(null, contentUrl);
+        return getStore().getWriter(contentCtx);
     }
     
     /**
@@ -187,7 +188,8 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         assertFalse("Reader exists failure", reader.exists());
         
         // write something
-        ContentWriter writer = store.getWriter(null, contentUrl);
+        ContentContext contentContext = new ContentContext(null, contentUrl);
+        ContentWriter writer = store.getWriter(contentContext);
         writer.putContent("ABC");
         
         assertTrue("Store exists should show URL to be present", store.exists(contentUrl));
@@ -298,10 +300,11 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         String contentUrl = AbstractContentStore.createNewUrl();
         ContentStore store = getStore();
 
-        ContentWriter firstWriter = store.getWriter(null, contentUrl);
+        ContentContext contentCtx = new ContentContext(null, contentUrl);
+        ContentWriter firstWriter = store.getWriter(contentCtx);
         try
         {
-            ContentWriter secondWriter = store.getWriter(null, contentUrl);
+            ContentWriter secondWriter = store.getWriter(contentCtx);
             fail("Store issued two writers for the same URL: " + store);
         }
         catch (ContentIOException e)
@@ -620,7 +623,8 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         }
         
         // get a new writer from the store, using the existing content and perform a truncation check
-        ContentWriter writerTruncate = getStore().getWriter(writer.getReader(), AbstractContentStore.createNewUrl());
+        ContentContext writerTruncateCtx = new ContentContext(writer.getReader(), AbstractContentStore.createNewUrl());
+        ContentWriter writerTruncate = getStore().getWriter(writerTruncateCtx);
         assertEquals("Content size incorrect", 0, writerTruncate.getSize());
         // get the channel with truncation
         FileChannel fcTruncate = writerTruncate.getFileChannel(true);
@@ -628,7 +632,8 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         assertEquals("Content not truncated", 0, writerTruncate.getSize());
         
         // get a new writer from the store, using the existing content and perform a non-truncation check
-        ContentWriter writerNoTruncate = getStore().getWriter(writer.getReader(), AbstractContentStore.createNewUrl());
+        ContentContext writerNoTruncateCtx = new ContentContext(writer.getReader(), AbstractContentStore.createNewUrl());
+        ContentWriter writerNoTruncate = getStore().getWriter(writerNoTruncateCtx);
         assertEquals("Content size incorrect", 0, writerNoTruncate.getSize());
         // get the channel without truncation
         FileChannel fcNoTruncate = writerNoTruncate.getFileChannel(false);

@@ -86,6 +86,10 @@ public abstract class AbstractContentStore implements ContentStore
      * @param contentUrl a URL of the content to check
      * @return Returns the relative part of the URL
      * @throws RuntimeException if the URL is not correct
+     * 
+     * @deprecated  Stores can really have any prefix in the URL.  This method was
+     *              really specific to the FileContentStore and has been moved into
+     *              it.
      */
     public static String getRelativePart(String contentUrl) throws RuntimeException
     {

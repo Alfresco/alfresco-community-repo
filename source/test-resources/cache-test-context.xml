@@ -45,4 +45,14 @@
       </property>
    </bean>
    
+   <bean name="objectCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheName">
+               <value>objectCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
 </beans>

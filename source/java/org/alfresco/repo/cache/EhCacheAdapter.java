@@ -87,7 +87,7 @@ public class EhCacheAdapter<K extends Serializable, V extends Object>
             Element element = cache.get(key);
             if (element != null)
             {
-                return (V) element.getValue();
+                return (V) element.getObjectValue();
             }
             else
             {
@@ -97,7 +97,8 @@ public class EhCacheAdapter<K extends Serializable, V extends Object>
         catch (CacheException e)
         {
             throw new AlfrescoRuntimeException("Failed to get from EhCache: \n" +
-                    "   key: " + key);
+                    "   key: " + key,
+                    e);
         }
     }
 

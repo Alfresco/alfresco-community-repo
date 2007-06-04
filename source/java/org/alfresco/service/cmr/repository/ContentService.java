@@ -55,6 +55,21 @@ import org.alfresco.service.namespace.QName;
 public interface ContentService
 {
     /**
+     * Fetch content from the low-level stores using a content URL.  None of the
+     * metadata associated with the content will be populated.  This method should
+     * be used only to stream the binary data out when no other metadata is
+     * required.
+     * <p>
+     * <tt>null</tt> is never returned, but the reader should always be checked for
+     * {@link ContentReader#exists() existence}.
+     * 
+     * @param contentUrl        a content store URL
+     * @return                  Returns a reader for the URL that needs to be checked.
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contentUrl"})
+    public ContentReader getRawReader(String contentUrl);
+    
+    /**
      * Gets a reader for the content associated with the given node property.
      * <p>
      * If a content URL is present for the given node then a reader <b>must</b>

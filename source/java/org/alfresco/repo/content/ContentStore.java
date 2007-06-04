@@ -71,8 +71,10 @@ public interface ContentStore
      * reader to {@link ContentReader#exists() check for existence}, although
      * that check should also be performed.
      * 
-     * @param contentUrl the path to the content
-     * @return Returns true if the content exists.
+     * @param contentUrl        the path to the content
+     * @return                  Returns true if the content exists, otherwise
+     *                          false if the content doesn't exist or if the URL
+     *                          is not applicable to this store.
      * @throws ContentIOException
      * 
      * @see ContentReader#exists()
@@ -90,6 +92,7 @@ public interface ContentStore
      *
      * @see #exists(String)
      * @see ContentReader#exists()
+     * @see EmptyContentReader
      */
     public ContentReader getReader(String contentUrl) throws ContentIOException;
     

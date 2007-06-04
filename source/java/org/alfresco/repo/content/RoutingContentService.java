@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
@@ -267,7 +268,31 @@ public class RoutingContentService implements ContentService
             policy.onContentUpdate(nodeRef, newContent);
         }
     }
-    
+
+    /** {@inheritDoc} */
+    public ContentReader getRawReader(String contentUrl)
+    {
+        ContentReader reader = store.getReader(contentUrl);
+        if (reader == null)
+        {
+            throw new AlfrescoRuntimeException("ContentStore implementations may not return null ContentReaders");
+        }
+        // set extra data on the reader
+        reader.setMimetype(MimetypeMap.MIMETYPE_BINARY);
+        reader.setEncoding("UTF-8");
+        reader.setLocale(I18NUtil.getLocale());
+        
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Direct request for reader: \n" +
+                    "   Content URL: " + contentUrl + "\n" +
+                    "   Reader:      " + reader);
+        }
+        return reader;
+    }
+
     public ContentReader getReader(NodeRef nodeRef, QName propertyQName)
     {
         return getReader(nodeRef, propertyQName, true);
@@ -318,6 +343,10 @@ public class RoutingContentService implements ContentService
         
         // The context of the read is entirely described by the URL
         ContentReader reader = store.getReader(contentUrl);
+        if (reader == null)
+        {
+            throw new AlfrescoRuntimeException("ContentStore implementations may not return null ContentReaders");
+        }
         
         // set extra data on the reader
         reader.setMimetype(contentData.getMimetype());

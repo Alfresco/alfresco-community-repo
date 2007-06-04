@@ -57,12 +57,22 @@ public class FileContentStore extends AbstractContentStore
     private boolean allowRandomAccess;
 
     /**
-     * @param rootDirectory the root under which files will be stored.  The
-     *      directory will be created if it does not exist.
+     * @param rootDirectoryStr  the root under which files will be stored.
+     *                          The directory will be created if it does not exist.
+     *                          
+     * @see FileContentStore#FileContentStore(File)
      */
     public FileContentStore(String rootDirectoryStr)
     {
-        rootDirectory = new File(rootDirectoryStr);
+        this(new File(rootDirectoryStr));
+    }
+
+    /**
+     * @param rootDirectory     the root under which files will be stored.
+     *                          The directory will be created if it does not exist.
+     */
+    public FileContentStore(File rootDirectory)
+    {
         if (!rootDirectory.exists())
         {
             if (!rootDirectory.mkdirs())
@@ -70,11 +80,11 @@ public class FileContentStore extends AbstractContentStore
                 throw new ContentIOException("Failed to create store root: " + rootDirectory, null);
             }
         }
-        rootDirectory = rootDirectory.getAbsoluteFile();
+        this.rootDirectory = rootDirectory.getAbsoluteFile();
         rootAbsolutePath = rootDirectory.getAbsolutePath();
         allowRandomAccess = true;
     }
-
+    
     public String toString()
     {
         StringBuilder sb = new StringBuilder(36);
@@ -183,8 +193,7 @@ public class FileContentStore extends AbstractContentStore
     }
     
     /**
-     * Creates a file from the given relative URL.  The URL must start with
-     * the required {@link FileContentStore#STORE_PROTOCOL protocol prefix}.
+     * Creates a file from the given relative URL.
      * 
      * @param contentUrl the content URL including the protocol prefix
      * @return Returns a file representing the URL - the file may or may not
@@ -195,7 +204,14 @@ public class FileContentStore extends AbstractContentStore
     private File makeFile(String contentUrl)
     {
         // take just the part after the protocol
-        String relativeUrl = getRelativePart(contentUrl);
+        String relativeUrl = FileContentStore.getRelativePart(contentUrl);
+        if (relativeUrl == null)
+        {
+            throw new ContentIOException(
+                    "The content URL is not valid for this store: \n" +
+                    "   Store:       " + this + "\n" +
+                    "   Content URL: " + contentUrl);
+        }
         // get the file
         File file = new File(rootDirectory, relativeUrl);
         // done
@@ -365,5 +381,48 @@ public class FileContentStore extends AbstractContentStore
                     "   url: " + contentUrl);
         }
         return deleted;
+    }
+
+    /**
+     * This method can be used to ensure that URLs conform to the required format.
+     * If subclasses have to parse the URL, then a call to this may not be required -
+     * provided that the format is checked.
+     * <p>
+     * The protocol part of the URL (including legacy protocols)
+     * is stripped out and just the relative path is returned.  If no known prefix is
+     * found, or if the relative part is empty, then <tt>null</tt> is returned.
+     * 
+     * @param contentUrl        a URL of the content to check
+     * @return                  Returns the relative part of the URL.  If there is no
+     *                          prefix, then the URL is assumed to be the relative part.
+     */
+    public static String getRelativePart(String contentUrl)
+    {
+        int index = 0;
+        if (contentUrl.startsWith(STORE_PROTOCOL))
+        {
+            index = 8;
+        }
+        else if (contentUrl.startsWith("file://"))
+        {
+            index = 7;
+        }
+        else
+        {
+            if (contentUrl.length() == 0)
+            {
+                throw new IllegalArgumentException("Invalid FileStore content URL: " + contentUrl);
+            }
+            return contentUrl;
+        }
+        
+        // extract the relative part of the URL
+        String path = contentUrl.substring(index);
+        // more extensive checks can be added in, but it seems overkill
+        if (path.length() == 0)
+        {
+            throw new IllegalArgumentException("Invalid FileStore content URL: " + contentUrl);
+        }
+        return path;
     }
 }

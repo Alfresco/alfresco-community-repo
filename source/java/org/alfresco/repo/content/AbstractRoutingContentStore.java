@@ -83,7 +83,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
      * to make a decision.
      * 
      * @param ctx       the context to use to make the choice
-     * @return          Returns the store most appropriate for the given context
+     * @return          Returns the store most appropriate for the given context and
+     *                  <b>never <tt>null</tt></b>
      */
     protected abstract ContentStore selectWriteStore(ContentContext ctx);
     
@@ -132,9 +133,19 @@ public abstract class AbstractRoutingContentStore implements ContentStore
             List<ContentStore> stores = getAllStores();
             for (ContentStore storeInList : stores)
             {
-                if (!store.exists(contentUrl))
+                boolean exists = false;
+                try
                 {
-                    // It is not in the store
+                    exists = storeInList.exists(contentUrl);
+                    if (!exists)
+                    {
+                        // It is not in the store
+                        continue;
+                    }
+                }
+                catch (Throwable e)
+                {
+                    // The API used to allow failure when the URL wasn't there
                     continue;
                 }
                 // We found one
@@ -264,6 +275,10 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     {
         // Select the store for writing
         ContentStore store = selectWriteStore(context);
+        if (store == null)
+        {
+            throw new NullPointerException("Unable to find a writer.  'selectWriteStore' may not return null.");
+        }
         ContentWriter writer = store.getWriter(context);
         // Cache the store against the URL
         storesCacheWriteLock.lock();

@@ -1,119 +1,204 @@
 html, body {
-    height: 100%;
-    overflow:hidden;
-    font-family: tahoma, sans-serif;
-    font-size: 11px;
-    color: #0073e6;
-    background: url("../images/taskpane/view_bg.gif") top;
+   height: 100%;
+   overflow: hidden;
+   font-family: tahoma, sans-serif;
+   font-size: 11px;
+   color: #0073e6;
+   background: url("../images/office/view_bg.gif") top;
 }
 
-body {margin:0px;padding:0px;}
+body {
+   margin: 0px;
+   padding: 0px;
+}
+
+a {
+   color: #0073e6;
+   text-decoration: none;
+}
+
+a img {
+   border: 0px;
+}
+
+.bold {
+   font-weight: bold;
+}
 
 #tabBar {
-      float:left;
-      width:100%;
-      background:#d4eaff url("../images/taskpane/bg.gif") repeat-x bottom;
-      font-size:93%;
-      line-height:normal;
-      }
+   float: left;
+   width: 100%;
+   background: #efefef;
+   border-bottom: 1px solid #ccc;
+}
 #tabBar ul {
-      margin:0;
-      padding:10px 10px 0;
-      list-style:none;
-      }
-    #tabBar li {
-      float:left;
-      background:url("../images/taskpane/norm_left.gif") no-repeat left top;
-      margin:0;
-      padding:0 0 0 9px;
-      }
-    #tabBar a {
-      display:block;
-      background:url("../images/taskpane/norm_right.gif") no-repeat right top;
-      padding:5px 15px 4px 6px;
-      text-decoration:none;
-      font-weight:bold;
-      color:#765;
-      }
-    #tabBar a:hover {
-      color:#333;
-      }
-    #tabBar #current {
-      background-image:url("../images/taskpane/norm_left_on.gif");
-      }
-    #tabBar #current a {
-      background-image:url("../images/taskpane/norm_right_on.gif");
-      color:#333;
-      padding-bottom:5px;
-      }
+   margin: 0px;
+   padding: 4px 10px 0px 4px;
+   list-style: none;
+}
+#tabBar li {
+   display: inline;
+   margin: 0px;
+   padding: 0px;
+}
+#tabBar a {
+   background: url("../images/office/tab_left.gif") no-repeat left top;
+   float:left;
+   margin: 0px;
+   padding: 0px 0px 0px 4px;
+   text-decoration: none;
+}
+#tabBar a span {
+   background: url("../images/office/tab_right.gif") no-repeat right top;
+   color: #666;
+   display: block;
+   float: none;
+   padding: 5px 15px 4px 6px;
+   height: 18px;
+}
 
-#spaceListHeader {width:100%;
-        height:auto;
-        padding:6px;}
+#tabBar a:hover span {
+   color: #FFF;
+}
+#tabBar a:hover {
+   background-position: 0% -42px;
+}
+#tabBar a:hover span {
+   background-position: 100% -42px;
+}
 
-#mycheckedoutdocsListHeader {width:100%;
-        height:auto;
-        padding:6px;}
+#tabBar #current a {
+   background-position: 0% -42px;
+}
+#tabBar #current a span {
+   background-position: 100% -42px;
+}
 
-#mytodoListHeader {width:100%;
-        height:auto;
-        padding:6px;}
+.header {
+   clear: both;
+   width: 282px;
+   padding: 6px 0px 2px 4px;
+   font-weight: bold;
+   float: left;
+}
 
-#contentListHeader {width:100%;
-        height:auto;padding:6px;}
+.headerExtra {
+   font-weight: normal;
+   float: right;
+   margin-top: -13px;
+}
 
-#searchResultsListHeader {width:100%;
-        height:auto;padding:6px;}
+.listBig {
+   clear: both;
+   float: left;
+   width: 282px;
+   height: 378px;
+   overflow: auto;
+   border: 1px solid #cccccc;
+   margin: 0px 4px 0px 4px;
+   background: #fff;
+}
+.listMedium {
+   clear: both;
+   float: left;
+   width: 282px;
+   height: 204px;
+   overflow: auto;
+   border: 1px solid #cccccc;
+   margin: 0px 4px 0px 4px;
+   background: #fff;
+}
 
-#detailsListHeader {width:100%;
-        height:auto;padding:6px;}
+.listMediumGrow {
+   height: 354px !important;
+}
+.listMediumShrink {
+   height: 54px !important;
+}
 
-#versionListHeader {width:100%;
-        height:auto;padding:6px;}
+.odd {
+   background-color: #f8f8f8 !important;
+   border-bottom: 1px solid #eee;
+}
+.even {
+   background-color: #ffffff !important;
+   border-bottom: 1px solid #eee;
+}
 
-#advWorkflowListHeader {width:100%;
-        height:auto;padding:6px;}
+#currentSpaceInfo {
+   clear: both;
+   float: left;
+   width: 282px;
+   height: 34px;
+   overflow: none;
+   border: 1px solid #cccccc;
+   margin: 4px 4px 0px;
+   padding: 4px 0px 0px;
+   background: #fff;
+}
 
-#myTasksListHeader {width:100%;
-        height:auto;padding:6px;}
+TABLE, TR, TD {
+   border: 0px;
+   border-collapse: collapse;
+   padding: 2px;
+}
 
-#simpleWorkflowHeader {width:100%;
-        height:auto;padding:6px;}
+ul {
+   margin: 0px;
+   list-style: none;
+   padding: 2px 0px 0px 4px;
+}
 
-#currentSpaceInfo {width:100%;
-                  padding: 6px}
+#documentActions {
+   clear: both;
+   background-color: #ffffcc;
+   border: 1px solid #ccc;
+   float: left;
+   margin: 0px 4px;
+   height: 150px;
+   width: 282px;
+}
 
-#simpleWorkflowInfo {width:100%;
-                  padding: 6px}
+#documentActionsNavigation {
+   clear: both;
+   background-color: #ffffcc;
+   border: 1px solid #ccc;
+   float: left;
+   margin: 0px 4px;
+   height: 106px;
+   width: 282px;
+}
 
-#spaceList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
-#mycheckedoutdocsList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
-#mytodoList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
-#contentList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
-#searchResultsList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
-#detailsList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
-#versionList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
-#advWorkflowList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
-#myTasksList {width:97%;overflow:auto; border: 1px solid #cccccc;margin-left:6px;background:#fff;}
+#nonStatusText {
+   min-height: 100%;
+   position: relative;
+}
 
-TABLE {border:0px;
-padding:2px;}
+#searchResultsList {
+   min-height: 100%;
+   position: relative;
+}
 
-A {color:#0073e6; }
+#statusText {
+   border: none;
+   float: left;
+   margin: -22px 0px;
+   padding: 2px;
+   position: relative;
+   height: 17px;
+   width: 278px;
+}
 
-#bottomMargin {height:6px;}
+#search {
+   clear: both;
+   float: left;
+   width: 282px;
+   border: 1px solid #cccccc;
+   margin: 0px 4px;
+   background: #fff;
+}
 
-#documentActions ul {
-      margin:0;
-      padding:10px 10px 0;
-      list-style:none;
-      }
-
-#documentActions {width:97%;margin-left:6px;padding-top:6px;padding-bottom:6px;}
-
-#search {padding: 24px 0px 0px 10px;}
-
-input.button{
+input.button {
    color:#0073e6;
    font-size:11px;
    font-weight:bold;
@@ -124,7 +209,22 @@ input.button{
    border-right-color:#0073e6;
    border-bottom-color:#0073e6;
    filter:progid:DXImageTransform.Microsoft.Gradient
-      (GradientType=0,StartColorStr='#ffffffff',EndColorStr='#6fb7ff');
+   (GradientType=0,StartColorStr='#ffffffff',EndColorStr='#6fb7ff');
    cursor:pointer;
    margin-left:6px;
-   }
+}
+
+#taskDetails {
+   padding: 2px;
+}
+
+.taskItemSelected {
+   background-color: #ffe500 !important;
+}
+
+.taskResources {
+   border: 1px solid #ccc;
+   margin: 4px;
+   height: 128px;
+   overflow: auto;
+}

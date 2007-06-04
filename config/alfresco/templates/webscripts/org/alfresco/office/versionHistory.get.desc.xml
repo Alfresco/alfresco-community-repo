@@ -1,7 +1,0 @@
-<webscript>
-  <shortname>Version History (Office Add-In)</shortname>
-  <description>Generate the Office Add-In Version History page</description>
-  <url format="html" template="/office/versionHistory?p={path?}" />
-  <authentication>user</authentication>
-  <transaction>required</transaction>
-</webscript>

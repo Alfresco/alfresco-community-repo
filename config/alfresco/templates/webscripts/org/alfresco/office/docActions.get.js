@@ -1,40 +1,79 @@
-// Generate a PDF transform of the current object
+// Client has requested certain actions on the current document
 
-if (document.isDocument)
+/* Inputs */
+var docId = args["d"],
+   runAction = args["a"];
+
+/* Outputs */
+var resultString = "Action failed.",
+   resultCode = false;
+
+var doc = search.findNode("workspace://SpacesStore/" + docId);
+
+if (doc != null && doc.isDocument)
 {
-   var runAction = args['action'];
-   var result = "Action failed.";
-
-   if (runAction == "makepdf")
+   try
    {
-      var trans = document.transformDocument("application/pdf");
-      result = "Action completed.";
+      if (runAction == "makepdf")
+      {
+         resultString = "Could not convert document";
+         var nodeTrans = doc.transformDocument("application/pdf");
+         if (nodeTrans != null)
+         {
+            resultString = "Document converted";
+            resultCode = true;
+         }
+      }
+      else if (runAction == "delete")
+      {
+         resultString = "Could not delete document";
+         if (doc.remove())
+         {
+            resultString = "Document deleted";
+            resultCode = true;
+         }
+      }
+      else if (runAction == "checkout")
+      {
+         var workingCopy = doc.checkout();
+         if (workingCopy != null)
+         {
+            resultString = "Document checked out";
+            resultCode = true;
+         }
+      }
+      else if (runAction == "checkin")
+      {
+         var originalDoc = doc.checkin();
+         if (originalDoc != null)
+         {
+            resultString = "Document checked in";
+            resultCode = true;
+         }
+      }
+      else if (runAction == "makeversion")
+      {
+         resultString = "Could not version document";
+         if (doc.addAspect("cm:versionable"))
+         {
+            resultString = "Document versioned";
+            resultCode = true;
+         }
+      }
+      else if (runAction == "test")
+      {
+         resultString = "Test complete.";
+         resultCode = true;
+      }
+      else
+      {
+          resultString = "Unknown action.";
+      }
    }
-   else if (runAction == "delete")
+   catch(e)
    {
-      var rc = document.remove();
-      result = "Action completed.";
+      resultString = "Action failed due to exception";
    }
-   else if (runAction == "checkout")
-   {
-      var wc = null;
-      wc = document.checkout();
-      result = "Action completed.";
-   }
-   else if (runAction == "checkin")
-   {
-      var wc = document.checkin();
-      result = "Action completed.";
-   }
-   else if (runAction == "makeversion")
-   {
-      var wc = document.addAspect("cm:versionable");
-      result = "Action completed.";
-   }
-   else
-   {
-       result = "Unknown action.";
-   }
-   
-   result;
 }
+model.resultString = resultString;
+model.resultCode = resultCode;

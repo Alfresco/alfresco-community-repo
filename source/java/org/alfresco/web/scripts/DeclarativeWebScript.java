@@ -154,7 +154,7 @@ public class DeclarativeWebScript extends AbstractWebScript
             // convert script node to template node, if required
             if (value instanceof Node)
             {
-                value = new TemplateNode(((Node)value).getNodeRef(), getServiceRegistry(), null);
+                value = new TemplateNode(((Node)value).getNodeRef(), getServiceRegistry(), getWebScriptRegistry().getTemplateImageResolver());
             }
             else if (value instanceof Collection)
             {
@@ -164,7 +164,7 @@ public class DeclarativeWebScript extends AbstractWebScript
                 {
                     if (value instanceof Node)
                     {
-                        templateColl.add(new TemplateNode(((Node)object).getNodeRef(), getServiceRegistry(), null));
+                        templateColl.add(new TemplateNode(((Node)object).getNodeRef(), getServiceRegistry(), getWebScriptRegistry().getTemplateImageResolver()));
                     }
                     else
                     {
@@ -180,7 +180,7 @@ public class DeclarativeWebScript extends AbstractWebScript
                 int i = 0;
                 for (Node node : nodes)
                 {
-                    templateNodes[i++] = new TemplateNode(node.getNodeRef(), getServiceRegistry(), null);
+                    templateNodes[i++] = new TemplateNode(node.getNodeRef(), getServiceRegistry(), getWebScriptRegistry().getTemplateImageResolver());
                 }
                 value = templateNodes;
             }

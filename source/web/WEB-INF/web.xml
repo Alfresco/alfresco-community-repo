@@ -282,13 +282,18 @@
    </servlet-mapping>
    
    <servlet-mapping>
+      <servlet-name>uploadContent</servlet-name>
+      <url-pattern>/upload/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
       <servlet-name>downloadContent</servlet-name>
       <url-pattern>/download/*</url-pattern>
    </servlet-mapping>
    
    <servlet-mapping>
-      <servlet-name>uploadContent</servlet-name>
-      <url-pattern>/upload/*</url-pattern>
+      <servlet-name>downloadContent</servlet-name>
+      <url-pattern>/d/*</url-pattern>
    </servlet-mapping>
    
    <servlet-mapping>
@@ -297,13 +302,8 @@
    </servlet-mapping>
    
    <servlet-mapping>
-      <servlet-name>guestTemplateContent</servlet-name>
-      <url-pattern>/guestTemplate/*</url-pattern>
-   </servlet-mapping>
-   
-   <servlet-mapping>
-      <servlet-name>externalAccess</servlet-name>
-      <url-pattern>/navigate/*</url-pattern>
+      <servlet-name>guestDownloadContent</servlet-name>
+      <url-pattern>/gd/*</url-pattern>
    </servlet-mapping>
    
    <servlet-mapping>
@@ -312,8 +312,38 @@
    </servlet-mapping>
    
    <servlet-mapping>
+      <servlet-name>templateContent</servlet-name>
+      <url-pattern>/t/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>guestTemplateContent</servlet-name>
+      <url-pattern>/guestTemplate/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>guestTemplateContent</servlet-name>
+      <url-pattern>/gt/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>externalAccess</servlet-name>
+      <url-pattern>/navigate/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>externalAccess</servlet-name>
+      <url-pattern>/n/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
       <servlet-name>commandServlet</servlet-name>
       <url-pattern>/command/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>commandServlet</servlet-name>
+      <url-pattern>/c/*</url-pattern>
    </servlet-mapping>
    
    <servlet-mapping>
@@ -334,6 +364,11 @@
    <servlet-mapping>
       <servlet-name>apiServlet</servlet-name>
       <url-pattern>/service/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>apiServlet</servlet-name>
+      <url-pattern>/s/*</url-pattern>
    </servlet-mapping>
 
    <servlet-mapping>

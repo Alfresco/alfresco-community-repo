@@ -308,6 +308,6 @@ public class ExternalAccessServlet extends BaseServlet
    }
    
    // example: http://<server>/alfresco/navigate/<outcome>[/<workspace>/<store>/<nodeId>]
-   private static final String EXTERNAL_URL  = "/navigate/{0}";
-   private static final String EXTERNAL_URL_ARGS  = "/navigate/{0}/{1}";
+   private static final String EXTERNAL_URL  = "/n/{0}";
+   private static final String EXTERNAL_URL_ARGS  = "/n/{0}/{1}";
 }

@@ -78,8 +78,8 @@ public class TemplateContentServlet extends BaseTemplateContentServlet
 
    private static final Log logger = LogFactory.getLog(TemplateContentServlet.class);
    
-   private static final String DEFAULT_URL  = "/template/{0}/{1}/{2}";
-   private static final String TEMPLATE_URL = "/template/{0}/{1}/{2}/{3}/{4}/{5}";
+   private static final String DEFAULT_URL  = "/t/{0}/{1}/{2}";
+   private static final String TEMPLATE_URL = "/t/{0}/{1}/{2}/{3}/{4}/{5}";
    
    @Override
    protected Log getLogger()

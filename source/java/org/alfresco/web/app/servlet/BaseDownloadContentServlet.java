@@ -73,8 +73,11 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
    
    protected static final String MSG_ERROR_CONTENT_MISSING = "error_content_missing";
    
+   protected static final String URL_DIRECT        = "d";
+   protected static final String URL_DIRECT_LONG   = "direct";
+   protected static final String URL_ATTACH        = "a";
+   protected static final String URL_ATTACH_LONG   = "attach";
    protected static final String ARG_PROPERTY = "property";
-   protected static final String ARG_ATTACH   = "attach";
    protected static final String ARG_PATH     = "path";
 
    /**
@@ -122,7 +125,7 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
       
       // attachment mode (either 'attach' or 'direct')
       String attachToken = t.nextToken();
-      boolean attachment = attachToken.equals(ARG_ATTACH);
+      boolean attachment = URL_ATTACH.equals(attachToken) || URL_ATTACH_LONG.equals(attachToken);
       
       // get or calculate the noderef and filename to download as
       NodeRef nodeRef;

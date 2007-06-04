@@ -75,8 +75,8 @@ public class DownloadContentServlet extends BaseDownloadContentServlet
 
    private static Log logger = LogFactory.getLog(DownloadContentServlet.class);
    
-   private static final String DOWNLOAD_URL  = "/download/attach/{0}/{1}/{2}/{3}";
-   private static final String BROWSER_URL   = "/download/direct/{0}/{1}/{2}/{3}";
+   private static final String DOWNLOAD_URL  = "/d/" + URL_ATTACH + "/{0}/{1}/{2}/{3}";
+   private static final String BROWSER_URL   = "/d/" + URL_DIRECT + "/{0}/{1}/{2}/{3}";
    
    @Override
    protected Log getLogger()

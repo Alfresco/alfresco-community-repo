@@ -73,8 +73,8 @@ public class GuestDownloadContentServlet extends BaseDownloadContentServlet
    
    private static Log logger = LogFactory.getLog(GuestDownloadContentServlet.class);
    
-   private static final String DOWNLOAD_URL  = "/guestDownload/attach/{0}/{1}/{2}/{3}";
-   private static final String BROWSER_URL   = "/guestDownload/direct/{0}/{1}/{2}/{3}";
+   private static final String DOWNLOAD_URL  = "/gd/" + URL_ATTACH + "/{0}/{1}/{2}/{3}";
+   private static final String BROWSER_URL   = "/gd/" + URL_DIRECT + "/{0}/{1}/{2}/{3}";
    
    @Override
    protected Log getLogger()

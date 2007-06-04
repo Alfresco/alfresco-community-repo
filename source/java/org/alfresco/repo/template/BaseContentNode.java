@@ -55,9 +55,9 @@ import org.springframework.util.StringUtils;
  */
 public abstract class BaseContentNode implements TemplateContent
 {
-    protected final static String CONTENT_DEFAULT_URL = "/download/direct/{0}/{1}/{2}/{3}";
-    protected final static String CONTENT_PROP_URL    = "/download/direct/{0}/{1}/{2}/{3}?property={4}";
-    protected final static String FOLDER_BROWSE_URL   = "/navigate/browse/{0}/{1}/{2}";
+    protected final static String CONTENT_DEFAULT_URL = "/d/d/{0}/{1}/{2}/{3}";
+    protected final static String CONTENT_PROP_URL    = "/d/d/{0}/{1}/{2}/{3}?property={4}";
+    protected final static String FOLDER_BROWSE_URL   = "/n/browse/{0}/{1}/{2}";
     
     protected final static String NAMESPACE_BEGIN = "" + QName.NAMESPACE_BEGIN;
     

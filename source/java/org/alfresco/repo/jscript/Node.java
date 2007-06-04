@@ -93,9 +93,9 @@ public class Node implements Serializable, Scopeable
     
     private final static String NAMESPACE_BEGIN = "" + QName.NAMESPACE_BEGIN;
     
-    private final static String CONTENT_DEFAULT_URL = "/download/direct/{0}/{1}/{2}/{3}";
-    private final static String CONTENT_PROP_URL = "/download/direct/{0}/{1}/{2}/{3}?property={4}";
-    private final static String FOLDER_BROWSE_URL = "/navigate/browse/{0}/{1}/{2}";
+    private final static String CONTENT_DEFAULT_URL = "/d/d/{0}/{1}/{2}/{3}";
+    private final static String CONTENT_PROP_URL = "/d/d/{0}/{1}/{2}/{3}?property={4}";
+    private final static String FOLDER_BROWSE_URL = "/n/browse/{0}/{1}/{2}";
     
     /** Root scope for this object */
     protected Scriptable scope;

@@ -119,6 +119,19 @@ public class Workflow extends BaseTemplateProcessorExtension
     }
     
     /**
+     * Return a single object representing a task of the given taskId for the current user
+     * 
+     * @return WorkflowTaskItem bean object {@link WorkflowTaskItem}
+     */
+    public WorkflowTaskItem getTaskById(String taskId)
+    {
+        // get the task corresponding to the given taskId
+        WorkflowTask task = getWorkflowService().getTaskById(taskId);
+        
+        return new WorkflowTaskItem(this.services, getTemplateImageResolver(), task);
+    }
+    
+    /**
      * Convert a list of WorkflowTask items into bean objects accessable from templates
      * 
      * @param tasks     List of WorkflowTask objects to convert

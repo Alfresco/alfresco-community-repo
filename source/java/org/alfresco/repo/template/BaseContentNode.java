@@ -66,7 +66,7 @@ public abstract class BaseContentNode implements TemplateContent
     
     protected ServiceRegistry services = null;
     protected TemplateImageResolver imageResolver = null;
-    private Set<QName> aspects = null;
+    protected Set<QName> aspects = null;
     private String displayPath = null;
     
     private Boolean isDocument = null;
@@ -285,7 +285,7 @@ public abstract class BaseContentNode implements TemplateContent
     {
         if (this.aspects == null)
         {
-            this.aspects = this.services.getNodeService().getAspects(getNodeRef());
+            getAspects();
         }
         
         if (aspect.startsWith(NAMESPACE_BEGIN))

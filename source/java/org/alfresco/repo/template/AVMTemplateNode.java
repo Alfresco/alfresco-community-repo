@@ -28,8 +28,10 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
@@ -109,7 +111,7 @@ public class AVMTemplateNode extends BasePermissionsNode
         Pair<Integer, String> pair = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         this.services = services;
         this.imageResolver = resolver;
-        init(pair.getFirst(), pair.getSecond());
+        init(pair.getFirst(), pair.getSecond(), null);
     }
     
     /**
@@ -135,18 +137,48 @@ public class AVMTemplateNode extends BasePermissionsNode
         this.nodeRef = AVMNodeConverter.ToNodeRef(version, path);
         this.services = services;
         this.imageResolver = resolver;
-        init(version, path);
+        init(version, path, null);
     }
     
-    private void init(int version, String path)
+    /**
+     * Constructor
+     * 
+     * @param descriptor    AVMNodeDescriptior
+     * @param services      
+     * @param resolver
+     */
+    public AVMTemplateNode(AVMNodeDescriptor descriptor, ServiceRegistry services, TemplateImageResolver resolver)
+    {
+        if (descriptor == null)
+        {
+            throw new IllegalArgumentException("AVMNodeDescriptor must be supplied.");
+        }
+        
+        if (services == null)
+        {
+            throw new IllegalArgumentException("The ServiceRegistry must be supplied.");
+        }
+        
+        this.version = -1;
+        this.path = descriptor.getPath();
+        this.nodeRef = AVMNodeConverter.ToNodeRef(this.version, this.path);
+        this.services = services;
+        this.imageResolver = resolver;
+        init(this.version, this.path, descriptor);
+    }
+    
+    private void init(int version, String path, AVMNodeDescriptor descriptor)
     {
         this.version = version;
         this.path = path;
         this.properties = new QNameMap<String, Serializable>(this.services.getNamespaceService());
-        AVMNodeDescriptor descriptor = this.services.getAVMService().lookup(version, path, true);
         if (descriptor == null)
         {
-            throw new IllegalArgumentException("Invalid node specified: " + nodeRef.toString());
+            descriptor = this.services.getAVMService().lookup(version, path, true);
+            if (descriptor == null)
+            {
+                throw new IllegalArgumentException("Invalid node specified: " + nodeRef.toString());
+            }
         }
         this.avmRef = descriptor;
         this.deleted = descriptor.isDeleted();
@@ -339,6 +371,21 @@ public class AVMTemplateNode extends BasePermissionsNode
         }
         
         return this.properties;
+    }
+    
+    /**
+     * @return The list of aspects applied to this node
+     */
+    @Override
+    public Set<QName> getAspects()
+    {
+        if (this.aspects == null)
+        {
+            this.aspects = new HashSet<QName>();
+            this.aspects.addAll(this.services.getAVMService().getAspects(this.version, this.path));
+        }
+        
+        return this.aspects;
     }
     
     

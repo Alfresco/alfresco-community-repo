@@ -56,11 +56,30 @@ public interface AVMLockingService
     public AVMLock getLock(String webProject, String path);
     
     /**
+     * Modify a lock. Null change parameters are ignored.
+     * @param webProject The name of the web project.
+     * @param path The path of the lock.
+     * @param newPath The path that the lock should be given. (may be null)
+     * @param newStore The store that the lock should be given. (may be null)
+     * @param usersToRemove List of users to remove from the lock. (may be null)
+     * @param usersToAdd List of users to add to the lock. (may be null)
+     */
+    public void modifyLock(String webProject, String path, String newPath,
+                           String newStore, List<String> usersToRemove,
+                           List<String> usersToAdd);
+    
+    /**
      * Remove a lock.
      * @param webProject The web project the lock lives in.
      * @param path The store relative path of the lock.
      */
     public void removeLock(String webProject, String path);
+    
+    /**
+     * Removes all locks residing in a store.
+     * @param store The store name.
+     */
+    public void removeStoreLocks(String store);
     
     /**
      * Get all the locks that a user owns.
@@ -87,4 +106,20 @@ public interface AVMLockingService
      * @return All the locks found.
      */
     public List<AVMLock> getWebProjectLocks(String webProject);
+    
+    /**
+     * Get all locks that reside in a given store.
+     * @param store The store name.
+     * @return All the locks found.
+     */
+    public List<AVMLock> getStoreLocks(String store);
+    
+    /**
+     * Is the user allowed to do anything to the given asset, other than read?
+     * @param webProject The name of the web project that this path is being checked in.
+     * @param avmPath A full avmPath
+     * @param user The name of the user, group, role to check on.
+     * @return Mother's verdict.
+     */
+    public boolean motherMayI(String webProject, String avmPath, String user);
 }

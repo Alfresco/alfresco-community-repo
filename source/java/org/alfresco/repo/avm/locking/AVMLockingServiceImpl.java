@@ -34,9 +34,9 @@ import org.alfresco.repo.attributes.ListAttributeValue;
 import org.alfresco.repo.attributes.MapAttributeValue;
 import org.alfresco.repo.attributes.StringAttributeValue;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.attributes.AttrQueryEquals;
 import org.alfresco.service.cmr.attributes.AttributeService;
+import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.locking.AVMLock;
@@ -53,6 +53,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
     public static final String LOCK_TABLE = ".avm_lock_table";
     public static final String WEB_PROJECTS = "web_projects";
     public static final String USERS = "users";
+    public static final String STORES = "stores";
     
     /**
      * AttributeService reference.
@@ -88,7 +89,8 @@ public class AVMLockingServiceImpl implements AVMLockingService
     
     public void init()
     {
-        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        RetryingTransactionHelper.RetryingTransactionCallback<Object> callback = 
+            new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
         {
             public Object execute()
             {
@@ -100,6 +102,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
                 fAttributeService.setAttribute("", LOCK_TABLE, new MapAttributeValue());
                 fAttributeService.setAttribute(LOCK_TABLE, WEB_PROJECTS, new MapAttributeValue());
                 fAttributeService.setAttribute(LOCK_TABLE, USERS, new MapAttributeValue());
+                fAttributeService.setAttribute(LOCK_TABLE, STORES, new MapAttributeValue());
                 return null;
             }
         };
@@ -182,6 +185,9 @@ public class AVMLockingServiceImpl implements AVMLockingService
             throw new AVMExistsException("Lock Exists: " + keys);
         }
         fAttributeService.setAttribute(keys, MD5.Digest(lock.getPath().getBytes()), lockData);
+        Attribute reverseEntry = new MapAttributeValue();
+        reverseEntry.put("web_project", new StringAttributeValue(lock.getWebProject()));
+        reverseEntry.put("path", new StringAttributeValue(lock.getPath()));        
         keys.clear();
         keys.add(LOCK_TABLE);
         keys.add(USERS);
@@ -195,12 +201,22 @@ public class AVMLockingServiceImpl implements AVMLockingService
                 fAttributeService.setAttribute(keys, user, new ListAttributeValue());
             }
             keys.add(user);
-            Attribute entry = new MapAttributeValue();
-            entry.put("web_project", new StringAttributeValue(lock.getWebProject()));
-            entry.put("path", new StringAttributeValue(lock.getPath()));
-            fAttributeService.addAttribute(keys, entry);
+            fAttributeService.addAttribute(keys, reverseEntry);
             keys.remove(2);
         }
+        String store = lock.getStore();
+        keys.clear();
+        keys.add(LOCK_TABLE);
+        keys.add(STORES);
+        keys.add(store);
+        Attribute storeEntry = fAttributeService.getAttribute(keys);
+        keys.remove(2);
+        if (storeEntry == null)
+        {
+            fAttributeService.setAttribute(keys, store, new ListAttributeValue());
+        }
+        keys.add(store);
+        fAttributeService.addAttribute(keys, reverseEntry);
     }
 
     /* (non-Javadoc)
@@ -230,7 +246,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
         {
             userKeys.add(user);            
             Attribute userLocks = fAttributeService.getAttribute(userKeys);
-            for (int i = 0; i < userLocks.size(); i++)
+            for (int i = userLocks.size() - 1; i >= 0; i--)
             {
                 Attribute lockInfo = userLocks.get(i);
                 if (lockInfo.get("web_project").getStringValue().equals(lock.getWebProject())
@@ -241,6 +257,22 @@ public class AVMLockingServiceImpl implements AVMLockingService
                 }
             }
             userKeys.remove(2);
+        }
+        List<String> storeKeys = new ArrayList<String>();
+        storeKeys.add(LOCK_TABLE);
+        storeKeys.add(STORES);
+        String store = lock.getStore();
+        storeKeys.add(store);
+        Attribute storeLocks = fAttributeService.getAttribute(storeKeys);
+        for (int i = storeLocks.size() - 1; i >= 0; i--)
+        {
+            Attribute lockInfo = storeLocks.get(i);
+            if (lockInfo.get("web_project").getStringValue().equals(lock.getWebProject()) &&
+                lockInfo.get("path").getStringValue().equals(lock.getPath()))
+            {
+                fAttributeService.removeAttribute(storeKeys, i);
+                break;
+            }
         }
     }
 
@@ -291,6 +323,8 @@ public class AVMLockingServiceImpl implements AVMLockingService
         userKeys.add(LOCK_TABLE);
         userKeys.add(USERS);
         List<String> users = fAttributeService.getKeys(userKeys);
+        // TODO This works incredibly slowly. AttributeService has to support
+        // extended querying on values.
         for (String user : users)
         {
             userKeys.add(user);
@@ -307,9 +341,149 @@ public class AVMLockingServiceImpl implements AVMLockingService
             userKeys.remove(2);
             fAttributeService.setAttribute(userKeys, user, userLocks);
         }
+        List<String> storeKeys = new ArrayList<String>();
+        storeKeys.add(LOCK_TABLE);
+        storeKeys.add(STORES);
+        List<String> stores = fAttributeService.getKeys(storeKeys);
+        // TODO Ditto.
+        for (String store : stores)
+        {
+            storeKeys.add(store);
+            Attribute storeLocks = fAttributeService.getAttribute(storeKeys);
+            Iterator<Attribute> iter = storeLocks.iterator();
+            while (iter.hasNext())
+            {
+                Attribute lockInfo = iter.next();
+                if (lockInfo.get("web_project").getStringValue().equals(webProject))
+                {
+                    iter.remove();
+                }
+            }
+            storeKeys.remove(2);
+            fAttributeService.setAttribute(storeKeys, store, storeLocks);
+        }
         List<String> keys = new ArrayList<String>();
         keys.add(LOCK_TABLE);
         keys.add(WEB_PROJECTS);
         fAttributeService.removeAttribute(keys, webProject);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#getStoreLocks(java.lang.String)
+     */
+    public List<AVMLock> getStoreLocks(String store)
+    {
+        List<AVMLock> locks = new ArrayList<AVMLock>();
+        List<String> keys = new ArrayList<String>();
+        keys.add(LOCK_TABLE);
+        keys.add(STORES);
+        keys.add(store);
+        List<String> lockKeys = new ArrayList<String>();
+        lockKeys.add(LOCK_TABLE);
+        lockKeys.add(WEB_PROJECTS);
+        Attribute storeLocks = fAttributeService.getAttribute(keys);
+        for (Attribute lockInfo : storeLocks)
+        {
+            String webProject = lockInfo.get("web_project").getStringValue();
+            String path = lockInfo.get("path").getStringValue();
+            lockKeys.add(webProject);
+            lockKeys.add(MD5.Digest(path.getBytes()));
+            Attribute lockData = fAttributeService.getAttribute(lockKeys);
+            locks.add(new AVMLock(lockData));
+            lockKeys.remove(3);
+            lockKeys.remove(2);
+        }
+        return locks;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#modifyLock(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.List, java.util.List)
+     */
+    public void modifyLock(String webProject, String path, String newPath, String newStore, List<String> usersToRemove, List<String> usersToAdd)
+    {
+        AVMLock lock = getLock(webProject, path);
+        if (lock == null)
+        {
+            throw new AVMNotFoundException("Lock not found for " + webProject + ":" + path);
+        }
+        removeLock(webProject, path);
+        if (newPath != null)
+        {
+            lock.setPath(newPath);
+        }
+        if (newStore != null)
+        {
+            lock.setStore(newStore);
+        }
+        if (usersToRemove != null)
+        {
+            for (String user : usersToRemove)
+            {
+                lock.getOwners().remove(user);
+            }
+        }
+        if (usersToAdd != null)
+        {
+            for (String user : usersToAdd)
+            {
+                if (lock.getOwners().contains(user))
+                {
+                    continue;
+                }
+                lock.getOwners().add(user);
+            }
+        }
+        lockPath(lock);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#removeStoreLocks(java.lang.String)
+     */
+    public void removeStoreLocks(String store)
+    {
+        List<String> storeKeys = new ArrayList<String>();
+        storeKeys.add(LOCK_TABLE);
+        storeKeys.add(STORES);
+        storeKeys.add(store);
+        Attribute storeLocks = fAttributeService.getAttribute(storeKeys);
+        if (storeLocks == null)
+        {
+            return;
+        }
+        for (Attribute lockInfo : storeLocks)
+        {
+            removeLock(lockInfo.get("web_project").getStringValue(),
+                       lockInfo.get("path").getStringValue());
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#motherMayI(java.lang.String, java.lang.String)
+     */
+    public boolean motherMayI(String webProject, String avmPath, String user)
+    {
+        String[] storePath = avmPath.split(":");
+        if (storePath.length != 2)
+        {
+            throw new AVMBadArgumentException("Malformed AVM Path : " + avmPath);
+        }
+        AVMLock lock = getLock(webProject, storePath[1]);
+        if (lock == null)
+        {
+            return true;
+        }
+        if (!lock.getStore().equals(storePath[0]))
+        {
+            return false;
+        }
+        List<String> owners = lock.getOwners();
+        if (owners.contains(user))
+        {
+            return true;
+        }
+        // TODO Figure out how the users, groups, roles mess works and give an answer
+        // based on that. <rant>Our entire access control and user, group, role approach
+        // is apalling and needs to be replaced.</rant>
+        return false;
     }
 }

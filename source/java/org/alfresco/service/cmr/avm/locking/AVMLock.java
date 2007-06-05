@@ -97,7 +97,6 @@ public class AVMLock implements Serializable
         fOwners = owners;
     }
                    
-    
     public AVMLock(Attribute lockData)
     {
         fPath = lockData.get(PATH).getStringValue();
@@ -142,6 +141,15 @@ public class AVMLock implements Serializable
     {
         return fPath;
     }
+    
+    /**
+     * Set the path of this lock.
+     * @param path
+     */
+    public void setPath(String path)
+    {
+        fPath = path;
+    }
 
     /**
      * @return the Store
@@ -149,6 +157,15 @@ public class AVMLock implements Serializable
     public String getStore()
     {
         return fStore;
+    }
+    
+    /**
+     * Set the store of this lock.
+     * @param store
+     */
+    public void setStore(String store)
+    {
+        fStore = store;
     }
 
     /**

@@ -52,6 +52,7 @@ public class MimetypeMap implements MimetypeService
     
     public static final String MIMETYPE_TEXT_PLAIN = "text/plain";
     public static final String MIMETYPE_TEXT_CSS = "text/css";    
+    public static final String MIMETYPE_TEXT_JAVASCRIPT = "text/javascript";    
     public static final String MIMETYPE_XML = "text/xml";
     public static final String MIMETYPE_HTML = "text/html";
     public static final String MIMETYPE_XHTML = "application/xhtml+xml";

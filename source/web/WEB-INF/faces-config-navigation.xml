@@ -264,14 +264,6 @@
    </navigation-rule>
    
    <navigation-rule>
-      <from-view-id>/jsp/dialog/edit-xml-inline.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>checkoutFile</from-outcome>
-         <to-view-id>/jsp/dialog/checkout-file.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
       <from-view-id>/jsp/dialog/checkout-file.jsp</from-view-id>
       <navigation-case>
          <from-outcome>checkoutFileLink</from-outcome>
@@ -911,10 +903,6 @@
       <navigation-case>
          <from-outcome>editAvmFile</from-outcome>
          <to-view-id>/jsp/wcm/edit-file.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>editAvmXmlInline</from-outcome>
-         <to-view-id>/jsp/wcm/edit-xml-inline.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
          <from-outcome>updateAvmFile</from-outcome>

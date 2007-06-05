@@ -20,9 +20,8 @@ package org.alfresco.web.bean.wcm;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
@@ -34,19 +33,15 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.util.Pair;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
-import org.alfresco.web.bean.CheckinCheckoutBean;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.forms.Form;
@@ -58,6 +53,7 @@ import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.forms.RenditionImpl;
 import org.alfresco.web.forms.XMLUtil;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.component.UIActionLink;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
@@ -70,6 +66,8 @@ import org.w3c.dom.Document;
  */
 public class AVMEditBean
 {
+   public static final String BEAN_NAME = "AVMEditBean";
+   
    private static final Log LOGGER = LogFactory.getLog(AVMEditBean.class);
    
    private static final String MSG_ERROR_UPDATE = "error_update";
@@ -101,6 +99,7 @@ public class AVMEditBean
 
    /** The FilePickerBean reference */
    protected FilePickerBean filePickerBean;
+   
    
    // ------------------------------------------------------------------------------
    // Bean property getters and setters 
@@ -333,7 +332,19 @@ public class AVMEditBean
     */
    public void setupEditAction(ActionEvent event)
    {
-      this.avmBrowseBean.setupContentAction(event);
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String path = params.get("id");
+      setupEditAction(path);
+   }
+   
+   /**
+    * Action handler called to calculate which editing screen to display based on the mimetype
+    * of a document. If appropriate, the in-line editing screen will be shown.
+    */
+   public void setupEditAction(String path)
+   {
+      this.avmBrowseBean.setupContentAction(path, true);
       
       // retrieve the content reader for this node
       String avmPath = getAvmNode().getPath();
@@ -366,12 +377,12 @@ public class AVMEditBean
          // reset the preview layer
          String storeName = AVMUtil.getStoreName(avmPath);
          storeName = AVMUtil.getCorrespondingPreviewStoreName(storeName);
-         final String path = AVMUtil.buildStoreRootPath(storeName);
+         final String rootPath = AVMUtil.buildStoreRootPath(storeName);
 
          if (LOGGER.isDebugEnabled())
-             LOGGER.debug("reseting layer " + path);
+             LOGGER.debug("reseting layer " + rootPath);
 
-         this.avmSyncService.resetLayer(path);
+         this.avmSyncService.resetLayer(rootPath);
       }
 
       this.filePickerBean.clearUploadedFiles();
@@ -395,7 +406,7 @@ public class AVMEditBean
             this.form = null;
             
             // navigate to appropriate screen
-            outcome = "dialog:editAvmXmlInline";
+            outcome = "dialog:editXmlInline";
          }
          else
          {
@@ -426,76 +437,6 @@ public class AVMEditBean
       }
       
       return outcome;
-   }
-   
-   /**
-    * Action handler called to set the content of a node from an inline editing page.
-    */
-   public String editInlineOK()
-   {
-      UserTransaction tx = null;
-      final AVMNode avmNode = getAvmNode();
-      if (avmNode == null)
-      {
-         return null;
-      }
-      
-      final String avmPath = avmNode.getPath();
-
-      if (LOGGER.isDebugEnabled())
-          LOGGER.debug("saving " + avmPath);
-
-      try
-      {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-         tx.begin();
-         
-         // get an updating writer that we can use to modify the content on the current node
-         final ContentWriter writer = this.avmService.getContentWriter(avmPath);
-         if (this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
-         {
-            this.editorOutput = XMLUtil.toString(this.instanceDataDocument, false);
-         }
-         writer.putContent(this.editorOutput);
-         
-         // commit the transaction
-         tx.commit();
-         
-         // regenerate form content
-         if (this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
-         {
-            this.regenerateRenditions();
-         }
-         final NodeRef[] uploadedFiles = this.filePickerBean.getUploadedFiles();
-
-         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("updating " + uploadedFiles.length + " uploaded files");
-         
-         final List<AVMDifference> diffList = new ArrayList<AVMDifference>(uploadedFiles.length);
-         for (NodeRef uploadedFile : uploadedFiles)
-         {
-            final String path = AVMNodeConverter.ToAVMVersionPath(uploadedFile).getSecond();
-            diffList.add(new AVMDifference(-1, path,
-                                           -1, AVMUtil.getCorrespondingPathInMainStore(path),
-                                           AVMDifference.NEWER));
-         }
-         this.avmSyncService.update(diffList, null, true, true, true, true, null, null);
-            
-         // Possibly notify virt server
-         AVMUtil.updateVServerWebapp(avmNode.getPath(), false);
-         
-         this.resetState();
-         
-         return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
-      }
-      catch (Throwable err)
-      {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-         Utils.addErrorMessage(Application.getMessage(
-                                  FacesContext.getCurrentInstance(), CheckinCheckoutBean.MSG_ERROR_UPDATE) + err.getMessage());
-         return null;
-      }
    }
    
    /**
@@ -562,7 +503,7 @@ public class AVMEditBean
       return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
    }
    
-   private void resetState()
+   /*package*/ void resetState()
    {
       // clean up and clear action context
       clearUpload();
@@ -593,7 +534,7 @@ public class AVMEditBean
       ctx.getExternalContext().getSessionMap().remove(FileUploadBean.FILE_UPLOAD_BEAN_NAME);
    }
 
-   private void regenerateRenditions()
+   /*package*/ void regenerateRenditions()
    {
       final String avmPath = this.getAvmNode().getPath();
       final FormInstanceData fid = new FormInstanceDataImpl(AVMNodeConverter.ToNodeRef(-1, avmPath))

@@ -246,6 +246,10 @@
                  managed-bean="MonitorDeploymentDialog"
                  icon="/images/icons/deploy_large.gif" title-id="monitor_deployment_title" 
                  description-id="monitor_deployment_desc" show-ok-button="false"/>
+         
+         <dialog name="editXmlInline" page="/jsp/wcm/edit-xml-inline.jsp" 
+                 managed-bean="EditXmlInlineDialog" icon="/images/icons/edit_large.gif"
+                 title-id="title_edit_xml_inline" description-id="editfileinline_description" />
       </dialogs>
    </config>
    

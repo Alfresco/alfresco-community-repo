@@ -2768,6 +2768,31 @@
    
    <managed-bean>
       <description>
+         The bean that backs up the Edit Xml XForms dialog
+      </description>
+      <managed-bean-name>EditXmlInlineDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.EditXmlInlineDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmSyncService</property-name>
+         <value>#{AVMSyncService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmEditBean</property-name>
+         <value>#{AVMEditBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>filePickerBean</property-name>
+         <value>#{FilePickerBean}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
          The bean that backs up the Snapshot Sandbox Dialog
       </description>
       <managed-bean-name>SnapshotSandboxDialog</managed-bean-name>

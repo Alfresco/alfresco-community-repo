@@ -67,8 +67,8 @@ public abstract class NetworkServer
 
     // Server shutdown flag and server active flag
 
-    private boolean m_shutdown = false;
-    private boolean m_active = false;
+    private volatile boolean m_shutdown = false;
+    private volatile boolean m_active = false;
 
     // Server error exception details
 

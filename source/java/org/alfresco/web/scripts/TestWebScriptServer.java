@@ -42,6 +42,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.config.ServerConfigElement;
 import org.springframework.context.ApplicationContext;
@@ -62,6 +63,7 @@ public class TestWebScriptServer
     // dependencies
     protected AuthenticationService authenticationService;
     protected TransactionService transactionService;
+    protected AuthorityService authorityService;
     protected DeclarativeWebScriptRegistry registry;
     protected ConfigService configService;
     
@@ -118,7 +120,15 @@ public class TestWebScriptServer
     {
         this.authenticationService = authenticationService;
     }
-    
+
+    /**
+     * @param authorityService
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+
     /**
      * Sets the Messages resource bundle
      * 
@@ -200,7 +210,7 @@ public class TestWebScriptServer
         MockHttpServletRequest req = createRequest(method, uri);
         MockHttpServletResponse res = new MockHttpServletResponse();
         
-        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, null, req, res, serverConfig);
+        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, authorityService, null, req, res, serverConfig);
         runtime.executeScript();
 
         return res;
@@ -225,7 +235,7 @@ public class TestWebScriptServer
         }
         MockHttpServletResponse res = new MockHttpServletResponse();
         
-        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, null, req, res, serverConfig);
+        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, authorityService, null, req, res, serverConfig);
         runtime.executeScript();
 
         return res;

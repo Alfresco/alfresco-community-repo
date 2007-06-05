@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.config.ServerConfigElement;
 import org.apache.commons.logging.Log;
@@ -56,6 +57,7 @@ public class WebScriptServlet extends HttpServlet
     // Component Dependencies
     private DeclarativeWebScriptRegistry registry;
     private TransactionService transactionService;
+    private AuthorityService authorityService;
     private WebScriptServletAuthenticator authenticator;
     protected ConfigService configService;
 
@@ -70,6 +72,7 @@ public class WebScriptServlet extends HttpServlet
         ApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
         registry = (DeclarativeWebScriptRegistry)context.getBean("webscripts.registry");
         transactionService = (TransactionService)context.getBean("transactionComponent");
+        authorityService = (AuthorityService)context.getBean("authorityServce");
         configService = (ConfigService)context.getBean("webClientConfigService");
 
         // retrieve authenticator via servlet initialisation parameter
@@ -105,7 +108,7 @@ public class WebScriptServlet extends HttpServlet
         res.setHeader("Cache-Control", "no-cache");
         res.setHeader("Pragma", "no-cache");
         
-        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, authenticator, req, res, serverConfig);
+        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, authorityService, authenticator, req, res, serverConfig);
         runtime.executeScript();
     }
     

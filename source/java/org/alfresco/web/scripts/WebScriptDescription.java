@@ -42,7 +42,8 @@ public interface WebScriptDescription
     {
         none,
         guest,
-        user
+        user,
+        admin
     }
     
     /**

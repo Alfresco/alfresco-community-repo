@@ -27,6 +27,7 @@ package org.alfresco.web.scripts;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.config.ServerConfigElement;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
@@ -54,10 +55,11 @@ public class WebScriptServletRuntime extends WebScriptRuntime
      * @param req
      * @param res
      */
-    public WebScriptServletRuntime(WebScriptRegistry registry, TransactionService transactionService, WebScriptServletAuthenticator authenticator,
+    public WebScriptServletRuntime(WebScriptRegistry registry, TransactionService transactionService, 
+            AuthorityService authorityService, WebScriptServletAuthenticator authenticator,
             HttpServletRequest req, HttpServletResponse res, ServerConfigElement serverConfig)
     {
-        super(registry, transactionService);
+        super(registry, transactionService, authorityService);
         this.req = req;
         this.res = res;
         this.authenticator = authenticator;
@@ -78,13 +80,13 @@ public class WebScriptServletRuntime extends WebScriptRuntime
             String overload = req.getHeader("X-HTTP-Method-Override");
             if (overload == null || overload.length() == 0)
             {
-                overload = req.getParameter("alf:method");
+                overload = req.getParameter("alf_method");
                 overloadParam = true;
             }
             if (overload != null && overload.length() > 0)
             {
                 if (logger.isDebugEnabled())
-                    logger.debug("POST is tunnelling method '" + overload + "' as specified by " + (overloadParam ? "alf:method parameter" : "X-HTTP-Method-Override header"));
+                    logger.debug("POST is tunnelling method '" + overload + "' as specified by " + (overloadParam ? "alf_method parameter" : "X-HTTP-Method-Override header"));
                     
                 method = overload;
             }

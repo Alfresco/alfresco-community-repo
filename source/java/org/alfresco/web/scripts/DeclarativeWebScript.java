@@ -33,6 +33,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.jscript.Node;
 import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.template.TemplateNode;
@@ -132,12 +133,34 @@ public class DeclarativeWebScript extends AbstractWebScript
                 {
                     res.setStatus(statusCode);
                 }
-                res.setContentType(mimetype + ";charset=UTF-8");
                 
-                if (logger.isDebugEnabled())
-                    logger.debug("Rendering response: content type=" + mimetype + ", status=" + statusCode);
+                String callback = req.getJSONCallback();
+                if (format.equals(WebScriptResponse.JSON_FORMAT) && callback != null)
+                {
+                    
+                    if (logger.isDebugEnabled())
+                        logger.debug("Rendering JSON callback response: content type=" + MimetypeMap.MIMETYPE_TEXT_JAVASCRIPT + ", status=" + statusCode + ", callback=" + callback);
+                    
+                    // NOTE: special case for wrapping JSON results in a javascript function callback
+                    res.setContentType(MimetypeMap.MIMETYPE_TEXT_JAVASCRIPT + ";charset=UTF-8");
+                    res.getOutputStream().write((callback + "(").getBytes());
+                }
+                else
+                {
+                    if (logger.isDebugEnabled())
+                        logger.debug("Rendering response: content type=" + mimetype + ", status=" + statusCode);
+
+                    res.setContentType(mimetype + ";charset=UTF-8");
+                }
             
+                // render response according to requested format
                 renderFormatTemplate(format, templateModel, res.getWriter());
+                
+                if (format.equals(WebScriptResponse.JSON_FORMAT) && callback != null)
+                {
+                    // NOTE: special case for wrapping JSON results in a javascript function callback
+                    res.getOutputStream().write(")".getBytes());
+                }
             }
         }
         catch(Throwable e)

@@ -39,6 +39,7 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.scripts.DeclarativeWebScriptRegistry;
 import org.alfresco.web.scripts.WebScript;
@@ -73,6 +74,7 @@ public class WebScriptPortlet implements Portlet
     // Component Dependencies
     protected DeclarativeWebScriptRegistry registry;
     protected TransactionService transactionService;
+    protected AuthorityService authorityService;
     protected WebScriptPortletAuthenticator authenticator;
 
 
@@ -86,6 +88,7 @@ public class WebScriptPortlet implements Portlet
         WebApplicationContext ctx = (WebApplicationContext)portletCtx.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
         registry = (DeclarativeWebScriptRegistry)ctx.getBean("webscripts.registry");
         transactionService = (TransactionService)ctx.getBean("transactionComponent");
+        authorityService = (AuthorityService)ctx.getBean("authorityService");
         authenticator = (WebScriptPortletAuthenticator)ctx.getBean("webscripts.authenticator.jsr168");
     }
 
@@ -209,7 +212,7 @@ public class WebScriptPortlet implements Portlet
          */
         public WebScriptPortalRuntime(RenderRequest req, RenderResponse res, String requestUrl)
         {
-            super(registry, transactionService);
+            super(registry, transactionService, authorityService);
             this.req = req;
             this.res = res;
             this.requestUrlParts = WebScriptURLRequest.splitURL(requestUrl);

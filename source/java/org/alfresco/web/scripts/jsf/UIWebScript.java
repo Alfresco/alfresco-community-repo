@@ -37,6 +37,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.event.FacesEvent;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.scripts.DeclarativeWebScriptRegistry;
 import org.alfresco.web.scripts.WebScriptMatch;
@@ -70,6 +71,7 @@ public class UIWebScript extends SelfRenderingComponent
    
    private WebScriptRegistry registry;
    private TransactionService txnService;
+   private AuthorityService authorityService;
    
    /**
     * Default constructor
@@ -80,6 +82,7 @@ public class UIWebScript extends SelfRenderingComponent
             FacesContext.getCurrentInstance());
       this.registry = (DeclarativeWebScriptRegistry)ctx.getBean("webscripts.registry");
       this.txnService = (TransactionService)ctx.getBean("transactionComponent");
+      this.authorityService = (AuthorityService)ctx.getBean("authorityService");
    }
    
    /**
@@ -225,7 +228,7 @@ public class UIWebScript extends SelfRenderingComponent
       
       WebScriptJSFRuntime(FacesContext fc, String scriptUrl)
       {
-         super(registry, txnService);
+         super(registry, txnService, authorityService);
          this.fc = fc;
          this.scriptUrl = scriptUrl;
          this.script = WebScriptURLRequest.splitURL(scriptUrl)[2];

@@ -28,13 +28,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredTransaction;
@@ -62,6 +62,7 @@ public abstract class WebScriptRuntime
     /** Component Dependencies */
     private WebScriptRegistry registry;
     private TransactionService transactionService;
+    private AuthorityService authorityService;
 
     /**
      * Construct
@@ -69,10 +70,11 @@ public abstract class WebScriptRuntime
      * @param registry  web script registry
      * @param transactionService  transaction service
      */
-    public WebScriptRuntime(WebScriptRegistry registry, TransactionService transactionService)
+    public WebScriptRuntime(WebScriptRegistry registry, TransactionService transactionService, AuthorityService authorityService)
     {
         this.registry = registry;
         this.transactionService = transactionService;
+        this.authorityService = authorityService;
     }
     
     /**
@@ -265,7 +267,7 @@ public abstract class WebScriptRuntime
         {
             wrappedExecute(scriptReq, scriptRes);
         }
-        else if (required == RequiredAuthentication.user && isGuest)
+        else if ((required == RequiredAuthentication.user || required == RequiredAuthentication.admin) && isGuest)
         {
             throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + desc.getId() + " requires user authentication; however, a guest has attempted access.");
         }
@@ -291,6 +293,11 @@ public abstract class WebScriptRuntime
                 //
                 if (authenticate(required, isGuest))
                 {
+                    if (required == RequiredAuthentication.admin && !authorityService.hasAdminAuthority())
+                    {
+                        throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + desc.getId() + " requires admin authentication; however, a non-admin has attempted access.");
+                    }
+                    
                     // Execute Web Script
                     wrappedExecute(scriptReq, scriptRes);
                 }

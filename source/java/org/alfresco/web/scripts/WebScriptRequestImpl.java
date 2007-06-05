@@ -138,5 +138,13 @@ public abstract class WebScriptRequestImpl implements WebScriptRequest
             }
         }
     }
-    
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequest#getJSONCallback()
+     */
+    public String getJSONCallback()
+    {
+        return getParameter("alf_callback");
+    }
+
 }

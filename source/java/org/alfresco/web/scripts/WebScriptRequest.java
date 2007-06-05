@@ -140,6 +140,13 @@ public interface WebScriptRequest
      * @return  format style (excludes any)
      */
     public FormatStyle getFormatStyle();
+ 
+    /**
+     * Get the JSON callback method
+     * 
+     * @return  method (or null, if not specified)
+     */
+    public String getJSONCallback();
     
     /**
      * Get User Agent

@@ -259,6 +259,7 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                 {
                     // establish static part of url template
                     boolean wildcard = false;
+                    boolean extension = true;
                     String uriTemplate = uri.getURI();
                     int queryArgIdx = uriTemplate.indexOf('?');
                     if (queryArgIdx != -1)
@@ -278,6 +279,7 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                         {
                             uriTemplate = uriTemplate.substring(0, extIdx);
                         }
+                        extension = false;
                     }
                     
                     // index service by static part of url (ensuring no other service has already claimed the url)
@@ -294,7 +296,7 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                     }
                     else
                     {
-                        URLIndex urlIndex = new URLIndex(uriTemplate, wildcard, serviceImpl);
+                        URLIndex urlIndex = new URLIndex(uriTemplate, wildcard, extension, serviceImpl);
                         webscriptsByURL.put(uriIdx, urlIndex);
                         
                         if (logger.isDebugEnabled())
@@ -580,13 +582,15 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
         String matchedPath = null;
         DeclarativeWebScriptMatch apiServiceMatch = null;
         String match = method.toString().toUpperCase() + ":" + uri;
+        String matchNoExt = method.toString().toUpperCase() + ":" + ((uri.indexOf('.') != -1) ? uri.substring(0, uri.indexOf('.')) : uri);
         
         // locate full match - on URI and METHOD
         for (Map.Entry<String, URLIndex> entry : webscriptsByURL.entrySet())
         {
             URLIndex urlIndex = entry.getValue();
             String index = entry.getKey();
-            if ((urlIndex.wildcardPath && match.startsWith(index)) || (!urlIndex.wildcardPath && match.equals(index)))
+            String test = urlIndex.includeExtension ? match : matchNoExt; 
+            if ((urlIndex.wildcardPath && test.startsWith(index)) || (!urlIndex.wildcardPath && test.equals(index)))
             {
                 apiServiceMatch = new DeclarativeWebScriptMatch(urlIndex.path, urlIndex.script); 
                 break;
@@ -715,15 +719,17 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
      */
     private static class URLIndex
     {
-        private URLIndex(String path, boolean wildcardPath, WebScript script)
+        private URLIndex(String path, boolean wildcardPath, boolean includeExtension, WebScript script)
         {
             this.path = path;
             this.wildcardPath = wildcardPath;
+            this.includeExtension = includeExtension;
             this.script = script;
         }
         
         private String path;
         private boolean wildcardPath;
+        private boolean includeExtension;
         private WebScript script;
     }
     

@@ -25,14 +25,19 @@
 package org.alfresco.repo.template;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.NameMatcher;
 import org.alfresco.util.ParameterCheck;
 
 /**
@@ -43,6 +48,7 @@ import org.alfresco.util.ParameterCheck;
 public class AVM extends BaseTemplateProcessorExtension
 {
     private ServiceRegistry services;
+    private NameMatcher matcher;
 
     /**
      * Sets the service registry
@@ -53,7 +59,12 @@ public class AVM extends BaseTemplateProcessorExtension
     {
         this.services = services;
     }
-    
+
+    public void setNameMatcher(NameMatcher matcher)
+    {
+        this.matcher = matcher;
+    }
+
     /**
      * Return an AVM store object for the specified store name
      * 
@@ -63,6 +74,7 @@ public class AVM extends BaseTemplateProcessorExtension
      */
     public AVMTemplateStore lookupStore(String store)
     {
+        ParameterCheck.mandatoryString("Store", store);
         AVMTemplateStore avmStore = null;
         AVMStoreDescriptor descriptor = this.services.getAVMService().getStore(store);
         if (descriptor != null)
@@ -71,7 +83,7 @@ public class AVM extends BaseTemplateProcessorExtension
         }
         return avmStore;
     }
-    
+
     /**
      * Return the root node for a specified AVM store
      * 
@@ -81,18 +93,16 @@ public class AVM extends BaseTemplateProcessorExtension
      */
     public AVMTemplateNode lookupStoreRoot(String store)
     {
+        ParameterCheck.mandatoryString("Store", store);
         AVMTemplateNode root = null;
-        if (store != null && store.length() != 0)
+        AVMTemplateStore avmStore = lookupStore(store);
+        if (avmStore != null)
         {
-            AVMTemplateStore avmStore = lookupStore(store);
-            if (avmStore != null)
-            {
-                root = avmStore.getLookupRoot();
-            }
+            root = avmStore.getLookupRoot();
         }
         return root;
     }
-    
+
     /**
      * Look a node by the absolute path. Path should include the store reference.
      * 
@@ -102,41 +112,83 @@ public class AVM extends BaseTemplateProcessorExtension
      */
     public AVMTemplateNode lookupNode(String path)
     {
+        ParameterCheck.mandatoryString("AVM Path", path);
         AVMTemplateNode node = null;
-        if (path != null && path.length() != 0)
+        AVMNodeDescriptor nodeDesc = this.services.getAVMService().lookup(-1, path);
+        if (nodeDesc != null)
         {
-            AVMNodeDescriptor nodeDesc = this.services.getAVMService().lookup(-1, path);
-            if (nodeDesc != null)
-            {
-                node = new AVMTemplateNode(path, -1, this.services, getTemplateImageResolver());
-            }
+            node = new AVMTemplateNode(path, -1, this.services, getTemplateImageResolver());
         }
         return node;
     }
-    
+
+    /**
+     * Return the list of modified items for the specified user sandbox against staging store id
+     * for a specific webapp.
+     * 
+     * @param storeId      Root Store ID
+     * @param username     Username to get modified items for
+     * @param webapp       Webapp name to filter by
+     * 
+     * @return List of AVMTemplateNode objects representing the modified items
+     */
+    public List<AVMTemplateNode> getModifiedItems(String storeId, String username, String webapp)
+    {
+        ParameterCheck.mandatoryString("Store ID", storeId);
+        ParameterCheck.mandatoryString("Username", username);
+        ParameterCheck.mandatoryString("Webapp", webapp);
+
+        List<AVMTemplateNode> items;
+
+        AVMService avmService = this.services.getAVMService();
+
+        // build the paths to the stores to compare - filter by current webapp
+        String userStore = userSandboxStore(storeId, username);
+        String userStorePath = getStoreRootWebappPath(userStore, webapp);
+        String stagingStore = stagingStore(storeId);
+        String stagingStorePath = getStoreRootWebappPath(stagingStore, webapp);
+        
+        List<AVMDifference> diffs = this.services.getAVMSyncService().compare(
+                -1, userStorePath, -1, stagingStorePath, this.matcher);
+        items = new ArrayList<AVMTemplateNode>(diffs.size());
+        for (AVMDifference diff : diffs)
+        {
+            // convert each diff record into an AVM Node template wrapper
+            String sourcePath = diff.getSourcePath();
+            AVMNodeDescriptor node = avmService.lookup(-1, sourcePath);
+            if (node != null)
+            {
+                items.add(new AVMTemplateNode(node, this.services, getTemplateImageResolver()));
+            }
+        }
+
+        return items;
+    }
+
     /**
      * @param storeId   Store ID to build staging store name for
      * 
      * @return the Staging Store name for the given store ID
      */
-    public String stagingStore(String storeId)
+    public static String stagingStore(String storeId)
     {
+        ParameterCheck.mandatoryString("Store ID", storeId);
         return storeId;
     }
-    
+
     /**
      * @param storeId   Store ID to build sandbox store name for
      * @param username  Username of the sandbox user
      * 
      * @return the Sandbox Store name for the given store ID and username
      */
-    public String userSandboxStore(String storeId, String username)
+    public static String userSandboxStore(String storeId, String username)
     {
         ParameterCheck.mandatoryString("Store ID", storeId);
         ParameterCheck.mandatoryString("Username", username);
         return storeId + "--" + username;
     }
-    
+
     /**
      * @param storeId   Store ID to build preview URL for
      * 
@@ -144,10 +196,11 @@ public class AVM extends BaseTemplateProcessorExtension
      */
     public String websiteStagingUrl(String storeId)
     {
+        ParameterCheck.mandatoryString("Store ID", storeId);
         return MessageFormat.format(JNDIConstants.PREVIEW_SANDBOX_URL,
                 lookupStoreDNS(storeId), getVServerDomain(), getVServerPort());
     }
-    
+
     /**
      * @param storeId   Store ID to build preview URL for
      * @param username  Username to build sandbox preview URL for
@@ -156,9 +209,11 @@ public class AVM extends BaseTemplateProcessorExtension
      */
     public String websiteUserSandboxUrl(String storeId, String username)
     {
+        ParameterCheck.mandatoryString("Store ID", storeId);
+        ParameterCheck.mandatoryString("Username", username);
         return websiteStagingUrl(userSandboxStore(storeId, username));
     }
-    
+
     /**
      * @param store     Store ID of the asset
      * @param assetPath Store relative path to the asset
@@ -169,11 +224,12 @@ public class AVM extends BaseTemplateProcessorExtension
     {
         ParameterCheck.mandatoryString("Store", store);
         ParameterCheck.mandatoryString("Asset Path", assetPath);
+        
         if (assetPath.startsWith('/' + JNDIConstants.DIR_DEFAULT_WWW + 
-                                 '/' + JNDIConstants.DIR_DEFAULT_APPBASE))
+                '/' + JNDIConstants.DIR_DEFAULT_APPBASE))
         {
             assetPath = assetPath.substring(('/' + JNDIConstants.DIR_DEFAULT_WWW + 
-                                             '/' + JNDIConstants.DIR_DEFAULT_APPBASE).length());
+                    '/' + JNDIConstants.DIR_DEFAULT_APPBASE).length());
         }
         if (assetPath.startsWith("/ROOT"))
         {
@@ -202,7 +258,7 @@ public class AVM extends BaseTemplateProcessorExtension
         }
         return assetUrl(s[0], s[1]);
     }
-    
+
     /**
      * @return VServer Port
      */
@@ -228,16 +284,26 @@ public class AVM extends BaseTemplateProcessorExtension
         }
         return domain;
     }
-    
+
     /**
      * @return the path to the webapps folder in a standard web store.
      */
     public static String getWebappsFolderPath()
     {
         return '/' + JNDIConstants.DIR_DEFAULT_WWW +
-               '/' + JNDIConstants.DIR_DEFAULT_APPBASE;
+        '/' + JNDIConstants.DIR_DEFAULT_APPBASE;
     }
-    
+
+    private static String getStoreRootPath(String store)
+    {
+        return store + ":" + getWebappsFolderPath();
+    }
+
+    private static String getStoreRootWebappPath(String store, String webapp)
+    {
+        return getStoreRootPath(store) + '/' + webapp;
+    }
+
     private String lookupStoreDNS(String store)
     {
         Map<QName, PropertyValue> props = 
@@ -245,6 +311,6 @@ public class AVM extends BaseTemplateProcessorExtension
         return (props.size() == 1
                 ? props.keySet().iterator().next().getLocalName().substring(PROP_DNS.length()) : null);
     }
-    
+
     private final static String PROP_DNS = ".dns.";
 }

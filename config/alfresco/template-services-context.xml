@@ -46,6 +46,9 @@
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>
+        <property name="nameMatcher">
+            <ref bean="globalPathExcluder"/>
+        </property>
     </bean>
     
     <bean id="sessionTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.Session">

@@ -4,6 +4,19 @@
 <beans>
 
    <!--  -->
+   <!--  Web Script Resource Bundles -->
+   <!--  -->
+
+   <bean id="webscripts.resources" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+      <property name="resourceBundles">
+         <list>
+            <value>alfresco.messages.webscripts</value>
+         </list>
+      </property>
+   </bean>
+
+
+   <!--  -->
    <!--  API Definition & Implementation Storage -->
    <!--  -->
 

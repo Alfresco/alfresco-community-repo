@@ -36,7 +36,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.web.config.OpenSearchConfigElement;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.WebScriptRequest;
-import org.alfresco.web.scripts.WebScriptResponse;
+import org.alfresco.web.scripts.WebScriptStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -80,7 +80,7 @@ public class SearchEngines extends DeclarativeWebScript
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptResponse res)
+    protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptStatus status)
     {
         String urlType = req.getParameter("type");
         if (urlType == null || urlType.length() == 0)

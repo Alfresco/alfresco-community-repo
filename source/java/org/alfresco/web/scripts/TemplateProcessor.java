@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.scripts;
 
+import java.io.IOException;
+
 import org.alfresco.repo.template.FreeMarkerProcessor;
 import org.alfresco.repo.template.QNameAwareObjectWrapper;
 import org.alfresco.service.cmr.repository.ProcessorExtension;
@@ -37,6 +39,7 @@ import org.springframework.context.ApplicationListener;
 import freemarker.cache.MruCacheStorage;
 import freemarker.cache.TemplateLoader;
 import freemarker.template.Configuration;
+import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 
 
@@ -104,6 +107,26 @@ public class TemplateProcessor extends FreeMarkerProcessor implements Applicatio
         {
             templateConfig.clearTemplateCache();
         }
+    }
+    
+    /**
+     * Determines if a template exists
+     * 
+     * @param template
+     * @return  true => exists
+     */
+    public boolean hasTemplate(String templatePath)
+    {
+        boolean hasTemplate = false;
+        try
+        {
+            Template template = templateConfig.getTemplate(templatePath);
+            hasTemplate = (template != null);
+        }
+        catch(IOException e)
+        {
+        }
+        return hasTemplate;
     }
     
     /**

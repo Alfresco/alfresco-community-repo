@@ -27,11 +27,14 @@ package org.alfresco.web.scripts.bean;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
-import org.alfresco.web.scripts.WebScriptResponse;
+import org.alfresco.web.scripts.WebScriptStatus;
 
 
 /**
@@ -57,25 +60,33 @@ public class Login extends DeclarativeWebScript
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptResponse res)
+    protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptStatus status)
     {
         // extract username and password
         String username = req.getParameter("u");
         if (username == null || username.length() == 0)
         {
-            throw new WebScriptException("Username has not been specified");
+            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Username not specified");
         }
         String password = req.getParameter("pw");
-        
-        // get ticket
-        authenticationService.authenticate(username, password == null ? null : password.toCharArray());
-        
-        // add ticket to model for javascript and template access
+        if (password == null)
+        {
+            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Password not specified");
+        }
+
         try
         {
+            // get ticket
+            authenticationService.authenticate(username, password.toCharArray());
+
+            // add ticket to model for javascript and template access
             Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
             model.put("ticket",  authenticationService.getCurrentTicket());
             return model;
+        }
+        catch(AuthenticationException e)
+        {
+            throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "Login failed");
         }
         finally
         {

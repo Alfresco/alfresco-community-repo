@@ -81,7 +81,7 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
     
     // map of web scripts by url
     // NOTE: The map is sorted by url (descending order)
-    private Map<String, WebScript> webscriptsByURL = new TreeMap<String, WebScript>(Collections.reverseOrder());
+    private Map<String, URLIndex> webscriptsByURL = new TreeMap<String, URLIndex>(Collections.reverseOrder());
     
     // map of web script packages by path
     private Map<String, Path> packageByPath = new TreeMap<String, Path>();
@@ -258,6 +258,7 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                 for (URI uri : serviceDesc.getURIs())
                 {
                     // establish static part of url template
+                    boolean wildcard = false;
                     String uriTemplate = uri.getURI();
                     int queryArgIdx = uriTemplate.indexOf('?');
                     if (queryArgIdx != -1)
@@ -268,6 +269,7 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                     if (tokenIdx != -1)
                     {
                         uriTemplate = uriTemplate.substring(0, tokenIdx);
+                        wildcard = true;
                     }
                     if (serviceDesc.getFormatStyle() != WebScriptDescription.FormatStyle.argument)
                     {
@@ -282,7 +284,8 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                     String uriIdx = serviceDesc.getMethod().toString() + ":" + uriTemplate;
                     if (webscriptsByURL.containsKey(uriIdx))
                     {
-                        WebScript existingService = webscriptsByURL.get(uriIdx);
+                        URLIndex urlIndex = webscriptsByURL.get(uriIdx);
+                        WebScript existingService = urlIndex.script;
                         if (!existingService.getDescription().getId().equals(serviceDesc.getId()))
                         {
                             String msg = "Web Script document " + serviceDesc.getDescPath() + " is attempting to define the url '" + uriIdx + "' already defined by " + existingService.getDescription().getDescPath();
@@ -291,7 +294,8 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                     }
                     else
                     {
-                        webscriptsByURL.put(uriIdx, serviceImpl);
+                        URLIndex urlIndex = new URLIndex(uriTemplate, wildcard, serviceImpl);
+                        webscriptsByURL.put(uriIdx, urlIndex);
                         
                         if (logger.isDebugEnabled())
                             logger.debug("Registered Web Script URL '" + uriIdx + "'");
@@ -357,7 +361,7 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                     subpath = path.createChildPath(part);
                     uriByPath.put(subpath.getPath(), subpath);
                     if (logger.isDebugEnabled())
-                        logger.debug("Registered Web Script URI " + subpath.getPath());
+                        logger.debug("Registered Web Script URI Path " + subpath.getPath());
                 }
                 path = subpath;
             }
@@ -387,7 +391,8 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
             }
 
             // retrieve script path
-            String scriptPath = serviceDescPath.substring(0, serviceDescPath.lastIndexOf('/'));
+            int iPathIdx = serviceDescPath.lastIndexOf('/');
+            String scriptPath = serviceDescPath.substring(0, iPathIdx == -1 ? 0 : iPathIdx);
             
             // retrieve script id
             String id = serviceDescPath.substring(0, serviceDescPath.lastIndexOf(".desc.xml"));
@@ -569,19 +574,38 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
      */
     public WebScriptMatch findWebScript(String method, String uri)
     {
+        long startTime = System.currentTimeMillis();
+        
         // TODO: Replace with more efficient approach
+        String matchedPath = null;
         DeclarativeWebScriptMatch apiServiceMatch = null;
         String match = method.toString().toUpperCase() + ":" + uri;
-        for (Map.Entry<String, WebScript> service : webscriptsByURL.entrySet())
+        
+        // locate full match - on URI and METHOD
+        for (Map.Entry<String, URLIndex> entry : webscriptsByURL.entrySet())
         {
-            String indexedPath = service.getKey();
-            if (match.startsWith(indexedPath))
+            URLIndex urlIndex = entry.getValue();
+            String index = entry.getKey();
+            if ((urlIndex.wildcardPath && match.startsWith(index)) || (!urlIndex.wildcardPath && match.equals(index)))
             {
-                String matchPath = indexedPath.substring(indexedPath.indexOf(':') +1);
-                apiServiceMatch = new DeclarativeWebScriptMatch(matchPath, service.getValue()); 
+                apiServiceMatch = new DeclarativeWebScriptMatch(urlIndex.path, urlIndex.script); 
                 break;
             }
+            else if ((urlIndex.wildcardPath && uri.startsWith(urlIndex.path)) || (!urlIndex.wildcardPath && uri.equals(urlIndex.path)))
+            {
+                matchedPath = urlIndex.path;
+            }
         }
+        
+        // locate URI match
+        if (apiServiceMatch == null && matchedPath != null)
+        {
+            apiServiceMatch = new DeclarativeWebScriptMatch(matchedPath);
+        }
+        
+        if (logger.isDebugEnabled())
+            logger.debug("Web Script index lookup for uri " + uri + " took " + (System.currentTimeMillis() - startTime) + "ms");
+        
         return apiServiceMatch;
     }
 
@@ -634,6 +658,7 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
     {
         private String path;
         private WebScript service;
+        private Kind kind;
 
         /**
          * Construct
@@ -643,8 +668,29 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
          */
         public DeclarativeWebScriptMatch(String path, WebScript service)
         {
+            this.kind = Kind.FULL;
             this.path = path;
             this.service = service;
+        }
+        
+        /**
+         * Construct
+         * 
+         * @param path
+         * @param service
+         */
+        public DeclarativeWebScriptMatch(String path)
+        {
+            this.kind = Kind.URI;
+            this.path = path;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.alfresco.web.scripts.WebScriptMatch#getKind()
+         */
+        public Kind getKind()
+        {
+            return this.kind;
         }
 
         /* (non-Javadoc)
@@ -662,6 +708,23 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
         {
             return service;
         }
+    }
+    
+    /**
+     * Web Script URL Index Entry
+     */
+    private static class URLIndex
+    {
+        private URLIndex(String path, boolean wildcardPath, WebScript script)
+        {
+            this.path = path;
+            this.wildcardPath = wildcardPath;
+            this.script = script;
+        }
+        
+        private String path;
+        private boolean wildcardPath;
+        private WebScript script;
     }
     
 }

@@ -42,7 +42,7 @@ import org.alfresco.util.ParameterCheck;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
-import org.alfresco.web.scripts.WebScriptResponse;
+import org.alfresco.web.scripts.WebScriptStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -78,7 +78,7 @@ public class KeywordSearch extends DeclarativeWebScript
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptResponse res)
+    protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptStatus status)
     {
         //
         // process arguments

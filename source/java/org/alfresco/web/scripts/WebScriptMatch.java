@@ -26,13 +26,25 @@ package org.alfresco.web.scripts;
 
 
 /**
- * Represents a URL to Web Script match
+ * Represents a URL request to Web Script match
  *  
  * @author davidc
  */
 public interface WebScriptMatch
 {
-
+    public enum Kind
+    {
+        /** URL request matches on URI only */
+        URI,
+        /** URL request matches on URI and Method */
+        FULL
+    };
+    
+    /**
+     * Gets the kind of Match
+     */
+    public Kind getKind();
+    
     /**
      * Gets the part of the request URL that matched the Web Script URL Template
      * 
@@ -43,7 +55,7 @@ public interface WebScriptMatch
     /**
      * Gets the matching web script
      * 
-     * @return  service
+     * @return  service (or null, if match kind is URI)
      */
     public WebScript getWebScript();
     

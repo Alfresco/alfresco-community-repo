@@ -120,7 +120,8 @@ public class WebScriptServletRequest extends WebScriptRequestImpl
      */
     public String getServicePath()
     {
-        return getServiceContextPath() + req.getPathInfo();
+        String pathInfo = req.getPathInfo();
+        return getServiceContextPath() + ((pathInfo == null) ? "" : req.getPathInfo());
     }
 
     /* (non-Javadoc)

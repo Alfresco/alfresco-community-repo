@@ -353,12 +353,7 @@ public class TestWebScriptServer
                  command[0].equals("post") ||
                  command[0].equals("delete"))
         {
-            if (command.length < 2)
-            {
-                return "Syntax Error.\n";
-            }
-
-            String uri = command[1];
+            String uri = (command.length > 1) ? command[1] : null;
             MockHttpServletResponse res = submitRequest(command[0], uri);
             bout.write(res.getContentAsByteArray());
             out.println();
@@ -392,23 +387,24 @@ public class TestWebScriptServer
     {
         MockHttpServletRequest req = new MockHttpServletRequest(method, uri);
 
-        // set parameters
-        int iArgIndex = uri.indexOf('?');
-        if (iArgIndex != -1 && iArgIndex != uri.length() -1)
-        {
-            String uriArgs = uri.substring(iArgIndex +1);
-            String[] args = uriArgs.split("&");
-            for (String arg : args)
-            {
-                String[] parts = arg.split("=");
-                req.addParameter(parts[0], (parts.length == 2) ? parts[1] : null);
-            }
-        }
-        
-        // set paths
         req.setContextPath("/alfresco");
         req.setServletPath("/service");
-        req.setPathInfo(iArgIndex == -1 ? uri : uri.substring(0, iArgIndex));
+
+        if (uri != null)
+        {
+            int iArgIndex = uri.indexOf('?');
+            if (iArgIndex != -1 && iArgIndex != uri.length() -1)
+            {
+                String uriArgs = uri.substring(iArgIndex +1);
+                String[] args = uriArgs.split("&");
+                for (String arg : args)
+                {
+                    String[] parts = arg.split("=");
+                    req.addParameter(parts[0], (parts.length == 2) ? parts[1] : null);
+                }
+            }
+            req.setPathInfo(iArgIndex == -1 ? uri : uri.substring(0, iArgIndex));
+        }
         
         return req;
     }

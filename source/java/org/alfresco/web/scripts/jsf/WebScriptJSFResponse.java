@@ -105,6 +105,13 @@ public class WebScriptJSFResponse implements WebScriptResponse
       return buf.toString();
    }
 
+   /* (non-Javadoc)
+    * @see org.alfresco.web.scripts.WebScriptResponse#reset()
+    */
+   public void reset()
+   {
+   }
+
    /**
     * @see org.alfresco.web.scripts.WebScriptResponse#getOutputStream()
     */
@@ -121,6 +128,13 @@ public class WebScriptJSFResponse implements WebScriptResponse
       return fc.getResponseWriter();
    }
 
+   /* (non-Javadoc)
+    * @see org.alfresco.web.scripts.WebScriptResponse#setStatus(int)
+    */
+   public void setStatus(int status)
+   {
+   }
+    
    /**
     * @see org.alfresco.web.scripts.WebScriptResponse#setContentType(java.lang.String)
     */
@@ -128,4 +142,5 @@ public class WebScriptJSFResponse implements WebScriptResponse
    {
       // Alfresco JSF framework only supports the default of text-html
    }
+
 }

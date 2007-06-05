@@ -31,11 +31,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.alfresco.repo.jscript.Node;
 import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.cmr.repository.ScriptLocation;
-import org.alfresco.service.cmr.repository.TemplateException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Context;
@@ -76,57 +77,90 @@ public class DeclarativeWebScript extends AbstractWebScript
      */
     final public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
-        // construct data model for template
-        Map<String, Object> model = executeImpl(req, res);
-        if (model == null)
-        {
-            model = new HashMap<String, Object>(7, 1.0f);
-        }
-        
-        // execute script if it exists
-        if (executeScript != null)
-        {
-            if (logger.isDebugEnabled())
-                logger.debug("Executing script " + executeScript);
-            
-            Map<String, Object> scriptModel = createScriptModel(req, res, model);
-            // add return model allowing script to add items to template model
-            Map<String, Object> returnModel = new ScriptableHashMap<String, Object>();
-            scriptModel.put("model", returnModel);
-            executeScript(executeScript, scriptModel);
-            mergeScriptModelIntoTemplateModel(returnModel, model);
-        }
-
-        // process requested format
+        // retrieve requested format
         String format = req.getFormat();
         if (format == null || format.length() == 0)
         {
             format = getDescription().getDefaultFormat();
         }
-        
-        String mimetype = getWebScriptRegistry().getFormatRegistry().getMimeType(req.getAgent(), format);
-        if (mimetype == null)
-        {
-            throw new WebScriptException("Web Script format '" + format + "' is not registered");
-        }
 
-        // render output
-        res.setContentType(mimetype + ";charset=UTF-8");
-        
-        if (logger.isDebugEnabled())
-            logger.debug("Response content type: " + mimetype);
-        
         try
         {
+            // establish mimetype from format
+            String mimetype = getWebScriptRegistry().getFormatRegistry().getMimeType(req.getAgent(), format);
+            if (mimetype == null)
+            {
+                throw new WebScriptException("Web Script format '" + format + "' is not registered");
+            }
+            
+            // construct data model for template
+            WebScriptStatus status = new WebScriptStatus();
+            Map<String, Object> model = executeImpl(req, status);
+            if (model == null)
+            {
+                model = new HashMap<String, Object>(7, 1.0f);
+            }
+            model.put("status", status);
+            
+            // execute script if it exists
+            if (executeScript != null)
+            {
+                if (logger.isDebugEnabled())
+                    logger.debug("Executing script " + executeScript);
+                
+                Map<String, Object> scriptModel = createScriptModel(req, model);
+                // add return model allowing script to add items to template model
+                Map<String, Object> returnModel = new ScriptableHashMap<String, Object>();
+                scriptModel.put("model", returnModel);
+                executeScript(executeScript, scriptModel);
+                mergeScriptModelIntoTemplateModel(returnModel, model);
+            }
+    
+            // create model for template rendering
             Map<String, Object> templateModel = createTemplateModel(req, res, model);            
-            renderFormatTemplate(format, templateModel, res.getWriter());
+            
+            // is a redirect to a status specific template required?
+            if (status.getRedirect())
+            {
+                sendStatus(req, res, status, format, templateModel);
+            }
+            else
+            {
+                // render output
+                int statusCode = status.getCode();
+                if (statusCode != HttpServletResponse.SC_OK)
+                {
+                    res.setStatus(statusCode);
+                }
+                res.setContentType(mimetype + ";charset=UTF-8");
+                
+                if (logger.isDebugEnabled())
+                    logger.debug("Rendering response: content type=" + mimetype + ", status=" + statusCode);
+            
+                renderFormatTemplate(format, templateModel, res.getWriter());
+            }
         }
-        catch(TemplateException e)
+        catch(Throwable e)
         {
-            throw new WebScriptException("Failed to process format '" + format + "'", e);
+            // extract status code, if specified
+            int statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+            if (e instanceof WebScriptException)
+            {
+                statusCode = ((WebScriptException)e).getStatus();
+            }
+
+            // send status
+            WebScriptStatus status = new WebScriptStatus();
+            status.setCode(statusCode);
+            status.setMessage(e.getMessage());
+            status.setException(e);
+            Map<String, Object> customModel = new HashMap<String, Object>();
+            customModel.put("status", status);
+            Map<String, Object> templateModel = createTemplateModel(req, res, customModel);
+            sendStatus(req, res, status, format, templateModel);
         }
     }
-
+    
     /**
      * Merge script generated model into template-ready model
      * 
@@ -192,10 +226,9 @@ public class DeclarativeWebScript extends AbstractWebScript
      * Execute custom Java logic
      * 
      * @param req  Web Script request
-     * @param res  Web Script response
      * @return  custom service model
      */
-    protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptResponse res)
+    protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptStatus status)
     {
         return null;
     }

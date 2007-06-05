@@ -29,7 +29,7 @@ import java.util.Map;
 
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.WebScriptRequest;
-import org.alfresco.web.scripts.WebScriptResponse;
+import org.alfresco.web.scripts.WebScriptStatus;
 
 
 /**
@@ -44,7 +44,7 @@ public class Index extends DeclarativeWebScript
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptResponse res)
+    protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptStatus status)
     {
         Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
         model.put("webscripts",  getWebScriptRegistry().getWebScripts());

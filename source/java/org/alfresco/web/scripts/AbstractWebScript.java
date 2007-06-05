@@ -24,10 +24,12 @@
  */
 package org.alfresco.web.scripts;
 
+import java.io.IOException;
 import java.io.Writer;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.repo.jscript.Node;
 import org.alfresco.repo.jscript.ScriptableHashMap;
@@ -39,6 +41,8 @@ import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredTransaction;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -48,12 +52,19 @@ import org.alfresco.web.scripts.WebScriptDescription.RequiredTransaction;
  */
 public abstract class AbstractWebScript implements WebScript 
 {
+    // Logger
+    private static final Log logger = LogFactory.getLog(AbstractWebScript.class);
+
     // dependencies
     private WebScriptContext scriptContext;
     private WebScriptRegistry scriptRegistry;
     private WebScriptDescription description;
     private ServiceRegistry serviceRegistry;
     private DescriptorService descriptorService;
+    
+    // Status Template cache
+    private Map<String, StatusTemplate> statusTemplates = new HashMap<String, StatusTemplate>();    
+    private ReentrantReadWriteLock statusTemplateLock = new ReentrantReadWriteLock(); 
 
     
     //
@@ -102,6 +113,15 @@ public abstract class AbstractWebScript implements WebScript
     public void init(WebScriptRegistry scriptRegistry)
     {
         this.scriptRegistry = scriptRegistry;
+        this.statusTemplateLock.writeLock().lock();
+        try
+        {
+            this.statusTemplates.clear();
+        }
+        finally
+        {
+            this.statusTemplateLock.writeLock().unlock();
+        }
     }
     
 
@@ -184,12 +204,11 @@ public abstract class AbstractWebScript implements WebScript
      * Create a model for script usage
      *  
      * @param req  web script request
-     * @param res  web script response
      * @param customModel  custom model entries
      * 
      * @return  script model
      */
-    final protected Map<String, Object> createScriptModel(WebScriptRequest req, WebScriptResponse res, Map<String, Object> customModel)
+    final protected Map<String, Object> createScriptModel(WebScriptRequest req, Map<String, Object> customModel)
     {
         // create script model
         Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
@@ -301,6 +320,188 @@ public abstract class AbstractWebScript implements WebScript
     {
         getWebScriptRegistry().getTemplateProcessor().processString(template, model, writer);
     }
+     
+    /**
+     * Render an explicit response status template
+     * 
+     * @param req  web script request
+     * @param res  web script response
+     * @param status  web script status
+     * @param format  format
+     * @param model  model
+     * @throws IOException
+     */
+    final protected void sendStatus(WebScriptRequest req, WebScriptResponse res, WebScriptStatus status, String format, Map<String, Object> model)
+        throws IOException
+    {
+        // locate status template
+        // NOTE: search order...
+        // NOTE: package path is recursed to root package
+        //   1) script located <scriptid>.<format>.<status>.ftl
+        //   2) script located <scriptid>.<format>.status.ftl
+        //   3) package located <scriptpath>/<format>.<status>.ftl
+        //   4) package located <scriptpath>/<format>.status.ftl
+        //   5) default <status>.ftl
+        //   6) default status.ftl
+
+        int statusCode = status.getCode();
+        String statusFormat = (format == null) ? "" : format;
+        String scriptId = getDescription().getId();
+        StatusTemplate template = getStatusTemplate(scriptId, statusCode, statusFormat);
+
+        // render output
+        String mimetype = getWebScriptRegistry().getFormatRegistry().getMimeType(req.getAgent(), template.format);
+        if (mimetype == null)
+        {
+            throw new WebScriptException("Web Script format '" + template.format + "' is not registered");
+        }
+    
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Sending status " + statusCode + " (Template: " + template.path + ")");
+            logger.debug("Rendering response: content type=" + mimetype);
+        }
+    
+        res.reset();
+        res.setStatus(statusCode);
+        res.setContentType(mimetype + ";charset=UTF-8");
+        renderTemplate(template.path, model, res.getWriter());
+    }
+
+    /**
+     * Find status template
+     * 
+     * Note: This method caches template search results
+     * 
+     * @param scriptId
+     * @param statusCode
+     * @param format
+     * @return  status template (or null if not found)
+     */
+    private StatusTemplate getStatusTemplate(String scriptId, int statusCode, String format)
+    {
+        StatusTemplate statusTemplate = null;
+        statusTemplateLock.readLock().lock();
+
+        try
+        {
+            String key = statusCode + "." + format;
+            statusTemplate = statusTemplates.get(key);
+            if (statusTemplate == null)
+            {
+                // Upgrade read lock to write lock
+                statusTemplateLock.readLock().unlock();
+                statusTemplateLock.writeLock().lock();
+
+                try
+                {
+                    // Check again
+                    statusTemplate = statusTemplates.get(key);
+                    if (statusTemplate == null)
+                    {
+                        // Locate template in web script store
+                        statusTemplate = getScriptStatusTemplate(scriptId, statusCode, format);
+                        if (statusTemplate == null)
+                        {
+                            WebScriptPath path = getWebScriptRegistry().getPackage(Path.concatPath("/", getDescription().getScriptPath()));
+                            statusTemplate = getPackageStatusTemplate(path, statusCode, format);
+                            if (statusTemplate == null)
+                            {
+                                statusTemplate = getDefaultStatusTemplate(statusCode);
+                            }
+                        }
+                        
+                        if (logger.isDebugEnabled())
+                            logger.debug("Caching template " + statusTemplate.path + " for web script " + scriptId + " and status " + statusCode + " (format: " + format + ")");
+                        
+                        statusTemplates.put(key, statusTemplate);
+                    }
+                }
+                finally
+                {
+                    // Downgrade lock to read
+                    statusTemplateLock.readLock().lock();
+                    statusTemplateLock.writeLock().unlock();
+                }
+            }
+            return statusTemplate;
+        }
+        finally
+        {
+            statusTemplateLock.readLock().unlock();
+        }
+    }
+    
+    /**
+     * Find a script specific status template
+     * 
+     * @param scriptId
+     * @param statusCode
+     * @param format
+     * @return  status template (or null, if not found)
+     */
+    private StatusTemplate getScriptStatusTemplate(String scriptId, int statusCode, String format)
+    {
+        String path = scriptId + "." + format + "." + statusCode + ".ftl";
+        if (getWebScriptRegistry().getTemplateProcessor().hasTemplate(path))
+        {
+            return new StatusTemplate(path, format);
+        }
+        path = scriptId + "." + format + ".status.ftl";
+        if (getWebScriptRegistry().getTemplateProcessor().hasTemplate(path))
+        {
+            return new StatusTemplate(path, format);
+        }
+        return null;
+    }
+
+    /**
+     * Find a package specific status template
+     * 
+     * @param scriptPath
+     * @param statusCode
+     * @param format
+     * @return  status template (or null, if not found)
+     */
+    private StatusTemplate getPackageStatusTemplate(WebScriptPath scriptPath, int statusCode, String format)
+    {
+        while(scriptPath != null)
+        {
+            String path = Path.concatPath(scriptPath.getPath(), format + "." + statusCode + ".ftl");
+            if (getWebScriptRegistry().getTemplateProcessor().hasTemplate(path))
+            {
+                return new StatusTemplate(path, format);
+            }
+            path = Path.concatPath(scriptPath.getPath(), format + ".status.ftl");
+            if (getWebScriptRegistry().getTemplateProcessor().hasTemplate(path))
+            {
+                return new StatusTemplate(path, format);
+            }
+            scriptPath = scriptPath.getParent();
+        }
+        return null;
+    }
+    
+    /**
+     * Find default status template
+     * 
+     * @param statusCode
+     * @return  status template
+     */
+    private StatusTemplate getDefaultStatusTemplate(int statusCode)
+    {
+        String path = statusCode + ".ftl";
+        if (getWebScriptRegistry().getTemplateProcessor().hasTemplate(path))
+        {
+            return new StatusTemplate(path, WebScriptResponse.HTML_FORMAT);
+        }
+        path = "status.ftl";
+        if (getWebScriptRegistry().getTemplateProcessor().hasTemplate(path))
+        {
+            return new StatusTemplate(path, WebScriptResponse.HTML_FORMAT);
+        }
+        throw new WebScriptException("Default status template /status.ftl could not be found");
+    }
         
     /**
      * Execute a script
@@ -312,4 +513,26 @@ public abstract class AbstractWebScript implements WebScript
     {
         getWebScriptRegistry().getScriptProcessor().executeScript(location, model);
     }
+    
+    /**
+     * Status Template
+     */
+    private class StatusTemplate
+    {
+        /**
+         * Construct
+         * 
+         * @param path
+         * @param format
+         */
+        private StatusTemplate(String path, String format)
+        {
+            this.path = path;
+            this.format = format;
+        }
+        
+        private String path;
+        private String format;
+    }
+    
 }

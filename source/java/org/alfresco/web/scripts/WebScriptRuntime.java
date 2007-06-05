@@ -25,8 +25,14 @@
 package org.alfresco.web.scripts;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.transaction.TransactionService;
@@ -77,94 +83,159 @@ public abstract class WebScriptRuntime
         long startRuntime = System.currentTimeMillis();
 
         String method = getScriptMethod();
-        String scriptUrl = getScriptUrl();
-        
+        String scriptUrl = null;
+
         try
         {
+            // extract script url
+            scriptUrl = getScriptUrl();
+            if (scriptUrl == null || scriptUrl.length() == 0)
+            {
+                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Script URL not specified");
+            }
+        
             if (logger.isDebugEnabled())
                 logger.debug("Processing script url ("  + method + ") " + scriptUrl);
 
             WebScriptMatch match = registry.findWebScript(method, scriptUrl);
-            if (match != null)
+            if (match == null || match.getKind() == WebScriptMatch.Kind.URI)
             {
-                // setup web script context
-                final WebScriptRequest scriptReq = createRequest(match);
-                final WebScriptResponse scriptRes = createResponse();
-                
-                if (logger.isDebugEnabled())
-                    logger.debug("Agent: " + scriptReq.getAgent());
-
-                long startScript = System.currentTimeMillis();
-                final WebScript script = match.getWebScript();
-                final WebScriptDescription description = script.getDescription();
-                
-                try
+                if (match == null)
                 {
+                    String msg = "Script url " + scriptUrl + " does not map to a Web Script.";
                     if (logger.isDebugEnabled())
+                        logger.debug(msg);
+                    throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, msg);
+                }
+                else
+                {
+                    String msg = "Script url " + scriptUrl + " does not support the method " + method;
+                    if (logger.isDebugEnabled())
+                        logger.debug(msg);
+                    throw new WebScriptException(HttpServletResponse.SC_METHOD_NOT_ALLOWED, msg);
+                }
+            }
+
+            // create web script request & response
+            final WebScriptRequest scriptReq = createRequest(match);
+            final WebScriptResponse scriptRes = createResponse();
+            
+            if (logger.isDebugEnabled())
+                logger.debug("Agent: " + scriptReq.getAgent());
+
+            long startScript = System.currentTimeMillis();
+            final WebScript script = match.getWebScript();
+            final WebScriptDescription description = script.getDescription();
+            
+            try
+            {
+                if (logger.isDebugEnabled())
+                {
+                    String user = AuthenticationUtil.getCurrentUserName();
+                    String locale = I18NUtil.getLocale().toString();
+                    String reqFormat = scriptReq.getFormat();
+                    String format = (reqFormat == null || reqFormat.length() == 0) ? "default" : scriptReq.getFormat();
+                    WebScriptDescription desc = scriptReq.getServiceMatch().getWebScript().getDescription();
+                    logger.debug("Format style: " + desc.getFormatStyle());
+                    logger.debug("Default format: " + desc.getDefaultFormat());
+                    logger.debug("Invoking Web Script "  + description.getId() + (user == null ? " (unauthenticated)" : " (authenticated as " + user + ") (format " + format + ") (" + locale + ")"));
+                }
+                
+                if (description.getRequiredTransaction() == RequiredTransaction.none)
+                {
+                    authenticatedExecute(scriptReq, scriptRes);
+                }
+                else
+                {
+                    // encapsulate script within transaction
+                    TransactionUtil.TransactionWork<Object> work = new TransactionUtil.TransactionWork<Object>()
                     {
-                        String user = AuthenticationUtil.getCurrentUserName();
-                        String locale = I18NUtil.getLocale().toString();
-                        String reqFormat = scriptReq.getFormat();
-                        String format = (reqFormat == null || reqFormat.length() == 0) ? "default" : scriptReq.getFormat();
-                        WebScriptDescription desc = scriptReq.getServiceMatch().getWebScript().getDescription();
-                        logger.debug("Format style: " + desc.getFormatStyle());
-                        logger.debug("Default format: " + desc.getDefaultFormat());
-                        logger.debug("Invoking Web Script "  + description.getId() + (user == null ? " (unauthenticated)" : " (authenticated as " + user + ") (format " + format + ") (" + locale + ")"));
-                    }
-                    
-                    if (description.getRequiredTransaction() == RequiredTransaction.none)
+                        public Object doWork() throws Throwable
+                        {
+                            if (logger.isDebugEnabled())
+                                logger.debug("Begin transaction: " + description.getRequiredTransaction());
+                            
+                            authenticatedExecute(scriptReq, scriptRes);
+                            
+                            if (logger.isDebugEnabled())
+                                logger.debug("End transaction: " + description.getRequiredTransaction());
+                            
+                            return null;
+                        }        
+                    };
+                
+                    if (description.getRequiredTransaction() == RequiredTransaction.required)
                     {
-                        authenticatedExecute(scriptReq, scriptRes);
+                        TransactionUtil.executeInUserTransaction(transactionService, work); 
                     }
                     else
                     {
-                        // encapsulate script within transaction
-                        TransactionUtil.TransactionWork<Object> work = new TransactionUtil.TransactionWork<Object>()
-                        {
-                            public Object doWork() throws Throwable
-                            {
-                                if (logger.isDebugEnabled())
-                                    logger.debug("Begin transaction: " + description.getRequiredTransaction());
-                                
-                                authenticatedExecute(scriptReq, scriptRes);
-                                
-                                if (logger.isDebugEnabled())
-                                    logger.debug("End transaction: " + description.getRequiredTransaction());
-                                
-                                return null;
-                            }        
-                        };
-                    
-                        if (description.getRequiredTransaction() == RequiredTransaction.required)
-                        {
-                            TransactionUtil.executeInUserTransaction(transactionService, work); 
-                        }
-                        else
-                        {
-                            TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, work); 
-                        }
-                    }
-                }
-                catch(IOException e)
-                {
-                    throw new WebScriptException("Failed to execute script", e);
-                }
-                finally
-                {
-                    if (logger.isDebugEnabled())
-                    {
-                        long endScript = System.currentTimeMillis();
-                        logger.debug("Web Script " + description.getId() + " executed in " + (endScript - startScript) + "ms");
+                        TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, work); 
                     }
                 }
             }
-            else
+            finally
             {
-                String msg = "Script url (" + method + ") " + scriptUrl + " does not map to a Web Script.";
                 if (logger.isDebugEnabled())
-                    logger.debug(msg);
+                {
+                    long endScript = System.currentTimeMillis();
+                    logger.debug("Web Script " + description.getId() + " executed in " + (endScript - startScript) + "ms");
+                }
+            }
+        }
+        catch(Throwable e)
+        {
+            // extract status code, if specified
+            int statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+            if (e instanceof WebScriptException)
+            {
+                statusCode = ((WebScriptException)e).getStatus();
+            }
 
-                throw new WebScriptException(msg);
+            // create web script status for status template rendering
+            WebScriptStatus status = new WebScriptStatus();
+            status.setCode(statusCode);
+            status.setMessage(e.getMessage());
+            status.setException(e);
+            
+            // create basic model for status template rendering
+            WebScriptRequest req = createRequest(null);
+            WebScriptResponse res = createResponse();
+            Map<String, Object> model = new HashMap<String, Object>();
+            model.put("status", status);
+            model.put("url", new URLModel(req));
+            
+            // locate status template
+            // NOTE: search order...
+            //   1) root located <status>.ftl
+            //   2) root located status.ftl
+            String templatePath = "/" + statusCode + ".ftl";
+            if (!registry.getTemplateProcessor().hasTemplate(templatePath))
+            {
+                templatePath = "/status.ftl";
+                if (!registry.getTemplateProcessor().hasTemplate(templatePath))
+                {
+                    throw new WebScriptException("Failed to find status template " + status + " (format: " + WebScriptResponse.HTML_FORMAT + ")");
+                }
+            }
+
+            // render output
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Sending status " + statusCode + " (Template: " + templatePath + ")");
+                logger.debug("Rendering response: content type=" + MimetypeMap.MIMETYPE_HTML);
+            }
+
+            res.reset();
+            res.setStatus(statusCode);
+            res.setContentType(MimetypeMap.MIMETYPE_HTML + ";charset=UTF-8");
+            try
+            {
+                registry.getTemplateProcessor().process(templatePath, model, res.getWriter());
+            }
+            catch (IOException e1)
+            {
+                throw new WebScriptException("Internal error", e1);
             }
         }
         finally
@@ -196,7 +267,7 @@ public abstract class WebScriptRuntime
         }
         else if (required == RequiredAuthentication.user && isGuest)
         {
-            throw new WebScriptException("Web Script " + desc.getId() + " requires user authentication; however, a guest has attempted access.");
+            throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + desc.getId() + " requires user authentication; however, a guest has attempted access.");
         }
         else
         {
@@ -220,7 +291,6 @@ public abstract class WebScriptRuntime
                 //
                 if (authenticate(required, isGuest))
                 {
-                    //
                     // Execute Web Script
                     wrappedExecute(scriptReq, scriptRes);
                 }

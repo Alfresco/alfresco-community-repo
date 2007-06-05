@@ -44,6 +44,12 @@ public interface WebScriptResponse
     public static final String JSON_FORMAT = "json";
     public static final String OPENSEARCH_DESCRIPTION_FORMAT = "opensearchdescription";
 
+    /**
+     * Sets the Response Status
+     * 
+     * @param status
+     */
+    public void setStatus(int status);
     
     /**
      * Sets the Content Type
@@ -67,6 +73,11 @@ public interface WebScriptResponse
      * @throws IOException
      */
     public OutputStream getOutputStream() throws IOException;
+    
+    /**
+     * Clears response buffer
+     */
+    public void reset();
     
     /**
      * Encode a script URL

@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -61,11 +60,33 @@ public class WebScriptServletResponse implements WebScriptResponse
     }
     
     /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptResponse#setStatus(int)
+     */
+    public void setStatus(int status)
+    {
+        res.setStatus(status);
+    }
+
+    /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptResponse#setContentType(java.lang.String)
      */
     public void setContentType(String contentType)
     {
         res.setContentType(contentType);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptResponse#reset()
+     */
+    public void reset()
+    {
+        try
+        {
+            res.reset();
+        }
+        catch(IllegalStateException e)
+        {
+        }
     }
 
     /* (non-Javadoc)
@@ -91,5 +112,5 @@ public class WebScriptServletResponse implements WebScriptResponse
     {
         return url;
     }
-    
+
 }

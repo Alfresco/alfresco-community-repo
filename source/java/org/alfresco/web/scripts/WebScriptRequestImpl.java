@@ -40,13 +40,21 @@ public abstract class WebScriptRequestImpl implements WebScriptRequest
      */
     public String getExtensionPath()
     {
-        String servicePath = getServiceMatch().getPath();
-        String extensionPath = getPathInfo();
-        int extIdx = extensionPath.indexOf(servicePath);
-        if (extIdx != -1)
+        String extensionPath = "";
+        WebScriptMatch match = getServiceMatch();
+        if (match != null)
         {
-            int extLength = (servicePath.endsWith("/") ? servicePath.length() : servicePath.length() + 1);
-            extensionPath = extensionPath.substring(extIdx + extLength);
+            String servicePath = getServiceMatch().getPath();
+            extensionPath = getPathInfo();
+            if (extensionPath != null)
+            {
+                int extIdx = extensionPath.indexOf(servicePath);
+                if (extIdx != -1)
+                {
+                    int extLength = (servicePath.endsWith("/") ? servicePath.length() : servicePath.length() + 1);
+                    extensionPath = extensionPath.substring(extIdx + extLength);
+                }
+            }
         }
         return extensionPath;
     }
@@ -65,30 +73,37 @@ public abstract class WebScriptRequestImpl implements WebScriptRequest
     public String getFormat()
     {
         String format = null;
-        FormatStyle style = getServiceMatch().getWebScript().getDescription().getFormatStyle();
-        
-        // extract format from extension
-        if (style == FormatStyle.extension || style == FormatStyle.any)
+        WebScriptMatch match = getServiceMatch();
+        if (match != null)
         {
-            String pathInfo = getPathInfo();
-            int extIdx = pathInfo.lastIndexOf('.');
-            if (extIdx != -1)
+            FormatStyle style = getServiceMatch().getWebScript().getDescription().getFormatStyle();
+            
+            // extract format from extension
+            if (style == FormatStyle.extension || style == FormatStyle.any)
             {
-                format = pathInfo.substring(extIdx +1);
-            }
-        }
-        
-        // extract format from argument
-        if (style == FormatStyle.argument || style == FormatStyle.any)
-        {
-            String argFormat = getParameter("format");
-            if (argFormat != null)
-            {
-                if (format != null && format.length() > 0)
+                String pathInfo = getPathInfo();
+                if (pathInfo != null)
                 {
-                    throw new WebScriptException("Format specified both in extension and format argument");
+                    int extIdx = pathInfo.lastIndexOf('.');
+                    if (extIdx != -1)
+                    {
+                        format = pathInfo.substring(extIdx +1);
+                    }
                 }
-                format = argFormat;
+            }
+            
+            // extract format from argument
+            if (style == FormatStyle.argument || style == FormatStyle.any)
+            {
+                String argFormat = getParameter("format");
+                if (argFormat != null)
+                {
+                    if (format != null && format.length() > 0)
+                    {
+                        throw new WebScriptException("Format specified both in extension and format argument");
+                    }
+                    format = argFormat;
+                }
             }
         }
         
@@ -100,7 +115,12 @@ public abstract class WebScriptRequestImpl implements WebScriptRequest
      */
     public FormatStyle getFormatStyle()
     {
-        FormatStyle style = getServiceMatch().getWebScript().getDescription().getFormatStyle();
+        WebScriptMatch match = getServiceMatch();
+        if (match == null)
+        {
+            return FormatStyle.any;
+        }
+        FormatStyle style = match.getWebScript().getDescription().getFormatStyle();
         if (style != FormatStyle.any)
         {
             return style;

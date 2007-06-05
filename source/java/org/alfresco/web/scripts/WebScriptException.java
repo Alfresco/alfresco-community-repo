@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.scripts;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
@@ -35,6 +37,15 @@ public class WebScriptException extends AlfrescoRuntimeException
 {
     private static final long serialVersionUID = -7338963365877285084L;
 
+    private int status = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+    
+    
+    public WebScriptException(int status, String msgId)
+    {
+        this(msgId);
+        this.status = status;
+    }
+    
     public WebScriptException(String msgId)
     {
        super(msgId);
@@ -54,4 +65,10 @@ public class WebScriptException extends AlfrescoRuntimeException
     {
         super(msgId, args, cause);
     }
+    
+    public int getStatus()
+    {
+        return status;
+    }
+    
 }

@@ -256,7 +256,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
      * Test revert
      */
     @SuppressWarnings("unused")
-    public void testRevert()
+    public void xtestRevert()
     {
     	// Create a versionable node
     	NodeRef versionableNode = createNewVersionableNode();

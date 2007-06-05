@@ -199,23 +199,23 @@ ul {
 }
 
 input.button {
-   color:#0073e6;
-   font-size:11px;
-   font-weight:bold;
-   background-color:#cce6ff;
-   border:1px solid;
-   border-top-color:#0073e6;
-   border-left-color:#0073e6;
-   border-right-color:#0073e6;
-   border-bottom-color:#0073e6;
+   color: #0073e6;
+   font-size: 11px;
+   font-weight: bold;
+   background-color: #cce6ff;
+   border: 1px solid #0073e6;
    filter:progid:DXImageTransform.Microsoft.Gradient
    (GradientType=0,StartColorStr='#ffffffff',EndColorStr='#6fb7ff');
-   cursor:pointer;
-   margin-left:6px;
+   cursor: pointer;
+   margin-left: 6px;
 }
 
 #taskDetails {
    padding: 2px;
+}
+
+.taskItem {
+   cursor: pointer;
 }
 
 .taskItemSelected {
@@ -227,4 +227,82 @@ input.button {
    margin: 4px;
    height: 128px;
    overflow: auto;
+}
+
+.taskAction {
+   color: #0073e6;
+   float: left;
+   font-size: 11px;
+   font-weight: bold;
+   background-color: #cce6ff;
+   border: 1px solid #0073e6;
+   cursor: pointer;
+   margin: 0px 0px 0px 2px;
+   padding: 4px;
+   filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0,StartColorStr='#ffffffff',EndColorStr='#6fb7ff');
+}
+
+.taskParameters {
+   border: 1px solid #ccc;
+   margin: 4px;
+   height: 200px;
+   overflow: auto;
+}
+
+.taskParam {
+   clear: both;
+   float: left;
+   padding: 2px 0px 0px 4px;
+   width: 64px;
+}
+
+.taskValue {
+   float: left;
+   padding: 2px 0px 0px 0px;
+   width: 164px;
+}
+
+#ajxUser {
+   float: left;
+   margin: 2px;
+}
+
+/* Autocomplete pop-up */
+ul.autocompleter-choices
+{
+   position: absolute;
+   margin: 0px;
+   padding: 0px;
+   list-style: none;
+   border: 1px solid #ccc;
+   background-color: white;
+   border-right-color: #ddd;
+   border-bottom-color: #ddd;
+   text-align: left;
+   z-index: 50;
+}
+
+ul.autocompleter-choices li
+{
+   position: relative;
+   padding: 0.1em 1.5em 0.1em 1em;
+   cursor: pointer;
+   font-weight: normal;
+   font-size: 1em;
+}
+
+ul.autocompleter-choices li.autocompleter-selected
+{
+   background-color: #444;
+   color: #fff;
+}
+
+ul.autocompleter-choices span.autocompleter-queried
+{
+   font-weight: bold;
+}
+
+ul.autocompleter-choices li.autocompleter-selected span.autocompleter-queried
+{
+color: #9FCFFF;
 }

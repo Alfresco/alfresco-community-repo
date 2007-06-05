@@ -143,15 +143,15 @@
    <div id="nonStatusText">
 <#if d.isDocument>
       <ul>
-         <li><a href="#" onClick="OfficeAddin.runAction('${doc_actions}','test','${d.id}', '');"><img src="${url.context}/images/office/checkin.gif" border="0" style="padding-right:6px;" alt="Test">Test</a></li>
          <#if d.isLocked >
          <#elseif hasAspect(d, "cm:workingcopy") == 1>
-         <li><a href="#" onClick="OfficeAddin.runAction('${doc_actions}','checkin','${d.id}', '');"><img src="${url.context}/images/office/checkin.gif" border="0" style="padding-right:6px;" alt="Check In">Check In</a></li>
+         <li><a href="#" onClick="OfficeAddin.runAction('${doc_actions}','checkin','${d.id}', '');"><img src="${url.context}/images/office/checkin.gif" style="padding-right:6px;" alt="Check In">Check In</a></li>
          <#else>
-         <li><a href="#" onClick="OfficeAddin.runAction('${doc_actions}','checkout','${d.id}', '');"><img src="${url.context}/images/office/checkout.gif" border="0" style="padding-right:6px;" alt="Check Out">Check Out</a></li>
+         <li><a href="#" onClick="OfficeAddin.runAction('${doc_actions}','checkout','${d.id}', '');"><img src="${url.context}/images/office/checkout.gif" style="padding-right:6px;" alt="Check Out">Check Out</a></li>
          </#if>
-         <li><a href="#" onClick="OfficeAddin.runAction('${doc_actions}','makepdf','${d.id}', '');"><img src="${url.context}/images/office/makepdf.gif" border="0" style="padding-right:6px;" alt="Transform to PDF">Transform to PDF</a></li>
+         <li><a href="#" onClick="OfficeAddin.runAction('${doc_actions}','makepdf','${d.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding-right:6px;" alt="Transform to PDF">Transform to PDF</a></li>
          <li><a href="${url.context}/navigate/showOfficeAddin/workspace/SpacesStore/${d.id}?ticket=${session.ticket}" target="_blank"><img src="${url.context}/images/office/document_details.gif" border="0" style="padding-right:6px;" alt="Open Full Details">Open Full Details</a></li>
+         <li><a href="${url.context}/service/office/myTasks?p=${path}&w=new"><img src="${url.context}/images/office/new_workflow.gif" style="padding-right:6px;" alt="Start Workflow">Start Workflow</a></li>
       </ul>
 
 <#else>

@@ -61,7 +61,7 @@
          <tr>
    <#list task.transitions as wt>
             <td>
-               <a class="taskAction" href="#" onclick="OfficeAddin.transitionTask('/command/task/end/${task.id}<#if wt.id?exists>/${wt.id}</#if>', 'Workflow action \'${wt.label?html}\' completed.');">${wt.label?html}</a>
+               <a class="taskAction" href="#" onclick="OfficeMyTasks.transitionTask('${task.id}', '${url.context}/command/task/end/${task.id}<#if wt.id?exists>/${wt.id}</#if>', 'Workflow action \'${wt.label?html}\' completed.');">${wt.label?html}</a>
             </td>
    </#list>
          </tr>

@@ -1,6 +1,6 @@
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
 <#if args.n?exists><#assign node=args.n><#else><#assign node=companyhome></#if>
-<#assign searchCommand="OfficeAddin.runSearch('${url.context}/service/office/searchResults', '${path}')" >
+<#assign searchCommand="OfficeSearch.runSearch('${url.context}/service/office/searchResults', '${path}')" >
 <#if (args.searchagain?exists)><#assign searchText=args.searchagain><#else><#assign searchText=""></#if>
 <#if (args.maxresults?exists)><#assign maxResults=args.maxresults><#else><#assign maxResults="5"></#if>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -10,6 +10,7 @@
 	<link rel="stylesheet" type="text/css" href="${url.context}/css/office.css" />
    <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.1.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
+	<script type="text/javascript" src="${url.context}/scripts/office/search.js"></script>
 </head>
 <body>
 

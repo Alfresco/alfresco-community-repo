@@ -20,6 +20,7 @@
 	<link rel="stylesheet" type="text/css" href="${url.context}/css/office.css" />
    <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.1.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
+	<script type="text/javascript" src="${url.context}/scripts/office/my_alfresco.js"></script>
 </head>
 <body>
 
@@ -63,12 +64,12 @@
 
 <div class="header">My Tasks<span class="headerExtra"><img src="${url.context}/images/office/task_overdue.gif" alt="overdue">=overdue, <img src="${url.context}/images/office/task_today.gif" alt="due today">=due today</span></div>
 
-<div class="listMedium">
+<div id="taskList" class="listMedium">
    <table width="100%">
 <#assign taskNum=0>
 <#list workflow.assignedTasks?sort_by('startDate') as t>
    <#assign taskNum=taskNum+1>
-      <tr class="${(taskNum % 2 = 0)?string("odd", "even")}">
+      <tr id="${t.id}" class="taskItem ${(taskNum % 2 = 0)?string("odd", "even")}">
          <td>
    <#assign hasDue=t.properties["bpm:dueDate"]?exists>
    <#if hasDue>
@@ -88,6 +89,8 @@
             ${t.description?html} (${t.type?html})
             <#if hasDue>
                <br />Due date: ${due?date}
+            <#else>
+               <br />(No due date)
             </#if>
          </td>
       </tr>

@@ -6,10 +6,11 @@ var OfficeAddin =
    ANIM_LENGTH: 300,
    STATUS_FADE: 10000,
    LIST_DEF_HEIGHT: 204,
-
+   
    init: function()
    {
-      this.queryObject = OfficeAddin.toQueryObject(document.location.search);
+      window.queryObject = OfficeAddin.toQueryObject(document.location.search);
+      window.contextPath = OfficeAddin.getContextPath();
 
       /* Update needed after page load? */      
       if(this.queryObject.st)
@@ -17,38 +18,6 @@ var OfficeAddin =
          var objResponse = Json.evaluate(this.queryObject.st);
          var imgSuccess = (objResponse.statusCode ? "action_successful.gif" : "action_failed.gif");
          OfficeAddin.showStatusText(objResponse.statusString, imgSuccess, true);
-      }
-      
-      /* Have search box? */
-      if ($("searchText"))
-      {
-         $("searchText").addEvent("keydown", function(event)
-         {
-            event = new Event(event);
-            if (event.key == 'enter')
-            {
-               $("simpleSearchButton").click();
-            }
-         });
-      }
-      
-      /* Have expandos? */
-      if ($("toggleSpaceList"))
-      {
-         $("toggleSpaceList").addEvent("click", function()
-         {
-            $("spaceList").removeClass("listMediumShrink");
-            $("spaceList").addClass("listMediumGrow");
-            $("documentList").removeClass("listMediumGrow");
-            $("documentList").addClass("listMediumShrink");
-         });
-         $("toggleDocumentList").addEvent("click", function()
-         {
-            $("documentList").removeClass("listMediumShrink");
-            $("documentList").addClass("listMediumGrow");
-            $("spaceList").removeClass("listMediumGrow");
-            $("spaceList").addClass("listMediumShrink");
-         });
       }
    },
 
@@ -134,26 +103,23 @@ var OfficeAddin =
       });
       myAjax.request();
    },
-   
-   /* AJAX call to perform server-side search */
-   runSearch: function(useTemplate, argPath)
+
+   /* Calculates and returns the context path for the current page */
+   getContextPath: function()
    {
-      OfficeAddin.showStatusText("Searching...", "ajax_anim.gif", false);
-
-      var searchString = $("searchText").value;
-      var maxResults = $("maxResults").value;
-
-      var actionURL = useTemplate + "?p=" + argPath + "&search=" + searchString + "&maxresults=" + maxResults;
-      var myAjax = new Ajax(actionURL, {
-         method: 'get',
-         headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
-         onComplete: function(textResponse, xmlResponse)
-         {
-            OfficeAddin.hideStatusText();
-            $("searchResultsList").innerHTML = textResponse;
-         }
-      });
-      myAjax.request();
+      var path = window.location.pathname;
+      var idx = path.indexOf("/", 1);
+      var contextPath = "";
+      if (idx != -1)
+      {
+         contextPath = path.substring(0, idx);
+      }
+      else
+      {
+         contextPath = "";
+      }
+   
+      return contextPath;
    }
 };
 

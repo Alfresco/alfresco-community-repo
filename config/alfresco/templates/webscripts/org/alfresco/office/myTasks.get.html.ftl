@@ -1,12 +1,25 @@
 <#assign doc_actions="${url.context}/service/office/docActions">
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
 <#if args.n?exists><#assign node=args.n><#else><#assign node=companyhome></#if>
+<#-- resolve the path (from Company Home) into a node -->
+<#if path?starts_with("/Company Home")>
+   <#if path?length=13>
+      <#assign d=companyhome>
+   <#elseif companyhome.childByNamePath[args.p[14..]]?exists>
+      <#assign d=companyhome.childByNamePath[args.p[14..]]>
+   <#else>
+      <#assign d=companyhome>
+   </#if>
+<#else>
+   <#assign d=companyhome>
+</#if>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
 	<title>My Tasks</title>
 	<link rel="stylesheet" type="text/css" href="${url.context}/css/office.css" />
    <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.1.js"></script>
+	<script type="text/javascript" src="${url.context}/scripts/ajax/autocompleter.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/my_tasks.js"></script>
 </head>
@@ -62,7 +75,38 @@
 
 <div class="listBig">
    <div id="nonStatusText">
+<#if args.w?exists && d.isDocument>
+      <div id="taskDetails">
+         <table width="100%">
+            <tr>
+               <td width="32" valign="top"><img src="${url.context}/images/office/new_workflow_large.gif" alt="Start workflow" /></td>
+               <td>
+                  Start workflow on:<br /><span style="font-weight: bold; padding-left: 8px;">${d.name?html}</span>
+               </td>
+            </tr>
+         </table>
+      
+         <div style="margin-top: 8px; font-weight: bold;">Enter new workflow details below</div>
+         <div class="taskParameters">
+            <div class="taskParam">Workflow:</div>
+            <div class="taskValue">
+               <select id="wrkType" style="font-size: 9pt;">
+                  <option value="review">Review &amp; Approve</option>
+                  <option value="adhoc">Adhoc Task</option>
+               </select>
+            </div>
+            <div class="taskParam">Assign to:</div>
+            <div class="taskValue"><input id="wrkUser" type="text" style="font-size: 9pt;"/></div>
+            <div id="ajxUser" style="display: none;"><img src="${url.context}/images/office/ajax_anim.gif" alt="*" /></div>
+            <div class="taskParam">Due on:</div>
+            <div class="taskValue"><i>TODO: calendar picker</i></div>
+            <div class="taskParam">Description:</div>
+            <div class="taskValue"><textarea id="wrkDescription" style="font-size: 9pt;"></textarea></div>
+         </div>
+      </div>
+<#else>
       <div id="taskDetails"></div>
+</#if>
    </div>
    
    <div id="statusText"></div>

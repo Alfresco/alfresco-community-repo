@@ -32,6 +32,8 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigService;
@@ -205,6 +207,31 @@ public class TestWebScriptServer
     }
     
     /**
+     * Submit a Web Script Request
+     * 
+     * @param method  http method
+     * @param uri  web script uri (relative to /alfresco/service)
+     * @param headers  headers
+     * @return  response
+     * @throws IOException
+     */
+    public MockHttpServletResponse submitRequest(String method, String uri, Map<String, String> headers)
+        throws IOException
+    {
+        MockHttpServletRequest req = createRequest(method, uri);
+        for (Map.Entry<String, String> header: headers.entrySet())
+        {
+            req.addHeader(header.getKey(), header.getValue());
+        }
+        MockHttpServletResponse res = new MockHttpServletResponse();
+        
+        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, null, req, res, serverConfig);
+        runtime.executeScript();
+
+        return res;
+    }    
+    
+    /**
      * A Read-Eval-Print loop.
      */
     /*package*/ void rep()
@@ -357,6 +384,44 @@ public class TestWebScriptServer
             MockHttpServletResponse res = submitRequest(command[0], uri);
             bout.write(res.getContentAsByteArray());
             out.println();
+        }
+        
+        else if (command[0].equals("tunnel"))
+        {
+            if (command.length < 4)
+            {
+                return "Syntax Error.\n";
+            }
+            
+            if (command[1].equals("param"))
+            {
+                String uri = command[3];
+                if (uri.indexOf('?') == -1)
+                {
+                    uri += "?alf:method=" + command[2];
+                }
+                else
+                {
+                    uri += "&alf:method=" + command[2];
+                }
+                MockHttpServletResponse res = submitRequest("post", uri);
+                bout.write(res.getContentAsByteArray());
+                out.println();
+            }
+            
+            else if (command[1].equals("header"))
+            {
+                Map<String, String> headers = new HashMap<String, String>();
+                headers.put("X-HTTP-Method-Override", command[2]);
+                MockHttpServletResponse res = submitRequest("post", command[3], headers);
+                bout.write(res.getContentAsByteArray());
+                out.println();
+            }
+                
+            else
+            {
+                return "Syntax Error.\n";
+            }
         }
 
         else if (command[0].equals("reset"))

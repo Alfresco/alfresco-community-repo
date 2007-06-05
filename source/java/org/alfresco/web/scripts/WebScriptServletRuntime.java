@@ -70,7 +70,27 @@ public class WebScriptServletRuntime extends WebScriptRuntime
     @Override
     protected String getScriptMethod()
     {
-        return req.getMethod();
+        // Is this an overloaded POST request?
+        String method = req.getMethod();
+        if (method.equalsIgnoreCase("post"))
+        {
+            boolean overloadParam = false;
+            String overload = req.getHeader("X-HTTP-Method-Override");
+            if (overload == null || overload.length() == 0)
+            {
+                overload = req.getParameter("alf:method");
+                overloadParam = true;
+            }
+            if (overload != null && overload.length() > 0)
+            {
+                if (logger.isDebugEnabled())
+                    logger.debug("POST is tunnelling method '" + overload + "' as specified by " + (overloadParam ? "alf:method parameter" : "X-HTTP-Method-Override header"));
+                    
+                method = overload;
+            }
+        }
+        
+        return method;
     }
 
     /* (non-Javadoc)

@@ -55,6 +55,21 @@ ok> delete <path>
     
     <path> URL relative to /alfresco/service
     
+ok> tunnel <encoding> <method> <path>
+
+    Tunnel a request via POST.
+    
+    The actual <method> is encoded as either the URL parameter named alf:method or 
+    the request header named X-HTTP-Method-Override as specified via the <encoding>
+    parameter:
+    
+    param - encode method as URL parameter
+    header - encode method in Request Header
+    
+    e.g. to tunnel 'get /index' via post (where method is encoded in header) issue
+    
+    tunnel header get /index
+    
 ## 
 ##  end 
 ## 

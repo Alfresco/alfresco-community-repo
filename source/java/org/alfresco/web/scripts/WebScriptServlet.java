@@ -72,7 +72,7 @@ public class WebScriptServlet extends HttpServlet
         ApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
         registry = (DeclarativeWebScriptRegistry)context.getBean("webscripts.registry");
         transactionService = (TransactionService)context.getBean("transactionComponent");
-        authorityService = (AuthorityService)context.getBean("authorityServce");
+        authorityService = (AuthorityService)context.getBean("authorityService");
         configService = (ConfigService)context.getBean("webClientConfigService");
 
         // retrieve authenticator via servlet initialisation parameter

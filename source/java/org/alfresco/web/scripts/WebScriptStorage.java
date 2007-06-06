@@ -97,7 +97,16 @@ public class WebScriptStorage implements ApplicationContextAware, ApplicationLis
     @SuppressWarnings("unchecked")
     public Collection<WebScriptStore> getStores()
     {
-        return applicationContext.getBeansOfType(WebScriptStore.class, false, false).values();
+        Collection<WebScriptStore> allstores = applicationContext.getBeansOfType(WebScriptStore.class, false, false).values();
+        Collection<WebScriptStore> stores = new ArrayList<WebScriptStore>();
+        for (WebScriptStore store : allstores)
+        {
+            if (store.exists())
+            {
+                stores.add(store);
+            }
+        }
+        return stores;
     }
 
     /**

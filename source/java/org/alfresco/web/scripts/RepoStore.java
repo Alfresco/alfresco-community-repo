@@ -63,6 +63,7 @@ import freemarker.cache.TemplateLoader;
 public class RepoStore implements WebScriptStore, ApplicationContextAware, ApplicationListener
 {
     private ProcessorLifecycle lifecycle = new ProcessorLifecycle();
+    protected boolean mustExist = false;
     protected StoreRef repoStore;
     protected String repoPath;
     protected NodeRef baseNodeRef;
@@ -114,6 +115,16 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
+    }
+    
+    /**
+     * Sets whether the repo store must exist
+     * 
+     * @param mustExist
+     */
+    public void setMustExist(boolean mustExist)
+    {
+        this.mustExist = mustExist;
     }
     
     /**
@@ -182,23 +193,30 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
                     {
                         String query = "PATH:\"" + repoPath + "\"";
                         ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
-                        if (resultSet.length() == 0)
+                        if (resultSet.length() == 1)
                         {
-                            throw new WebScriptException("Unable to locate repository path " + repoStore.toString() + repoPath);
+                            baseNodeRef = resultSet.getNodeRef(0);
+                            baseDir = getPath(baseNodeRef);
                         }
-                        if (resultSet.length() > 1)
+                        else if (mustExist)
                         {
-                            throw new WebScriptException("Multiple repository paths found for " + repoStore.toString() + repoPath);
+                            throw new WebScriptException("Web Script Store " + repoStore.toString() + repoPath + " must exist; it was not found");
                         }
-                        baseNodeRef = resultSet.getNodeRef(0);
-                        baseDir = getPath(baseNodeRef);
                         return null;
                     }
                 });
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-        
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptStore#exists()
+     */
+    public boolean exists()
+    {
+        return (baseNodeRef != null);
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptStore#getBasePath()
      */

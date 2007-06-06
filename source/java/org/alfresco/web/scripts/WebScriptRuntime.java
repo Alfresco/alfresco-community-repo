@@ -217,7 +217,7 @@ public abstract class WebScriptRuntime
                 templatePath = "/status.ftl";
                 if (!registry.getTemplateProcessor().hasTemplate(templatePath))
                 {
-                    throw new WebScriptException("Failed to find status template " + status + " (format: " + WebScriptResponse.HTML_FORMAT + ")");
+                    throw new WebScriptException("Failed to find status template " + templatePath + " (format: " + WebScriptResponse.HTML_FORMAT + ")");
                 }
             }
 

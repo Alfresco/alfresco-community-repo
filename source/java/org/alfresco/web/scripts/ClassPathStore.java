@@ -53,9 +53,23 @@ import freemarker.cache.TemplateLoader;
 public class ClassPathStore implements WebScriptStore, InitializingBean
 {
     PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+    protected boolean mustExist = false;
     protected String classPath;
     protected File fileDir;
 
+    
+    /**
+     * Sets whether the class path must exist
+     * 
+     * If it must exist, but it doesn't exist, an exception is thrown
+     * on initialisation of the store
+     * 
+     * @param mustExist
+     */
+    public void setMustExist(boolean mustExist)
+    {
+        this.mustExist = mustExist;
+    }
     
     /**
      * Sets the class path
@@ -74,7 +88,22 @@ public class ClassPathStore implements WebScriptStore, InitializingBean
         throws Exception
     {
         ClassPathResource resource = new ClassPathResource(classPath);
-        fileDir = resource.getFile();
+        if (resource.exists())
+        {
+            fileDir = resource.getFile();
+        }
+        else if (mustExist)
+        {
+            throw new WebScriptException("Web Script Store classpath:" + classPath + " must exist; it was not found");
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptStore#exists()
+     */
+    public boolean exists()
+    {
+        return (fileDir != null);
     }
 
     /* (non-Javadoc)

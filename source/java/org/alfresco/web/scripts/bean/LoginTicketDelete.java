@@ -83,7 +83,7 @@ public class LoginTicketDelete extends DeclarativeWebScript
         // construct model for ticket
         Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
         model.put("ticket",  ticket);
-
+        
         try
         {
             String ticketUser = ticketComponent.validateTicket(ticket);
@@ -91,7 +91,6 @@ public class LoginTicketDelete extends DeclarativeWebScript
             // do not go any further if tickets are different
             if (!AuthenticationUtil.getCurrentUserName().equals(ticketUser))
             {
-                status.setRedirect(true);
                 status.setCode(HttpServletResponse.SC_NOT_FOUND);
                 status.setMessage("Ticket not found");
             }
@@ -99,15 +98,16 @@ public class LoginTicketDelete extends DeclarativeWebScript
             {
                 // delete the ticket
                 authenticationService.invalidateTicket(ticket);
+                status.setMessage("Deleted Ticket " + ticket);
             }
         }
         catch(AuthenticationException e)
         {
-            status.setRedirect(true);
             status.setCode(HttpServletResponse.SC_NOT_FOUND);
             status.setMessage("Ticket not found");
         }
-        
+
+        status.setRedirect(true);
         return model;
     }
 

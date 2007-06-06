@@ -37,7 +37,13 @@ import freemarker.cache.TemplateLoader;
  */
 public interface WebScriptStore
 {
-
+    /**
+     * Determines whether the store actually exists
+     * 
+     * @return  true => it does exist
+     */
+    public boolean exists();
+    
     /**
      * Gets the base path of the store
      *  

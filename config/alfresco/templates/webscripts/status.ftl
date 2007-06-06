@@ -21,7 +21,7 @@
      <tr><td><b>${status.code} Description:</b><td> ${status.codeDescription}
      <tr><td>&nbsp;
      <tr><td><b>Message:</b><td>${status.message!"<i>&lt;Not specified&gt;</i>"}
-     <tr><td><b>Exception:</b><td>${status.exception!"None"}
+     <tr><td><b>Exception:</b><td><#if status.exception?exists>${status.exception.class.name}<#if status.exception.message?exists> - ${status.exception.message}</#if></#if>
      <#if status.exception?exists>
        <tr><td><td>&nbsp;
        <#list status.exception.stackTrace as element>

@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.alfresco.repo.jscript.Node;
 import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.template.AbsoluteUrlMethod;
@@ -358,12 +360,13 @@ public abstract class AbstractWebScript implements WebScript
     
         if (logger.isDebugEnabled())
         {
+            logger.debug("Force success status header in response: " + req.forceSuccessStatus());
             logger.debug("Sending status " + statusCode + " (Template: " + template.path + ")");
             logger.debug("Rendering response: content type=" + mimetype);
         }
     
         res.reset();
-        res.setStatus(statusCode);
+        res.setStatus(req.forceSuccessStatus() ? HttpServletResponse.SC_OK : statusCode);
         res.setContentType(mimetype + ";charset=UTF-8");
         renderTemplate(template.path, model, res.getWriter());
     }

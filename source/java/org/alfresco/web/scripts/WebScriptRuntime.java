@@ -138,8 +138,7 @@ public abstract class WebScriptRuntime
                     String reqFormat = scriptReq.getFormat();
                     String format = (reqFormat == null || reqFormat.length() == 0) ? "default" : scriptReq.getFormat();
                     WebScriptDescription desc = scriptReq.getServiceMatch().getWebScript().getDescription();
-                    logger.debug("Format style: " + desc.getFormatStyle());
-                    logger.debug("Default format: " + desc.getDefaultFormat());
+                    logger.debug("Format style: " + desc.getFormatStyle() + ", Default format: " + desc.getDefaultFormat());
                     logger.debug("Invoking Web Script "  + description.getId() + (user == null ? " (unauthenticated)" : " (authenticated as " + user + ") (format " + format + ") (" + locale + ")"));
                 }
                 
@@ -224,12 +223,13 @@ public abstract class WebScriptRuntime
             // render output
             if (logger.isDebugEnabled())
             {
+                logger.debug("Force success status header in response: " + req.forceSuccessStatus());
                 logger.debug("Sending status " + statusCode + " (Template: " + templatePath + ")");
                 logger.debug("Rendering response: content type=" + MimetypeMap.MIMETYPE_HTML);
             }
 
             res.reset();
-            res.setStatus(statusCode);
+            res.setStatus(req.forceSuccessStatus() ? HttpServletResponse.SC_OK : statusCode);
             res.setContentType(MimetypeMap.MIMETYPE_HTML + ";charset=UTF-8");
             try
             {

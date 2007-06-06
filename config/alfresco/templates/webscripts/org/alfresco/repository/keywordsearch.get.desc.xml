@@ -6,5 +6,4 @@
   <url format="rss" template="/api/search/keyword.rss?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}"/>
   <url format="portlet" template="/api/search/keyword.portlet?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}"/>
   <authentication>guest</authentication>
-  <format default="html">any</format>
 </webscript>

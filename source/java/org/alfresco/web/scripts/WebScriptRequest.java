@@ -142,13 +142,6 @@ public interface WebScriptRequest
     public FormatStyle getFormatStyle();
  
     /**
-     * Get the JSON callback method
-     * 
-     * @return  method (or null, if not specified)
-     */
-    public String getJSONCallback();
-    
-    /**
      * Get User Agent
      * 
      * TODO: Expand on known agents
@@ -157,4 +150,21 @@ public interface WebScriptRequest
      */
     public String getAgent();
 
+    /**
+     * Get the JSON callback method
+     * 
+     * @return  method (or null, if not specified)
+     */
+    public String getJSONCallback();
+
+    /**
+     * Force response to return SUCCESS (200) code
+     * 
+     * Note: This is to support clients who cannot support non-success codes
+     *       e.g. Flash player
+     *       
+     * @return true => force return of 200, otherwise return status explicitly set
+     */
+    public boolean forceSuccessStatus();
+    
 }

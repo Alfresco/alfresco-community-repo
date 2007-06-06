@@ -79,6 +79,9 @@ public class TestWebScriptServer
     /** Current user */
     private String username = "admin";
     
+    /** Current headers */
+    private Map<String, String> headers = new HashMap<String, String>();
+    
     /** I18N Messages */
     private MessageSource m_messages;    
     
@@ -391,7 +394,9 @@ public class TestWebScriptServer
                  command[0].equals("delete"))
         {
             String uri = (command.length > 1) ? command[1] : null;
-            MockHttpServletResponse res = submitRequest(command[0], uri);
+            MockHttpServletResponse res = submitRequest(command[0], uri, headers);
+            bout.write(("Response status: " + res.getStatus()).getBytes());
+            out.println();
             bout.write(res.getContentAsByteArray());
             out.println();
         }
@@ -414,16 +419,17 @@ public class TestWebScriptServer
                 {
                     uri += "&alf:method=" + command[2];
                 }
-                MockHttpServletResponse res = submitRequest("post", uri);
+                MockHttpServletResponse res = submitRequest("post", uri, headers);
                 bout.write(res.getContentAsByteArray());
                 out.println();
             }
             
             else if (command[1].equals("header"))
             {
-                Map<String, String> headers = new HashMap<String, String>();
-                headers.put("X-HTTP-Method-Override", command[2]);
-                MockHttpServletResponse res = submitRequest("post", command[3], headers);
+                Map<String, String> tunnelheaders = new HashMap<String, String>();
+                tunnelheaders.putAll(headers);
+                tunnelheaders.put("X-HTTP-Method-Override", command[2]);
+                MockHttpServletResponse res = submitRequest("post", command[3], tunnelheaders);
                 bout.write(res.getContentAsByteArray());
                 out.println();
             }
@@ -433,6 +439,43 @@ public class TestWebScriptServer
                 return "Syntax Error.\n";
             }
         }
+
+        else if (command[0].equals("header"))
+        {
+            if (command.length == 1)
+            {
+                for (Map.Entry<String, String> entry : headers.entrySet())
+                {
+                    out.println(entry.getKey() + " = " + entry.getValue());
+                }
+            }
+            else if (command.length == 2)
+            {
+                String[] param = command[1].split("=");
+                if (param.length == 0)
+                {
+                    return "Syntax Error.\n";
+                }
+                if (param.length == 1)
+                {
+                    headers.remove(param[0]);
+                    out.println("deleted header " + param[0]);
+                }
+                else if (param.length == 2)
+                {
+                    headers.put(param[0], param[1]);
+                    out.println("set header " + param[0] + " = " + headers.get(param[0]));
+                }
+                else
+                {
+                    return "Syntax Error.\n";
+                }
+            }
+            else
+            {
+                return "Syntax Error.\n";
+            }
+        }            
 
         else if (command[0].equals("reset"))
         {

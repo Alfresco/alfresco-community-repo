@@ -129,8 +129,10 @@ public class DeclarativeWebScript extends AbstractWebScript
             {
                 // render output
                 int statusCode = status.getCode();
-                if (statusCode != HttpServletResponse.SC_OK)
+                if (statusCode != HttpServletResponse.SC_OK && !req.forceSuccessStatus())
                 {
+                    logger.debug("Force success status header in response: " + req.forceSuccessStatus());
+                    logger.debug("Setting status " + statusCode);
                     res.setStatus(statusCode);
                 }
                 

@@ -248,4 +248,14 @@ public class WebScriptServletRequest extends WebScriptRequestImpl
         return port;
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequestImpl#forceSuccessStatus()
+     */
+    @Override
+    public boolean forceSuccessStatus()
+    {
+        String forceSuccess = req.getHeader("alf-force-success-response");
+        return Boolean.valueOf(forceSuccess);
+    }
+
 }

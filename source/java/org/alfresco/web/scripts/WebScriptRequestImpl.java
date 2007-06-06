@@ -147,4 +147,12 @@ public abstract class WebScriptRequestImpl implements WebScriptRequest
         return getParameter("alf_callback");
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequest#forceSuccessStatus()
+     */
+    public boolean forceSuccessStatus()
+    {
+        return false;
+    }
+
 }

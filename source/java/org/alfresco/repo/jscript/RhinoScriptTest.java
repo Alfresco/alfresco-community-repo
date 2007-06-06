@@ -176,9 +176,8 @@ public class RhinoScriptTest extends TestCase
                     {
                         Scriptable scope = cx.initStandardObjects();
                         
-                        // wrap System.out so we can perform println() from within scripts
-                        Object wrappedOut = Context.javaToJS(System.out, scope);
-                        ScriptableObject.putProperty(scope, "out", wrappedOut);
+                        // add logger object so we can perform output from within scripts
+                        ScriptableObject.putProperty(scope, "logger", new ScriptLogger());
                         
                         // wrap a simple NodeRef Java object
                         // we can use Java style method calls within the script to access it's properties
@@ -192,7 +191,7 @@ public class RhinoScriptTest extends TestCase
                         assertEquals(ref1.getId(), cx.toString(result));
                         
                         // wrap a scriptable Alfresco Node object - the Node object is a wrapper like TemplateNode
-                        Node node1 = new Node(root, serviceRegistry, null);
+                        Node node1 = new Node(root, serviceRegistry, scope);
                         Object wrappedNode = Context.javaToJS(node1, scope);
                         ScriptableObject.putProperty(scope, "root", wrappedNode);
                         
@@ -384,16 +383,16 @@ public class RhinoScriptTest extends TestCase
     
     private static final String TESTSCRIPT1 =
             "var id = root.id;\r\n" + 
-            "out.println(id);\r\n" + 
+            "logger.log(id);\r\n" + 
             "var name = root.name;\r\n" + 
-            "out.println(name);\r\n" + 
+            "logger.log(name);\r\n" + 
             "var type = root.type;\r\n" + 
-            "out.println(type);\r\n" + 
+            "logger.log(type);\r\n" + 
             "var childList = root.children;\r\n" + 
-            "out.println(\"zero index node name: \" + childList[0].name);\r\n" +
-            "out.println(\"name property access: \" + childList[0].properties.name );\r\n" +
+            "logger.log(\"zero index node name: \" + childList[0].name);\r\n" +
+            "logger.log(\"name property access: \" + childList[0].properties.name);\r\n" +
             "var childByNameNode = root.childByNamePath(\"/\" + childList[0].name);\r\n" +
-            "out.println(\"child by name path: \" + childByNameNode.name);\r\n" +
+            "logger.log(\"child by name path: \" + childByNameNode.name);\r\n" +
             "var xpathResults = root.childrenByXPath(\"/*\");\r\n" +
-            "out.println(\"children of root from xpath: \" + xpathResults.length);\r\n";
+            "logger.log(\"children of root from xpath: \" + xpathResults.length);\r\n";
 }

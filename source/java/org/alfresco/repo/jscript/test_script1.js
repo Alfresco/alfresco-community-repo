@@ -1,16 +1,16 @@
 var id = root.id;
 var name = root.name;
-out.println("Name: " + name);
+logger.log("Name: " + name);
 var type = root.type;
-out.println("ID: " + id + " of type: " + type);
+logger.log("ID: " + id + " of type: " + type);
 var noderef = root.nodeRef;
-out.println("NodeRef: " + noderef);
+logger.log("NodeRef: " + noderef);
 var childList = root.children;
-out.println("Has " + childList.length + " child nodes");
+logger.log("Has " + childList.length + " child nodes");
 var properties = root.properties;
-out.println("Property Count: " + properties.length);
+logger.log("Property Count: " + properties.length);
 var assocs = root.assocs;
-out.println("Assoc Count: " + assocs.length);
+logger.log("Assoc Count: " + assocs.length);
 
 // test various access mechanisms
 var childname1 = childList[0].name;

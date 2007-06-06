@@ -14,7 +14,7 @@ import org.alfresco.util.NameMatcher;
  * Client side wrapper around the RMI based AVMSyncServiceTransport.
  * @author britt
  */
-public class AVMSyncServiceClient implements AVMSyncService 
+public class AVMSyncServiceRemote implements AVMSyncService 
 {
     /**
      * The instance of AVMSyncServiceTransport.
@@ -29,7 +29,7 @@ public class AVMSyncServiceClient implements AVMSyncService
     /**
      * Default constructor.
      */
-    public AVMSyncServiceClient()
+    public AVMSyncServiceRemote()
     {
     }
 

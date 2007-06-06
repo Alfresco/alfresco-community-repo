@@ -27,7 +27,7 @@
         </property>
     </bean>
 
-	<bean id="avmSyncService" class="org.alfresco.repo.remote.AVMSyncServiceClient">
+	<bean id="avmSyncService" class="org.alfresco.repo.remote.AVMSyncServiceRemote">
 	    <property name="avmSyncServiceTransport">
 	    	<ref bean="avmSyncServiceTransport"/>
 	    </property>

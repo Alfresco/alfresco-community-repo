@@ -30,6 +30,7 @@ package org.alfresco.linkvalidation;
 import java.util.List;
 
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
+import org.alfresco.util.NameMatcher;
 
 public interface LinkValidationService
 {
@@ -80,7 +81,7 @@ public interface LinkValidationService
     *  to a webapp.  This function is just a convenience wrapper for calling  
     *  getHrefConcordance with statusGTE=400 and statusLTE=599.
     */
-    public List<HrefConcordanceEntry> getBrokenHrefConcordance( 
+    public List<HrefConcordanceEntry> getBrokenHrefConcordanceEntries( 
                                           String  storeNameOrWebappPath 
                                       ) throws AVMNotFoundException;
 
@@ -101,7 +102,7 @@ public interface LinkValidationService
     *    <li> storeNameOrWebappPath="mysite:/www/avm_webapps/ROOT"
     *    <li> statusGTE=400
     *    <li> statusLTE=599
-    *  <ul>
+    *  </ul>
     *  <p>
     *  Example 2:<br>
     *  The following parameters will fetch all the links whose return status
@@ -111,22 +112,23 @@ public interface LinkValidationService
     *    <li> storeNameOrWebappPath="mysite"
     *    <li> statusGTE=200
     *    <li> statusLTE=299
-    *  <ul>
+    *  </ul>
+    *  <p>
     *  Example 3:<br>
     *  The following parameters will fetch all the links whose return status
     *  is 200 (OK) within the ROOT webapp in the staging area of the 'mysite' 
-    *  web project
+    *  web project:
     *  <ul>
     *    <li> storeNameOrWebappPath="mysite:/www/avm_webapps/ROOT"
     *    <li> statusGTE=200
     *    <li> statusLTE=200
-    *  <ul>
+    *  </ul>
     *  <p>
     *  For details regarding HTTP status codes, see:
     *  http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
     *
     */
-    public List<HrefConcordanceEntry> getHrefConcordance( 
+    public List<HrefConcordanceEntry> getHrefConcordanceEntries( 
                                          String  storeNameOrWebappPath,
                                          int     statusGTE,
                                          int     statusLTE
@@ -180,6 +182,35 @@ public interface LinkValidationService
                                          AVMNotFoundException;
 
 
+    /**
+    *  Fetch all hyperlinks that rely upon the existence of the file specified
+    *  by 'path', directly or indirectly.  The list of hrefs returnd is 
+    *  sorted in increasing lexicographic order.  For example, in 
+    *   alfresco-sample-website.war, the hrefs dependent upon
+    *  <code>mysite:/www/avm_webapps/ROOT/assets/footer.html</code> are:
+    *  <pre>
+    *     http://mysite.www--sandbox.version--v-1.127-0-0-1.ip.alfrescodemo.net:8180/
+    *     http://mysite.www--sandbox.version--v-1.127-0-0-1.ip.alfrescodemo.net:8180/assets/footer.html
+    *     http://mysite.www--sandbox.version--v-1.127-0-0-1.ip.alfrescodemo.net:8180/index.jsp
+    *     http://mysite.www--sandbox.version--v-1.127-0-0-1.ip.alfrescodemo.net:8180/media/releases/index.jsp
+    *  </pre>
+    *  Note that this list may contain links that are functionally equivalent
+    * (e.g.: the first and third links), and may also contain links that 
+    * don't actually appear an any web page, but are implicitly present
+    * in the site because any asset can be "dead reckoned".
+    * 
+    *
+    */
     public List<String> getHrefsDependentUponFile(String path);
+
+
+    /**
+    *  Don't use yet - does nothing at the moment.
+    */
+    public BrokenHrefConcordanceDifference getBrokenHrefConcordanceDifference(
+                                               int srcVersion, String srcPath,
+                                               int dstVersion, String dstPath,
+                                               NameMatcher     excluder) 
+                                           throws AVMNotFoundException;
 }
 

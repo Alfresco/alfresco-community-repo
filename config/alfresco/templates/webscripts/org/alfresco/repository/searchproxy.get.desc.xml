@@ -1,5 +1,5 @@
 <webscript>
   <shortname>Proxied (OpenSearch) Search</shortname>
   <description>Search engine proxy for issuing a search against a remote search engine</description>
-  <url template="/search/engine/{engine}/{format}"/>
+  <url template="/api/search/engine/{engine}/{format}"/>
 </webscript>

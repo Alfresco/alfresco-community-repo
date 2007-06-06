@@ -15,13 +15,12 @@
 
             <!--  TODO: Find/Replace [host] with server host name    -->
             <!--  TODO: Find/Replace [port] with server port number  -->
-         
             <engine label="Remote Alfresco Repository" proxy="remote">
                <url type="application/atom+xml">
-                  http://[host]:[port]/alfresco/service/search/keyword?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest=true&amp;format=atom
+                  http://[host]:[port]/alfresco/api/service/search/keyword.atom?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest=true
                </url>
                <url type="application/rss+xml">
-                  http://[host]:[port]/alfresco/service/search/keyword?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest=true&amp;format=rss
+                  http://[host]:[port]/alfresco/api/service/search/keyword.rss?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest=true
                </url>
             </engine>
             

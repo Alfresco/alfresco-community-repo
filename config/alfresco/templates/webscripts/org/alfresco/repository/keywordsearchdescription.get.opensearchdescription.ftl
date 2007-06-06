@@ -4,8 +4,8 @@
   <LongName>Alfresco ${server.edition} Keyword Search ${server.version}</LongName>
   <Description>Search Alfresco "company home" using keywords</Description>
   <#comment>IE takes first template from list, thus html response is listed first</#comment>
-  <Url type="text/html" template="${absurl(url.serviceContext)}/search/keyword?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}"/>
-  <Url type="application/atom+xml" template="${absurl(url.serviceContext)}/search/keyword?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}&amp;format=atom"/>
-  <Url type="application/rss+xml" template="${absurl(url.serviceContext)}/search/keyword?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}&amp;format=rss"/>
+  <Url type="text/html" template="${absurl(url.serviceContext)}/api/search/keyword?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}"/>
+  <Url type="application/atom+xml" template="${absurl(url.serviceContext)}/api/search/keyword.atom?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}"/>
+  <Url type="application/rss+xml" template="${absurl(url.serviceContext)}/api/search/keyword.rss?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}"/>
   <Image height="16" width="16" type="image/x-icon">${absurl(url.context)}/images/logo/AlfrescoLogo16.ico</Image>
 </OpenSearchDescription>

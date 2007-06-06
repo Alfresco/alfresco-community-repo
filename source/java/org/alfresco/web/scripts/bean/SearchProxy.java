@@ -170,7 +170,7 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
         {
             throw new WebScriptException("Search Proxy must be executed in HTTP Servlet environment");
         }
-        HttpServletResponse servletRes = ((WebScriptServletResponse)req).getHttpServletResponse();
+        HttpServletResponse servletRes = ((WebScriptServletResponse)res).getHttpServletResponse();
         SearchEngineHttpProxy proxy = new SearchEngineHttpProxy(req.getServicePath() + "/" + req.getContextPath(), engine, engineUrl, servletRes);
         proxy.service();
     }

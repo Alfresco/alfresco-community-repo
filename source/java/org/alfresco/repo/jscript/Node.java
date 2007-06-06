@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,7 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Wrapper;
@@ -113,13 +115,13 @@ public class Node implements Serializable, Scopeable
     private Set<QName> aspects = null;
     
     /** The target associations for this node */
-    private ScriptableQNameMap<String, Node[]> assocs = null;
+    private ScriptableQNameMap<String, Object> assocs = null;
     
     /** The child associations for this node */
-    private ScriptableQNameMap<String, Node[]> childAssocs = null;
+    private ScriptableQNameMap<String, Object> childAssocs = null;
     
     /** The children of this node */
-    private Node[] children = null;
+    private Scriptable children = null;
     
     /** The properties of this node */
     private ScriptableQNameMap<String, Serializable> properties = null;
@@ -330,26 +332,26 @@ public class Node implements Serializable, Scopeable
     }
     
     /**
-     * @return The children of this Node as Node wrappers
+     * @return The children of this Node as JavaScript array of Node object wrappers
      */
-    public Node[] getChildren()
+    public Scriptable getChildren()
     {
         if (this.children == null)
         {
             List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(this.nodeRef);
-            this.children = new Node[childRefs.size()];
+            Object[] children = new Object[childRefs.size()];
             for (int i = 0; i < childRefs.size(); i++)
             {
                 // create our Node representation from the NodeRef
-                Node child = newInstance(childRefs.get(i).getChildRef(), this.services, this.scope);
-                this.children[i] = child;
+                children[i] = newInstance(childRefs.get(i).getChildRef(), this.services, this.scope);
             }
+            this.children = Context.getCurrentContext().newArray(this.scope, children);
         }
         
         return this.children;
     }
     
-    public Node[] jsGet_children()
+    public Scriptable jsGet_children()
     {
         return getChildren();
     }
@@ -386,9 +388,9 @@ public class Node implements Serializable, Scopeable
                     t.nextToken());
         }
         
-        Node[] nodes = getChildrenByXPath(xpath.toString(), params, true);
+        Object[] nodes = getChildrenByXPath(xpath.toString(), params, true);
         
-        return (nodes.length != 0) ? nodes[0] : null;
+        return (nodes.length != 0) ? (Node)nodes[0] : null;
     }
     
     // TODO: find out why this doesn't work - the function defs do not seem to get found
@@ -398,101 +400,116 @@ public class Node implements Serializable, Scopeable
     // }
     
     /**
-     * @return Returns the Nodes at the specified XPath walking the children of this Node. So a valid call might be <code>mynode.childrenByXPath("*[@cm:name='Testing']/*");</code>
+     * @return Returns a JavaScript array of Nodes at the specified XPath starting at this Node.
+     *         So a valid call might be <code>mynode.childrenByXPath("*[@cm:name='Testing']/*");</code>
      */
-    public Node[] childrenByXPath(String xpath)
+    public Scriptable childrenByXPath(String xpath)
     {
-        return getChildrenByXPath(xpath, null, false);
+        return Context.getCurrentContext().newArray(this.scope, getChildrenByXPath(xpath, null, false));
     }
     
     /**
-     * Return the target associations from this Node. As a Map of assoc name to an Array of Nodes.
+     * Return the target associations from this Node. As a Map of assoc name to a JavaScript array of Nodes.
      * The Map returned implements the Scriptable interface to allow access to the assoc arrays via JavaScript
      * associative array access. This means associations of this node can be access thus:
      * <code>node.assocs["translations"][0]</code>
      * 
-     * @return target associations as a Map of assoc name to an Array of Nodes.
+     * @return target associations as a Map of assoc name to a JavaScript array of Nodes.
      */
     @SuppressWarnings("unchecked")
-    public Map<String, Node[]> getAssocs()
+    public Map<String, Object> getAssocs()
     {
         if (this.assocs == null)
         {
             // this Map implements the Scriptable interface for native JS syntax property access
-            this.assocs = new ScriptableQNameMap<String, Node[]>(this.services.getNamespaceService());
-            
+            this.assocs = new ScriptableQNameMap<String, Object>(this.services.getNamespaceService());
+
+            // get the list of target nodes for each association type
             List<AssociationRef> refs = this.nodeService.getTargetAssocs(this.nodeRef, RegexQNamePattern.MATCH_ALL);
             for (AssociationRef ref : refs)
             {
                 String qname = ref.getTypeQName().toString();
-                Node[] nodes = (Node[]) this.assocs.get(qname);
+                List<Node> nodes = (List<Node>)this.assocs.get(qname);
                 if (nodes == null)
                 {
-                    // first access for the list for this qname
-                    nodes = new Node[1];
+                    // first access of the list for this qname
+                    nodes = new ArrayList<Node>(4);
+                    this.assocs.put(ref.getTypeQName().toString(), nodes);
                 }
-                else
-                {
-                    Node[] newNodes = new Node[nodes.length + 1];
-                    System.arraycopy(nodes, 0, newNodes, 0, nodes.length);
-                    nodes = newNodes;
-                }
-                nodes[nodes.length - 1] = newInstance(ref.getTargetRef(), this.services, this.scope);
-                
-                this.assocs.put(ref.getTypeQName().toString(), nodes);
+                nodes.add(newInstance(ref.getTargetRef(), this.services, this.scope));
+            }
+            
+            // convert each Node list into a JavaScript array object
+            for (String qname : this.assocs.keySet())
+            {
+                List<Node> nodes = (List<Node>)this.assocs.get(qname);
+                Object[] objs = nodes.toArray(new Object[nodes.size()]);
+                this.assocs.put(qname, Context.getCurrentContext().newArray(this.scope, objs));
             }
         }
-        
+
         return this.assocs;
     }
     
-    public Map<String, Node[]> jsGet_assocs()
+    public Map<String, Object> jsGet_assocs()
     {
         return getAssocs();
     }
     
+    public Map<String, Object> jsGet_associations()
+    {
+       return getAssocs();
+    }
+    
     /**
-     * Return the child associations from this Node. As a Map of assoc name to an Array of Nodes.
+     * Return the child associations from this Node. As a Map of assoc name to a JavaScript array of Nodes.
      * The Map returned implements the Scriptable interface to allow access to the assoc arrays via JavaScript
      * associative array access. This means associations of this node can be access thus:
      * <code>node.childAssocs["contains"][0]</code>
      * 
-     * @return child associations as a Map of assoc name to an Array of Nodes.
+     * @return child associations as a Map of assoc name to a JavaScript array of Nodes.
      */
     @SuppressWarnings("unchecked")
-    public Map<String, Node[]> getChildAssocs()
+    public Map<String, Object> getChildAssocs()
     {
         if (this.childAssocs == null)
         {
             // this Map implements the Scriptable interface for native JS syntax property access
-            this.childAssocs = new ScriptableQNameMap<String, Node[]>(this.services.getNamespaceService());
+            this.childAssocs = new ScriptableQNameMap<String, Object>(this.services.getNamespaceService());
             
+            // get the list of child assoc nodes for each association type
             List<ChildAssociationRef> refs = this.nodeService.getChildAssocs(nodeRef);
             for (ChildAssociationRef ref : refs)
             {
                 String qname = ref.getTypeQName().toString();
-                Node[] nodes = (Node[]) this.childAssocs.get(qname);
+                List<Node> nodes = (List<Node>)this.childAssocs.get(qname);
                 if (nodes == null)
                 {
-                    // first access for the list for this qname
-                    nodes = new Node[1];
+                    // first access of the list for this qname
+                    nodes = new ArrayList<Node>(4);
+                    this.childAssocs.put(ref.getTypeQName().toString(), nodes);
                 }
-                else
-                {
-                    Node[] newNodes = new Node[nodes.length + 1];
-                    System.arraycopy(nodes, 0, newNodes, 0, nodes.length);
-                    nodes = newNodes;
-                }
-                nodes[nodes.length - 1] = newInstance(ref.getChildRef(), this.services, this.scope);
-                
-                this.childAssocs.put(ref.getTypeQName().toString(), nodes);
+                nodes.add(newInstance(ref.getChildRef(), this.services, this.scope));
+            }
+            
+            // convert each Node list into a JavaScript array object
+            for (String qname : this.childAssocs.keySet())
+            {
+                List<Node> nodes = (List<Node>)this.childAssocs.get(qname);
+                Object[] objs = nodes.toArray(new Object[nodes.size()]);
+                this.childAssocs.put(qname, Context.getCurrentContext().newArray(this.scope, objs));
             }
         }
         
         return this.childAssocs;
     }
     
-    public Map<String, Node[]> jsGet_childAssocs()
+    public Map<String, Object> jsGet_childAssocs()
+    {
+        return getChildAssocs();
+    }
+    
+    public Map<String, Object> jsGet_childAssociations()
     {
         return getChildAssocs();
     }
@@ -1865,11 +1882,11 @@ public class Node implements Serializable, Scopeable
      * @param xpath      XPath to execute
      * @param firstOnly  True to return the first result only
      * 
-     * @return Node[] can be empty but never null
+     * @return Object[] can be empty but never null
      */
-    private Node[] getChildrenByXPath(String xpath, QueryParameterDefinition[] params, boolean firstOnly)
+    private Object[] getChildrenByXPath(String xpath, QueryParameterDefinition[] params, boolean firstOnly)
     {
-        Node[] result = null;
+        Object[] result = null;
         
         if (xpath.length() != 0)
         {
@@ -1883,14 +1900,14 @@ public class Node implements Serializable, Scopeable
             {
                 if (nodes.size() != 0)
                 {
-                    result = new Node[1];
+                    result = new Object[1];
                     result[0] = newInstance(nodes.get(0), this.services, this.scope);
                 }
             }
             // or all the results
             else
             {
-                result = new Node[nodes.size()];
+                result = new Object[nodes.size()];
                 for (int i = 0; i < nodes.size(); i++)
                 {
                     NodeRef ref = nodes.get(i);
@@ -1899,7 +1916,7 @@ public class Node implements Serializable, Scopeable
             }
         }
         
-        return result != null ? result : new Node[0];
+        return result != null ? result : new Object[0];
     }
     
     

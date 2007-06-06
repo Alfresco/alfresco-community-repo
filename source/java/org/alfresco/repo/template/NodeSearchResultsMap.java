@@ -59,7 +59,7 @@ public class NodeSearchResultsMap extends BaseSearchResultsMap
             
             List<TemplateNode> results = query(ref);
             
-            if (results.size() == 1)
+            if (results.size() != 0)
             {
                 result = results.get(0);
             }

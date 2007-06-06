@@ -40,6 +40,8 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
 
 /**
  * Search component for use by the ScriptService.
@@ -58,10 +60,10 @@ public final class Search extends BaseScopableProcessorExtension
 {
     /** Service registry */
     private ServiceRegistry services;
-    
+
     /** Default store reference */
     private StoreRef storeRef;
-    
+
     /**
      * Set the default store reference
      * 
@@ -71,7 +73,7 @@ public final class Search extends BaseScopableProcessorExtension
     {
         this.storeRef = new StoreRef(storeRef);
     }
-    
+
     /**
      * Set the service registry
      * 
@@ -81,7 +83,7 @@ public final class Search extends BaseScopableProcessorExtension
     {
         this.services = services;
     }
-    
+
     /**
      * Find a single Node by the Node reference
      * 
@@ -93,7 +95,7 @@ public final class Search extends BaseScopableProcessorExtension
     {
         return findNode(ref.toString());
     }
-    
+
     /**
      * Find a single Node by the Node reference
      *  
@@ -104,80 +106,82 @@ public final class Search extends BaseScopableProcessorExtension
     public Node findNode(String ref)
     {
         String query = "ID:" + LuceneQueryParser.escape(ref);
-        Node[] result = query(query, SearchService.LANGUAGE_LUCENE);
-        if (result.length == 1)
+        Object[] result = query(query, SearchService.LANGUAGE_LUCENE);
+        if (result.length != 0)
         {
-            return result[0];
+            return (Node)result[0];
         }
         else
         {
             return null;
         }
     }
-    
+
     /**
      * Execute a XPath search
      * 
      * @param search        XPath search string to execute
      * 
-     * @return Node[] of results from the search - can be empty but not null
+     * @return JavaScript array of Node results from the search - can be empty but not null
      */
-    public Node[] xpathSearch(String search)
+    public Scriptable xpathSearch(String search)
     {
         if (search != null && search.length() != 0)
         {
-           return query(search, SearchService.LANGUAGE_XPATH);
+            Object[] results = query(search, SearchService.LANGUAGE_XPATH);
+            return Context.getCurrentContext().newArray(getScope(), results);
         }
         else
         {
-           return new Node[0];
+            return Context.getCurrentContext().newArray(getScope(), 0);
         }
     }
-    
+
     /**
      * Execute a Lucene search
      * 
      * @param search        Lucene search string to execute
      * 
-     * @return Node[] of results from the search - can be empty but not null
+     * @return JavaScript array of Node results from the search - can be empty but not null
      */
-    public Node[] luceneSearch(String search)
+    public Scriptable luceneSearch(String search)
     {
         if (search != null && search.length() != 0)
         {
-           return query(search, SearchService.LANGUAGE_LUCENE);
+            Object[] results = query(search, SearchService.LANGUAGE_LUCENE);
+            return Context.getCurrentContext().newArray(getScope(), results);
         }
         else
         {
-           return new Node[0];
+            return Context.getCurrentContext().newArray(getScope(), 0);
         }
     }
-    
+
     /**
      * Execute a saved Lucene search
      * 
      * @param savedSearch   Node that contains the saved search XML content
      * 
-     * @return Node[] of results from the search - can be empty but not null
+     * @return JavaScript array of Node results from the search - can be empty but not null
      */
-    public Node[] savedSearch(Node savedSearch)
+    public Scriptable savedSearch(Node savedSearch)
     {
         String search = null;
-        
+
         // read the Saved Search XML on the specified node - and get the Lucene search from it
         try
         {
             if (savedSearch != null)
             {
                 ContentReader content = this.services.getContentService().getReader(
-                       savedSearch.getNodeRef(), ContentModel.PROP_CONTENT);
+                        savedSearch.getNodeRef(), ContentModel.PROP_CONTENT);
                 if (content != null && content.exists())
                 {
                     // get the root element
                     SAXReader reader = new SAXReader();
                     Document document = reader.read(new StringReader(content.getContentString()));
                     Element rootElement = document.getRootElement();
-                    
+
                     Element queryElement = rootElement.element("query");
                     if (queryElement != null)
                     {
@@ -191,17 +195,25 @@ public final class Search extends BaseScopableProcessorExtension
             throw new AlfrescoRuntimeException("Failed to find or load saved Search: " + savedSearch.getNodeRef(), err);
         }
         
-        return search != null ? query(search, SearchService.LANGUAGE_LUCENE) : new Node[0];
+        if (search != null)
+        {
+            Object[] results = query(search, SearchService.LANGUAGE_LUCENE);
+            return Context.getCurrentContext().newArray(getScope(), results);
+        }
+        else
+        {
+            return Context.getCurrentContext().newArray(getScope(), 0);
+        }
     }
-    
+
     /**
      * Execute a saved Lucene search
      * 
      * @param searchRef    NodeRef string that points to the node containing saved search XML content
      * 
-     * @return Node[] of results from the search - can be empty but not null
+     * @return JavaScript array of Node results from the search - can be empty but not null
      */
-    public Node[] savedSearch(String searchRef)
+    public Scriptable savedSearch(String searchRef)
     {
         if (searchRef != null)
         {
@@ -209,37 +221,39 @@ public final class Search extends BaseScopableProcessorExtension
         }
         else
         {
-            return new Node[0];
+            return Context.getCurrentContext().newArray(getScope(), 0);
         }
     }
 
     /**
      * Execute the query
      * 
-     * Removes any duplicates that may be present (ID can cause duplicates - it is better to remove them here)
+     * Removes any duplicates that may be present (ID search can cause duplicates - it is better to remove them here)
      * 
-     * @param search
-     * @return
+     * @param search    Lucene search to execute
+     * @param language  Search language to use e.g. SearchService.LANGUAGE_LUCENE
+     * 
+     * @return Array of Node objects
      */
-    private Node[] query(String search, String language)
+    private Object[] query(String search, String language)
     {   
-        LinkedHashSet<Node> set = new LinkedHashSet<Node> ();
-        
+        LinkedHashSet<Node> set = new LinkedHashSet<Node>();
+
         // perform the search against the repo
         ResultSet results = null;
         try
         {
             results = this.services.getSearchService().query(
-                      this.storeRef,
-                      language,
-                      search);
-            
+                    this.storeRef,
+                    language,
+                    search);
+
             if (results.length() != 0)
             {
                 for (ResultSetRow row: results)
                 {
                     NodeRef nodeRef = row.getNodeRef();
-                    set.add(new Node(nodeRef, services, getScope()));
+                    set.add(new Node(nodeRef, this.services, getScope()));
                 }
             }
         }
@@ -254,7 +268,7 @@ public final class Search extends BaseScopableProcessorExtension
                 results.close();
             }
         }
-     
-        return set.toArray(new Node[(set.size())]);
+
+        return set.toArray(new Object[(set.size())]);
     }
 }

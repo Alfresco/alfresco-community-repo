@@ -34,6 +34,8 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.ParameterCheck;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
 
 /**
  * Scripted People service for describing and executing actions against People & Groups.
@@ -226,12 +228,13 @@ public final class People extends BaseScopableProcessorExtension
      * @param group        the group to retrieve members for
      * @param recurse      recurse into sub-groups
      * 
-     * @return the members of the group
+     * @return members of the group as a JavaScript array
      */
-    public Node[] getMembers(Node group)
+    public Scriptable getMembers(Node group)
     {
         ParameterCheck.mandatory("Group", group);
-        return getContainedAuthorities(group, AuthorityType.USER, true);
+        Object[] members = getContainedAuthorities(group, AuthorityType.USER, true);
+        return Context.getCurrentContext().newArray(getScope(), members);
     }
 
     /**
@@ -240,12 +243,13 @@ public final class People extends BaseScopableProcessorExtension
      * @param group        the group to retrieve members for
      * @param recurse      recurse into sub-groups
      * 
-     * @return the members of the group
+     * @return the members of the group as a JavaScript array
      */
-    public Node[] getMembers(Node group, boolean recurse)
+    public Scriptable getMembers(Node group, boolean recurse)
     {
         ParameterCheck.mandatory("Group", group);
-        return getContainedAuthorities(group, AuthorityType.USER, recurse);
+        Object[] members = getContainedAuthorities(group, AuthorityType.USER, recurse);
+        return Context.getCurrentContext().newArray(getScope(), members);
     }
     
     /**
@@ -253,17 +257,17 @@ public final class People extends BaseScopableProcessorExtension
      * 
      * @param person       the user (cm:person) to get the containing groups for
      * 
-     * @return the containing groups, can be null
+     * @return the containing groups as a JavaScript array, can be null
      */
-    public Node[] getContainerGroups(Node person)
+    public Scriptable getContainerGroups(Node person)
     {
         ParameterCheck.mandatory("Person", person);
-        Node[] parents = null;
+        Object[] parents = null;
         Set<String> authorities = this.authorityService.getContainingAuthorities(
                 AuthorityType.GROUP,
                 (String)person.getProperties().get(ContentModel.PROP_USERNAME),
                 false);
-        parents = new Node[authorities.size()];
+        parents = new Object[authorities.size()];
         int i = 0;
         for (String authority : authorities)
         {
@@ -273,7 +277,7 @@ public final class People extends BaseScopableProcessorExtension
                 parents[i++] = group; 
             }
         }
-        return parents;
+        return Context.getCurrentContext().newArray(getScope(), parents);
     }
 
     /**
@@ -283,16 +287,17 @@ public final class People extends BaseScopableProcessorExtension
      * @param type       authority type to filter by
      * @param recurse    recurse into sub-containers
      * 
-     * @return contained authorities or null if none found
+     * @return contained authorities
      */
-    private Node[] getContainedAuthorities(Node container, AuthorityType type, boolean recurse)
+    private Object[] getContainedAuthorities(Node container, AuthorityType type, boolean recurse)
     {
-        Node[] members = null;
+        Object[] members = null;
+        
         if (container.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
         {
             String groupName = (String)container.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
             Set<String> authorities = authorityService.getContainedAuthorities(type, groupName, !recurse);
-            members = new Node[authorities.size()];
+            members = new Object[authorities.size()];
             int i = 0;
             for (String authority : authorities)
             {
@@ -315,6 +320,7 @@ public final class People extends BaseScopableProcessorExtension
                 }
             }
         }
-        return members;
+        
+        return members != null ? members : new Object[0];
     }
 }

@@ -31,6 +31,8 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.namespace.QName;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
 
 /**
  * Support class for finding categories, finding root nodes for categories and creating root categories. 
@@ -69,10 +71,11 @@ public final class Classification extends BaseScopableProcessorExtension
      * @param aspect
      * @return
      */
-    public CategoryNode[] getAllCategoryNodes(String aspect)
+    public Scriptable getAllCategoryNodes(String aspect)
     {
-        return buildCategoryNodes(services.getCategoryService().getCategories(storeRef, createQName(aspect),
-                CategoryService.Depth.ANY));
+        Object[] cats = buildCategoryNodes(services.getCategoryService().getCategories(
+                            storeRef, createQName(aspect), CategoryService.Depth.ANY));
+        return Context.getCurrentContext().newArray(getScope(), cats);
     }
 
     /**
@@ -114,14 +117,16 @@ public final class Classification extends BaseScopableProcessorExtension
      * @param aspect
      * @return
      */
-    public CategoryNode[] getRootCategories(String aspect)
+    public Scriptable getRootCategories(String aspect)
     {
-        return buildCategoryNodes(services.getCategoryService().getRootCategories(storeRef, createQName(aspect)));
+        Object[] cats = buildCategoryNodes(services.getCategoryService().getRootCategories(
+                            storeRef, createQName(aspect)));
+        return Context.getCurrentContext().newArray(getScope(), cats);
     }
 
-    private CategoryNode[] buildCategoryNodes(Collection<ChildAssociationRef> cars)
+    private Object[] buildCategoryNodes(Collection<ChildAssociationRef> cars)
     {
-        CategoryNode[] categoryNodes = new CategoryNode[cars.size()];
+        Object[] categoryNodes = new Object[cars.size()];
         int i = 0;
         for (ChildAssociationRef car : cars)
         {
@@ -143,5 +148,4 @@ public final class Classification extends BaseScopableProcessorExtension
         }
         return qname;
     }
-
 }

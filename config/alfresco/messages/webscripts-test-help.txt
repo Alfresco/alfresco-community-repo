@@ -69,6 +69,31 @@ ok> tunnel <encoding> <method> <path>
     e.g. to tunnel 'get /index' via post (where method is encoded in header) issue
     
     tunnel header get /index
+   
+## 
+##  Request Header Commands 
+## 
+
+ok> header 
+
+    Show all defined headers. 
+
+ok> var <headerName>=<headerValue> 
+
+    Define or update a header value. 
+
+    <headerName> header name 
+    <headerValue> header value 
+
+    e.g. 
+
+    header alf-force-success=true 
+
+ok> header <headerName>= 
+
+    Delete an existing header value. 
+
+    <headerName> header name 
     
 ## 
 ##  end 

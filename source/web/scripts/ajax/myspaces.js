@@ -506,9 +506,9 @@ var MySpaces = {
                }
             }, 
             "path=" + path.replace("_%_", "'") +
-            "&name=" + escape(spaceName) +
-            "&title=" + escape(spaceTitle) +
-            "&description=" + escape(spaceDesc)
+            "&name=" + encodeURIComponent(spaceName) +
+            "&title=" + encodeURIComponent(spaceTitle) +
+            "&description=" + encodeURIComponent(spaceDesc)
          );
       }
    },

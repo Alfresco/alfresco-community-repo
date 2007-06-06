@@ -84,7 +84,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
     /** the component giving direct access to <b>transaction</b> instances */
     protected NodeDaoService nodeDaoService;
     
-    private boolean shutdown;
+    private volatile boolean shutdown;
     private final WriteLock indexerWriteLock;
     
     public AbstractReindexComponent()
@@ -307,7 +307,10 @@ public abstract class AbstractReindexComponent implements IndexRecovery
     }
     
     /**
-     * @return Returns true if the given transaction is indexed in the in the 
+     * @param updateCount       the number of node updates in the transaction
+     * @param deleteCount       the number of node deletions in the transaction
+     * @return                  Returns true if the given transaction is indexed,
+     *                          or if there are no updates or deletes
      */
     private boolean isTxnIdPresentInIndex(StoreRef storeRef, Transaction txn, int updateCount, int deleteCount)
     {
@@ -350,53 +353,57 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                 if (results != null) { results.close(); }
             }
         }
-        // there have been deletes, so we have to ensure that none of the nodes deleted are present in the index
-        // get all node refs for the transaction
-        List<NodeRef> nodeRefs = nodeDaoService.getTxnChangesForStore(storeRef, txnId);
-        for (NodeRef nodeRef : nodeRefs)
+        else if (deleteCount > 0)
         {
-            if (logger.isDebugEnabled())
+            // there have been deletes, so we have to ensure that none of the nodes deleted are present in the index
+            // get all node refs for the transaction
+            List<NodeRef> nodeRefs = nodeDaoService.getTxnChangesForStore(storeRef, txnId);
+            for (NodeRef nodeRef : nodeRefs)
             {
-                logger.debug("Searching for node in index: \n" +
-                        "   node: " + nodeRef + "\n" +
-                        "   txn: " + txnId);
-            }
-            // we know that these are all deletions
-            ResultSet results = null;
-            try
-            {
-                SearchParameters sp = new SearchParameters();
-                sp.addStore(storeRef);
-                // search for it in the index, sorting with youngest first, fetching only 1
-                sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-                sp.setQuery("ID:" + LuceneQueryParser.escape(nodeRef.toString()));
-                sp.setLimit(1);
-                
-                results = searcher.query(sp);
-                
-                if (results.length() == 0)
+                if (logger.isDebugEnabled())
                 {
-                    // no results, as expected
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug(" --> Node not found (OK)");
-                    }
-                    continue;
+                    logger.debug("Searching for node in index: \n" +
+                            "   node: " + nodeRef + "\n" +
+                            "   txn: " + txnId);
                 }
-                else
+                // we know that these are all deletions
+                ResultSet results = null;
+                try
                 {
-                    if (logger.isDebugEnabled())
+                    SearchParameters sp = new SearchParameters();
+                    sp.addStore(storeRef);
+                    // search for it in the index, sorting with youngest first, fetching only 1
+                    sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+                    sp.setQuery("ID:" + LuceneQueryParser.escape(nodeRef.toString()));
+                    sp.setLimit(1);
+                    
+                    results = searcher.query(sp);
+                    
+                    if (results.length() == 0)
                     {
-                        logger.debug(" --> Node found (Index out of date)");
+                        // no results, as expected
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug(" --> Node not found (OK)");
+                        }
+                        continue;
                     }
-                    return false;
+                    else
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug(" --> Node found (Index out of date)");
+                        }
+                        return false;
+                    }
                 }
-            }
-            finally
-            {
-                if (results != null) { results.close(); }
+                finally
+                {
+                    if (results != null) { results.close(); }
+                }
             }
         }
+        // else  -> The fallthrough case where there are no updates or deletes 
         
         // all tests passed
         if (logger.isDebugEnabled())

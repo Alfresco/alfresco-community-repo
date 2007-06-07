@@ -38,7 +38,7 @@
    <div id="taskPanel">
       <#-- populated via an AJAX call to 'mytaskspanel' webscript -->
       <#-- resolved filter required as argument -->
-      <script>MyTasks.Filter="${filter}";</script>
+      <script>MyTasks.ServiceContext="${url.serviceContext}";MyTasks.Filter="${filter}";</script>
    </div>
 </td>
 <td width=4 class="paperEdgeRight"><td>

@@ -9,6 +9,7 @@ var MySpaces = {
    Path: null,
    Filter: null,
    Home: null,
+   ServiceContext: null,
    popupPanel: null,
    
    start: function()
@@ -19,7 +20,7 @@ var MySpaces = {
          // is responsible for rendering just the contents of the main panel div
          YAHOO.util.Connect.asyncRequest(
             "GET",
-            getContextPath() + '/service/myspacespanel?p='+MySpaces.Path+'&f='+MySpaces.Filter+'&h='+MySpaces.Home,
+            MySpaces.ServiceContext + '/myspacespanel?p='+MySpaces.Path+'&f='+MySpaces.Filter+'&h='+MySpaces.Home,
             {
                success: function(response)
                {

@@ -2,6 +2,7 @@ var MyTasks = {
    ANIM_LENGTH: 300,
    DETAIL_PANEL_HEIGHT: 132,
    Filter: null,
+   ServiceContext: null,
    
    start: function()
    {
@@ -11,7 +12,7 @@ var MyTasks = {
          // is responsible for rendering just the contents of the main panel div
          YAHOO.util.Connect.asyncRequest(
             "GET",
-            getContextPath() + '/service/mytaskspanel?f='+MyTasks.Filter,
+            MyTasks.ServiceContext + '/mytaskspanel?f='+MyTasks.Filter,
             {
                success: function(response)
                {

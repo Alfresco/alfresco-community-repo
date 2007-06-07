@@ -90,7 +90,7 @@
    <div id="spacePanel">
       <#-- populated via an AJAX call to 'myspacespanel' webscript -->
       <#-- resolved path, filter and home.noderef required as arguments -->
-      <script>MySpaces.Path="${path?replace("\"","\\\"")}";MySpaces.Filter="${filter}";MySpaces.Home="${home.nodeRef}";</script>
+      <script>MySpaces.ServiceContext="${url.serviceContext}";MySpaces.Path="${path?replace("\"","\\\"")}";MySpaces.Filter="${filter}";MySpaces.Home="${home.nodeRef}";</script>
    </div>
    <div class="spaceFooter">
       <#-- the count value is retrieved and set dynamically from the AJAX webscript output above -->

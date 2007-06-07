@@ -14,7 +14,7 @@
          <#if d.isDocument>
             <a href="${url.context}${d.url}" target="new" onclick="event.cancelBubble=true"><img class="spaceIconImage" alt="" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border=0></a>
          <#else>
-            <a href="${scripturl("${url.context}/service/myspaces?f=${args.f}&p=${args.p}/${d.name}", false)}"><img class="spaceIconImage" alt="" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border="0" onclick="event.cancelBubble=true;"></a>
+            <a href="${scripturl("${url.serviceContext}/myspaces?f=${args.f}&p=${args.p}/${d.name}", false)}"><img class="spaceIconImage" alt="" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border="0" onclick="event.cancelBubble=true;"></a>
          </#if>
          <div style="display:none"><img class="spaceIconImage64" alt="" width="64" height="64" src="${url.context}${d.icon64}"></div>
       </div>

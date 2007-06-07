@@ -2,8 +2,11 @@
   <shortname>Alfresco Keyword Search (OpenSearch Enabled)</shortname>
   <description>Execute Keyword Search against Alfresco Repository (Company Home and below)</description>
   <url format="html" template="/api/search/keyword.html?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}"/>
+  <url format="html" template="/search/keyword.html?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}"/>
   <url format="atom" template="/api/search/keyword.atom?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}"/>
+  <url format="atom" template="/search/keyword.atom?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}"/>
   <url format="rss" template="/api/search/keyword.rss?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}"/>
+  <url format="rss" template="/search/keyword.rss?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}"/>
   <url format="portlet" template="/api/search/keyword.portlet?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}"/>
   <authentication>guest</authentication>
 </webscript>

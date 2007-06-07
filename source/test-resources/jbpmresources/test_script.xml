@@ -21,17 +21,7 @@
 
     <node name="doit">
         <event type="node-enter">
-            <script>
-                <expression>
-                    System.out.println("testNode.created: " + testNode.properties{"cm:created"});
-                    System.out.println("test node " + testNode.name + " contains " + testNode.children.length + " children");
-                </expression>
-                <variable name="testNode" access="read" />
-            </script>
-        </event>
-        <event type="node-enter">
-            <action
-                class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+            <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
                 <script>
                     <!-- following line fails as it attempts to convert properties of children to javascript objects -->
                     <!-- except the beanshell line above has already pre-created the children without the javascript scope -->

@@ -21,13 +21,26 @@
      <tr><td><b>${status.code} Description:</b><td> ${status.codeDescription}
      <tr><td>&nbsp;
      <tr><td><b>Message:</b><td>${status.message!"<i>&lt;Not specified&gt;</i>"}
-     <tr><td><b>Exception:</b><td><#if status.exception?exists>${status.exception.class.name}<#if status.exception.message?exists> - ${status.exception.message}</#if></#if>
      <#if status.exception?exists>
-       <tr><td><td>&nbsp;
-       <#list status.exception.stackTrace as element>
-         <tr><td><td>${element}
-       </#list>  
+       <tr><td>&nbsp;     
+       <@recursestack status.exception/>
      </#if>
     </table>
   </body>
 </html>
+
+<#macro recursestack exception>
+   <#if exception.cause?exists>
+      <@recursestack exception=exception.cause/>
+   </#if>
+   <tr><td><b>Exception:</b><td>${exception.class.name}<#if exception.message?exists> - ${exception.message}</#if>
+   <tr><td><td>&nbsp;
+   <#if exception.cause?exists == false>
+      <#list exception.stackTrace as element>
+         <tr><td><td>${element}
+      </#list>  
+      <#else>
+         <tr><td><td>${exception.stackTrace[0]}
+      </#if>
+   <tr><td><td>&nbsp;
+</#macro>

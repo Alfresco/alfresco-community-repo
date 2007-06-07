@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:relevance="http://a9.com/-/opensearch/extensions/relevance/1.0/">
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:relevance="http://a9.com/-/opensearch/extensions/relevance/1.0/" xmlns:alf="http://www.alfresco.org/opensearch/1.0/">
   <generator version="${server.version}">Alfresco (${server.edition})</generator>
   <title>Alfresco Keyword Search: ${search.searchTerms}</title> 
   <updated>${xmldate(date)}</updated>
@@ -29,6 +29,7 @@
     <link rel="alternate" href="${absurl(url.context)}${row.url}"/>
     <icon>${absurl(url.context)}${row.icon16}</icon>       <#comment>TODO: What's the standard for entry icons?</#comment>
     <id>urn:uuid:${row.id}</id>
+    <alf:noderef>${row.nodeRef}</alf:noderef>
     <updated>${xmldate(row.properties.modified)}</updated>
     <summary>${row.properties.description!""}</summary>
     <author> 

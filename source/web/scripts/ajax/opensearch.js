@@ -467,7 +467,7 @@ Alfresco.OpenSearchClient.prototype =
             {
                if (link != null)
                {
-                  sb[sb.length] = "<a target='_new' href='";
+                  sb[sb.length] = "<a target='new' href='";
                   sb[sb.length] = link;
                   sb[sb.length] = "'>";
                }
@@ -476,13 +476,22 @@ Alfresco.OpenSearchClient.prototype =
                {
                   sb[sb.length] = "</a>";
                }
+               var noderef = Alfresco.Dom.getElementTextByTagNameNS(elResult, "http://www.alfresco.org/opensearch/1.0/", "alf", "noderef");
+               if (noderef != null)
+               {
+                  sb[sb.length] = "<span onclick=\"AlfNodeInfoMgr.toggle('" + noderef + "',this);\">";
+                  sb[sb.length] = "<img src='" + getContextPath() + "/images/icons/popup.gif' class='popupImage' width='16' height='16' />";
+                  sb[sb.length] = "</span>";
+               }
             }
-            sb[sb.length] = "</div><div class='osResultSummary'>";
+            sb[sb.length] = "</div>";
             if (summary != null)
             {
+               sb[sb.length] = "<div class='osResultSummary'>";
                sb[sb.length] = summary;
+               sb[sb.length] = "</div>";
             }
-            sb[sb.length] = "</div></td></tr>";
+            sb[sb.length] = "</td></tr>";
          }
          
          // close the table

@@ -27,8 +27,8 @@ package org.alfresco.web.scripts;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.config.ServerConfigElement;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 
@@ -55,11 +55,11 @@ public class WebScriptServletRuntime extends WebScriptRuntime
      * @param req
      * @param res
      */
-    public WebScriptServletRuntime(WebScriptRegistry registry, TransactionService transactionService, 
+    public WebScriptServletRuntime(WebScriptRegistry registry, RetryingTransactionHelper transactionHelper, 
             AuthorityService authorityService, WebScriptServletAuthenticator authenticator,
             HttpServletRequest req, HttpServletResponse res, ServerConfigElement serverConfig)
     {
-        super(registry, transactionService, authorityService);
+        super(registry, transactionHelper, authorityService);
         this.req = req;
         this.res = res;
         this.authenticator = authenticator;

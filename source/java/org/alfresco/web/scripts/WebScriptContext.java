@@ -28,14 +28,14 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -54,7 +54,7 @@ public class WebScriptContext implements ApplicationContextAware, ApplicationLis
     private ProcessorLifecycle lifecycle = new ProcessorLifecycle();
 
     // dependencies
-    private TransactionService transactionService;
+    private RetryingTransactionHelper retryingTransactionHelper;
     private NamespaceService namespaceService;
     private SearchService searchService;
     private NodeService nodeService;
@@ -87,13 +87,11 @@ public class WebScriptContext implements ApplicationContextAware, ApplicationLis
     }
 
     /**
-     * Sets the transaction service
-     * 
-     * @param transactionService
+     * Sets helper that provides transaction callbacks
      */
-    public void setTransactionService(TransactionService transactionService)
+    public void setTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
     {
-        this.transactionService = transactionService;
+        this.retryingTransactionHelper = retryingTransactionHelper;
     }
 
     /**
@@ -174,10 +172,10 @@ public class WebScriptContext implements ApplicationContextAware, ApplicationLis
      */
     protected void initContext()
     {
-        TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<Object>()
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
             @SuppressWarnings("synthetic-access")
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(companyHomeStore), companyHomePath, null, namespaceService, false);
                 if (refs.size() != 1)

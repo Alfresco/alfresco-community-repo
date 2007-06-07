@@ -56,7 +56,7 @@
    </bean>
 
    <bean id="webscripts.context" class="org.alfresco.web.scripts.WebScriptContext">
-      <property name="transactionService" ref="transactionComponent" />
+      <property name="transactionHelper" ref="retryingTransactionHelper" />
       <property name="namespaceService" ref="namespaceService" />
       <property name="nodeService" ref="nodeService" />
       <property name="personService" ref="personService" />

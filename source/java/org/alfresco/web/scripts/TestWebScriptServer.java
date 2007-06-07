@@ -40,10 +40,10 @@ import org.alfresco.config.ConfigService;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.config.ServerConfigElement;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
@@ -62,7 +62,7 @@ public class TestWebScriptServer
 {
     // dependencies
     protected AuthenticationService authenticationService;
-    protected TransactionService transactionService;
+    protected RetryingTransactionHelper retryingTransactionHelper;
     protected AuthorityService authorityService;
     protected DeclarativeWebScriptRegistry registry;
     protected ConfigService configService;
@@ -87,13 +87,11 @@ public class TestWebScriptServer
     
     
     /**
-     * Sets the transaction service
-     * 
-     * @param transactionService
+     * Sets helper that provides transaction callbacks
      */
-    public void setTransactionService(TransactionService transactionService)
+    public void setTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
     {
-        this.transactionService = transactionService;
+        this.retryingTransactionHelper = retryingTransactionHelper;
     }
     
     /**
@@ -213,7 +211,7 @@ public class TestWebScriptServer
         MockHttpServletRequest req = createRequest(method, uri);
         MockHttpServletResponse res = new MockHttpServletResponse();
         
-        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, authorityService, null, req, res, serverConfig);
+        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, retryingTransactionHelper, authorityService, null, req, res, serverConfig);
         runtime.executeScript();
 
         return res;
@@ -238,7 +236,7 @@ public class TestWebScriptServer
         }
         MockHttpServletResponse res = new MockHttpServletResponse();
         
-        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionService, authorityService, null, req, res, serverConfig);
+        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, retryingTransactionHelper, authorityService, null, req, res, serverConfig);
         runtime.executeScript();
 
         return res;
@@ -291,9 +289,9 @@ public class TestWebScriptServer
             {
                 try
                 {
-                    TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<Object>()
+                    retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
                     {
-                        public Object doWork() throws Throwable
+                        public Object execute() throws Exception
                         {
                             authenticationService.validate(username);
                             return null;

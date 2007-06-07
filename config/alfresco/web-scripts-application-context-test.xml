@@ -11,7 +11,7 @@
       <property name="registry" ref="webscripts.registry" />
       <property name="authenticationService" ref="authenticationService" />
       <property name="authorityService" ref="authorityService" />
-      <property name="transactionService" ref="transactionComponent" />
+      <property name="transactionHelper" ref="retryingTransactionHelper" />
       <property name="configService" ref="webClientConfigService" />
       <property name="messages">
          <bean class="org.springframework.context.support.ResourceBundleMessageSource">

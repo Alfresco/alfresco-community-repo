@@ -33,9 +33,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredTransaction;
 import org.apache.commons.logging.Log;
@@ -61,7 +61,7 @@ public abstract class WebScriptRuntime
 
     /** Component Dependencies */
     private WebScriptRegistry registry;
-    private TransactionService transactionService;
+    private RetryingTransactionHelper retryingTransactionHelper;
     private AuthorityService authorityService;
 
     /**
@@ -70,10 +70,10 @@ public abstract class WebScriptRuntime
      * @param registry  web script registry
      * @param transactionService  transaction service
      */
-    public WebScriptRuntime(WebScriptRegistry registry, TransactionService transactionService, AuthorityService authorityService)
+    public WebScriptRuntime(WebScriptRegistry registry, RetryingTransactionHelper transactionHelper, AuthorityService authorityService)
     {
         this.registry = registry;
-        this.transactionService = transactionService;
+        this.retryingTransactionHelper = transactionHelper;
         this.authorityService = authorityService;
     }
     
@@ -149,9 +149,9 @@ public abstract class WebScriptRuntime
                 else
                 {
                     // encapsulate script within transaction
-                    TransactionUtil.TransactionWork<Object> work = new TransactionUtil.TransactionWork<Object>()
+                    RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
                     {
-                        public Object doWork() throws Throwable
+                        public Object execute() throws Exception
                         {
                             if (logger.isDebugEnabled())
                                 logger.debug("Begin transaction: " + description.getRequiredTransaction());
@@ -167,11 +167,11 @@ public abstract class WebScriptRuntime
                 
                     if (description.getRequiredTransaction() == RequiredTransaction.required)
                     {
-                        TransactionUtil.executeInUserTransaction(transactionService, work); 
+                        retryingTransactionHelper.doInTransaction(work); 
                     }
                     else
                     {
-                        TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, work); 
+                        retryingTransactionHelper.doInTransaction(work, false, true); 
                     }
                 }
             }

@@ -146,6 +146,10 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
             ExecutionResult result = checkCommand.execute();
             // check the return code
             available = result.getSuccess();
+            if (!available)
+            {
+                logger.error("Failed to start a runtime executable content transformer: \n" + result);
+            }
         }
         else
         {

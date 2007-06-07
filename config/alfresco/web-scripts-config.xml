@@ -26,16 +26,16 @@
          
             <engine label-id="current_repo" label="Alfresco Keyword Search">
                <url type="application/opensearchdescription+xml">
-                  /service/api/search/keyword/description.xml
+                  /api/search/keyword/description.xml
                </url>
                <url type="application/atom+xml">
-                  /service/api/search/keyword.atom?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}
+                  /api/search/keyword.atom?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}
                </url>
                <url type="application/rss+xml">
-                  /service/api/search/keyword.rss?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}
+                  /api/search/keyword.rss?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}
                </url>
                <url type="text/html">
-                  /service/api/search/keyword?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}
+                  /api/search/keyword?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}
                </url>
             </engine>
 
@@ -43,7 +43,7 @@
          
          <proxy>
             <!--  URL of Search Engine proxy -->
-            <url>/service/api/search/engine</url>
+            <url>/api/search/engine</url>
          </proxy>
          
       </opensearch>

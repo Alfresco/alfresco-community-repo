@@ -257,6 +257,15 @@
       <servlet-class>org.alfresco.web.scripts.WebScriptServlet</servlet-class>
       <init-param>
          <param-name>authenticator</param-name>
+         <param-value>webscripts.authenticator.basic</param-value>
+      </init-param>
+   </servlet>
+
+   <servlet>
+      <servlet-name>wcapiServlet</servlet-name>
+      <servlet-class>org.alfresco.web.scripts.WebScriptServlet</servlet-class>
+      <init-param>
+         <param-name>authenticator</param-name>
          <param-value>webscripts.authenticator.webclient</param-value>
       </init-param>
    </servlet>
@@ -379,6 +388,16 @@
    <servlet-mapping>
       <servlet-name>apiServlet</servlet-name>
       <url-pattern>/s/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>wcapiServlet</servlet-name>
+      <url-pattern>/wcservice/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>wcapiServlet</servlet-name>
+      <url-pattern>/wcs/*</url-pattern>
    </servlet-mapping>
 
    <servlet-mapping>

@@ -6,7 +6,7 @@
     <title>Alfresco Registered Search Engines</title>
 <#list engines as engine>
 <#if engine.urlType == "description">
-    <link rel="search" type="${engine.type}" href="${url.context}${engine.url}" title="${engine.label}">
+    <link rel="search" type="${engine.type}" href="${url.serviceContext}${engine.url}" title="${engine.label}">
 </#if>
 </#list>
   </head>
@@ -22,7 +22,7 @@
       <tr align="left"><td><b>Engine<td><b>URL Type<td><b>Response Format</tr>
 <#list engines as engine>
       <tr align="left">
-        <td><a href="${url.context}${engine.url}">${engine.label}</a>
+        <td><a href="${url.serviceContext}${engine.url}">${engine.label}</a>
         <td><#if engine.urlType == "description">OpenSearch Description<#else>Template URL</#if>
         <td>${engine.type}
       </tr>

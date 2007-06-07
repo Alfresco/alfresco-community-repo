@@ -303,7 +303,7 @@ public class UIOpenSearch extends SelfRenderingComponent
                {
                   if (url.startsWith("/"))
                   {
-                     url = context.getExternalContext().getRequestContextPath() + url;
+                     url = context.getExternalContext().getRequestContextPath() + "/wcservice" + url;
                   }
                           
                   // add the engine

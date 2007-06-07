@@ -209,8 +209,8 @@ public class AVMLockingServiceImpl implements AVMLockingService
     {
         for (String authority : lock.getOwners())
         {
-            if (fPersonService.getPerson(authority) == null &&
-                !fAuthorityService.authorityExists(authority))
+            if (!fAuthorityService.authorityExists(authority) &&
+                !fPersonService.personExists(authority))
             {
                 throw new AVMBadArgumentException("Not an Authority: " + authority);
             }
@@ -466,8 +466,8 @@ public class AVMLockingServiceImpl implements AVMLockingService
         {
             for (String user : usersToAdd)
             {
-                if (fPersonService.getPerson(user) == null &&
-                    !fAuthorityService.authorityExists(user))
+                if (!fAuthorityService.authorityExists(user) &&
+                    !fPersonService.personExists(user))
                 {
                     throw new AVMBadArgumentException("Not an authority: " + user);
                 }
@@ -512,6 +512,10 @@ public class AVMLockingServiceImpl implements AVMLockingService
         {
             return false;
         }
+        if (fAuthorityService.isAdminAuthority(user))
+        {
+            return true;
+        }
         String[] storePath = avmPath.split(":");
         if (storePath.length != 2)
         {
@@ -526,11 +530,6 @@ public class AVMLockingServiceImpl implements AVMLockingService
         if (!lock.getStore().equals(storePath[0]))
         {
             return false;
-        }
-        // TODO is this meaningful?  I don't think so.
-        if (AuthorityType.getAuthorityType(user) == AuthorityType.ADMIN)
-        {
-            return true;
         }
         List<String> owners = lock.getOwners();
         for (String owner : owners)
@@ -568,5 +567,16 @@ public class AVMLockingServiceImpl implements AVMLockingService
             }
         }
         return false;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#getWebProjects()
+     */
+    public List<String> getWebProjects()
+    {
+        List<String> keys = new ArrayList<String>();
+        keys.add(LOCK_TABLE);
+        keys.add(WEB_PROJECTS);
+        return fAttributeService.getKeys(keys);
     }
 }

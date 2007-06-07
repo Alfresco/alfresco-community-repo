@@ -57,6 +57,15 @@ public interface AuthorityService
      */
     @Auditable
     public boolean hasAdminAuthority();
+    
+    /**
+     * Does the given authority have admin authority.
+     *  
+     * @param authorityName The name of the authority.
+     * @return Whether the authority is an admin.
+     */
+    @Auditable(parameters = {"authorityName"})
+    public boolean isAdminAuthority(String authorityName);
 
     /**
      * Get the authorities for the current user

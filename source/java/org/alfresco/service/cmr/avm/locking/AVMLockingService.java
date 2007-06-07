@@ -122,4 +122,10 @@ public interface AVMLockingService
      * @return Whether the user has access.
      */
     public boolean hasAccess(String webProject, String avmPath, String user);
+    
+    /**
+     * Get the names of all the web projects the service knows about.
+     * @return The list of web project names.
+     */
+    public List<String> getWebProjects();
 }

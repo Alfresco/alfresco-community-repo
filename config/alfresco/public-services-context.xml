@@ -1078,6 +1078,9 @@
                 <value>getLock</value>
                 <value>getUserLocks</value>
                 <value>getWebProjectLocks</value>
+                <value>getWebProjects</value>
+                <value>getStoreLocks</value>
+                <value>hasAccess</value>
             </list>
         </property>
     </bean>
@@ -1092,6 +1095,8 @@
                 <value>lockPath</value>
                 <value>removeLock</value>
                 <value>removeWebProject</value>
+                <value>modifyLock</value>
+                <value>removeStoreLocks</value>
             </list>
         </property>
     </bean>

@@ -99,6 +99,19 @@ public class AuthorityServiceImpl implements AuthorityService
         return ((currentUserName != null) && adminUsers.contains(currentUserName));
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.security.AuthorityService#isAdminAuthority(java.lang.String)
+     */
+    public boolean isAdminAuthority(String authorityName)
+    {
+        String canonicalName = personService.getUserIdentifier(authorityName);
+        if (canonicalName == null)
+        {
+            canonicalName = authorityName;
+        }
+        return adminUsers.contains(canonicalName);
+    }
+
     // IOC
 
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)

@@ -345,6 +345,7 @@ function getContextPath()
             if (elWidth > maxwidth) elWidth = maxwidth;
          }
          var docWidth = this.getDocumentWidth();
+         var shiftedLeft = false;
          if (pos.x + 20 + elWidth < docWidth)
          {
             el.style.left = (pos.x + 20) + "px";
@@ -353,6 +354,7 @@ function getContextPath()
          {
             // Shifting X coord left - overflow
             el.style.left = (pos.x + 20 - ((pos.x + elWidth) - docWidth)) + "px";
+            shiftedLeft = true;
          }
          if (pos.y + 12 + elHeight < this.getDocumentHeight())
          {
@@ -361,7 +363,17 @@ function getContextPath()
          else
          {
             // Shifting Y coord up - overflow
-            el.style.top = (pos.y - elHeight + 4) + "px";
+            if (shiftedLeft == true)
+            {
+               el.style.top = (pos.y - elHeight + 4) + "px";
+            }
+            else
+            {
+               // we have room to shift vertically without overwriting the pop-up icon
+               var ypos = (pos.y - elHeight + 4);
+               if (ypos < 0) ypos = 0;
+               el.style.top = ypos + "px";
+            }
          }
       }
    };

@@ -1078,7 +1078,7 @@
       </managed-property>
       <managed-property>
          <property-name>authenticationService</property-name>
-         <value>#{authenticationService}</value>
+         <value>#{AuthenticationService}</value>
       </managed-property>
       <managed-property>
          <property-name>permissionService</property-name>

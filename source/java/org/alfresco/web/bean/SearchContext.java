@@ -613,6 +613,7 @@ public final class SearchContext implements Serializable
          }
          else
          {
+            if (value.length() == 1) return;    // handle just opcode
             prefix = STR_OP_WILDCARD;
             safeValue = QueryParser.escape(value.substring(1, value.length() - 1));
          }

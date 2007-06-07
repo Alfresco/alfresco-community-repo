@@ -168,11 +168,11 @@ public class UIPanel extends UICommand
          
          if (isExpanded() == true)
          {
-            out.write(Utils.buildImageTag(context, WebResources.IMAGE_EXPANDED, 11, 11, label));
+            out.write(Utils.buildImageTag(context, WebResources.IMAGE_EXPANDED, 11, 11, getLabel()));
          }
          else
          {
-            out.write(Utils.buildImageTag(context, WebResources.IMAGE_COLLAPSED, 11, 11, label));
+            out.write(Utils.buildImageTag(context, WebResources.IMAGE_COLLAPSED, 11, 11, getLabel()));
          }
          
          out.write("</a>&nbsp;&nbsp;");

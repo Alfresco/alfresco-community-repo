@@ -68,7 +68,7 @@ public class WebScriptJSFResponse implements WebScriptResponse
       String fieldId = component.getClientId(fc);
       String formClientId = form.getClientId(fc);
       
-      StringBuilder buf = new StringBuilder(200);
+      StringBuilder buf = new StringBuilder(256);
       // dirty - but can't see any other way to convert to a JSF action click... 
       buf.append("#\" onclick=\"");
       buf.append("document.forms[");

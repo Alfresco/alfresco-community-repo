@@ -28,6 +28,7 @@ package org.alfresco.repo.avm.locking;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.repo.attributes.ListAttributeValue;
@@ -41,6 +42,9 @@ import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.MD5;
 import org.alfresco.util.Pair;
 
@@ -61,6 +65,16 @@ public class AVMLockingServiceImpl implements AVMLockingService
     private AttributeService fAttributeService;
     
     /**
+     * AuthorityService reference.
+     */
+    private AuthorityService fAuthorityService;
+    
+    /**
+     * PersonService reference.
+     */
+    private PersonService fPersonService;
+    
+    /**
      * Transaction Helper reference.
      */
     private RetryingTransactionHelper fRetryingTransactionHelper;
@@ -78,6 +92,24 @@ public class AVMLockingServiceImpl implements AVMLockingService
         fAttributeService = service;
     }
 
+    /**
+     * Set the authority service reference.
+     * @param service
+     */
+    public void setAuthorityService(AuthorityService service)
+    {
+        fAuthorityService = service;
+    }
+    
+    /**
+     * Set the person service reference.
+     * @param service
+     */
+    public void setPersonService(PersonService service)
+    {
+        fPersonService = service;
+    }
+    
     /**
      * Setter for RetryingTransactionHelper reference.
      * @param helper
@@ -175,6 +207,14 @@ public class AVMLockingServiceImpl implements AVMLockingService
      */
     public void lockPath(AVMLock lock)
     {
+        for (String authority : lock.getOwners())
+        {
+            if (fPersonService.getPerson(authority) == null &&
+                !fAuthorityService.authorityExists(authority))
+            {
+                throw new AVMBadArgumentException("Not an Authority: " + authority);
+            }
+        }
         List<String> keys = new ArrayList<String>();
         Attribute lockData = lock.getAttribute();
         keys.add(LOCK_TABLE);
@@ -426,6 +466,11 @@ public class AVMLockingServiceImpl implements AVMLockingService
         {
             for (String user : usersToAdd)
             {
+                if (fPersonService.getPerson(user) == null &&
+                    !fAuthorityService.authorityExists(user))
+                {
+                    throw new AVMBadArgumentException("Not an authority: " + user);
+                }
                 if (lock.getOwners().contains(user))
                 {
                     continue;
@@ -458,16 +503,22 @@ public class AVMLockingServiceImpl implements AVMLockingService
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#motherMayI(java.lang.String, java.lang.String)
+     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#hasAccess(java.lang.String, java.lang.String)
      */
-    public boolean motherMayI(String webProject, String avmPath, String user)
+    public boolean hasAccess(String webProject, String avmPath, String user)
     {
+        if (fPersonService.getPerson(user) == null &&
+            !fAuthorityService.authorityExists(user))
+        {
+            return false;
+        }
         String[] storePath = avmPath.split(":");
         if (storePath.length != 2)
         {
             throw new AVMBadArgumentException("Malformed AVM Path : " + avmPath);
         }
-        AVMLock lock = getLock(webProject, storePath[1]);
+        String path = normalizePath(storePath[1]);
+        AVMLock lock = getLock(webProject, path);
         if (lock == null)
         {
             return true;
@@ -476,14 +527,46 @@ public class AVMLockingServiceImpl implements AVMLockingService
         {
             return false;
         }
-        List<String> owners = lock.getOwners();
-        if (owners.contains(user))
+        // TODO is this meaningful?  I don't think so.
+        if (AuthorityType.getAuthorityType(user) == AuthorityType.ADMIN)
         {
             return true;
         }
-        // TODO Figure out how the users, groups, roles mess works and give an answer
-        // based on that. <rant>Our entire access control and user, group, role approach
-        // is apalling and needs to be replaced.</rant>
+        List<String> owners = lock.getOwners();
+        for (String owner : owners)
+        {
+            if (AuthorityType.getAuthorityType(owner) == AuthorityType.EVERYONE)
+            {
+                return true;
+            }
+            if (checkAgainstAuthority(user, owner))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Helper function that checks the transitive closure of authorities for user.
+     * @param user
+     * @param authority
+     * @return
+     */
+    private boolean checkAgainstAuthority(String user, String authority)
+    {
+        if (user.equalsIgnoreCase(authority))
+        {
+            return true;
+        }
+        Set<String> containing = fAuthorityService.getContainingAuthorities(null, user, false);
+        for (String parent : containing)
+        {
+            if (parent.equalsIgnoreCase(authority))
+            {
+                return true;
+            }
+        }
         return false;
     }
 }

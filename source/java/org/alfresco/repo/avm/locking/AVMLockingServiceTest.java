@@ -25,12 +25,24 @@
 
 package org.alfresco.repo.avm.locking;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationComponentImpl;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
+import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.QName;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import junit.framework.TestCase;
@@ -47,6 +59,14 @@ public class AVMLockingServiceTest extends TestCase
     
     private static AttributeService fAttributeService;
     
+    private static PersonService fPersonService;
+    
+    private static AuthorityService fAuthorityService;
+    
+    private static AuthenticationService fAuthenticationService;
+    
+    private static AuthenticationComponent fAuthenticationComponent;
+    
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
      */
@@ -58,7 +78,32 @@ public class AVMLockingServiceTest extends TestCase
             fContext = new FileSystemXmlApplicationContext("config/alfresco/application-context.xml");
             fService = (AVMLockingService)fContext.getBean("AVMLockingService");
             fAttributeService = (AttributeService)fContext.getBean("AttributeService");
+            fPersonService = (PersonService)fContext.getBean("PersonService");
+            fAuthorityService = (AuthorityService)fContext.getBean("AuthorityService");
+            fAuthenticationService = (AuthenticationService)fContext.getBean("AuthenticationService");
+            fAuthenticationComponent = (AuthenticationComponent)fContext.getBean("AuthenticationComponent");
+            fAuthenticationComponent.setSystemUserAsCurrentUser();
         }
+        // Set up sample users groups and roles.
+        fAuthenticationService.createAuthentication("Buffy", "Buffy".toCharArray());
+        fPersonService.getPerson("Buffy");
+        fAuthorityService.createAuthority(AuthorityType.GROUP, null, "Scoobies");
+        fAuthorityService.addAuthority("GROUP_Scoobies", "Buffy");
+        fAuthorityService.createAuthority(AuthorityType.ROLE, null, "SUPER_POWERED");
+        fAuthorityService.addAuthority("ROLE_SUPER_POWERED", "Buffy");
+        fAuthenticationService.createAuthentication("Willow", "Willow".toCharArray());
+        fPersonService.getPerson("Willow");
+        fAuthorityService.addAuthority("GROUP_Scoobies", "Willow");
+        fAuthenticationService.createAuthentication("Xander", "Xander".toCharArray());
+        fPersonService.getPerson("Xander");
+        fAuthorityService.addAuthority("GROUP_Scoobies", "Xander");
+        fAuthenticationService.createAuthentication("Tara", "Tara".toCharArray());
+        fPersonService.getPerson("Tara");
+        fAuthenticationService.createAuthentication("Spike", "Spike".toCharArray());
+        fPersonService.getPerson("Spike");
+        fAuthorityService.addAuthority("ROLE_SUPER_POWERED", "Spike");
+        fAuthorityService.createAuthority(AuthorityType.GROUP, null, "vampires");
+        fAuthorityService.addAuthority("GROUP_vampires", "Spike");
     }
 
     /* (non-Javadoc)
@@ -72,6 +117,19 @@ public class AVMLockingServiceTest extends TestCase
         {
             fAttributeService.removeAttribute("", key);
         }
+        fAuthenticationService.deleteAuthentication("Buffy");
+        fAuthenticationService.deleteAuthentication("Willow");
+        fAuthenticationService.deleteAuthentication("Xander");
+        fAuthenticationService.deleteAuthentication("Tara");
+        fAuthenticationService.deleteAuthentication("Spike");
+        fPersonService.deletePerson("Buffy");
+        fPersonService.deletePerson("Willow");
+        fPersonService.deletePerson("Tara");
+        fPersonService.deletePerson("Xander");
+        fPersonService.deletePerson("Spike");
+        fAuthorityService.deleteAuthority("GROUP_Scoobies");
+        fAuthorityService.deleteAuthority("ROLE_SUPER_POWERED");
+        fAuthorityService.deleteAuthority("GROUP_vampires");
     }
     
     public void testAll()

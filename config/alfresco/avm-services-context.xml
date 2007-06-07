@@ -322,6 +322,12 @@
 	    <property name="attributeService">
 	        <ref bean="attributeService"/>
 	    </property>
+	    <property name="authorityService">
+	        <ref bean="authorityService"/>	
+	    </property>
+	    <property name="personService">
+	        <ref bean="personService"/>
+	    </property>
 	    <property name="retryingTransactionHelper">
 	        <ref bean="retryingTransactionHelper"/>
 	    </property>

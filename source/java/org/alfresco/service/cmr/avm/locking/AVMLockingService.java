@@ -119,7 +119,7 @@ public interface AVMLockingService
      * @param webProject The name of the web project that this path is being checked in.
      * @param avmPath A full avmPath
      * @param user The name of the user, group, role to check on.
-     * @return Mother's verdict.
+     * @return Whether the user has access.
      */
-    public boolean motherMayI(String webProject, String avmPath, String user);
+    public boolean hasAccess(String webProject, String avmPath, String user);
 }

@@ -1,8 +1,8 @@
 <webscript>
   <shortname>Category Search</shortname>
   <description>Find all blog entries tagged with specified categories</description>
-  <url format="html" template="/sample/blog/category?c={category}"/>
-  <url format="atom" template="/sample/blog/category.atom?c={category}"/>
+  <url>/sample/blog/category?c={category}</url>
+  <url>/sample/blog/category.atom?c={category}</url>
   <authentication>guest</authentication>
   <transaction>required</transaction>
 </webscript>

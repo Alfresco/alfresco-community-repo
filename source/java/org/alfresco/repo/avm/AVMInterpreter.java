@@ -397,6 +397,28 @@ public class AVMInterpreter
                 out.println("Owner: " + desc.getOwner());
                 out.println("Mod Time: " + new Date(desc.getModDate()));
             }
+            else if (command[0].equals("getnodeproperties"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                final Map<QName, PropertyValue> properties = fService.getNodeProperties(Integer.parseInt(command[2]), command[1]);
+                for (final Map.Entry<QName, PropertyValue> p : properties.entrySet())
+                {
+                   out.println(p.getKey() + ": " + p.getValue());
+                }
+            }
+            else if (command[0].equals("deletenodeproperty"))
+            {
+               if (command.length != 3)
+               {
+                  return "Syntax Error.";
+               }
+               
+               fService.deleteNodeProperty(command[1], QName.createQName(command[2]));
+               out.println("deleted property " + command[2] + " of " + command[1]);
+            }
             else if (command[0].equals("history"))
             {
                 if (command.length != 4)

@@ -1,5 +1,6 @@
 <webscript>
   <shortname>Web Script Maintenance</shortname>
   <description>Maintain index of Web Scripts</description>
-  <url format="html" template="/index?reset={reset?}" />
+  <url>/index?reset={reset?}</url>
+  <url>/?reset={reset?}</url>
 </webscript>

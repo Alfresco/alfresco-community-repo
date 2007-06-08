@@ -140,7 +140,7 @@ public interface WebScriptDescription
      * 
      * @return  array of URIs in order specified in service description document
      */
-    public URI[] getURIs();
+    public String[] getURIs();
 
     /**
      * Gets the style of Format discriminator supported by this web script
@@ -150,44 +150,13 @@ public interface WebScriptDescription
     public FormatStyle getFormatStyle();
 
     /**
-     * Gets a URI by format
-     * 
-     * @param format  the format
-     * @return  the URI (or null, if no URI registered for the format)
-     */
-    public URI getURI(String format);
-    
-    /**
      * Gets the default response format
      * 
      * Note: the default response format is the first listed in the service
      *       description document
      * 
-     * @return  default response format
+     * @return  default response format (or null, if format not known until run-time)
      */
     public String getDefaultFormat();
-    
-    
-    /**
-     * Web Script URL
-     * 
-     * @author davidc
-     */
-    public interface URI
-    {
-        /**
-         * Gets the URI response format
-         * 
-         * @return  format
-         */
-        public String getFormat();
-        
-        /**
-         * Gets the URI
-         * 
-         * @return  uri
-         */
-        public String getURI();
-    }
     
 }

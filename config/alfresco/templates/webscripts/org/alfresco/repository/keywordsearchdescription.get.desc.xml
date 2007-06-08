@@ -1,7 +1,7 @@
 <webscript>
   <shortname>Keyword Search Description</shortname>
   <description>OpenSearch description document for Alfresco Repository keyword search</description>
-  <url format="opensearchdescription" template="/api/search/keyword/description.xml" />
-  <url format="opensearchdescription" template="/search/keyword/description.xml" />
-  <format>argument</format>
+  <url>/api/search/keyword/description.xml</url>
+  <url>/search/keyword/description.xml</url>
+  <format default="opensearchdescription">argument</format>
 </webscript>

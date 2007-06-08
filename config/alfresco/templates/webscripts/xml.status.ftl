@@ -23,9 +23,8 @@
       <#list exception.stackTrace as element>
          ${element}
       </#list>  
-      <#else>
-         ${exception}
-         ${exception.stackTrace[0]}
-      </#if>
-   <tr><td><td>&nbsp;
+   <#else>
+      ${exception}
+      ${exception.stackTrace[0]}
+   </#if>
 </#macro>

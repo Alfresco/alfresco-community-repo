@@ -1,7 +1,7 @@
 <webscript>
   <shortname>My Alfresco (Office Add-In)</shortname>
   <description>Generate the Office Add-In My Alfresco page</description>
-  <url format="html" template="/office/myAlfresco?p={path?}" />
+  <url>/office/myAlfresco?p={path?}</url>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

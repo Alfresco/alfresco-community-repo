@@ -1,6 +1,6 @@
 <webscript>
   <shortname>Web Script Description</shortname>
   <description>Retrieve description document for identified Web Script</description>
-  <url format="html" template="/description/{serviceId}" />
+  <url>/description/{serviceId}</url>
   <format>argument</format>
 </webscript>

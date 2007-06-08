@@ -1,7 +1,7 @@
 <webscript>
   <shortname>My Tasks Detail (Office Add-In)</shortname>
   <description>Generate the Office Add-In Task Detail page</description>
-  <url format="html" template="/office/myTasksDetail?t={taskId}" />
+  <url>/office/myTasksDetail?t={taskId}</url>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

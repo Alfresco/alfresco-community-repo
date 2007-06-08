@@ -1,7 +1,7 @@
 <webscript>
   <shortname>Get Users (Office Add-In)</shortname>
   <description>Used by the Office Add-In to query for users</description>
-  <url format="html" template="/office/getUsers?s={searchTerm}" />
+  <url>/office/getUsers?s={searchTerm}</url>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

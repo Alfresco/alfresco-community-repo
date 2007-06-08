@@ -1,7 +1,7 @@
 <webscript>
   <shortname>Document Actions (Office Add-In)</shortname>
   <description>Used by the Office Add-In to perform actions on managed documents</description>
-  <url format="html" template="/office/docActions" />
+  <url>/office/docActions</url>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

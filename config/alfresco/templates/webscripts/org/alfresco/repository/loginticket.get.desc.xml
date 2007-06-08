@@ -1,7 +1,8 @@
 <webscript>
   <shortname>Get Login Ticket</shortname>
   <description>Get Login Ticket</description>
-  <url format="xml" template="/api/login/ticket/{ticket}"/>
+  <url>/api/login/ticket/{ticket}</url>
+  <format default="xml"/>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

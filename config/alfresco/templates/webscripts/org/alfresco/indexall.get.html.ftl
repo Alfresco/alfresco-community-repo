@@ -27,7 +27,7 @@
         <span class="mainSubTitle">${desc.shortName}</span>
         <table>
         <#list desc.URIs as uri>
-          <tr><td><a href="${url.serviceContext}${uri.URI}">${desc.method} ${url.serviceContext}${uri.URI}</a> => ${uri.format}<#if uri.format = desc.defaultFormat> (default)</#if>
+          <tr><td><a href="${url.serviceContext}${uri}">${desc.method} ${url.serviceContext}${uri}</a>
         </#list>
           <tr><td>
         </table>
@@ -36,6 +36,7 @@
           <tr><td>Authentication:<td>${desc.requiredAuthentication}
           <tr><td>Transaction:<td>${desc.requiredTransaction}
           <tr><td>Format Style:<td>${desc.formatStyle}
+          <tr><td>Default Format:<td>${desc.defaultFormat!"<i>Determined at run-time</i>"}
           <tr><td>
           <tr><td>Id:<td>${desc.id}
           <tr><td>Description:<td><a href="${url.serviceContext}/description/${desc.id}">${desc.storePath}/${desc.descPath}</a>

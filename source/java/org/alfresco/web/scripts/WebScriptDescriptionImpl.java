@@ -26,8 +26,6 @@ package org.alfresco.web.scripts;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
@@ -47,9 +45,8 @@ public class WebScriptDescriptionImpl implements WebScriptDescription
     private RequiredTransaction requiredTransaction;
     private FormatStyle formatStyle;
     private String httpMethod;
-    private URI[] uris;
+    private String[] uris;
     private String defaultFormat;
-    private Map<String, URI> uriByFormat;
 
     
     /**
@@ -246,30 +243,17 @@ public class WebScriptDescriptionImpl implements WebScriptDescription
      * 
      * @param uris
      */
-    public void setUris(URI[] uris)
+    public void setUris(String[] uris)
     {
-        this.uriByFormat = new HashMap<String, URI>(uris.length);
-        for (URI uri : uris)
-        {
-            this.uriByFormat.put(uri.getFormat(), uri);
-        }
         this.uris = uris;
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptDescription#getURIs()
      */
-    public URI[] getURIs()
+    public String[] getURIs()
     {
         return this.uris;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptDescription#getURI(java.lang.String)
-     */
-    public URI getURI(String format)
-    {
-        return this.uriByFormat.get(format);
     }
 
     /**
@@ -288,54 +272,6 @@ public class WebScriptDescriptionImpl implements WebScriptDescription
     public String getDefaultFormat()
     {
         return this.defaultFormat;
-    }
-
-    
-    /**
-     * Web Script URL Implementation
-     * 
-     * @author davidc
-     */
-    public static class URIImpl implements WebScriptDescription.URI
-    {
-        private String format;
-        private String uri;
-
-        /**
-         * Sets the URI response format
-         *  
-         * @param format
-         */
-        public void setFormat(String format)
-        {
-            this.format = format;
-        }
-
-        /* (non-Javadoc)
-         * @see org.alfresco.web.scripts.WebScriptDescription.URI#getFormat()
-         */
-        public String getFormat()
-        {
-            return this.format;
-        }
-
-        /**
-         * Sets the URI
-         * 
-         * @param uri
-         */
-        public void setUri(String uri)
-        {
-            this.uri = uri;
-        }
-
-        /* (non-Javadoc)
-         * @see org.alfresco.web.scripts.WebScriptDescription.URI#getURI()
-         */
-        public String getURI()
-        {
-            return this.uri;
-        }
     }
 
 }

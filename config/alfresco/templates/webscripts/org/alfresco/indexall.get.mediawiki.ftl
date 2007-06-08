@@ -28,13 +28,14 @@ The following reference provides a list of all available Web Scripts organised b
 <#if desc.description??><#if desc.description?ends_with(".")>${desc.description}<#else>${desc.description}.</#if><#else></#if>
 
 <#list desc.URIs as uri>
- [http://localhost:8080/${url.serviceContext}${uri.URI} ${desc.method} ${url.serviceContext}${uri.URI}] => ${uri.format}<#if uri.format = desc.defaultFormat> (default)</#if>
+ [http://localhost:8080/${url.serviceContext}${uri} ${desc.method} ${url.serviceContext}${uri}]
 </#list>
 
 Requirements:
 * Authentication: ${desc.requiredAuthentication}
 * Transaction: ${desc.requiredTransaction}
 * Format Style: ${desc.formatStyle}
+* Default Format: ${desc.defaultFormat!"<i>Determined at run-time</i>"}
 
 Definition:
 * Id: ${desc.id}

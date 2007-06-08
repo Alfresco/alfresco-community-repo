@@ -1,7 +1,7 @@
 <webscript>
   <shortname>My Web Forms</shortname>
   <description>Generate the My Web Forms portlet page</description>
-  <url format="html" template="/mywebforms"/>
+  <url>/mywebforms</url>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

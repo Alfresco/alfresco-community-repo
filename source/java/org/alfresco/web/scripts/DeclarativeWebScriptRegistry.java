@@ -43,7 +43,6 @@ import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.web.scripts.WebScriptDescription.FormatStyle;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredTransaction;
-import org.alfresco.web.scripts.WebScriptDescription.URI;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -151,9 +150,18 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
      */
     public void reset()
     {
-        getTemplateProcessor().resetCache();
-        getScriptProcessor().resetCache();
-        initWebScripts();
+        long startTime = System.currentTimeMillis();
+        try
+        {
+            getTemplateProcessor().resetCache();
+            getScriptProcessor().resetCache();
+            initWebScripts();
+        }
+        finally
+        {
+            if (logger.isInfoEnabled())
+                logger.info("Registered " + webscriptsById.size() + " Web Scripts " + webscriptsByURL.size() + ", URLs (in " + (System.currentTimeMillis() - startTime) + "ms)");
+        }        
     }
     
     /* (non-Javadoc)
@@ -162,7 +170,7 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        initWebScripts();
+        reset();
     }
 
     /* (non-Javadoc)
@@ -178,7 +186,7 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
      *
      * Note: Each invocation of this method resets the list of the services
      */
-    public void initWebScripts()
+    private void initWebScripts()
     {
         if (logger.isDebugEnabled())
             logger.debug("Initialising Web Scripts");
@@ -250,17 +258,16 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                 
                 if (logger.isDebugEnabled())
                     logger.debug("Found Web Script " + id +  " (desc: " + serviceDescPath + ", impl: " + serviceImplName + ", auth: " + 
-                                 serviceDesc.getRequiredAuthentication() + ", trx: " + serviceDesc.getRequiredTransaction() + ", format: " + 
-                                 serviceDesc.getFormatStyle() + ")");
+                                 serviceDesc.getRequiredAuthentication() + ", trx: " + serviceDesc.getRequiredTransaction() + ", format style: " + 
+                                 serviceDesc.getFormatStyle() + ", default format: " + serviceDesc.getDefaultFormat() + ")");
                 
                 // register service and its urls
                 webscriptsById.put(id, serviceImpl);
-                for (URI uri : serviceDesc.getURIs())
+                for (String uriTemplate : serviceDesc.getURIs())
                 {
                     // establish static part of url template
                     boolean wildcard = false;
                     boolean extension = true;
-                    String uriTemplate = uri.getURI();
                     int queryArgIdx = uriTemplate.indexOf('?');
                     if (queryArgIdx != -1)
                     {
@@ -309,9 +316,6 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                 registerURIs(serviceImpl);
             }
         }
-        
-        if (logger.isDebugEnabled())
-            logger.debug("Registered " + webscriptsById.size() + " Web Scripts; " + webscriptsByURL.size() + " URLs");
     }
 
     /**
@@ -347,10 +351,10 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
     private void registerURIs(WebScript script)
     {
         WebScriptDescription desc = script.getDescription();
-        for (URI uri : desc.getURIs())
+        for (String uri : desc.getURIs())
         {
             Path path = uriByPath.get("/");
-            String[] parts = uri.getURI().split("/");
+            String[] parts = uri.split("/");
             for (String part : parts)
             {
                 if (part.indexOf("?") != -1)
@@ -429,32 +433,25 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
             {
                 throw new WebScriptException("Expected at least one <url> element");
             }
-            List<WebScriptDescription.URI> uris = new ArrayList<WebScriptDescription.URI>();
+            List<String> uris = new ArrayList<String>();
             Iterator iterElements = urlElements.iterator();
             while(iterElements.hasNext())
             {
                 // retrieve url element
                 Element urlElement = (Element)iterElements.next();
                 
-                // retrieve url mimetype
-                String format = urlElement.attributeValue("format");
-                if (format == null)
-                {
-                    // default to unspecified format
-                    format = "";
-                }
-                
                 // retrieve url template
-                String template = urlElement.attributeValue("template");
+                String template = urlElement.getTextTrim();
                 if (template == null || template.length() == 0)
                 {
-                    throw new WebScriptException("Expected template attribute on <url> element");
+                    // NOTE: for backwards compatibility only
+                    template = urlElement.attributeValue("template");
+                    if (template == null || template.length() == 0)
+                    {
+                        throw new WebScriptException("Expected <url> element value");
+                    }
                 }
-                
-                WebScriptDescriptionImpl.URIImpl uriImpl = new WebScriptDescriptionImpl.URIImpl();
-                uriImpl.setFormat(format);
-                uriImpl.setUri(template);
-                uris.add(uriImpl);
+                uris.add(template);
             }
             
             // retrieve authentication
@@ -492,11 +489,18 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
             }
             
             // retrieve format
-            String defaultFormat = uris.get(0).getFormat();
+            String defaultFormat = "html";
             FormatStyle formatStyle = FormatStyle.any;
             Element formatElement = rootElement.element("format");
             if (formatElement != null)
             {
+                // establish if default is set explicitly
+                String attrDefaultValue = formatElement.attributeValue("default");
+                if (attrDefaultValue != null)
+                {
+                    defaultFormat = (attrDefaultValue.length() == 0) ? null : attrDefaultValue;
+                }
+                // establish format declaration style
                 String formatStyleStr = formatElement.getTextTrim();
                 if (formatStyleStr != null && formatStyleStr.length() > 0)
                 {
@@ -505,11 +509,6 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                     {
                         throw new WebScriptException("Format Style '" + formatStyle + "' is not a valid value");
                     }
-                }
-                String defaultFormatStr = formatElement.attributeValue("default");
-                if (defaultFormatStr != null && defaultFormatStr.length() > 0)
-                {
-                    defaultFormat = defaultFormatStr;
                 }
             }
             
@@ -524,7 +523,7 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
             serviceDesc.setRequiredAuthentication(reqAuth);
             serviceDesc.setRequiredTransaction(reqTrx);
             serviceDesc.setMethod(method);
-            serviceDesc.setUris(uris.toArray(new WebScriptDescription.URI[uris.size()]));
+            serviceDesc.setUris(uris.toArray(new String[uris.size()]));
             serviceDesc.setDefaultFormat(defaultFormat);
             serviceDesc.setFormatStyle(formatStyle);
             return serviceDesc;

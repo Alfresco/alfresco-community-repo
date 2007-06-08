@@ -1,6 +1,6 @@
 <webscript>
   <shortname>Web Scripts Documentation</shortname>
   <description>Web Scripts Documentation</description>
-  <url format="html" template="/" />
-  <url format="html" template="/index" />
+  <url>/</url>
+  <url>/index</url>
 </webscript>

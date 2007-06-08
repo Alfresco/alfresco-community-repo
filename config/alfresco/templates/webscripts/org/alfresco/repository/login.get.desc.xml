@@ -1,7 +1,8 @@
 <webscript>
   <shortname>Login</shortname>
   <description>Establish a ticket</description>
-  <url format="xml" template="/api/login?u={username}&amp;pw={password?}"/>
+  <url>/api/login?u={username}&amp;pw={password?}</url>
+  <format default="xml"/>
   <authentication>none</authentication>
   <transaction>required</transaction>
 </webscript>

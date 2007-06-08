@@ -11,6 +11,7 @@ var OfficeAddin =
    {
       window.queryObject = OfficeAddin.toQueryObject(document.location.search);
       window.contextPath = OfficeAddin.getContextPath();
+      window.serviceContextPath = window.contextPath + "/wcservice";
 
       /* Update needed after page load? */      
       if(this.queryObject.st)

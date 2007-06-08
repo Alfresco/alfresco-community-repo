@@ -1,8 +1,8 @@
 // Client has requested certain actions on the current document
 
 /* Inputs */
-var docId = args["d"],
-   runAction = args["a"];
+var docId = args.d,
+   runAction = args.a;
 
 /* Outputs */
 var resultString = "Action failed.",
@@ -59,6 +59,25 @@ if (doc != null && doc.isDocument)
             resultString = "Document versioned";
             resultCode = true;
          }
+      }
+      else if (runAction == "workflow")
+      {
+         var workflowType = "jbpm$wf:" + args.wt;
+         var assignTo = people.getPerson(args.at);
+         var dueDate = new Date(args.dd);
+         var description = args.desc;
+
+         var workflow = actions.create("start-workflow");
+         workflow.parameters.workflowName = workflowType;
+         workflow.parameters["bpm:workflowDescription"] = description;
+         workflow.parameters["bpm:assignee"] = assignTo;
+         if ((args.dd) && (args.dd != ""))
+         {
+            workflow.parameters["bpm:workflowDueDate"] = dueDate;
+         } 
+         workflow.execute(doc);
+         resultString = "New workflow started.";
+         resultCode = true;
       }
       else if (runAction == "test")
       {

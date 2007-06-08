@@ -14,11 +14,14 @@ var OfficeMyTasks =
          OfficeMyTasks.openTask(window.queryObject.t);
       }
       
-      if ($('wrkUser'))
+      if ($('wrkAssignTo'))
       {
-         var autoUser = new Autocompleter.Ajax.Json($('wrkUser'), window.contextPath + '/service/office/getUsers',
+         var autoAssignTo = new Autocompleter.Ajax.Json($('wrkAssignTo'), window.serviceContextPath + '/office/getUsers',
          {
             postVar: 's',
+            minLength: 2,
+            useSelection: false,
+            markQuery: false,
             ajaxOptions:
             {
                method: 'get',
@@ -26,14 +29,23 @@ var OfficeMyTasks =
             },
             onRequest: function(el)
             {
-               $('ajxUser').setStyle('display', '');
+               $('ajxAssignTo').setStyle('display', '');
             },
             onComplete: function(el)
             {
-               $('ajxUser').setStyle('display', 'none');
+               $('ajxAssignTo').setStyle('display', 'none');
             }
-         });      
-		}
+         });
+      }
+		
+      if ($('wrkDueDate'))
+      {
+         var dueDate = new DatePicker($('wrkDueDate'),
+         {
+            readOnly: false,
+            dateFormat: "dd MMMM yyyy"
+         });
+      }
    },
 
    setupEventHandlers: function()
@@ -89,7 +101,7 @@ var OfficeMyTasks =
                OfficeAddin.showStatusText("Loading task...", "ajax_anim.gif", false);
 
                // ajax call to load task details               
-               var actionURL = window.contextPath + "/service/office/myTasksDetail?t=" + task.id;
+               var actionURL = window.serviceContextPath + "/office/myTasksDetail?t=" + task.id;
                var myAjax = new Ajax(actionURL, {
                   method: 'get',
                   headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
@@ -149,20 +161,66 @@ var OfficeMyTasks =
             var href = window.location.href.replace("#", "")
             // Remove any previous "&st=" string
             href = href.replace(/[?&]st=([^&$]+)/g, "");
-            // Remove any previous "&t=" string
-            href = href.replace(/[?&]t=([^&$]+)/g, "");
+            // Remove any previous "&w=" string
+            href = href.replace(/[?&]w=([^&$]+)/g, "");
             // Optionally add a status string
             if (successMessage != "")
             {
                var json = "{\"statusString\":\"" + successMessage + "\",\"statusCode\":true}";
                href += "&st=" + encodeURI(json);
-               href += "&t=" + taskId;
             }
             window.location.href = href;
          },
          onFailure: function()
          {
             OfficeAddin.showStatusText("Couldn't run workflow", "action_failed.gif", true);
+         }
+      });
+      myAjax.request();
+   },
+   
+   startWorkflow: function(useTemplate, Doc)
+   {
+//      OfficeAddin.runAction('${doc_actions}','makepdf','${d.id}', '');"
+
+      var wrkType=$('wrkType').value;
+      // wrkAssignTo should be "First Last (Username)"
+      var wrkAssignTo=$('wrkAssignTo').value;
+      if (wrkAssignTo.test(/(?:\(([^\)]+)\))/))
+      {
+         // Extract the Username
+         wrkAssignTo=wrkAssignTo.match(/(?:\(([^\)]+)\))/)[1];
+      }
+      var wrkDueDate = $('wrkDueDate').value;;
+      var wrkDescription=$('wrkDescription').value;
+      
+      OfficeAddin.showStatusText("Starting workflow...", "ajax_anim.gif", false);
+      var actionURL = useTemplate + "?a=workflow&d=" + Doc;
+      actionURL += "&wt=" + wrkType;
+      actionURL += "&at=" + wrkAssignTo;
+      // Date supplied?
+      if (wrkDueDate != "")
+      {
+         actionURL += "&dd=" + wrkDueDate;
+      }
+      actionURL += "&desc=" + wrkDescription;
+      var myAjax = new Ajax(actionURL, {
+         method: 'get',
+         headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
+         onComplete: function(textResponse, xmlResponse)
+         {
+            // Remove any trailing hash
+            var href = window.location.href.replace("#", "")
+            // Remove any previous "&st=" strings
+            href = href.replace(/[?&]st=([^&$]+)/g, "");
+            // Remove any previous "&w=" strings
+            href = href.replace(/[?&]w=([^&$]+)/g, "");
+            // Optionally add a status string
+            if (textResponse != "")
+            {
+               href += "&st=" + encodeURI(textResponse);
+            }
+            window.location.href = href;
          }
       });
       myAjax.request();

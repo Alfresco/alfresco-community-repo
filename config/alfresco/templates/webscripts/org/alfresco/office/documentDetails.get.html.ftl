@@ -1,4 +1,4 @@
-<#assign doc_actions="${url.context}/service/office/docActions">
+<#assign doc_actions="${url.serviceContext}/office/docActions">
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
 <#-- resolve the path (from Company Home) into a node -->
 <#if path?starts_with("/Company Home")>
@@ -24,17 +24,17 @@
 
 <div id="tabBar">
    <ul>
-      <li><a title="My Alfresco" href="${url.context}/service/office/myAlfresco?p=${path}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li><a title="Browse Spaces and Documents" href="${url.context}/service/office/navigation?p=${path}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
-      <li><a title="Search Alfresco" href="${url.context}/service/office/search?p=${path}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
-      <li id="current"><a title="View Details" href="${url.context}/service/office/documentDetails?p=${path}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
-      <li><a title="My Tasks" href="${url.context}/service/office/myTasks?p=${path}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
+      <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
+      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
+      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
+      <li id="current"><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
+      <li><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
    </ul>
 </div>
 
 <div class="header">Current Document Details</div>
 
-<div class="listMedium">
+<div class="containerMedium">
    <table>
       <tbody>
          <tr>
@@ -92,7 +92,7 @@
 </#if>
 </div>
 
-<div class="listMedium">
+<div class="containerMedium">
    <table>
 <#if d.isDocument >
    <#if hasAspect(d, "cm:versionable") == 1>
@@ -145,13 +145,43 @@
       <ul>
          <#if d.isLocked >
          <#elseif hasAspect(d, "cm:workingcopy") == 1>
-         <li><a href="#" onClick="OfficeAddin.runAction('${doc_actions}','checkin','${d.id}', '');"><img src="${url.context}/images/office/checkin.gif" style="padding-right:6px;" alt="Check In">Check In</a></li>
+         <li>
+            <a href="#" onClick="OfficeAddin.runAction('${doc_actions}','checkin','${d.id}', '');">
+               <img src="${url.context}/images/office/checkin.gif" alt="Check In">
+               Check In
+            </a>
+            <br />Check in the current document.
+         </li>
          <#else>
-         <li><a href="#" onClick="OfficeAddin.runAction('${doc_actions}','checkout','${d.id}', '');"><img src="${url.context}/images/office/checkout.gif" style="padding-right:6px;" alt="Check Out">Check Out</a></li>
+         <li>
+            <a href="#" onClick="OfficeAddin.runAction('${doc_actions}','checkout','${d.id}', '');">
+               <img src="${url.context}/images/office/checkout.gif" alt="Check Out">
+               Check Out
+            </a>
+            <br />Check out the current document to a working copy.
+         </li>
          </#if>
-         <li><a href="#" onClick="OfficeAddin.runAction('${doc_actions}','makepdf','${d.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding-right:6px;" alt="Transform to PDF">Transform to PDF</a></li>
-         <li><a href="${url.context}/navigate/showOfficeAddin/workspace/SpacesStore/${d.id}?ticket=${session.ticket}" target="_blank"><img src="${url.context}/images/office/document_details.gif" border="0" style="padding-right:6px;" alt="Open Full Details">Open Full Details</a></li>
-         <li><a href="${url.context}/service/office/myTasks?p=${path}&w=new"><img src="${url.context}/images/office/new_workflow.gif" style="padding-right:6px;" alt="Start Workflow">Start Workflow</a></li>
+         <li>
+            <a href="#" onClick="OfficeAddin.runAction('${doc_actions}','makepdf','${d.id}', '');">
+               <img src="${url.context}/images/office/makepdf.gif" alt="Transform to PDF">
+               Transform to PDF
+            </a>
+            <br />Transform the current document to Adobe PDF format.
+         </li>
+         <li>
+            <a href="${url.context}/navigate/showOfficeAddin/workspace/SpacesStore/${d.id}?ticket=${session.ticket}" target="_blank">
+               <img src="${url.context}/images/office/document_details.gif" alt="Open Full Details">
+               Open Full Details
+            </a>
+            <br />Open the document details in the Alfresco Web Client.
+         </li>
+         <li>
+            <a href="${url.serviceContext}/office/myTasks?p=${path}&w=new">
+               <img src="${url.context}/images/office/new_workflow.gif" alt="Start Workflow">
+               Start Workflow
+            </a>
+            <br />Start Advanced Workflow for the current document.
+         </li>
       </ul>
 
 <#else>

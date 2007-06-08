@@ -1,15 +1,12 @@
-html, body {
-   height: 100%;
-   overflow: hidden;
+body {
+   background: url("../images/office/view_bg.gif") top;
+   color: #0073e6;
    font-family: tahoma, sans-serif;
    font-size: 11px;
-   color: #0073e6;
-   background: url("../images/office/view_bg.gif") top;
-}
-
-body {
+   height: 100%;
    margin: 0px;
    padding: 0px;
+   overflow: hidden;
 }
 
 a {
@@ -40,6 +37,7 @@ a img {
    display: inline;
    margin: 0px;
    padding: 0px;
+   height: 18px;
 }
 #tabBar a {
    background: url("../images/office/tab_left.gif") no-repeat left top;
@@ -54,7 +52,6 @@ a img {
    display: block;
    float: none;
    padding: 5px 15px 4px 6px;
-   height: 18px;
 }
 
 #tabBar a:hover span {
@@ -88,31 +85,41 @@ a img {
    margin-top: -13px;
 }
 
-.listBig {
+.containerBig {
    clear: both;
    float: left;
    width: 282px;
-   height: 378px;
+   height: 373px;
    overflow: auto;
    border: 1px solid #cccccc;
    margin: 0px 4px 0px 4px;
    background: #fff;
 }
-.listMedium {
+.containerMedium {
    clear: both;
    float: left;
    width: 282px;
-   height: 204px;
+   height: 200px;
+   overflow: auto;
+   border: 1px solid #cccccc;
+   margin: 0px 4px 0px 4px;
+   background: #fff;
+}
+.containerSmall {
+   clear: both;
+   float: left;
+   width: 282px;
+   height: 76px;
    overflow: auto;
    border: 1px solid #cccccc;
    margin: 0px 4px 0px 4px;
    background: #fff;
 }
 
-.listMediumGrow {
+.containerMediumGrow {
    height: 354px !important;
 }
-.listMediumShrink {
+.containerMediumShrink {
    height: 54px !important;
 }
 
@@ -146,7 +153,7 @@ TABLE, TR, TD {
 ul {
    margin: 0px;
    list-style: none;
-   padding: 2px 0px 0px 4px;
+   padding: 2px 0px 0px 24px;
 }
 
 #documentActions {
@@ -158,6 +165,14 @@ ul {
    height: 150px;
    width: 282px;
 }
+#documentActions li a {
+   font-weight: bold;
+   margin: 0px 0px 0px -22px;
+}
+#documentActions li a img {
+   margin: 0px 0px -2px 0px;
+   padding: 0px 3px 0px 0px;
+}
 
 #documentActionsNavigation {
    clear: both;
@@ -168,13 +183,17 @@ ul {
    height: 106px;
    width: 282px;
 }
-
-#nonStatusText {
-   min-height: 100%;
-   position: relative;
+#documentActionsNavigation li a {
+   font-weight: bold;
+   margin: 0px 0px 0px -22px;
+}
+#documentActionsNavigation li a img {
+   margin: 0px 0px -2px 0px;
+   padding: 0px 3px 0px 0px;
 }
 
-#searchResultsList {
+
+#nonStatusText {
    min-height: 100%;
    position: relative;
 }
@@ -189,25 +208,36 @@ ul {
    width: 278px;
 }
 
-#search {
-   clear: both;
+.searchBox {
+   padding: 2px;
+}
+
+.searchParam {
    float: left;
-   width: 282px;
-   border: 1px solid #cccccc;
-   margin: 0px 4px;
-   background: #fff;
+   padding: 2px;
+}
+
+#searchText {
+   font-family: tahoma, sans-serif;
+   font-size: 8pt;
+   padding: 1px 0px 1px 2px;
+   width: 160px;
+}
+
+#searchResultsList {
+   overflow: hidden;
 }
 
 input.button {
+   background-color: #cce6ff;
+   border: 1px solid #0073e6;
    color: #0073e6;
    font-size: 11px;
    font-weight: bold;
-   background-color: #cce6ff;
-   border: 1px solid #0073e6;
-   filter:progid:DXImageTransform.Microsoft.Gradient
-   (GradientType=0,StartColorStr='#ffffffff',EndColorStr='#6fb7ff');
    cursor: pointer;
    margin-left: 6px;
+   padding: 1px 4px;
+   filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#cce6ff');
 }
 
 #taskDetails {
@@ -230,16 +260,16 @@ input.button {
 }
 
 .taskAction {
+   background-color: #cce6ff;
+   border: 1px solid #0073e6;
    color: #0073e6;
    float: left;
    font-size: 11px;
    font-weight: bold;
-   background-color: #cce6ff;
-   border: 1px solid #0073e6;
    cursor: pointer;
    margin: 0px 0px 0px 2px;
    padding: 4px;
-   filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0,StartColorStr='#ffffffff',EndColorStr='#6fb7ff');
+   filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#cce6ff');
 }
 
 .taskParameters {
@@ -252,19 +282,24 @@ input.button {
 .taskParam {
    clear: both;
    float: left;
-   padding: 2px 0px 0px 4px;
+   padding: 4px 4px 0px 0px;
+   text-align: right;
    width: 64px;
 }
 
 .taskValue {
    float: left;
    padding: 2px 0px 0px 0px;
-   width: 164px;
+   width: 196px;
 }
-
-#ajxUser {
-   float: left;
-   margin: 2px;
+.taskValue img {
+   margin: 0px 0px -2px -2px;
+}
+.taskValue select, .taskValue input, .taskValue textarea {
+   font-family: tahoma, sans-serif;
+   font-size: 8pt;
+   padding: 1px 0px 1px 2px;
+   width: 172px;
 }
 
 /* Autocomplete pop-up */
@@ -276,8 +311,6 @@ ul.autocompleter-choices
    list-style: none;
    border: 1px solid #ccc;
    background-color: white;
-   border-right-color: #ddd;
-   border-bottom-color: #ddd;
    text-align: left;
    z-index: 50;
 }
@@ -285,7 +318,7 @@ ul.autocompleter-choices
 ul.autocompleter-choices li
 {
    position: relative;
-   padding: 0.1em 1.5em 0.1em 1em;
+   padding: 0.1em 0.5em 0.1em 1em;
    cursor: pointer;
    font-weight: normal;
    font-size: 1em;
@@ -293,8 +326,8 @@ ul.autocompleter-choices li
 
 ul.autocompleter-choices li.autocompleter-selected
 {
-   background-color: #444;
-   color: #fff;
+   background-color: #eee;
+   border: 1px solid #ccc;
 }
 
 ul.autocompleter-choices span.autocompleter-queried
@@ -304,5 +337,99 @@ ul.autocompleter-choices span.autocompleter-queried
 
 ul.autocompleter-choices li.autocompleter-selected span.autocompleter-queried
 {
-color: #9FCFFF;
+   color: #9FCFFF;
+}
+
+/* Date Picker */
+#date-picker {
+   margin-top: 3px;
+   position: absolute;
+   top: -1000px;
+   left: 1000px;
+   visibility: hidden;
+}
+
+#date-wrapper {
+   font-weight: normal !important;
+   font-size: 11px !important;
+   margin: 0px 1px;
+}
+
+#date-wrapper .date-table {
+   padding: 0px;
+   margin: 0px;
+   border: 1px solid #666;
+   border-collapse: collapse;
+}
+
+#date-wrapper .date-table th, #date-wrapper .date-table td {
+   background-color: #fff;
+   padding: 3px 5px;
+   text-align: center;
+   border: 1px solid #c0c0c0;
+}
+
+#date-wrapper .date-table td {
+   background-color: #f8f8f8;
+   padding: 3px;
+}
+
+#date-wrapper .date-table td.date-monthswitch, #date-wrapper .date-table td.date-yearswitch {
+   cursor: pointer;
+   padding: 1px;
+}
+
+#date-wrapper .date-table td.date-monthandyear {
+   font-weight: bold;
+}
+
+#date-wrapper .date-table th {
+   background-color: #004080;
+   color: #fff;
+   padding: 2px 5px;
+   text-align: center;
+}
+
+#date-wrapper .date-table tr {
+   padding: 3px 5px;
+}
+
+#date-wrapper td.date-weekend {
+   font-weight: bold;
+   background-color: #ffc;
+}
+
+#date-wrapper td.date-workday {
+   font-weight: bold;
+   background-color: #fff;
+}
+
+#date-wrapper td.date-offmonth {
+   background-color: #fff;
+   color: #ccc;
+}
+
+#date-wrapper td.date-day {
+   cursor: pointer;
+}
+
+#date-wrapper td.date-todayfooter {
+   background-color: #f8f8f8;
+   cursor: pointer;
+}
+
+
+/* Date highlighting */
+#date-wrapper td.date-today {
+   background-color: #ffe500;
+}
+
+#date-wrapper td.date-picked {
+   border: 2px solid #0073e6;
+   margin: -4px;
+}
+
+#date-wrapper td.date-tdover {
+   background-color: #0073e6;
+   color: #fff;
 }

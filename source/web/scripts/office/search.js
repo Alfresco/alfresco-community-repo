@@ -11,7 +11,7 @@ var OfficeSearch =
          event = new Event(event);
          if (event.key == 'enter')
          {
-            $("simpleSearchButton").click();
+            $("simpleSearchButton").onclick();
          }
       });
    },

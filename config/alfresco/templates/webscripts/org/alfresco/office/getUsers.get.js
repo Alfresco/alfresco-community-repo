@@ -7,9 +7,9 @@ if ((args.s) && (args.s != ""))
    for (i = 0; i < terms.length; i++)
    {
       term = terms[i];
-      query += "((@\\{http\\://www.alfresco.org/model/content/1.0\\}firstName:" + term;
-//      query += "*) OR (@\\{http\\://www.alfresco.org/model/content/1.0\\}lastName:*" + term;
-//      query += "*) OR (@\\{http\\://www.alfresco.org/model/content/1.0\\}userName:" + term;
+      query += "((@\\{http\\://www.alfresco.org/model/content/1.0\\}firstName:*" + term;
+      query += "*) OR (@\\{http\\://www.alfresco.org/model/content/1.0\\}lastName:*" + term;
+      query += "*) OR (@\\{http\\://www.alfresco.org/model/content/1.0\\}userName:" + term;
       query += "*)) ";   // final space here is important as default OR separator
    }
    query += ")";

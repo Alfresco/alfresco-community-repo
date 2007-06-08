@@ -1,4 +1,4 @@
-<#assign doc_actions="${url.context}/service/office/docActions">
+<#assign doc_actions="${url.serviceContext}/office/docActions">
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
 <#if args.n?exists><#assign node=args.n><#else><#assign node=companyhome></#if>
 <#-- resolve the path (from Company Home) into a node -->
@@ -20,6 +20,7 @@
 	<link rel="stylesheet" type="text/css" href="${url.context}/css/office.css" />
    <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.1.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/ajax/autocompleter.js"></script>
+	<script type="text/javascript" src="${url.context}/scripts/ajax/date_picker.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/my_tasks.js"></script>
 </head>
@@ -27,17 +28,17 @@
 
 <div id="tabBar">
    <ul>
-      <li><a title="My Alfresco" href="${url.context}/service/office/myAlfresco?p=${path}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li><a title="Browse Spaces and Documents" href="${url.context}/service/office/navigation?p=${path}&n=${node.id}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
-      <li><a title="Search Alfresco" href="${url.context}/service/office/search?p=${path}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
-      <li><a title="View Details" href="${url.context}/service/office/documentDetails?p=${path}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
-      <li id="current"><a title="My Tasks" href="${url.context}/service/office/myTasks?p=${path}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
+      <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
+      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path}&n=${node.id}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
+      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
+      <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
+      <li id="current"><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
    </ul>
 </div>
 
 <div class="header">My Tasks<span class="headerExtra"><img src="${url.context}/images/office/task_overdue.gif" alt="overdue">=overdue, <img src="${url.context}/images/office/task_today.gif" alt="due today">=due today</span></div>
 
-<div id="taskList" class="listMedium">
+<div id="taskList" class="containerMedium">
    <table width="100%">
 <#assign taskNum=0>
 <#list workflow.assignedTasks?sort_by('startDate') as t>
@@ -73,7 +74,7 @@
 
 <div class="header">Workflow</div>
 
-<div class="listBig">
+<div class="containerBig">
    <div id="nonStatusText">
 <#if args.w?exists && d.isDocument>
       <div id="taskDetails">
@@ -90,18 +91,30 @@
          <div class="taskParameters">
             <div class="taskParam">Workflow:</div>
             <div class="taskValue">
-               <select id="wrkType" style="font-size: 9pt;">
-                  <option value="review">Review &amp; Approve</option>
+               <select id="wrkType" style="width: 178px;">
+                  <option value="review" selected>Review &amp; Approve</option>
                   <option value="adhoc">Adhoc Task</option>
                </select>
             </div>
             <div class="taskParam">Assign to:</div>
-            <div class="taskValue"><input id="wrkUser" type="text" style="font-size: 9pt;"/></div>
-            <div id="ajxUser" style="display: none;"><img src="${url.context}/images/office/ajax_anim.gif" alt="*" /></div>
+            <div class="taskValue">
+               <input id="wrkAssignTo" type="text" value="" />
+               <img id="ajxAssignTo" src="${url.context}/images/office/ajax_anim.gif" alt="*" style="display: none;" />
+            </div>
             <div class="taskParam">Due on:</div>
-            <div class="taskValue"><i>TODO: calendar picker</i></div>
+            <div class="taskValue">
+               <input type="text" id="wrkDueDate" value="" />
+               <img src="${url.context}/images/office/date.gif" alt="date" />
+            </div>
             <div class="taskParam">Description:</div>
-            <div class="taskValue"><textarea id="wrkDescription" style="font-size: 9pt;"></textarea></div>
+            <div class="taskValue"><textarea id="wrkDescription"></textarea></div>
+            <div class="taskParam">&nbsp;</div>
+            <div class="taskValue">
+               <a class="taskAction" href="#" onclick="OfficeMyTasks.startWorkflow('${url.serviceContext}/office/docActions', '${d.id}');">
+                  Submit
+               </a>
+            </div>
+
          </div>
       </div>
 <#else>

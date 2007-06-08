@@ -1,7 +1,7 @@
 <#if args.search?exists>
    <#assign searchString = args.search>
    <#if searchString != "">
-      <#assign queryString = "TEXT:\"${searchString}\" @cm\\:title:${searchString}">
+      <#assign queryString = "TEXT:\"${searchString}\" @cm\\:title:*${searchString}*">
    </#if>
 <#else>
    <#assign searchString = "">
@@ -35,7 +35,7 @@
                <#assign hrefExtra = " onClick=\"window.external.openDocument('${webdavPath}')\"">
             </#if>
          <#else>
-            <#assign openURL = "${url.context}/service/office/navigation?p=${args.p}&n=${child.id}&search=${searchString}&maxresults=${maxresults}">
+            <#assign openURL = "${url.serviceContext}/office/navigation?p=${args.p}&n=${child.id}&search=${searchString}&maxresults=${maxresults}">
             <#assign hrefExtra = "">
          </#if>
       <tr>

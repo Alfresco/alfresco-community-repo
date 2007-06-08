@@ -1,4 +1,4 @@
-<#assign doc_actions="${url.context}/service/office/docActions">
+<#assign doc_actions="${url.serviceContext}/office/docActions">
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
 <#if args.n?exists><#assign node=args.n><#else><#assign node=companyhome></#if>
 <#-- resolve the path (from Company Home) into a node -->
@@ -26,17 +26,17 @@
 
 <div id="tabBar">
    <ul>
-      <li id="current"><a title="My Alfresco" href="${url.context}/service/office/myAlfresco?p=${path}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li><a title="Browse Spaces and Documents" href="${url.context}/service/office/navigation?p=${path}&n=${d.id}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
-      <li><a title="Search Alfresco" href="${url.context}/service/office/search?p=${path}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
-      <li><a title="View Details" href="${url.context}/service/office/documentDetails?p=${path}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
-      <li><a title="My Tasks" href="${url.context}/service/office/myTasks?p=${path}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
+      <li id="current"><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
+      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path}&n=${d.id}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
+      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
+      <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
+      <li><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
    </ul>
 </div>
 
 <div class="header">My Checked Out Documents</div>
 
-<div class="listMedium">
+<div class="containerMedium">
    <table>
 <#assign rowNum=0>
 <#assign query="@cm\\:workingCopyOwner:${person.properties.userName}">
@@ -64,7 +64,7 @@
 
 <div class="header">My Tasks<span class="headerExtra"><img src="${url.context}/images/office/task_overdue.gif" alt="overdue">=overdue, <img src="${url.context}/images/office/task_today.gif" alt="due today">=due today</span></div>
 
-<div id="taskList" class="listMedium">
+<div id="taskList" class="containerMedium">
    <table width="100%">
 <#assign taskNum=0>
 <#list workflow.assignedTasks?sort_by('startDate') as t>
@@ -101,15 +101,42 @@
 <div class="header">Other Actions</div>
 
 <div id="documentActions">
-   <ul>
-      <li><a title="Save to Alfresco" href="${url.context}/service/office/navigation?p=${path}"><img src="${url.context}/images/office/save_to_alfresco.gif" alt="Save to Alfresco"><b>&nbsp;Save to Alfresco</b></a><br />Allows you to place the current document under Alfresco management.</li>
-      <li><a title="Browse Alfresco" href="${url.context}/service/office/navigation?p=${path}"><img src="${url.context}/images/office/navigator.gif" alt="Browse Alfresco"><b>&nbsp;Browse Alfresco</b></a><br />Navigate around the Alfresco repository for documents.</li>
-      <li><a title="Search" href="${url.context}/service/office/search?p=${path}"><img src="${url.context}/images/office/search.gif" alt="Search"><b>&nbsp;Find Documents</b></a><br />Search Alfresco for documents by name and content.</li>
-      <li><a title="Launch Alfresco" href="${url.context}/navigate/browse?ticket=${session.ticket}" target="_blank"><img src="${url.context}/images/logo/AlfrescoLogo16.gif" alt="Launch Alfresco"><b>&nbsp;Launch Alfresco</b></a><br />Start the Alfresco Web Client.</li>
-   </ul>
-</div>
+   <div id="nonStatusText">
+      <ul>
+         <li>
+            <a title="Save to Alfresco" href="${url.serviceContext}/office/navigation?p=${path}">
+               <img src="${url.context}/images/office/save_to_alfresco.gif" alt="Save to Alfresco">
+               Save to Alfresco
+            </a>
+            <br />Allows you to place the current document under Alfresco management.
+         </li>
+         <li>
+            <a title="Browse Alfresco" href="${url.serviceContext}/office/navigation?p=${path}">
+               <img src="${url.context}/images/office/navigator.gif" alt="Browse Alfresco">
+               Browse Alfresco
+            </a>
+            <br />Navigate around the Alfresco repository for documents.
+         </li>
+         <li>
+            <a title="Search" href="${url.serviceContext}/office/search?p=${path}">
+               <img src="${url.context}/images/office/search.gif" alt="Search">
+               Find Documents
+            </a>
+            <br />Search Alfresco for documents by name and content.
+         </li>
+         <li>
+            <a title="Launch Alfresco" href="${url.context}/navigate/browse?ticket=${session.ticket}" target="_blank">
+               <img src="${url.context}/images/logo/AlfrescoLogo16.gif" alt="Launch Alfresco">
+               Launch Alfresco
+            </a>
+            <br />Start the Alfresco Web Client.
+         </li>
+      </ul>
+   </div>
 
-<div id="statusText"></div>
+   <div id="statusText"></div>
+
+</div>
 
 </body>
 </html>

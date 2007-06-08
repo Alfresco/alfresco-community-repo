@@ -1,4 +1,4 @@
-<#assign doc_actions="${url.context}/service/office/docActions">
+<#assign doc_actions="${url.serviceContext}/office/docActions">
 <#if node.isDocument>
    <#assign thisSpace = node.parent>
 <#else>
@@ -16,11 +16,11 @@
 
 <div id="tabBar">
    <ul>
-      <li><a title="My Alfresco" href="${url.context}/service/office/myAlfresco?p=${path}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li id="current"><a title="Browse Spaces and Documents" href="${url.context}/service/office/navigation?p=${path}&n=${node.id}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
-      <li><a title="Search Alfresco" href="${url.context}/service/office/search?p=${path}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
-      <li><a title="View Details" href="${url.context}/service/office/documentDetails?p=${path}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
-      <li><a title="My Tasks" href="${url.context}/service/office/myTasks?p=${path}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
+      <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
+      <li id="current"><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path}&n=${node.id}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
+      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
+      <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
+      <li><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
    </ul>
 </div>
 
@@ -38,7 +38,7 @@
          <td width="34" align="right">
 <#if thisSpace=companyhome>
 <#else>
-            <a title="Up to Parent Space" href="${url.context}/service/office/navigation?p=${path}&n=${thisSpace.parent.id}">
+            <a title="Up to Parent Space" href="${url.serviceContext}/office/navigation?p=${path}&n=${thisSpace.parent.id}">
                <img src="${url.context}/images/office/go_up.gif" alt="Up to Parent Space" />
                <span>Up</span>
             </a>
@@ -50,7 +50,7 @@
 
 <div class="header">Spaces in ${thisSpace.name}<span class="headerExtra"><span class="toggle"></span></span></div>
 
-<div id="spaceList" class="listMedium">
+<div id="spaceList" class="containerMedium">
    <table>
 <#assign spacesFound = 0>
 <#list thisSpace.children as child>
@@ -58,10 +58,10 @@
       <#assign spacesFound = spacesFound + 1>
       <tr class="${(spacesFound % 2 = 0)?string("odd", "even")}">
          <td>
-            <a href="${url.context}/service/office/navigation?p=${path}&n=${child.id}"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
+            <a href="${url.serviceContext}/office/navigation?p=${path}&n=${child.id}"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
          </td>
          <td width="100%">
-            <a href="${url.context}/service/office/navigation?p=${path}&n=${child.id}" title="Open ${child.name}">
+            <a href="${url.serviceContext}/office/navigation?p=${path}&n=${child.id}" title="Open ${child.name}">
                <span class="bold">${child.name}</span>
             </a>
       <#if child.properties.description?exists>
@@ -81,7 +81,7 @@
 
 <div class="header">Documents in ${thisSpace.name}<span class="headerExtra"><span class="toggle"></span></span></div>
 
-<div id="documentList" class="listMedium">
+<div id="documentList" class="containerMedium">
    <table>
 <#assign documentsFound = 0>
 <#list thisSpace.children as child>
@@ -135,14 +135,26 @@
 
 <div class="header">Document Actions</div>
 
+<#assign currentPath = thisSpace.displayPath  + '/' + thisSpace.name />
+<#assign webdavPath = currentPath?substring(13)?url('ISO-8859-1')?replace('%2F', '/')?replace('\'', '\\\'') />
 <div id="documentActionsNavigation">
    <div id="nonStatusText">
       <ul>
-<#assign currentPath = thisSpace.displayPath  + '/' + thisSpace.name />
-<#assign webdavPath = currentPath?substring(13)?url('ISO-8859-1')?replace('%2F', '/')?replace('\'', '\\\'') />
-         <li><a href="#" onClick="window.external.saveToAlfresco('${webdavPath}')"><img src="${url.context}/images/office/save_to_alfresco.gif" style="padding-right:6px;" alt="Save to Alfresco">Save to Alfresco</a></li>
+         <li>
+            <a href="#" onClick="window.external.saveToAlfresco('${webdavPath}')">
+               <img src="${url.context}/images/office/save_to_alfresco.gif" alt="Save to Alfresco">
+               Save to Alfresco
+            </a>
+            <br />Allows you to place the current document under Alfresco management.
+         </li>
     <#if args.search?exists>
-         <li><a href="${url.context}/service/office/search?p=${path}&searchagain=${args.search}&maxresults=${args.maxresults}"><img src="${url.context}/images/office/search_again.gif" style="padding-right:6px;" alt="Back to results">Back to search results</a></li>
+         <li>
+            <a href="${url.serviceContext}/office/search?p=${path}&searchagain=${args.search}&maxresults=${args.maxresults}">
+               <img src="${url.context}/images/office/search_again.gif" alt="Back to results">
+               Back to search results
+            </a>
+            <br />Return to the search tab.
+         </li>
     </#if>
       </ul>
    </div>

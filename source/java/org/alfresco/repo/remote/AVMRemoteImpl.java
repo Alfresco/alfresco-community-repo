@@ -332,12 +332,30 @@ public class AVMRemoteImpl implements AVMRemote
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMRemote#lookup(int, java.lang.String, boolean)
+     */
+    public AVMNodeDescriptor lookup(int version, String path, boolean includeDeleted) 
+    {
+        return fTransport.lookup(fTicketHolder.getTicket(), version, path, includeDeleted);
+    }
+
+
+    /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#lookup(org.alfresco.service.cmr.avm.AVMNodeDescriptor, java.lang.String)
      */
     public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name) 
     {
         return fTransport.lookup(fTicketHolder.getTicket(), dir, name);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMRemote#lookup(org.alfresco.service.cmr.avm.AVMNodeDescriptor, java.lang.String, boolean includeDeleted)
+     */
+    public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name, boolean includeDeleted) 
+    {
+        return fTransport.lookup(fTicketHolder.getTicket(), dir, name, includeDeleted);
+    }
+
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#makePrimary(java.lang.String)

@@ -66,12 +66,12 @@ public interface LinkValidationService
     *             'status' may be polled in a separate thread to 
     *             observe its progress.
     */
-    public void updateHrefInfo( String  storeNameOrWebappPath,
-                                boolean incremental,
-                                int     connectTimeout,
-                                int     readTimeout,
-                                int     nthreads,
-                                UpdateHrefInfoStatus status
+    public void updateHrefInfo( String   storeNameOrWebappPath,
+                                boolean  incremental,
+                                int      connectTimeout,
+                                int      readTimeout,
+                                int      nthreads,
+                                HrefValidationProgress progress
                               ) 
                 throws AVMNotFoundException;
 
@@ -208,9 +208,11 @@ public interface LinkValidationService
     *  Don't use yet - does nothing at the moment.
     */
     public BrokenHrefConcordanceDifference getBrokenHrefConcordanceDifference(
-                                               int srcVersion, String srcPath,
-                                               int dstVersion, String dstPath,
-                                               NameMatcher     excluder) 
+                                               int         srcVersion, 
+                                               String      srcPath,
+                                               int         dstVersion, 
+                                               String      dstPath,
+                                               HrefValidationProgress progress)
                                            throws AVMNotFoundException;
 }
 

@@ -318,11 +318,27 @@ public class AVMRemoteLocal implements AVMRemote
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMRemote#lookup(int, java.lang.String, boolean)
+     */
+    public AVMNodeDescriptor lookup(int version, String path, boolean includeDeleted) 
+    {
+        return fService.lookup(version, path, includeDeleted);
+    }
+
+    /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#lookup(org.alfresco.service.cmr.avm.AVMNodeDescriptor, java.lang.String)
      */
     public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name) 
     {
         return fService.lookup(dir, name);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMRemote#lookup(org.alfresco.service.cmr.avm.AVMNodeDescriptor, java.lang.String, boolean includeDeleted)
+     */
+    public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name, boolean includeDeleted) 
+    {
+        return fService.lookup(dir, name, includeDeleted);
     }
 
     /* (non-Javadoc)

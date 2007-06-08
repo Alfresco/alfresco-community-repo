@@ -704,6 +704,23 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
         fAuthService.validate(ticket);
         return fAVMService.lookup(version, path);
     }
+
+    /**
+     * Lookup a node identified by version ID and path; optionally,
+     * if the node is deleted, its descriptor can still
+     * be retrieved. 
+     *
+     * @param version        The version ID to look under.
+     * @param path           The simple absolute path to the parent directory.
+     * @param includeDeleted Whether to allow a deleted node to be retrieved
+     * @return               An AVMNodeDescriptor, or null if the version does not exist.
+     */
+    public AVMNodeDescriptor lookup(String ticket, int version, String path, boolean includeDeleted) 
+    {
+        fAuthService.validate(ticket);
+        return fAVMService.lookup(version, path, includeDeleted);
+    }
+
     
     /**
      * Get a descriptor for the specified node.
@@ -716,6 +733,25 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
         fAuthService.validate(ticket);
         return fAVMService.lookup(dir, name);
     }
+
+    /**
+     * Lookup a node identified by the directory that contains it, and its name;
+     * optionally, the lookup can retrive the descriptor of a node even if 
+     * it has been deleted from its containing directory.
+     *
+     * @param dir            The descriptor for the directory node.
+     * @param name           The name to lookup.
+     * @param includeDeleted Whether to allow a deleted node to be retrieved via the lookup
+     * @return               The descriptor for the child, null if the child doesn't exist.
+     * @throws               AVMNotFoundException
+     * @throws               AVMWrongTypeException
+     */
+    public AVMNodeDescriptor lookup(String ticket, AVMNodeDescriptor dir, String name, boolean includeDeleted) 
+    {
+        fAuthService.validate(ticket);
+        return fAVMService.lookup(dir, name, includeDeleted);
+    }
+
     
     /**
      * Get the indirection path for a node.

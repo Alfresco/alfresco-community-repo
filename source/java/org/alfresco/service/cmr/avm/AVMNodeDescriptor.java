@@ -253,6 +253,11 @@ public class AVMNodeDescriptor implements Serializable
     /**
      * Determines whether this node corresponds to
      * either a plain or layered file.   
+     * <p>
+     * NOTE:  A deleted file node is <em>not</em> considered a file 
+     * (i.e.: isFile() returns false when isDeleted() returns true).  
+     * Therefore, use isDeletedFile() to determine if a deleted node 
+     * was a file, not isFile().
      *
      * @return true if AVMNodeDescriptor is a plain or layered file,
      *         otherwise false.
@@ -289,7 +294,12 @@ public class AVMNodeDescriptor implements Serializable
 
     /**
      * Determines whether this node corresponds to
-     * either a plain or layered directory.   
+     * either a plain or layered directory. 
+     * <p>
+     * NOTE:  A deleted directory node is <em>not</em> considered a directory 
+     * (i.e.: isDirectory() returns false when isDeleted() returns true).  
+     * Therefore, use isDeletedDirectory() to determine if a deleted node 
+     * was a directory, not isDirectory().
      *
      * @return true if AVMNodeDescriptor is a plain or layered directory,
      *         otherwise false.

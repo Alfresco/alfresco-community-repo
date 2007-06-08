@@ -249,12 +249,14 @@
           class="org.alfresco.repo.avm.wf.AVMSubmitTransactionListener"/>
 
 
-	<!-- NameMatcher beans for filtering what shows up as different in compares. -->
-	
+    <!-- NameMatcher beans for filtering what shows up as different in compares. -->
     <bean id="excludeRegexMatcher" class="org.alfresco.util.RegexNameMatcher">
-        <property name="patterns">
+        <property name="patterns">        
+            <!-- 
+            NOTE:  Regexes are implicitly anchored with ^ and $ in this context.
+            -->
             <list>
-            	<value>.*/#.*</value>
+            	<value>.*/#[^/]*</value>    <!-- A leaf starting with '#' -->
             </list>
         </property>
     </bean>

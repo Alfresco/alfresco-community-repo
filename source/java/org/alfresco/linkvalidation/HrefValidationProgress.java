@@ -22,7 +22,7 @@
 *  
 *  
 *  Author  Jon Cox  <jcox@alfresco.com>
-*  File    UpdateHrefInfoStatus.java
+*  File    HrefValidationProgress.java
 *----------------------------------------------------------------------------*/
 
 package org.alfresco.linkvalidation;
@@ -43,10 +43,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 *  call to updateHrefInfo() has completed by examining
 *  the value returned by isDone().
 *  <p>
-*  Note:  It is safest to instantiate a fresh UpdateHrefInfoStatus 
+*  Note:  It is safest to instantiate a fresh HrefValidationProgress 
 *  object for every invocation of updateHrefInfo().
 */
-public class UpdateHrefInfoStatus
+public class HrefValidationProgress
 {
     AtomicInteger webapp_update_count_;
     AtomicInteger dir_update_count_;
@@ -54,7 +54,7 @@ public class UpdateHrefInfoStatus
     AtomicInteger url_update_count_;
     AtomicBoolean is_done_;
 
-    public UpdateHrefInfoStatus() 
+    public HrefValidationProgress() 
     {
         webapp_update_count_ = new AtomicInteger();
         dir_update_count_    = new AtomicInteger();

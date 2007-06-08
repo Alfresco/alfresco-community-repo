@@ -409,6 +409,7 @@
             <show-link>false</show-link>
             <!-- add the edit form action -->
             <action idref="edit_form"/>
+            <action idref="regenerate_renditions"/>
             <!-- hide the cut and copy operations for web form -->
             <action idref="cut_node" hide="true" />
             <action idref="copy_node" hide="true" />
@@ -418,6 +419,7 @@
          <action-group id="browse_actions_menu">
             <!-- add the edit form action -->
             <action idref="edit_form" />
+            <action idref="regenerate_renditions" />
             <!-- hide the cut and copy operations for web form -->
             <action idref="cut_node" hide="true" />
             <action idref="copy_node" hide="true" />
@@ -427,11 +429,11 @@
          <action-group id="space_details_actions">
             <!-- add the edit form action -->
             <action idref="edit_form" />
+            <action idref="regenerate_renditions" />
             <!-- hide the cut and copy operations for web form -->
             <action idref="cut_node" hide="true" />
             <action idref="copy_node" hide="true" />
          </action-group>
-      
       </actions>
    </config>
 

@@ -38,7 +38,6 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
@@ -96,8 +95,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
    protected String description;
    protected String webapp = WEBAPP_DEFAULT;
    protected List<String> deployTo;
-   
-   protected String websitesFolderId = null;
    
    protected AVMService avmService;
    protected WorkflowService workflowService;
@@ -163,10 +160,10 @@ public class CreateWebsiteWizard extends BaseWizardBean
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       // create the website space in the correct parent folder
-      String websiteParentId = getWebsitesFolderId();
+      final NodeRef websiteParent = WebProject.getWebsitesFolder();
       
       FileInfo fileInfo = this.fileFolderService.create(
-            new NodeRef(Repository.getStoreRef(), websiteParentId),
+            websiteParent,
             this.name,
             WCMAppModel.TYPE_AVMWEBFOLDER);
       NodeRef nodeRef = fileInfo.getNodeRef();
@@ -218,7 +215,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          saveWebProjectModel(nodeRef);
          
          // navigate to the Websites folder so we can see the newly created folder
-         this.navigator.setCurrentNodeId(websiteParentId);
+         this.navigator.setCurrentNodeId(websiteParent.getId());
          
          outcome = AlfrescoNavigationHandler.CLOSE_WIZARD_OUTCOME;
       }
@@ -802,37 +799,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
    
    // ------------------------------------------------------------------------------
    // Helper methods
-   
-   /**
-    * Helper to get the ID of the 'Websites' system folder
-    * 
-    * @return ID of the 'Websites' system folder
-    * 
-    * @throws AlfrescoRuntimeException if unable to find the required folder
-    */
-   private String getWebsitesFolderId()
-   {
-      if (this.websitesFolderId == null)
-      {
-         // get the template from the special Content Templates folder
-         FacesContext fc = FacesContext.getCurrentInstance();
-         String xpath = Application.getRootPath(fc) + "/" + Application.getWebsitesFolderName(fc);
-         
-         NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
-         NamespaceService resolver = Repository.getServiceRegistry(fc).getNamespaceService();
-         List<NodeRef> results = this.searchService.selectNodes(rootNodeRef, xpath, null, resolver, false);
-         if (results.size() == 1)
-         {
-            this.websitesFolderId = results.get(0).getId();
-         }
-         else
-         {
-            throw new AlfrescoRuntimeException("Unable to find 'Websites' system folder at: " + xpath);
-         }
-      }
-      
-      return this.websitesFolderId;
-   }
    
    
    // ------------------------------------------------------------------------------

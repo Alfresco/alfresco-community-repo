@@ -33,6 +33,7 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.sandbox.SandboxConstants;
@@ -42,7 +43,14 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.data.IDataContainer;
@@ -52,6 +60,8 @@ import org.alfresco.web.forms.FormImpl;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.forms.RenderingEngineTemplateImpl;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Provides configured data for a web project.
@@ -165,6 +175,9 @@ public class WebProject
 
    /////////////////////////////////////////////////////////////////////////////
 
+   private final static Log LOGGER = LogFactory.getLog(WebProject.class); 
+   private static String websitesFolderId;
+
    private final NodeRef nodeRef;
 
    public WebProject(final NodeRef nodeRef)
@@ -181,6 +194,16 @@ public class WebProject
    }
 
    /**
+    * Returns the noderef for the webproject
+    *
+    * @return the noderef for the webproject.
+    */
+   public NodeRef getNodeRef()
+   {
+      return this.nodeRef;
+   }
+
+   /**
     * Returns the name of the web project.
     *
     * @return the name of the web project.
@@ -190,6 +213,30 @@ public class WebProject
       final ServiceRegistry serviceRegistry = this.getServiceRegistry();
       final NodeService nodeService = serviceRegistry.getNodeService();
       return (String)nodeService.getProperty(this.nodeRef, ContentModel.PROP_NAME);
+   }
+
+   /**
+    * Returns the title of the web project.
+    *
+    * @return the title of the web project.
+    */
+   public String getTitle()
+   {
+      final ServiceRegistry serviceRegistry = this.getServiceRegistry();
+      final NodeService nodeService = serviceRegistry.getNodeService();
+      return (String)nodeService.getProperty(this.nodeRef, ContentModel.PROP_TITLE);
+   }
+
+   /**
+    * Returns the description of the web project.
+    *
+    * @return the description of the web project.
+    */
+   public String getDescription()
+   {
+      final ServiceRegistry serviceRegistry = this.getServiceRegistry();
+      final NodeService nodeService = serviceRegistry.getNodeService();
+      return (String)nodeService.getProperty(this.nodeRef, ContentModel.PROP_DESCRIPTION);
    }
 
    /**
@@ -221,8 +268,8 @@ public class WebProject
     */
    public List<Form> getForms()
    {
-      List forms = new ArrayList(this.getFormsImpl().values());
-      QuickSort sorter = new QuickSort(forms, "name", true, IDataContainer.SORT_CASEINSENSITIVE);
+      final List forms = new ArrayList(this.getFormsImpl().values());
+      final QuickSort sorter = new QuickSort(forms, "name", true, IDataContainer.SORT_CASEINSENSITIVE);
       sorter.sort();
       return Collections.unmodifiableList(forms);
    }
@@ -290,6 +337,60 @@ public class WebProject
          nodeService.getProperty(this.nodeRef, WCMAppModel.PROP_DEFAULTWEBAPP);
    }
 
+   /**
+    * Helper to get the ID of the 'Websites' system folder
+    * 
+    * @return ID of the 'Websites' system folder
+    * 
+    * @throws AlfrescoRuntimeException if unable to find the required folder
+    */
+   public static NodeRef getWebsitesFolder()
+   {
+      if (WebProject.websitesFolderId == null)
+      {
+         // get the template from the special Content Templates folder
+         final FacesContext fc = FacesContext.getCurrentInstance();
+         final String xpath = Application.getRootPath(fc) + "/" + Application.getWebsitesFolderName(fc);
+         
+         final NodeRef rootNodeRef = WebProject.getServiceRegistry().getNodeService().getRootNode(Repository.getStoreRef());
+         final NamespaceService resolver = Repository.getServiceRegistry(fc).getNamespaceService();
+         final List<NodeRef> results = WebProject.getServiceRegistry().getSearchService().selectNodes(rootNodeRef, xpath, null, resolver, false);
+         if (results.size() == 1)
+         {
+            WebProject.websitesFolderId = results.get(0).getId();
+         }
+         else
+         {
+            throw new AlfrescoRuntimeException("Unable to find 'Websites' system folder at: " + xpath);
+         }
+      }
+      
+      return new NodeRef(Repository.getStoreRef(), WebProject.websitesFolderId);
+   }
+
+   public static List<WebProject> getWebProjects()
+   {
+      final ServiceRegistry serviceRegistry = WebProject.getServiceRegistry();
+      final SearchParameters sp = new SearchParameters();
+      sp.addStore(Repository.getStoreRef());
+      sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+      sp.setQuery("+TYPE:\"" + WCMAppModel.TYPE_AVMWEBFOLDER + 
+                  "\" +PARENT:\"" + WebProject.getWebsitesFolder() + "\"");
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("running query [" + sp.getQuery() + "]");
+      final ResultSet rs = serviceRegistry.getSearchService().query(sp);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("received " + rs.length() + " results");
+      final List<WebProject> result = new ArrayList<WebProject>(rs.length());
+      for (ResultSetRow row : rs)
+      {
+         result.add(new WebProject(row.getNodeRef()));
+      }
+      QuickSort sorter = new QuickSort((List)result, "name", true, IDataContainer.SORT_CASEINSENSITIVE);
+      sorter.sort();
+      return result;
+   }
+
    private Map<String, Form> getFormsImpl()
    {
       final ServiceRegistry serviceRegistry = this.getServiceRegistry();
@@ -309,9 +410,21 @@ public class WebProject
       return result;
    }
 
-   private ServiceRegistry getServiceRegistry()
+   private static ServiceRegistry getServiceRegistry()
    {
       final FacesContext fc = FacesContext.getCurrentInstance();
       return Repository.getServiceRegistry(fc);
+   }
+
+   public boolean equals(final Object other)
+   {
+      return (other != null && 
+              other instanceof WebProject && 
+              this.getNodeRef().equals(((WebProject)other).getNodeRef()));
+   }
+
+   public int hashCode()
+   {
+      return this.nodeRef.hashCode();
    }
 }

@@ -186,7 +186,8 @@ public final class FormsService
       final SearchParameters sp = new SearchParameters();
       sp.addStore(Repository.getStoreRef());
       sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-      sp.setQuery("ASPECT:\"" + WCMAppModel.ASPECT_FORM + "\"");
+      sp.setQuery("+ASPECT:\"" + WCMAppModel.ASPECT_FORM + 
+                  "\" +PARENT:\"" + this.getContentFormsNodeRef() + "\"");
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("running query [" + sp.getQuery() + "]");
       final ResultSet rs = this.searchService.query(sp);

@@ -405,6 +405,8 @@ public class CreateWebContentWizard extends BaseContentWizard
                                                            this.nodeService);
 
                   parameters.put(WorkflowModel.ASSOC_PACKAGE, packageNodeRef);
+                  parameters.put(WCMWorkflowModel.ASSOC_WEBPROJECT, 
+                                 this.avmBrowseBean.getWebsite().getNodeRef());
                   // TODO: capture label and comment?
                   parameters.put(WCMWorkflowModel.PROP_LABEL, 
                                  MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null 

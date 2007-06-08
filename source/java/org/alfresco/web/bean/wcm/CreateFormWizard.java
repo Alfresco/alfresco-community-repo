@@ -1044,8 +1044,7 @@ public class CreateFormWizard
       {
          // get list of workflows from config definitions
          final List<WorkflowDefinition> workflowDefs = AVMWorkflowUtil.getConfiguredWorkflows();
-         this.defaultWorkflowChoices = new ArrayList<UIListItem>(workflowDefs.size() + 1);
-         
+         this.defaultWorkflowChoices = new ArrayList<UIListItem>(workflowDefs.size());
          for (WorkflowDefinition workflowDef : workflowDefs)
          {
             final UIListItem item = new UIListItem();

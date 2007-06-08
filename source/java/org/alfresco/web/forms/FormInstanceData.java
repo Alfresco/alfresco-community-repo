@@ -38,6 +38,49 @@ public interface FormInstanceData
    extends Serializable
 {
 
+   /////////////////////////////////////////////////////////////////////////////
+
+   public static class RegenerateResult
+   {
+
+      private final RenderingEngineTemplate ret;
+      private final Rendition r;
+      private final Exception e;
+
+      public RegenerateResult(final RenderingEngineTemplate ret, 
+                              final Rendition r)
+      {
+         this.ret = ret;
+         this.r = r;
+         this.e = null;
+      }
+
+      public RegenerateResult(final RenderingEngineTemplate ret,
+                              final Exception e)
+      {
+         this.ret = ret;
+         this.e = e;
+         this.r = null;
+      }
+
+      public RenderingEngineTemplate getRenderingEngineTemplate()
+      {
+         return this.ret;
+      }
+
+      public Rendition getRendition()
+      {
+         return this.r;
+      }
+
+      public Exception getException()
+      {
+         return this.e;
+      }
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+
    /** the form generate this form instance data */
    public Form getForm();
 
@@ -59,6 +102,9 @@ public interface FormInstanceData
    /** returns the parsed form instance data */
    public Document getDocument()
       throws IOException, SAXException;
+
+   /** Regenerates all renditions of this form instance data */
+   public List<RegenerateResult> regenerateRenditions();
 
    /** returns all renditions of this form instance data */
    public List<Rendition> getRenditions();

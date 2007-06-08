@@ -19,7 +19,8 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's
  * FLOSS exception.  You should have recieved a copy of the text describing
  * the FLOSS exception, and it is also available here:
- * http://www.alfresco.com/legal/licensing" */
+ * http://www.alfresco.com/legal/licensing" 
+ */
 package org.alfresco.web.forms;
 
 import java.io.FileNotFoundException;
@@ -35,6 +36,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.Pair;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.ui.common.Utils;
@@ -63,6 +65,11 @@ public class RenditionImpl
          throw new NullPointerException();
       }
       this.nodeRef = nodeRef;
+   }
+
+   public RenditionImpl(final int version, final String avmPath)
+   {
+      this(AVMNodeConverter.ToNodeRef(version, avmPath));
    }
 
    /** the name of this rendition */
@@ -118,9 +125,22 @@ public class RenditionImpl
          final NodeRef retNodeRef = (NodeRef)
             nodeService.getProperty(this.nodeRef, 
                                     WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE);
+         if (retNodeRef == null)
+         {
+            LOGGER.debug("unable to locate parent rendering engine template of rendition " +
+                         this.getPath());
+            return null;
+         }
+
          final NodeRef rpNodeRef = (NodeRef)
             nodeService.getProperty(this.nodeRef, 
                                     WCMAppModel.PROP_PARENT_RENDITION_PROPERTIES);
+         if (rpNodeRef == null)
+         {
+            LOGGER.debug("unable to locate parent rendering engine template properties of rendition " +
+                         this.getPath());
+            return null;
+         }
          this.renderingEngineTemplate = new RenderingEngineTemplateImpl(retNodeRef, rpNodeRef);
       }
       return this.renderingEngineTemplate;
@@ -149,7 +169,12 @@ public class RenditionImpl
 
    public OutputStream getOutputStream()
    {
-      return this.getServiceRegistry().getAVMService().getFileOutputStream(this.getPath());
+      final AVMService avmService = this.getServiceRegistry().getAVMService();
+      final Pair<Integer, String> p = AVMNodeConverter.ToAVMVersionPath(this.nodeRef);
+      return (avmService.lookup(p.getFirst(), p.getSecond()) == null
+              ? avmService.createFile(AVMNodeConverter.SplitBase(p.getSecond())[0],
+                                      AVMNodeConverter.SplitBase(p.getSecond())[1])
+              : avmService.getFileOutputStream(this.getPath()));
    }
 
    public void regenerate()
@@ -173,5 +198,18 @@ public class RenditionImpl
    {
       final FacesContext fc = FacesContext.getCurrentInstance();
       return Repository.getServiceRegistry(fc);
+   }
+
+   public int hashCode()
+   {
+      return this.getPath().hashCode() ^ this.getRenderingEngineTemplate().hashCode();
+   }
+
+   public String toString()
+   {
+      return (this.getClass().getName() + 
+              "{path : " + this.getPath() + 
+              ", rendering_engine_template : " + this.getRenderingEngineTemplate() +
+              "}");
    }
 }

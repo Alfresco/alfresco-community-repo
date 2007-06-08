@@ -59,6 +59,7 @@ public class SelectListTag extends HtmlComponentTag
       setStringProperty(component, "itemStyle", this.itemStyle);
       setStringProperty(component, "itemStyleClass", this.itemStyleClass);
       setStringProperty(component, "value", this.value);
+      setStringProperty(component, "onchange", this.onchange);
    }
    
    /**
@@ -73,6 +74,7 @@ public class SelectListTag extends HtmlComponentTag
       this.itemStyle = null;
       this.itemStyleClass = null;
       this.value = null;
+      this.onchange = null;
    }
 
    /**
@@ -135,6 +137,16 @@ public class SelectListTag extends HtmlComponentTag
       this.value = value;
    }
 
+   /**
+    * Set the onchange handler
+    *
+    * @param value the onchange handler.
+    */
+   public void setOnchange(final String onchange)
+   {
+      this.onchange = onchange;
+   }
+
    /** the selected value */
    private String value;
 
@@ -152,4 +164,7 @@ public class SelectListTag extends HtmlComponentTag
    
    /** the variable name for row item context */
    private String var;
+
+   /** the event handler for a change in selection */
+   private String onchange;
 }

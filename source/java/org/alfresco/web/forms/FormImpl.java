@@ -19,7 +19,8 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's
  * FLOSS exception.  You should have recieved a copy of the text describing
  * the FLOSS exception, and it is also available here:
- * http://www.alfresco.com/legal/licensing */
+ * http://www.alfresco.com/legal/licensing 
+ */
 package org.alfresco.web.forms;
 
 import freemarker.ext.dom.NodeModel;

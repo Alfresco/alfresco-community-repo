@@ -419,7 +419,27 @@
                      instruction-id="content_finish_instruction" />
             </step>
          </wizard>
-         
+
+         <!-- Definition of the create form wizard -->
+         <wizard name="regenerateRenditions" managed-bean="RegenerateRenditionsWizard"
+                 title-id="regenerate_renditions_title" description-id="regenerate_renditions_desc"
+                 icon="/images/icons/regenerate_renditions_large.gif">
+           <step name="select_renditions" 
+                 title-id="regenerate_renditions_select_renditions_title" 
+                 description-id="regenerate_renditions_select_renditions_desc">
+                 <page path="/jsp/wcm/regenerate-renditions-wizard/select_renditions.jsp" 
+                       title-id="regenerate_renditions_select_renditions_step_title"
+                       description-id="regenerate_renditions_select_renditions_desc"
+                       instruction-id="regenerate_renditions_select_renditions_instruction" />
+           </step>
+           <step name="summary" title-id="summary" description-id="summary_step_description">
+             <page path="/jsp/wcm/regenerate-renditions-wizard/summary.jsp"
+                   title-id="summary"
+                   description-id="regenerate_renditions_summary_desc"
+                   instruction-id="regenerate_renditions_summary_instruction" />
+           </step>
+      </wizard>
+      
          <!-- Definition of the Dashboard Layout wizard -->
          <wizard name="configureDashboard" managed-bean="DashboardWizard"
                  title-id="configure_dashboard_title" description-id="configure_dashboard_desc"

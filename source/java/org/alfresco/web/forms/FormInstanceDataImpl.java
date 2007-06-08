@@ -119,6 +119,61 @@ public class FormInstanceDataImpl
       return AVMUtil.buildAssetUrl(this.getPath());
    }
 
+   public List<FormInstanceData.RegenerateResult> regenerateRenditions()
+   {
+
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("regenerating renditions of " + this);
+      String originalParentAvmPath = (String)
+         this.getServiceRegistry().getNodeService().getProperty(this.getNodeRef(), 
+                                                                WCMAppModel.PROP_ORIGINAL_PARENT_PATH);
+      if (originalParentAvmPath == null)
+      {
+         originalParentAvmPath = AVMNodeConverter.SplitBase(this.getPath())[0];
+      }
+      final HashSet<RenderingEngineTemplate> allRets = 
+         new HashSet<RenderingEngineTemplate>(this.getForm().getRenderingEngineTemplates());
+      final List<RegenerateResult> result = new LinkedList<RegenerateResult>();
+      // regenerate existing renditions
+      for (final Rendition r : this.getRenditions())
+      {
+         final RenderingEngineTemplate ret = r.getRenderingEngineTemplate();
+         if (ret == null || !allRets.contains(ret))
+         {
+            continue;
+         }
+         try
+         {
+            LOGGER.debug("regenerating rendition " + r + " using template " + ret);
+            ret.render(this, r);
+            allRets.remove(ret);
+            result.add(new RegenerateResult(ret, r));
+         }
+         catch (Exception e)
+         {
+            result.add(new RegenerateResult(ret, e));
+         }
+      }
+
+      // render all renditions for newly added templates
+      for (final RenderingEngineTemplate ret : allRets)
+      {
+         try
+         {
+            final String path = ret.getOutputPathForRendition(this, originalParentAvmPath);
+            LOGGER.debug("regenerating rendition of " + this.getPath() + 
+                         " at " + path + " using template " + ret);
+            
+            result.add(new RegenerateResult(ret, ret.render(this, path)));
+         }
+         catch (Exception e)
+         {
+            result.add(new RegenerateResult(ret, e));
+         }
+      }
+      return result;
+   }
+
    public List<Rendition> getRenditions()
    {
       final AVMService avmService = this.getServiceRegistry().getAVMService();
@@ -131,8 +186,18 @@ public class FormInstanceDataImpl
       final List<Rendition> result = new ArrayList<Rendition>(renditionPaths.size());
       for (Serializable path : renditionPaths)
       {
-         result.add(new RenditionImpl(AVMNodeConverter.ToNodeRef(-1, storeName + ':' + (String)path)));
-         
+         if (avmService.lookup(-1, storeName + ':' + (String)path) != null)
+         {
+            final Rendition r = new RenditionImpl(AVMNodeConverter.ToNodeRef(-1, storeName + ':' + (String)path));
+            if (r.getRenderingEngineTemplate() != null)
+            {
+               result.add(r);
+            }
+         }
+         else
+         {
+            LOGGER.debug("ignoring dangling rendition at " + storeName + ':' + (String)path);
+         }
       }
       return result;
    }
@@ -141,5 +206,16 @@ public class FormInstanceDataImpl
    {
       final FacesContext fc = FacesContext.getCurrentInstance();
       return Repository.getServiceRegistry(fc);
+   }
+
+   public int hashCode()
+   {
+      return this.getPath().hashCode() ^ this.getForm().hashCode();
+   }
+
+   public String toString()
+   {
+      return (this.getClass().getName() + "{path : " + this.getPath() +
+              ", form : " + this.getForm().getName() + "}");
    }
 }

@@ -27,6 +27,7 @@ package org.alfresco.web.ui.common.component;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.faces.component.NamingContainer;
@@ -65,7 +66,7 @@ public class UISelectList extends UIInput implements NamingContainer
    private Boolean activeSelect;
    private int rowIndex = -1;
    private int itemCount;
-   
+   private String onchange = null;
    
    // ------------------------------------------------------------------------------
    // Component Impl 
@@ -97,6 +98,7 @@ public class UISelectList extends UIInput implements NamingContainer
       this.multiSelect = (Boolean)values[1];
       this.activeSelect = (Boolean)values[2];
       this.itemCount = (Integer)values[3];
+      this.onchange = (String)values[4];
    }
    
    /**
@@ -104,13 +106,14 @@ public class UISelectList extends UIInput implements NamingContainer
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[4];
-      // standard component attributes are saved by the super class
-      values[0] = super.saveState(context);
-      values[1] = this.multiSelect;
-      values[2] = this.activeSelect;
-      values[3] = this.itemCount;
-      return (values);
+      return new Object[] 
+      { 
+         super.saveState(context),
+         this.multiSelect,
+         this.activeSelect,
+         this.itemCount,
+         this.onchange
+      };
    }
    
    /**
@@ -124,11 +127,7 @@ public class UISelectList extends UIInput implements NamingContainer
    {
       String clientId = super.getClientId(context);
       int rowIndex = getRowIndex();
-      if (rowIndex == -1)
-      {
-         return clientId;
-      }
-      return clientId + "_" + rowIndex;
+      return (rowIndex == -1 ? clientId : clientId + "_" + rowIndex);
    }
    
    /**
@@ -144,9 +143,8 @@ public class UISelectList extends UIInput implements NamingContainer
       }
       
       setRowIndex(-1);
-      for (Iterator itr=getChildren().iterator(); itr.hasNext(); /**/)
+      for (UIComponent child : (List<UIComponent>)this.getChildren())
       {
-         UIComponent child = (UIComponent)itr.next();
          if (child instanceof UIListItem == false && child instanceof UIListItems == false)
          {
             for (int i=0; i<this.itemCount; i++)
@@ -238,7 +236,7 @@ public class UISelectList extends UIInput implements NamingContainer
     */
    public void encodeBegin(FacesContext context) throws IOException
    {
-      if (isRendered() == false)
+      if (!isRendered())
       {
          return;
       }
@@ -269,18 +267,16 @@ public class UISelectList extends UIInput implements NamingContainer
       // get the child components and look for compatible ListItem objects
       this.itemCount = 0;
       setRowIndex(-1);
-      for (Iterator i = getChildren().iterator(); i.hasNext(); /**/)
+      for (final UIComponent child : (List<UIComponent>)this.getChildren())
       {
-         UIComponent child = (UIComponent)i.next();
          if (child instanceof UIListItems)
          {
             // get the value of the list items component and iterate through it's collection
             Object listItems = ((UIListItems)child).getValue();
             if (listItems instanceof Collection)
             {
-               for (Iterator iter = ((Collection)listItems).iterator(); iter.hasNext(); /**/)
+               for (final UIListItem item : (Collection<UIListItem>)listItems)
                {
-                  UIListItem item = (UIListItem)iter.next();
                   if (item.isRendered())
                   {
                      if (var != null)
@@ -355,7 +351,11 @@ public class UISelectList extends UIInput implements NamingContainer
          out.write(id);
          out.write("' value='");
          out.write(itemValue);
-         out.write('\'');
+         out.write("'");
+         if (this.onchange != null)
+         {
+            out.write(" onchange='" + this.onchange + "'");
+         }
          String[] value = (String[])getValue();
          if (multiSelect)
          {
@@ -454,9 +454,8 @@ public class UISelectList extends UIInput implements NamingContainer
       if (isActiveSelect())
       {
          this.rowIndex = rowIndex;
-         for (Iterator itr=getChildren().iterator(); itr.hasNext(); /**/)
+         for (UIComponent child : (List<UIComponent>)this.getChildren())
          {
-            UIComponent child = (UIComponent)itr.next();
             if (child instanceof UIListItem == false && child instanceof UIListItems == false)
             {
                // forces a reset of the clientId for the component
@@ -482,15 +481,7 @@ public class UISelectList extends UIInput implements NamingContainer
          this.multiSelect = (Boolean)vb.getValue(getFacesContext());
       }
       
-      if (this.multiSelect != null)
-      {
-         return this.multiSelect.booleanValue();
-      }
-      else
-      {
-         // return the default
-         return false;
-      }
+      return this.multiSelect != null ? this.multiSelect.booleanValue() : false;
    }
 
    /**
@@ -516,15 +507,7 @@ public class UISelectList extends UIInput implements NamingContainer
          this.activeSelect = (Boolean)vb.getValue(getFacesContext());
       }
       
-      if (this.activeSelect != null)
-      {
-         return this.activeSelect.booleanValue();
-      }
-      else
-      {
-         // return the default
-         return false;
-      }
+      return (this.activeSelect != null ? this.activeSelect.booleanValue() : false;
    }
 
    /**

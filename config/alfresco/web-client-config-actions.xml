@@ -372,6 +372,18 @@
             </params>
          </action>
 
+         <!-- Create XML content type -->
+         <action id="regenerate_renditions">
+            <evaluator>org.alfresco.web.action.evaluator.RegenerateRenditionsEvaluator</evaluator>
+            <label-id>regenerate_renditions</label-id>
+            <image>/images/icons/regenerate_renditions.gif</image>
+            <action>wizard:regenerateRenditions</action>
+            <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+
          <!-- Create space -->
          <action id="create_space">
             <permissions>
@@ -700,7 +712,7 @@
             <action idref="create_form" />
             <action idref="create_website_wizard" />
             <action idref="create_space" />
-            <action idref= "create_multilingual_space" />
+            <action idref="create_multilingual_space" />
             <action idref="create_space_wizard" />
          </action-group>
 

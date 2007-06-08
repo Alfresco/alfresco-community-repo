@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.MessageFormat;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
@@ -542,53 +543,14 @@ public class AVMEditBean
          @Override
          public Form getForm() { return AVMEditBean.this.getForm(); }
       };
-
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("regenerating renditions of " + fid);
-      String originalParentAvmPath = (String)
-         this.nodeService.getProperty(((FormInstanceDataImpl)fid).getNodeRef(), 
-                                      WCMAppModel.PROP_ORIGINAL_PARENT_PATH);
-      if (originalParentAvmPath == null)
+      final List<FormInstanceData.RegenerateResult> result = fid.regenerateRenditions();
+      for (FormInstanceData.RegenerateResult rr : result)
       {
-         originalParentAvmPath = AVMNodeConverter.SplitBase(avmPath)[0];
-      }
-      final HashSet<RenderingEngineTemplate> allRets = 
-         new HashSet<RenderingEngineTemplate>(this.getForm().getRenderingEngineTemplates());
-
-      // regenerate existing renditions
-      for (final Rendition r : fid.getRenditions())
-      {
-         final RenderingEngineTemplate ret = r.getRenderingEngineTemplate();
-         if (!allRets.contains(ret))
+         if (rr.getException() != null)
          {
-            continue;
-         }
-         try
-         {
-            ret.render(fid, r);
-            allRets.remove(ret);
-         }
-         catch (Exception e)
-         {
-            Utils.addErrorMessage("error regenerating rendition using " + ret.getName() + 
-                                  ": " + e.getMessage(),
-                                  e);
-         }
-      }
-
-      // render all renditions for newly added templates
-      for (final RenderingEngineTemplate ret : allRets)
-      {
-         try
-         {
-            final String path = ret.getOutputPathForRendition(fid, originalParentAvmPath);
-            ret.render(fid, path);
-         }
-         catch (Exception e)
-         {
-            Utils.addErrorMessage("error regenerating rendition using " + ret.getName() + 
-                                  ": " + e.getMessage(),
-                                  e);
+            Utils.addErrorMessage("error regenerating rendition using " + rr.getRenderingEngineTemplate().getName() + 
+                                  ": " + rr.getException().getMessage(),
+                                  rr.getException());
          }
       }
    }

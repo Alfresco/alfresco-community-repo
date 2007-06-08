@@ -57,7 +57,6 @@ public class UIListItems extends SelfRenderingComponent
             this.value = vb.getValue(getFacesContext());
          }
       }
-      
       return this.value;
    }
 
@@ -85,11 +84,8 @@ public class UIListItems extends SelfRenderingComponent
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[2];
       // standard component attributes are saved by the super class
-      values[0] = super.saveState(context);
-      values[1] = this.value;
-      return (values);
+      return new Object[] { super.saveState(context), this.value };
    }
 }
 

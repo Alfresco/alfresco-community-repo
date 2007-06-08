@@ -77,6 +77,8 @@ import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.ibm.icu.text.Normalizer;
+
 /**
  * FTP Server Session Class
  * 
@@ -117,7 +119,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
     //  Enabled features
     
-    protected static boolean FeatureUTF8   = false;
+    protected static boolean FeatureUTF8   = true;
     protected static boolean FeatureMDTM   = true;
     protected static boolean FeatureSIZE   = true;
     protected static boolean FeatureMLST   = true;
@@ -234,26 +236,6 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
     private TreeConnectionHash m_connections;
 
-    /**
-     * Static initializer
-     */
-    static
-    {
-    	try
-    	{
-        	// Check if the sun.text classes are available for UTF-8 conversion
-        	
-    		Class.forName( "sun.text.Normalizer");
-    		
-    		// Enable UTF-8 support
-    		
-    		FeatureUTF8 = true;
-    	}
-    	catch ( Exception ex)
-    	{
-    	}
-    }
-    
     /**
      * Class constructor
      * 
@@ -4170,8 +4152,8 @@ public class FTPSrvSession extends SrvSession implements Runnable
                 if ( isUTF8Enabled())
                 {
                 	// Convert the string from UTF-8
-                	
-               		cmd = sun.text.Normalizer.compose( new String(m_inbuf, 0, rdlen, "UTF-8"), false, 0);
+  
+                	cmd = Normalizer.compose( new String(m_inbuf, 0, rdlen, "UTF-8"), false);
                 }
                 else
                 {

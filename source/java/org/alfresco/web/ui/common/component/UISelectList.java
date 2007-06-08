@@ -507,7 +507,7 @@ public class UISelectList extends UIInput implements NamingContainer
          this.activeSelect = (Boolean)vb.getValue(getFacesContext());
       }
       
-      return (this.activeSelect != null ? this.activeSelect.booleanValue() : false;
+      return this.activeSelect != null ? this.activeSelect.booleanValue() : false;
    }
 
    /**

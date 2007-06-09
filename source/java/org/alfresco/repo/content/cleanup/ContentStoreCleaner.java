@@ -40,6 +40,7 @@ import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
@@ -220,7 +221,16 @@ public class ContentStoreCleaner
         // now clean each store in turn
         for (ContentStore store : stores)
         {
-            clean(validUrls, store);
+            try
+            {
+                clean(validUrls, store);
+            }
+            catch (UnsupportedOperationException e)
+            {
+                throw new ContentIOException(
+                        "Unable to clean store as the necessary operations are not supported: " + store,
+                        e);
+            }
         }
     }
     

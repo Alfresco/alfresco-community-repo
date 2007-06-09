@@ -39,9 +39,8 @@ import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.audit.AuditConfiguration;
 import org.alfresco.repo.audit.AuditDAO;
-import org.alfresco.repo.audit.AuditException;
 import org.alfresco.repo.audit.AuditState;
-import org.alfresco.repo.content.AbstractContentStore;
+import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -383,12 +382,12 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
     {
         AuditConfigImpl auditConfig = new AuditConfigImpl();
         InputStream is = new BufferedInputStream(auditInfo.getAuditConfiguration().getInputStream());
-        String url = AbstractContentStore.createNewUrl();
-        ContentWriter writer = contentStore.getWriter(null, url);
+        ContentWriter writer = contentStore.getWriter(ContentStore.NEW_CONTENT_CONTEXT);
         writer.setMimetype(MimetypeMap.MIMETYPE_XML);
         writer.setEncoding("UTF-8");
         writer.putContent(is);
-        auditConfig.setConfigURL(url);
+        String contentUrl = writer.getContentUrl();
+        auditConfig.setConfigURL(contentUrl);
         getSession().save(auditConfig);
         return auditConfig;
     }

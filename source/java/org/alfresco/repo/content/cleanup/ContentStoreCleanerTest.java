@@ -88,7 +88,7 @@ public class ContentStoreCleanerTest extends TestCase
     {
         cleaner.setProtectDays(0);
         // add some content to the store
-        ContentWriter writer = store.getWriter(null, null);
+        ContentWriter writer = store.getWriter(ContentStore.NEW_CONTENT_CONTEXT);
         writer.putContent("ABC");
         String contentUrl = writer.getContentUrl();
         
@@ -104,7 +104,7 @@ public class ContentStoreCleanerTest extends TestCase
     {
         cleaner.setProtectDays(1);
         // add some content to the store
-        ContentWriter writer = store.getWriter(null, null);
+        ContentWriter writer = store.getWriter(ContentStore.NEW_CONTENT_CONTEXT);
         writer.putContent("ABC");
         String contentUrl = writer.getContentUrl();
         

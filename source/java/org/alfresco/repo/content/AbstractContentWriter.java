@@ -121,9 +121,10 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
      */
     public final ContentReader getReader() throws ContentIOException
     {
+        String contentUrl = getContentUrl();
         if (!isClosed())
         {
-            return null;
+            return new EmptyContentReader(contentUrl);
         }
         ContentReader reader = createReader();
         if (reader == null)
@@ -131,7 +132,7 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
             throw new AlfrescoRuntimeException("ContentReader failed to create new reader: \n" +
                     "   writer: " + this);
         }
-        else if (reader.getContentUrl() == null || !reader.getContentUrl().equals(getContentUrl()))
+        else if (reader.getContentUrl() == null || !reader.getContentUrl().equals(contentUrl))
         {
             throw new AlfrescoRuntimeException("ContentReader has different URL: \n" +
                     "   writer: " + this + "\n" +
@@ -235,7 +236,7 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
         // this is a use-once object
         if (channel != null)
         {
-            throw new RuntimeException("A channel has already been opened");
+            throw new ContentIOException("A channel has already been opened");
         }
         WritableByteChannel directChannel = getDirectWritableChannel();
         channel = getCallbackWritableChannel(directChannel, listeners);

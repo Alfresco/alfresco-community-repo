@@ -81,7 +81,7 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     {
         if (contentUrl == null || contentUrl.length() == 0)
         {
-            throw new IllegalArgumentException("contentUrl must be a valid String");
+            throw new IllegalArgumentException("contentUrl is invalid:" + contentUrl);
         }
         this.contentUrl = contentUrl;
         

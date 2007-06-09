@@ -26,19 +26,20 @@ package org.alfresco.repo.content.filestore;
 
 import java.io.File;
 
+import org.alfresco.repo.content.AbstractReadOnlyContentStoreTest;
 import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.util.TempFileProvider;
 
 /**
- * Tests the file-based store when random access is not allowed, i.e. has to be spoofed.
+ * Tests the file-based store when in read-only mode.
  * 
  * @see org.alfresco.repo.content.filestore.FileContentStore
  * 
  * @since 2.1
  * @author Derek Hulley
  */
-public class NoRandomAccessFileContentStoreTest extends AbstractWritableContentStoreTest
+public class ReadOnlyFileContentStoreTest extends AbstractReadOnlyContentStoreTest
 {
     private FileContentStore store;
     
@@ -54,7 +55,7 @@ public class NoRandomAccessFileContentStoreTest extends AbstractWritableContentS
                 File.separatorChar +
                 getName());
         // disallow random access
-        store.setAllowRandomAccess(false);
+        store.setReadOnly(true);
     }
     
     @Override

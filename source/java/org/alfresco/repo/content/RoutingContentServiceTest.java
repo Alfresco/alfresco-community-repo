@@ -271,7 +271,7 @@ public class RoutingContentServiceTest extends TestCase
     
     public void testGetRawReader() throws Exception
     {
-        ContentReader reader = contentService.getRawReader("blah");
+        ContentReader reader = contentService.getRawReader("test://non-existence");
         assertNotNull("A reader is expected with content URL referencing no content", reader);
         assertFalse("Reader should not have any content", reader.exists());
         // Now write something

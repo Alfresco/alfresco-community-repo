@@ -26,10 +26,9 @@ package org.alfresco.repo.content;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
-import junit.framework.TestCase;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 
@@ -40,22 +39,27 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.TempFileProvider;
 
 /**
- * Ensures that the routing of URLs based on context is working.
+ * Ensures that the routing of URLs based on context is working.  A combination
+ * of fully featured and incompletely featured stores is used to ensure that
+ * all routing scenarios are handled.
  * 
  * @see AbstractRoutingContentStore
  * @since 2.1
  * 
  * @author Derek Hulley
  */
-public class RoutingContentStoreTest extends TestCase
+public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
 {
     private ContentStore storeA;
     private ContentStore storeB;
+    private ContentStore storeC;
+    private ContentStore storeD;
     private ContentStore routingStore;
     
     @Override
-    protected void setUp() throws Exception
+    public void setUp() throws Exception
     {
+        super.setUp();
         File tempDir = TempFileProvider.getTempDir();
         // Create a subdirectory for A
         File storeADir = new File(tempDir, "A");
@@ -63,14 +67,23 @@ public class RoutingContentStoreTest extends TestCase
         // Create a subdirectory for B
         File storeBDir = new File(tempDir, "B");
         storeB = new FileContentStore(storeBDir);
+        // Create a subdirectory for C
+        File storeCDir = new File(tempDir, "C");
+        storeC = new DumbReadOnlyFileStore(new FileContentStore(storeCDir));
+        // No subdirectory for D
+        storeD = new SupportsNoUrlFormatStore();
         // Create the routing store
-        routingStore = new RandomRoutingContentStore(storeA, storeB);
+        routingStore = new RandomRoutingContentStore(storeA, storeB, storeC, storeD);
     }
     
+    @Override
+    protected ContentStore getStore()
+    {
+        return routingStore;
+    }
+
     public void testSetUp() throws Exception
     {
-        assertNotNull(storeA);
-        assertNotNull(storeB);
         assertNotNull(routingStore);
     }
     
@@ -96,7 +109,9 @@ public class RoutingContentStoreTest extends TestCase
      */
     public void testMissingUrl()
     {
-        ContentReader reader = routingStore.getReader("blah");
+        String missingContentUrl = FileContentStore.createNewFileStoreUrl();
+        
+        ContentReader reader = routingStore.getReader(missingContentUrl);
         assertNotNull("Missing URL should not return null", reader);
         assertFalse("Empty reader should say content doesn't exist.", reader.exists());
         try
@@ -110,7 +125,7 @@ public class RoutingContentStoreTest extends TestCase
         }
     }
     
-    public void testHandlingInCache()
+    public void testGeneralUse()
     {
         for (int i = 0 ; i < 20; i++)
         {
@@ -130,14 +145,6 @@ public class RoutingContentStoreTest extends TestCase
     }
     
     /**
-     * Checks that content URLs are matched to the appropriate stores when in the cache limit.
-     */
-    public void testReadFindInCache()
-    {
-        
-    }
-
-    /**
      * A test routing store that directs content writes to a randomly-chosen store.
      * Matching of content URLs back to the stores is handled by the base class.
      * 
@@ -146,11 +153,9 @@ public class RoutingContentStoreTest extends TestCase
     private static class RandomRoutingContentStore extends AbstractRoutingContentStore
     {
         private List<ContentStore> stores;
-        private Random random;
         
         public RandomRoutingContentStore(ContentStore ... stores)
         {
-            this.random = new Random();
             this.stores = new ArrayList<ContentStore>(5);
             for (ContentStore store : stores)
             {
@@ -173,9 +178,66 @@ public class RoutingContentStoreTest extends TestCase
         @Override
         protected ContentStore selectWriteStore(ContentContext ctx)
         {
-            int size = stores.size();
-            int index = (int) Math.floor(random.nextDouble() * (double) size);
-            return stores.get(index);
+            // Shuffle the list of writable stores
+            List<ContentStore> shuffled = new ArrayList<ContentStore>(stores);
+            Collections.shuffle(shuffled);
+            // Pick the first writable store
+            for (ContentStore store : shuffled)
+            {
+                if (store.isWriteSupported())
+                {
+                    return store;
+                }
+            }
+            // Nothing found
+            fail("A request came for a writer when there is no writable store to choose from");
+            return null;
+        }
+    }
+    
+    /**
+     * The simplest possible store.
+     * 
+     * @author Derek Hulley
+     */
+    private static class DumbReadOnlyFileStore extends AbstractContentStore
+    {
+        FileContentStore fileStore;
+        public DumbReadOnlyFileStore(FileContentStore fileStore)
+        {
+            this.fileStore = fileStore;
+        }
+
+        public boolean isWriteSupported()
+        {
+            return false;
+        }
+
+        public ContentReader getReader(String contentUrl)
+        {
+            return fileStore.getReader(contentUrl);
+        }
+    }
+    
+    /**
+     * This store supports nothing.  It is designed to catch the routing code out.
+     * 
+     * @author Derek Hulley
+     */
+    private static class SupportsNoUrlFormatStore extends AbstractContentStore
+    {
+        public SupportsNoUrlFormatStore()
+        {
+        }
+
+        public boolean isWriteSupported()
+        {
+            return false;
+        }
+
+        public ContentReader getReader(String contentUrl)
+        {
+            throw new UnsupportedContentUrlException(this, contentUrl);
         }
     }
 }

@@ -27,9 +27,9 @@ package org.alfresco.repo.node.index;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneIndexerImpl;
@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -119,7 +120,8 @@ public class MissingContentReindexComponentTest extends TestCase
     public synchronized void testReindex() throws Exception
     {
         // create a node with missing content
-        String contentUrl = AbstractContentStore.createNewUrl();
+        String contentUrl = FileContentStore.STORE_PROTOCOL + FileContentStore.PROTOCOL_DELIMITER +
+                            "x/y/" + GUID.generate() + ".bin";
         ContentData contentData = new ContentData(contentUrl, "text/plain", 0L, "UTF8");
         
         // create the file node

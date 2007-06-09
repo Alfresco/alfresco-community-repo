@@ -272,7 +272,16 @@ public class RoutingContentService implements ContentService
     /** {@inheritDoc} */
     public ContentReader getRawReader(String contentUrl)
     {
-        ContentReader reader = store.getReader(contentUrl);
+        ContentReader reader = null;
+        try
+        {
+            reader = store.getReader(contentUrl);
+        }
+        catch (UnsupportedContentUrlException e)
+        {
+            // The URL is not supported, so we spoof it
+            reader = new EmptyContentReader(contentUrl);
+        }
         if (reader == null)
         {
             throw new AlfrescoRuntimeException("ContentStore implementations may not return null ContentReaders");

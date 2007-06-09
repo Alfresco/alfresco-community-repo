@@ -38,113 +38,224 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
 
-import javax.transaction.UserTransaction;
-
-import junit.framework.TestCase;
-
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
-import org.springframework.context.ApplicationContext;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Abstract base class that provides a set of tests for implementations
- * of the content readers and writers.
+ * of {@link ContentStore}.
  * 
+ * @see ContentStore
  * @see org.alfresco.service.cmr.repository.ContentReader
  * @see org.alfresco.service.cmr.repository.ContentWriter
  * 
  * @author Derek Hulley
  */
-public abstract class AbstractContentReadWriteTest extends TestCase
+public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyContentStoreTest
 {
-    private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private static Log logger = LogFactory.getLog(AbstractWritableContentStoreTest.class);
     
-    protected TransactionService transactionService;
-    private String contentUrl;
-    private UserTransaction txn;
-    
-    public AbstractContentReadWriteTest()
+    public AbstractWritableContentStoreTest()
     {
         super();
     }
 
-    @Override
-    public void setUp() throws Exception
-    {
-        contentUrl = AbstractContentStore.createNewUrl();
-        transactionService = (TransactionService) ctx.getBean("TransactionService");
-        txn = transactionService.getUserTransaction();
-        txn.begin();
-    }
-    
-    public void tearDown() throws Exception
-    {
-        txn.rollback();
-    }
-    
     /**
-     * Fetch the store to be used during a test.  This method is invoked once per test - it is
-     * therefore safe to use <code>setUp</code> to initialise resources.
+     * @inheritDoc
      * <p>
-     * Usually tests will construct a static instance of the store to use throughout all the
-     * tests.
-     * 
-     * @return Returns the <b>same instance</b> of a store for all invocations.
+     * This implementation creates some content in the store and returns the new content URL.
      */
-    protected abstract ContentStore getStore();
-    
-    /**
-     * @see #getStore()
-     */
-    protected final ContentWriter getWriter()
+    protected String getExistingContentUrl()
     {
-        ContentContext contentCtx = new ContentContext(null, contentUrl);
-        return getStore().getWriter(contentCtx);
+        ContentWriter writer = getWriter();
+        writer.putContent("Content for " + getName());
+        return writer.getContentUrl();
     }
     
     /**
-     * @see #getStore()
+     * Get a writer into the store.  This test class assumes that the store is writable and
+     * that it therefore supports the ability to write content.
+     * 
+     * @return
+     *      Returns a writer for new content
      */
-    protected final ContentReader getReader()
+    protected ContentWriter getWriter()
     {
-        return getStore().getReader(contentUrl);
+        ContentStore store = getStore();
+        return store.getWriter(ContentStore.NEW_CONTENT_CONTEXT);
     }
     
     public void testSetUp() throws Exception
     {
-        assertNotNull("setUp() not executed: no content URL present");
-        
         // check that the store remains the same
         ContentStore store = getStore();
         assertNotNull("No store provided", store);
         assertTrue("The same instance of the store must be returned for getStore", store == getStore());
     }
     
-    public void testContentUrl() throws Exception
+    public void testWritable() throws Exception
     {
-        ContentReader reader = getReader();
-        ContentWriter writer = getWriter();
-        
-        // the contract is that both the reader and writer must refer to the same
-        // content -> the URL must be the same
-        String readerContentUrl = reader.getContentUrl();
-        String writerContentUrl = writer.getContentUrl();
-        assertNotNull("Reader url is invalid", readerContentUrl);
-        assertNotNull("Writer url is invalid", writerContentUrl);
-        assertEquals("Reader and writer must reference same content",
-                readerContentUrl,
-                writerContentUrl);
-        
-        // check that the content URL is correct
-        assertTrue("Content URL doesn't start with correct prefix",
-                readerContentUrl.startsWith(ContentStore.STORE_PROTOCOL));
+        ContentStore store = getStore();
+        assertTrue("The store cannot be read-only", store.isWriteSupported());
+    }
+
+    /**
+     * Helper to ensure that illegal content URLs are flagged for <b>getWriter</b> requests
+     */
+    private void checkIllegalWritableContentUrl(ContentStore store, String contentUrl)
+    {
+        assertFalse("This check is for unsupported content URLs only", store.isContentUrlSupported(contentUrl));
+        ContentContext bogusContentCtx = new ContentContext(null, contentUrl);
+        try
+        {
+            store.getWriter(bogusContentCtx);
+            fail("Expected UnsupportedContentUrlException, but got nothing");
+        }
+        catch (UnsupportedContentUrlException e)
+        {
+            // Expected
+        }
     }
     
-    public void testMimetypAbdEncodingAndLocale() throws Exception
+    /**
+     * Checks that the error handling for <i>inappropriate</i> content URLs
+     */
+    public void testIllegalWritableContentUrls()
+    {
+        ContentStore store = getStore();
+        checkIllegalWritableContentUrl(store, "://bogus");
+        checkIllegalWritableContentUrl(store, "bogus://");
+        checkIllegalWritableContentUrl(store, "bogus://bogus");
+    }
+    
+    /**
+     * Get a writer and write a little bit of content before reading it.
+     */
+    public void testSimpleUse()
+    {
+        ContentStore store = getStore();
+        String content = "Content for " + getName();
+        
+        ContentWriter writer = store.getWriter(ContentStore.NEW_CONTENT_CONTEXT);
+        assertNotNull("Writer may not be null", writer);
+        // Ensure that the URL is available
+        String contentUrlBefore = writer.getContentUrl();
+        assertNotNull("Content URL may not be null for unused writer", contentUrlBefore);
+        assertTrue("URL is not valid: " + contentUrlBefore, AbstractContentStore.isValidContentUrl(contentUrlBefore));
+        // Write something
+        writer.putContent(content);
+        String contentUrlAfter = writer.getContentUrl();
+        assertTrue("URL is not valid: " + contentUrlBefore, AbstractContentStore.isValidContentUrl(contentUrlAfter));
+        assertEquals("The content URL may not change just because the writer has put content", contentUrlBefore, contentUrlAfter);
+        // Get the readers
+        ContentReader reader = store.getReader(contentUrlBefore);
+        assertNotNull("Reader from store is null", reader);
+        assertEquals(reader.getContentUrl(), writer.getContentUrl());
+        String checkContent = reader.getContentString();
+        assertEquals("Content is different", content, checkContent);
+    }
+    
+    /**
+     * Checks that the various methods of obtaining a reader are supported.
+     */
+    public void testGetReader() throws Exception
+    {
+        ContentStore store = getStore();
+        ContentWriter writer = store.getWriter(ContentStore.NEW_CONTENT_CONTEXT);
+        String contentUrl = writer.getContentUrl();
+        
+        // Check that a reader is available from the store
+        ContentReader readerFromStoreBeforeWrite = store.getReader(contentUrl);
+        assertNotNull("A reader must always be available from the store", readerFromStoreBeforeWrite);
+        
+        // check that a reader is available from the writer
+        ContentReader readerFromWriterBeforeWrite = writer.getReader();
+        assertNotNull("A reader must always be available from the writer", readerFromWriterBeforeWrite);
+        
+        String content = "Content for " + getName();
+        
+        // write some content
+        long before = System.currentTimeMillis();
+        writer.setMimetype("text/plain");
+        writer.setEncoding("UTF-8");
+        writer.setLocale(Locale.CHINESE);
+        writer.putContent(content);
+        long after = System.currentTimeMillis();
+        
+        // get a reader from the store
+        ContentReader readerFromStore = store.getReader(contentUrl);
+        assertNotNull(readerFromStore);
+        assertTrue(readerFromStore.exists());
+        // Store-provided readers don't have context other than URLs
+        // assertEquals(writer.getContentData(), readerFromStore.getContentData());
+        assertEquals(content, readerFromStore.getContentString());
+        
+        // get a reader from the writer
+        ContentReader readerFromWriter = writer.getReader();
+        assertNotNull(readerFromWriter);
+        assertTrue(readerFromWriter.exists());
+        assertEquals(writer.getContentData(), readerFromWriter.getContentData());
+        assertEquals(content, readerFromWriter.getContentString());
+        
+        // get another reader from the reader
+        ContentReader readerFromReader = readerFromWriter.getReader();
+        assertNotNull(readerFromReader);
+        assertTrue(readerFromReader.exists());
+        assertEquals(writer.getContentData(), readerFromReader.getContentData());
+        assertEquals(content, readerFromReader.getContentString());
+        
+        // check that the length is correct
+        int length = content.getBytes(writer.getEncoding()).length;
+        assertEquals("Reader content length is incorrect", length, readerFromWriter.getSize());
+
+        // check that the last modified time is correct
+        long modifiedTimeCheck = readerFromWriter.getLastModified();
+
+        // On some versionms of Linux (e.g. Centos) this test won't work as the 
+        // modified time accuracy is only to the second.
+        long beforeSeconds = before/1000L;
+        long afterSeconds = after/1000L;
+        long modifiedTimeCheckSeconds = modifiedTimeCheck/1000L;
+
+        assertTrue("Reader last modified is incorrect", beforeSeconds <= modifiedTimeCheckSeconds);
+        assertTrue("Reader last modified is incorrect", modifiedTimeCheckSeconds <= afterSeconds);
+    }
+    
+    /**
+     * Check that a reader is immutable, i.e. that a reader fetched before a
+     * write doesn't suddenly become aware of the content once it has been written.
+     */
+    public void testReaderImmutability()
+    {
+        ContentWriter writer = getWriter();
+        
+        ContentReader readerBeforeWrite = writer.getReader();
+        assertNotNull(readerBeforeWrite);
+        assertFalse(readerBeforeWrite.exists());
+        
+        // Write some content
+        writer.putContent("Content for " + getName());
+        assertFalse("Reader's state changed after write", readerBeforeWrite.exists());
+        try
+        {
+            readerBeforeWrite.getContentString();
+            fail("Reader's state changed after write");
+        }
+        catch (ContentIOException e)
+        {
+            // Expected
+        }
+        
+        // A new reader should work
+        ContentReader readerAfterWrite = writer.getReader();
+        assertTrue("New reader after write should be directed to new content", readerAfterWrite.exists());
+    }
+    
+    public void testMimetypAndEncodingAndLocale() throws Exception
     {
         ContentWriter writer = getWriter();
         // set mimetype and encoding
@@ -172,93 +283,14 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         assertEquals("Encoding and decoding of strings failed", content, contentCheck);
     }
     
-    public void testExists() throws Exception
-    {
-        ContentStore store = getStore();
-        
-        // make up a URL
-        String contentUrl = AbstractContentStore.createNewUrl();
-        
-        // it should not exist in the store
-        assertFalse("Store exists fails with new URL", store.exists(contentUrl));
-        
-        // get a reader
-        ContentReader reader = store.getReader(contentUrl);
-        assertNotNull("Reader must be present, even for missing content", reader);
-        assertFalse("Reader exists failure", reader.exists());
-        
-        // write something
-        ContentContext contentContext = new ContentContext(null, contentUrl);
-        ContentWriter writer = store.getWriter(contentContext);
-        writer.putContent("ABC");
-        
-        assertTrue("Store exists should show URL to be present", store.exists(contentUrl));
-    }
-    
-    public void testGetReader() throws Exception
-    {
-        ContentWriter writer = getWriter();
-        
-        // check that no reader is available from the writer just yet
-        ContentReader nullReader = writer.getReader();
-        assertNull("No reader expected", nullReader);
-        
-        String content = "ABC";
-        // write some content
-        long before = System.currentTimeMillis();
-        writer.setMimetype("text/plain");
-        writer.setEncoding("UTF-8");
-        writer.setLocale(Locale.CHINESE);
-        writer.putContent(content);
-        long after = System.currentTimeMillis();
-        
-        // get a reader from the writer
-        ContentReader readerFromWriter = writer.getReader();
-        assertEquals("URL incorrect", writer.getContentUrl(), readerFromWriter.getContentUrl());
-        assertEquals("Mimetype incorrect", writer.getMimetype(), readerFromWriter.getMimetype());
-        assertEquals("Encoding incorrect", writer.getEncoding(), readerFromWriter.getEncoding());
-        assertEquals("Locale incorrect", writer.getLocale(), readerFromWriter.getLocale());
-        
-        // get another reader from the reader
-        ContentReader readerFromReader = readerFromWriter.getReader();
-        assertEquals("URL incorrect", writer.getContentUrl(), readerFromReader.getContentUrl());
-        assertEquals("Mimetype incorrect", writer.getMimetype(), readerFromReader.getMimetype());
-        assertEquals("Encoding incorrect", writer.getEncoding(), readerFromReader.getEncoding());
-        assertEquals("Locale incorrect", writer.getLocale(), readerFromReader.getLocale());
-        
-        // check the content
-        String contentCheck = readerFromWriter.getContentString();
-        assertEquals("Content is incorrect", content, contentCheck);
-        
-        // check that the length is correct
-        int length = content.getBytes(writer.getEncoding()).length;
-        assertEquals("Reader content length is incorrect", length, readerFromWriter.getSize());
-
-        // check that the last modified time is correct
-        long modifiedTimeCheck = readerFromWriter.getLastModified();
-
-        // On some versionms of Linux (e.g. Centos) this test won't work as the 
-        // modified time accuracy is only to the second.
-        long beforeSeconds = before/1000L;
-        long afterSeconds = after/1000L;
-        long modifiedTimeCheckSeconds = modifiedTimeCheck/1000L;
-
-        assertTrue("Reader last modified is incorrect", beforeSeconds <= modifiedTimeCheckSeconds);
-        assertTrue("Reader last modified is incorrect", modifiedTimeCheckSeconds <= afterSeconds);
-    }
-    
     public void testClosedState() throws Exception
     {
-        ContentReader reader = getReader();
         ContentWriter writer = getWriter();
+        ContentReader readerBeforeWrite = writer.getReader();
         
         // check that streams are not flagged as closed
-        assertFalse("Reader stream should not be closed", reader.isClosed());
+        assertFalse("Reader stream should not be closed", readerBeforeWrite.isClosed());
         assertFalse("Writer stream should not be closed", writer.isClosed());
-        
-        // check that the write doesn't supply a reader
-        ContentReader writerGivenReader = writer.getReader();
-        assertNull("No reader should be available before a write has finished", writerGivenReader);
         
         // write some stuff
         writer.putContent("ABC");
@@ -266,10 +298,10 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         assertTrue("Writer stream should be closed", writer.isClosed());
         
         // check that we can get a reader from the writer
-        writerGivenReader = writer.getReader();
-        assertNotNull("No reader given by closed writer", writerGivenReader);
-        assertFalse("Readers should still be closed", reader.isClosed());
-        assertFalse("Readers should still be closed", writerGivenReader.isClosed());
+        ContentReader readerAfterWrite = writer.getReader();
+        assertNotNull("No reader given by closed writer", readerAfterWrite);
+        assertFalse("Before-content reader should not be affected by content updates", readerBeforeWrite.isClosed());
+        assertFalse("After content reader should not be closed", readerAfterWrite.isClosed());
         
         // check that the instance is new each time
         ContentReader newReaderA = writer.getReader();
@@ -278,180 +310,61 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         
         // check that the readers refer to the same URL
         assertEquals("Readers should refer to same URL",
-                reader.getContentUrl(), writerGivenReader.getContentUrl());
+                readerBeforeWrite.getContentUrl(), readerAfterWrite.getContentUrl());
         
         // read their content
-        String contentCheck = reader.getContentString();
-        assertEquals("Incorrect content", "ABC", contentCheck);
-        contentCheck = writerGivenReader.getContentString();
+        try
+        {
+            readerBeforeWrite.getContentString();
+        }
+        catch (Throwable e)
+        {
+            // The content doesn't exist for this reader
+        }
+        String contentCheck = readerAfterWrite.getContentString();
         assertEquals("Incorrect content", "ABC", contentCheck);
         
         // check closed state of readers
-        assertTrue("Reader should be closed", reader.isClosed());
-        assertTrue("Reader should be closed", writerGivenReader.isClosed());
+        assertFalse("Before-content reader stream should not be closed", readerBeforeWrite.isClosed());
+        assertTrue("After-content reader should be closed after reading", readerAfterWrite.isClosed());
     }
     
-    /**
-     * Checks that the store disallows concurrent writers to be issued to the same URL.
-     */
-    @SuppressWarnings("unused")
-    public void testConcurrentWriteDetection() throws Exception
+    public void testGetUrls()
     {
-        String contentUrl = AbstractContentStore.createNewUrl();
         ContentStore store = getStore();
-
-        ContentContext contentCtx = new ContentContext(null, contentUrl);
-        ContentWriter firstWriter = store.getWriter(contentCtx);
         try
         {
-            ContentWriter secondWriter = store.getWriter(contentCtx);
-            fail("Store issued two writers for the same URL: " + store);
+            store.getUrls();
         }
-        catch (ContentIOException e)
+        catch (UnsupportedOperationException e)
         {
-            // expected
+            logger.warn("Store test " + getName() + " not possible on " + store.getClass().getName());
+            return;
         }
+        ContentWriter writer = getWriter();
+        writer.putContent("Content for " + getName());
+        Set<String> contentUrls = store.getUrls();
+        String contentUrl = writer.getContentUrl();
+        assertTrue("New content not found in URL set", contentUrls.contains(contentUrl));
     }
     
-    /**
-     * Checks that the writer can have a listener attached
-     */
-    public void testWriteStreamListener() throws Exception
+    public void testDeleteSimple() throws Exception
     {
+        ContentStore store = getStore();
         ContentWriter writer = getWriter();
-        
-        final boolean[] streamClosed = new boolean[] {false};  // has to be final
-        ContentStreamListener listener = new ContentStreamListener()
+        writer.putContent("Content for " + getName());
+        String contentUrl = writer.getContentUrl();
+        assertTrue("Content must now exist", store.exists(contentUrl));
+        try
         {
-            public void contentStreamClosed() throws ContentIOException
-            {
-                streamClosed[0] = true;
-            }
-        };
-        writer.setRetryingTransactionHelper(null);
-        writer.addListener(listener);
-        
-        // write some content
-        writer.putContent("ABC");
-        
-        // check that the listener was called
-        assertTrue("Write stream listener was not called for the stream close", streamClosed[0]);
-    }
-    
-    /**
-     * The simplest test.  Write a string and read it again, checking that we receive the same values.
-     * If the resource accessed by {@link #getReader()} and {@link #getWriter()} is not the same, then
-     * values written and read won't be the same.
-     */
-    public void testWriteAndReadString() throws Exception
-    {
-        ContentReader reader = getReader();
-        ContentWriter writer = getWriter();
-        
-        String content = "ABC";
-        writer.putContent(content);
-        assertTrue("Stream close not detected", writer.isClosed());
-
-        String check = reader.getContentString();
-        assertTrue("Read and write may not share same resource", check.length() > 0);
-        assertEquals("Write and read didn't work", content, check);
-    }
-    
-    public void testStringTruncation() throws Exception
-    {
-        String content = "1234567890";
-        
-        ContentWriter writer = getWriter();
-        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        writer.setEncoding("UTF-8");  // shorter format i.t.o. bytes used
-        // write the content
-        writer.putContent(content);
-        
-        // get a reader - get it in a larger format i.t.o. bytes
-        ContentReader reader = writer.getReader();
-        String checkContent = reader.getContentString(5);
-        assertEquals("Truncated strings don't match", "12345", checkContent);
-    }
-    
-    public void testReadAndWriteFile() throws Exception
-    {
-        ContentReader reader = getReader();
-        ContentWriter writer = getWriter();
-        
-        File sourceFile = File.createTempFile(getName(), ".txt");
-        sourceFile.deleteOnExit();
-        // dump some content into the temp file
-        String content = "ABC";
-        FileOutputStream os = new FileOutputStream(sourceFile);
-        os.write(content.getBytes());
-        os.flush();
-        os.close();
-        
-        // put our temp file's content
-        writer.putContent(sourceFile);
-        assertTrue("Stream close not detected", writer.isClosed());
-        
-        // create a sink temp file
-        File sinkFile = File.createTempFile(getName(), ".txt");
-        sinkFile.deleteOnExit();
-        
-        // get the content into our temp file
-        reader.getContent(sinkFile);
-        
-        // read the sink file manually
-        FileInputStream is = new FileInputStream(sinkFile);
-        byte[] buffer = new byte[100];
-        int count = is.read(buffer);
-        assertEquals("No content read", 3, count);
-        is.close();
-        String check = new String(buffer, 0, count);
-        
-        assertEquals("Write out of and read into files failed", content, check);
-    }
-    
-    public void testReadAndWriteStreamByPull() throws Exception
-    {
-        ContentReader reader = getReader();
-        ContentWriter writer = getWriter();
-
-        String content = "ABC";
-        // put the content using a stream
-        InputStream is = new ByteArrayInputStream(content.getBytes());
-        writer.putContent(is);
-        assertTrue("Stream close not detected", writer.isClosed());
-        
-        // get the content using a stream
-        ByteArrayOutputStream os = new ByteArrayOutputStream(100);
-        reader.getContent(os);
-        byte[] bytes = os.toByteArray();
-        String check = new String(bytes);
-        
-        assertEquals("Write out and read in using streams failed", content, check);
-    }
-    
-    public void testReadAndWriteStreamByPush() throws Exception
-    {
-        ContentReader reader = getReader();
-        ContentWriter writer = getWriter();
-
-        String content = "ABC";
-        // get the content output stream
-        OutputStream os = writer.getContentOutputStream();
-        os.write(content.getBytes());
-        assertFalse("Stream has not been closed", writer.isClosed());
-        // close the stream and check again
-        os.close();
-        assertTrue("Stream close not detected", writer.isClosed());
-        
-        // pull the content from a stream
-        InputStream is = reader.getContentInputStream();
-        byte[] buffer = new byte[100];
-        int count = is.read(buffer);
-        assertEquals("No content read", 3, count);
-        is.close();
-        String check = new String(buffer, 0, count);
-        
-        assertEquals("Write out of and read into files failed", content, check);
+            store.delete(contentUrl);
+        }
+        catch (UnsupportedOperationException e)
+        {
+            logger.warn("Store test " + getName() + " not possible on " + store.getClass().getName());
+            return;
+        }
+        assertFalse("Content must now be removed", store.exists(contentUrl));
     }
     
     /**
@@ -459,19 +372,18 @@ public abstract class AbstractContentReadWriteTest extends TestCase
      * <p>
      * Only applies when {@link #getStore()} returns a value.
      */
-    public void testDelete() throws Exception
+    public void testDeleteReaderStates() throws Exception
     {
         ContentStore store = getStore();
         ContentWriter writer = getWriter();
         
-        String content = "ABC";
+        String content = "Content for " + getName();
         String contentUrl = writer.getContentUrl();
 
         // write some bytes, but don't close the stream
         OutputStream os = writer.getContentOutputStream();
         os.write(content.getBytes());
         os.flush();                  // make sure that the bytes get persisted
-        
         // close the stream
         os.close();
         
@@ -540,6 +452,147 @@ public abstract class AbstractContentReadWriteTest extends TestCase
     }
     
     /**
+     * Checks that the writer can have a listener attached
+     */
+    public void testWriteStreamListener() throws Exception
+    {
+        ContentWriter writer = getWriter();
+        
+        final boolean[] streamClosed = new boolean[] {false};  // has to be final
+        ContentStreamListener listener = new ContentStreamListener()
+        {
+            public void contentStreamClosed() throws ContentIOException
+            {
+                streamClosed[0] = true;
+            }
+        };
+        writer.setRetryingTransactionHelper(null);
+        writer.addListener(listener);
+        
+        // write some content
+        writer.putContent("ABC");
+        
+        // check that the listener was called
+        assertTrue("Write stream listener was not called for the stream close", streamClosed[0]);
+    }
+    
+    /**
+     * The simplest test.  Write a string and read it again, checking that we receive the same values.
+     * If the resource accessed by {@link #getReader()} and {@link #getWriter()} is not the same, then
+     * values written and read won't be the same.
+     */
+    public void testWriteAndReadString() throws Exception
+    {
+        ContentWriter writer = getWriter();
+        
+        String content = "ABC";
+        writer.putContent(content);
+        assertTrue("Stream close not detected", writer.isClosed());
+
+        ContentReader reader = writer.getReader();
+        String check = reader.getContentString();
+        assertTrue("Read and write may not share same resource", check.length() > 0);
+        assertEquals("Write and read didn't work", content, check);
+    }
+    
+    public void testStringTruncation() throws Exception
+    {
+        String content = "1234567890";
+        
+        ContentWriter writer = getWriter();
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");  // shorter format i.t.o. bytes used
+        // write the content
+        writer.putContent(content);
+        
+        // get a reader - get it in a larger format i.t.o. bytes
+        ContentReader reader = writer.getReader();
+        String checkContent = reader.getContentString(5);
+        assertEquals("Truncated strings don't match", "12345", checkContent);
+    }
+    
+    public void testReadAndWriteFile() throws Exception
+    {
+        ContentWriter writer = getWriter();
+        
+        File sourceFile = File.createTempFile(getName(), ".txt");
+        sourceFile.deleteOnExit();
+        // dump some content into the temp file
+        String content = "ABC";
+        FileOutputStream os = new FileOutputStream(sourceFile);
+        os.write(content.getBytes());
+        os.flush();
+        os.close();
+        
+        // put our temp file's content
+        writer.putContent(sourceFile);
+        assertTrue("Stream close not detected", writer.isClosed());
+        
+        // create a sink temp file
+        File sinkFile = File.createTempFile(getName(), ".txt");
+        sinkFile.deleteOnExit();
+        
+        // get the content into our temp file
+        ContentReader reader = writer.getReader();
+        reader.getContent(sinkFile);
+        
+        // read the sink file manually
+        FileInputStream is = new FileInputStream(sinkFile);
+        byte[] buffer = new byte[100];
+        int count = is.read(buffer);
+        assertEquals("No content read", 3, count);
+        is.close();
+        String check = new String(buffer, 0, count);
+        
+        assertEquals("Write out of and read into files failed", content, check);
+    }
+    
+    public void testReadAndWriteStreamByPull() throws Exception
+    {
+        ContentWriter writer = getWriter();
+
+        String content = "ABC";
+        // put the content using a stream
+        InputStream is = new ByteArrayInputStream(content.getBytes());
+        writer.putContent(is);
+        assertTrue("Stream close not detected", writer.isClosed());
+        
+        // get the content using a stream
+        ByteArrayOutputStream os = new ByteArrayOutputStream(100);
+        ContentReader reader = writer.getReader();
+        reader.getContent(os);
+        byte[] bytes = os.toByteArray();
+        String check = new String(bytes);
+        
+        assertEquals("Write out and read in using streams failed", content, check);
+    }
+    
+    public void testReadAndWriteStreamByPush() throws Exception
+    {
+        ContentWriter writer = getWriter();
+
+        String content = "ABC";
+        // get the content output stream
+        OutputStream os = writer.getContentOutputStream();
+        os.write(content.getBytes());
+        assertFalse("Stream has not been closed", writer.isClosed());
+        // close the stream and check again
+        os.close();
+        assertTrue("Stream close not detected", writer.isClosed());
+        
+        // pull the content from a stream
+        ContentReader reader = writer.getReader();
+        InputStream is = reader.getContentInputStream();
+        byte[] buffer = new byte[100];
+        int count = is.read(buffer);
+        assertEquals("No content read", 3, count);
+        is.close();
+        String check = new String(buffer, 0, count);
+        
+        assertEquals("Write out of and read into files failed", content, check);
+    }
+    
+    /**
      * Tests retrieval of all content URLs
      * <p>
      * Only applies when {@link #getStore()} returns a value.
@@ -547,7 +600,17 @@ public abstract class AbstractContentReadWriteTest extends TestCase
     public void testListUrls() throws Exception
     {
         ContentStore store = getStore();
-
+        // Ensure that this test can be done
+        try
+        {
+            store.getUrls();
+        }
+        catch (UnsupportedOperationException e)
+        {
+            logger.warn("Store test " + getName() + " not possible on " + store.getClass().getName());
+            return;
+        }
+        // Proceed with the test
         ContentWriter writer = getWriter();
         
         Set<String> contentUrls = store.getUrls();
@@ -566,14 +629,6 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         // check that the query for content created before this time yesterday doesn't return the URL
         contentUrls = store.getUrls(null, yesterday);
         assertFalse("URL was younger than required, but still shows up", contentUrls.contains(contentUrl));
-        
-        // delete the content
-        boolean deleted = store.delete(contentUrl);
-        if (deleted)
-        {
-            contentUrls = store.getUrls();
-            assertFalse("Successfully deleted URL still shown by store", contentUrls.contains(contentUrl));
-        }
     }
     
     /**
@@ -623,7 +678,7 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         }
         
         // get a new writer from the store, using the existing content and perform a truncation check
-        ContentContext writerTruncateCtx = new ContentContext(writer.getReader(), AbstractContentStore.createNewUrl());
+        ContentContext writerTruncateCtx = new ContentContext(writer.getReader(), null);
         ContentWriter writerTruncate = getStore().getWriter(writerTruncateCtx);
         assertEquals("Content size incorrect", 0, writerTruncate.getSize());
         // get the channel with truncation
@@ -632,7 +687,7 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         assertEquals("Content not truncated", 0, writerTruncate.getSize());
         
         // get a new writer from the store, using the existing content and perform a non-truncation check
-        ContentContext writerNoTruncateCtx = new ContentContext(writer.getReader(), AbstractContentStore.createNewUrl());
+        ContentContext writerNoTruncateCtx = new ContentContext(writer.getReader(), null);
         ContentWriter writerNoTruncate = getStore().getWriter(writerNoTruncateCtx);
         assertEquals("Content size incorrect", 0, writerNoTruncate.getSize());
         // get the channel without truncation

@@ -34,6 +34,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.text.MessageFormat;
 
 import org.alfresco.repo.content.AbstractContentReader;
+import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -119,7 +120,9 @@ public class FileContentReader extends AbstractContentReader
      */
     public FileContentReader(File file)
     {
-        this(file, FileContentStore.STORE_PROTOCOL + file.getAbsolutePath());
+        this(
+                file,
+                FileContentStore.STORE_PROTOCOL + ContentStore.PROTOCOL_DELIMITER + file.getAbsolutePath());
     }
     
     /**

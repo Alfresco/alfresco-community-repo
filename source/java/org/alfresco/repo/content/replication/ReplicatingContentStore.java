@@ -203,6 +203,23 @@ public class ReplicatingContentStore extends AbstractContentStore
     }
     
     /**
+     * @return      Returns <tt>true</tt> if the primary store supports writing
+     */
+    public boolean isWriteSupported()
+    {
+        return primaryStore.isWriteSupported();
+    }
+
+    /**
+     * @return      Returns <tt>true</tt> if the primary store supports the URL
+     */
+    @Override
+    public boolean isContentUrlSupported(String contentUrl)
+    {
+        return primaryStore.isContentUrlSupported(contentUrl);
+    }
+
+    /**
      * Forwards the call directly to the first store in the list of stores.
      */
     public ContentReader getReader(String contentUrl) throws ContentIOException
@@ -443,6 +460,13 @@ public class ReplicatingContentStore extends AbstractContentStore
                                     "   url: " + contentUrl + "\n" +
                                     "   to store: " + store);
                         }
+                    }
+                    catch (UnsupportedOperationException e)
+                    {
+                        throw new ContentIOException(
+                                "Unable to replicate content.  The target store doesn't support replication: \n" +
+                                "   Content:  " + writer.getContentUrl() + "\n" +
+                                "   To Store: " + store);
                     }
                     catch (Throwable e)
                     {

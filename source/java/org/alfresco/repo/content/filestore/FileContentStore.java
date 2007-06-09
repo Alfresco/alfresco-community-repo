@@ -26,16 +26,23 @@ package org.alfresco.repo.content.filestore;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentContext;
+import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.EmptyContentReader;
+import org.alfresco.repo.content.UnsupportedContentUrlException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -50,11 +57,18 @@ import org.apache.commons.logging.LogFactory;
  */
 public class FileContentStore extends AbstractContentStore
 {
+    /**
+     * <b>store</b> is the new prefix for file content URLs
+     * @see ContentStore#PROTOCOL_DELIMITER
+     */
+    public static final String STORE_PROTOCOL = "store";
+    
     private static final Log logger = LogFactory.getLog(FileContentStore.class);
     
     private File rootDirectory;
     private String rootAbsolutePath;
     private boolean allowRandomAccess;
+    private boolean readOnly;
 
     /**
      * @param rootDirectoryStr  the root under which files will be stored.
@@ -83,6 +97,7 @@ public class FileContentStore extends AbstractContentStore
         this.rootDirectory = rootDirectory.getAbsoluteFile();
         rootAbsolutePath = rootDirectory.getAbsolutePath();
         allowRandomAccess = true;
+        readOnly = false;
     }
     
     public String toString()
@@ -90,6 +105,8 @@ public class FileContentStore extends AbstractContentStore
         StringBuilder sb = new StringBuilder(36);
         sb.append("FileContentStore")
           .append("[ root=").append(rootDirectory)
+          .append(", allowRandomAccess=").append(allowRandomAccess)
+          .append(", readOnly=").append(readOnly)
           .append("]");
         return sb.toString();
     }
@@ -111,6 +128,18 @@ public class FileContentStore extends AbstractContentStore
     }
 
     /**
+     * File stores may optionally be declared read-only.  This is useful when configuring
+     * a store, possibly temporarily, to act as a source of data but to preserve it against
+     * any writes.
+     * 
+     * @param readOnly      <tt>true</tt> to force the store to only allow reads.
+     */
+    public void setReadOnly(boolean readOnly)
+    {
+        this.readOnly = readOnly;
+    }
+
+    /**
      * Generates a new URL and file appropriate to it.
      * 
      * @return Returns a new and unique file
@@ -118,7 +147,7 @@ public class FileContentStore extends AbstractContentStore
      */
     private File createNewFile() throws IOException
     {
-        String contentUrl = createNewUrl();
+        String contentUrl = FileContentStore.createNewFileStoreUrl();
         return createNewFile(contentUrl);
     }
     
@@ -131,11 +160,20 @@ public class FileContentStore extends AbstractContentStore
      * 
      * @param newContentUrl the specific URL to use, which may not be in use
      * @return Returns a new and unique file
-     * @throws IOException if the file or parent directories couldn't be created or
-     *      if the URL is already in use.
+     * @throws IOException
+     *      if the file or parent directories couldn't be created or if the URL is already in use.
+     * @throws UnsupportedOperationException
+     *      if the store is read-only
+     * 
+     * @see #setReadOnly(boolean)
      */
     public File createNewFile(String newContentUrl) throws IOException
     {
+        if (readOnly)
+        {
+            throw new UnsupportedOperationException("This store is currently read-only: " + this);
+        }
+        
         File file = makeFile(newContentUrl);
 
         // create the directory, if it doesn't exist
@@ -185,7 +223,7 @@ public class FileContentStore extends AbstractContentStore
             index++;
         }
         // strip off the root path and adds the protocol prefix
-        String url = AbstractContentStore.STORE_PROTOCOL + path.substring(index);
+        String url = FileContentStore.STORE_PROTOCOL + ContentStore.PROTOCOL_DELIMITER + path.substring(index);
         // replace '\' with '/' so that URLs are consistent across all filesystems
         url = url.replace('\\', '/');
         // done
@@ -195,34 +233,45 @@ public class FileContentStore extends AbstractContentStore
     /**
      * Creates a file from the given relative URL.
      * 
-     * @param contentUrl the content URL including the protocol prefix
-     * @return Returns a file representing the URL - the file may or may not
-     *      exist 
+     * @param contentUrl    the content URL including the protocol prefix
+     * @return              Returns a file representing the URL - the file may or may not
+     *                      exist
+     * @throws UnsupportedContentUrlException
+     *                      if the URL is invalid and doesn't support the
+     *                      {@link FileContentStore#STORE_PROTOCOL correct protocol}
      * 
      * @see #checkUrl(String)
      */
     private File makeFile(String contentUrl)
     {
         // take just the part after the protocol
-        String relativeUrl = FileContentStore.getRelativePart(contentUrl);
-        if (relativeUrl == null)
+        Pair<String, String> urlParts = super.getContentUrlParts(contentUrl);
+        String protocol = urlParts.getFirst();
+        String relativePath = urlParts.getSecond();
+        // Check the protocol
+        if (!protocol.equals(FileContentStore.STORE_PROTOCOL))
         {
-            throw new ContentIOException(
-                    "The content URL is not valid for this store: \n" +
-                    "   Store:       " + this + "\n" +
-                    "   Content URL: " + contentUrl);
+            throw new UnsupportedContentUrlException(this, contentUrl);
         }
         // get the file
-        File file = new File(rootDirectory, relativeUrl);
+        File file = new File(rootDirectory, relativePath);
         // done
         return file;
     }
-    
+
+    /**
+     * @return      Returns <tt>true</tt> always
+     */
+    public boolean isWriteSupported()
+    {
+        return true;
+    }
+
     /**
      * Performs a direct check against the file for its existence.
      */
     @Override
-    public boolean exists(String contentUrl) throws ContentIOException
+    public boolean exists(String contentUrl)
     {
         File file = makeFile(contentUrl);
         return file.exists();
@@ -237,8 +286,17 @@ public class FileContentStore extends AbstractContentStore
         try
         {
             File file = makeFile(contentUrl);
-            FileContentReader reader = new FileContentReader(file, contentUrl);
-            reader.setAllowRandomAccess(allowRandomAccess);
+            ContentReader reader = null;
+            if (file.exists())
+            {
+                FileContentReader fileContentReader = new FileContentReader(file, contentUrl);
+                fileContentReader.setAllowRandomAccess(allowRandomAccess);
+                reader = fileContentReader;
+            }
+            else
+            {
+                reader = new EmptyContentReader(contentUrl);
+            }
             
             // done
             if (logger.isDebugEnabled())
@@ -250,6 +308,11 @@ public class FileContentStore extends AbstractContentStore
             }
             return reader;
         }
+        catch (UnsupportedContentUrlException e)
+        {
+            // This can go out directly
+            throw e;
+        }
         catch (Throwable e)
         {
             throw new ContentIOException("Failed to get reader for URL: " + contentUrl, e);
@@ -259,10 +322,8 @@ public class FileContentStore extends AbstractContentStore
     /**
      * @return Returns a writer onto a location based on the date
      */
-    public ContentWriter getWriter(ContentContext ctx)
+    public ContentWriter getWriterInternal(ContentReader existingContentReader, String newContentUrl)
     {
-        ContentReader existingContentReader = ctx.getExistingContentReader();
-        String newContentUrl = ctx.getContentUrl();
         try
         {
             File file = null;
@@ -358,9 +419,17 @@ public class FileContentStore extends AbstractContentStore
     /**
      * Attempts to delete the content.  The actual deletion is optional on the interface
      * so it just returns the success or failure of the underlying delete.
+     * 
+     * @throws UnsupportedOperationException        if the store is read-only
+     * 
+     * @see #setReadOnly(boolean)
      */
-    public boolean delete(String contentUrl) throws ContentIOException
+    public boolean delete(String contentUrl)
     {
+        if (readOnly)
+        {
+            throw new UnsupportedOperationException("This store is currently read-only: " + this);
+        }
         // ignore files that don't exist
         File file = makeFile(contentUrl);
         boolean deleted = false;
@@ -384,45 +453,31 @@ public class FileContentStore extends AbstractContentStore
     }
 
     /**
-     * This method can be used to ensure that URLs conform to the required format.
-     * If subclasses have to parse the URL, then a call to this may not be required -
-     * provided that the format is checked.
-     * <p>
-     * The protocol part of the URL (including legacy protocols)
-     * is stripped out and just the relative path is returned.  If no known prefix is
-     * found, or if the relative part is empty, then <tt>null</tt> is returned.
+     * Creates a new content URL.  This must be supported by all
+     * stores that are compatible with Alfresco.
      * 
-     * @param contentUrl        a URL of the content to check
-     * @return                  Returns the relative part of the URL.  If there is no
-     *                          prefix, then the URL is assumed to be the relative part.
+     * @return Returns a new and unique content URL
      */
-    public static String getRelativePart(String contentUrl)
+    public static String createNewFileStoreUrl()
     {
-        int index = 0;
-        if (contentUrl.startsWith(STORE_PROTOCOL))
-        {
-            index = 8;
-        }
-        else if (contentUrl.startsWith("file://"))
-        {
-            index = 7;
-        }
-        else
-        {
-            if (contentUrl.length() == 0)
-            {
-                throw new IllegalArgumentException("Invalid FileStore content URL: " + contentUrl);
-            }
-            return contentUrl;
-        }
-        
-        // extract the relative part of the URL
-        String path = contentUrl.substring(index);
-        // more extensive checks can be added in, but it seems overkill
-        if (path.length() == 0)
-        {
-            throw new IllegalArgumentException("Invalid FileStore content URL: " + contentUrl);
-        }
-        return path;
+        Calendar calendar = new GregorianCalendar();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH) + 1;  // 0-based
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        // create the URL
+        StringBuilder sb = new StringBuilder(20);
+        sb.append(FileContentStore.STORE_PROTOCOL)
+          .append(ContentStore.PROTOCOL_DELIMITER)
+          .append(year).append('/')
+          .append(month).append('/')
+          .append(day).append('/')
+          .append(hour).append('/')
+          .append(minute).append('/')
+          .append(GUID.generate()).append(".bin");
+        String newContentUrl = sb.toString();
+        // done
+        return newContentUrl;
     }
 }

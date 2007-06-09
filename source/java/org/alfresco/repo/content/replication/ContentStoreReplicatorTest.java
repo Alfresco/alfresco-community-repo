@@ -30,6 +30,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.alfresco.repo.content.AbstractContentStore;
+import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -76,7 +77,7 @@ public class ContentStoreReplicatorTest extends TestCase
      */
     public void testSinglePassReplication() throws Exception
     {
-        ContentWriter writer = sourceStore.getWriter(null, null);
+        ContentWriter writer = sourceStore.getWriter(ContentStore.NEW_CONTENT_CONTEXT);
         writer.putContent("123");
         
         // replicate
@@ -92,7 +93,7 @@ public class ContentStoreReplicatorTest extends TestCase
                 targetStore.exists(writer.getContentUrl()));
         
         // this was a single pass, so now more replication should be done
-        writer = sourceStore.getWriter(null, null);
+        writer = sourceStore.getWriter(ContentStore.NEW_CONTENT_CONTEXT);
         writer.putContent("456");
 
         // wait a second
@@ -119,21 +120,22 @@ public class ContentStoreReplicatorTest extends TestCase
     {
         replicator.start();
         
-        String duplicateUrl = AbstractContentStore.createNewUrl();
+        String duplicateUrl = null;
         // start the replicator - it won't wait between iterations
         for (int i = 0; i < 10; i++)
         {
             // put some content into both the target and source
-            duplicateUrl = AbstractContentStore.createNewUrl();
-            ContentWriter duplicateTargetWriter = targetStore.getWriter(null, duplicateUrl); 
-            ContentWriter duplicateSourceWriter = sourceStore.getWriter(null, duplicateUrl);
+            ContentWriter duplicateSourceWriter = sourceStore.getWriter(ContentStore.NEW_CONTENT_CONTEXT);
+            duplicateUrl = duplicateSourceWriter.getContentUrl();
+            ContentContext targetContentCtx = new ContentContext(null, duplicateUrl);
+            ContentWriter duplicateTargetWriter = targetStore.getWriter(targetContentCtx); 
             duplicateTargetWriter.putContent("Duplicate Target Content: " + i);
             duplicateSourceWriter.putContent(duplicateTargetWriter.getReader());
             
             for (int j = 0; j < 100; j++)
             {
                 // write content
-                ContentWriter writer = sourceStore.getWriter(null, null);
+                ContentWriter writer = sourceStore.getWriter(ContentStore.NEW_CONTENT_CONTEXT);
                 writer.putContent("Repeated put: " + j);
             }
         }

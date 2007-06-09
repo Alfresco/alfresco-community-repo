@@ -24,15 +24,15 @@
  */
 package org.alfresco.repo.content;
 
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.util.Date;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Base class providing support for different types of content stores.
@@ -41,94 +41,112 @@ import org.alfresco.util.GUID;
  * reasons of replication and backup, the most important functionality
  * provided is the generation of new content URLs and the checking of
  * existing URLs.
+ * <p>
+ * Implementations must override either of the <b>getWriter</b> methods;
+ * {@link #getWriter(ContentContext)} or {@link #getWriterInternal(ContentReader, String)}.
+ * 
+ * @see #getWriter(ContentReader, String)
+ * @see #getWriterInternal(ContentReader, String)
  * 
  * @author Derek Hulley
  */
 public abstract class AbstractContentStore implements ContentStore
 {
+    private static Log logger = LogFactory.getLog(AbstractContentStore.class);
+    /** Helper */
+    private static final int PROTOCOL_DELIMETER_LENGTH = PROTOCOL_DELIMITER.length();
+
     /**
-     * Creates a new content URL.  This must be supported by all
-     * stores that are compatible with Alfresco.
+     * Checks that the content conforms to the format <b>protocol://identifier</b>
+     * as specified in the contract of the {@link ContentStore} interface.
      * 
-     * @return Returns a new and unique content URL
+     * @param contentUrl    the content URL to check
+     * @return              Returns <tt>true</tt> if the content URL is valid
+     * 
+     * @since 2.1
      */
-    public static String createNewUrl()
+    public static final boolean isValidContentUrl(String contentUrl)
     {
-        Calendar calendar = new GregorianCalendar();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1;  // 0-based
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
-        // create the URL
-        StringBuilder sb = new StringBuilder(20);
-        sb.append(STORE_PROTOCOL)
-          .append(year).append('/')
-          .append(month).append('/')
-          .append(day).append('/')
-          .append(hour).append('/')
-          .append(minute).append('/')
-          .append(GUID.generate()).append(".bin");
-        String newContentUrl = sb.toString();
-        // done
-        return newContentUrl;
+        if (contentUrl == null)
+        {
+            return false;
+        }
+        int index = contentUrl.indexOf(ContentStore.PROTOCOL_DELIMITER);
+        if (index <= 0)
+        {
+            return false;
+        }
+        if (contentUrl.length() <= (index + PROTOCOL_DELIMETER_LENGTH))
+        {
+            return false;
+        }
+        return true;
     }
     
     /**
-     * This method can be used to ensure that URLs conform to the
-     * required format.  If subclasses have to parse the URL,
-     * then a call to this may not be required - provided that
-     * the format is checked.
-     * <p>
-     * The protocol part of the URL (including legacy protocols)
-     * is stripped out and just the relative path is returned.
+     * Splits the content URL into its component parts as separated by
+     * {@link ContentStore#PROTOCOL_DELIMITER protocol delimiter}.
      * 
-     * @param contentUrl a URL of the content to check
-     * @return Returns the relative part of the URL
-     * @throws RuntimeException if the URL is not correct
+     * @param contentUrl    the content URL to split
+     * @return              Returns the protocol and identifier portions of the content URL,
+     *                      both of which will not be <tt>null</tt>
+     * @throws              UnsupportedContentUrlException if the content URL is invalid
      * 
-     * @deprecated  Stores can really have any prefix in the URL.  This method was
-     *              really specific to the FileContentStore and has been moved into
-     *              it.
+     * @since 2.1
      */
-    public static String getRelativePart(String contentUrl) throws RuntimeException
+    protected Pair<String, String> getContentUrlParts(String contentUrl)
     {
-        int index = 0;
-        if (contentUrl.startsWith(STORE_PROTOCOL))
+        if (contentUrl == null)
         {
-            index = 8;
+            throw new IllegalArgumentException("The contentUrl may not be null");
         }
-        else if (contentUrl.startsWith("file://"))
+        int index = contentUrl.indexOf(ContentStore.PROTOCOL_DELIMITER);
+        if (index <= 0)
         {
-            index = 7;
+            throw new UnsupportedContentUrlException(this, contentUrl);
         }
-        else
+        String protocol = contentUrl.substring(0, index);
+        String identifier = contentUrl.substring(
+                index + PROTOCOL_DELIMETER_LENGTH,
+                contentUrl.length());
+        if (identifier.length() == 0)
         {
-            throw new AlfrescoRuntimeException(
-                    "All content URLs must start with " + STORE_PROTOCOL + ": \n" +
-                    "   the invalid url is: " + contentUrl);
+            throw new UnsupportedContentUrlException(this, contentUrl);
         }
-        
-        // extract the relative part of the URL
-        String path = contentUrl.substring(index);
-        // more extensive checks can be added in, but it seems overkill
-        if (path.length() < 8)
-        {
-            throw new AlfrescoRuntimeException(
-                    "The content URL is invalid: \n" +
-                    "   content url: " + contentUrl);
-        }
-        return path;
+        return new Pair<String, String>(protocol, identifier);
     }
 
     /**
-     * Simple implementation that uses the
-     * {@link ContentReader#exists() reader's exists} method as its implementation.
+     * Override this method to supply a efficient and direct check of the URL supplied.
+     * The default implementation checks whether {@link ContentStore#getReader(String)}
+     * throws the {@link UnsupportedContentUrlException} exception.
+     * 
+     * @since 2.1
      */
-    public boolean exists(String contentUrl) throws ContentIOException
+    public boolean isContentUrlSupported(String contentUrl)
     {
-        ContentReader reader = getReader(contentUrl);
-        return reader.exists();
+        try
+        {
+            getReader(contentUrl);
+            return true;
+        }
+        catch (UnsupportedContentUrlException e)
+        {
+            // It is not supported
+            return false;
+        }
+    }
+
+    /**
+     * Override if the derived class supports the operation.
+     * 
+     * @throws UnsupportedOperationException    always
+     * 
+     * @since 2.1
+     */
+    public boolean delete(String contentUrl)
+    {
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -136,16 +154,124 @@ public abstract class AbstractContentStore implements ContentStore
      * 
      * @see ContentStore#getUrls(java.util.Date, java.util.Date)
      */
-    public final Set<String> getUrls() throws ContentIOException
+    public final Set<String> getUrls()
     {
         return getUrls(null, null);
+    }
+
+    /**
+     * Override if the derived class supports the operation.
+     * 
+     * @throws UnsupportedOperationException    always
+     * 
+     * @since 2.1
+     */
+    public Set<String> getUrls(Date createdAfter, Date createdBefore)
+    {
+        throw new UnsupportedOperationException();
+    }
+    
+    /**
+     * Implement to supply a store-specific writer for the given existing content
+     * and optional target content URL.
+     * 
+     * @param existingContentReader     a reader onto any content to initialize the new writer with
+     * @param newContentUrl             an optional target for the new content
+     *                 
+     * @throws UnsupportedContentUrlException
+     *      if the content URL supplied is not supported by the store
+     * @throws ContentExistsException
+     *      if the content URL is already in use
+     * @throws ContentIOException
+     *      if an IO error occurs
+     * 
+     * @since 2.1
+     */
+    protected ContentWriter getWriterInternal(ContentReader existingContentReader, String newContentUrl)
+    {
+        throw new UnsupportedOperationException("Override getWriterInternal (preferred) or getWriter");
+    }
+
+    /**
+     * An implementation that does some sanity checking before requesting a writer from the
+     * store.  If this method is not overridden, then an implementation of
+     * {@link #getWriterInternal(ContentReader, String)} must be supplied.
+     * 
+     * @see #getWriterInternal(ContentReader, String)
+     * @since 2.1
+     */
+    public ContentWriter getWriter(ContentContext context)
+    {
+        ContentReader existingContentReader = context.getExistingContentReader();
+        String contentUrl = context.getContentUrl();
+        // Check if the store handles writes
+        if (!isWriteSupported())
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Write requests are not supported for this store:\n" +
+                        "   Store:   " + this + "\n" +
+                        "   Context: " + context);
+            }
+            throw new UnsupportedOperationException("Write operations are not supported by this store: " + this);
+        }
+        // Check the content URL
+        if (contentUrl != null)
+        {
+            if (!isContentUrlSupported(contentUrl))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(
+                            "Specific writer content URL is unsupported: \n" +
+                            "   Store:   " + this + "\n" +
+                            "   Context: " + context);
+                }
+                throw new UnsupportedContentUrlException(this, contentUrl);
+            }
+            else if (exists(contentUrl))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(
+                            "The content location is already used: \n" +
+                            "   Store:   " + this + "\n" +
+                            "   Context: " + context);
+                }
+                throw new ContentExistsException(this, contentUrl);
+            }
+        }
+        // Get the writer
+        ContentWriter writer = getWriterInternal(existingContentReader, contentUrl);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Fetched new writer: \n" +
+                    "   Store:   " + this + "\n" +
+                    "   Context: " + context + "\n" +
+                    "   Writer:  " + writer);
+        }
+        return writer;
+    }
+    
+    /**
+     * Simple implementation that uses the
+     * {@link ContentReader#exists() reader's exists} method as its implementation.
+     * Override this method if a more efficient implementation is possible.
+     */
+    public boolean exists(String contentUrl)
+    {
+        ContentReader reader = getReader(contentUrl);
+        return reader.exists();
     }
 
     /**
      * @see ContentContext
      * @see ContentStore#getWriter(ContentContext)
      */
-    public final ContentWriter getWriter(ContentReader existingContentReader, String newContentUrl) throws ContentIOException
+    public final ContentWriter getWriter(ContentReader existingContentReader, String newContentUrl)
     {
         ContentContext ctx = new ContentContext(existingContentReader, newContentUrl);
         return getWriter(ctx);

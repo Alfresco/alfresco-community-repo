@@ -33,6 +33,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
 import org.alfresco.repo.content.AbstractContentWriter;
+import org.alfresco.repo.content.ContentStore;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.apache.commons.logging.Log;
@@ -60,10 +61,7 @@ public class FileContentWriter extends AbstractContentWriter
      */
     public FileContentWriter(File file)
     {
-        this(
-                file,
-                FileContentStore.STORE_PROTOCOL + file.getAbsolutePath(),
-                null);
+        this(file, null);
     }
     
     /**
@@ -77,7 +75,7 @@ public class FileContentWriter extends AbstractContentWriter
     {
         this(
                 file,
-                FileContentStore.STORE_PROTOCOL + file.getAbsolutePath(),
+                FileContentStore.STORE_PROTOCOL + ContentStore.PROTOCOL_DELIMITER + file.getAbsolutePath(),
                 existingContentReader);
     }
     

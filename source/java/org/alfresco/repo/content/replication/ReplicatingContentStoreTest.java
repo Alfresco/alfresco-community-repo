@@ -32,7 +32,7 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.alfresco.repo.content.AbstractContentReadWriteTest;
+import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.filestore.FileContentStore;
@@ -51,7 +51,7 @@ import org.alfresco.util.TempFileProvider;
  * 
  * @author Derek Hulley
  */
-public class ReplicatingContentStoreTest extends AbstractContentReadWriteTest
+public class ReplicatingContentStoreTest extends AbstractWritableContentStoreTest
 {
     private static final String SOME_CONTENT = "The No. 1 Ladies' Detective Agency";
     

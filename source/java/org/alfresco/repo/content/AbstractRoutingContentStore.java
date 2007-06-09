@@ -32,6 +32,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -70,7 +71,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     {
         this.storesByContentUrl = storesCache;
     }
-    
+
     /**
      * @return          Returns a list of all possible stores available for reading or writing
      */
@@ -101,10 +102,28 @@ public abstract class AbstractRoutingContentStore implements ContentStore
         {
             // Check if the store is in the cache
             ContentStore store = storesByContentUrl.get(contentUrl);
-            if (store != null && store.exists(contentUrl))
+            if (store != null)
             {
-                // We found a store and can use it
-                return store;
+                // We found a store that was previously used
+                try
+                {
+                    // It is possible for content to be removed from a store and
+                    // it might have moved into another store.
+                    if (store.exists(contentUrl))
+                    {
+                        // We found a store and can use it
+                        return store;
+                    }
+                }
+                catch (UnsupportedContentUrlException e)
+                {
+                    // This is odd.  The store that previously supported the content URL
+                    // no longer does so.  I can't think of a reason why that would be.
+                    throw new AlfrescoRuntimeException(
+                            "Found a content store that previously supported a URL, but no longer does: \n" +
+                            "   Store:       " + store + "\n" +
+                            "   Content URL: " + contentUrl);
+                }
             }
         }
         finally
@@ -129,23 +148,30 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                 }
                 return store;
             }
+            else
+            {
+                store = null;
+            }
             // It isn't, so search all the stores
             List<ContentStore> stores = getAllStores();
+            // Keep track of the unsupported state of the content URL - it might be a rubbish URL
+            boolean contentUrlSupported = false;
             for (ContentStore storeInList : stores)
             {
                 boolean exists = false;
                 try
                 {
                     exists = storeInList.exists(contentUrl);
-                    if (!exists)
-                    {
-                        // It is not in the store
-                        continue;
-                    }
+                    // At least the content URL was supported
+                    contentUrlSupported = true;
                 }
-                catch (Throwable e)
+                catch (UnsupportedContentUrlException e)
                 {
-                    // The API used to allow failure when the URL wasn't there
+                    // The store can't handle the content URL
+                }
+                if (!exists)
+                {
+                    // It is not in the store
                     continue;
                 }
                 // We found one
@@ -153,6 +179,11 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                 // Put the value in the cache
                 storesByContentUrl.put(contentUrl, store);
                 break;
+            }
+            // Check if the content URL was supported
+            if (!contentUrlSupported)
+            {
+                throw new UnsupportedContentUrlException(this, contentUrl);
             }
             // Done
             if (logger.isDebugEnabled())
@@ -171,25 +202,49 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     }
 
     /**
-     * This operation has to be performed on all the stores in order to maintain the
-     * {@link ContentStore#exists(String)} contract.
+     * @return      Returns <tt>true</tt> if the URL is supported by any of the stores.
      */
-    public boolean delete(String contentUrl) throws ContentIOException
+    public boolean isContentUrlSupported(String contentUrl)
     {
-        boolean deleted = true;
         List<ContentStore> stores = getAllStores();
+        boolean supported = false;
         for (ContentStore store : stores)
         {
-            deleted &= store.delete(contentUrl);
+            if (store.isContentUrlSupported(contentUrl))
+            {
+                supported = true;
+                break;
+            }
         }
         // Done
         if (logger.isDebugEnabled())
         {
-            logger.debug("Deleted content URL from stores: \n" +
-                    "   Stores:  " + stores.size() + "\n" +
-                    "   Deleted: " + deleted);
+            logger.debug("The url " + (supported ? "is" : "is not") + " supported by at least one store.");
         }
-        return deleted;
+        return supported;
+    }
+
+    /**
+     * @return      Returns <tt>true</tt> if write is supported by any of the stores.
+     */
+    public boolean isWriteSupported()
+    {
+        List<ContentStore> stores = getAllStores();
+        boolean supported = false;
+        for (ContentStore store : stores)
+        {
+            if (store.isWriteSupported())
+            {
+                supported = true;
+                break;
+            }
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Writing " + (supported ? "is" : "is not") + " supported by at least one store.");
+        }
+        return supported;
     }
 
     /**
@@ -226,6 +281,87 @@ public abstract class AbstractRoutingContentStore implements ContentStore
             }
             return new EmptyContentReader(contentUrl);
         }
+    }
+
+    /**
+     * Selects a store for the given context and caches store that was used.
+     * 
+     * @see #selectWriteStore(ContentContext)
+     */
+    public ContentWriter getWriter(ContentContext context) throws ContentIOException
+    {
+        String contentUrl = context.getContentUrl();
+        if (contentUrl != null)
+        {
+            // Check to see if it is in the cache
+            storesCacheReadLock.lock();
+            try
+            {
+                // Check if the store is in the cache
+                ContentStore store = storesByContentUrl.get(contentUrl);
+                if (store != null)
+                {
+                    throw new ContentExistsException(this, contentUrl);
+                }
+                /*
+                 * We could go further and check each store for the existence of the URL,
+                 * but that would be overkill.  The main problem we need to prevent is
+                 * the simultaneous access of the same store.  The router represents
+                 * a single store and therefore if the URL is present in any of the stores,
+                 * it is effectively present in all of them.
+                 */
+            }
+            finally
+            {
+                storesCacheReadLock.unlock();
+            }
+        }
+        // Select the store for writing
+        ContentStore store = selectWriteStore(context);
+        // Check that we were given a valid store
+        if (store == null)
+        {
+            throw new NullPointerException(
+                    "Unable to find a writer.  'selectWriteStore' may not return null: \n" +
+                    "   Router: " + this + "\n" +
+                    "   Chose:  " + store);
+        }
+        else if (!store.isWriteSupported())
+        {
+            throw new AlfrescoRuntimeException(
+                    "A write store was chosen that doesn't support writes: \n" +
+                    "   Router: " + this + "\n" +
+                    "   Chose:  " + store);
+        }
+        ContentWriter writer = store.getWriter(context);
+        // Cache the store against the URL
+        storesCacheWriteLock.lock();
+        try
+        {
+            storesByContentUrl.put(contentUrl, store);
+        }
+        finally
+        {
+            storesCacheWriteLock.unlock();
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Got writer and cache URL from store: \n" +
+                    "   Context: " + context + "\n" +
+                    "   Writer:  " + writer + "\n" +
+                    "   Store:   " + store);
+        }
+        return writer;
+    }
+
+    /**
+     * @see 
+     */
+    public ContentWriter getWriter(ContentReader existingContentReader, String newContentUrl) throws ContentIOException
+    {
+        return getWriter(new ContentContext(existingContentReader, newContentUrl));
     }
 
     /**
@@ -267,47 +403,27 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     }
 
     /**
-     * Selects a store for the given context and caches store that was used.
-     * 
-     * @see #selectWriteStore(ContentContext)
+     * This operation has to be performed on all the stores in order to maintain the
+     * {@link ContentStore#exists(String)} contract.
      */
-    public ContentWriter getWriter(ContentContext context) throws ContentIOException
+    public boolean delete(String contentUrl) throws ContentIOException
     {
-        // Select the store for writing
-        ContentStore store = selectWriteStore(context);
-        if (store == null)
+        boolean deleted = true;
+        List<ContentStore> stores = getAllStores();
+        for (ContentStore store : stores)
         {
-            throw new NullPointerException("Unable to find a writer.  'selectWriteStore' may not return null.");
-        }
-        ContentWriter writer = store.getWriter(context);
-        // Cache the store against the URL
-        storesCacheWriteLock.lock();
-        try
-        {
-            String contentUrl = writer.getContentUrl();
-            storesByContentUrl.put(contentUrl, store);
-        }
-        finally
-        {
-            storesCacheWriteLock.unlock();
+            if (store.isWriteSupported())
+            {
+                deleted &= store.delete(contentUrl);
+            }
         }
         // Done
         if (logger.isDebugEnabled())
         {
-            logger.debug(
-                    "Got writer and cache URL from store: \n" +
-                    "   Context: " + context + "\n" +
-                    "   Writer:  " + writer + "\n" +
-                    "   Store:   " + store);
+            logger.debug("Deleted content URL from stores: \n" +
+                    "   Stores:  " + stores.size() + "\n" +
+                    "   Deleted: " + deleted);
         }
-        return writer;
-    }
-
-    /**
-     * @see 
-     */
-    public ContentWriter getWriter(ContentReader existingContentReader, String newContentUrl) throws ContentIOException
-    {
-        return getWriter(new ContentContext(existingContentReader, newContentUrl));
+        return deleted;
     }
 }

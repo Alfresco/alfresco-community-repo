@@ -27,6 +27,7 @@ package org.alfresco.repo.content;
 import org.alfresco.repo.content.cleanup.ContentStoreCleanerTest;
 import org.alfresco.repo.content.filestore.FileContentStoreTest;
 import org.alfresco.repo.content.filestore.NoRandomAccessFileContentStoreTest;
+import org.alfresco.repo.content.filestore.ReadOnlyFileContentStoreTest;
 import org.alfresco.repo.content.metadata.HtmlMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.MappingMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.OfficeMetadataExtracterTest;
@@ -63,6 +64,7 @@ public class ContentTestSuite extends TestSuite
         suite.addTestSuite(ContentStoreCleanerTest.class);
         suite.addTestSuite(FileContentStoreTest.class);
         suite.addTestSuite(NoRandomAccessFileContentStoreTest.class);
+        suite.addTestSuite(ReadOnlyFileContentStoreTest.class);
         suite.addTestSuite(MappingMetadataExtracterTest.class);
         suite.addTestSuite(HtmlMetadataExtracterTest.class);
         suite.addTestSuite(OfficeMetadataExtracterTest.class);

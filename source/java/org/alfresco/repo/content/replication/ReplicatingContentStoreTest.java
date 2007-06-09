@@ -36,6 +36,7 @@ import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.filestore.FileContentStore;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.GUID;
@@ -197,5 +198,29 @@ public class ReplicatingContentStoreTest extends AbstractWritableContentStoreTes
         
         // this time, it must have been replicated to the primary store
         checkForReplication(true, false, contentUrl, SOME_CONTENT);
+    }
+    
+    public void testTargetContentUrlExists()
+    {
+        replicatingStore.setOutbound(true);
+        replicatingStore.setInbound(false);
+        // pick a secondary store and write some content to it
+        ContentStore secondaryStore = secondaryStores.get(2);
+        ContentWriter secondaryWriter = secondaryStore.getWriter(ContentContext.NULL_CONTEXT);
+        secondaryWriter.putContent("Content for secondary");
+        String secondaryContentUrl = secondaryWriter.getContentUrl();
+        
+        // Now write to the primary store
+        ContentWriter replicatingWriter = replicatingStore.getWriter(new ContentContext(null, secondaryContentUrl));
+        String replicatingContent = "Content for primary";
+        try
+        {
+            replicatingWriter.putContent(replicatingContent);
+            fail("Replication should fail when the secondary store already has the content");
+        }
+        catch (ContentIOException e)
+        {
+            // Expected
+        }
     }
 }

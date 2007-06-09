@@ -36,6 +36,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentContext;
+import org.alfresco.repo.content.ContentExistsException;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -441,8 +442,9 @@ public class ReplicatingContentStore extends AbstractContentStore
         {
             public void run()
             {
-                for (ContentStore store : stores)
+                for (int i = 0; i < stores.size(); i++)
                 {
+                    ContentStore store = stores.get(i);
                     try
                     {
                         // replicate the content to the store - we know the URL that we want to write to
@@ -457,22 +459,37 @@ public class ReplicatingContentStore extends AbstractContentStore
                         if (logger.isDebugEnabled())
                         {
                             logger.debug("Replicated content to store: \n" +
-                                    "   url: " + contentUrl + "\n" +
-                                    "   to store: " + store);
+                                    "   Content: " + writer + "\n" +
+                                    "   Store:   " + store + "\n" +
+                                    "   Number:  " + i);
                         }
                     }
                     catch (UnsupportedOperationException e)
                     {
                         throw new ContentIOException(
                                 "Unable to replicate content.  The target store doesn't support replication: \n" +
-                                "   Content:  " + writer.getContentUrl() + "\n" +
-                                "   To Store: " + store);
+                                "   Content: " + writer + "\n" +
+                                "   Store:   " + store + "\n" +
+                                "   Number:  " + i,
+                                e);
+                    }
+                    catch (ContentExistsException e)
+                    {
+                        throw new ContentIOException(
+                                "Content replication failed.  " +
+                                "The content URL already exists in the target (secondary) store: \n" +
+                                "   Content: " + writer + "\n" +
+                                "   Store:   " + store + "\n" +
+                                "   Number:  " + i);
                     }
                     catch (Throwable e)
                     {
-                        throw new ContentIOException("Content replication failed: \n" +
-                                "   url: " + writer.getContentUrl() + "\n" +
-                                "   to store: " + store);
+                        throw new ContentIOException(
+                                "Content replication failed: \n" +
+                                "   Content: " + writer + "\n" +
+                                "   Store:   " + store + "\n" +
+                                "   Number:  " + i,
+                                e);
                     }
                 }
             }

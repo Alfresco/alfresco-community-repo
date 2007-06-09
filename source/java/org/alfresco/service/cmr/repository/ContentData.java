@@ -29,7 +29,6 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 
 import org.alfresco.i18n.I18NUtil;
-import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.util.EqualsHelper;
 
@@ -239,13 +238,6 @@ public class ContentData implements Serializable
                                 "   position: " + j);
                     }
                 }
-            }
-            // Check that the protocol separator is present
-            if (contentUrl != null && !AbstractContentStore.isValidContentUrl(contentUrl))
-            {
-                throw new IllegalArgumentException(
-                        "The content URL must be of the form 'protocol://identifier': \n" +
-                        "   Content URL: " + contentUrl);
             }
             
             // check that mimetype is present if URL is present

@@ -34,7 +34,6 @@ import org.alfresco.web.scripts.WebScriptDescription.FormatStyle;
  */
 public abstract class WebScriptRequestImpl implements WebScriptRequest
 {
-    
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptRequest#getExtensionPath()
      */
@@ -154,5 +153,4 @@ public abstract class WebScriptRequestImpl implements WebScriptRequest
     {
         return false;
     }
-
 }

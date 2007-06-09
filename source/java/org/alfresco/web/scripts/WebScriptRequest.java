@@ -166,5 +166,4 @@ public interface WebScriptRequest
      * @return true => force return of 200, otherwise return status explicitly set
      */
     public boolean forceSuccessStatus();
-    
 }

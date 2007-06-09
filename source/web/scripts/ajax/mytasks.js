@@ -25,7 +25,12 @@ var MyTasks = {
                },
                failure: function(response)
                {
+                  // display the error
                   $('taskPanel').setHTML("Sorry, data currently unavailable.");
+                  
+                  // hide the ajax wait panel and show the main task panel
+                  $('taskPanelOverlay').setStyle('visibility', 'hidden');
+                  $('taskPanel').setStyle('visibility', 'visible');
                }
             }
          );
@@ -35,6 +40,7 @@ var MyTasks = {
    init: function()
    {
       MyTasks.parseTaskPanels();
+      
       // hide the ajax wait panel and show the main task panel
       $('taskPanelOverlay').setStyle('visibility', 'hidden');
       $('taskPanel').setStyle('visibility', 'visible');

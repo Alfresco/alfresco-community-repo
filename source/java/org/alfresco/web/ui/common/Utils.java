@@ -116,7 +116,6 @@ public final class Utils
     * 
     * @param string     the String to convert
     */
-   //XXXarielb perhaps use org.springframework.web.util.HtmlUtils instead?
    public static String encode(String string)
    {
       if (string == null)
@@ -233,6 +232,28 @@ public final class Utils
       {
          return Utils.encode(text);
       }
+   }
+   
+   /**
+    * Encode a string to the %AB hex style JavaScript compatible notation.
+    * Used to encode a string to a value that can be safely inserted into an HTML page and
+    * then decoded (and probably eval()ed) using the unescape() JavaScript method.
+    * 
+    * @param s      string to encode
+    * 
+    * @return %AB hex style encoded string
+    */
+   public static String encodeJavascript(String s)
+   {
+       StringBuilder buf = new StringBuilder(s.length() * 3);
+       for (int i=0; i<s.length(); i++)
+       {
+           char c = s.charAt(i);
+           int iChar = (int)c;
+           buf.append('%');
+           buf.append(Integer.toHexString(iChar));
+       }
+       return buf.toString();
    }
    
    /**
@@ -474,11 +495,9 @@ public final class Utils
       String formClientId = form.getClientId(context);
       
       StringBuilder buf = new StringBuilder(200);
-      buf.append("document.forms[");
-      buf.append("'");
+      buf.append("document.forms['");
       buf.append(formClientId);
-      buf.append("'");
-      buf.append("]['");
+      buf.append("']['");
       buf.append(fieldId);
       buf.append("'].value=");
       if (valueIsParam == false)
@@ -496,11 +515,9 @@ public final class Utils
       {
          for (String name : params.keySet())
          {
-            buf.append("document.forms[");
-            buf.append("'");
+            buf.append("document.forms['");
             buf.append(formClientId);
-            buf.append("'");
-            buf.append("]['");
+            buf.append("']['");
             buf.append(name);
             buf.append("'].value='");
             buf.append(params.get(name));
@@ -512,11 +529,9 @@ public final class Utils
          }
       }
       
-      buf.append("document.forms[");
-      buf.append("'");
+      buf.append("document.forms['");
       buf.append(formClientId);
-      buf.append("'");
-      buf.append("].submit();");
+      buf.append("'].submit();");
       
       if (valueIsParam == false)
       {
@@ -550,11 +565,9 @@ public final class Utils
       
       StringBuilder buf = new StringBuilder(48);
       
-      buf.append("document.forms[");
-      buf.append("'");
+      buf.append("document.forms['");
       buf.append(formClientId);
-      buf.append("'");
-      buf.append("].submit()");
+      buf.append("'].submit()");
       
       buf.append(";return false;");
       

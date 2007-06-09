@@ -33,6 +33,7 @@ import javax.portlet.RenderResponse;
 
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
+import org.alfresco.web.ui.common.Utils;
 
 
 /**
@@ -127,4 +128,34 @@ public class WebScriptPortletResponse implements WebScriptResponse
         return portletUrl.toString();
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptResponse#getEncodeScriptUrlFunction(java.lang.String)
+     */
+    public String getEncodeScriptUrlFunction(String name)
+    {
+        PortletURL portletUrl = res.createActionURL();
+        
+        String func = ENCODE_FUNCTION.replace("$name$", name);
+        func = func.replace("$actionUrl$", portletUrl.toString());
+        return Utils.encodeJavascript(func);
+    }
+    
+    private static final String ENCODE_FUNCTION = 
+            "{ $name$: function(url) {" + 
+            " var out = \"$actionUrl$\";" + 
+            " var argsIndex = url.indexOf(\"?\");" + 
+            " if (argsIndex == -1)" + 
+            " {" + 
+            "    out += \"&scriptUrl=\" + escape(url);" + 
+            " }" + 
+            " else" + 
+            " {" + 
+            "    out += \"&scriptUrl=\" + escape(url.substring(0, argsIndex));" + 
+            "    var args = url.substring(argsIndex + 1).split(\"&\");" + 
+            "    for (var i=0; i<args.length; i++)" + 
+            "    {" + 
+            "       out += \"arg.\" + args[i];" + 
+            "    }" + 
+            " }" + 
+            " return out; } }"; 
 }

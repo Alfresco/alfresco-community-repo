@@ -204,7 +204,7 @@ public abstract class WebScriptRuntime
             WebScriptResponse res = createResponse();
             Map<String, Object> model = new HashMap<String, Object>();
             model.put("status", status);
-            model.put("url", new URLModel(req));
+            model.put("url", new URLModel(req, res));
             
             // locate status template
             // NOTE: search order...

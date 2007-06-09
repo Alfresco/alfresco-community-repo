@@ -11,6 +11,7 @@ var MySpaces = {
    Home: null,
    ServiceContext: null,
    popupPanel: null,
+   ScriptUrlEncoder: null,
    
    start: function()
    {
@@ -26,14 +27,32 @@ var MySpaces = {
                {
                   // push the response into the space panel div
                   $('spacePanel').setHTML(response.responseText);
+                  
+                  // Construct the links to the outer webscript - we use the client script url encoder
+                  // method provided by the outer webscript runtime to generate urls to call it from the
+                  // inner webscript we called via a servlet - this means we can gen urls to call JSF or
+                  // portlet webscript from the inner.
+                  var navLinks = $$('#spacePanel .spaceNavLinkUrl');
+                  var navImgs  = $$('#spacePanel .spaceNavLinkImg');
+                  navLinks.each(function(navLink, i)
+                  {
+                     navLink.setHTML('<a href="' + MySpaces.ScriptUrlEncoder.encUrl(navLink.innerHTML.replace(/&amp;/, "&")) + '">' + navImgs[i].innerHTML + '</a>');
+                     navImgs[i].innerHTML = "";    // remove the html so the class is not selected during init()
+                  });
                   // extract the count value from a hidden div and display it
                   $('spaceCount').setHTML($('spaceCountValue').innerHTML);
+                  
                   // wire up all the events and animations
                   MySpaces.init();
                },
                failure: function(response)
                {
+                  // display the error
                   $('spacePanel').setHTML("Sorry, data currently unavailable.");
+                  
+                  // hide the ajax wait panel and show the main spaces panel
+                  $('spacePanelOverlay').setStyle('visibility', 'hidden');
+                  $('spacePanel').setStyle('visibility', 'visible');
                }
             }
          );
@@ -43,6 +62,7 @@ var MySpaces = {
    init: function()
    {
       MySpaces.parseSpacePanels();
+      
       // hide the ajax wait panel and show the main spaces panel
       $('spacePanelOverlay').setStyle('visibility', 'hidden');
       $('spacePanel').setStyle('visibility', 'visible');

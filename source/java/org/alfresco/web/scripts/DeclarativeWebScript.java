@@ -109,7 +109,7 @@ public class DeclarativeWebScript extends AbstractWebScript
                 if (logger.isDebugEnabled())
                     logger.debug("Executing script " + executeScript);
                 
-                Map<String, Object> scriptModel = createScriptModel(req, model);
+                Map<String, Object> scriptModel = createScriptModel(req, res, model);
                 // add return model allowing script to add items to template model
                 Map<String, Object> returnModel = new ScriptableHashMap<String, Object>();
                 scriptModel.put("model", returnModel);

@@ -206,11 +206,12 @@ public abstract class AbstractWebScript implements WebScript
      * Create a model for script usage
      *  
      * @param req  web script request
+     * @param res  web script response
      * @param customModel  custom model entries
      * 
      * @return  script model
      */
-    final protected Map<String, Object> createScriptModel(WebScriptRequest req, Map<String, Object> customModel)
+    final protected Map<String, Object> createScriptModel(WebScriptRequest req, WebScriptResponse res,  Map<String, Object> customModel)
     {
         // create script model
         Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
@@ -235,7 +236,7 @@ public abstract class AbstractWebScript implements WebScript
         // add web script context
         model.put("args", createArgModel(req));
         model.put("guest", req.isGuest());
-        model.put("url", new URLModel(req));
+        model.put("url", new URLModel(req, res));
         model.put("server", new ServerModel(descriptorService.getServerDescriptor()));
 
         // add custom model
@@ -282,7 +283,7 @@ public abstract class AbstractWebScript implements WebScript
         // add web script context
         model.put("args", createArgModel(req));
         model.put("guest", req.isGuest());
-        model.put("url", new URLModel(req));
+        model.put("url", new URLModel(req, res));
         model.put("server", new ServerModel(descriptorService.getServerDescriptor()));
         
         // add template support

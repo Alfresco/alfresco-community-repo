@@ -38,7 +38,6 @@ import org.alfresco.web.scripts.WebScriptURLRequest;
  */
 public class WebScriptJSFRequest extends WebScriptURLRequest
 {
-
    /**
     * Constructor
     * 
@@ -85,5 +84,4 @@ public class WebScriptJSFRequest extends WebScriptURLRequest
       // NOTE: unknown in the JSF environment
       return null;
    }
-
 }

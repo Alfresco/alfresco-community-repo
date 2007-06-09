@@ -82,11 +82,19 @@ public interface WebScriptResponse
     /**
      * Encode a script URL
      * 
-     * Note: Some Web Script Runtime environments (e.g. portal) require urls to be re-written.
+     * Note: Some Web Script Runtime environments (e.g. JSR-168, JSF) require urls to be re-written.
      * 
-     * @param url  url to encode
-     * @return  encoded url
+     * @param url  to encode
+     * @return encoded url
      */
     public String encodeScriptUrl(String url);
     
+    /**
+     * Return a client side javascript function to build urls to this service
+     *  
+     * @param name      Generated function name
+     *  
+     * @return javascript function definition
+     */
+    public String getEncodeScriptUrlFunction(String name);
 }

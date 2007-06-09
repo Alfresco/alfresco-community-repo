@@ -30,6 +30,8 @@ import java.io.Writer;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.web.ui.common.Utils;
+
 /**
  * HTTP Servlet Web Script Response
  * 
@@ -113,4 +115,13 @@ public class WebScriptServletResponse implements WebScriptResponse
         return url;
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptResponse#getEncodeScriptUrlFunction(java.lang.String)
+     */
+    public String getEncodeScriptUrlFunction(String name)
+    {
+        return Utils.encodeJavascript(ENCODE_FUNCTION.replace("$name$", name));
+    }
+    
+    private static final String ENCODE_FUNCTION = "{ $name$: function(url) { return url; } }";
 }

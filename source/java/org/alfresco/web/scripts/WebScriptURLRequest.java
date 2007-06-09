@@ -87,7 +87,6 @@ public abstract class WebScriptURLRequest extends WebScriptRequestImpl
         return urlParts;
     }
 
-    
     /**
      * Construct
      * 
@@ -199,6 +198,4 @@ public abstract class WebScriptURLRequest extends WebScriptRequestImpl
     {
         return queryArgs.get(name);
     }
-
-    
 }

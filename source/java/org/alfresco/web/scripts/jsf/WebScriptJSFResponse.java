@@ -105,11 +105,12 @@ public class WebScriptJSFResponse implements WebScriptResponse
       return buf.toString();
    }
 
-   /* (non-Javadoc)
+   /**
     * @see org.alfresco.web.scripts.WebScriptResponse#reset()
     */
    public void reset()
    {
+       // nothing to do
    }
 
    /**
@@ -128,11 +129,12 @@ public class WebScriptJSFResponse implements WebScriptResponse
       return fc.getResponseWriter();
    }
 
-   /* (non-Javadoc)
+   /**
     * @see org.alfresco.web.scripts.WebScriptResponse#setStatus(int)
     */
    public void setStatus(int status)
    {
+      // makes no sense in the JSF env
    }
     
    /**
@@ -142,5 +144,32 @@ public class WebScriptJSFResponse implements WebScriptResponse
    {
       // Alfresco JSF framework only supports the default of text-html
    }
-
+   
+   /* (non-Javadoc)
+    * @see org.alfresco.web.scripts.WebScriptResponse#getEncodeScriptUrlFunction(java.lang.String)
+    */
+   public String getEncodeScriptUrlFunction(String name)
+   {
+      UIForm form = Utils.getParentForm(fc, component);
+      if (form == null)
+      {
+         throw new IllegalStateException("Must nest components inside UIForm to generate form submit!");
+      }
+      String fieldId = component.getClientId(fc);
+      String formClientId = form.getClientId(fc);
+      HtmlFormRendererBase.addHiddenCommandParameter(fc, form, fieldId);
+      
+      String func = ENCODE_FUNCTION.replace("$name$", name);
+      func = func.replace("$formClientId$", formClientId);
+      func = func.replace("$fieldId$", fieldId);
+      return Utils.encodeJavascript(func);
+   }
+   
+   private static final String ENCODE_FUNCTION = 
+            "{ $name$: function(url) {" + 
+            " var out = '';" + 
+            " out += \"#\\\" onclick=\\\"document.forms['$formClientId$']['$fieldId$'].value='\";" + 
+            " out += escape(url);" + 
+            " out += \"';document.forms['$formClientId$'].submit();return false;\";" + 
+            " return out; } }";
 }

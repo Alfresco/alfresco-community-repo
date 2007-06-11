@@ -269,6 +269,11 @@
          <param-value>webscripts.authenticator.webclient</param-value>
       </init-param>
    </servlet>
+   
+   <servlet>
+      <servlet-name>portalapiServlet</servlet-name>
+      <servlet-class>org.alfresco.web.scripts.WebScriptServlet</servlet-class>
+   </servlet>
 
    <servlet>
       <servlet-name>proxyServlet</servlet-name>
@@ -398,6 +403,16 @@
    <servlet-mapping>
       <servlet-name>wcapiServlet</servlet-name>
       <url-pattern>/wcs/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>portalapiServlet</servlet-name>
+      <url-pattern>/168service/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>portalapiServlet</servlet-name>
+      <url-pattern>/168s/*</url-pattern>
    </servlet-mapping>
 
    <servlet-mapping>

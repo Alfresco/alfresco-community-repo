@@ -90,7 +90,13 @@
    <div id="spacePanel">
       <#-- populated via an AJAX call to 'myspacespanel' webscript -->
       <#-- resolved path, filter and home.noderef required as arguments -->
-      <script>MySpaces.ServiceContext="${url.serviceContext}";MySpaces.ScriptUrlEncoder=eval("MySpaces.ScriptUrlEncoder=" + unescape("${url.getClientUrlFunction("encUrl")}"));MySpaces.Path="${path?replace("\"","\\\"")}";MySpaces.Filter="${filter}";MySpaces.Home="${home.nodeRef}";</script>
+      <script>
+         MySpaces.ServiceContext="${url.serviceContext}";
+         MySpaces.ScriptUrlEncoder=eval("MySpaces.ScriptUrlEncoder=" + unescape("${url.getClientUrlFunction("encUrl")}"));
+         MySpaces.Path="${path?replace("\"","\\\"")}";
+         MySpaces.Filter="${filter}";
+         MySpaces.Home="${home.nodeRef}";
+      </script>
    </div>
    <div class="spaceFooter">
       <#-- the count value is retrieved and set dynamically from the AJAX webscript output above -->
@@ -402,7 +408,6 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    padding: 8px;
    margin: 8px;
    display: none;
-   left: 8px;
    -moz-border-radius: 5px;
 }
 
@@ -416,7 +421,6 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    padding: 8px;
    margin: 8px;
    display: none;
-   left: 8px;
    -moz-border-radius: 5px;
 }
 

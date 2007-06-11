@@ -473,6 +473,10 @@ var MySpaces = {
       var panel = $E(".spaceCreateSpacePanel", $(actionEl).getParent());
       panel.setStyle("opacity", 0);
       panel.setStyle("display", "inline");
+      Alfresco.Dom.smartAlignElement(panel, panel.getParent());
+      // make into a dragable panel
+      new Drag.Move(panel);
+      
       var anim = new Fx.Styles(
          panel,
          {
@@ -544,6 +548,9 @@ var MySpaces = {
       var panel = $E(".spaceUploadPanel", $(actionEl).getParent());
       panel.setStyle("opacity", 0);
       panel.setStyle("display", "inline");
+      Alfresco.Dom.smartAlignElement(panel, panel.getParent());
+      // make into a dragable panel
+      new Drag.Move(panel);
       
       // Generate a file upload element
       // To perform the actual upload, the element is moved to a hidden iframe

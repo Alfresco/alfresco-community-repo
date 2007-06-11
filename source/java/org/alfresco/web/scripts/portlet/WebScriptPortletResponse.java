@@ -154,7 +154,7 @@ public class WebScriptPortletResponse implements WebScriptResponse
             "    var args = url.substring(argsIndex + 1).split(\"&\");" + 
             "    for (var i=0; i<args.length; i++)" + 
             "    {" + 
-            "       out += \"arg.\" + args[i];" + 
+            "       out += \"&arg.\" + args[i];" + 
             "    }" + 
             " }" + 
             " return out; } }"; 

@@ -29,7 +29,7 @@
         
         <init-param>
            <name>scriptUrl</name>
-           <value>/alfresco/wcservice/mytasks</value>
+           <value>/alfresco/168service/mytasks</value>
         </init-param>
 
         <supports>
@@ -50,7 +50,7 @@
         
         <init-param>
            <name>scriptUrl</name>
-           <value>/alfresco/wcservice/doclist</value>
+           <value>/alfresco/168service/doclist</value>
         </init-param>
 
         <supports>
@@ -71,7 +71,7 @@
         
         <init-param>
            <name>scriptUrl</name>
-           <value>/alfresco/wcservice/myspaces</value>
+           <value>/alfresco/168service/myspaces</value>
         </init-param>
 
         <supports>
@@ -92,7 +92,7 @@
         
         <init-param>
            <name>scriptUrl</name>
-           <value>/alfresco/wcservice/mywebforms</value>
+           <value>/alfresco/168service/mywebforms</value>
         </init-param>
 
         <supports>

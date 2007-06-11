@@ -25,6 +25,8 @@
 package org.alfresco.web.scripts.portlet;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Map;
 
 import javax.portlet.ActionRequest;
@@ -39,6 +41,7 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.web.scripts.DeclarativeWebScriptRegistry;
@@ -154,7 +157,7 @@ public class WebScriptPortlet implements Portlet
         if (scriptUrl != null)
         {
             // build web script url from render request
-            String scriptUrlArgs = "";
+            StringBuilder scriptUrlArgs = new StringBuilder(128);
             Map<String, String[]> params = req.getParameterMap();
             for (Map.Entry<String, String[]> param : params.entrySet())
             {
@@ -164,12 +167,22 @@ public class WebScriptPortlet implements Portlet
                     String argName = name.substring("arg.".length());
                     for (String argValue : param.getValue())
                     {
-                        scriptUrlArgs += (scriptUrlArgs.length() == 0) ? "" : "&";
-                        scriptUrlArgs += argName + "=" + argValue;
+                        scriptUrlArgs.append((scriptUrlArgs.length() == 0) ? "" : "&");
+                        // decode url arg (as it would be if this was a servlet)
+                        try
+                        {
+                            scriptUrlArgs.append(argName).append("=")
+                                         .append(URLDecoder.decode(argValue, "UTF-8"));
+                        }
+                        catch (UnsupportedEncodingException e)
+                        {
+                           throw new AlfrescoRuntimeException("Unable to decode UTF-8 url!", e);
+                        }
+                       
                     }
                 }
             }
-            scriptUrl += "?" + scriptUrlArgs;
+            scriptUrl += (scriptUrlArgs.length() != 0 ? ("?" + scriptUrlArgs.toString()) : "");
         }
         else
         {

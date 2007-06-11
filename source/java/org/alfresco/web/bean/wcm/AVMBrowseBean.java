@@ -41,6 +41,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.linkvalidation.HrefValidationProgress;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.actions.AVMRevertStoreAction;
@@ -146,6 +147,12 @@ public class AVMBrowseBean implements IContextListener
    
    /** List of expired paths to submit */
    private List<AVMNodeDescriptor> expiredNodes = Collections.<AVMNodeDescriptor>emptyList();
+   
+   /** Object used by link validation service to monitor the status of a link check  */
+   private HrefValidationProgress linkValidationMonitor;
+   
+   /** Link validation state instance used by link validation dialogs  */
+   private LinkValidationState linkValidationState;
    
    /* component references */
    private UIRichList foldersRichList;
@@ -455,6 +462,38 @@ public class AVMBrowseBean implements IContextListener
    public void setDeploymentMonitorIds(List<String> deploymentMonitorIds)
    {
       this.deploymentMonitorIds = deploymentMonitorIds;
+   }
+   
+   /**
+    * @return Returns the link validation monitor instance
+    */
+   public HrefValidationProgress getLinkValidationMonitor()
+   {
+      return this.linkValidationMonitor;
+   }
+   
+   /**
+    * @param monitor The link validation monitor instance to use
+    */
+   public void setLinkValidationMonitor(HrefValidationProgress monitor)
+   {
+      this.linkValidationMonitor = monitor;
+   }
+   
+   /**
+    * @return Returns the link validation state instance
+    */
+   public LinkValidationState getLinkValidationState()
+   {
+      return this.linkValidationState;
+   }
+   
+   /**
+    * @param monitor The link validation state instance to use
+    */
+   public void setLinkValidationState(LinkValidationState state)
+   {
+      this.linkValidationState = state;
    }
 
    /**

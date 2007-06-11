@@ -267,4 +267,112 @@
       </attribute>
    </tag>
    
+   <tag>
+      <name>linkValidationProgress</name>
+      <tag-class>org.alfresco.web.ui.wcm.tag.LinkValidationProgressTag</tag-class>
+      <display-name>Link Validation Progress</display-name>
+      <body-content>JSP</body-content>
+      <description>Monitors the progress of the current link validation check being executed.</description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>Flag to determine whether component should be rendered</description>
+      </attribute>
+   </tag>
+   
+   <tag>
+      <name>linkValidationSummary</name>
+      <tag-class>org.alfresco.web.ui.wcm.tag.LinkValidationSummaryTag</tag-class>
+      <body-content>JSP</body-content>
+      <display-name>Link Validation Sumary</display-name>
+      <description>Displays summary information for a link validation report</description>
+      
+      <attribute>
+         <name>value</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The link validation state object holding the report data</description>
+      </attribute>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The component identifier for this component</description>
+      </attribute>
+
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>Flag to determine whether component should be rendered</description>
+      </attribute>
+   </tag>
+   
+   <tag>
+      <name>linkValidationBrokenFiles</name>
+      <tag-class>org.alfresco.web.ui.wcm.tag.LinkValidationBrokenFilesTag</tag-class>
+      <body-content>JSP</body-content>
+      <display-name>Link Validation Broken Files</display-name>
+      <description>Displays broken file information for a link validation report</description>
+      
+      <attribute>
+         <name>value</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The link validation state object holding the report data</description>
+      </attribute>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The component identifier for this component</description>
+      </attribute>
+
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>Flag to determine whether component should be rendered</description>
+      </attribute>
+   </tag>
+   
+   <tag>
+      <name>linkValidationFixedFiles</name>
+      <tag-class>org.alfresco.web.ui.wcm.tag.LinkValidationFixedFilesTag</tag-class>
+      <body-content>JSP</body-content>
+      <display-name>Link Validation Fixed Files</display-name>
+      <description>Displays the list of files fixed since the initial run of a link validation report</description>
+      
+      <attribute>
+         <name>value</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The link validation state object holding the report data</description>
+      </attribute>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The component identifier for this component</description>
+      </attribute>
+
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>Flag to determine whether component should be rendered</description>
+      </attribute>
+   </tag>
+   
 </taglib>

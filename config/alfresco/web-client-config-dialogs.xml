@@ -240,12 +240,24 @@
                  managed-bean="ViewDeploymentReportDialog"
                  icon="/images/icons/deployment_report_large.gif" 
                  title-id="deployment_report_title" 
-                 description-id="deployment_report_desc" show-ok-button="false"/>
+                 description-id="deployment_report_desc" show-ok-button="false" />
                  
          <dialog name="monitorDeployment" page="/jsp/wcm/monitor-deployment.jsp" 
                  managed-bean="MonitorDeploymentDialog"
                  icon="/images/icons/deploy_large.gif" title-id="monitor_deployment_title" 
-                 description-id="monitor_deployment_desc" show-ok-button="false"/>
+                 description-id="monitor_deployment_desc" show-ok-button="false" />
+                 
+         <dialog name="runLinkValidation" page="/jsp/wcm/run-link-validation.jsp" 
+                 managed-bean="LinkValidationRunDialog"
+                 icon="/images/icons/run_link_validation_large.gif" 
+                 title-id="run_link_validaton_title" 
+                 description-id="run_link_validaton_desc" show-ok-button="false" />
+                 
+        <dialog name="linkValidationReport" page="/jsp/wcm/link-validation-report.jsp" 
+                 managed-bean="LinkValidationReportDialog"
+                 icon="/images/icons/link_validation_report_large.gif" 
+                 title-id="link_validaton_report_title" 
+                 description-id="link_validaton_report_desc" />
          
          <dialog name="editXmlInline" page="/jsp/wcm/edit-xml-inline.jsp" 
                  managed-bean="EditXmlInlineDialog" icon="/images/icons/edit_large.gif"

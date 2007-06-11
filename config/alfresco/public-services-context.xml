@@ -117,7 +117,7 @@
         </property>
         <property name="transactionAttributes">
             <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
+                <prop key="*">${server.transaction.mode.readOnly}</prop>
             </props>
         </property>
     </bean>

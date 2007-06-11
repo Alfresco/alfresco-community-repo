@@ -353,7 +353,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Invoke policy behaviour
         invokeOnCreateNode(childAssocRef);
         invokeOnCreateNodeAssociation(childAssocRef);
-        invokeOnUpdateNode(parentRef);
         if (propertiesAfter != null)
         {
             invokeOnUpdateProperties(childAssocRef.getChildRef(), propertiesBefore, propertiesAfter);
@@ -472,8 +471,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             invokeOnCreateChildAssociation(newAssoc.getChildAssocRef());
             invokeOnDeleteChildAssociation(oldAssoc.getChildAssocRef());
-            invokeOnUpdateNode(oldParentNode.getNodeRef());
-            invokeOnUpdateNode(newParentRef);
         }
         invokeOnMoveNode(oldAssocRef, newAssocRef);
         
@@ -771,7 +768,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
         // Invoke policy behaviours
         invokeOnCreateChildAssociation(assocRef);
-        invokeOnUpdateNode(parentRef);
         
         return assoc.getChildAssocRef();
     }
@@ -813,9 +809,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             deleteNode(primaryAssocRef.getChildRef());
         }
 
-        // Invoke policy behaviours
-        invokeOnUpdateNode(parentRef);
-        
         // done
     }
     

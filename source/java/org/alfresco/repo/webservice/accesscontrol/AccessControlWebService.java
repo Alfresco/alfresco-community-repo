@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.repo.transaction.TransactionComponent;
+import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.repo.webservice.AbstractWebService;
@@ -27,7 +27,7 @@ public class AccessControlWebService extends AbstractWebService implements Acces
     private static Log logger = LogFactory.getLog(AccessControlWebService.class);
     
     /** Transaction service */
-    private TransactionComponent transactionService = null;
+    private TransactionServiceImpl transactionService = null;
     
     /** Permission service */
     private PermissionService permissionService = null;
@@ -40,7 +40,7 @@ public class AccessControlWebService extends AbstractWebService implements Acces
      * 
      * @param transactionService    the transaction service
      */
-    public void setTransactionService(TransactionComponent transactionService)
+    public void setTransactionService(TransactionServiceImpl transactionService)
     {
         this.transactionService = transactionService;
     }

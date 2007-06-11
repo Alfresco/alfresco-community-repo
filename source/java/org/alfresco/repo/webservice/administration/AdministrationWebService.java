@@ -36,7 +36,6 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.transaction.TransactionComponent;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.repo.webservice.AbstractWebService;
@@ -48,6 +47,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.apache.axis.MessageContext;
 import org.apache.commons.logging.Log;
@@ -69,7 +69,7 @@ public class AdministrationWebService extends AbstractWebService implements
     private AuthenticationService authenticationService = null;
     
     /** The transaction service */
-    private TransactionComponent transactionService = null;
+    private TransactionService transactionService = null;
     
     /** A set of ignored properties */
     private static Set<QName> ignoredProperties = new HashSet<QName>(3);
@@ -93,7 +93,7 @@ public class AdministrationWebService extends AbstractWebService implements
      * 
      * @param transactionService    the transaction service
      */
-    public void setTransactionService(TransactionComponent transactionService)
+    public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
     }

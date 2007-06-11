@@ -34,7 +34,7 @@ import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
 import org.alfresco.repo.action.executer.CompositeActionExecuter;
-import org.alfresco.repo.transaction.TransactionComponent;
+import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.repo.webservice.AbstractWebService;
@@ -82,7 +82,7 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     private DictionaryService dictionaryService;
     
     /** The transaction service */
-    private TransactionComponent transactionService;
+    private TransactionServiceImpl transactionService;
     
     /**
      * Set the action service
@@ -119,7 +119,7 @@ public class ActionWebService extends AbstractWebService implements ActionServic
      * 
      * @param transactionService    the transaction service
      */
-    public void setTransactionService(TransactionComponent transactionService)
+    public void setTransactionService(TransactionServiceImpl transactionService)
     {
         this.transactionService = transactionService;
     }

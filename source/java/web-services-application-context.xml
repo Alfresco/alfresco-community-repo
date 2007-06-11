@@ -133,7 +133,7 @@
          <ref bean="VersionService"/>
       </property>
       <property name="transactionService">
-         <ref bean="transactionComponent"/>
+         <ref bean="transactionService"/>
       </property>
    </bean>
    
@@ -157,7 +157,7 @@
          <ref bean="CategoryService"/>
       </property>
       <property name="transactionService">
-         <ref bean="transactionComponent"/>
+         <ref bean="transactionService"/>
       </property>
    </bean>
    
@@ -184,7 +184,7 @@
       	<ref bean="DictionaryService"/>
       </property>
       <property name="transactionService">
-         <ref bean="transactionComponent"/>
+         <ref bean="transactionService"/>
       </property>
    </bean>
    
@@ -199,7 +199,7 @@
          <ref bean="NamespaceService"/>
       </property>
       <property name="transactionService">
-         <ref bean="transactionComponent"/>
+         <ref bean="transactionService"/>
       </property>
       <property name="permissionService">
          <ref bean="PermissionService"/>
@@ -220,7 +220,7 @@
          <ref bean="NamespaceService"/>
       </property>
       <property name="transactionService">
-         <ref bean="transactionComponent"/>
+         <ref bean="transactionService"/>
       </property>
       <property name="authenticationService">
          <ref bean="AuthenticationService"/>

@@ -145,7 +145,8 @@
     </bean>
 
     <!-- transaction service -->
-    <bean id="transactionComponent" class="org.alfresco.repo.transaction.TransactionComponent">
+    <alias name="transactionService" alias="transactionComponent"/>
+    <bean id="transactionService" class="org.alfresco.repo.transaction.TransactionServiceImpl">
         <property name="transactionManager">
             <ref bean="transactionManager" />
         </property>
@@ -156,10 +157,10 @@
     
     <bean id="retryingTransactionHelper" class="org.alfresco.repo.transaction.RetryingTransactionHelper">
         <property name="transactionService">
-            <ref bean="transactionComponent"/>
+            <ref bean="transactionService"/>
         </property>
         <property name="maxRetries">
-            <value>20</value>
+            <value>${server.transaction.max-retries}</value>
         </property>
     </bean>
 
@@ -654,7 +655,7 @@
             <ref bean="searchService"/>
         </property>
         <property name="transactionService">
-            <ref bean="transactionComponent"/>
+            <ref bean="transactionService"/>
         </property>
         <property name="authenticationComponent">
             <ref bean="authenticationComponent"/>
@@ -776,7 +777,7 @@
     <bean id="luceneIndexBackupComponent"
           class="org.alfresco.repo.search.impl.lucene.AbstractLuceneIndexerAndSearcherFactory$LuceneIndexBackupComponent">
         <property name="transactionService">
-            <ref bean="transactionComponent" />
+            <ref bean="transactionService" />
         </property>
         <property name="factories">
 			<set>

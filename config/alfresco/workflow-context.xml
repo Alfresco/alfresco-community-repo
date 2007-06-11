@@ -8,7 +8,7 @@
    <!--                                 -->
 
    <bean id="workflowDeployer" class="org.alfresco.repo.workflow.WorkflowDeployer" abstract="true">
-      <property name="transactionService" ref="transactionComponent"/>
+      <property name="transactionService" ref="transactionService"/>
       <property name="authenticationComponent" ref="authenticationComponent" />
       <property name="workflowService" ref="WorkflowService" />
       <property name="dictionaryDAO" ref="dictionaryDAO"/>
@@ -36,7 +36,7 @@
       <property name="namespaceService" ref="namespaceService"/>
       <property name="personService" ref="PersonService"/>
       <property name="authorityDAO" ref="authorityDAO"/>
-      <property name="transactionService" ref="transactionComponent"/>
+      <property name="transactionService" ref="transactionService"/>
       <property name="fileFolderService" ref="FileFolderService"/>
    </bean>
 

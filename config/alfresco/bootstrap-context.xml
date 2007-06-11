@@ -254,7 +254,7 @@
            <ref bean="systemBootstrap"/>
        </property>
        <property name="transactionService">
-           <ref bean="transactionComponent"/>
+           <ref bean="transactionService"/>
        </property>
        <property name="namespaceService">
            <ref bean="namespaceService"/>
@@ -296,7 +296,7 @@
        </property>
        <!-- helper beans -->
        <property name="transactionService">
-           <ref bean="transactionComponent"/>
+           <ref bean="transactionService"/>
        </property>
        <property name="systemBootstrap">
            <ref bean="systemBootstrap"/>
@@ -319,7 +319,7 @@
 
     <bean id="patchExecuter" class="org.alfresco.repo.admin.patch.PatchExecuter">
         <property name="transactionService">
-            <ref bean="transactionComponent" />
+            <ref bean="transactionService" />
         </property>
         <property name="patchService">
             <ref bean="PatchService" />

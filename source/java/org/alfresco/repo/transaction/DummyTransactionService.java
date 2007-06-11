@@ -76,4 +76,13 @@ public class DummyTransactionService implements TransactionService
     {
         return txn;
     }
+
+    public RetryingTransactionHelper getRetryingTransactionHelper()
+    {
+        RetryingTransactionHelper helper = new RetryingTransactionHelper();
+        helper.setMaxRetries(20);
+        helper.setTransactionService(this);
+        helper.setReadOnly(false);
+        return helper;
+    }
 }

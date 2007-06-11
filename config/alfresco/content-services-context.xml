@@ -33,7 +33,7 @@
             <ref bean="avmNodeDAO"/>
       </property>
       <property name="transactionService" >
-         <ref bean="transactionComponent" />
+         <ref bean="transactionService" />
       </property>
       <property name="protectDays" >
          <value>14</value>
@@ -52,7 +52,7 @@
 
    <bean id="contentService" class="org.alfresco.repo.content.RoutingContentService" init-method="init">
       <property name="transactionService">
-          <ref bean="transactionComponent" />
+          <ref bean="transactionService" />
       </property>
       <property name="retryingTransactionHelper">
           <ref bean="retryingTransactionHelper"/>

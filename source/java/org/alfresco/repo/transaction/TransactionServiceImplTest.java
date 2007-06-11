@@ -30,6 +30,8 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.ApplicationContextHelper;
@@ -38,24 +40,24 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
- * @see org.alfresco.repo.transaction.TransactionComponent
+ * @see org.alfresco.repo.transaction.TransactionServiceImpl
  * 
  * @author Derek Hulley
  */
-public class TransactionComponentTest extends TestCase
+public class TransactionServiceImplTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private PlatformTransactionManager transactionManager;
-    private TransactionComponent transactionComponent;
+    private TransactionServiceImpl transactionService;
     private NodeService nodeService;
     
     public void setUp() throws Exception
     {
         transactionManager = (PlatformTransactionManager) ctx.getBean("transactionManager");
-        transactionComponent = new TransactionComponent();
-        transactionComponent.setTransactionManager(transactionManager);
-        transactionComponent.setAllowWrite(true);
+        transactionService = new TransactionServiceImpl();
+        transactionService.setTransactionManager(transactionManager);
+        transactionService.setAllowWrite(true);
         
         nodeService = (NodeService) ctx.getBean("dbNodeService");
     }
@@ -63,12 +65,12 @@ public class TransactionComponentTest extends TestCase
     public void testPropagatingTxn() throws Exception
     {
         // start a transaction
-        UserTransaction txnOuter = transactionComponent.getUserTransaction();
+        UserTransaction txnOuter = transactionService.getUserTransaction();
         txnOuter.begin();
         String txnIdOuter = AlfrescoTransactionSupport.getTransactionId();
         
         // start a propagating txn
-        UserTransaction txnInner = transactionComponent.getUserTransaction();
+        UserTransaction txnInner = transactionService.getUserTransaction();
         txnInner.begin();
         String txnIdInner = AlfrescoTransactionSupport.getTransactionId();
         
@@ -97,12 +99,12 @@ public class TransactionComponentTest extends TestCase
     public void testNonPropagatingTxn() throws Exception
     {
         // start a transaction
-        UserTransaction txnOuter = transactionComponent.getUserTransaction();
+        UserTransaction txnOuter = transactionService.getUserTransaction();
         txnOuter.begin();
         String txnIdOuter = AlfrescoTransactionSupport.getTransactionId();
         
         // start a propagating txn
-        UserTransaction txnInner = transactionComponent.getNonPropagatingUserTransaction();
+        UserTransaction txnInner = transactionService.getNonPropagatingUserTransaction();
         txnInner.begin();
         String txnIdInner = AlfrescoTransactionSupport.getTransactionId();
         
@@ -119,9 +121,9 @@ public class TransactionComponentTest extends TestCase
     public void testReadOnlyTxn() throws Exception
     {
         // start a read-only transaction
-        transactionComponent.setAllowWrite(false);
+        transactionService.setAllowWrite(false);
         
-        UserTransaction txn = transactionComponent.getUserTransaction();
+        UserTransaction txn = transactionService.getUserTransaction();
         txn.begin();
         
         // do some writing
@@ -135,8 +137,39 @@ public class TransactionComponentTest extends TestCase
         }
         catch (InvalidDataAccessApiUsageException e)
         {
+            @SuppressWarnings("unused")
             int i = 0;
             // expected
+        }
+    }
+    
+    public void testGetRetryingTransactionHelper()
+    {
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                return null;
+            }
+        };
+        
+        assertFalse("Retriers must be new instances",
+                transactionService.getRetryingTransactionHelper() == transactionService.getRetryingTransactionHelper());
+        
+        transactionService.setAllowWrite(true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false);
+
+        transactionService.setAllowWrite(false);
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback, true);
+        try
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(callback, false);
+            fail("Expected AccessDeniedException when starting to write to a read-only transaction service.");
+        }
+        catch (AccessDeniedException e)
+        {
+            // Expected
         }
     }
 }

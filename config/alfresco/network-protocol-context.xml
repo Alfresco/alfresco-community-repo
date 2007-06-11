@@ -38,7 +38,7 @@
          <ref bean="personService"/>
       </property>
       <property name="transactionService">
-         <ref bean="transactionComponent"/>
+         <ref bean="transactionService"/>
       </property>
       <property name="diskInterface">
          <ref bean="contentDiskDriver"/>
@@ -53,7 +53,7 @@
       <constructor-arg>
          <ref bean="cifsHelper" />
       </constructor-arg>
-      <property name="transactionService"><ref bean="transactionComponent" /></property>
+      <property name="transactionService"><ref bean="transactionService" /></property>
       <property name="nodeService"><ref bean="NodeService" /></property>
       <property name="searchService"><ref bean="SearchService" /></property>
       <property name="namespaceService"><ref bean="namespaceService" /></property>
@@ -78,7 +78,7 @@
 	<!-- AVM Filesystem Interface -->
    <bean id="avmDiskDriver" class="org.alfresco.filesys.avm.AVMDiskDriver" >
 	  <property name="avmService"><ref bean="indexingAVMService" /></property>
-      <property name="transactionService"><ref bean="transactionComponent" /></property>
+      <property name="transactionService"><ref bean="transactionService" /></property>
       <property name="authenticationComponent"><ref bean="authenticationComponent"/></property>
 	  <property name="authenticationService"><ref bean="authenticationService"/></property>
 	  <property name="mimetypeService"><ref bean="mimetypeService" /></property>

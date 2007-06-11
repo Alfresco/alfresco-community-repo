@@ -38,7 +38,7 @@ import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.TransactionComponent;
+import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -72,7 +72,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
     
     private AuthenticationComponent authenticationComponent;
     /** provides transactions to atomically index each missed transaction */
-    protected TransactionComponent transactionService;
+    protected TransactionServiceImpl transactionService;
     /** the component to index the node hierarchy */
     protected Indexer indexer;
     /** the FTS indexer that we will prompt to pick up on any un-indexed text */
@@ -136,9 +136,9 @@ public abstract class AbstractReindexComponent implements IndexRecovery
      * 
      * @param transactionComponent provide transactions to index each missed transaction
      */
-    public void setTransactionComponent(TransactionComponent transactionComponent)
+    public void setTransactionService(TransactionServiceImpl transactionService)
     {
-        this.transactionService = transactionComponent;
+        this.transactionService = transactionService;
     }
 
     /**

@@ -51,7 +51,7 @@
             <ref bean="patchComponent" />
         </property>
         <property name="transactionService">
-            <ref bean="transactionComponent" />
+            <ref bean="transactionService" />
         </property>
         <property name="namespaceService">
             <ref bean="namespaceService" />

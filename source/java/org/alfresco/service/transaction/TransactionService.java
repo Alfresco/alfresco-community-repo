@@ -26,6 +26,7 @@ package org.alfresco.service.transaction;
 
 import javax.transaction.UserTransaction;
 
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
 
@@ -96,4 +97,14 @@ public interface TransactionService
      */
     @NotAuditable
     UserTransaction getNonPropagatingUserTransaction(boolean readOnly);
+    
+    /**
+     * Get the standard instance of the helper object that supports transaction retrying.
+     * 
+     * @return
+     *      Returns a helper object that executes units of work transactionally.  The helper
+     *      can be reused or altered as required.
+     */
+    @NotAuditable
+    RetryingTransactionHelper getRetryingTransactionHelper();
 }

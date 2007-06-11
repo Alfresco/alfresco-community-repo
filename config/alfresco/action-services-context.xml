@@ -25,7 +25,7 @@
     
     <bean id="asynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl">
     	<property name="transactionService">
-    		<ref bean="transactionComponent"/>
+    		<ref bean="transactionService"/>
     	</property>
     	<property name="authenticationComponent">
     		<ref bean="AuthenticationComponent"/>

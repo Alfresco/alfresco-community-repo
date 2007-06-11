@@ -63,7 +63,7 @@
          <ref bean="SearchService"/>
       </property>
       <property name="transactionService">
-         <ref bean="transactionComponent"/>
+         <ref bean="transactionService"/>
       </property>
    </bean>
 

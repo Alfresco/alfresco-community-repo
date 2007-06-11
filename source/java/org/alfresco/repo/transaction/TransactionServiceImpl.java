@@ -36,10 +36,11 @@ import org.springframework.transaction.TransactionDefinition;
  * 
  * @author David Caruana
  */
-public class TransactionComponent implements TransactionService
+public class TransactionServiceImpl implements TransactionService
 {
     private PlatformTransactionManager transactionManager;
     private boolean readOnly = false;
+    private int maxRetries = 20;
     
     /**
      * Set the transaction manager to use
@@ -64,6 +65,17 @@ public class TransactionComponent implements TransactionService
     public boolean isReadOnly()
     {
         return readOnly;
+    }
+    
+    /**
+     * Set the maximum number of retries that will be done by the
+     * {@link RetryingTransactionHelper transaction helper}.
+     * 
+     * @param maxRetries    the maximum transaction retries
+     */
+    public void setMaxRetries(int maxRetries)
+    {
+        this.maxRetries = maxRetries;
     }
 
     /**
@@ -120,5 +132,17 @@ public class TransactionComponent implements TransactionService
                 TransactionDefinition.PROPAGATION_REQUIRES_NEW,
                 TransactionDefinition.TIMEOUT_DEFAULT);
         return txn;
+    }
+
+    /**
+     * Creates a new helper instance.  It can be reused.
+     */
+    public RetryingTransactionHelper getRetryingTransactionHelper()
+    {
+        RetryingTransactionHelper helper = new RetryingTransactionHelper();
+        helper.setMaxRetries(maxRetries);
+        helper.setTransactionService(this);
+        helper.setReadOnly(readOnly);
+        return helper;
     }
 }

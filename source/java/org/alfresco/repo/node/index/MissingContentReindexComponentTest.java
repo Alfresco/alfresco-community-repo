@@ -35,7 +35,7 @@ import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneIndexerImpl;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.TransactionComponent;
+import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -91,7 +91,7 @@ public class MissingContentReindexComponentTest extends TestCase
         reindexer.setNodeDaoService(nodeDaoService);
         reindexer.setNodeService(nodeService);
         reindexer.setSearcher(searchService);
-        reindexer.setTransactionComponent((TransactionComponent)transactionService);
+        reindexer.setTransactionService((TransactionServiceImpl)transactionService);
         
         // authenticate
         authenticationComponent.setSystemUserAsCurrentUser();

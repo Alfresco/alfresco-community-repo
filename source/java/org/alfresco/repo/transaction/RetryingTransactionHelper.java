@@ -32,6 +32,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.ExceptionStackUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.log4j.Logger;
 import org.hibernate.StaleObjectStateException;
@@ -48,6 +49,7 @@ import org.springframework.dao.DeadlockLoserDataAccessException;
  */
 public class RetryingTransactionHelper
 {
+    private static final String MSG_READ_ONLY = "permissions.err_read_only";
     private static Logger fgLogger = Logger.getLogger(RetryingTransactionHelper.class);
     
     /**
@@ -73,6 +75,11 @@ public class RetryingTransactionHelper
      * The maximum number of retries. -1 for infinity.
      */
     private int fMaxRetries;
+    
+    /**
+     * Whether the the transactions may only be reads
+     */
+    private boolean readOnly;
     
     /**
      * Random number generator for retry delays.
@@ -119,6 +126,14 @@ public class RetryingTransactionHelper
         fMaxRetries = maxRetries;
     }
     
+    /**
+     * Set whether this helper only supports read transactions.
+     */
+    public void setReadOnly(boolean readOnly)
+    {
+        this.readOnly = readOnly;
+    }
+
     /**
      * Execute a callback in a transaction until it succeeds, fails 
      * because of an error not the result of an optimistic locking failure,
@@ -172,6 +187,10 @@ public class RetryingTransactionHelper
      */
     public <R> R doInTransaction(RetryingTransactionCallback<R> cb, boolean readOnly, boolean newTransaction)
     {
+        if (this.readOnly && !readOnly)
+        {
+            throw new AccessDeniedException(MSG_READ_ONLY);
+        }
         // Track the last exception caught, so that we
         // can throw it if we run out of retries.
         RuntimeException lastException = null;
@@ -208,7 +227,9 @@ public class RetryingTransactionHelper
                 {
                     if (count != 0)
                     {
-                        fgLogger.debug("Transaction succeeded after " + count + " retries");
+                        fgLogger.debug(
+                                "Transaction succeeded after " + count +
+                                " retries on thread " + Thread.currentThread().getName());
                     }
                 }
                 return result;

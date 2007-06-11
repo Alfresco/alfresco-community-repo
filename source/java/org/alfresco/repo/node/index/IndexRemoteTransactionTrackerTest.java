@@ -32,7 +32,7 @@ import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.TransactionComponent;
+import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.ServiceRegistry;
@@ -89,7 +89,7 @@ public class IndexRemoteTransactionTrackerTest extends TestCase
         indexTracker.setNodeDaoService(nodeDaoService);
         indexTracker.setNodeService(nodeService);
         indexTracker.setSearcher(searchService);
-        indexTracker.setTransactionComponent((TransactionComponent)transactionService);
+        indexTracker.setTransactionService((TransactionServiceImpl)transactionService);
         
         // authenticate
         authenticationComponent.setSystemUserAsCurrentUser();

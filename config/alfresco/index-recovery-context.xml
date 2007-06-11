@@ -7,8 +7,8 @@
       <property name="authenticationComponent">
          <ref bean="authenticationComponent" />
       </property>
-      <property name="transactionComponent">
-         <ref bean="transactionComponent" />
+      <property name="transactionService">
+         <ref bean="transactionService" />
       </property>
       <property name="indexer">
          <ref bean="indexerComponent" />

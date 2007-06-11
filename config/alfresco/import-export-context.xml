@@ -181,7 +181,7 @@
     
     <bean id="systemInfoImporter" class="org.alfresco.repo.importer.system.SystemInfoBootstrap" abstract="true">
         <property name="transactionService">
-            <ref bean="transactionComponent"/>
+            <ref bean="transactionService"/>
         </property>
         <property name="nodeService">
             <ref bean="nodeService"/>
@@ -203,7 +203,7 @@
 
     <bean id="storeImporter" class="org.alfresco.repo.importer.ImporterBootstrap" abstract="true">
         <property name="transactionService">
-            <ref bean="transactionComponent"/>
+            <ref bean="transactionService"/>
         </property>
         <property name="nodeService">
             <ref bean="nodeService"/>

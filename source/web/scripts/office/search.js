@@ -6,7 +6,7 @@ var OfficeSearch =
 {
    init: function()
    {
-      $("searchText").addEvent("keydown", function(event)
+      $('searchText').addEvent('keydown', function(event)
       {
          event = new Event(event);
          if (event.key == 'enter')
@@ -14,6 +14,20 @@ var OfficeSearch =
             $("simpleSearchButton").onclick();
          }
       });
+      
+      $('itemsFound').innerHTML = "Results Shown Below";
+   },
+   
+   itemsFound: function(shownResults, totalResults)
+   {
+      if (shownResults < totalResults)
+      {
+         $('itemsFound').innerHTML = "Showing first " + shownResults + " of " + totalResults + " total items found";
+      }
+      else
+      {
+         $('itemsFound').innerHTML = "Showing all " + shownResults + " items found";
+      }
    },
 
    /* AJAX call to perform server-side search */
@@ -21,17 +35,18 @@ var OfficeSearch =
    {
       OfficeAddin.showStatusText("Searching...", "ajax_anim.gif", false);
 
-      var searchString = $("searchText").value;
-      var maxResults = $("maxResults").value;
+      var searchString = $('searchText').value;
+      var maxResults = $('maxResults').value;
 
       var actionURL = useTemplate + "?p=" + argPath + "&search=" + searchString + "&maxresults=" + maxResults;
       var myAjax = new Ajax(actionURL, {
          method: 'get',
          headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
+         evalScripts: true,
          onComplete: function(textResponse, xmlResponse)
          {
             OfficeAddin.hideStatusText();
-            $("searchResultsList").innerHTML = textResponse;
+            $('searchResultsList').innerHTML = textResponse;
          }
       });
       myAjax.request();

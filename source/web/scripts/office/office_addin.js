@@ -20,6 +20,19 @@ var OfficeAddin =
          var imgSuccess = (objResponse.statusCode ? "action_successful.gif" : "action_failed.gif");
          OfficeAddin.showStatusText(objResponse.statusString, imgSuccess, true);
       }
+      
+      OfficeAddin.makeExternalLinks();
+   },
+
+   makeExternalLinks: function(e)
+   {
+      $$('a').each(function(anchor, i)
+      {
+         if (anchor.getProperty('rel') == '_blank')
+         {
+            anchor.target = "_blank";
+         }
+      });
    },
 
    toQueryObject: function(s)

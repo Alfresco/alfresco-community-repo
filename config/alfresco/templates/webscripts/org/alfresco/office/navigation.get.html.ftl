@@ -11,57 +11,59 @@
 	<link rel="stylesheet" type="text/css" href="${url.context}/css/office.css" />
    <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.1.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
+	<script type="text/javascript" src="${url.context}/scripts/office/navigation.js"></script>
 </head>
 <body>
 
 <div id="tabBar">
    <ul>
-      <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li id="current"><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path}&n=${node.id}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
-      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
-      <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
-      <li><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
+      <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path?url}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
+      <li id="current"><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${node.id}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
+      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path?url}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
+      <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path?url}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
+      <li><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path?url}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
    </ul>
 </div>
 
+<div class="header">Current Space</div>
+
 <div id="currentSpaceInfo">
-   <table width="100%">
-      <tr>
-         <td width="10">In:</td>
-         <td width="16"><img src="${url.context}${thisSpace.icon16}" alt="${thisSpace.name}" /></td>
-         <td>
-            <span class="bold">${thisSpace.name}</span>
+   <span style="float: left;">
+      <span style="float: left;">
+         <img src="${url.context}${thisSpace.icon16}" alt="${thisSpace.name}" />
+      </span>
+      <span style="float: left; padding-left: 6px;">
+         <span class="bold">${thisSpace.name}</span><br />
 <#if thisSpace.properties.description?exists>
-            <br />${thisSpace.properties.description}
+         ${thisSpace.properties.description}
 </#if>
-         </td>
-         <td width="34" align="right">
+      </span>
+   </span>
 <#if thisSpace=companyhome>
 <#else>
-            <a title="Up to Parent Space" href="${url.serviceContext}/office/navigation?p=${path}&n=${thisSpace.parent.id}">
-               <img src="${url.context}/images/office/go_up.gif" alt="Up to Parent Space" />
-               <span>Up</span>
-            </a>
+   <span style="float: right;">
+      <a title="Up to Parent Space" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${thisSpace.parent.id}">
+      <img src="${url.context}/images/office/go_up.gif" alt="Up to Parent Space" />
+      <span>Up</span>
+      </a>
+   </span>
 </#if>
-         </td>
-      </tr>
-   </table>
 </div>
 
-<div class="header">Spaces in ${thisSpace.name}<span class="headerExtra"><span class="toggle"></span></span></div>
+<div class="header">Spaces in ${thisSpace.name}<span class="headerExtra"><span class="toggle">&nbsp;</span></span></div>
 
-<div id="spaceList" class="containerMedium">
-   <table>
+<div id="spaceList" class="containerMedium togglePanel">
+   <table width="265">
 <#assign spacesFound = 0>
 <#list thisSpace.children as child>
    <#if child.isContainer>
       <#assign spacesFound = spacesFound + 1>
       <tr class="${(spacesFound % 2 = 0)?string("odd", "even")}">
-         <td>
-            <a href="${url.serviceContext}/office/navigation?p=${path}&n=${child.id}"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
+         <td style="width: 32px;">
+            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${child.id}"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
          </td>
-         <td width="100%">
-            <a href="${url.serviceContext}/office/navigation?p=${path}&n=${child.id}" title="Open ${child.name}">
+         <td>
+            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${child.id}" title="Open ${child.name}">
                <span class="bold">${child.name}</span>
             </a>
       <#if child.properties.description?exists>
@@ -79,30 +81,30 @@
    </table>
 </div>
 
-<div class="header">Documents in ${thisSpace.name}<span class="headerExtra"><span class="toggle"></span></span></div>
+<div class="header">Documents in ${thisSpace.name}<span class="headerExtra"><span class="toggle">&nbsp;</span></span></div>
 
-<div id="documentList" class="containerMedium">
-   <table>
+<div id="documentList" class="containerMedium togglePanel">
+   <table width="265">
 <#assign documentsFound = 0>
 <#list thisSpace.children as child>
    <#if child.isDocument>
       <#assign documentsFound = documentsFound + 1>
       <#assign webdavPath = (child.displayPath?substring(13) + '/' + child.name)?url('ISO-8859-1')?replace('%2F', '/')?replace('\'', '\\\'') />
       <tr class="${(documentsFound % 2 = 0)?string("odd", "even")}">
-         <td valign="top">
+         <td valign="top" style="width: 32px;">
       <#if child.name?ends_with(".doc")>
-            <a href="#" onClick="window.external.openDocument('${webdavPath}')"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
+            <a href="#" onclick="window.external.openDocument('${webdavPath}')"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
       <#else>
-            <a href="${url.context}${child.url}?ticket=${session.ticket}" target="_blank"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
+            <a href="${url.context}${child.url}?ticket=${session.ticket}" rel="_blank"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
       </#if>
          </td>
-         <td width="100%">
+         <td>
       <#if child.name?ends_with(".doc")>
-            <a href="#" onClick="window.external.openDocument('${webdavPath}')" title="Open ${child.name}">
+            <a href="#" onclick="window.external.openDocument('${webdavPath}')" title="Open ${child.name}">
                <span class="bold">${child.name}</span>
             </a><br/>
       <#else>
-            <a href="${url.context}${child.url}?ticket=${session.ticket}" target="_blank" title="Open ${child.name}">
+            <a href="${url.context}${child.url}?ticket=${session.ticket}" rel="_blank" title="Open ${child.name}">
                <span class="bold">${child.name}</span>
             </a><br/>
       </#if>
@@ -111,15 +113,15 @@
       </#if>
             Modified: ${child.properties.modified?datetime}, Size: ${(child.size / 1024)?int}Kb<br/>
       <#if child.isLocked >
-            <img src="${url.context}/images/office/lock.gif" style="padding:3px 6px 2px 0px;" alt="Locked">
+            <img src="${url.context}/images/office/lock.gif" style="padding:3px 6px 2px 0px;" alt="Locked" />
       <#elseif hasAspect(child, "cm:workingcopy") == 1>
-            <a href="#" onClick="OfficeAddin.runAction('${doc_actions}','checkin','${child.id}', '');"><img src="${url.context}/images/office/checkin.gif" style="padding:3px 6px 2px 0px;" alt="Check In" title="Check In"></a>
+            <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','checkin','${child.id}', '');"><img src="${url.context}/images/office/checkin.gif" style="padding:3px 6px 2px 0px;" alt="Check In" title="Check In" /></a>
       <#else>
-            <a href="#" onClick="OfficeAddin.runAction('${doc_actions}','checkout','${child.id}', '');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="Check Out" title="Check Out"></a>
+            <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','checkout','${child.id}', '');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="Check Out" title="Check Out" /></a>
       </#if>
-            <a href="#" onClick="OfficeAddin.runAction('${doc_actions}','makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="Make PDF..." title="Make PDF"></a>
+            <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="Make PDF..." title="Make PDF" /></a>
       <#if !child.isLocked >
-            <a href="#" onClick="OfficeAddin.runAction('${doc_actions}','delete','${child.id}', 'Are you sure you want to delete this document?');"><img src="${url.context}/images/office/delete.gif" style="padding:3px 6px 2px 0px;" alt="Delete..." title="Delete"></a>
+            <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','delete','${child.id}', 'Are you sure you want to delete this document?');"><img src="${url.context}/images/office/delete.gif" style="padding:3px 6px 2px 0px;" alt="Delete..." title="Delete" /></a>
       </#if>
          </td>
       </tr>
@@ -141,16 +143,16 @@
    <div id="nonStatusText">
       <ul>
          <li>
-            <a href="#" onClick="window.external.saveToAlfresco('${webdavPath}')">
-               <img src="${url.context}/images/office/save_to_alfresco.gif" alt="Save to Alfresco">
+            <a href="#" onclick="window.external.saveToAlfresco('${webdavPath}')">
+               <img src="${url.context}/images/office/save_to_alfresco.gif" alt="Save to Alfresco" />
                Save to Alfresco
             </a>
             <br />Allows you to place the current document under Alfresco management.
          </li>
     <#if args.search?exists>
          <li>
-            <a href="${url.serviceContext}/office/search?p=${path}&searchagain=${args.search}&maxresults=${args.maxresults}">
-               <img src="${url.context}/images/office/search_again.gif" alt="Back to results">
+            <a href="${url.serviceContext}/office/search?p=${path?url}&amp;searchagain=${args.search?url}&amp;maxresults=${args.maxresults}">
+               <img src="${url.context}/images/office/search_again.gif" alt="Back to results" />
                Back to search results
             </a>
             <br />Return to the search tab.

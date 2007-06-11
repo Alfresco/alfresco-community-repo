@@ -1,7 +1,8 @@
 <#if args.search?exists>
    <#assign searchString = args.search>
    <#if searchString != "">
-      <#assign queryString = "TEXT:\"${searchString}\" @cm\\:title:*${searchString}*">
+      <#-- assign queryString = "(TEXT:\"${searchString}\") OR (@cm\\:name:*${searchString}*)"  -->
+      <#assign queryString = "@\\{http\\://www.alfresco.org/model/content/1.0\\}name:*${searchString}*" >
    </#if>
 <#else>
    <#assign searchString = "">
@@ -15,7 +16,7 @@
       <#assign maxresults=10>
    </#if>
 
-   <#assign rescount=1>
+   <#assign rescount=0>
 
    <table>
    <#assign results = companyhome.childrenByLuceneSearch[queryString] >
@@ -24,7 +25,9 @@
          <td>(No results found)</td>
       </tr>
    <#else>
+      <#assign totalResults = results?size>
       <#list results as child>
+         <#assign rescount=rescount + 1>
          <#if child.isDocument>
             <#if child.name?ends_with(".pdf")>
                <#assign openURL = "${url.context}${child.url}">
@@ -35,11 +38,11 @@
                <#assign hrefExtra = " onClick=\"window.external.openDocument('${webdavPath}')\"">
             </#if>
          <#else>
-            <#assign openURL = "${url.serviceContext}/office/navigation?p=${args.p}&n=${child.id}&search=${searchString}&maxresults=${maxresults}">
+            <#assign openURL = "${url.serviceContext}/office/navigation?p=${args.p?url}&amp;n=${child.id}&amp;search=${searchString?url}&amp;maxresults=${maxresults}">
             <#assign hrefExtra = "">
          </#if>
       <tr>
-         <td width="32">
+         <td style="width: 32px;">
             <a href="${openURL}" ${hrefExtra}><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
          </td>
          <td>
@@ -55,8 +58,10 @@
          <#if rescount = maxresults>
             <#break>
          </#if>
-       <#assign rescount=rescount + 1>
       </#list>
    </#if>
    </table>
 </#if>
+<script type="text/javascript">
+   OfficeSearch.itemsFound(${rescount}, ${totalResults});
+</script>

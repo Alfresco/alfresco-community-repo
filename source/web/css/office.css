@@ -1,3 +1,7 @@
+html {
+   overflow: hidden;
+}
+
 body {
    background: url("../images/office/view_bg.gif") top;
    color: #0073e6;
@@ -16,6 +20,30 @@ a {
 
 a img {
    border: 0px;
+}
+
+TABLE, TR, TD {
+   border: 0px;
+   border-collapse: collapse;
+   padding: 2px;
+}
+
+ul {
+   margin: 0px;
+   list-style: none;
+   padding: 2px 0px 0px 24px;
+}
+
+input.button {
+   background-color: #cce6ff;
+   border: 1px solid #0073e6;
+   color: #0073e6;
+   font-size: 11px;
+   font-weight: bold;
+   cursor: pointer;
+   margin-left: 6px;
+   padding: 1px 4px;
+   filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#cce6ff');
 }
 
 .bold {
@@ -73,16 +101,37 @@ a img {
 
 .header {
    clear: both;
-   width: 282px;
-   padding: 6px 0px 2px 4px;
    font-weight: bold;
    float: left;
+   padding: 6px 0px 2px 4px;
+   height: 13px;
+   width: 282px;
 }
 
 .headerExtra {
    font-weight: normal;
    float: right;
-   margin-top: -13px;
+   height: 13px;
+   margin: -13px 0px 0px 0px;
+}
+
+.taskKey {
+   float: left;
+   margin: 0px 0px 0px 0px;
+   padding: 0px 0px 0px 0px;
+}
+
+.toggle {
+   background: transparent url("../images/office/arrow_up.gif") no-repeat;
+   cursor: pointer;
+   display: block;
+   float: left;
+   margin: -3px -1px 0px 4px;
+   height: 16px;
+   width: 16px;
+}
+.toggled {
+   background-image: url("../images/office/arrow_down.gif") !important;
 }
 
 .containerBig {
@@ -116,44 +165,38 @@ a img {
    background: #fff;
 }
 
-.containerMediumGrow {
-   height: 354px !important;
+.containerSearchResults {
+   clear: both;
+   float: left;
+   width: 282px;
+   height: 497px;
+   overflow: auto;
+   border: 1px solid #cccccc;
+   margin: 0px 4px 0px 4px;
+   background: #fff;
 }
-.containerMediumShrink {
-   height: 54px !important;
+
+#checkedoutList, #taskList, #spaceList, #documentList, #versionList, #resultsList {
+   overflow-y: scroll;
 }
 
 .odd {
    background-color: #f8f8f8 !important;
-   border-bottom: 1px solid #eee;
 }
 .even {
    background-color: #ffffff !important;
-   border-bottom: 1px solid #eee;
 }
 
 #currentSpaceInfo {
+   background: #fff;
+   border: 1px solid #cccccc;
    clear: both;
    float: left;
-   width: 282px;
    height: 34px;
+   width: 280px;
    overflow: none;
-   border: 1px solid #cccccc;
-   margin: 4px 4px 0px;
-   padding: 4px 0px 0px;
-   background: #fff;
-}
-
-TABLE, TR, TD {
-   border: 0px;
-   border-collapse: collapse;
-   padding: 2px;
-}
-
-ul {
-   margin: 0px;
-   list-style: none;
-   padding: 2px 0px 0px 24px;
+   margin: 0px 4px;
+   padding: 2px 0px 2px 2px;
 }
 
 #documentActions {
@@ -180,7 +223,7 @@ ul {
    border: 1px solid #ccc;
    float: left;
    margin: 0px 4px;
-   height: 106px;
+   height: 89px;
    width: 282px;
 }
 #documentActionsNavigation li a {
@@ -228,16 +271,8 @@ ul {
    overflow: hidden;
 }
 
-input.button {
-   background-color: #cce6ff;
-   border: 1px solid #0073e6;
-   color: #0073e6;
-   font-size: 11px;
-   font-weight: bold;
-   cursor: pointer;
-   margin-left: 6px;
-   padding: 1px 4px;
-   filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#cce6ff');
+.checkedoutItem {
+   border-bottom: 1px solid #eee;
 }
 
 #taskDetails {
@@ -246,10 +281,11 @@ input.button {
 
 .taskItem {
    cursor: pointer;
+   border-bottom: 1px solid #eee;
 }
 
 .taskItemSelected {
-   background-color: #ffe500 !important;
+   background-color: #ffff90 !important;
 }
 
 .taskResources {

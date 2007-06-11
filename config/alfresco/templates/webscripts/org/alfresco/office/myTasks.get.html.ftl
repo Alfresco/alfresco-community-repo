@@ -28,32 +28,32 @@
 
 <div id="tabBar">
    <ul>
-      <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path}&n=${node.id}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
-      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
-      <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
-      <li id="current"><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
+      <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path?url}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
+      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${node.id}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
+      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path?url}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
+      <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path?url}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
+      <li id="current"><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path?url}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
    </ul>
 </div>
 
-<div class="header">My Tasks<span class="headerExtra"><img src="${url.context}/images/office/task_overdue.gif" alt="overdue">=overdue, <img src="${url.context}/images/office/task_today.gif" alt="due today">=due today</span></div>
+<div class="header">My Tasks<span class="headerExtra"><span class="taskKey"><img src="${url.context}/images/office/task_overdue.gif" alt="overdue" />=overdue, <img src="${url.context}/images/office/task_today.gif" alt="due today" />=due today</span></span></div>
 
 <div id="taskList" class="containerMedium">
-   <table width="100%">
+   <table width="265">
 <#assign taskNum=0>
 <#list workflow.assignedTasks?sort_by('startDate') as t>
    <#assign taskNum=taskNum+1>
-      <tr id="${t.id}" class="taskItem ${(taskNum % 2 = 0)?string("odd", "even")}">
+      <tr id="${t.id?replace("$", ".")}" class="taskItem ${(taskNum % 2 = 0)?string("odd", "even")}">
          <td>
    <#assign hasDue=t.properties["bpm:dueDate"]?exists>
    <#if hasDue>
       <#assign due=t.properties["bpm:dueDate"]>
       <#-- items due today? -->
       <#if (dateCompare(date?date, due?date, 0, "==") == 1)>
-            <img src="${url.context}/images/office/task_today.gif">
+            <img src="${url.context}/images/office/task_today.gif" alt="due today" />
       <#-- items overdue? -->
       <#elseif (dateCompare(date?date, due?date) == 1)>
-            <img src="${url.context}/images/office/task_overdue.gif">
+            <img src="${url.context}/images/office/task_overdue.gif" alt="overdue" />
       </#if>
    <#else>
             &nbsp;
@@ -61,14 +61,19 @@
          </td>
          <td>
             <span style="font-weight: bold;">${t.description?html}</span> (${t.type?html})
-            <#if hasDue>
+   <#if hasDue>
                <br />Due date: ${due?date}
-            <#else>
+   <#else>
                <br />(No due date)
-            </#if>
+   </#if>
          </td>
       </tr>
 </#list>
+<#if taskNum = 0>
+   <tr>
+      <td>(No tasks)</td>
+   </tr>
+</#if>
    </table>
 </div>
 
@@ -80,7 +85,7 @@
       <div id="taskDetails">
          <table width="100%">
             <tr>
-               <td width="32" valign="top"><img src="${url.context}/images/office/new_workflow_large.gif" alt="Start workflow" /></td>
+               <td valign="top"><img src="${url.context}/images/office/new_workflow_large.gif" alt="Start workflow" /></td>
                <td>
                   Start workflow on:<br /><span style="font-weight: bold; padding-left: 8px;">${d.name?html}</span>
                </td>

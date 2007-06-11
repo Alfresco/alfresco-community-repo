@@ -24,25 +24,25 @@
 
 <div id="tabBar">
    <ul>
-      <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
-      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
-      <li id="current"><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
-      <li><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
+      <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path?url}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
+      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
+      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path?url}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
+      <li id="current"><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path?url}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
+      <li><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path?url}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
    </ul>
 </div>
 
 <div class="header">Current Document Details</div>
 
 <div class="containerMedium">
-   <table>
+   <table width="265">
       <tbody>
          <tr>
             <td valign="top">
 <#if d.isDocument>
-               <img src="${url.context}${d.icon32}" border="0" alt="${d.name}" />
+               <img src="${url.context}${d.icon32}" alt="${d.name}" />
             </td>
-            <td width="100%" style="padding-top: 4px;">
+            <td style="padding-top: 4px;">
                <span style="font-weight:bold; vertical-align: top;">${d.name}
    <#if d.isLocked >
                   <img src="${url.context}/images/office/lock.gif" alt="Locked" title="Locked" style="margin: -2px 0px;" />
@@ -92,8 +92,8 @@
 </#if>
 </div>
 
-<div class="containerMedium">
-   <table>
+<div id="versionList" class="containerMedium">
+   <table width="265">
 <#if d.isDocument >
    <#if hasAspect(d, "cm:versionable") == 1>
       <#assign versionRow=0>
@@ -103,14 +103,14 @@
          <td valign="top">
             <a title="Open ${record.versionLabel}" href="$(url.context}${d.url}"><img src="${url.context}/images/office/document.gif" alt="Open ${record.versionLabel}" /></a>
          </td>
-         <td width="100%">
+         <td>
             <a title="Open ${record.versionLabel}" href="#"><span style="font-weight:bold;">${record.versionLabel}</span></a><br />
             Author: ${record.creator}<br/>
             Date: ${record.createdDate?datetime}<br/>
          <#if record.description?exists>
             Notes: ${record.description}<br/>
          </#if>
-<!--                       <a href="#" onClick="window.external.compareDocument('/alfresco${d.url}')" title="Compare with current">Compare with current</a><br/> -->
+<!--                       <a href="#" onclick="window.external.compareDocument('/alfresco${d.url}')" title="Compare with current">Compare with current</a><br/> -->
          </td>
       </tr>
    </#list>
@@ -120,7 +120,7 @@
             The current document is not versioned.<br />
             <br />
             <ul>
-               <li><a title="Make Versionable" href="#" onClick="OfficeAddin.runAction('${doc_actions}','makeversion','${d.id}', '');">
+               <li><a title="Make Versionable" href="#" onclick="OfficeAddin.runAction('${doc_actions}','makeversion','${d.id}', '');">
                   <img src="${url.context}/images/office/make_versionable.gif" alt="Make Versionable" /> Make Versionable
                </a></li>
             </ul>
@@ -146,7 +146,7 @@
          <#if d.isLocked >
          <#elseif hasAspect(d, "cm:workingcopy") == 1>
          <li>
-            <a href="#" onClick="OfficeAddin.runAction('${doc_actions}','checkin','${d.id}', '');">
+            <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','checkin','${d.id}', '');">
                <img src="${url.context}/images/office/checkin.gif" alt="Check In">
                Check In
             </a>
@@ -154,7 +154,7 @@
          </li>
          <#else>
          <li>
-            <a href="#" onClick="OfficeAddin.runAction('${doc_actions}','checkout','${d.id}', '');">
+            <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','checkout','${d.id}', '');">
                <img src="${url.context}/images/office/checkout.gif" alt="Check Out">
                Check Out
             </a>
@@ -162,25 +162,25 @@
          </li>
          </#if>
          <li>
-            <a href="#" onClick="OfficeAddin.runAction('${doc_actions}','makepdf','${d.id}', '');">
-               <img src="${url.context}/images/office/makepdf.gif" alt="Transform to PDF">
+            <a href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;w=new">
+               <img src="${url.context}/images/office/new_workflow.gif" alt="Start Workflow" />
+               Start Workflow
+            </a>
+            <br />Start Advanced Workflow for the current document.
+         </li>
+         <li>
+            <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','makepdf','${d.id}', '');">
+               <img src="${url.context}/images/office/makepdf.gif" alt="Transform to PDF" />
                Transform to PDF
             </a>
             <br />Transform the current document to Adobe PDF format.
          </li>
          <li>
-            <a href="${url.context}/navigate/showOfficeAddin/workspace/SpacesStore/${d.id}?ticket=${session.ticket}" target="_blank">
-               <img src="${url.context}/images/office/document_details.gif" alt="Open Full Details">
+            <a href="${url.context}/navigate/showOfficeAddin/workspace/SpacesStore/${d.id}?ticket=${session.ticket}" rel="_blank">
+               <img src="${url.context}/images/office/document_details.gif" alt="Open Full Details" />
                Open Full Details
             </a>
             <br />Open the document details in the Alfresco Web Client.
-         </li>
-         <li>
-            <a href="${url.serviceContext}/office/myTasks?p=${path}&w=new">
-               <img src="${url.context}/images/office/new_workflow.gif" alt="Start Workflow">
-               Start Workflow
-            </a>
-            <br />Start Advanced Workflow for the current document.
          </li>
       </ul>
 

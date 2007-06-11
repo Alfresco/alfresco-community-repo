@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.QName;
@@ -66,6 +67,7 @@ public class WorkflowBean
    protected NodeService nodeService;
    protected WorkflowService workflowService;
    protected List<Node> tasks;
+   protected List<Node> activeTasks;
    protected List<Node> pooledTasks;
    protected List<Node> completedTasks;
    
@@ -77,6 +79,55 @@ public class WorkflowBean
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
    
+   /**
+    * Returns a list of nodes representing the "all" active tasks.
+    * 
+    * @return List of all active tasks
+    */
+   public List<Node> getAllActiveTasks()
+   {
+      if (this.activeTasks == null)
+      {
+         // get the current username
+         FacesContext context = FacesContext.getCurrentInstance();
+         User user = Application.getCurrentUser(context);
+         String userName = user.getUserName();
+         
+         UserTransaction tx = null;
+         try
+         {
+            tx = Repository.getUserTransaction(context, true);
+            tx.begin();
+            
+            // query for all active tasks
+            WorkflowTaskQuery query = new WorkflowTaskQuery();
+            List<WorkflowTask> tasks = this.workflowService.queryTasks(query);
+            
+            // create a list of transient nodes to represent
+            this.activeTasks = new ArrayList<Node>(tasks.size());
+            for (WorkflowTask task : tasks)
+            {
+               Node node = createTask(task);
+               this.activeTasks.add(node);
+               
+               if (logger.isDebugEnabled())
+                  logger.debug("Added active task: " + node);
+            }
+            
+            // commit the changes
+            tx.commit();
+         }
+         catch (Throwable e)
+         {
+            // rollback the transaction
+            try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+            Utils.addErrorMessage("Failed to get all active tasks: " + e.toString(), e);
+         }
+      }
+      
+      return this.activeTasks;
+   }
+      
    /**
     * Returns a list of nodes representing the "pooled" to do tasks the 
     * current user has.

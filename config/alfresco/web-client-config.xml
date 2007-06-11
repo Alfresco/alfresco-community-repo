@@ -215,6 +215,8 @@
             <dashlet id="getting-started" label-id="dashlet_gettingstarted_label"
                   description-id="dashlet_gettingstarted_desc"
                   jsp="/jsp/dashboards/dashlets/getting-started.jsp" allow-narrow="false" />
+            <dashlet id="tasks-active" label-id="tasks_active_title" description-id="tasks_active_desc"
+                  jsp="/jsp/workflow/tasks-active-dashlet.jsp" allow-narrow="false" />
             <!-- this dashlet 'tasks-todo' is also shown by default for all users -->
             <dashlet id="tasks-todo" label-id="my_tasks_todo_title" description-id="my_tasks_todo_desc"
                   jsp="/jsp/workflow/tasks-todo-dashlet.jsp" allow-narrow="false" />

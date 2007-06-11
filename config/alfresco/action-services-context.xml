@@ -505,6 +505,18 @@
     	</property>
     </bean>
     
+    <bean id="avm-link-validation" class="org.alfresco.linkvalidation.LinkValidationAction" parent="action-executer">
+      <property name="linkValidationService">
+          <ref bean="LinkValidationService"/>
+      </property>
+      <property name="avmService">
+            <ref bean="indexingAVMService"/>
+        </property>
+      <property name="publicAction">
+          <value>false</value>
+      </property>
+    </bean>
+    
     <!-- Scheduled action helper beans -->
     
     <!-- Base template action definition -->

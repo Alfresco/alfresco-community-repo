@@ -50,4 +50,5 @@ public class  SandboxConstants
     public final static QName PROP_WEBSITE_NAME                      = QName.createQName(null, ".website.name");
     public final static QName PROP_AUTHOR_NAME                       = QName.createQName(null, ".author.name");
     public final static QName PROP_WEB_PROJECT_NODE_REF              = QName.createQName(null, ".web_project.noderef");
+    public final static QName PROP_LINK_VALIDATION_REPORT            = QName.createQName(null, ".link.validation.report");
 }

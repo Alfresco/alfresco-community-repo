@@ -26,6 +26,7 @@
 *----------------------------------------------------------------------------*/
 
 package org.alfresco.linkvalidation;
+import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -46,8 +47,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 *  Note:  It is safest to instantiate a fresh HrefValidationProgress 
 *  object for every invocation of updateHrefInfo().
 */
-public class HrefValidationProgress
+public class HrefValidationProgress implements Serializable
 {
+    private static final long serialVersionUID = 3031274879702889688L;
+   
     AtomicInteger webapp_update_count_;
     AtomicInteger dir_update_count_;
     AtomicInteger file_update_count_;

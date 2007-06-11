@@ -32,11 +32,12 @@ import java.util.Map;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -371,79 +372,80 @@ public abstract class BaseDetailsBean
    {
       String outcome = "cancel";
       
-      UserTransaction tx = null;
-      
       try
       {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-         tx.begin();
-         
-         // firstly retrieve all the properties for the current node
-         Map<QName, Serializable> updateProps = this.nodeService.getProperties(
-               getNode().getNodeRef());
-         
-         // update the simple workflow properties
-         
-         // set the approve step name
-         updateProps.put(ApplicationModel.PROP_APPROVE_STEP,
-               this.workflowProperties.get(SimpleWorkflowHandler.PROP_APPROVE_STEP_NAME));
-         
-         // specify whether the approve step will copy or move the content
-         boolean approveMove = true;
-         String approveAction = (String)this.workflowProperties.get(SimpleWorkflowHandler.PROP_APPROVE_ACTION);
-         if (approveAction != null && approveAction.equals("copy"))
+         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
          {
-            approveMove = false;
-         }
-         updateProps.put(ApplicationModel.PROP_APPROVE_MOVE, Boolean.valueOf(approveMove));
-         
-         // create node ref representation of the destination folder
-         updateProps.put(ApplicationModel.PROP_APPROVE_FOLDER,
-               this.workflowProperties.get(SimpleWorkflowHandler.PROP_APPROVE_FOLDER));
-         
-         // determine whether there should be a reject step
-         boolean requireReject = true;
-         String rejectStepPresent = (String)this.workflowProperties.get(
-               SimpleWorkflowHandler.PROP_REJECT_STEP_PRESENT);
-         if (rejectStepPresent != null && rejectStepPresent.equals("no"))
-         {
-            requireReject = false;
-         }
-         
-         if (requireReject)
-         {
-            // set the reject step name
-            updateProps.put(ApplicationModel.PROP_REJECT_STEP,
-                  this.workflowProperties.get(SimpleWorkflowHandler.PROP_REJECT_STEP_NAME));
-         
-            // specify whether the reject step will copy or move the content
-            boolean rejectMove = true;
-            String rejectAction = (String)this.workflowProperties.get(
-                  SimpleWorkflowHandler.PROP_REJECT_ACTION);
-            if (rejectAction != null && rejectAction.equals("copy"))
+            public Object execute() throws Throwable
             {
-               rejectMove = false;
-            }
-            updateProps.put(ApplicationModel.PROP_REJECT_MOVE, Boolean.valueOf(rejectMove));
+               // firstly retrieve all the properties for the current node
+               Map<QName, Serializable> updateProps = nodeService.getProperties(
+                     getNode().getNodeRef());
+               
+               // update the simple workflow properties
+               
+               // set the approve step name
+               updateProps.put(ApplicationModel.PROP_APPROVE_STEP,
+                     workflowProperties.get(SimpleWorkflowHandler.PROP_APPROVE_STEP_NAME));
+               
+               // specify whether the approve step will copy or move the content
+               boolean approveMove = true;
+               String approveAction = (String)workflowProperties.get(SimpleWorkflowHandler.PROP_APPROVE_ACTION);
+               if (approveAction != null && approveAction.equals("copy"))
+               {
+                  approveMove = false;
+               }
+               updateProps.put(ApplicationModel.PROP_APPROVE_MOVE, Boolean.valueOf(approveMove));
+               
+               // create node ref representation of the destination folder
+               updateProps.put(ApplicationModel.PROP_APPROVE_FOLDER,
+                     workflowProperties.get(SimpleWorkflowHandler.PROP_APPROVE_FOLDER));
+               
+               // determine whether there should be a reject step
+               boolean requireReject = true;
+               String rejectStepPresent = (String)workflowProperties.get(
+                     SimpleWorkflowHandler.PROP_REJECT_STEP_PRESENT);
+               if (rejectStepPresent != null && rejectStepPresent.equals("no"))
+               {
+                  requireReject = false;
+               }
+               
+               if (requireReject)
+               {
+                  // set the reject step name
+                  updateProps.put(ApplicationModel.PROP_REJECT_STEP,
+                        workflowProperties.get(SimpleWorkflowHandler.PROP_REJECT_STEP_NAME));
+               
+                  // specify whether the reject step will copy or move the content
+                  boolean rejectMove = true;
+                  String rejectAction = (String)workflowProperties.get(
+                        SimpleWorkflowHandler.PROP_REJECT_ACTION);
+                  if (rejectAction != null && rejectAction.equals("copy"))
+                  {
+                     rejectMove = false;
+                  }
+                  updateProps.put(ApplicationModel.PROP_REJECT_MOVE, Boolean.valueOf(rejectMove));
 
-            // create node ref representation of the destination folder
-            updateProps.put(ApplicationModel.PROP_REJECT_FOLDER,
-                  this.workflowProperties.get(SimpleWorkflowHandler.PROP_REJECT_FOLDER));
-         }
-         else
-         {
-            // set all the reject properties to null to signify there should
-            // be no reject step
-            updateProps.put(ApplicationModel.PROP_REJECT_STEP, null);
-            updateProps.put(ApplicationModel.PROP_REJECT_MOVE, null);
-            updateProps.put(ApplicationModel.PROP_REJECT_FOLDER, null);
-         }
-         
-         // set the properties on the node
-         this.nodeService.setProperties(getNode().getNodeRef(), updateProps);
-         
-         // commit the transaction
-         tx.commit();
+                  // create node ref representation of the destination folder
+                  updateProps.put(ApplicationModel.PROP_REJECT_FOLDER,
+                        workflowProperties.get(SimpleWorkflowHandler.PROP_REJECT_FOLDER));
+               }
+               else
+               {
+                  // set all the reject properties to null to signify there should
+                  // be no reject step
+                  updateProps.put(ApplicationModel.PROP_REJECT_STEP, null);
+                  updateProps.put(ApplicationModel.PROP_REJECT_MOVE, null);
+                  updateProps.put(ApplicationModel.PROP_REJECT_FOLDER, null);
+               }
+               
+               // set the properties on the node
+               nodeService.setProperties(getNode().getNodeRef(), updateProps);
+               return null;
+            }
+         };
+         txnHelper.doInTransaction(callback);
          
          // reset the state of the current document so it reflects the changes just made
          getNode().reset();
@@ -452,7 +454,6 @@ public abstract class BaseDetailsBean
       }
       catch (Throwable e)
       {
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), MSG_ERROR_UPDATE_SIMPLEWORKFLOW), e.getMessage()), e);
       }
@@ -493,19 +494,21 @@ public abstract class BaseDetailsBean
          throw new AlfrescoRuntimeException("approve called without an id");
       }
       
-      NodeRef docNodeRef = new NodeRef(Repository.getStoreRef(), id);
+      final NodeRef docNodeRef = new NodeRef(Repository.getStoreRef(), id);
       
-      UserTransaction tx = null;
       try
       {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-         tx.begin();
-         
-         // call the service to perform the approve
-         WorkflowUtil.approve(docNodeRef, this.nodeService, this.copyService);
-         
-         // commit the transaction
-         tx.commit();
+         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+         {
+            public Object execute() throws Throwable
+            {
+               // call the service to perform the approve
+               WorkflowUtil.approve(docNodeRef, nodeService, copyService);
+               return null;
+            }
+         };
+         txnHelper.doInTransaction(callback);
          
          // if this was called via the document details dialog we need to reset the document node
          if (getNode() != null)
@@ -518,8 +521,6 @@ public abstract class BaseDetailsBean
       }
       catch (Throwable e)
       {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), MSG_ERROR_WORKFLOW_APPROVE), e.getMessage()), e);
       }
@@ -558,19 +559,21 @@ public abstract class BaseDetailsBean
          throw new AlfrescoRuntimeException("reject called without an id");
       }
       
-      NodeRef docNodeRef = new NodeRef(Repository.getStoreRef(), id);
+      final NodeRef docNodeRef = new NodeRef(Repository.getStoreRef(), id);
       
-      UserTransaction tx = null;
       try
       {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-         tx.begin();
-         
-         // call the service to perform the reject
-         WorkflowUtil.reject(docNodeRef, this.nodeService, this.copyService);
-         
-         // commit the transaction
-         tx.commit();
+         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+         {
+            public Object execute() throws Throwable
+            {
+               // call the service to perform the reject
+               WorkflowUtil.reject(docNodeRef, nodeService, copyService);
+               return null;
+            }
+         };
+         txnHelper.doInTransaction(callback);
          
          // if this was called via the document details dialog we need to reset the document node
          if (getNode() != null)
@@ -584,7 +587,6 @@ public abstract class BaseDetailsBean
       catch (Throwable e)
       {
          // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), MSG_ERROR_WORKFLOW_REJECT), e.getMessage()), e);
       }
@@ -649,33 +651,32 @@ public abstract class BaseDetailsBean
    /**
     * Action Handler to take Ownership of the current Space
     */
-   public void takeOwnership(ActionEvent event)
+   public void takeOwnership(final ActionEvent event)
    {
-      FacesContext fc = FacesContext.getCurrentInstance();
-      
-      UserTransaction tx = null;
+      final FacesContext fc = FacesContext.getCurrentInstance();
       
       try
       {
-         tx = Repository.getUserTransaction(fc);
-         tx.begin();
-         
-         this.ownableService.takeOwnership(getNode().getNodeRef());
-         
-         String msg = Application.getMessage(fc, MSG_SUCCESS_OWNERSHIP);
-         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
-         String formId = Utils.getParentForm(fc, event.getComponent()).getClientId(fc);
-         fc.addMessage(formId + ':' + getPropertiesPanelId(), facesMsg);
-         
-         getNode().reset();
-         
-         // commit the transaction
-         tx.commit();
+         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+         {
+            public Object execute() throws Throwable
+            {
+               ownableService.takeOwnership(getNode().getNodeRef());
+               
+               String msg = Application.getMessage(fc, MSG_SUCCESS_OWNERSHIP);
+               FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
+               String formId = Utils.getParentForm(fc, event.getComponent()).getClientId(fc);
+               fc.addMessage(formId + ':' + getPropertiesPanelId(), facesMsg);
+               
+               getNode().reset();
+               return null;
+            }
+         };
+         txnHelper.doInTransaction(callback);
       }
       catch (Throwable e)
       {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                fc, Repository.ERROR_GENERIC), e.getMessage()), e);
       }

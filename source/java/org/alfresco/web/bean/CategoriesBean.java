@@ -38,6 +38,8 @@ import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -447,36 +449,36 @@ public class CategoriesBean implements IContextListener
    {
       String outcome = DEFAULT_OUTCOME;
       
-      UserTransaction tx = null;
       try
       {
          FacesContext context = FacesContext.getCurrentInstance();
-         tx = Repository.getUserTransaction(context);
-         tx.begin();
-         
-         // create category using categoryservice
-         NodeRef ref;
-         if (categoryRef == null)
+         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(context);
+         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
          {
-            ref = this.categoryService.createRootCategory(Repository.getStoreRef(), ContentModel.ASPECT_GEN_CLASSIFIABLE, this.name);
-         }
-         else
-         {
-            ref = this.categoryService.createCategory(categoryRef, this.name);
-         }
-         
-         // apply the titled aspect - for description
-         Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
-         titledProps.put(ContentModel.PROP_DESCRIPTION, this.description);
-         this.nodeService.addAspect(ref, ContentModel.ASPECT_TITLED, titledProps);
-         
-         // commit the transaction
-         tx.commit();
+            public Object execute() throws Throwable
+            {
+               // create category using categoryservice
+               NodeRef ref;
+               if (categoryRef == null)
+               {
+                  ref = categoryService.createRootCategory(Repository.getStoreRef(), ContentModel.ASPECT_GEN_CLASSIFIABLE, name);
+               }
+               else
+               {
+                  ref = categoryService.createCategory(categoryRef, name);
+               }
+               
+               // apply the titled aspect - for description
+               Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
+               titledProps.put(ContentModel.PROP_DESCRIPTION, description);
+               nodeService.addAspect(ref, ContentModel.ASPECT_TITLED, titledProps);
+               return null;
+            }
+         };
+         txnHelper.doInTransaction(callback);
       }
       catch (Throwable err)
       {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
          outcome = null;
@@ -492,31 +494,33 @@ public class CategoriesBean implements IContextListener
    {
       String outcome = DEFAULT_OUTCOME;
       
-      UserTransaction tx = null;
       try
       {
          FacesContext context = FacesContext.getCurrentInstance();
-         tx = Repository.getUserTransaction(context);
-         tx.begin();
-         
-         // update the category node
-         NodeRef nodeRef = getActionCategory().getNodeRef();
-         this.nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, this.name);
-         
-         // apply the titled aspect - for description
-         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED) == false)
+         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(context);
+         RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
          {
-            Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
-            titledProps.put(ContentModel.PROP_DESCRIPTION, this.description);
-            this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, titledProps);
-         }
-         else
-         {
-            this.nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, this.description);
-         }
-         
-         // commit the transaction
-         tx.commit();
+            public NodeRef execute() throws Throwable
+            {
+               // update the category node
+               NodeRef nodeRef = getActionCategory().getNodeRef();
+               nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, name);
+               
+               // apply the titled aspect - for description
+               if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED) == false)
+               {
+                  Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
+                  titledProps.put(ContentModel.PROP_DESCRIPTION, description);
+                  nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, titledProps);
+               }
+               else
+               {
+                  nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, description);
+               }
+               return nodeRef;
+            }
+         };
+         NodeRef nodeRef = txnHelper.doInTransaction(callback);
          
          // edit the node in the breadcrumb if required
          List<IBreadcrumbHandler> location = getLocation();
@@ -533,8 +537,6 @@ public class CategoriesBean implements IContextListener
       }
       catch (Throwable err)
       {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
          outcome = null;
@@ -552,44 +554,46 @@ public class CategoriesBean implements IContextListener
       
       if (getActionCategory() != null)
       {
-         UserTransaction tx = null;
          try
          {
             FacesContext context = FacesContext.getCurrentInstance();
-            tx = Repository.getUserTransaction(context);
-            tx.begin();
-            
-            // delete the category node using the nodeservice
-            NodeRef categoryNodeRef = getActionCategory().getNodeRef();
-            this.categoryService.deleteCategory(categoryNodeRef);
-            
-            // if there are other items in the repository using this category
-            // all the associations to the category should be removed too
-            if (this.members != null && this.members.size() > 0)
+            RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(context);
+            RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
             {
-               for (ChildAssociationRef childRef : this.members)
+               public NodeRef execute() throws Throwable
                {
-                  List<NodeRef> list = new ArrayList<NodeRef>(this.members.size());
+                  // delete the category node using the nodeservice
+                  NodeRef categoryNodeRef = getActionCategory().getNodeRef();
+                  categoryService.deleteCategory(categoryNodeRef);
                   
-                  NodeRef member = childRef.getChildRef();
-                  Collection<NodeRef> categories = (Collection<NodeRef>)this.nodeService.
-                        getProperty(member, ContentModel.PROP_CATEGORIES);
-
-                  for (NodeRef category : categories)
+                  // if there are other items in the repository using this category
+                  // all the associations to the category should be removed too
+                  if (members != null && members.size() > 0)
                   {
-                     if (category.equals(categoryNodeRef) == false)
+                     for (ChildAssociationRef childRef : members)
                      {
-                        list.add(category);
+                        List<NodeRef> list = new ArrayList<NodeRef>(members.size());
+                        
+                        NodeRef member = childRef.getChildRef();
+                        Collection<NodeRef> categories = (Collection<NodeRef>)nodeService.
+                              getProperty(member, ContentModel.PROP_CATEGORIES);
+
+                        for (NodeRef category : categories)
+                        {
+                           if (category.equals(categoryNodeRef) == false)
+                           {
+                              list.add(category);
+                           }
+                        }
+                        
+                        // persist the list back to the repository
+                        nodeService.setProperty(member, ContentModel.PROP_CATEGORIES, (Serializable)list);
                      }
                   }
-                  
-                  // persist the list back to the repository
-                  this.nodeService.setProperty(member, ContentModel.PROP_CATEGORIES, (Serializable)list);
+                  return categoryNodeRef;
                }
-            }
-            
-            // commit the transaction
-            tx.commit();
+            };
+            NodeRef categoryNodeRef = txnHelper.doInTransaction(callback);
             
             // remove this node from the breadcrumb if required
             List<IBreadcrumbHandler> location = getLocation();
@@ -613,8 +617,6 @@ public class CategoriesBean implements IContextListener
          }
          catch (Throwable err)
          {
-            // rollback the transaction
-            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
             Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
             outcome = null;
@@ -715,6 +717,7 @@ public class CategoriesBean implements IContextListener
       /**
        * @see org.alfresco.web.ui.common.component.IBreadcrumbHandler#navigationOutcome(org.alfresco.web.ui.common.component.UIBreadcrumb)
        */
+      @SuppressWarnings("unchecked")
       public String navigationOutcome(UIBreadcrumb breadcrumb)
       {
          // All category breadcrumb elements relate to a Categiry Node Id

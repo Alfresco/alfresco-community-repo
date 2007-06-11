@@ -46,10 +46,11 @@ import javax.faces.render.RenderKitFactory;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 
@@ -88,7 +89,6 @@ public class InvokeCommand extends BaseAjaxCommand
                        final HttpServletResponse response)
       throws ServletException, IOException
    {
-      UserTransaction tx = null;
       ResponseWriter writer = null;
       try
       {
@@ -153,20 +153,21 @@ public class InvokeCommand extends BaseAjaxCommand
                                            facesContext);
 
          // setup the transaction
-         tx = Repository.getUserTransaction(facesContext);
-         tx.begin();
-         
-         // invoke the method
-         method.invoke(bean);
-
-         // commit
-         tx.commit();
+         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+         final Object beanFinal = bean;
+         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+         {
+            public Object execute() throws Throwable
+            {
+               // invoke the method
+               method.invoke(beanFinal);
+               return null;
+            }
+         };
+         txnHelper.doInTransaction(callback);
       }
       catch (Throwable err)
       {
-         // rollback the transaction
-         try { if (tx != null) { tx.rollback(); } } catch (Exception ex) { }
-         
          if (err instanceof EvaluationException)
          {
             final Throwable cause = ((EvaluationException)err).getCause();

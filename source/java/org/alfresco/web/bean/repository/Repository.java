@@ -39,6 +39,7 @@ import org.alfresco.repo.configuration.ConfigurableService;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.metadata.MetadataExtracter;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
@@ -376,11 +377,26 @@ public final class Repository
     * @param context    FacesContext
     * 
     * @return UserTransaction
+    * 
+    * @deprecated
+    * @see        #getRetryingTransactionHelper(FacesContext)
     */
    public static UserTransaction getUserTransaction(FacesContext context)
    {
       TransactionService transactionService = getServiceRegistry(context).getTransactionService(); 
       return transactionService.getUserTransaction();
+   }
+   
+   /**
+    * Returns the transaction helper that executes a unit of work.
+    * 
+    * @param context    FacesContext
+    * @return           Returns the transaction helper
+    */
+   public static RetryingTransactionHelper getRetryingTransactionHelper(FacesContext context)
+   {
+      TransactionService transactionService = getServiceRegistry(context).getTransactionService();
+      return transactionService.getRetryingTransactionHelper();
    }
    
    /**

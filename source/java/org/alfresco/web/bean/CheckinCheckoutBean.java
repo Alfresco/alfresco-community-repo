@@ -30,11 +30,12 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -453,86 +454,85 @@ public class CheckinCheckoutBean
       String outcome = null;
       boolean checkoutSuccessful = false;
       
-      UserTransaction tx = null;
-      
-      Node node = getDocument();
+      final Node node = getDocument();
       if (node != null)
       {
          try
          {
-            tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-            tx.begin();
-            
-            if (logger.isDebugEnabled())
-               logger.debug("Trying to checkout content node Id: " + node.getId());
-            
-            // checkout the node content to create a working copy
-            if (logger.isDebugEnabled())
+            RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+            RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
             {
-               logger.debug("Checkout copy location: " + getCopyLocation());
-               logger.debug("Selected Space Id: " + this.selectedSpaceId);
-            }
-            NodeRef workingCopyRef = null;
-            if (getCopyLocation().equals(COPYLOCATION_OTHER) && this.selectedSpaceId != null)
-            {
-               // checkout to a arbituary parent Space 
-               NodeRef destRef = this.selectedSpaceId;
-               
-               ChildAssociationRef childAssocRef = this.nodeService.getPrimaryParent(destRef);
-               workingCopyRef = this.versionOperationsService.checkout(node.getNodeRef(),
-                     destRef, ContentModel.ASSOC_CONTAINS, childAssocRef.getQName());
-            }
-            else
-            {
-               // checkout the content to the current space
-               workingCopyRef = this.versionOperationsService.checkout(node.getNodeRef());
-               
-               // if this is a workflow action and there is a task id present we need
-               // to also link the working copy to the workflow package so it appears
-               // in the resources panel in the manage task dialog
-               if (this.isWorkflowAction && this.workflowTaskId != null && 
-                   (this.workflowTaskId.equals("null") == false))
+               public Object execute() throws Throwable
                {
-                  WorkflowTask task = this.workflowService.getTaskById(this.workflowTaskId);
-                  if (task != null)
+                  if (logger.isDebugEnabled())
+                     logger.debug("Trying to checkout content node Id: " + node.getId());
+                  
+                  // checkout the node content to create a working copy
+                  if (logger.isDebugEnabled())
                   {
-                     NodeRef workflowPackage = (NodeRef)task.properties.get(WorkflowModel.ASSOC_PACKAGE);
-                     if (workflowPackage != null)
+                     logger.debug("Checkout copy location: " + getCopyLocation());
+                     logger.debug("Selected Space Id: " + selectedSpaceId);
+                  }
+                  NodeRef workingCopyRef = null;
+                  if (getCopyLocation().equals(COPYLOCATION_OTHER) && selectedSpaceId != null)
+                  {
+                     // checkout to a arbituary parent Space 
+                     NodeRef destRef = selectedSpaceId;
+                     
+                     ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(destRef);
+                     workingCopyRef = versionOperationsService.checkout(node.getNodeRef(),
+                           destRef, ContentModel.ASSOC_CONTAINS, childAssocRef.getQName());
+                  }
+                  else
+                  {
+                     // checkout the content to the current space
+                     workingCopyRef = versionOperationsService.checkout(node.getNodeRef());
+                     
+                     // if this is a workflow action and there is a task id present we need
+                     // to also link the working copy to the workflow package so it appears
+                     // in the resources panel in the manage task dialog
+                     if (isWorkflowAction && workflowTaskId != null && 
+                         (workflowTaskId.equals("null") == false))
                      {
-                        this.nodeService.addChild(workflowPackage, workingCopyRef, 
-                              ContentModel.ASSOC_CONTAINS, QName.createQName(
-                              NamespaceService.CONTENT_MODEL_1_0_URI,
-                              QName.createValidLocalName((String)this.nodeService.getProperty(
-                              workingCopyRef, ContentModel.PROP_NAME))));
-                        
-                        if (logger.isDebugEnabled())
-                           logger.debug("Added working copy to workflow package: " + workflowPackage);
+                        WorkflowTask task = workflowService.getTaskById(workflowTaskId);
+                        if (task != null)
+                        {
+                           NodeRef workflowPackage = (NodeRef)task.properties.get(WorkflowModel.ASSOC_PACKAGE);
+                           if (workflowPackage != null)
+                           {
+                              nodeService.addChild(workflowPackage, workingCopyRef, 
+                                    ContentModel.ASSOC_CONTAINS, QName.createQName(
+                                    NamespaceService.CONTENT_MODEL_1_0_URI,
+                                    QName.createValidLocalName((String)nodeService.getProperty(
+                                    workingCopyRef, ContentModel.PROP_NAME))));
+                              
+                              if (logger.isDebugEnabled())
+                                 logger.debug("Added working copy to workflow package: " + workflowPackage);
+                           }
+                        }
                      }
                   }
+                  
+                  // set the working copy Node instance
+                  Node workingCopy = new Node(workingCopyRef);
+                  setWorkingDocument(workingCopy);
+                  
+                  // create content URL to the content download servlet with ID and expected filename
+                  // the myfile part will be ignored by the servlet but gives the browser a hint
+                  String url = DownloadContentServlet.generateDownloadURL(workingCopyRef, workingCopy.getName());
+                  
+                  workingCopy.getProperties().put("url", url);
+                  workingCopy.getProperties().put("fileType32", Utils.getFileTypeImage(workingCopy.getName(), false)); 
+                  return null;
                }
-            }
-            
-            // set the working copy Node instance
-            Node workingCopy = new Node(workingCopyRef);
-            setWorkingDocument(workingCopy);
-            
-            // create content URL to the content download servlet with ID and expected filename
-            // the myfile part will be ignored by the servlet but gives the browser a hint
-            String url = DownloadContentServlet.generateDownloadURL(workingCopyRef, workingCopy.getName());
-            
-            workingCopy.getProperties().put("url", url);
-            workingCopy.getProperties().put("fileType32", Utils.getFileTypeImage(workingCopy.getName(), false)); 
-            
-            // commit the transaction
-            tx.commit();
+            };
+            txnHelper.doInTransaction(callback);
             
             // mark as successful
             checkoutSuccessful = true;
          }
          catch (Throwable err)
          {
-            // rollback the transaction
-            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
             Utils.addErrorMessage(Application.getMessage(
                   FacesContext.getCurrentInstance(), MSG_ERROR_CHECKOUT) + err.getMessage(), err);
          }
@@ -689,25 +689,26 @@ public class CheckinCheckoutBean
    {
       String outcome = null;
       
-      UserTransaction tx = null;
-      
-      Node node = getDocument();
+      final Node node = getDocument();
       if (node != null)
       {
          try
          {
-            tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-            tx.begin();
-            
-            if (logger.isDebugEnabled())
-               logger.debug("Trying to update content node Id: " + node.getId());
-            
-            // get an updating writer that we can use to modify the content on the current node
-            ContentWriter writer = this.contentService.getWriter(node.getNodeRef(), ContentModel.PROP_CONTENT, true);
-            writer.putContent(this.editorOutput);
-            
-            // commit the transaction
-            tx.commit();
+            RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+            RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+            {
+               public Object execute() throws Throwable
+               {
+                  if (logger.isDebugEnabled())
+                     logger.debug("Trying to update content node Id: " + node.getId());
+                  
+                  // get an updating writer that we can use to modify the content on the current node
+                  ContentWriter writer = contentService.getWriter(node.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                  writer.putContent(editorOutput);
+                  return null;
+               }
+            };
+            txnHelper.doInTransaction(callback);
             
             // clean up and clear action context
             resetState();
@@ -719,8 +720,6 @@ public class CheckinCheckoutBean
          }
          catch (Throwable err)
          {
-            // rollback the transaction
-            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
             Utils.addErrorMessage(Application.getMessage(
                   FacesContext.getCurrentInstance(), MSG_ERROR_UPDATE) + err.getMessage());
          }
@@ -828,66 +827,67 @@ public class CheckinCheckoutBean
    {
       String outcome = null;
       
-      UserTransaction tx = null;
-      
       // NOTE: for checkin the document node _is_ the working document!
-      Node node = getDocument();
+      final Node node = getDocument();
       if (node != null && (getCopyLocation().equals(COPYLOCATION_CURRENT) || this.getFileName() != null))
       {
          try
          {
-            FacesContext context = FacesContext.getCurrentInstance();
-            tx = Repository.getUserTransaction(context);
-            tx.begin();
-            
-            if (logger.isDebugEnabled())
-               logger.debug("Trying to checkin content node Id: " + node.getId());
-            
-            // we can either checkin the content from the current working copy node
-            // which would have been previously updated by the user
-            String contentUrl;
-            if (getCopyLocation().equals(COPYLOCATION_CURRENT))
+            final FacesContext context = FacesContext.getCurrentInstance();
+            RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+            RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
             {
-               ContentData contentData = (ContentData) node.getProperties().get(ContentModel.PROP_CONTENT);
-               contentUrl = (contentData == null ? null : contentData.getContentUrl());
-            }
-            // or specify a specific file as the content instead
-            else
-            {
-               // add the content to an anonymous but permanent writer location
-               // we can then retrieve the URL to the content to to be set on the node during checkin
-               ContentWriter writer = this.contentService.getWriter(node.getNodeRef(), ContentModel.PROP_CONTENT, true);
-               // also update the mime type in case a different type of file is uploaded
-               String mimeType = Repository.getMimeTypeForFileName(context, this.fileName);
-               writer.setMimetype(mimeType);
-               writer.putContent(this.file);
-               contentUrl = writer.getContentUrl();
-            }
-            
-            if (contentUrl == null || contentUrl.length() == 0)
-            {
-               throw new IllegalStateException("Content URL is empty for specified working copy content node!");
-            }
-            
-            // add version history text to props
-            Map<String, Serializable> props = new HashMap<String, Serializable>(1, 1.0f);
-            props.put(Version.PROP_DESCRIPTION, this.versionNotes);
-            // set the flag for minor or major change
-            if (this.minorChange)
-            {
-               props.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
-            }
-            else
-            {
-               props.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
-            }
-            
-            // perform the checkin
-            this.versionOperationsService.checkin(node.getNodeRef(),
-                  props, contentUrl, this.keepCheckedOut);
-            
-            // commit the transaction
-            tx.commit();
+               public Object execute() throws Throwable
+               {
+                  if (logger.isDebugEnabled())
+                     logger.debug("Trying to checkin content node Id: " + node.getId());
+                  
+                  // we can either checkin the content from the current working copy node
+                  // which would have been previously updated by the user
+                  String contentUrl;
+                  if (getCopyLocation().equals(COPYLOCATION_CURRENT))
+                  {
+                     ContentData contentData = (ContentData) node.getProperties().get(ContentModel.PROP_CONTENT);
+                     contentUrl = (contentData == null ? null : contentData.getContentUrl());
+                  }
+                  // or specify a specific file as the content instead
+                  else
+                  {
+                     // add the content to an anonymous but permanent writer location
+                     // we can then retrieve the URL to the content to to be set on the node during checkin
+                     ContentWriter writer = contentService.getWriter(node.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                     // also update the mime type in case a different type of file is uploaded
+                     String mimeType = Repository.getMimeTypeForFileName(context, fileName);
+                     writer.setMimetype(mimeType);
+                     writer.putContent(file);
+                     contentUrl = writer.getContentUrl();
+                  }
+                  
+                  if (contentUrl == null || contentUrl.length() == 0)
+                  {
+                     throw new IllegalStateException("Content URL is empty for specified working copy content node!");
+                  }
+                  
+                  // add version history text to props
+                  Map<String, Serializable> props = new HashMap<String, Serializable>(1, 1.0f);
+                  props.put(Version.PROP_DESCRIPTION, versionNotes);
+                  // set the flag for minor or major change
+                  if (minorChange)
+                  {
+                     props.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
+                  }
+                  else
+                  {
+                     props.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+                  }
+                  
+                  // perform the checkin
+                  versionOperationsService.checkin(node.getNodeRef(),
+                        props, contentUrl, keepCheckedOut);
+                  return null;
+               }
+            };
+            txnHelper.doInTransaction(callback);
             
             outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
             
@@ -902,8 +902,6 @@ public class CheckinCheckoutBean
          }
          catch (Throwable err)
          {
-            // rollback the transaction
-            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
             Utils.addErrorMessage(Application.getMessage(
                   FacesContext.getCurrentInstance(), MSG_ERROR_CHECKIN) + err.getMessage(), err);
          }
@@ -923,32 +921,33 @@ public class CheckinCheckoutBean
    {
       String outcome = null;
       
-      UserTransaction tx = null;
-      
       // NOTE: for update the document node _is_ the working document!
-      Node node = getDocument();
+      final Node node = getDocument();
       if (node != null && this.getFileName() != null)
       {
          try
          {
-            FacesContext context = FacesContext.getCurrentInstance();
-            tx = Repository.getUserTransaction(context);
-            tx.begin();
-            
-            if (logger.isDebugEnabled())
-               logger.debug("Trying to update content node Id: " + node.getId());
-            
-            // get an updating writer that we can use to modify the content on the current node
-            ContentWriter writer = this.contentService.getWriter(node.getNodeRef(), ContentModel.PROP_CONTENT, true);
-            
-            // also update the mime type in case a different type of file is uploaded
-            String mimeType = Repository.getMimeTypeForFileName(context, this.fileName);
-            writer.setMimetype(mimeType);
-            
-            writer.putContent(this.file);            
-            
-            // commit the transaction
-            tx.commit();
+            final FacesContext context = FacesContext.getCurrentInstance();
+            RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+            RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+            {
+               public Object execute() throws Throwable
+               {
+                  if (logger.isDebugEnabled())
+                     logger.debug("Trying to update content node Id: " + node.getId());
+                  
+                  // get an updating writer that we can use to modify the content on the current node
+                  ContentWriter writer = contentService.getWriter(node.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                  
+                  // also update the mime type in case a different type of file is uploaded
+                  String mimeType = Repository.getMimeTypeForFileName(context, fileName);
+                  writer.setMimetype(mimeType);
+                  
+                  writer.putContent(file);            
+                  return null;
+               }
+            };
+            txnHelper.doInTransaction(callback);
             
             // clear action context
             setDocument(null);
@@ -958,8 +957,6 @@ public class CheckinCheckoutBean
          }
          catch (Throwable err)
          {
-            // rollback the transaction
-            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
             Utils.addErrorMessage(Application.getMessage(
                   FacesContext.getCurrentInstance(), MSG_ERROR_UPDATE) + err.getMessage(), err);
          }

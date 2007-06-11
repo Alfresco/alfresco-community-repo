@@ -36,11 +36,12 @@ import java.util.Map;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
@@ -412,25 +413,25 @@ public class DocumentDetailsBean extends BaseDetailsBean
    {
       String outcome = "cancel";
       
-      UserTransaction tx = null;
-      
       try
       {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-         tx.begin();
-         
-         // firstly retrieve all the properties for the current node
-         Map<QName, Serializable> updateProps = this.nodeService.getProperties(
-               getDocument().getNodeRef());
-         
-         // create a node ref representation of the selected id and set the new properties
-         updateProps.put(ContentModel.PROP_CATEGORIES, (Serializable)this.categories);
-         
-         // set the properties on the node
-         this.nodeService.setProperties(getDocument().getNodeRef(), updateProps);
-         
-         // commit the transaction
-         tx.commit();
+         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+         {
+            public Object execute() throws Throwable
+            {
+               // firstly retrieve all the properties for the current node
+               Map<QName, Serializable> updateProps = nodeService.getProperties(getDocument().getNodeRef());
+               
+               // create a node ref representation of the selected id and set the new properties
+               updateProps.put(ContentModel.PROP_CATEGORIES, (Serializable) categories);
+               
+               // set the properties on the node
+               nodeService.setProperties(getDocument().getNodeRef(), updateProps);
+               return null;
+            }
+         };
+         txnHelper.doInTransaction(callback);
          
          // reset the state of the current document so it reflects the changes just made
          getDocument().reset();
@@ -439,7 +440,6 @@ public class DocumentDetailsBean extends BaseDetailsBean
       }
       catch (Throwable e)
       {
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), MSG_ERROR_UPDATE_CATEGORY), e.getMessage()), e);
       }
@@ -452,26 +452,25 @@ public class DocumentDetailsBean extends BaseDetailsBean
     */
    public void applyClassifiable()
    {
-      UserTransaction tx = null;
-      
       try
       {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-         tx.begin();
-         
-         // add the general classifiable aspect to the node
-         this.nodeService.addAspect(getDocument().getNodeRef(), ContentModel.ASPECT_GEN_CLASSIFIABLE, null);
-         
-         // commit the transaction
-         tx.commit();
+         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+         {
+            public Object execute() throws Throwable
+            {
+               // add the general classifiable aspect to the node
+               nodeService.addAspect(getDocument().getNodeRef(), ContentModel.ASPECT_GEN_CLASSIFIABLE, null);
+               return null;
+            }
+         };
+         txnHelper.doInTransaction(callback);
          
          // reset the state of the current document
          getDocument().reset();
       }
       catch (Throwable e)
       {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), MSG_ERROR_ASPECT_CLASSIFY), e.getMessage()), e);
       }
@@ -482,26 +481,25 @@ public class DocumentDetailsBean extends BaseDetailsBean
     */
    public void applyVersionable()
    {
-      UserTransaction tx = null;
-      
       try
       {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-         tx.begin();
-         
-         // add the versionable aspect to the node
-         this.nodeService.addAspect(getDocument().getNodeRef(), ContentModel.ASPECT_VERSIONABLE, null);
-         
-         // commit the transaction
-         tx.commit();
+         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+         {
+            public Object execute() throws Throwable
+            {
+               // add the versionable aspect to the node
+               nodeService.addAspect(getDocument().getNodeRef(), ContentModel.ASPECT_VERSIONABLE, null);
+               return null;
+            }
+         };
+         txnHelper.doInTransaction(callback);
          
          // reset the state of the current document
          getDocument().reset();
       }
       catch (Throwable e)
       {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), MSG_ERROR_ASPECT_VERSIONING), e.getMessage()), e);
       }
@@ -510,33 +508,32 @@ public class DocumentDetailsBean extends BaseDetailsBean
    /**
     * Action Handler to unlock a locked document
     */
-   public void unlock(ActionEvent event)
+   public void unlock(final ActionEvent event)
    {
-      FacesContext fc = FacesContext.getCurrentInstance();
-      
-      UserTransaction tx = null;
+      final FacesContext fc = FacesContext.getCurrentInstance();
       
       try
       {
-         tx = Repository.getUserTransaction(fc);
-         tx.begin();
-         
-         this.lockService.unlock(getNode().getNodeRef());
-         
-         String msg = Application.getMessage(fc, MSG_SUCCESS_UNLOCK);
-         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
-         String formId = Utils.getParentForm(fc, event.getComponent()).getClientId(fc);
-         fc.addMessage(formId + ':' + getPropertiesPanelId(), facesMsg);
-         
-         getNode().reset();
-         
-         // commit the transaction
-         tx.commit();
+         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+         {
+            public Object execute() throws Throwable
+            {
+               lockService.unlock(getNode().getNodeRef());
+               
+               String msg = Application.getMessage(fc, MSG_SUCCESS_UNLOCK);
+               FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
+               String formId = Utils.getParentForm(fc, event.getComponent()).getClientId(fc);
+               fc.addMessage(formId + ':' + getPropertiesPanelId(), facesMsg);
+               
+               getNode().reset();
+               return null;
+            }
+         };
+         txnHelper.doInTransaction(callback);
       }
       catch (Throwable e)
       {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                fc, Repository.ERROR_GENERIC), e.getMessage()), e);
       }
@@ -547,45 +544,45 @@ public class DocumentDetailsBean extends BaseDetailsBean
     */
    public String applyInlineEditable()
    {
-      UserTransaction tx = null;
-      
       try
       {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-         tx.begin();
-         
-         // add the inlineeditable aspect to the node
-         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
-         String contentType = null;
-         ContentData contentData = (ContentData)getDocument().getProperties().get(ContentModel.PROP_CONTENT);
-         if (contentData != null)
+         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
          {
-            contentType = contentData.getMimetype();
-         }
-         if (contentType != null)
-         {
-            // set the property to true by default if the filetype is a known content type
-            if (MimetypeMap.MIMETYPE_HTML.equals(contentType) ||
-                MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(contentType) ||
-                MimetypeMap.MIMETYPE_XML.equals(contentType) ||
-                MimetypeMap.MIMETYPE_TEXT_CSS.equals(contentType) ||
-                MimetypeMap.MIMETYPE_JAVASCRIPT.equals(contentType))
+            public Object execute() throws Throwable
             {
-               props.put(ApplicationModel.PROP_EDITINLINE, true);
+               // add the inlineeditable aspect to the node
+               Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
+               String contentType = null;
+               ContentData contentData = (ContentData)getDocument().getProperties().get(ContentModel.PROP_CONTENT);
+               if (contentData != null)
+               {
+                  contentType = contentData.getMimetype();
+               }
+               if (contentType != null)
+               {
+                  // set the property to true by default if the filetype is a known content type
+                  if (MimetypeMap.MIMETYPE_HTML.equals(contentType) ||
+                      MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(contentType) ||
+                      MimetypeMap.MIMETYPE_XML.equals(contentType) ||
+                      MimetypeMap.MIMETYPE_TEXT_CSS.equals(contentType) ||
+                      MimetypeMap.MIMETYPE_JAVASCRIPT.equals(contentType))
+                  {
+                     props.put(ApplicationModel.PROP_EDITINLINE, true);
+                  }
+               }
+               nodeService.addAspect(getDocument().getNodeRef(), ApplicationModel.ASPECT_INLINEEDITABLE, props);
+               
+               return null;
             }
-         }
-         this.nodeService.addAspect(getDocument().getNodeRef(), ApplicationModel.ASPECT_INLINEEDITABLE, props);
-         
-         // commit the transaction
-         tx.commit();
+         };
+         txnHelper.doInTransaction(callback);
          
          // reset the state of the current document
          getDocument().reset();
       }
       catch (Throwable e)
       {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), MSG_ERROR_ASPECT_INLINEEDITABLE), e.getMessage()), e);
       }

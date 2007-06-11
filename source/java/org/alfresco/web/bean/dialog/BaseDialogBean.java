@@ -26,16 +26,15 @@ package org.alfresco.web.bean.dialog;
 
 import java.text.MessageFormat;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
-import javax.transaction.UserTransaction;
 
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -96,26 +95,29 @@ public abstract class BaseDialogBean implements IDialogBean
    
    public String finish()
    {
-      String outcome = getDefaultFinishOutcome();
+      final FacesContext context = FacesContext.getCurrentInstance();
+      final String defaultOutcome = getDefaultFinishOutcome();
+      String outcome = null;
       
       // check the isFinished flag to stop the finish button
       // being pressed multiple times
       if (this.isFinished == false)
       {
          this.isFinished = true;
-         UserTransaction tx = null;
       
+         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(context);
+         RetryingTransactionCallback<String> callback = new RetryingTransactionCallback<String>()
+         {
+            public String execute() throws Throwable
+            {
+               // call the actual implementation
+               return finishImpl(context, defaultOutcome);
+            }
+         };
          try
          {
-            FacesContext context = FacesContext.getCurrentInstance();
-            tx = Repository.getUserTransaction(context);
-            tx.begin();
-            
-            // call the actual implementation
-            outcome = finishImpl(context, outcome);
-            
-            // persist the changes
-            tx.commit();
+            // Execute
+            outcome = txnHelper.doInTransaction(callback);
             
             // allow any subclasses to perform post commit processing 
             // i.e. resetting state or setting status messages
@@ -126,8 +128,6 @@ public abstract class BaseDialogBean implements IDialogBean
             // reset the flag so we can re-attempt the operation
             isFinished = false;
             
-            // rollback the transaction
-            try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
             Utils.addErrorMessage(formatErrorMessage(e), e);
             outcome = getErrorOutcome(e);
          }

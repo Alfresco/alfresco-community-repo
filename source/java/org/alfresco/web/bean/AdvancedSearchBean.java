@@ -39,12 +39,13 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.ExpiringValueCache;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -984,45 +985,48 @@ public class AdvancedSearchBean
          searchesRef = getUserSearchesRef();
       }
       
-      SearchContext search = this.navigator.getSearchContext();
+      final SearchContext search = this.navigator.getSearchContext();
       if (searchesRef != null && search != null)
       {
-         UserTransaction tx = null;
          try
          {
-            FacesContext context = FacesContext.getCurrentInstance();
-            tx = Repository.getUserTransaction(context);
-            tx.begin();
-            
-            // create new content node as the saved search object
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-            props.put(ContentModel.PROP_NAME, this.searchName);
-            props.put(ContentModel.PROP_DESCRIPTION, this.searchDescription);
-            ChildAssociationRef childRef = this.nodeService.createNode(
-                  searchesRef,
-                  ContentModel.ASSOC_CONTAINS,
-                  QName.createQName(NamespaceService.ALFRESCO_URI, QName.createValidLocalName(this.searchName)),
-                  ContentModel.TYPE_CONTENT,
-                  props);
-            
-            ContentService contentService = Repository.getServiceRegistry(context).getContentService();
-            ContentWriter writer = contentService.getWriter(childRef.getChildRef(), ContentModel.PROP_CONTENT, true);
-            
-            // get a writer to our new node ready for XML content
-            writer.setMimetype(MimetypeMap.MIMETYPE_XML);
-            writer.setEncoding("UTF-8");
-            
-            // output an XML serialized version of the SearchContext object
-            writer.putContent(search.toXML());
-            
-            tx.commit();
+            final FacesContext context = FacesContext.getCurrentInstance();
+            final NodeRef searchesRefFinal = searchesRef;
+            RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+            RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+            {
+               public Object execute() throws Throwable
+               {
+                  // create new content node as the saved search object
+                  Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
+                  props.put(ContentModel.PROP_NAME, searchName);
+                  props.put(ContentModel.PROP_DESCRIPTION, searchDescription);
+                  ChildAssociationRef childRef = nodeService.createNode(
+                        searchesRefFinal,
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.ALFRESCO_URI, QName.createValidLocalName(searchName)),
+                        ContentModel.TYPE_CONTENT,
+                        props);
+                  
+                  ContentService contentService = Repository.getServiceRegistry(context).getContentService();
+                  ContentWriter writer = contentService.getWriter(childRef.getChildRef(), ContentModel.PROP_CONTENT, true);
+                  
+                  // get a writer to our new node ready for XML content
+                  writer.setMimetype(MimetypeMap.MIMETYPE_XML);
+                  writer.setEncoding("UTF-8");
+                  
+                  // output an XML serialized version of the SearchContext object
+                  writer.putContent(search.toXML());
+                  return null;
+               }
+            };
+            txnHelper.doInTransaction(callback);
             
             this.cachedSavedSearches.clear();
             this.savedSearch = null;
          }
          catch (Throwable e)
          {
-            try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
             Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                   FacesContext.getCurrentInstance(), MSG_ERROR_SAVE_SEARCH), e.getMessage()), e);
             outcome = null;
@@ -1039,45 +1043,47 @@ public class AdvancedSearchBean
    {
       String outcome = OUTCOME_BROWSE;
       
-      SearchContext search = this.navigator.getSearchContext();
+      final SearchContext search = this.navigator.getSearchContext();
       if (search != null)
       {
-         UserTransaction tx = null;
          try
          {
-            FacesContext context = FacesContext.getCurrentInstance();
-            tx = Repository.getUserTransaction(context);
-            tx.begin();
-            
-            // handle Edit e.g. Overwrite of existing search
-            // detect if was previously selected saved search (e.g. NodeRef not null)
-            NodeRef searchRef = new NodeRef(Repository.getStoreRef(), this.savedSearch);
-            if (this.nodeService.exists(searchRef))
+            final FacesContext context = FacesContext.getCurrentInstance();
+            RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+            RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
             {
-               Map<QName, Serializable> props = this.nodeService.getProperties(searchRef);
-               props.put(ContentModel.PROP_NAME, this.searchName);
-               props.put(ContentModel.PROP_DESCRIPTION, this.searchDescription);
-               this.nodeService.setProperties(searchRef, props);
-               
-               ContentService contentService = Repository.getServiceRegistry(context).getContentService();
-               ContentWriter writer = contentService.getWriter(searchRef, ContentModel.PROP_CONTENT, true);
-               
-               // get a writer to our new node ready for XML content
-               writer.setMimetype(MimetypeMap.MIMETYPE_XML);
-               writer.setEncoding("UTF-8");
-               
-               // output an XML serialized version of the SearchContext object
-               writer.putContent(search.toXML());
-               
-               tx.commit();
-            }
+               public Object execute() throws Throwable
+               {
+                  // handle Edit e.g. Overwrite of existing search
+                  // detect if was previously selected saved search (e.g. NodeRef not null)
+                  NodeRef searchRef = new NodeRef(Repository.getStoreRef(), savedSearch);
+                  if (nodeService.exists(searchRef))
+                  {
+                     Map<QName, Serializable> props = nodeService.getProperties(searchRef);
+                     props.put(ContentModel.PROP_NAME, searchName);
+                     props.put(ContentModel.PROP_DESCRIPTION, searchDescription);
+                     nodeService.setProperties(searchRef, props);
+                     
+                     ContentService contentService = Repository.getServiceRegistry(context).getContentService();
+                     ContentWriter writer = contentService.getWriter(searchRef, ContentModel.PROP_CONTENT, true);
+                     
+                     // get a writer to our new node ready for XML content
+                     writer.setMimetype(MimetypeMap.MIMETYPE_XML);
+                     writer.setEncoding("UTF-8");
+                     
+                     // output an XML serialized version of the SearchContext object
+                     writer.putContent(search.toXML());
+                  }
+                  return null;
+               }
+            };
+            txnHelper.doInTransaction(callback);
             
             this.cachedSavedSearches.clear();
             this.savedSearch = null;
          }
          catch (Throwable e)
          {
-            try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
             Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                   FacesContext.getCurrentInstance(), MSG_ERROR_SAVE_SEARCH), e.getMessage()), e);
             outcome = null;

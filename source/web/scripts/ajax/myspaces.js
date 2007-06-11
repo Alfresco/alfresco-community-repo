@@ -36,7 +36,7 @@ var MySpaces = {
                   var navImgs  = $$('#spacePanel .spaceNavLinkImg');
                   navLinks.each(function(navLink, i)
                   {
-                     navLink.setHTML('<a href="' + MySpaces.ScriptUrlEncoder.encUrl(navLink.innerHTML.replace(/&amp;/, "&")) + '">' + navImgs[i].innerHTML + '</a>');
+                     navLink.setHTML('<span onclick="event.cancelBubble=true"><a href="' + MySpaces.ScriptUrlEncoder.encUrl(navLink.innerHTML.replace(/&amp;/, "&")) + '">' + navImgs[i].innerHTML + '</a></span>');
                      navImgs[i].innerHTML = "";    // remove the html so the class is not selected during init()
                   });
                   // extract the count value from a hidden div and display it

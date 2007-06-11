@@ -57,7 +57,7 @@
       <div class="spaceToolbarAction spaceToolbarActionUpload" title="Upload a new document" <#if home.hasPermission("CreateChildren")>onclick="MySpaces.upload(this);"</#if>>Upload</div>
       <div class="spaceUploadPanel">
          <#-- Url encode the path value, and encode any single quotes to generate valid string -->
-         <input class="spaceFormItem" type="submit" value="OK" onclick='MySpaces.uploadOK(this, "${path?url?replace("'","_%_")}");'>
+         <input class="spaceFormItem" type="button" value="OK" onclick='MySpaces.uploadOK(this, "${path?url?replace("'","_%_")}");'>
          <input class="spaceFormItem" type="button" value="Cancel" onclick="MySpaces.closePopupPanel();">
       </div>
       <#-- Create Space action -->

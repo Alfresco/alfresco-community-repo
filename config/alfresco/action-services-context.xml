@@ -505,7 +505,7 @@
     	</property>
     </bean>
     
-    <bean id="avm-link-validation" class="org.alfresco.linkvalidation.LinkValidationAction" parent="action-executer">
+    <bean id="avm-link-validation" class="org.alfresco.linkvalidation.LinkValidationAction" parent="action-executer" lazy-init="true">
       <property name="linkValidationService">
           <ref bean="LinkValidationService"/>
       </property>

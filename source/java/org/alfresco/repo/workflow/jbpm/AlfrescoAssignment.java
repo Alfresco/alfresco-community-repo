@@ -25,7 +25,7 @@
 package org.alfresco.repo.workflow.jbpm;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.jscript.Node;
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -97,9 +97,9 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
                     {
                         actor = (String)eval;
                     }
-                    else if (eval instanceof Node)
+                    else if (eval instanceof ScriptNode)
                     {
-                        actor = mapAuthorityToName((Node)eval, false);
+                        actor = mapAuthorityToName((ScriptNode)eval, false);
                     }
                     if (actor == null)
                     {
@@ -133,13 +133,13 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
                         throw new WorkflowException("pooledactors expression '" + pooledactorValStr + "' evaluates to null");
                     }
     
-                    if (eval instanceof Node[])
+                    if (eval instanceof ScriptNode[])
                     {
-                        Node[] nodes = (Node[])eval;
+                        ScriptNode[] nodes = (ScriptNode[])eval;
                         assignedPooledActors = new String[nodes.length];
                         
                         int i = 0;
-                        for (Node node : (Node[])nodes)
+                        for (ScriptNode node : (ScriptNode[])nodes)
                         {
                             String actor = mapAuthorityToName(node, true);
                             if (actor == null)
@@ -149,9 +149,9 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
                             assignedPooledActors[i++] = actor;
                         }
                     }
-                    else if (eval instanceof Node)
+                    else if (eval instanceof ScriptNode)
                     {
-                        Node node = (Node)eval;
+                        ScriptNode node = (ScriptNode)eval;
                         String actor = mapAuthorityToName(node, true);
                         if (actor == null)
                         {
@@ -195,7 +195,7 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
      * @param authority
      * @return  actor id
      */
-    private String mapAuthorityToName(Node authority, boolean allowGroup)
+    private String mapAuthorityToName(ScriptNode authority, boolean allowGroup)
     {
         String name = null;
         QName type = authority.getType();

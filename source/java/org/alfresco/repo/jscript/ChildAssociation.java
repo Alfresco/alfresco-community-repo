@@ -106,22 +106,22 @@ public class ChildAssociation implements Scopeable, Serializable
 		return getName();
 	}
 	
-	public Node getParent()
+	public ScriptNode getParent()
 	{
-		return (Node)new ValueConverter().convertValueForScript(this.services, this.scope, null, childAssocRef.getParentRef());
+		return (ScriptNode)new ValueConverter().convertValueForScript(this.services, this.scope, null, childAssocRef.getParentRef());
 	}
 	
-	public Node jsGet_parent()
+	public ScriptNode jsGet_parent()
 	{
 		return getParent();
 	}
 	
-	public Node getChild()
+	public ScriptNode getChild()
 	{
-		return (Node)new ValueConverter().convertValueForScript(this.services, this.scope, null, childAssocRef.getChildRef());
+		return (ScriptNode)new ValueConverter().convertValueForScript(this.services, this.scope, null, childAssocRef.getChildRef());
 	}
 	
-	public Node jsGet_child()
+	public ScriptNode jsGet_child()
 	{
 		return getChild();
 	}

@@ -91,7 +91,7 @@ public final class Search extends BaseScopableProcessorExtension
      * 
      * @return the Node if found or null if failed to find
      */
-    public Node findNode(NodeRef ref)
+    public ScriptNode findNode(NodeRef ref)
     {
         return findNode(ref.toString());
     }
@@ -103,13 +103,13 @@ public final class Search extends BaseScopableProcessorExtension
      *  
      * @return the Node if found or null if failed to find
      */
-    public Node findNode(String ref)
+    public ScriptNode findNode(String ref)
     {
         String query = "ID:" + LuceneQueryParser.escape(ref);
         Object[] result = query(query, SearchService.LANGUAGE_LUCENE);
         if (result.length != 0)
         {
-            return (Node)result[0];
+            return (ScriptNode)result[0];
         }
         else
         {
@@ -164,7 +164,7 @@ public final class Search extends BaseScopableProcessorExtension
      * 
      * @return JavaScript array of Node results from the search - can be empty but not null
      */
-    public Scriptable savedSearch(Node savedSearch)
+    public Scriptable savedSearch(ScriptNode savedSearch)
     {
         String search = null;
 
@@ -217,7 +217,7 @@ public final class Search extends BaseScopableProcessorExtension
     {
         if (searchRef != null)
         {
-            return savedSearch(new Node(new NodeRef(searchRef), services, null));
+            return savedSearch(new ScriptNode(new NodeRef(searchRef), services, null));
         }
         else
         {
@@ -237,7 +237,7 @@ public final class Search extends BaseScopableProcessorExtension
      */
     private Object[] query(String search, String language)
     {   
-        LinkedHashSet<Node> set = new LinkedHashSet<Node>();
+        LinkedHashSet<ScriptNode> set = new LinkedHashSet<ScriptNode>();
 
         // perform the search against the repo
         ResultSet results = null;
@@ -253,7 +253,7 @@ public final class Search extends BaseScopableProcessorExtension
                 for (ResultSetRow row: results)
                 {
                     NodeRef nodeRef = row.getNodeRef();
-                    set.add(new Node(nodeRef, this.services, getScope()));
+                    set.add(new ScriptNode(nodeRef, this.services, getScope()));
                 }
             }
         }

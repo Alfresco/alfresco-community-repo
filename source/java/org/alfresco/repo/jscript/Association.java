@@ -90,22 +90,22 @@ public class Association implements Scopeable, Serializable
 		return getType();
 	}
 	
-	public Node getSource()
+	public ScriptNode getSource()
 	{
-		return (Node)new ValueConverter().convertValueForScript(this.services, this.scope, null, assocRef.getSourceRef());
+		return (ScriptNode)new ValueConverter().convertValueForScript(this.services, this.scope, null, assocRef.getSourceRef());
 	}
 	
-	public Node jsGet_source()
+	public ScriptNode jsGet_source()
 	{
 		return getSource();
 	}
 	
-	public Node getTarget()
+	public ScriptNode getTarget()
 	{
-		return (Node)new ValueConverter().convertValueForScript(this.services, this.scope, null, assocRef.getTargetRef());
+		return (ScriptNode)new ValueConverter().convertValueForScript(this.services, this.scope, null, assocRef.getTargetRef());
 	}
 	
-	public Node jsGet_target()
+	public ScriptNode jsGet_target()
 	{
 		return getTarget();
 	}

@@ -68,13 +68,13 @@ public final class CrossRepositoryCopy extends BaseScopableProcessorExtension
      * 
      * @throws org.alfresco.error.AlfrescoRuntimeException on copy error
      */
-    public Node copy(Node src, Node dest, String name)
+    public ScriptNode copy(ScriptNode src, ScriptNode dest, String name)
     {
         ParameterCheck.mandatory("Node source", src);
         ParameterCheck.mandatory("Node destination", dest);
         ParameterCheck.mandatory("Node destination name", name);
         
-        Node result = null;
+        ScriptNode result = null;
         
         // perform the copy operation using the repository service
         this.services.getCrossRepositoryCopyService().copy(src.getNodeRef(), dest.getNodeRef(), name);

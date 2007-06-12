@@ -42,7 +42,7 @@ import org.mozilla.javascript.Scriptable;
  * 
  * @author davidc
  */
-public class JBPMNode extends org.alfresco.repo.jscript.Node
+public class JBPMNode extends org.alfresco.repo.jscript.ScriptNode
 {
     private static final long serialVersionUID = -826970280203254365L;
 
@@ -69,7 +69,7 @@ public class JBPMNode extends org.alfresco.repo.jscript.Node
     /**
      * Value converter for beanshell.
      */
-    private class JBPMNodeConverter extends org.alfresco.repo.jscript.Node.NodeValueConverter
+    private class JBPMNodeConverter extends org.alfresco.repo.jscript.ScriptNode.NodeValueConverter
     {
         @Override
         public Serializable convertValueForRepo(Serializable value)

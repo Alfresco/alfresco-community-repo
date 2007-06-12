@@ -133,7 +133,7 @@ public final class ScriptAction implements Serializable, Scopeable
      *            the node to execute action upon
      */
     @SuppressWarnings("synthetic-access")
-    public void execute(Node node)
+    public void execute(ScriptNode node)
     {
         if (this.parameters != null && this.parameters.isModified())
         {

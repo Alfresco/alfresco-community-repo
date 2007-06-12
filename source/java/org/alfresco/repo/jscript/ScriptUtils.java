@@ -71,9 +71,9 @@ public final class ScriptUtils extends BaseScopableProcessorExtension
      * @param nodeRefString     string reference to a node
      * @return                  a JS node object
      */
-    public Node getNodeFromString(String nodeRefString)
+    public ScriptNode getNodeFromString(String nodeRefString)
     {
         NodeRef nodeRef = new NodeRef(nodeRefString);
-        return (Node)new ValueConverter().convertValueForScript(this.services, getScope(), null, nodeRef);
+        return (ScriptNode)new ValueConverter().convertValueForScript(this.services, getScope(), null, nodeRef);
     }
 }

@@ -105,11 +105,11 @@ public class ForEachFork extends JBPMSpringActionHandler
                 }
                 
                 // expression evaluates to Node array
-                else if (eval instanceof org.alfresco.repo.jscript.Node[])
+                else if (eval instanceof org.alfresco.repo.jscript.ScriptNode[])
                 {
-                    org.alfresco.repo.jscript.Node[] nodes = (org.alfresco.repo.jscript.Node[])eval;
+                    org.alfresco.repo.jscript.ScriptNode[] nodes = (org.alfresco.repo.jscript.ScriptNode[])eval;
                     forEachColl = new ArrayList(nodes.length);
-                    for (org.alfresco.repo.jscript.Node node : nodes)
+                    for (org.alfresco.repo.jscript.ScriptNode node : nodes)
                     {
                         forEachColl.add(new JBPMNode(node.getNodeRef(), services));
                     }

@@ -191,7 +191,7 @@ public class RhinoScriptTest extends TestCase
                         assertEquals(ref1.getId(), cx.toString(result));
                         
                         // wrap a scriptable Alfresco Node object - the Node object is a wrapper like TemplateNode
-                        Node node1 = new Node(root, serviceRegistry, scope);
+                        ScriptNode node1 = new ScriptNode(root, serviceRegistry, scope);
                         Object wrappedNode = Context.javaToJS(node1, scope);
                         ScriptableObject.putProperty(scope, "root", wrappedNode);
                         
@@ -232,7 +232,7 @@ public class RhinoScriptTest extends TestCase
                         
                         // create an Alfresco scriptable Node object
                         // the Node object is a wrapper similar to the TemplateNode concept
-                        Node rootNode = new Node(root, serviceRegistry, null);
+                        ScriptNode rootNode = new ScriptNode(root, serviceRegistry, null);
                         model.put("root", rootNode);
                         
                         // execute test scripts using the various entry points of the ScriptService
@@ -304,8 +304,8 @@ public class RhinoScriptTest extends TestCase
                         // create an Alfresco scriptable Node object
                         // the Node object is a wrapper similar to the TemplateNode concept
                         Map<String, Object> model = new HashMap<String, Object>();
-                        model.put("doc", new Node(childRef.getChildRef(), serviceRegistry, null));
-                        model.put("root", new Node(root, serviceRegistry, null));
+                        model.put("doc", new ScriptNode(childRef.getChildRef(), serviceRegistry, null));
+                        model.put("root", new ScriptNode(root, serviceRegistry, null));
                         
                         // execute to add aspect via action
                         Object result = scriptService.executeScript(TESTSCRIPT_CLASSPATH2, model);
@@ -358,8 +358,8 @@ public class RhinoScriptTest extends TestCase
                         // create an Alfresco scriptable Node object
                         // the Node object is a wrapper similar to the TemplateNode concept
                         Map<String, Object> model = new HashMap<String, Object>();
-                        model.put("doc", new Node(childRef.getChildRef(), serviceRegistry, null));
-                        model.put("root", new Node(root, serviceRegistry, null));
+                        model.put("doc", new ScriptNode(childRef.getChildRef(), serviceRegistry, null));
+                        model.put("root", new ScriptNode(root, serviceRegistry, null));
                         
                         // execute to add aspect via action
                         Object result = scriptService.executeScript(TESTSCRIPT_CLASSPATH3, model);

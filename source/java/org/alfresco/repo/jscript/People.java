@@ -83,15 +83,15 @@ public final class People extends BaseScopableProcessorExtension
      * @param username  the username of the person to get
      * @return the person node (type cm:person) or null if no such person exists 
      */
-    public Node getPerson(String username)
+    public ScriptNode getPerson(String username)
     {
         ParameterCheck.mandatoryString("Username", username);
-        Node person = null;
+        ScriptNode person = null;
         PersonService personService = services.getPersonService();
         if (personService.personExists(username))
         {
             NodeRef personRef = personService.getPerson(username);
-            person = new Node(personRef, services, getScope());
+            person = new ScriptNode(personRef, services, getScope());
         }
         return person;
     }
@@ -102,14 +102,14 @@ public final class People extends BaseScopableProcessorExtension
      * @param groupName  name of group to get
      * @return  the group node (type usr:authorityContainer) or null if no such group exists
      */
-    public Node getGroup(String groupName)
+    public ScriptNode getGroup(String groupName)
     {
         ParameterCheck.mandatoryString("GroupName", groupName);
-        Node group = null;
+        ScriptNode group = null;
         NodeRef groupRef = authorityDAO.getAuthorityNodeRefOrNull(groupName);
         if (groupRef != null)
         {
-            group = new Node(groupRef, services, getScope());
+            group = new ScriptNode(groupRef, services, getScope());
         }
         return group;
     }
@@ -119,7 +119,7 @@ public final class People extends BaseScopableProcessorExtension
      * 
      * @param group     The group to delete
      */
-    public void deleteGroup(Node group)
+    public void deleteGroup(ScriptNode group)
     {
         ParameterCheck.mandatory("Group", group);
         if (group.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
@@ -136,7 +136,7 @@ public final class People extends BaseScopableProcessorExtension
      * 
      * @return the group reference if successful or null if failed
      */
-    public Node createGroup(String groupName)
+    public ScriptNode createGroup(String groupName)
     {
         return createGroup(null, groupName);
     }
@@ -149,11 +149,11 @@ public final class People extends BaseScopableProcessorExtension
      * 
      * @return the group reference if successful or null if failed
      */
-    public Node createGroup(Node parentGroup, String groupName)
+    public ScriptNode createGroup(ScriptNode parentGroup, String groupName)
     {
         ParameterCheck.mandatoryString("GroupName", groupName);
         
-        Node group = null;
+        ScriptNode group = null;
         
         String actualName = services.getAuthorityService().getName(AuthorityType.GROUP, groupName);
         if (authorityService.authorityExists(groupName) == false)
@@ -176,7 +176,7 @@ public final class People extends BaseScopableProcessorExtension
      * @param parentGroup   The parent container group
      * @param authority     The authority (user or group) to add
      */
-    public void addAuthority(Node parentGroup, Node authority)
+    public void addAuthority(ScriptNode parentGroup, ScriptNode authority)
     {
         ParameterCheck.mandatory("Authority", authority);
         ParameterCheck.mandatory("ParentGroup", parentGroup);
@@ -202,7 +202,7 @@ public final class People extends BaseScopableProcessorExtension
      * @param parentGroup   The parent container group
      * @param authority     The authority (user or group) to remove
      */
-    public void removeAuthority(Node parentGroup, Node authority)
+    public void removeAuthority(ScriptNode parentGroup, ScriptNode authority)
     {
         ParameterCheck.mandatory("Authority", authority);
         ParameterCheck.mandatory("ParentGroup", parentGroup);
@@ -230,7 +230,7 @@ public final class People extends BaseScopableProcessorExtension
      * 
      * @return members of the group as a JavaScript array
      */
-    public Scriptable getMembers(Node group)
+    public Scriptable getMembers(ScriptNode group)
     {
         ParameterCheck.mandatory("Group", group);
         Object[] members = getContainedAuthorities(group, AuthorityType.USER, true);
@@ -245,7 +245,7 @@ public final class People extends BaseScopableProcessorExtension
      * 
      * @return the members of the group as a JavaScript array
      */
-    public Scriptable getMembers(Node group, boolean recurse)
+    public Scriptable getMembers(ScriptNode group, boolean recurse)
     {
         ParameterCheck.mandatory("Group", group);
         Object[] members = getContainedAuthorities(group, AuthorityType.USER, recurse);
@@ -259,7 +259,7 @@ public final class People extends BaseScopableProcessorExtension
      * 
      * @return the containing groups as a JavaScript array, can be null
      */
-    public Scriptable getContainerGroups(Node person)
+    public Scriptable getContainerGroups(ScriptNode person)
     {
         ParameterCheck.mandatory("Person", person);
         Object[] parents = null;
@@ -271,7 +271,7 @@ public final class People extends BaseScopableProcessorExtension
         int i = 0;
         for (String authority : authorities)
         {
-            Node group = getGroup(authority);
+            ScriptNode group = getGroup(authority);
             if (group != null)
             {
                 parents[i++] = group; 
@@ -289,7 +289,7 @@ public final class People extends BaseScopableProcessorExtension
      * 
      * @return contained authorities
      */
-    private Object[] getContainedAuthorities(Node container, AuthorityType type, boolean recurse)
+    private Object[] getContainedAuthorities(ScriptNode container, AuthorityType type, boolean recurse)
     {
         Object[] members = null;
         
@@ -304,7 +304,7 @@ public final class People extends BaseScopableProcessorExtension
                 AuthorityType authorityType = AuthorityType.getAuthorityType(authority);
                 if (authorityType.equals(AuthorityType.GROUP))
                 {
-                    Node group = getGroup(authority);
+                    ScriptNode group = getGroup(authority);
                     if (group != null)
                     {
                         members[i++] = group; 
@@ -312,7 +312,7 @@ public final class People extends BaseScopableProcessorExtension
                 }
                 else if (authorityType.equals(AuthorityType.USER))
                 {
-                    Node person = getPerson(authority);
+                    ScriptNode person = getPerson(authority);
                     if (person != null)
                     {
                         members[i++] = person; 

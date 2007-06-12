@@ -87,11 +87,11 @@ import org.springframework.util.StringUtils;
  * 
  * @author Kevin Roast
  */
-public class Node implements Serializable, Scopeable
+public class ScriptNode implements Serializable, Scopeable
 {
     private static final long serialVersionUID = -3378946227712939600L;
     
-    private static Log logger = LogFactory.getLog(Node.class);
+    private static Log logger = LogFactory.getLog(ScriptNode.class);
     
     private final static String NAMESPACE_BEGIN = "" + QName.NAMESPACE_BEGIN;
     
@@ -132,7 +132,7 @@ public class Node implements Serializable, Scopeable
     private Boolean isContainer = null;
     private String displayPath = null;
     protected TemplateImageResolver imageResolver = null;
-    protected Node parent = null;
+    protected ScriptNode parent = null;
     private ChildAssociationRef primaryParentAssoc = null;
     // NOTE: see the reset() method when adding new cached members!
     
@@ -147,7 +147,7 @@ public class Node implements Serializable, Scopeable
      * @param services  The ServiceRegistry the Node can use to access services
      * @param resolver  Image resolver to use to retrieve icons
      */
-    public Node(NodeRef nodeRef, ServiceRegistry services)
+    public ScriptNode(NodeRef nodeRef, ServiceRegistry services)
     {
         this(nodeRef, services, null);
     }
@@ -160,7 +160,7 @@ public class Node implements Serializable, Scopeable
      * @param resolver  Image resolver to use to retrieve icons
      * @param scope     Root scope for this Node
      */
-    public Node(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
+    public ScriptNode(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
     {
         if (nodeRef == null)
         {
@@ -194,16 +194,16 @@ public class Node implements Serializable, Scopeable
         if (this == obj) return true;
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
-        if (!nodeRef.equals(((Node)obj).nodeRef)) return false;
+        if (!nodeRef.equals(((ScriptNode)obj).nodeRef)) return false;
         return true;
     }
     
     /**
      * Factory method
      */
-    public Node newInstance(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
+    public ScriptNode newInstance(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
     {
-        return new Node(nodeRef, services, scope);
+        return new ScriptNode(nodeRef, services, scope);
     }
     
     /**
@@ -361,7 +361,7 @@ public class Node implements Serializable, Scopeable
      *         So a valid call might be:
      *         <code>mynode.childByNamePath("/QA/Testing/Docs");</code>
      */
-    public Node childByNamePath(String path)
+    public ScriptNode childByNamePath(String path)
     {
         // convert the name based path to a valid XPath query
         StringBuilder xpath = new StringBuilder(path.length() << 1);
@@ -390,7 +390,7 @@ public class Node implements Serializable, Scopeable
         
         Object[] nodes = getChildrenByXPath(xpath.toString(), params, true);
         
-        return (nodes.length != 0) ? (Node)nodes[0] : null;
+        return (nodes.length != 0) ? (ScriptNode)nodes[0] : null;
     }
     
     // TODO: find out why this doesn't work - the function defs do not seem to get found
@@ -429,11 +429,11 @@ public class Node implements Serializable, Scopeable
             for (AssociationRef ref : refs)
             {
                 String qname = ref.getTypeQName().toString();
-                List<Node> nodes = (List<Node>)this.assocs.get(qname);
+                List<ScriptNode> nodes = (List<ScriptNode>)this.assocs.get(qname);
                 if (nodes == null)
                 {
                     // first access of the list for this qname
-                    nodes = new ArrayList<Node>(4);
+                    nodes = new ArrayList<ScriptNode>(4);
                     this.assocs.put(ref.getTypeQName().toString(), nodes);
                 }
                 nodes.add(newInstance(ref.getTargetRef(), this.services, this.scope));
@@ -442,7 +442,7 @@ public class Node implements Serializable, Scopeable
             // convert each Node list into a JavaScript array object
             for (String qname : this.assocs.keySet())
             {
-                List<Node> nodes = (List<Node>)this.assocs.get(qname);
+                List<ScriptNode> nodes = (List<ScriptNode>)this.assocs.get(qname);
                 Object[] objs = nodes.toArray(new Object[nodes.size()]);
                 this.assocs.put(qname, Context.getCurrentContext().newArray(this.scope, objs));
             }
@@ -482,11 +482,11 @@ public class Node implements Serializable, Scopeable
             for (ChildAssociationRef ref : refs)
             {
                 String qname = ref.getTypeQName().toString();
-                List<Node> nodes = (List<Node>)this.childAssocs.get(qname);
+                List<ScriptNode> nodes = (List<ScriptNode>)this.childAssocs.get(qname);
                 if (nodes == null)
                 {
                     // first access of the list for this qname
-                    nodes = new ArrayList<Node>(4);
+                    nodes = new ArrayList<ScriptNode>(4);
                     this.childAssocs.put(ref.getTypeQName().toString(), nodes);
                 }
                 nodes.add(newInstance(ref.getChildRef(), this.services, this.scope));
@@ -495,7 +495,7 @@ public class Node implements Serializable, Scopeable
             // convert each Node list into a JavaScript array object
             for (String qname : this.childAssocs.keySet())
             {
-                List<Node> nodes = (List<Node>)this.childAssocs.get(qname);
+                List<ScriptNode> nodes = (List<ScriptNode>)this.childAssocs.get(qname);
                 Object[] objs = nodes.toArray(new Object[nodes.size()]);
                 this.childAssocs.put(qname, Context.getCurrentContext().newArray(this.scope, objs));
             }
@@ -706,7 +706,7 @@ public class Node implements Serializable, Scopeable
     /**
      * @return the parent node
      */
-    public Node getParent()
+    public ScriptNode getParent()
     {
         if (parent == null)
         {
@@ -721,7 +721,7 @@ public class Node implements Serializable, Scopeable
         return parent;
     }
     
-    public Node jsGet_parent()
+    public ScriptNode jsGet_parent()
     {
         return getParent();
     }
@@ -1109,7 +1109,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return Newly created Node or null if failed to create.
      */
-    public Node createFile(String name)
+    public ScriptNode createFile(String name)
     {
         ParameterCheck.mandatoryString("Node Name", name);
         
@@ -1125,7 +1125,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return Newly created Node or null if failed to create.
      */
-    public Node createFolder(String name)
+    public ScriptNode createFolder(String name)
     {
         ParameterCheck.mandatoryString("Node Name", name);
         
@@ -1142,7 +1142,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return Newly created Node or null if failed to create.
      */
-    public Node createNode(String name, String type)
+    public ScriptNode createNode(String name, String type)
     {
         return createNode(name, type, null, ContentModel.ASSOC_CONTAINS.toString());
     }
@@ -1156,7 +1156,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return Newly created Node or null if failed to create.
      */
-    public Node createNode(String name, String type, String assocName)
+    public ScriptNode createNode(String name, String type, String assocName)
     {
         return createNode(name, type, null, assocName);
     }
@@ -1170,7 +1170,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return Newly created Node or null if failed to create.
      */
-    public Node createNode(String name, String type, Object properties)
+    public ScriptNode createNode(String name, String type, Object properties)
     {
         return createNode(name, type, properties, ContentModel.ASSOC_CONTAINS.toString());
     }
@@ -1185,7 +1185,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return Newly created Node or null if failed to create.
      */
-    public Node createNode(String name, String type, Object properties, String assocName)
+    public ScriptNode createNode(String name, String type, Object properties, String assocName)
     {
         ParameterCheck.mandatoryString("Node Type", type);
         ParameterCheck.mandatoryString("Association Name", assocName);
@@ -1223,7 +1223,7 @@ public class Node implements Serializable, Scopeable
      * @param target        Destination node for the association
      * @param assocType     Association type qname (short form or fully qualified)
      */
-    public void createAssociation(Node target, String assocType)
+    public void createAssociation(ScriptNode target, String assocType)
     {
         ParameterCheck.mandatory("Target", target);
         ParameterCheck.mandatoryString("Association Type Name", assocType);
@@ -1237,7 +1237,7 @@ public class Node implements Serializable, Scopeable
      * @param target        Destination node on the end of the association
      * @param assocType     Association type qname (short form or fully qualified)
      */
-    public void removeAssociation(Node target, String assocType)
+    public void removeAssociation(ScriptNode target, String assocType)
     {
         ParameterCheck.mandatory("Target", target);
         ParameterCheck.mandatoryString("Association Type Name", assocType);
@@ -1270,7 +1270,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return The newly copied Node instance or null if failed to copy.
      */
-    public Node copy(Node destination)
+    public ScriptNode copy(ScriptNode destination)
     {
         return copy(destination, false);
     }
@@ -1283,11 +1283,11 @@ public class Node implements Serializable, Scopeable
      * 
      * @return The newly copied Node instance or null if failed to copy.
      */
-    public Node copy(Node destination, boolean deepCopy)
+    public ScriptNode copy(ScriptNode destination, boolean deepCopy)
     {
         ParameterCheck.mandatory("Destination Node", destination);
         
-        Node copy = null;
+        ScriptNode copy = null;
         
         if (destination.getNodeRef().getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_WORKSPACE))
         {
@@ -1311,7 +1311,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return true on successful move, false on failure to move.
      */
-    public boolean move(Node destination)
+    public boolean move(ScriptNode destination)
     {
         ParameterCheck.mandatory("Destination Node", destination);
         
@@ -1424,10 +1424,10 @@ public class Node implements Serializable, Scopeable
      * 
      * @return the working copy Node for the checked out document
      */
-    public Node checkout()
+    public ScriptNode checkout()
     {
         NodeRef workingCopyRef = this.services.getCheckOutCheckInService().checkout(this.nodeRef);
-        Node workingCopy = newInstance(workingCopyRef, this.services, this.scope);
+        ScriptNode workingCopy = newInstance(workingCopyRef, this.services, this.scope);
         
         // reset the aspect and properties as checking out a document causes changes
         this.properties = null;
@@ -1443,14 +1443,14 @@ public class Node implements Serializable, Scopeable
      *            Destination for the checked out document working copy Node.
      * @return the working copy Node for the checked out document
      */
-    public Node checkout(Node destination)
+    public ScriptNode checkout(ScriptNode destination)
     {
         ParameterCheck.mandatory("Destination Node", destination);
         
         ChildAssociationRef childAssocRef = this.nodeService.getPrimaryParent(destination.getNodeRef());
         NodeRef workingCopyRef = this.services.getCheckOutCheckInService().checkout(this.nodeRef,
                 destination.getNodeRef(), ContentModel.ASSOC_CONTAINS, childAssocRef.getQName());
-        Node workingCopy = newInstance(workingCopyRef, this.services, this.scope);
+        ScriptNode workingCopy = newInstance(workingCopyRef, this.services, this.scope);
         
         // reset the aspect and properties as checking out a document causes changes
         this.properties = null;
@@ -1466,7 +1466,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return the original Node that was checked out.
      */
-    public Node checkin()
+    public ScriptNode checkin()
     {
         return checkin("", false);
     }
@@ -1480,7 +1480,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return the original Node that was checked out.
      */
-    public Node checkin(String history)
+    public ScriptNode checkin(String history)
     {
         return checkin(history, false);
     }
@@ -1495,7 +1495,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return the original Node that was checked out.
      */
-    public Node checkin(String history, boolean majorVersion)
+    public ScriptNode checkin(String history, boolean majorVersion)
     {
         Map<String, Serializable> props = new HashMap<String, Serializable>(2, 1.0f);
         props.put(Version.PROP_DESCRIPTION, history);
@@ -1511,7 +1511,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return the original Node that was checked out.
      */
-    public Node cancelCheckout()
+    public ScriptNode cancelCheckout()
     {
         NodeRef original = this.services.getCheckOutCheckInService().cancelCheckout(this.nodeRef);
         return newInstance(original, this.services, this.scope);
@@ -1529,7 +1529,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return Node representing the newly transformed document.
      */
-    public Node transformDocument(String mimetype)
+    public ScriptNode transformDocument(String mimetype)
     {
         return transformDocument(mimetype, getPrimaryParentAssoc().getParentRef());
     }
@@ -1543,12 +1543,12 @@ public class Node implements Serializable, Scopeable
      * 
      * @return Node representing the newly transformed document.
      */
-    public Node transformDocument(String mimetype, Node destination)
+    public ScriptNode transformDocument(String mimetype, ScriptNode destination)
     {
         return transformDocument(mimetype, destination.getNodeRef());
     }
     
-    private Node transformDocument(String mimetype, NodeRef destination)
+    private ScriptNode transformDocument(String mimetype, NodeRef destination)
     {
         ParameterCheck.mandatoryString("Mimetype", mimetype);
         ParameterCheck.mandatory("Destination Node", destination);
@@ -1556,10 +1556,10 @@ public class Node implements Serializable, Scopeable
         // the delegate definition for transforming a document
         Transformer transformer = new Transformer()
         {
-            public Node transform(ContentService contentService, NodeRef nodeRef, ContentReader reader,
+            public ScriptNode transform(ContentService contentService, NodeRef nodeRef, ContentReader reader,
                     ContentWriter writer)
             {
-                Node transformedNode = null;
+                ScriptNode transformedNode = null;
                 if (contentService.isTransformable(reader, writer))
                 {
                     contentService.transform(reader, writer);
@@ -1581,9 +1581,9 @@ public class Node implements Serializable, Scopeable
      * 
      * @return Node representing the transformed content - or null if the transform failed
      */
-    private Node transformNode(Transformer transformer, String mimetype, NodeRef destination)
+    private ScriptNode transformNode(Transformer transformer, String mimetype, NodeRef destination)
     {
-        Node transformedNode = null;
+        ScriptNode transformedNode = null;
         
         // get the content reader
         ContentService contentService = this.services.getContentService();
@@ -1623,7 +1623,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return Node representing the newly transformed image.
      */
-    public Node transformImage(String mimetype)
+    public ScriptNode transformImage(String mimetype)
     {
         return transformImage(mimetype, null, getPrimaryParentAssoc().getParentRef());
     }
@@ -1637,7 +1637,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return Node representing the newly transformed image.
      */
-    public Node transformImage(String mimetype, String options)
+    public ScriptNode transformImage(String mimetype, String options)
     {
         return transformImage(mimetype, options, getPrimaryParentAssoc().getParentRef());
     }
@@ -1651,7 +1651,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return Node representing the newly transformed image.
      */
-    public Node transformImage(String mimetype, Node destination)
+    public ScriptNode transformImage(String mimetype, ScriptNode destination)
     {
         ParameterCheck.mandatory("Destination Node", destination);
         return transformImage(mimetype, null, destination.getNodeRef());
@@ -1668,20 +1668,20 @@ public class Node implements Serializable, Scopeable
      * 
      * @return Node representing the newly transformed image.
      */
-    public Node transformImage(String mimetype, String options, Node destination)
+    public ScriptNode transformImage(String mimetype, String options, ScriptNode destination)
     {
         ParameterCheck.mandatory("Destination Node", destination);
         return transformImage(mimetype, options, destination.getNodeRef());
     }
     
-    private Node transformImage(String mimetype, final String options, NodeRef destination)
+    private ScriptNode transformImage(String mimetype, final String options, NodeRef destination)
     {
         ParameterCheck.mandatoryString("Mimetype", mimetype);
         
         // the delegate definition for transforming an image
         Transformer transformer = new Transformer()
         {
-            public Node transform(ContentService contentService, NodeRef nodeRef, ContentReader reader,
+            public ScriptNode transform(ContentService contentService, NodeRef nodeRef, ContentReader reader,
                     ContentWriter writer)
             {
                 Map<String, Object> opts = new HashMap<String, Object>(1);
@@ -1702,7 +1702,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return output of the template execution
      */
-    public String processTemplate(Node template)
+    public String processTemplate(ScriptNode template)
     {
         ParameterCheck.mandatory("Template Node", template);
         return processTemplate(template.getContent(), null, null);
@@ -1717,7 +1717,7 @@ public class Node implements Serializable, Scopeable
      *                   
      * @return output of the template execution
      */
-    public String processTemplate(Node template, Object args)
+    public String processTemplate(ScriptNode template, Object args)
     {
         ParameterCheck.mandatory("Template Node", template);
         return processTemplate(template.getContent(), null, (ScriptableObject)args);
@@ -1755,9 +1755,9 @@ public class Node implements Serializable, Scopeable
     {
         // build default model for the template processing
         Map<String, Object> model = this.services.getTemplateService().buildDefaultModel(
-                ((Node)((Wrapper)scope.get("person", scope)).unwrap()).getNodeRef(),
-                ((Node)((Wrapper)scope.get("companyhome", scope)).unwrap()).getNodeRef(),
-                ((Node)((Wrapper)scope.get("userhome", scope)).unwrap()).getNodeRef(),
+                ((ScriptNode)((Wrapper)scope.get("person", scope)).unwrap()).getNodeRef(),
+                ((ScriptNode)((Wrapper)scope.get("companyhome", scope)).unwrap()).getNodeRef(),
+                ((ScriptNode)((Wrapper)scope.get("userhome", scope)).unwrap()).getNodeRef(),
                 templateRef,
                 null);
         
@@ -2149,6 +2149,6 @@ public class Node implements Serializable, Scopeable
          * 
          * @return Node representing the transformed entity
          */
-        Node transform(ContentService contentService, NodeRef noderef, ContentReader reader, ContentWriter writer);
+        ScriptNode transform(ContentService contentService, NodeRef noderef, ContentReader reader, ContentWriter writer);
     }
 }

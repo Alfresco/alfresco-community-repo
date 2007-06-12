@@ -555,7 +555,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         {
             if (entry.getValue() instanceof NodeRef)
             {
-                newModel.put(entry.getKey(), new Node((NodeRef)entry.getValue(), this.services));
+                newModel.put(entry.getKey(), new ScriptNode((NodeRef)entry.getValue(), this.services));
             }
             else
             {

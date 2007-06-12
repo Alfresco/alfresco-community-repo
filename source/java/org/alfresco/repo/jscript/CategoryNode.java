@@ -39,7 +39,7 @@ import org.mozilla.javascript.Scriptable;
  * 
  * @author Andy Hind
  */
-public class CategoryNode extends Node
+public class CategoryNode extends ScriptNode
 {
     /**
      * Constructor
@@ -69,12 +69,12 @@ public class CategoryNode extends Node
     /**
      * @return all the members of a category
      */
-    public Node[] getCategoryMembers()
+    public ScriptNode[] getCategoryMembers()
     {
         return buildNodes(services.getCategoryService().getChildren(getNodeRef(), CategoryService.Mode.MEMBERS, CategoryService.Depth.ANY));
     }
     
-    public Node[] jsGet_categoryMembers()
+    public ScriptNode[] jsGet_categoryMembers()
     {
         return getCategoryMembers();
     }
@@ -95,12 +95,12 @@ public class CategoryNode extends Node
     /**
      * @return members and subcategories of a category
      */
-    public Node[] getMembersAndSubCategories()
+    public ScriptNode[] getMembersAndSubCategories()
     {
         return buildMixedNodes(services.getCategoryService().getChildren(getNodeRef(), CategoryService.Mode.ALL, CategoryService.Depth.ANY));
     }
     
-    public Node[] jsGet_membersAndSubCategories()
+    public ScriptNode[] jsGet_membersAndSubCategories()
     {
         return getMembersAndSubCategories();
     }
@@ -108,12 +108,12 @@ public class CategoryNode extends Node
     /**
      * @return all the immediate member of a category
      */
-    public Node[] getImmediateCategoryMembers()
+    public ScriptNode[] getImmediateCategoryMembers()
     {
         return buildNodes(services.getCategoryService().getChildren(getNodeRef(), CategoryService.Mode.MEMBERS, CategoryService.Depth.IMMEDIATE));
     }
     
-    public Node[] jsGet_immediateCategoryMembers()
+    public ScriptNode[] jsGet_immediateCategoryMembers()
     {
         return getImmediateCategoryMembers();
     }
@@ -134,12 +134,12 @@ public class CategoryNode extends Node
     /**
      * @return immediate members and subcategories of a category 
      */
-    public Node[] getImmediateMembersAndSubCategories()
+    public ScriptNode[] getImmediateMembersAndSubCategories()
     {
         return buildMixedNodes(services.getCategoryService().getChildren(getNodeRef(), CategoryService.Mode.ALL, CategoryService.Depth.IMMEDIATE));
     }
     
-    public Node[] jsGet_immediateMembersAndSubCategories()
+    public ScriptNode[] jsGet_immediateMembersAndSubCategories()
     {
         return getImmediateMembersAndSubCategories();
     }
@@ -181,20 +181,20 @@ public class CategoryNode extends Node
         return categoryNodes;
     }
 
-    private Node[] buildNodes(Collection<ChildAssociationRef> cars)
+    private ScriptNode[] buildNodes(Collection<ChildAssociationRef> cars)
     {
-        Node[] nodes = new Node[cars.size()];
+        ScriptNode[] nodes = new ScriptNode[cars.size()];
         int i = 0;
         for (ChildAssociationRef car : cars)
         {
-            nodes[i++] = new Node(car.getChildRef(), this.services, this.scope);
+            nodes[i++] = new ScriptNode(car.getChildRef(), this.services, this.scope);
         }
         return nodes;
     }
 
-    private Node[] buildMixedNodes(Collection<ChildAssociationRef> cars)
+    private ScriptNode[] buildMixedNodes(Collection<ChildAssociationRef> cars)
     {
-        Node[] nodes = new Node[cars.size()];
+        ScriptNode[] nodes = new ScriptNode[cars.size()];
         int i = 0;
         for (ChildAssociationRef car : cars)
         {
@@ -205,7 +205,7 @@ public class CategoryNode extends Node
             }
             else
             {
-                nodes[i++] = new Node(car.getChildRef(), this.services, this.scope);
+                nodes[i++] = new ScriptNode(car.getChildRef(), this.services, this.scope);
             }
         }
         return nodes;

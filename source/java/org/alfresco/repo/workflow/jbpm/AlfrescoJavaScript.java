@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.jscript.Node;
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -125,9 +125,9 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
 
         // execute
         Object result = executeScript(executionContext, services, expression, variableAccesses);
-        if (result instanceof Node)
+        if (result instanceof ScriptNode)
         {
-            result = new JBPMNode(((Node)result).getNodeRef(), services);
+            result = new JBPMNode(((ScriptNode)result).getNodeRef(), services);
         }
 
         // map script return variable to process context

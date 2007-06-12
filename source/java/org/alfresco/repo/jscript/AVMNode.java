@@ -40,7 +40,7 @@ import org.mozilla.javascript.Scriptable;
  * 
  * @author Kevin Roast
  */
-public class AVMNode extends Node
+public class AVMNode extends ScriptNode
 {
     private String path;
     private int version;
@@ -87,12 +87,12 @@ public class AVMNode extends Node
      * Factory methods
      */
     @Override
-    public Node newInstance(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
+    public ScriptNode newInstance(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
     {
         return new AVMNode(nodeRef, services, scope);
     }
     
-    public Node newInstance(String path, int version, ServiceRegistry services, Scriptable scope)
+    public ScriptNode newInstance(String path, int version, ServiceRegistry services, Scriptable scope)
     {
         return new AVMNode(AVMNodeConverter.ToNodeRef(version, path), services, scope);
     }
@@ -186,7 +186,7 @@ public class AVMNode extends Node
      * @return the copy of this node
      */
     @Override
-    public Node copy(Node destination)
+    public ScriptNode copy(ScriptNode destination)
     {
         ParameterCheck.mandatory("Destination Node", destination);
         
@@ -200,7 +200,7 @@ public class AVMNode extends Node
      * 
      * @return the copy of this node
      */
-    public Node copy(String destination)
+    public ScriptNode copy(String destination)
     {
         ParameterCheck.mandatoryString("Destination Path", destination);
         
@@ -218,7 +218,7 @@ public class AVMNode extends Node
      * @return true on successful move, false on failure to move.
      */
     @Override
-    public boolean move(Node destination)
+    public boolean move(ScriptNode destination)
     {
         ParameterCheck.mandatory("Destination Node", destination);
         

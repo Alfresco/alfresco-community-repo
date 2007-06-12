@@ -605,6 +605,14 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
             leafrefs.addAll(deleteReference(deletions, mainReader, false));
             refs.addAll(leafrefs);
             deletions.addAll(leafrefs);
+            
+            // make sure leaves are also removed from the delta before reindexing
+            
+            IndexReader deltaReader = getDeltaReader();
+            for(String id : leafrefs)
+            {
+                deltaReader.deleteDocuments(new Term("ID", id));
+            }
 
         }
 

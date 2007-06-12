@@ -24,9 +24,15 @@
  */
 package org.alfresco.web.ui.wcm.component;
 
+import java.io.IOException;
+import java.util.List;
+
 import javax.faces.context.FacesContext;
+import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 
+import org.alfresco.config.JNDIConstants;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.wcm.LinkValidationState;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 
@@ -62,6 +68,167 @@ public abstract class AbstractLinkValidationReportComponent extends SelfRenderin
       return values;
    }
   
+   // ------------------------------------------------------------------------------
+   // Helper methods
+   
+   /**
+    * Returns the name and path for the given avm path
+    * 
+    * @param avmPath The path to split
+    * @return A String array with the name in the first position and the path in the
+    *         second position.
+    */
+   protected String[] getFileNameAndPath(String avmPath)
+   {
+      String fileName = avmPath;
+      String filePath = avmPath;
+      
+      int idx = avmPath.lastIndexOf("/");
+      if (idx != -1)
+      {
+         fileName = avmPath.substring(idx+1);
+         
+         int appbaseIdx = avmPath.indexOf(JNDIConstants.DIR_DEFAULT_APPBASE);
+         if (appbaseIdx != -1)
+         {
+            filePath = avmPath.substring(appbaseIdx+JNDIConstants.DIR_DEFAULT_APPBASE.length(), idx);
+         }
+         else
+         {
+            filePath = avmPath.substring(0, idx);
+         }
+      }
+      
+      return new String[] {fileName, filePath};
+   }
+   
+   /**
+    * Constructs a comma separated list of broken links for the given avm path
+    * 
+    * @param avmPath The avm path to get the broken links for
+    * @param linkState The current link valiation state
+    * @return Comma separated list of broken links
+    */
+   protected String getBrokenLinks(String avmPath, LinkValidationState linkState)
+   {
+      List<String> brokenLinks = linkState.getBrokenLinksForFile(avmPath);
+      StringBuilder builder = new StringBuilder();
+      boolean first = true;
+      for (String link : brokenLinks)
+      {
+         if (first == false)
+         {
+            builder.append(", ");
+         }
+         else
+         {
+            first = false;
+         }
+         
+         builder.append(parseBrokenLink(link));
+      }
+      
+      return builder.toString();
+   }
+   
+   /**
+    * Removes the virtulisation server host name from the link if appropriate
+    * 
+    * @param linkUrl The URL that is broken
+    * @return Parsed URL
+    */
+   protected String parseBrokenLink(String linkUrl)
+   {
+      String link = linkUrl;
+      
+      if (linkUrl.startsWith("http://") && linkUrl.indexOf("www--sandbox") != -1)
+      {
+         // remove the virtualisation server host name
+         int idx = linkUrl.indexOf("/", 7);
+         if (idx != -1)
+         {
+            link = linkUrl.substring(idx);
+         }
+      }
+      
+      return link;
+   }
+   
+   /**
+    * Renders the HTML to display a file and it's optional broken links
+    * 
+    * @param out ResponseWriter instance to write to
+    * @param context FacesContext
+    * @param fileName Name of the file
+    * @param filePath Path to the file
+    * @param brokenLinks List of broken links in the file
+    * @throws IOException
+    */
+   protected void renderFile(ResponseWriter out, FacesContext context,
+            String fileName, String filePath, String brokenLinks) throws IOException
+   {
+      out.write("<table cellpadding='0' cellspacing='0'><tr><td valign='top'><img src='");
+      out.write(context.getExternalContext().getRequestContextPath());
+      out.write(getIcon(fileName));
+      out.write("' style='padding: 5px;' /></td>");
+      out.write("<td width='100%'><div style='padding: 5px;'><div style='font-weight: bold;'>");
+      out.write(fileName);
+      out.write("</div><div style='padding-top: 2px;'>");
+      out.write(filePath);
+      out.write("</div>");
+      
+      if (brokenLinks != null && brokenLinks.length() > 0)
+      {
+         out.write("<div style='padding-top: 4px; color: #888;'>");
+         out.write(Application.getMessage(context, "broken_links"));
+         out.write(":</div><div style='padding-top: 2px;'>");
+         out.write(brokenLinks);
+         out.write("</div>");
+      }
+      
+      out.write("</div></td></tr></table>");
+   }
+   
+   /**
+    * Renders the "No items to display" message
+    * 
+    * @param out ResponseWriter instance to write to
+    * @param context FacesContext
+    * @throws IOException
+    */
+   protected void renderNoItems(ResponseWriter out, FacesContext context)
+      throws IOException
+   {
+      out.write("<tr><td><div style='padding: 6px;'>");
+      out.write(Application.getMessage(context, "no_items"));
+      out.write("</div></td></tr>");
+   }
+   
+   /**
+    * Returns the icon to use given a file name
+    * 
+    * @param fileName File name to find an icon for
+    * @return The path to the icon to use
+    */
+   protected String getIcon(String fileName)
+   {
+      // work out what icon to use
+      String icon = "/images/filetypes32/html.gif";
+      String ext = "";
+      int idx = fileName.indexOf(".");
+      if (idx != -1)
+      {
+         ext = fileName.substring(idx);
+      }
+      
+      if (ext.equals(".xml"))
+      {
+         icon = "/images/icons/webform_large.gif";
+      }
+      
+      return icon;
+   }
+   
    // ------------------------------------------------------------------------------
    // Strongly typed component property accessors
    

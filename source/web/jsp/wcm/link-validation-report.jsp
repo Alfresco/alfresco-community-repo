@@ -34,6 +34,7 @@
 
 <w:linkValidationSummary value="#{AVMBrowseBean.linkValidationState}" />
 <w:linkValidationBrokenFiles value="#{AVMBrowseBean.linkValidationState}" />
+<w:linkValidationBrokenForms value="#{AVMBrowseBean.linkValidationState}" />
 <w:linkValidationFixedFiles value="#{AVMBrowseBean.linkValidationState}" />
 
 

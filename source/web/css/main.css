@@ -755,6 +755,7 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
 .linkValidationSummaryPanel
 {
    margin: 6px;
+   margin-top: 3px;
    padding: 8px;
    background-color: white;
    /* border: 1px solid #babfc5; */
@@ -763,7 +764,14 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
 .linkValidationBrokenFilesPanel
 {
    margin: 6px;
-   margin-top: 10px;
+   padding: 8px;
+   background-color: white;
+   /* border: 1px solid #babfc5; */
+}
+
+.linkValidationBrokenFormsPanel
+{
+   margin: 6px;
    padding: 8px;
    background-color: white;
    /* border: 1px solid #babfc5; */
@@ -772,7 +780,6 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
 .linkValidationFixedFilesPanel
 {
    margin: 6px;
-   margin-top: 10px;
    padding: 8px;
    background-color: white;
    /* border: 1px solid #babfc5; */
@@ -781,7 +788,7 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
 .linkValidationList
 {
    overflow: auto;
-   height: 150px;
+   height: 130px;
    border: 1px solid #aaa;
 }
 

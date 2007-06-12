@@ -30,7 +30,6 @@ import java.util.List;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
-import org.alfresco.config.JNDIConstants;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.wcm.LinkValidationState;
 import org.apache.commons.logging.Log;
@@ -77,11 +76,18 @@ public class UILinkValidationBrokenFiles extends AbstractLinkValidationReportCom
       out.write("<div class='linkValidationBrokenFilesPanel'><div class='linkValidationReportTitle'>");
       out.write(Application.getMessage(context, "files_with_broken_links"));
       out.write("</div><div class='linkValidationList'><table width='100%' cellpadding='0' cellspacing='0'>");
-      
+
       List<String> brokenFiles = linkState.getStaticFilesWithBrokenLinks();
-      for (String file : brokenFiles)
+      if (brokenFiles == null || brokenFiles.size() == 0)
       {
-         renderBrokenFile(context, out, file, linkState);
+         renderNoItems(out, context);
+      }
+      else
+      {
+         for (String file : brokenFiles)
+         {
+            renderBrokenFile(context, out, file, linkState);
+         }
       }
       
       out.write("</table></div></div>");
@@ -94,43 +100,12 @@ public class UILinkValidationBrokenFiles extends AbstractLinkValidationReportCom
             String file, LinkValidationState linkState) throws IOException
    {
       // gather the data to show for the file
-      String fileName = file;
-      String filePath = file;
-      
-      int idx = file.lastIndexOf("/");
-      if (idx != -1)
-      {
-         fileName = file.substring(idx+1);
-         
-         int appbaseIdx = file.indexOf(JNDIConstants.DIR_DEFAULT_APPBASE);
-         if (appbaseIdx != -1)
-         {
-            filePath = file.substring(appbaseIdx+JNDIConstants.DIR_DEFAULT_APPBASE.length(), idx);
-         }
-         else
-         {
-            filePath = file.substring(0, idx);
-         }
-      }
-      
+      String[] nameAndPath = this.getFileNameAndPath(file);
+      String fileName = nameAndPath[0];
+      String filePath = nameAndPath[1];
+
       // build the list of broken links for the file
-      List<String> brokenLinks = linkState.getBrokenLinksForFile(file);
-      StringBuilder builder = new StringBuilder();
-      boolean first = true;
-      for (String link : brokenLinks)
-      {
-         if (first == false)
-         {
-            builder.append(", ");
-         }
-         else
-         {
-            first = false;
-         }
-         
-         builder.append(parseBrokenLink(link));
-      }
-      String brokenLinksList = builder.toString();
+      String brokenLinks = getBrokenLinks(file, linkState);
       
       // render the row with the appropriate background style
       out.write("<tr class='");
@@ -148,42 +123,15 @@ public class UILinkValidationBrokenFiles extends AbstractLinkValidationReportCom
       this.oddRow = !this.oddRow;
       
       // render the data
-      out.write("'><td valign='top'><img src='");
-      out.write(context.getExternalContext().getRequestContextPath());
-      out.write("/images/filetypes32/html.gif' style='padding: 5px;' /></td>");
-      out.write("<td width='100%'><div style='padding: 5px;'><div style='font-weight: bold;'>");
-      out.write(fileName);
-      out.write("</div><div style='padding-top: 2px;'>");
-      out.write(filePath);
-      out.write("</div><div style='padding-top: 4px; color: #aaa;'>");
-      out.write(Application.getMessage(context, "broken_links"));
-      out.write(":</div><div style='padding-top: 2px;'>");
-      out.write(brokenLinksList);
-      out.write("</div></div></td><td align='right' valign='top'>");
-      out.write("<div style='white-space: nowrap; padding: 5px; padding-right: 10px;'>");
+      out.write("'><td>");
+      renderFile(out, context, fileName, filePath, brokenLinks);
+      out.write("</td><td align='right' valign='top'><div style='white-space: nowrap; padding-top: 10px; padding-right: 20px;'>");
       out.write("&nbsp;");
 //      out.write("<img src='/alfresco/images/icons/edit_icon.gif' />&nbsp;");
 //      out.write("<img src='/alfresco/images/icons/update.gif' />&nbsp;");
 //      out.write("<img src='/alfresco/images/icons/revert.gif' />&nbsp;");
 //      out.write("<img src='/alfresco/images/icons/preview_website.gif' />&nbsp;");
       out.write("</div></td></tr>");
-   }
-   
-   private String parseBrokenLink(String linkUrl)
-   {
-      String link = linkUrl;
-      
-      if (linkUrl.startsWith("http://") && linkUrl.indexOf("www--sandbox") != -1)
-      {
-         // remove the virtualisation server host name
-         int idx = linkUrl.indexOf("/", 7);
-         if (idx != -1)
-         {
-            link = linkUrl.substring(idx);
-         }
-      }
-      
-      return link;
    }
 }
 

@@ -347,6 +347,35 @@
    </tag>
    
    <tag>
+      <name>linkValidationBrokenForms</name>
+      <tag-class>org.alfresco.web.ui.wcm.tag.LinkValidationBrokenFormsTag</tag-class>
+      <body-content>JSP</body-content>
+      <display-name>Link Validation Broken Forms</display-name>
+      <description>Displays broken form information for a link validation report</description>
+      
+      <attribute>
+         <name>value</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The link validation state object holding the report data</description>
+      </attribute>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The component identifier for this component</description>
+      </attribute>
+
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>Flag to determine whether component should be rendered</description>
+      </attribute>
+   </tag>
+   
+   <tag>
       <name>linkValidationFixedFiles</name>
       <tag-class>org.alfresco.web.ui.wcm.tag.LinkValidationFixedFilesTag</tag-class>
       <body-content>JSP</body-content>

@@ -26,6 +26,7 @@ package org.alfresco.web.ui.wcm.component;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.ResourceBundle;
 
 import javax.faces.context.FacesContext;
@@ -33,6 +34,7 @@ import javax.faces.context.ResponseWriter;
 
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.wcm.LinkValidationState;
+import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -74,8 +76,11 @@ public class UILinkValidationSummary extends AbstractLinkValidationReportCompone
       // resolve all the strings holding data
       ResourceBundle bundle = Application.getBundle(context);
       String pattern = bundle.getString("files_links_checked");
+      Date initialCheck = linkState.getInitialCheckCompletedAt();
+      String initialCheckTime = Utils.getDateTimeFormat(context).format(initialCheck);
       String initialCheckSummary = MessageFormat.format(pattern, 
-               new Object[] {linkState.getInitialNumberFilesChecked(), linkState.getInitialNumberLinksChecked()});
+               new Object[] {initialCheckTime, linkState.getInitialNumberFilesChecked(), 
+                             linkState.getInitialNumberLinksChecked()});
       pattern = bundle.getString("files_links_broken");
       String initialBrokenSummary = MessageFormat.format(pattern, 
                new Object[] {linkState.getInitialNumberBrokenFiles(), linkState.getInitialNumberBrokenLinks()});

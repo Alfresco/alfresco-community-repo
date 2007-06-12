@@ -36,15 +36,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * JSF component that shows the fixed files for a link validation report.
+ * JSF component that shows the broken form information for a link
+ * validation report.
  * 
  * @author gavinc
  */
-public class UILinkValidationFixedFiles extends AbstractLinkValidationReportComponent
+public class UILinkValidationBrokenForms extends AbstractLinkValidationReportComponent
 {
    private boolean oddRow = true;
    
-   private static Log logger = LogFactory.getLog(UILinkValidationFixedFiles.class);
+   private static Log logger = LogFactory.getLog(UILinkValidationBrokenForms.class);
    
    // ------------------------------------------------------------------------------
    // Component implementation
@@ -52,7 +53,7 @@ public class UILinkValidationFixedFiles extends AbstractLinkValidationReportComp
    @Override
    public String getFamily()
    {
-      return "org.alfresco.faces.LinkValidationFixedFiles";
+      return "org.alfresco.faces.LinkValidationBrokenForms";
    }
    
    @SuppressWarnings("unchecked")
@@ -69,39 +70,23 @@ public class UILinkValidationFixedFiles extends AbstractLinkValidationReportComp
       LinkValidationState linkState = getValue();
       
       if (logger.isDebugEnabled())
-         logger.debug("Rendering fixed files from state object: " + linkState);
+         logger.debug("Rendering broken forms from state object: " + linkState);
       
       // render the list of broken files and their contained links
-      out.write("<div class='linkValidationFixedFilesPanel'><div class='linkValidationReportTitle'>");
-      out.write(Application.getMessage(context, "fixed_items"));
+      out.write("<div class='linkValidationBrokenFormsPanel'><div class='linkValidationReportTitle'>");
+      out.write(Application.getMessage(context, "forms_with_broken_links"));
       out.write("</div><div class='linkValidationList'><table width='100%' cellpadding='0' cellspacing='0'>");
-      
-      int fixedItems = 0;
-      List<String> fixedFiles = linkState.getFixedFiles();
-      List<String> fixedForms = linkState.getFixedForms();
-      if (fixedFiles != null)
-      {
-         fixedItems = fixedFiles.size();
-      }
-      if (fixedForms != null)
-      {
-         fixedItems += fixedForms.size();
-      }
-      
-      if (fixedItems == 0)
+
+      List<String> brokenForms = linkState.getFormsWithBrokenLinks();
+      if (brokenForms == null || brokenForms.size() == 0)
       {
          renderNoItems(out, context);
       }
       else
       {
-         for (String file : fixedFiles)
+         for (String form : brokenForms)
          {
-            renderFixedItem(context, out, file, linkState);
-         }
-         
-         for (String file : fixedForms)
-         {
-            renderFixedItem(context, out, file, linkState);
+            renderBrokenForm(context, out, form, linkState);
          }
       }
       
@@ -111,13 +96,13 @@ public class UILinkValidationFixedFiles extends AbstractLinkValidationReportComp
    // ------------------------------------------------------------------------------
    // Helpers
    
-   private void renderFixedItem(FacesContext context, ResponseWriter out,
+   private void renderBrokenForm(FacesContext context, ResponseWriter out,
             String file, LinkValidationState linkState) throws IOException
-   {
-      // gather the data to show for the file
-      String[] nameAndPath = this.getFileNameAndPath(file);
-      String fileName = nameAndPath[0];
-      String filePath = nameAndPath[1];
+   {  
+      // get the web form name and path
+      String[] formNamePath = this.getFileNameAndPath(file);
+      String formName = formNamePath[0];
+      String formPath = formNamePath[1];
       
       // render the row with the appropriate background style
       out.write("<tr class='");
@@ -135,9 +120,34 @@ public class UILinkValidationFixedFiles extends AbstractLinkValidationReportComp
       this.oddRow = !this.oddRow;
       
       // render the data
-      out.write("'><td>");
-      renderFile(out, context, fileName, filePath, null);
-      out.write("</td></tr>");
+      out.write("'><td valign='top'><img src='");
+      out.write(context.getExternalContext().getRequestContextPath());
+      out.write("/images/icons/webform_large.gif' style='padding: 5px;' /></td><td width='100%'>");
+      out.write("<div style='font-weight: bold; padding-top: 5px;'>");
+      out.write(formName);
+      out.write("</div><div style='padding-top: 2px;'>");
+      out.write(formPath);
+      out.write("</div><div style='padding-top: 4px; color: #888;'>");
+      out.write(Application.getMessage(context, "generated_files"));
+      out.write(":</div><div style='padding-top: 2px;'>");
+      
+      for (String brokenFile : linkState.getBrokenFilesByForm(file))
+      {
+         String[] nameAndPath = this.getFileNameAndPath(brokenFile);
+         String fileName = nameAndPath[0];
+         String filePath = nameAndPath[1];
+   
+         // build the list of broken links for the file
+         String brokenLinks = getBrokenLinks(brokenFile, linkState);
+         renderFile(out, context, fileName, filePath, brokenLinks);
+      }
+      
+      out.write("</div>");
+      
+      out.write("</td><td align='right' valign='top'><div style='white-space: nowrap; padding-top: 10px; padding-right: 20px;'>");
+      out.write("&nbsp;");
+//      out.write("<img src='/alfresco/images/icons/edit_icon.gif' />&nbsp;");
+      out.write("</div></td></tr>");
    }
 }
 

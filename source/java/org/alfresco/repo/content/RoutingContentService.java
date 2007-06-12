@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
@@ -551,8 +552,9 @@ public class RoutingContentService implements ContentService
                 // Bypass NodeService for avm stores.
                 if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
                 {
-                    Pair<Integer, String> versionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-                    avmService.setContentData(versionPath.getSecond(), contentData);
+                    nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, contentData);
+//                    Pair<Integer, String> versionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+//                    avmService.setContentData(versionPath.getSecond(), contentData);
                 }
                 else
                 {

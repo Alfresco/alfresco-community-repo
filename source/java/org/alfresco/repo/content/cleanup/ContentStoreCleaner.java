@@ -35,8 +35,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.AVMNodeDAO;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.node.db.NodeDaoService;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -58,6 +59,8 @@ import org.apache.commons.logging.LogFactory;
 public class ContentStoreCleaner
 {
     private static Log logger = LogFactory.getLog(ContentStoreCleaner.class);
+    
+    private static VmShutdownListener vmShutdownListener = new VmShutdownListener(ContentStoreCleaner.class.getName());
     
     private DictionaryService dictionaryService;
     private NodeDaoService nodeDaoService;
@@ -159,34 +162,30 @@ public class ContentStoreCleaner
     
     private Set<String> getValidUrls()
     {
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        
         final DataTypeDefinition contentDataType = dictionaryService.getDataType(DataTypeDefinition.CONTENT);
         // wrap to make the request in a transaction
-        TransactionWork<List<Serializable>> getUrlsWork = new TransactionWork<List<Serializable>>()
+        RetryingTransactionCallback<List<Serializable>> getUrlsCallback = new RetryingTransactionCallback<List<Serializable>>()
         {
-            public List<Serializable> doWork() throws Exception
+            public List<Serializable> execute() throws Throwable
             {
                 return nodeDaoService.getPropertyValuesByActualType(contentDataType);
-            };
+            }
         };
         // execute in READ-ONLY txn
-        List<Serializable> values = TransactionUtil.executeInUserTransaction(
-                transactionService,
-                getUrlsWork,
-                true);
+        List<Serializable> values = txnHelper.doInTransaction(getUrlsCallback, true);
         
         // Do the same for the AVM repository.
-        TransactionWork<List<String>> getAVMUrlsWork = new TransactionWork<List<String>>()
+        RetryingTransactionCallback<List<String>> getAVMUrlsCallback = new RetryingTransactionCallback<List<String>>()
         {
-            public List<String> doWork() throws Exception
+            public List<String> execute() throws Exception
             {
                 return avmNodeDAO.getContentUrls();
             }
         };
-        
-        List<String> avmContentUrls = TransactionUtil.executeInUserTransaction(
-                transactionService,
-                getAVMUrlsWork,
-                true);
+        // execute in READ-ONLY txn
+        List<String> avmContentUrls = txnHelper.doInTransaction(getAVMUrlsCallback, true);
         
         // get all valid URLs
         Set<String> validUrls = new HashSet<String>(values.size());
@@ -217,19 +216,38 @@ public class ContentStoreCleaner
     public void execute()
     {
         checkProperties();
-        Set<String> validUrls = getValidUrls();
-        // now clean each store in turn
-        for (ContentStore store : stores)
+        try
         {
-            try
+            Set<String> validUrls = getValidUrls();
+            // now clean each store in turn
+            for (ContentStore store : stores)
             {
-                clean(validUrls, store);
+                try
+                {
+                    clean(validUrls, store);
+                }
+                catch (UnsupportedOperationException e)
+                {
+                    throw new ContentIOException(
+                            "Unable to clean store as the necessary operations are not supported: " + store,
+                            e);
+                }
             }
-            catch (UnsupportedOperationException e)
+        }
+        catch (ContentIOException e)
+        {
+            throw e;
+        }
+        catch (Throwable e)
+        {
+            // If the VM is shutting down, then ignore
+            if (vmShutdownListener.isVmShuttingDown())
             {
-                throw new ContentIOException(
-                        "Unable to clean store as the necessary operations are not supported: " + store,
-                        e);
+                // Ignore
+            }
+            else
+            {
+                logger.error("Exception during cleanup of content", e);
             }
         }
     }

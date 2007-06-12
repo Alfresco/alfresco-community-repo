@@ -34,7 +34,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.jscript.Node;
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.cmr.repository.ScriptLocation;
@@ -211,9 +211,9 @@ public class DeclarativeWebScript extends AbstractWebScript
             }
             
             // convert script node to template node, if required
-            if (value instanceof Node)
+            if (value instanceof ScriptNode)
             {
-                value = new TemplateNode(((Node)value).getNodeRef(), getServiceRegistry(), getWebScriptRegistry().getTemplateImageResolver());
+                value = new TemplateNode(((ScriptNode)value).getNodeRef(), getServiceRegistry(), getWebScriptRegistry().getTemplateImageResolver());
             }
             else if (value instanceof Collection)
             {
@@ -221,9 +221,9 @@ public class DeclarativeWebScript extends AbstractWebScript
                 Collection templateColl = new ArrayList(coll.size());
                 for (Object object : coll)
                 {
-                    if (value instanceof Node)
+                    if (value instanceof ScriptNode)
                     {
-                        templateColl.add(new TemplateNode(((Node)object).getNodeRef(), getServiceRegistry(), getWebScriptRegistry().getTemplateImageResolver()));
+                        templateColl.add(new TemplateNode(((ScriptNode)object).getNodeRef(), getServiceRegistry(), getWebScriptRegistry().getTemplateImageResolver()));
                     }
                     else
                     {
@@ -232,12 +232,12 @@ public class DeclarativeWebScript extends AbstractWebScript
                 }
                 value = templateColl;
             }
-            else if (value instanceof Node[])
+            else if (value instanceof ScriptNode[])
             {
-                Node[] nodes = (Node[])value;
+                ScriptNode[] nodes = (ScriptNode[])value;
                 TemplateNode[] templateNodes = new TemplateNode[nodes.length];
                 int i = 0;
-                for (Node node : nodes)
+                for (ScriptNode node : nodes)
                 {
                     templateNodes[i++] = new TemplateNode(node.getNodeRef(), getServiceRegistry(), getWebScriptRegistry().getTemplateImageResolver());
                 }

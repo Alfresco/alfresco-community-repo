@@ -33,7 +33,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.jscript.Node;
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.template.AbsoluteUrlMethod;
 import org.alfresco.service.ServiceRegistry;
@@ -223,13 +223,13 @@ public abstract class AbstractWebScript implements WebScript
             NodeRef companyHome = scriptContext.getCompanyHome();
             if (companyHome != null)
             {
-                model.put("companyhome", new Node(scriptContext.getCompanyHome(), serviceRegistry));
+                model.put("companyhome", new ScriptNode(scriptContext.getCompanyHome(), serviceRegistry));
             }
             NodeRef person = scriptContext.getPerson();
             if (person != null)
             {
-                model.put("person", new Node(person, serviceRegistry));
-                model.put("userhome", new Node(scriptContext.getUserHome(person), serviceRegistry));
+                model.put("person", new ScriptNode(person, serviceRegistry));
+                model.put("userhome", new ScriptNode(scriptContext.getUserHome(person), serviceRegistry));
             }
         }
 

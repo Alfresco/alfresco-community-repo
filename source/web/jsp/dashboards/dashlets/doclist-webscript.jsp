@@ -24,4 +24,4 @@
 --%>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<r:webScript scriptUrl="/alfresco/service/doclist" />
+<r:webScript scriptUrl="/alfresco/wcs/doclist" />

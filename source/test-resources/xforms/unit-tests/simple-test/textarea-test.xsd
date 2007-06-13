@@ -13,7 +13,7 @@
           </xs:annotation>
         </xs:element>
         <xs:element name="rich_text_anyType" type="xs:anyType" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="rich_text_stringType" type="xs:string" minOccurs="0" maxOccurs="1" default="ф">
+        <xs:element name="rich_text_stringType" type="xs:string" minOccurs="0" maxOccurs="1">
           <xs:annotation>
             <xs:appinfo>
               <alf:appearance>full</alf:appearance>
@@ -29,7 +29,7 @@
           </xs:appinfo>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="rich_text_stringType_attribute" type="xs:string" use="optional" default="ф">
+      <xs:attribute name="rich_text_stringType_attribute" type="xs:string" use="optional">
         <xs:annotation>
           <xs:appinfo>
             <alf:appearance>full</alf:appearance>

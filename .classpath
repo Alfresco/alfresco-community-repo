@@ -17,5 +17,6 @@
 	<classpathentry kind="lib" path="/3rd Party/lib/fop/avalon-framework-4.2.0.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MBean"/>
 	<classpathentry kind="lib" path="/3rd Party/lib/chiba-1.3.0.jar"/>
+	<classpathentry kind="lib" path="/3rd Party/lib/json.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

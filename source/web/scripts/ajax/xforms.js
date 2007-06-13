@@ -846,9 +846,9 @@ dojo.declare("alfresco.xforms.RichTextEditor",
 
                  this.statics.currentInstance = this;
 
-                 tinyMCE.settings.theme_advanced_buttons1 = this._tinyMCE_buttons[0];
-                 tinyMCE.settings.theme_advanced_buttons2 = this._tinyMCE_buttons[1];
-                 tinyMCE.settings.theme_advanced_buttons3 = this._tinyMCE_buttons[2];
+                 tinyMCE.settings.theme_advanced_buttons1 = this._tinyMCE_buttons[0] || "";
+                 tinyMCE.settings.theme_advanced_buttons2 = this._tinyMCE_buttons[1] || "";
+                 tinyMCE.settings.theme_advanced_buttons3 = this._tinyMCE_buttons[2] || "";
                  tinyMCE.addMCEControl(this.widget, this.id);
                  
                  var editorDocument = tinyMCE.getInstanceById(this.id).getDoc();
@@ -4006,11 +4006,19 @@ dojo.declare("alfresco.xforms.XForm",
                                    " schemaType " + schemaType +
                                    " appearance " + appearance);
                  }
-                 if (x == null)
+                 if (x == null || typeof x.className == "undefined")
                  {
                    return null;
                  }
-                 var result = new x.className(this, xformsNode, x.params);
+                 var cstr = eval(x.className);
+                 if (!cstr)
+                 {
+                   throw new Error("unable to load constructor " + x.className +
+                                   " for xforms type " + xformsType +
+                                   " schemaType " + schemaType +
+                                   " appearance " + appearance);
+                 }
+                 var result = new cstr(this, xformsNode, x.params);
                  if (result instanceof alfresco.xforms.Widget)
                  {
                    return result;
@@ -4624,74 +4632,3 @@ tinyMCE.init({
   theme_advanced_buttons3: "",
   urlconverter_callback: "alfresco_TinyMCE_urlconverter_callback"
 });
-
-alfresco.xforms.widgetConfig =
-{
-  "xf:group": 
-  {
-    "*": { "minimal": { className: alfresco.xforms.HGroup }, "*": { className: alfresco.xforms.VGroup }}
-  },
-  "xf:repeat": 
-  {
-    "*": { "*": { className: alfresco.xforms.Repeat } }
-  },
-  "xf:textarea":
-  {
-    "*": 
-    { 
-      "minimal": { className: alfresco.xforms.PlainTextEditor }, 
-      "*": { className: alfresco.xforms.RichTextEditor, params: [ "bold,italic,underline,separator,forecolor,backcolor,separator,link,unlink,image", "", "" ] },
-      "full": { className: alfresco.xforms.RichTextEditor, params: ["bold,italic,underline,strikethrough,separator,fontselect,fontsizeselect", "link,unlink,image,separator,justifyleft,justifycenter,justifyright,justifyfull,separator,bullist,numlist,separator,undo,redo,separator,forecolor,backcolor", "" ] }
-    }
-  },
-  "xf:upload":
-  {
-    "*": { "*": { className: alfresco.xforms.FilePicker } }
-  },
-  "xf:range":
-  {
-    "*": { "*": { className: alfresco.xforms.NumericalRange } }
-  },
-  "xf:input":
-  {
-    "date": { "*": { className: alfresco.xforms.DatePicker }},
-    "time": { "*": { className: alfresco.xforms.TimePicker }},
-    "gDay": { "*": { className: alfresco.xforms.DayPicker }},
-    "gMonth": { "*": { className: alfresco.xforms.MonthPicker }},
-    "gYear": { "*": { className: alfresco.xforms.YearPicker }},
-    "gMonthDay": { "*": { className: alfresco.xforms.MonthDayPicker }},
-    "gYearMonth": { "*": { className: alfresco.xforms.YearMonthPicker }},
-    "dateTime": { "*": { className: alfresco.xforms.DateTimePicker }},
-    "*": { "*": { className: alfresco.xforms.TextField }}
-  },
-  "xf:select1":
-  {
-    "boolean": { "*": { className: alfresco.xforms.Checkbox }},
-    "*": { "full": { className: alfresco.xforms.RadioSelect1},
-           "*": { className: alfresco.xforms.ComboboxSelect1 }}
-  },
-  "xf:select":
-  {
-    "*": { "full": { className: alfresco.xforms.CheckboxSelect},
-           "*": { className: alfresco.xforms.ListSelect }}
-  },
-  "xf:submit":
-  {
-    "*": { "*": { className: alfresco.xforms.Submit } }
-  },
-  "xf:trigger":
-  {
-    "*": { "*": { className: alfresco.xforms.Trigger }}
-  },
-  "xf:switch":
-  {
-    "*": { "*": { className: alfresco.xforms.SwitchGroup } }
-  },
-  "xf:case":
-  {
-    "*": { "*": { className: alfresco.xforms.CaseGroup }}
-  },
-  "chiba:data": { "*": { "*": null } },
-  "xf:label": { "*": { "*": null } },
-  "xf:alert": { "*": { "*": null } }
-}

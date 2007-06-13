@@ -26,6 +26,81 @@
          	<!-- the delay (in seconds) to apply to a deployment (for testing and demo purposes) -->
          	<delay>30</delay>
          </deployment>
+
+         <xforms>
+           <widget xforms-type="xf:group" 
+                   appearance="minimal" 
+                   javascript-class-name="alfresco.xforms.HGroup"/>
+           <widget xforms-type="xf:group" 
+                   javascript-class-name="alfresco.xforms.VGroup"/>
+           <widget xforms-type="xf:repeat" 
+                   javascript-class-name="alfresco.xforms.Repeat"/>
+           <widget xforms-type="xf:textarea"
+                   appearance="minimal"
+                   javascript-class-name="alfresco.xforms.PlainTextEditor"/>
+           <widget xforms-type="xf:textarea"
+                   javascript-class-name="alfresco.xforms.RichTextEditor">
+             <param>bold,italic,underline,separator,forecolor,backcolor,separator,link,unlink,image</param>
+           </widget>
+           <widget xforms-type="xf:textarea"
+                   appearance="full"
+                   javascript-class-name="alfresco.xforms.RichTextEditor">
+             <param>bold,italic,underline,strikethrough,separator,fontselect,fontsizeselect</param>
+             <param>link,unlink,image,separator,justifyleft,justifycenter,justifyright,justifyfull,separator,bullist,numlist,separator,undo,redo,separator,forecolor,backcolor</param>
+           </widget>
+           <widget xforms-type="xf:upload" javascript-class-name="alfresco.xforms.FilePicker"/>
+           <widget xforms-type="xf:range" javascript-class-name="alfresco.xforms.NumericalRange"/>
+           <widget xforms-type="xf:input" 
+                   xml-schema-type="date"
+                   javascript-class-name="alfresco.xforms.DatePicker"/>
+           <widget xforms-type="xf:input"
+                   xml-schema-type="time"
+                   javascript-class-name="alfresco.xforms.TimePicker"/>
+           <widget xforms-type="xf:input"
+                   xml-schema-type="gDay"
+                   javascript-class-name="alfresco.xforms.DayPicker"/>
+           <widget xforms-type="xf:input"
+                   xml-schema-type="gMonth"
+                   javascript-class-name="alfresco.xforms.MonthPicker"/>
+           <widget xforms-type="xf:input"
+                   xml-schema-type="gYear"
+                   javascript-class-name="alfresco.xforms.YearPicker"/>
+           <widget xforms-type="xf:input"
+                   xml-schema-type="gMonthDay"
+                   javascript-class-name="alfresco.xforms.MonthDayPicker"/>
+           <widget xforms-type="xf:input"
+                   xml-schema-type="gYearMonth"
+                   javascript-class-name="alfresco.xforms.YearMonthPicker"/>
+           <widget xforms-type="xf:input"
+                   xml-schema-type="dateTime"
+                   javascript-class-name="alfresco.xforms.DateTimePicker"/>
+           <widget xforms-type="xf:input"
+                   javascript-class-name="alfresco.xforms.TextField"/>
+           <widget xforms-type="xf:select1"
+                   xml-schema-type="boolean"
+                   javascript-class-name="alfresco.xforms.Checkbox"/>
+           <widget xforms-type="xf:select1"
+                   appearance="full"
+                   javascript-class-name="alfresco.xforms.RadioSelect1"/>
+           <widget xforms-type="xf:select1"
+                   javascript-class-name="alfresco.xforms.ComboboxSelect1"/>
+           <widget xforms-type="xf:select"
+                   appearance="full"
+                   javascript-class-name="alfresco.xforms.CheckboxSelect"/>
+           <widget xforms-type="xf:select"
+                   javascript-class-name="alfresco.xforms.ListSelect"/>
+           <widget xforms-type="xf:submit"
+                   javascript-class-name="alfresco.xforms.Submit"/>
+           <widget xforms-type="xf:trigger"
+                   javascript-class-name="alfresco.xforms.Trigger"/>
+           <widget xforms-type="xf:switch"
+                   javascript-class-name="alfresco.xforms.SwitchGroup"/>
+           <widget xforms-type="xf:case"
+                   javascript-class-name="alfresco.xforms.CaseGroup"/>
+           <widget xforms-type="chiba:data"/>
+           <widget xforms-type="xf:label"/>
+           <widget xforms-type="xf:alert"/>
+         </xforms>
       </wcm>
    
    </config>

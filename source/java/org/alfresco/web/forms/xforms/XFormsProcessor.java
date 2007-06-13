@@ -20,16 +20,20 @@ package org.alfresco.web.forms.xforms;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ResourceBundle;
+import java.util.*;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.alfresco.config.ConfigElement;
+import org.alfresco.config.ConfigService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.bean.wcm.AVMBrowseBean;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.forms.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.web.util.JavaScriptUtils;
 
 import org.w3c.dom.Document;
@@ -92,8 +96,14 @@ public class XFormsProcessor
       "validation_provide_values_for_required_fields"
    };
 
+   private static JSONObject widgetConfig = null;
+
    public XFormsProcessor()
    {
+      if (XFormsProcessor.widgetConfig == null)
+      {
+         XFormsProcessor.widgetConfig = XFormsProcessor.loadConfig();
+      }
    }
 
    public Session process(final Document instanceDataDocument,
@@ -225,6 +235,19 @@ public class XFormsProcessor
             append(k.equals(BUNDLE_KEYS[BUNDLE_KEYS.length - 1]) ? "\n};" : ",").
             append("\n");
       }
+
+      try
+      {
+         js.append("alfresco.xforms.widgetConfig = \n").
+            append(LOGGER.isDebugEnabled() 
+                   ? XFormsProcessor.widgetConfig.toString(0) 
+                   : XFormsProcessor.widgetConfig).
+            append("\n");
+      }
+      catch (JSONException jsone)
+      {
+         LOGGER.error(jsone);
+      }
       e.appendChild(result.createTextNode(js.toString()));
 
       div.appendChild(e);
@@ -240,5 +263,142 @@ public class XFormsProcessor
       }
  
       XMLUtil.print(result, out);
+   }
+   
+   private static JSONObject loadConfig()
+   {
+      final ConfigService cfgService = Application.getConfigService(FacesContext.getCurrentInstance());
+      final ConfigElement xformsConfig = cfgService.getGlobalConfig().getConfigElement("wcm").getChild("xforms");
+      final List<ConfigElement> widgetConfig = xformsConfig.getChildren("widget");
+
+      class WidgetConfigElement
+         implements Comparable<WidgetConfigElement>
+      {
+         public final String xformsType;
+         public final String xmlSchemaType;
+         public final String appearance;
+         public final String javascriptClassName;
+         private List<String> params;
+
+         public WidgetConfigElement(final String xformsType,
+                                    final String xmlSchemaType,
+                                    final String appearance,
+                                    final String javascriptClassName)
+         {
+            if (xformsType == null)
+            {
+               throw new NullPointerException();
+            }
+            this.xformsType = xformsType;
+            this.xmlSchemaType = xmlSchemaType;
+            this.appearance = appearance;
+            this.javascriptClassName = javascriptClassName;
+         }
+
+         public void addParam(final String p)
+         {
+            if (this.params == null)
+            {
+               this.params = new LinkedList();
+            }
+            this.params.add(p);
+         }
+
+         public List<String> getParams()
+         {
+            return (this.params == null 
+                    ? (List<String>)Collections.EMPTY_LIST
+                    : Collections.unmodifiableList(this.params));
+         }
+
+         public int compareTo(final WidgetConfigElement other)
+         {
+            int result = this.xformsType.compareTo(other.xformsType);
+            if (result != 0)
+            {
+               return result;
+            }
+            
+            result = this.compareAttribute(this.xmlSchemaType, other.xmlSchemaType);
+            if (result != 0)
+            {
+               return result;
+            }
+            result = this.compareAttribute(this.appearance, other.appearance);
+            if (result != 0)
+            {
+               return result;
+            }
+            throw new RuntimeException("widget definitions " + this + 
+                                       " and " + other + " collide");
+         }
+
+         public String toString()
+         {
+            return (this.getClass().getName() + "{" +
+                    "xformsType: "+ this.xformsType +
+                    ", xmlSchemaType: " + this.xmlSchemaType +
+                    ", appearance: " + this.appearance +
+                    ", javascriptClassName: " + this.javascriptClassName +
+                    ", numParams: " + this.getParams().size() +
+                    "}");
+         }
+
+         private int compareAttribute(final String s1, final String s2)
+         {
+            return (s1 != null && s2 == null
+                    ? 1
+                    : (s1 == null && s2 != null
+                       ? -1
+                       : (s1 != null && s2 != null
+                          ? s1.compareTo(s2)
+                          : 0)));
+         }
+      }
+
+      final TreeSet<WidgetConfigElement> widgetConfigs = new TreeSet<WidgetConfigElement>();
+      for (final ConfigElement ce : widgetConfig)
+      {
+         final WidgetConfigElement wce = new WidgetConfigElement(ce.getAttribute("xforms-type"),
+                                                                 ce.getAttribute("xml-schema-type"),
+                                                                 ce.getAttribute("appearance"),
+                                                                 ce.getAttribute("javascript-class-name"));
+
+         final List<ConfigElement> params = ce.getChildren("param");
+         for (final ConfigElement p : params)
+         {
+            wce.addParam(p.getValue());
+         }
+         widgetConfigs.add(wce);
+      }
+      try
+      {
+         final JSONObject result = new JSONObject();
+         for (final WidgetConfigElement wce : widgetConfigs)
+         {
+            if (!result.has(wce.xformsType))
+            {
+               result.put(wce.xformsType, new JSONObject());
+            }
+            final JSONObject xformsTypeObject = result.getJSONObject(wce.xformsType);
+            String s = wce.xmlSchemaType == null ? "*" : wce.xmlSchemaType;
+            if (!xformsTypeObject.has(s))
+            {
+               xformsTypeObject.put(s, new JSONObject());
+            }
+            final JSONObject schemaTypeObject = xformsTypeObject.getJSONObject(s);
+            s = wce.appearance == null ? "*" : wce.appearance;
+            final JSONObject o = new JSONObject();
+            schemaTypeObject.put(s, o);
+            o.put("className", wce.javascriptClassName);
+            o.put("params", wce.getParams());
+         }
+         return result;
+      }
+      catch (JSONException jsone)
+      {
+         LOGGER.error(jsone, jsone);
+         return null;
+      }
    }
 }

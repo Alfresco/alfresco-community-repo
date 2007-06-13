@@ -50,8 +50,8 @@ import org.alfresco.web.app.servlet.ajax.InvokeCommand;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMBrowseBean;
-import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.AVMNode;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.forms.*;
 import org.alfresco.web.ui.common.Utils;
 
@@ -161,7 +161,7 @@ public class XFormsBean
    private Schema2XFormsProperties schema2XFormsProperties;
    private AVMBrowseBean avmBrowseBean;
    private AVMService avmService;
-
+   
    public XFormsBean()
    {
    }

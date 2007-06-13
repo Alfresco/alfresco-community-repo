@@ -71,7 +71,7 @@ public interface Node
 
     public Set<QName> getAspects();
     
-    public Collection<ChildAssoc> getParentAssocs();
+//    public Collection<ChildAssoc> getParentAssocs();
 
     public Map<QName, PropertyValue> getProperties();
 

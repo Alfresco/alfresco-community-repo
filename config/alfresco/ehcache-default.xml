@@ -75,13 +75,6 @@
         eternal="true"
         overflowToDisk="false"
         />
-    <!-- approx 10MB memory required -->
-    <cache 
-        name="org.alfresco.repo.domain.hibernate.NodeImpl.parentAssocs" 
-        maxElementsInMemory="10000"
-        eternal="true"
-        overflowToDisk="false"
-        />
     <!-- approx 250MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.ChildAssocImpl" 
@@ -92,7 +85,7 @@
     <!-- general use node associations are not common  -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeAssocImpl" 
-        maxElementsInMemory="1000" 
+        maxElementsInMemory="5000" 
         eternal="true"
         overflowToDisk="false"
         />
@@ -262,7 +255,13 @@
         overflowToDisk="false"
         /> 
 
-    <!-- Internally used caches -->     
+    <!-- Internally used caches -->
+    <cache 
+        name="org.alfresco.cache.parentAssocsCache"
+        maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false"
+        />
     <cache 
         name="org.alfresco.cache.userToAuthorityCache" 
         maxElementsInMemory="10000"

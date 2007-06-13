@@ -30,15 +30,17 @@ import java.util.Collection;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
+import junit.framework.TestCase;
 import net.sf.ehcache.CacheManager;
 
+import org.alfresco.error.ExceptionStackUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import junit.framework.TestCase;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * @see org.alfresco.repo.cache.EhCacheAdapter
@@ -133,7 +135,7 @@ public class CacheTest extends TestCase
         assertNull("Non-transactional remove didn't go to backing cache", backingCache.get(key));
     }
     
-    public void testTransactionalCacheWithTxn() throws Throwable
+    public void testTransactionalCacheWithSingleTxn() throws Throwable
     {
         String newGlobalOne = "new_global_one";
         String newGlobalTwo = "new_global_two";
@@ -252,5 +254,270 @@ public class CacheTest extends TestCase
                     "   direct: " + timePlain/((long)count) + " ns\\count \n" + 
                     "   transaction: " + timeTxn/((long)count) + " ns\\count"); 
         }
+    }
+    
+    /**
+     * Starts off with a <tt>null</tt> in the backing cache and adds a value to the
+     * transactional cache.  There should be no problem with this.
+     */
+    public void testNullValue() throws Exception
+    {
+        TransactionService transactionService = serviceRegistry.getTransactionService();
+        UserTransaction txn = transactionService.getUserTransaction();
+        try
+        {
+            txn.begin();
+            
+            backingCache.put("A", null);
+            transactionalCache.put("A", "AAA");
+            
+            txn.commit();
+        }
+        finally
+        {
+            try { txn.rollback(); } catch (Throwable ee) {}
+        }
+    }
+    
+    private static final Class[] CONCURRENCY_EXCEPTIONS = {ConcurrencyFailureException.class};
+    /** Execute the callback and ensure that the concurrent condition is detected */
+    private void executeAndCheck(RetryingTransactionCallback callback) throws Exception
+    {
+        TransactionService transactionService = serviceRegistry.getTransactionService();
+        UserTransaction txn = transactionService.getUserTransaction();
+        try
+        {
+            txn.begin();
+            callback.execute();
+            txn.commit();
+            fail("Failed to detect concurrent modification");
+        }
+        catch (Throwable e)
+        {
+            assertNotNull(
+                    "Expected a concurrency failure",
+                    ExceptionStackUtil.getCause(e, CONCURRENCY_EXCEPTIONS));
+        }
+        finally
+        {
+            try { txn.rollback(); } catch (Throwable ee) {}
+        }
+    }
+    
+    /**
+     * <ul>
+     *   <li>Add to the transaction cache</li>
+     *   <li>Add to the backing cache</li>
+     *   <li>Commit</li>
+     * </ul>
+     */
+    public void testConcurrentAddAgainstAdd() throws Exception
+    {
+        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        {
+            public Object execute() throws Throwable
+            {
+                transactionalCache.put("A", "AAA");
+                backingCache.put("A", "aaa");
+                return null;
+            }
+        };
+        executeAndCheck(callback);
+    }
+    /**
+     * <ul>
+     *   <li>Add to the transaction cache</li>
+     *   <li>Clear the backing cache</li>
+     *   <li>Commit</li>
+     * </ul>
+     */
+    public void testConcurrentAddAgainstClear() throws Exception
+    {
+        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        {
+            public Object execute() throws Throwable
+            {
+                transactionalCache.put("A", "AAA");
+                backingCache.clear();
+                return null;
+            }
+        };
+        executeAndCheck(callback);
+    }
+    /**
+     * <ul>
+     *   <li>Add to the backing cache</li>
+     *   <li>Update the transactional cache</li>
+     *   <li>Update the backing cache</li>
+     *   <li>Commit</li>
+     * </ul>
+     */
+    public void testConcurrentUpdateAgainstUpdate() throws Exception
+    {
+        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        {
+            public Object execute() throws Throwable
+            {
+                backingCache.put("A", "aaa1");
+                transactionalCache.put("A", "AAA");
+                backingCache.put("A", "aaa2");
+                return null;
+            }
+        };
+        executeAndCheck(callback);
+    }
+    /**
+     * <ul>
+     *   <li>Add to the backing cache</li>
+     *   <li>Update the transactional cache</li>
+     *   <li>Update the backing cache with a <tt>null</tt> value</li>
+     *   <li>Commit</li>
+     * </ul>
+     */
+    public void testConcurrentUpdateAgainstUpdateNull() throws Exception
+    {
+        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        {
+            public Object execute() throws Throwable
+            {
+                backingCache.put("A", "aaa1");
+                transactionalCache.put("A", "AAA");
+                backingCache.put("A", null);
+                return null;
+            }
+        };
+        executeAndCheck(callback);
+    }
+    /**
+     * <ul>
+     *   <li>Add to the backing cache</li>
+     *   <li>Update the transactional cache with a <tt>null</tt> value</li>
+     *   <li>Update the backing cache</li>
+     *   <li>Commit</li>
+     * </ul>
+     */
+    public void testConcurrentUpdateNullAgainstUpdate() throws Exception
+    {
+        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        {
+            public Object execute() throws Throwable
+            {
+                backingCache.put("A", "aaa1");
+                transactionalCache.put("A", null);
+                backingCache.put("A", "aaa2");
+                return null;
+            }
+        };
+        executeAndCheck(callback);
+    }
+    /**
+     * <ul>
+     *   <li>Add to the backing cache</li>
+     *   <li>Update the transactional cache</li>
+     *   <li>Remove from the backing cache</li>
+     *   <li>Commit</li>
+     * </ul>
+     */
+    public void testConcurrentUpdateAgainstRemove() throws Exception
+    {
+        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        {
+            public Object execute() throws Throwable
+            {
+                backingCache.put("A", "aaa1");
+                transactionalCache.put("A", "AAA");
+                backingCache.remove("A");
+                return null;
+            }
+        };
+        executeAndCheck(callback);
+    }
+    /**
+     * <ul>
+     *   <li>Add to the backing cache</li>
+     *   <li>Update the transactional cache</li>
+     *   <li>Clear the backing cache</li>
+     *   <li>Commit</li>
+     * </ul>
+     */
+    public void testConcurrentUpdateAgainstClear() throws Exception
+    {
+        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        {
+            public Object execute() throws Throwable
+            {
+                backingCache.put("A", "aaa1");
+                transactionalCache.put("A", "AAA");
+                backingCache.clear();
+                return null;
+            }
+        };
+        executeAndCheck(callback);
+    }
+    /**
+     * <ul>
+     *   <li>Add to the backing cache</li>
+     *   <li>Remove from the transactional cache</li>
+     *   <li>Add to the backing cache</li>
+     *   <li>Commit</li>
+     * </ul>
+     */
+    public void testConcurrentRemoveAgainstUpdate() throws Exception
+    {
+        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        {
+            public Object execute() throws Throwable
+            {
+                backingCache.put("A", "aaa1");
+                transactionalCache.remove("A");
+                backingCache.put("A", "aaa2");
+                return null;
+            }
+        };
+        executeAndCheck(callback);
+    }
+    /**
+     * <ul>
+     *   <li>Add to the backing cache</li>
+     *   <li>Remove from the transactional cache</li>
+     *   <li>Remove from the backing cache</li>
+     *   <li>Commit</li>
+     * </ul>
+     */
+    public void testConcurrentRemoveAgainstRemove() throws Exception
+    {
+        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        {
+            public Object execute() throws Throwable
+            {
+                backingCache.put("A", "aaa1");
+                transactionalCache.remove("A");
+                backingCache.remove("A");
+                return null;
+            }
+        };
+        executeAndCheck(callback);
+    }
+    /**
+     * <ul>
+     *   <li>Add to the backing cache</li>
+     *   <li>Remove from the transactional cache</li>
+     *   <li>Clear the backing cache</li>
+     *   <li>Commit</li>
+     * </ul>
+     */
+    public void testConcurrentRemoveAgainstClear() throws Exception
+    {
+        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        {
+            public Object execute() throws Throwable
+            {
+                backingCache.put("A", "aaa1");
+                transactionalCache.remove("A");
+                backingCache.clear();
+                return null;
+            }
+        };
+        executeAndCheck(callback);
     }
 }

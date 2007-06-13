@@ -35,6 +35,7 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -256,7 +257,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
      * Test revert
      */
     @SuppressWarnings("unused")
-    public void xtestRevert()
+    public void testRevert()
     {
     	// Create a versionable node
     	NodeRef versionableNode = createNewVersionableNode();
@@ -688,9 +689,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             }
         });
         
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
             	// Get the archived noderef
             	NodeRef archivedNodeRef = VersionServiceImplTest.this.nodeArchiveService.getArchivedNode(nodeRef);

@@ -172,7 +172,9 @@
             <props>
                 <prop key="org.alfresco.repo.domain.hibernate.NodeImpl.properties">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.NodeImpl.aspects">${cache.strategy}</prop>
+<!--
                 <prop key="org.alfresco.repo.domain.hibernate.NodeImpl.parentAssocs">${cache.strategy}</prop>
+-->
 
                 <prop key="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl.entries">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.DbAuthorityImpl.externalKeys">${cache.strategy}</prop>
@@ -230,6 +232,9 @@
    <bean id="nodeDaoServiceImpl" class="org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl">
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
+      </property>
+      <property name="parentAssocsCache">
+         <ref bean="parentAssocsCache"/>
       </property>
    </bean>
     

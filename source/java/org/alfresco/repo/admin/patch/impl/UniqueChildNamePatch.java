@@ -223,7 +223,7 @@ public class UniqueChildNamePatch extends AbstractPatch
                                 {
                                     // Try removing the secondary parent associations
                                     writeLine("   Removing secondary parents of node " + childNode.getId());
-                                    Collection<ChildAssoc> parentAssocs = childNode.getParentAssocs();
+                                    Collection<ChildAssoc> parentAssocs = nodeDaoService.getParentAssocs(childNode);
                                     for (ChildAssoc parentAssoc : parentAssocs)
                                     {
                                         if (!parentAssoc.getIsPrimary())
@@ -241,7 +241,7 @@ public class UniqueChildNamePatch extends AbstractPatch
                                 else if (duplicateNumber > 10)
                                 {
                                     // after 10 attempts, we have to admit defeat.  Perhaps there is a larger issue.
-                                    Collection<ChildAssoc> parentAssocs = childNode.getParentAssocs();
+                                    Collection<ChildAssoc> parentAssocs = nodeDaoService.getParentAssocs(childNode);
                                     write("   Unable to set child name '" + usedChildName + "' for node " + childNode.getId());
                                     writeLine(" with parent associations:");
                                     for (ChildAssoc parentAssoc : parentAssocs)

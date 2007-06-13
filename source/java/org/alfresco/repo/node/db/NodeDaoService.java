@@ -217,18 +217,18 @@ public interface NodeDaoService
     /**
      * Finds the association between the node's primary parent and the node itself
      * 
-     * @param node the child node
+     * @param childNode the child node
      * @return Returns the primary <code>ChildAssoc</code> instance where the given node is the child.
      *      The return value could be null for a root node - but ONLY a root node
      */
-    public ChildAssoc getPrimaryParentAssoc(Node node);
+    public ChildAssoc getPrimaryParentAssoc(Node childNode);
     
     /**
      * Get all parent associations for the node.  This methods includes a cache safety check.
-     * @param node the child node
+     * @param childNode the child node
      * @return Returns all parent associations for the node.
      */
-    public Collection<ChildAssoc> getParentAssocs(Node node);
+    public Collection<ChildAssoc> getParentAssocs(Node childNode);
     
     /**
      * @return Returns the persisted and filled association

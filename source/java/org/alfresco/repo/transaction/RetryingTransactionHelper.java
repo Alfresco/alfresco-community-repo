@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.transaction;
 
+import java.sql.BatchUpdateException;
 import java.util.Random;
 
 import javax.transaction.Status;
@@ -62,7 +63,8 @@ public class RetryingTransactionHelper
                 ConcurrencyFailureException.class,
                 DeadlockLoserDataAccessException.class,
                 StaleObjectStateException.class,
-                LockAcquisitionException.class
+                LockAcquisitionException.class,
+                BatchUpdateException.class
                 };
     }
     
@@ -274,7 +276,7 @@ public class RetryingTransactionHelper
                 lastException = (e instanceof RuntimeException) ? 
                         (RuntimeException)e : new AlfrescoRuntimeException("Unknown Exception in Transaction.", e);
                 // Check if there is a cause for retrying
-                Throwable retryCause = ExceptionStackUtil.getCause(e, RETRY_EXCEPTIONS);
+                Throwable retryCause = extractRetryCause(e);
                 if (retryCause != null)
                 {
                     // Sleep a random amount of time before retrying.
@@ -300,5 +302,37 @@ public class RetryingTransactionHelper
         // We've worn out our welcome and retried the maximum number of times.
         // So, fail.
         throw lastException;
+    }
+    
+    /**
+     * Sometimes, the exception means retry and sometimes not.
+     * 
+     * @param cause     the cause to examine
+     * @return          Returns the original cause if it is a valid retry cause, otherwise <tt>null</tt>
+     */
+    private Throwable extractRetryCause(Throwable cause)
+    {
+        Throwable retryCause = ExceptionStackUtil.getCause(cause, RETRY_EXCEPTIONS);
+        if (retryCause == null)
+        {
+            return null;
+        }
+        else if (retryCause instanceof BatchUpdateException)
+        {
+            if (retryCause.getMessage().contains("Lock wait"))
+            {
+                // It is valid
+                return retryCause;
+            }
+            else
+            {
+                // Not valid
+                return null;
+            }
+        }
+        else
+        {
+            return retryCause;
+        }
     }
 }

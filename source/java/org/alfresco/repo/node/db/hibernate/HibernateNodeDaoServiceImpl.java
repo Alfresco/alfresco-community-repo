@@ -37,6 +37,7 @@ import java.util.zip.CRC32;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
@@ -92,10 +93,11 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_PRIMARY_CHILD_NODE_STATUSES = "node.GetPrimaryChildNodeStatuses";
     private static final String QUERY_GET_CHILD_ASSOCS = "node.GetChildAssocs";
     private static final String QUERY_GET_CHILD_ASSOCS_BY_ALL = "node.GetChildAssocsByAll";
-    private static final String QUERY_GET_CHILD_ASSOC_BY_NAME = "node.GetChildAssocByShortName";
+    private static final String QUERY_GET_CHILD_ASSOC_ID_BY_NAME = "node.GetChildAssocIdByShortName";
     private static final String QUERY_GET_CHILD_ASSOC_BY_TYPE_AND_NAME = "node.GetChildAssocByTypeAndName";
     private static final String QUERY_GET_CHILD_ASSOC_REFS = "node.GetChildAssocRefs";
     private static final String QUERY_GET_CHILD_ASSOC_REFS_BY_QNAME = "node.GetChildAssocRefsByQName";
+    private static final String QUERY_GET_PARENT_ASSOCS = "node.GetParentAssocs";
     private static final String QUERY_GET_NODE_ASSOC = "node.GetNodeAssoc";
     private static final String QUERY_GET_NODE_ASSOCS_TO_AND_FROM = "node.GetNodeAssocsToAndFrom";
     private static final String QUERY_GET_TARGET_ASSOCS = "node.GetTargetAssocs";
@@ -104,7 +106,13 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_SERVER_BY_IPADDRESS = "server.getServerByIpAddress";
     
     private static Log logger = LogFactory.getLog(HibernateNodeDaoServiceImpl.class);
-    private static Log loggerChildAssoc = LogFactory.getLog(HibernateNodeDaoServiceImpl.class.getName() + ".ChildAssoc");
+    /** Log to trace parent association caching: <b>classname + .ParentAssocsCache</b> */
+    private static Log loggerParentAssocsCache = LogFactory.getLog(HibernateNodeDaoServiceImpl.class.getName() + ".ParentAssocsCache");
+    
+    /** A cache for more performant lookups of the parent associations */
+    private SimpleCache<Long, Set<Long>> parentAssocsCache;
+    private boolean isDebugEnabled = logger.isDebugEnabled();
+    private boolean isDebugParentAssocCacheEnabled = loggerParentAssocsCache.isDebugEnabled();
     
     /** a uuid identifying this unique instance */
     private final String uuid;
@@ -156,6 +164,16 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public int hashCode()
     {
         return uuid.hashCode();
+    }
+
+    /**
+     * Set the transaction-aware cache to store parent associations by child node id
+     * 
+     * @param parentAssocsCache     the cache
+     */
+    public void setParentAssocsCache(SimpleCache<Long, Set<Long>> parentAssocsCache)
+    {
+        this.parentAssocsCache = parentAssocsCache;
     }
 
     /**
@@ -232,7 +250,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             // bind the id
             AlfrescoTransactionSupport.bindResource(RESOURCE_KEY_TRANSACTION_ID, txnId);
             
-            if (logger.isDebugEnabled())
+            if (isDebugEnabled)
             {
                 if (!changeTxnIdSet.add(changeTxnId))
                 {
@@ -245,7 +263,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         else
         {
             transaction = (Transaction) getHibernateTemplate().get(TransactionImpl.class, txnId);
-            if (logger.isDebugEnabled())
+            if (isDebugEnabled)
             {
                 logger.debug("Using existing transaction: " + transaction);
             }
@@ -476,19 +494,19 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private void deleteNodeInternal(Node node, boolean cascade, Set<Long> deletedChildAssocIds)
     {
         // delete all parent assocs
-        if (logger.isDebugEnabled())
+        if (isDebugEnabled)
         {
             logger.debug("Deleting parent assocs of node " + node.getId());
         }
         
-        Collection<ChildAssoc> parentAssocs = node.getParentAssocs();
+        Collection<ChildAssoc> parentAssocs = getParentAssocsInternal(node);
         parentAssocs = new ArrayList<ChildAssoc>(parentAssocs);
         for (ChildAssoc assoc : parentAssocs)
         {
             deleteChildAssocInternal(assoc, false, deletedChildAssocIds);  // we don't cascade upwards
         }
         // delete all child assocs
-        if (logger.isDebugEnabled())
+        if (isDebugEnabled)
         {
             logger.debug("Deleting child assocs of node " + node.getId());
         }
@@ -499,7 +517,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             deleteChildAssocInternal(assoc, cascade, deletedChildAssocIds);   // potentially cascade downwards
         }
         // delete all node associations to and from
-        if (logger.isDebugEnabled())
+        if (isDebugEnabled)
         {
             logger.debug("Deleting source and target assocs of node " + node.getId());
         }
@@ -514,9 +532,16 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         nodeStatus.setNode(null);
         nodeStatus.getTransaction().setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
         // finally delete the node
+        Long nodeId = node.getId();
         getHibernateTemplate().delete(node);
-//        // flush to ensure constraints can't be violated
-//        getSession().flush();
+        // Remove node from cache
+        parentAssocsCache.remove(nodeId);
+        if (isDebugParentAssocCacheEnabled)
+        {
+            loggerParentAssocsCache.debug("\n" +
+                    "Parent associations cache - Removing entry: \n" +
+                    "   Node:   " + nodeId);
+        }
         // done
     }
     
@@ -550,20 +575,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             QName assocTypeQName,
             QName qname)
     {
-        /*
-         * This initial child association creation will fail IFF there is already
-         * an association of the given type and name between the two nodes.  For new association
-         * creation, this can only occur if two transactions attempt to create a secondary
-         * child association between the same two nodes.  As this is unlikely, it is
-         * appropriate to just throw a runtime exception and let the second transaction
-         * fail.
-         * 
-         * We don't need to flush the session beforehand as there won't be any deletions
-         * of the assocation pending.  The association deletes, on the other hand, have
-         * to flush early in order to ensure that the database unique index isn't violated
-         * if the association is recreated subsequently.
-         */
-        
         // assign a random name to the node
         String randomName = GUID.generate();
         
@@ -576,7 +587,24 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         // maintain inverse sets
         assoc.buildAssociation(parentNode, childNode);
         // persist it
-        getHibernateTemplate().save(assoc);
+        Long assocId = (Long) getHibernateTemplate().save(assoc);
+        // Add it to the cache
+        Long childNodeId = childNode.getId();
+        Set<Long> oldParentAssocIds = parentAssocsCache.get(childNode.getId());
+        if (oldParentAssocIds != null)
+        {
+            Set<Long> newParentAssocIds = new HashSet<Long>(oldParentAssocIds);
+            newParentAssocIds.add(assocId);
+            parentAssocsCache.put(childNodeId, newParentAssocIds);
+            if (isDebugParentAssocCacheEnabled)
+            {
+                loggerParentAssocsCache.debug("\n" +
+                        "Parent associations cache - Updating entry: \n" +
+                        "   Node:   " + childNodeId +  "\n" +
+                        "   Before: " + oldParentAssocIds + "\n" +
+                        "   After:  " + newParentAssocIds);
+            }
+        }
         // done
         return assoc;
     }
@@ -622,7 +650,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
          * transactions modifying the unique index without this transaction's knowledge.
          */
         final Node parentNode = childAssoc.getParent();
-//        if (loggerChildAssoc.isDebugEnabled())
+//        if (loggerChildAssoc.Enabled())
 //        {
 //            loggerChildAssoc.debug(
 //                    "Locking parent node for modifying child assoc: \n" +
@@ -649,23 +677,23 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             public Object doInHibernate(Session session)
             {
                 Query query = session
-                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_BY_NAME)
+                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_ID_BY_NAME)
                     .setLong("parentId", parentNode.getId())
                     .setParameter("childNodeName", childNameNewShort)
                     .setLong("childNodeNameCrc", childNameNewCrc);
                 return query.uniqueResult();
             }
         };
-        ChildAssoc childAssocExisting = (ChildAssoc) getHibernateTemplate().execute(callback);
-        if (childAssocExisting != null)
+        Long childAssocIdExisting = (Long) getHibernateTemplate().execute(callback);
+        if (childAssocIdExisting != null)
         {
             // There is already an entity
-            if (loggerChildAssoc.isDebugEnabled())
+            if (isDebugEnabled)
             {
-                loggerChildAssoc.debug(
+                logger.debug(
                         "Duplicate child association detected: \n" +
-                        "   Child Assoc:          " + childAssoc + "\n" +
-                        "   Existing Child Assoc: " + childName);
+                        "   Existing Child Assoc: " + childAssocIdExisting + "\n" +
+                        "   Assoc Name:           " + childName);
             }
             throw new DuplicateChildNodeNameException(
                     parentNode.getNodeRef(),
@@ -678,9 +706,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         childAssoc.setChildNodeNameCrc(childNameNewCrc);
         
         // Done
-        if (loggerChildAssoc.isDebugEnabled())
+        if (isDebugEnabled)
         {
-            loggerChildAssoc.debug(
+            logger.debug(
                     "Updated child association: \n" +
                     "   Parent:      " + parentNode + "\n" +
                     "   Child Assoc: " + childAssoc);
@@ -881,33 +909,50 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
      * @param cascade true to cascade to the child node of the association
      * @param deletedChildAssocIds already-deleted associations
      */
-    private void deleteChildAssocInternal(ChildAssoc assoc, boolean cascade, Set<Long> deletedChildAssocIds)
+    private void deleteChildAssocInternal(final ChildAssoc assoc, boolean cascade, Set<Long> deletedChildAssocIds)
     {
         Long childAssocId = assoc.getId();
+        
         if (deletedChildAssocIds.contains(childAssocId))
         {
-            if (logger.isDebugEnabled())
+            if (isDebugEnabled)
             {
                 logger.debug("Ignoring parent-child association " + assoc.getId());
             }
             return;
         }
         
-        if (loggerChildAssoc.isDebugEnabled())
+        if (isDebugEnabled)
         {
-            loggerChildAssoc.debug(
+            logger.debug(
                     "Deleting parent-child association " + assoc.getId() +
                     (cascade ? " with" : " without") + " cascade:" +
                     assoc.getParent().getId() + " -> " + assoc.getChild().getId());
         }
 
         Node childNode = assoc.getChild();
+        Long childNodeId = childNode.getId();
+        
+        // Add remove the child association from the cache
+        Set<Long> oldParentAssocIds = parentAssocsCache.get(childNodeId);
+        if (oldParentAssocIds != null)
+        {
+            Set<Long> newParentAssocIds = new HashSet<Long>(oldParentAssocIds);
+            newParentAssocIds.remove(childAssocId);
+            parentAssocsCache.put(childNodeId, newParentAssocIds);
+            loggerParentAssocsCache.debug("\n" +
+                    "Parent associations cache - Updating entry: \n" +
+                    "   Node:   " + childNodeId +  "\n" +
+                    "   Before: " + oldParentAssocIds + "\n" +
+                    "   After:  " + newParentAssocIds);
+        }
         
         // maintain inverse association sets
         assoc.removeAssociation();
         // remove instance
         getHibernateTemplate().delete(assoc);
-        deletedChildAssocIds.add(childAssocId);         // ensure that we don't attempt to delete it twice
+        // ensure that we don't attempt to delete it twice
+        deletedChildAssocIds.add(childAssocId);
         
         if (cascade && assoc.getIsPrimary())   // the assoc is primary
         {
@@ -919,25 +964,97 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
              * duplicate call will be received to do this
              */
         }
-//        
-//        // To ensure the validity of the constraint enforcement by the database,
-//        // we have to flush here.  It is possible to delete and recreate the instance
-//        getSession().flush();
     }
 
     /**
+     * @param childNode         the child node
+     * @return                  Returns the parent associations without any interpretation
+     */
+    @SuppressWarnings("unchecked")
+    private Collection<ChildAssoc> getParentAssocsInternal(Node childNode)
+    {
+        final Long childNodeId = childNode.getId();
+        List<ChildAssoc> parentAssocs = null;
+        // First check the cache
+        Set<Long> parentAssocIds = parentAssocsCache.get(childNodeId);
+        if (parentAssocIds != null)
+        {
+            if (isDebugParentAssocCacheEnabled)
+            {
+                loggerParentAssocsCache.debug("\n" +
+                        "Parent associations cache - Hit: \n" +
+                        "   Node:   " + childNodeId + "\n" +
+                        "   Assocs: " + parentAssocIds);
+            }
+            parentAssocs = new ArrayList<ChildAssoc>(parentAssocIds.size());
+            for (Long parentAssocId : parentAssocIds)
+            {
+                ChildAssoc parentAssoc = (ChildAssoc) getSession().get(ChildAssocImpl.class, parentAssocId);
+                if (parentAssoc == null)
+                {
+                    // The cache is out of date, so just repopulate it
+                    parentAssoc = null;
+                    break;
+                }
+                else
+                {
+                    parentAssocs.add(parentAssoc);
+                }
+            }
+        }
+        // Did we manage to get the parent assocs
+        if (parentAssocs == null)
+        {
+            if (isDebugParentAssocCacheEnabled)
+            {
+                loggerParentAssocsCache.debug("\n" +
+                        "Parent associations cache - Miss: \n" +
+                        "   Node:   " + childNodeId + "\n" +
+                        "   Assocs: " + parentAssocIds);
+            }
+            HibernateCallback callback = new HibernateCallback()
+            {
+                public Object doInHibernate(Session session)
+                {
+                    Query query = session
+                        .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_PARENT_ASSOCS)
+                        .setLong("childId", childNodeId);
+                    return query.list();
+                }
+            };
+            parentAssocs = (List) getHibernateTemplate().execute(callback);
+            // Populate the cache
+            parentAssocIds = new HashSet<Long>(parentAssocs.size());
+            for (ChildAssoc parentAssoc : parentAssocs)
+            {
+                parentAssocIds.add(parentAssoc.getId());
+            }
+            parentAssocsCache.put(childNodeId, parentAssocIds);
+            if (isDebugParentAssocCacheEnabled)
+            {
+                loggerParentAssocsCache.debug("\n" +
+                        "Parent associations cache - Adding entry: \n" +
+                        "   Node:   " + childNodeId + "\n" +
+                        "   Assocs: " + parentAssocIds);
+            }
+        }
+        // Done
+        return parentAssocs;
+    }
+    
+    /**
      * @inheritDoc
      * 
-     * This method includes a check to ensure that the <b>parentAssocs</b> cache
-     * isn't incorrectly empty.
+     * This includes a check to ensuret that only root nodes don't have primary parents
      */
-    public Collection<ChildAssoc> getParentAssocs(Node node)
+    public Collection<ChildAssoc> getParentAssocs(final Node childNode)
     {
-        Collection<ChildAssoc> parentAssocs = node.getParentAssocs();
+        Collection<ChildAssoc> parentAssocs = getParentAssocsInternal(childNode);
+
         if (parentAssocs.size() == 0)
         {
             // the only condition where this is allowed is if the given node is a root node
-            Store store = node.getStore();
+            Store store = childNode.getStore();
             Node rootNode = store.getRootNode();
             if (rootNode == null)
             {
@@ -945,22 +1062,23 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 throw new DataIntegrityViolationException("Store has no root node: \n" +
                         "   store: " + store);
             }
-            if (!rootNode.equals(node))
+            if (!rootNode.equals(childNode))
             {
-                // Reload the node to ensure that it is properly initialized
-                getSession().refresh(node);
+                parentAssocsCache.remove(childNode.getId());
+                if (isDebugParentAssocCacheEnabled)
+                {
+                    loggerParentAssocsCache.debug("\n" +
+                            "Parent associations cache - Removing entry: \n" +
+                            "   Node:   " + childNode.getId());
+                }
+                parentAssocs = getParentAssocsInternal(childNode);
                 // Check if it has any parents yet.
-                if (node.getParentAssocs().size() == 0)
+                if (parentAssocs.size() == 0)
                 {
                     // It wasn't the root node and definitely has no parent
                     throw new DataIntegrityViolationException(
                             "Non-root node has no primary parent: \n" +
-                            "   child: " + node);
-                }
-                else
-                {
-                    // Repeat this method with confidence
-                    return getParentAssocs(node);
+                            "   child: " + childNode);
                 }
             }
         }
@@ -977,10 +1095,10 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
      * the error.  It is up to the administrator to fix the issue at the moment, but
      * the server will not stop working.
      */
-    public ChildAssoc getPrimaryParentAssoc(Node node)
+    public ChildAssoc getPrimaryParentAssoc(Node childNode)
     {
         // get the assocs pointing to the node
-        Collection<ChildAssoc> parentAssocs = node.getParentAssocs();
+        Collection<ChildAssoc> parentAssocs = getParentAssocs(childNode);
         ChildAssoc primaryAssoc = null;
         for (ChildAssoc assoc : parentAssocs)
         {
@@ -994,7 +1112,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 // We have found one already.
                 synchronized(warnedDuplicateParents)
                 {
-                    NodeRef childNodeRef = node.getNodeRef();
+                    NodeRef childNodeRef = childNode.getNodeRef();
                     boolean added = warnedDuplicateParents.add(childNodeRef);
                     if (added)
                     {
@@ -1008,37 +1126,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             }
             primaryAssoc = assoc;
             // we keep looping to hunt out data integrity issues
-        }
-        // did we find a primary assoc?
-        if (primaryAssoc == null)
-        {
-            // the only condition where this is allowed is if the given node is a root node
-            Store store = node.getStore();
-            Node rootNode = store.getRootNode();
-            if (rootNode == null)
-            {
-                // a store without a root node - the entire store is hosed
-                throw new DataIntegrityViolationException("Store has no root node: \n" +
-                        "   store: " + store);
-            }
-            if (!rootNode.equals(node))
-            {
-                // Reload the node to ensure that it is properly initialized
-                getSession().refresh(node);
-                // Check if it has any parents yet.
-                if (node.getParentAssocs().size() == 0)
-                {
-                    // It wasn't the root node and definitely has no parent
-                    throw new DataIntegrityViolationException(
-                            "Non-root node has no primary parent: \n" +
-                            "   child: " + node);
-                }
-                else
-                {
-                    // Repeat this method with confidence
-                    primaryAssoc = getPrimaryParentAssoc(node);
-                }
-            }
         }
         // done
         return primaryAssoc;
@@ -1142,9 +1229,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     {
         // Remove instance
         getHibernateTemplate().delete(assoc);
-//        // Flush to ensure that the database constraints aren't violated if the assoc
-//        // is recreated in the transaction
-//        getSession().flush();
     }
 
     public List<Serializable> getPropertyValuesByActualType(DataTypeDefinition actualDataTypeDefinition)

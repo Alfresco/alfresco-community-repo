@@ -203,7 +203,7 @@ public class TransactionUtil
         {
             // commit failed
             throw new AlfrescoRuntimeException(
-                    "Unexpected rollback of exception: \n" + exception.getMessage(),
+                    "Unexpected rollback exception: \n" + exception.getMessage(),
                     exception);
         }
         catch (Throwable exception)

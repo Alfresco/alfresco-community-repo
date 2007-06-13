@@ -179,25 +179,6 @@
     </cache>
 
     <cache
-        name="org.alfresco.repo.domain.hibernate.NodeImpl.parentAssocs"
-        maxElementsInMemory="10000"
-        eternal="true"
-        timeToIdleSeconds="0"
-        timeToLiveSeconds="0"
-        overflowToDisk="false">
-
-            <cacheEventListenerFactory
-                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
-                    properties="replicatePuts = false,
-                                replicateUpdates = true,
-                                replicateRemovals = true,
-                                replicateUpdatesViaCopy = false,
-                                replicateAsynchronously = false"/>
-                                
-
-    </cache>
-
-    <cache
         name="org.alfresco.repo.domain.hibernate.ChildAssocImpl"
         maxElementsInMemory="200000"
         eternal="true"
@@ -434,6 +415,23 @@
 
     <!-- Non-Hibernate -->
     
+    <cache
+        name="org.alfresco.cache.parentAssocsCache"
+        maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+
+
+    </cache>
+
     <cache
         name="org.alfresco.cache.userToAuthorityCache"
         maxElementsInMemory="10000"

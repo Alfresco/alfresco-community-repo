@@ -71,13 +71,13 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
         // add the forward associations
         this.setParent(parentNode);
         this.setChild(childNode);
-        childNode.getParentAssocs().add(this);
+//        childNode.getParentAssocs().add(this);
     }
     
     public void removeAssociation()
     {
-        // maintain inverse assoc from child node to this instance
-        this.getChild().getParentAssocs().remove(this);
+//        // maintain inverse assoc from child node to this instance
+//        this.getChild().getParentAssocs().remove(this);
     }
     
     public ChildAssociationRef getChildAssocRef()

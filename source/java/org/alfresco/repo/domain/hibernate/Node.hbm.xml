@@ -91,6 +91,7 @@
          <element column="qname" type="QName" length="200"/>
       </set>
       <!-- inverse assoc to parent childassocs -->
+<!--
       <set
             name="parentAssocs"
             inverse="true" 
@@ -101,6 +102,7 @@
          <key column="child_node_id" />
          <one-to-many class="org.alfresco.repo.domain.hibernate.ChildAssocImpl" />
       </set>
+-->
    </class>
 
    <class
@@ -236,6 +238,18 @@
          assoc.id = :childAssocId
    </query>
    
+   <query name="node.GetParentAssocs">
+      select
+         assoc
+      from
+         org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
+      where
+         assoc.child.id = :childId
+      order by
+         assoc.index,
+         assoc.id
+   </query>
+   
    <query name="node.GetPrimaryChildNodeStatuses">
       select
          status
@@ -283,9 +297,9 @@
          assoc.id
    </query>
    
-   <query name="node.GetChildAssocByShortName">
+   <query name="node.GetChildAssocIdByShortName">
       select
-         assoc
+         assoc.id
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
       where

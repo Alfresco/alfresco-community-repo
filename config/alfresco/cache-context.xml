@@ -28,6 +28,42 @@
    
    
    <!-- ===================================== -->
+   <!-- Parent Associations lookup for nodes  -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Parent Associations -->
+   
+   <bean name="parentAssocsSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.parentAssocsCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for Parent Associations -->
+   
+   <bean name="parentAssocsCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="parentAssocsSharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.parentAssocsTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>1000</value>
+      </property>
+   </bean>
+   
+   <!-- ===================================== -->
    <!-- Authority container look up for users -->
    <!-- ===================================== -->
 

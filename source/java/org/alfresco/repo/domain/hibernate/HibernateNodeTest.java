@@ -45,6 +45,7 @@ import org.alfresco.repo.domain.Server;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.domain.StoreKey;
 import org.alfresco.repo.domain.Transaction;
+import org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -55,9 +56,11 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.hibernate.CacheMode;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.GenericJDBCException;
+import org.springframework.orm.hibernate3.HibernateCallback;
 
 /**
  * Test persistence and retrieval of Hibernate-specific implementations of the
@@ -292,7 +295,7 @@ public class HibernateNodeTest extends BaseSpringTest
         assertNotNull("Node not found", containerNode);
 
         // check that we can traverse the association from the child
-        Collection<ChildAssoc> parentAssocs = contentNode.getParentAssocs();
+        Collection<ChildAssoc> parentAssocs = getParentAssocs(contentNode);
         assertEquals("Expected exactly 2 parent assocs", 2, parentAssocs.size());
         parentAssocs = new HashSet<ChildAssoc>(parentAssocs);
         for (ChildAssoc assoc : parentAssocs)
@@ -304,8 +307,23 @@ public class HibernateNodeTest extends BaseSpringTest
         }
         
         // check that the child now has zero parents
-        parentAssocs = contentNode.getParentAssocs();
+        parentAssocs = getParentAssocs(contentNode);
         assertEquals("Expected exactly 0 parent assocs", 0, parentAssocs.size());
+    }
+    
+    @SuppressWarnings("unchecked")
+    private List<ChildAssoc> getParentAssocs(final Node childNode)
+    {
+        Query query = getSession()
+                .createQuery(
+                    "select assoc from org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc " +
+                    "where " +
+                    "   assoc.child.id = :childId " +
+                    "order by " +
+                    "assoc.index, assoc.id")
+                .setLong("childId", childNode.getId());
+        List<ChildAssoc> parentAssocs = query.list();
+        return parentAssocs;
     }
     
     /**

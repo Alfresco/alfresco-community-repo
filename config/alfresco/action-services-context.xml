@@ -24,6 +24,9 @@
     </bean>
     
     <bean id="asynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl">
+      <property name="threadPoolExecutor">
+         <ref bean="threadPoolExecutor"/>
+      </property>
     	<property name="transactionService">
     		<ref bean="transactionService"/>
     	</property>

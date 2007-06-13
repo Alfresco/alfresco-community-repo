@@ -102,6 +102,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private static final String ACT_CREATE_FORM_CONTENT = "create_form_content";
    private static final String ACT_SANDBOX_REVERTSELECTED = "sandbox_revertselected";
    private static final String ACT_SANDBOX_SUBMITSELECTED = "sandbox_submitselected";
+   private static final String ACT_SANDBOX_CHECK_LINKS = "check_links";
    private static final String ACT_SANDBOX_BROWSE = "sandbox_browse";
    private static final String ACT_SANDBOX_REVERTALL = "sandbox_revertall";
    private static final String ACT_SANDBOX_SUBMITALL = "sandbox_submitall";
@@ -374,6 +375,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write(")</td><td><nobr>");
                   
                   // Direct actions for a sandbox...
+                  Utils.encodeRecursive(context, aquireAction(
+                        context, mainStore, username, ACT_SANDBOX_CHECK_LINKS, "/images/icons/run_link_validation.gif",
+                        "#{DialogManager.setupParameters}", "dialog:runLinkValidation"));
+                  out.write("&nbsp;&nbsp;");
+                  
                   // Browse Sandbox
                   Utils.encodeRecursive(context, aquireAction(
                         context, mainStore, username, ACT_SANDBOX_BROWSE, "/images/icons/space_small.gif",

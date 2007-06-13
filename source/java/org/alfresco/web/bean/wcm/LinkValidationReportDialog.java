@@ -90,12 +90,6 @@ public class LinkValidationReportDialog extends BaseDialogBean
    }
 
    @Override
-   public boolean getFinishButtonDisabled()
-   {
-      return (this.avmBrowseBean.getLinkValidationState().getNumberBrokenLinks() == 0);
-   }
-
-   @Override
    public String getCancelButtonLabel()
    {
       return Application.getMessage(FacesContext.getCurrentInstance(), "close");

@@ -87,7 +87,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
     {
         HashSet<Locale> locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.LOCALE_AND_ALL_CONTAINED_LOCALES, new Locale("en", "GB", ""), false));
-        assertEquals(1, locales.size());
+        assertTrue(locales.size() >= 1);
         assertTrue(locales.contains(new Locale("en", "GB", "")));
         
         locales = new HashSet<Locale>();
@@ -122,7 +122,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
     {
         HashSet<Locale> locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.LOCALE_AND_ALL_CONTAINED_LOCALES, new Locale("en", "GB", ""), false));
-        assertEquals(1, locales.size());
+        assertTrue(locales.size() >= 1);
         assertTrue(locales.contains(new Locale("en", "GB", "")));
         
         locales = new HashSet<Locale>();
@@ -141,7 +141,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
     {
         HashSet<Locale> locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.LOCALE_AND_ALL_CONTAINED_LOCALES, new Locale("en", "GB", ""), false));
-        assertEquals(1, locales.size());
+        assertTrue(locales.size() >= 1);
         assertTrue(locales.contains(new Locale("en", "GB", "")));
         
         locales = new HashSet<Locale>();
@@ -159,7 +159,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
         
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.ALL_COUNTRIES, new Locale("en", "GB", ""), false));
-        assertEquals(1, locales.size());
+        assertTrue(locales.size() >= 1);
         assertTrue(locales.contains(new Locale("en", "GB", "")));
         
         locales = new HashSet<Locale>();
@@ -178,7 +178,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
         
         locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.ALL_COUNTRIES_AND_ALL, new Locale("en", "GB", ""), false));
-        assertEquals(2, locales.size());
+        assertTrue(locales.size() >= 2);
         assertTrue(locales.contains(new Locale("", "", "")));
         assertTrue(locales.contains(new Locale("en", "GB", "")));
     }
@@ -187,7 +187,7 @@ public class MLAnaysisModeExpansionTest extends TestCase
     {
         HashSet<Locale> locales = new HashSet<Locale>();
         locales.addAll(MLAnalysisMode.getLocales(MLAnalysisMode.LOCALE_AND_ALL_CONTAINED_LOCALES, new Locale("en", "GB", ""), false));
-        assertEquals(1, locales.size());
+        assertTrue(locales.size() >= 1);
         assertTrue(locales.contains(new Locale("en", "GB", "")));
         
         locales = new HashSet<Locale>();

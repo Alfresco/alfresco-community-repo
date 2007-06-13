@@ -212,7 +212,7 @@
 	     nodes that were frozen by the snapshot so that subsequent 
 	     snapshots can find them and force copies. -->
 	<class name="VersionLayeredNodeEntryImpl" proxy="VersionLayeredNodeEntry"
-	       table="avm_version_layered_node_entries">
+	       table="avm_version_layered_node_entry">
 	    <composite-id>
 	        <key-many-to-one name="version" class="VersionRootImpl" column="version_root_id"/>
 	        <key-property name="md5Sum" type="string" length="32" column="md5sum"/>

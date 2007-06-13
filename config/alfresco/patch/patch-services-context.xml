@@ -743,17 +743,6 @@
         </property>
     </bean>
 
-	<bean id="patch.AVMLayeredSnapshotPatch" class="org.alfresco.repo.admin.patch.impl.AVMLayeredSnapshotPatch" parent="basePatch">
-	    <property name="id"><value>patch.AVMLayeredSnapshotPatch</value></property>
-	    <property name="description"><value>patch.AVMLayeredSnapshotPatch.description</value></property>
-	    <property name="fixesFromSchema"><value>0</value></property>
-	    <property name="fixesToSchema"><value>52</value></property>
-	    <property name="targetSchema"><value>53</value></property>
-	    <property name="avmNodeDAO">
-	        <ref bean="avmNodeDAO"/>
-	    </property>
-	</bean>
-
     <bean id="patch.db-V2.1-VersionColumns" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.1-VersionColumns</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
@@ -782,5 +771,16 @@
             </props>
         </property>
     </bean>
-	
+
+    <bean id="patch.AVMLayeredSnapshot" class="org.alfresco.repo.admin.patch.impl.AVMLayeredSnapshotPatch" parent="basePatch">
+        <property name="id"><value>patch.AVMLayeredSnapshot</value></property>
+        <property name="description"><value>patch.AVMLayeredSnapshot.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>55</value></property>
+        <property name="targetSchema"><value>56</value></property>
+        <property name="avmNodeDAO">
+            <ref bean="avmNodeDAO"/>
+        </property>
+    </bean>
+
 </beans>

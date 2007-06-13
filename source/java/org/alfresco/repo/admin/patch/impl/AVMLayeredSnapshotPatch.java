@@ -41,7 +41,7 @@ public class AVMLayeredSnapshotPatch extends AbstractPatch
 {
     private AVMNodeDAO fAVMNodeDAO;
     
-    private static final String MSG_SUCCESS = "patch.AVMLayeredSnapshotPatch.result";
+    private static final String MSG_SUCCESS = "patch.AVMLayeredSnapshot.result";
     
     public AVMLayeredSnapshotPatch()
     {

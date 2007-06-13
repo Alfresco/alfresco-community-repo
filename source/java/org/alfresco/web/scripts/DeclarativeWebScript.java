@@ -25,6 +25,7 @@
 package org.alfresco.web.scripts;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,6 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptableHashMap;
+import org.alfresco.repo.jscript.ValueConverter;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.apache.commons.logging.Log;
@@ -55,8 +57,12 @@ public class DeclarativeWebScript extends AbstractWebScript
     // Logger
     private static final Log logger = LogFactory.getLog(DeclarativeWebScript.class);
 
+    // Script Context
     private String basePath;
     private ScriptLocation executeScript;
+    
+    // Javascript Converter
+    private ValueConverter valueConverter = new ValueConverter();
     
 
     /* (non-Javadoc)
@@ -199,51 +205,8 @@ public class DeclarativeWebScript extends AbstractWebScript
         {
             // retrieve script model value
             Object value = entry.getValue();
-            
-            // convert from js to java, if required
-            if (value instanceof Wrapper)
-            {
-                value = ((Wrapper)value).unwrap();
-            }
-            else if (value instanceof NativeArray)
-            {
-                value = Context.jsToJava(value, Object[].class);
-            }
-            
-            // convert script node to template node, if required
-            if (value instanceof ScriptNode)
-            {
-                value = new TemplateNode(((ScriptNode)value).getNodeRef(), getServiceRegistry(), getWebScriptRegistry().getTemplateImageResolver());
-            }
-            else if (value instanceof Collection)
-            {
-                Collection coll = (Collection)value;
-                Collection templateColl = new ArrayList(coll.size());
-                for (Object object : coll)
-                {
-                    if (value instanceof ScriptNode)
-                    {
-                        templateColl.add(new TemplateNode(((ScriptNode)object).getNodeRef(), getServiceRegistry(), getWebScriptRegistry().getTemplateImageResolver()));
-                    }
-                    else
-                    {
-                        templateColl.add(object);
-                    }
-                }
-                value = templateColl;
-            }
-            else if (value instanceof ScriptNode[])
-            {
-                ScriptNode[] nodes = (ScriptNode[])value;
-                TemplateNode[] templateNodes = new TemplateNode[nodes.length];
-                int i = 0;
-                for (ScriptNode node : nodes)
-                {
-                    templateNodes[i++] = new TemplateNode(node.getNodeRef(), getServiceRegistry(), getWebScriptRegistry().getTemplateImageResolver());
-                }
-                value = templateNodes;
-            }
-            templateModel.put(entry.getKey(), value);
+            Object templateValue = (value instanceof Serializable) ? valueConverter.convertValueForRepo((Serializable)value) : value;
+            templateModel.put(entry.getKey(), templateValue);
         }
     }
 

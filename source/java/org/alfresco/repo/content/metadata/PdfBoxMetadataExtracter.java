@@ -27,29 +27,47 @@ package org.alfresco.repo.content.metadata;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.namespace.QName;
 import org.pdfbox.pdmodel.PDDocument;
 import org.pdfbox.pdmodel.PDDocumentInformation;
 
 /**
+ * Metadata extractor for the PDF documents.
+ * <pre>
+ *   <b>author:</b>                 --      cm:author
+ *   <b>title:</b>                  --      cm:title
+ *   <b>subject:</b>                --      cm:description
+ *   <b>created:</b>                --      cm:created
+ * </pre>
  * 
  * @author Jesper Steen Møller
+ * @author Derek Hulley
  */
-public class PdfBoxMetadataExtracter extends AbstractMetadataExtracter
+public class PdfBoxMetadataExtracter extends AbstractMappingMetadataExtracter
 {
+    private static final String KEY_AUTHOR = "author";
+    private static final String KEY_TITLE = "title";
+    private static final String KEY_SUBJECT = "subject";
+    private static final String KEY_CREATED = "created";
+    
+    public static String[] SUPPORTED_MIMETYPES = new String[] {MimetypeMap.MIMETYPE_PDF };
+
     public PdfBoxMetadataExtracter()
     {
-        super(MimetypeMap.MIMETYPE_PDF, 1.0, 1000);
+        super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)));
     }
-
-    public void extractInternal(ContentReader reader, Map<QName, Serializable> destination) throws Throwable
+    
+    @Override
+    public Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
     {
+        Map<String, Serializable> rawProperties = newRawMap();
+        
         PDDocument pdf = null;
         InputStream is = null;
         try
@@ -62,13 +80,15 @@ public class PdfBoxMetadataExtracter extends AbstractMetadataExtracter
                 // Scoop out the metadata
                 PDDocumentInformation docInfo = pdf.getDocumentInformation();
     
-                trimPut(ContentModel.PROP_AUTHOR, docInfo.getAuthor(), destination);
-                trimPut(ContentModel.PROP_TITLE, docInfo.getTitle(), destination);
-                trimPut(ContentModel.PROP_DESCRIPTION, docInfo.getSubject(), destination);
+                putRawValue(KEY_AUTHOR, docInfo.getAuthor(), rawProperties);
+                putRawValue(KEY_TITLE, docInfo.getTitle(), rawProperties);
+                putRawValue(KEY_SUBJECT, docInfo.getSubject(), rawProperties);
     
                 Calendar created = docInfo.getCreationDate();
                 if (created != null)
-                    destination.put(ContentModel.PROP_CREATED, created.getTime());
+                {
+                    putRawValue(KEY_CREATED, created.getTime(), rawProperties);
+                }
             }
         }
         finally
@@ -82,5 +102,7 @@ public class PdfBoxMetadataExtracter extends AbstractMetadataExtracter
                 try { pdf.close(); } catch (Throwable e) { e.printStackTrace(); }
             }
         }
+        // Done
+        return rawProperties;
     }
 }

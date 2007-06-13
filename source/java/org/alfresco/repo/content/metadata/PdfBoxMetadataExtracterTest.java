@@ -9,13 +9,14 @@ import org.alfresco.repo.content.MimetypeMap;
  */
 public class PdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
-    private MetadataExtracter extracter;
+    private PdfBoxMetadataExtracter extracter;
 
     @Override
     public void setUp() throws Exception
     {
         super.setUp();
         extracter = new PdfBoxMetadataExtracter();
+        extracter.register();
     }
 
     /**
@@ -26,14 +27,13 @@ public class PdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
         return extracter;
     }
 
-    public void testReliability() throws Exception
+    public void testSupports() throws Exception
     {
-        double reliability = 0.0;
-        reliability = extracter.getReliability(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        assertEquals("Mimetype should not be supported", 0.0, reliability);
-
-        reliability = extracter.getReliability(MimetypeMap.MIMETYPE_PDF);
-        assertEquals("Mimetype should be supported", 1.0, reliability);
+        for (String mimetype : PdfBoxMetadataExtracter.SUPPORTED_MIMETYPES)
+        {
+            boolean supports = extracter.isSupported(mimetype);
+            assertTrue("Mimetype should be supported: " + mimetype, supports);
+        }
     }
 
     public void testPdfExtraction() throws Exception

@@ -78,6 +78,10 @@ public class UILinkValidationBrokenForms extends AbstractLinkValidationReportCom
       
       if (logger.isDebugEnabled())
          logger.debug("Rendering broken forms from state object: " + linkState);
+
+      out.write("<script type='text/javascript' src='");
+      out.write(context.getExternalContext().getRequestContextPath());
+      out.write("/scripts/ajax/link-validation-report.js'></script>\n");
       
       // render the list of broken files and their contained links
       out.write("<div class='linkValidationBrokenFormsPanel'><div class='linkValidationReportTitle'>");
@@ -115,6 +119,14 @@ public class UILinkValidationBrokenForms extends AbstractLinkValidationReportCom
       String formName = formNamePath[0];
       String formPath = formNamePath[1];
       
+      // setup the context for the actions
+      AVMNodeDescriptor desc = avmService.lookup(-1, file);
+      AVMNode node = new AVMNode(desc);
+      actions.setContext(node);
+
+      // generate a unique id for this form
+      String formId = this.getId() + "_" + desc.getId();
+      
       // render the row with the appropriate background style
       out.write("<tr class='");
       
@@ -138,9 +150,14 @@ public class UILinkValidationBrokenForms extends AbstractLinkValidationReportCom
       out.write(formName);
       out.write("</div><div style='padding-top: 2px;'>");
       out.write(formPath);
-      out.write("</div><div style='padding-top: 4px; color: #888;'>");
+      out.write("</div><div style='padding-top: 4px; color: #888;'><img src='/alfresco/images/icons/arrow_closed.gif' ");
+      out.write("onclick='Alfresco.toggleGeneratedFiles(this, \"");
+      out.write(formId);
+      out.write("\");return false;' style='vertical-align: -6px; padding-right: 2px;' class='collapsed' />");
       out.write(Application.getMessage(context, "generated_files"));
-      out.write(":</div><div style='padding-top: 2px;'>");
+      out.write(":</div><div style='padding-top: 2px; display: none;' id='");
+      out.write(formId);
+      out.write("'>");
       
       for (String brokenFile : linkState.getBrokenFilesByForm(file))
       {
@@ -158,10 +175,7 @@ public class UILinkValidationBrokenForms extends AbstractLinkValidationReportCom
       out.write("</td><td align='right' valign='top'><div style='white-space: nowrap; padding-top: 10px; padding-right: 20px;'>");
       out.write("&nbsp;");
 
-      // setup the context for the actions
-      AVMNodeDescriptor desc = avmService.lookup(-1, file);
-      AVMNode node = new AVMNode(desc);
-      actions.setContext(node);
+      
       
       // render the actions
       Utils.encodeRecursive(context, actions);

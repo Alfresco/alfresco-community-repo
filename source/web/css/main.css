@@ -788,7 +788,7 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
 .linkValidationList
 {
    overflow: auto;
-   height: 130px;
+   height: 132px;
    border: 1px solid #aaa;
 }
 

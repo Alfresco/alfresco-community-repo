@@ -5,11 +5,13 @@ Alfresco.LinkValidationMonitor = function()
    this.successMsg = '';
 }
 
-Alfresco.LinkValidationMonitor.prototype = {
+Alfresco.LinkValidationMonitor.prototype = 
+{
    url: null,
    failedMsg: null,
    successMsg: null,
-   retrieveLinkValidationStatus: function() {
+   retrieveLinkValidationStatus: function() 
+   {
       YAHOO.util.Connect.asyncRequest('GET', this.url,
          {
             success: this.processResults,
@@ -18,34 +20,42 @@ Alfresco.LinkValidationMonitor.prototype = {
          },
          null);
    },
-   processResults: function(ajaxResponse) {
+   processResults: function(ajaxResponse) 
+   {
       var xml = ajaxResponse.responseXML.documentElement;
       var finished = xml.getAttribute('finished');
       var fileCount = xml.getAttribute('file-count');
       var linkCount = xml.getAttribute('link-count');
       
       var fileCountElem = document.getElementById('file-count');
-      if (fileCountElem != null) {
+      if (fileCountElem != null) 
+      {
          fileCountElem.innerHTML = fileCount;
       }
       var linkCountElem = document.getElementById('link-count');
-      if (linkCountElem != null) {
+      if (linkCountElem != null) 
+      {
          linkCountElem.innerHTML = linkCount;
       }
 
-      if (finished == 'true') {
+      if (finished == 'true') 
+      {
          var linkOnclick = document.getElementById('validation-callback-link').onclick;
          linkOnclick();
-      } else {
+      } 
+      else 
+      {
          setTimeout('Alfresco.linkMonitor.retrieveLinkValidationStatus()', 2000);
       }
    },
-   handleError: function(ajaxResponse) {
+   handleError: function(ajaxResponse) 
+   {
       handleErrorYahoo(ajaxResponse.status + ' ' + ajaxResponse.statusText);
    }
 }
 
-Alfresco.initLinkValidationMonitor = function() {
+Alfresco.initLinkValidationMonitor = function() 
+{
    Alfresco.linkMonitor = new Alfresco.LinkValidationMonitor();
    Alfresco.linkMonitor.retrieveLinkValidationStatus();
 }

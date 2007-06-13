@@ -76,7 +76,6 @@ public class LinkValidationReportDialog extends BaseDialogBean
       
       Map<String, String> params = new HashMap<String, String>(1);
       params.put("store", this.store);
-      params.put("rerun", "true");
       Application.getDialogManager().setupParameters(params);
       
       return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
@@ -108,6 +107,24 @@ public class LinkValidationReportDialog extends BaseDialogBean
       return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
              AlfrescoNavigationHandler.OUTCOME_SEPARATOR +
              "browseWebsite";
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Event handlers
+   
+   public String updateStatus()
+   {
+      if (logger.isDebugEnabled())
+         logger.debug("Updating status for link validation report for store '" + store + "'");
+      
+      Map<String, String> params = new HashMap<String, String>(1);
+      params.put("store", this.store);
+      params.put("rerun", "true");
+      Application.getDialogManager().setupParameters(params);
+      
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
+             AlfrescoNavigationHandler.OUTCOME_SEPARATOR +
+             "dialog:runLinkValidation";
    }
    
    // ------------------------------------------------------------------------------

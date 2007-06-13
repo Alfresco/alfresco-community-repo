@@ -30,8 +30,15 @@ import java.util.List;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.wcm.AVMNode;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.LinkValidationState;
+import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.repo.component.UIActions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -84,9 +91,12 @@ public class UILinkValidationBrokenForms extends AbstractLinkValidationReportCom
       }
       else
       {
+         UIActions actions = aquireUIActions("broken_form_actions", getValue().getStore());
+         AVMService avmService = Repository.getServiceRegistry(context).getAVMService();
+         
          for (String form : brokenForms)
          {
-            renderBrokenForm(context, out, form, linkState);
+            renderBrokenForm(context, out, form, linkState, actions, avmService);
          }
       }
       
@@ -97,7 +107,8 @@ public class UILinkValidationBrokenForms extends AbstractLinkValidationReportCom
    // Helpers
    
    private void renderBrokenForm(FacesContext context, ResponseWriter out,
-            String file, LinkValidationState linkState) throws IOException
+            String file, LinkValidationState linkState, UIActions actions,
+            AVMService avmService) throws IOException
    {  
       // get the web form name and path
       String[] formNamePath = this.getFileNameAndPath(file);
@@ -146,7 +157,15 @@ public class UILinkValidationBrokenForms extends AbstractLinkValidationReportCom
       
       out.write("</td><td align='right' valign='top'><div style='white-space: nowrap; padding-top: 10px; padding-right: 20px;'>");
       out.write("&nbsp;");
-//      out.write("<img src='/alfresco/images/icons/edit_icon.gif' />&nbsp;");
+
+      // setup the context for the actions
+      AVMNodeDescriptor desc = avmService.lookup(-1, file);
+      AVMNode node = new AVMNode(desc);
+      actions.setContext(node);
+      
+      // render the actions
+      Utils.encodeRecursive(context, actions);
+      
       out.write("</div></td></tr>");
    }
 }

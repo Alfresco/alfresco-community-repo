@@ -27,6 +27,7 @@ package org.alfresco.web.ui.wcm.component;
 import java.io.IOException;
 import java.util.List;
 
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
@@ -35,6 +36,7 @@ import org.alfresco.config.JNDIConstants;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.wcm.LinkValidationState;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
+import org.alfresco.web.ui.repo.component.UIActions;
 
 /**
  * Base class for all the link validation report JSF components.
@@ -66,6 +68,22 @@ public abstract class AbstractLinkValidationReportComponent extends SelfRenderin
       values[0] = super.saveState(context);
       values[1] = this.state;
       return values;
+   }
+   
+   /**
+    * @see javax.faces.component.UIComponentBase#getRendersChildren()
+    */
+   public boolean getRendersChildren()
+   {
+      return true;
+   }
+   
+   /**
+    * @see javax.faces.component.UIComponentBase#encodeChildren(javax.faces.context.FacesContext)
+    */
+   public void encodeChildren(FacesContext context) throws IOException
+   {
+      // the child components are rendered explicitly during the encodeBegin()
    }
   
    // ------------------------------------------------------------------------------
@@ -227,6 +245,45 @@ public abstract class AbstractLinkValidationReportComponent extends SelfRenderin
       }
       
       return icon;
+   }
+   
+   /**
+    * Aquire the UIActions component for the specified action group ID.
+    * Search for the component in the child list or create as needed. 
+    * 
+    * @param id      ActionGroup id of the UIActions component
+    * 
+    * @return UIActions component
+    */
+   @SuppressWarnings("unchecked")
+   protected UIActions aquireUIActions(String id, String store)
+   {
+      UIActions uiActions = null;
+      String componentId = id + '_' + store;
+      
+      for (UIComponent component : (List<UIComponent>)getChildren())
+      {
+         if (componentId.equals(component.getId()))
+         {
+            uiActions = (UIActions)component;
+            break;
+         }
+      }
+      
+      if (uiActions == null)
+      {
+         javax.faces.application.Application facesApp = FacesContext.getCurrentInstance().getApplication();
+         uiActions = (UIActions)facesApp.createComponent("org.alfresco.faces.Actions");
+         uiActions.setShowLink(false);
+         uiActions.getAttributes().put("styleClass", "inlineAction");
+         uiActions.setId(componentId);
+         uiActions.setParent(this);
+         uiActions.setValue(id);
+         
+         this.getChildren().add(uiActions);
+      }
+      
+      return uiActions;
    }
    
    // ------------------------------------------------------------------------------

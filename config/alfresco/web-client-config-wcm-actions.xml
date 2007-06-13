@@ -384,6 +384,18 @@
             <action idref="delete_space" />
          </action-group>
          
+         <!-- Actions for files containing broken links -->
+         <action-group id="broken_file_actions">
+            <action idref="edit_file" />
+            <action idref="update_file" />
+            <action idref="preview_file" />
+         </action-group>
+         
+         <!-- Actions for web forms containing broken links -->
+         <action-group id="broken_form_actions">
+            <action idref="edit_file" />
+         </action-group>
+         
       </actions>
    </config>
    

@@ -31,6 +31,7 @@ import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.VersionNumber;
 
 /**
  * The serial version label policy.
@@ -92,14 +93,14 @@ public class SerialVersionLabelPolicy
         private static final String DELIMITER = ".";
         
         /**
-         * The major revision number
+         * The major revision number (default 1)
          */
-        private int majorRevisionNumber = 1;
+        private int majorRevisionNumber;
         
         /**
-         * The minor revision number
+         * The minor revision number (default 0)
          */
-        private int minorRevisionNumber = 0;        
+        private int minorRevisionNumber;        
         
         /**
          * Constructor
@@ -110,12 +111,14 @@ public class SerialVersionLabelPolicy
         {
             if (versionLabel != null && versionLabel.length() != 0)
             {
-                int iIndex = versionLabel.indexOf(DELIMITER);
-                String majorString = versionLabel.substring(0, iIndex);
-                String minorString = versionLabel.substring(iIndex+1);
-                
-                this.majorRevisionNumber = Integer.parseInt(majorString);
-                this.minorRevisionNumber = Integer.parseInt(minorString);
+                VersionNumber versionNumber = new VersionNumber(versionLabel);
+                majorRevisionNumber = versionNumber.getPart(0);
+                minorRevisionNumber = versionNumber.getPart(1);
+            }
+            else
+            {
+                majorRevisionNumber = 1;
+                minorRevisionNumber = 0;
             }
         }
         

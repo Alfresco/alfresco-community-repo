@@ -249,7 +249,7 @@
                  
          <dialog name="runLinkValidation" page="/jsp/wcm/run-link-validation.jsp" 
                  managed-bean="LinkValidationRunDialog"
-                 icon="/images/icons/run_link_validation_large.gif" 
+                 icon="/images/icons/link_validation_report_large.gif" 
                  title-id="run_link_validaton_title" 
                  description-id="run_link_validaton_desc" show-ok-button="false" />
                  

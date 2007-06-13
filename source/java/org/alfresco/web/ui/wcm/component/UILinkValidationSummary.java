@@ -109,14 +109,14 @@ public class UILinkValidationSummary extends AbstractLinkValidationReportCompone
       out.write(initialCheckSummary);
       out.write("</div><div style='margin-bottom: 14px;'><img src='");
       out.write(context.getExternalContext().getRequestContextPath());
-      out.write("/images/icons/warning.gif'' style='vertical-align: -4px; padding-right: 4px;'/>");
+      out.write("/images/icons/broken_link.gif'' style='vertical-align: -4px; padding-right: 4px;'/>");
       out.write(initialBrokenSummary);
       out.write("</div></td></tr>");
       out.write("<tr><td class='linkValidationReportSubTitle'>");
       out.write(bundle.getString("current_status"));
       out.write(":</td><td><div><img src='");
       out.write(context.getExternalContext().getRequestContextPath());
-      out.write("/images/icons/warning.gif' style='vertical-align: -4px; padding-right: 4px;' >");
+      out.write("/images/icons/broken_link.gif' style='vertical-align: -4px; padding-right: 4px;' >");
       out.write(stillBroken);
       out.write("<img src='");
       out.write(context.getExternalContext().getRequestContextPath());

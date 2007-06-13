@@ -137,6 +137,7 @@
          <props>
             <prop key="atom">text/xml</prop>
             <prop key="rss">text/xml</prop>
+            <prop key="opensearchdescription">text/xml</prop>
          </props>
       </property>
    </bean>

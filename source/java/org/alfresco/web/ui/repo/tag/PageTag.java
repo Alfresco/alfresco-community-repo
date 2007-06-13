@@ -126,6 +126,7 @@ public class PageTag extends TagSupport
       
       try
       {
+         String reqPath = ((HttpServletRequest)pageContext.getRequest()).getContextPath();
          Writer out = pageContext.getOut();
          
          if (Application.inPortalServer() == false)
@@ -143,11 +144,11 @@ public class PageTag extends TagSupport
             {
                out.write("Alfresco Web Client");
             }
-            out.write("</title></head>");
+            out.write("</title>");
+            out.write("<link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"" + reqPath + "/wcservice/api/search/keyword/description.xml\" title=\"Alfresco Keyword Search\"/>");
+            out.write("</head>");
             out.write("<body>\n");
          }
-         
-         String reqPath = ((HttpServletRequest)pageContext.getRequest()).getContextPath();
          
          // CSS style includes
          out.write(STYLES_START);

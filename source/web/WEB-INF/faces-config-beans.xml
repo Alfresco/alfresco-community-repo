@@ -128,7 +128,7 @@
          The bean that add a translation with a content
       </description>
       <managed-bean-name>AddTranslationDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.ml.AddTranslationlDialog</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.ml.AddTranslationDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>multilingualContentService</property-name>

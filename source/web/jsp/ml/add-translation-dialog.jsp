@@ -33,11 +33,11 @@
 <%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="org.alfresco.web.app.servlet.FacesHelper" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
-<%@ page import="org.alfresco.web.bean.ml.AddTranslationlDialog" %>
+<%@ page import="org.alfresco.web.bean.ml.AddTranslationDialog" %>
 <%
 boolean fileUploaded = false;
 
-AddTranslationlDialog dialog = (AddTranslationlDialog)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "AddTranslationDialog");
+AddTranslationDialog dialog = (AddTranslationDialog)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "AddTranslationDialog");
 
 if (dialog != null && dialog.getFileName() != null)
 {

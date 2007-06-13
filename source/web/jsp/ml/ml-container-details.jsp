@@ -259,24 +259,24 @@
 
                                            <%-- edition label --%>
                                            <a:column id="column-edition-label${idx}" width="100" style="text-align:left">
-                                               <a:outputTextExprEnable id="edition-label${idx}" value="#{ed.editionLabel}"/>
+                                               <a:outputText id="edition-label${idx}" value="#{ed.editionLabel}"/>
                                            </a:column>
 
                                            <%-- edition notes --%>
                                            <a:column id="column-edition-notes${idx}" width="200" style="text-align:left">
-                                               <a:outputTextExprEnable id="edition-notes${idx}" value="#{ed.editionNotes}" />
+                                               <a:outputText id="edition-notes${idx}" value="#{ed.editionNotes}" />
                                            </a:column>
 
                                            <%-- edition author --%>
                                            <a:column id="column-edition-author${idx}" style="text-align:left">
-                                               <a:outputTextExprEnable id="edition-author${idx}" value="#{ed.editionAuthor}" />
+                                               <a:outputText id="edition-author${idx}" value="#{ed.editionAuthor}" />
                                            </a:column>
 
                                            <%-- edition date --%>
                                            <a:column id="column-edition-date${idx}" style="text-align:left; white-space:nowrap">
-                                             <a:outputTextExprEnable id="edition-date${idx}" value="#{ed.editionDate}">
+                                             <a:outputText id="edition-date${idx}" value="#{ed.editionDate}">
                                                  <a:convertXMLDate type="both" pattern="#{msg.date_pattern}" />
-                                             </a:outputTextExprEnable>
+                                             </a:outputText>
                                            </a:column>
                                        </a:richList>
 
@@ -290,11 +290,8 @@
                                                     rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
                                                     pageSize="10" initialSortColumn="versionName" initialSortDescending="true" style="padding-left:12px;padding-top:10px;">
 
-                                    <%-- Icon details view mode --%>
+                                               <%-- Icon details view mode --%>
                                                <a:column id="column-view-mode${idx}" primary="true" width="20" style="padding:2px;">
-                                                   <f:facet name="header">
-                                                       <a:outputTextExprEnable id="translation-image-title${idx}" value="" styleClass="header"/>
-                                                   </f:facet>
                                                    <a:graphicImageExprEnable id="translation-image${idx}" url="/images/filetypes/_default.gif" />
                                                </a:column>
 
@@ -303,15 +300,15 @@
                                                    <f:facet name="header">
                                                        <a:sortLink id="sort-name${idx}" label="#{msg.name}" value="versionName" mode="case-insensitive" styleClass="header"/>
                                                    </f:facet>
-                                                   <a:outputTextExprEnable id="translation-name${idx}" value="#{tr.versionName}"/>
+                                                   <a:outputText id="translation-name${idx}" value="#{tr.versionName}"/>
                                                </a:column>
 
                                                <%-- Versionned description --%>
                                                <a:column id="column-description${idx}" width="200" style="text-align:left">
                                                    <f:facet name="header">
-                                                       <a:outputTextExprEnable id="desc-title${idx}" value="#{msg.description}" styleClass="header"/>
+                                                       <a:outputText id="desc-title${idx}" value="#{msg.description}" styleClass="header"/>
                                                    </f:facet>
-                                                   <a:outputTextExprEnable id="translation-description${idx}" value="#{tr.versionDescription}" />
+                                                   <a:outputText id="translation-description${idx}" value="#{tr.versionDescription}" />
                                                </a:column>
 
                                                <%-- Versionned creation date --%>
@@ -319,9 +316,9 @@
                                                    <f:facet name="header">
                                                        <a:sortLink  id="sort-cr-date${idx}" label="#{msg.created}" value="versionCreatedDate" mode="case-insensitive" styleClass="header"/>
                                                    </f:facet>
-                                                   <a:outputTextExprEnable id="translation-created-date${idx}" value="#{tr.versionCreatedDate}">
+                                                   <a:outputText id="translation-created-date${idx}" value="#{tr.versionCreatedDate}">
                                                        <a:convertXMLDate type="both" pattern="#{msg.date_pattern}" />
-                                                   </a:outputTextExprEnable>
+                                                   </a:outputText>
                                                </a:column>
 
                                                <%-- Versionned modified date --%>
@@ -329,9 +326,9 @@
                                                    <f:facet name="header">
                                                        <a:sortLink  id="sort-mod-date${idx}" label="#{msg.modified}" value="versionModifiedDate" mode="case-insensitive" styleClass="header"/>
                                                    </f:facet>
-                                                   <a:outputTextExprEnable id="translation-modif-date${idx}" value="#{tr.versionModifiedDate}">
+                                                   <a:outputText id="translation-modif-date${idx}" value="#{tr.versionModifiedDate}">
                                                        <a:convertXMLDate type="both" pattern="#{msg.date_pattern}" />
-                                                   </a:outputTextExprEnable>
+                                                   </a:outputText>
                                                </a:column>
 
                                                <%-- Versionned language --%>
@@ -339,13 +336,13 @@
                                                    <f:facet name="header">
                                                        <a:sortLink  id="sort-lang${idx}" label="#{msg.language}" value="versionLanguage" mode="case-insensitive" styleClass="header"/>
                                                    </f:facet>
-                                                   <a:outputTextExprEnable id="translation-language${idx}" value="#{tr.versionLanguage}" />
+                                                   <a:outputText id="translation-language${idx}" value="#{tr.versionLanguage}" />
                                                </a:column>
 
                                                <%-- view actions --%>
                                                <a:column id="column-action${idx}" style="text-align: left">
                                                    <f:facet name="header">
-                                                       <a:outputTextExprEnable id="translation-action${idx}" value="#{msg.actions}"/>
+                                                       <a:outputText id="translation-action${idx}" value="#{msg.actions}"/>
                                                    </f:facet>
                                                    <a:actionLink id="translation-link${idx}" value="#{msg.view}" href="#{tr.versionUrl}" target="new" />
                                                </a:column>

@@ -159,7 +159,7 @@ public class MakeMultilingualDialog extends BaseDialogBean
          }
          else
          {
-            AddTranslationlDialog dialog = (AddTranslationlDialog) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "AddTranslationDialog");
+            AddTranslationDialog dialog = (AddTranslationDialog) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "AddTranslationDialog");
             dialog.start(null);
             return "addTranslation";
          }

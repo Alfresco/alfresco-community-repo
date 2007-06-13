@@ -28,8 +28,10 @@ import java.io.IOException;
 import java.net.URLEncoder;
 
 import javax.faces.component.UIOutput;
+import javax.faces.component.ValueHolder;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
+import javax.faces.convert.Converter;
 import javax.faces.el.ValueBinding;
 
 /**
@@ -124,19 +126,48 @@ public class UIOutputText extends UIOutput
          return;
       }
       
-      ResponseWriter out = context.getResponseWriter();
-      
-      String output = null;
-      
-      if (isEncodeForJavaScript())
+      Object value = getValue();
+      if (value != null)
       {
-         output = URLEncoder.encode((String)getValue(), "UTF-8").replace('+', ' ');
+         Converter converter = getConverter();
+         if (converter != null)
+         {
+            value = converter.getAsString(context, this, value);
+         }
+         
+         ResponseWriter out = context.getResponseWriter();
+   
+         if (isEncodeForJavaScript())
+         {
+            out.write( URLEncoder.encode((String)getValue(), "UTF-8").replace('+', ' ') );
+         }
+         else
+         {
+            String style = (String)getAttributes().get("style");
+            String styleClass = (String)getAttributes().get("styleClass");
+            if (style != null || styleClass != null)
+            {
+               out.write("<span");
+               if (style != null)
+               {
+                  out.write(" style='");
+                  out.write(style);
+                  out.write('\'');
+               }
+               if (styleClass != null)
+               {
+                  out.write(" class=");
+                  out.write(styleClass);
+               }
+               out.write('>');
+               out.write(value.toString());
+               out.write("</span>");
+            }
+            else
+            {
+               out.write(value.toString());
+            }
+         }
       }
-      else
-      {
-         output = (String)getValue();
-      }
-
-      out.write(output);
    }
 }

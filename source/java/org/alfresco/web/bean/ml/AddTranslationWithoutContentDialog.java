@@ -91,7 +91,7 @@ public class AddTranslationWithoutContentDialog extends BaseDialogBean
       nodeService.setProperty(newTranslation, ContentModel.PROP_AUTHOR, author);
       nodeService.setProperty(newTranslation, ContentModel.PROP_TITLE, title);
 
-      // Get the content data of the 
+      // Get the content data of the new translation
       ContentData newTranslationContentData = fileFolderService.getReader(newTranslation).getContentData();
       
       // set the current browse node

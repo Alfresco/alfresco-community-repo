@@ -1,3 +1,5 @@
+<#assign isImage=node.isDocument && (node.mimetype = "image/gif" || node.mimetype = "image/jpeg" || node.mimetype = "image/png")>
+<#assign isVideo=node.isDocument && node.mimetype?starts_with("video/")>
 <div class="summaryPopupPanel" style="background-color:#F8FCFD">
 	<table cellpadding='3' cellspacing='0'>
 	   <tr>
@@ -12,7 +14,7 @@
 	               </#if>
 	               <#assign navurl=navurl + node.nodeRef.storeRef.protocol + '/' + node.nodeRef.storeRef.identifier + '/' + node.nodeRef.id>
 	               <td width=24><center><a href='${url.context}${navurl}' target="new"><img src='${url.context}/images/icons/View_details.gif' style='cursor:pointer' width=12 height=16 border=0 title="Details" alt="Details"></a></center></td>
-	               <td width=14 align=right><img src='${url.context}/images/icons/close_panel.gif' onclick="if (document.all) document.getElementById('${node.id}_player').controls.stop();AlfNodeInfoMgr.close('${node.nodeRef}');" style='cursor:pointer' width=14 height=14 border=0 title="Close" alt="Close"></td>
+	               <td width=14 align=right><img src='${url.context}/images/icons/close_panel.gif' onclick="<#if isVideo>if (document.all) document.getElementById('${node.id}_player').controls.stop();</#if>AlfNodeInfoMgr.close('${node.nodeRef}');" style='cursor:pointer' width=14 height=14 border=0 title="Close" alt="Close"></td>
 	            </tr>
 	         </table>
 	      </td>
@@ -20,8 +22,6 @@
 	   
 	   <tr>
 	      <td valign="middle" align="center">
-	         <#assign isImage=node.isDocument && (node.mimetype = "image/gif" || node.mimetype = "image/jpeg" || node.mimetype = "image/png")>
-	         <#assign isVideo=node.isDocument && node.mimetype?starts_with("video/")>
 	         <#if isImage>
 	            <a href="${url.context}${node.url}" target="new"><img src="${url.context}${node.url}" width=120 border=0></a>
 	         <#elseif isVideo>

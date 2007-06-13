@@ -7,7 +7,7 @@
     <table>
 <#list search.results as row>            
       <tr>
-      <td><img src="${url.context}${row.icon16}"/></td><td><a href="${url.context}${row.url}">${row.name}</a></td>
+      <td><img src="${url.context}${row.icon16}"/></td><td><a href="${url.serviceContext}${row.url}">${row.name}</a></td>
       </tr>
       <#if row.properties.description?? == true>
       <tr>

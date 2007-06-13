@@ -25,7 +25,10 @@
 package org.alfresco.web.scripts.bean;
 
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URLEncoder;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -34,6 +37,7 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
@@ -45,6 +49,7 @@ import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.StringUtils;
 
 
 /**
@@ -187,10 +192,19 @@ public class KeywordSearch extends DeclarativeWebScript
             searchResult.setLocale(locale);
             searchResult.setItemsPerPage(itemsPerPage);
             searchResult.setStartPage(startPage);
-            searchResult.setTotalPages(totalPages);
             searchResult.setTotalResults(totalResults);
-            searchResult.setStartIndex(((startPage -1) * itemsPerPage) + 1);
-            searchResult.setTotalPageItems(Math.min(itemsPerPage, totalResults - searchResult.getStartIndex() + 1));
+            if (totalResults == 0)
+            {
+                searchResult.setTotalPages(0);
+                searchResult.setStartIndex(0);
+                searchResult.setTotalPageItems(0);
+            }
+            else
+            {
+                searchResult.setTotalPages(totalPages);
+                searchResult.setStartIndex(((startPage -1) * itemsPerPage) + 1);
+                searchResult.setTotalPageItems(Math.min(itemsPerPage, totalResults - searchResult.getStartIndex() + 1));
+            }
             SearchTemplateNode[] nodes = new SearchTemplateNode[searchResult.getTotalPageItems()];
             for (int i = 0; i < searchResult.getTotalPageItems(); i++)
             {
@@ -342,6 +356,8 @@ public class KeywordSearch extends DeclarativeWebScript
      */
     public class SearchTemplateNode extends TemplateNode
     {
+        protected final static String URL = "/api/node/content/{0}/{1}/{2}/{3}";
+        
         private static final long serialVersionUID = -1791913270786140012L;
         private float score;
 
@@ -365,6 +381,26 @@ public class KeywordSearch extends DeclarativeWebScript
         public float getScore()
         {
             return score;
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.template.BaseContentNode#getUrl()
+         */
+        @Override
+        public String getUrl()
+        {
+            try
+            {
+                return MessageFormat.format(URL, new Object[] {
+                    getNodeRef().getStoreRef().getProtocol(),
+                    getNodeRef().getStoreRef().getIdentifier(),
+                    getNodeRef().getId(),
+                    StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") } );
+            }
+            catch (UnsupportedEncodingException err)
+            {
+                throw new TemplateException("Failed to encode content URL for node: " + getNodeRef(), err);
+            }
         }
     }
     

@@ -31,7 +31,7 @@
 <#list search.results as row>            
   <item>
     <title>${row.name}</title>
-    <link>${absurl(url.context)}${row.url}</link>
+    <link>${absurl(url.serviceContext)}${row.url}</link>
     <description>${row.properties.description!""}</description>
     <pubDate>${xmldate(row.properties.modified)}</pubDate>
     <guid isPermaLink="false">${row.id}</guid>

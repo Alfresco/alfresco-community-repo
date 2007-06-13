@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Content Retrieval</shortname>
+  <description>Stream a content property from the Repository</description>
+  <url>/api/node/content{;property}/{store_type}/{store_id}/{node_id}?a={attach?}</url>
+  <url>/api/path/content{;property}/{store_type}/{store_id}/{path}?a={attach?}</url>
+  <authentication>guest</authentication>
+  <format default="">argument</format>
+</webscript>

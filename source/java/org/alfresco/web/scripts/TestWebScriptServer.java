@@ -32,6 +32,8 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -498,8 +500,10 @@ public class TestWebScriptServer
      * @param method
      * @param uri
      * @return  mock http servlet request
+     * @throws UnsupportedEncodingException 
      */
     private MockHttpServletRequest createRequest(String method, String uri)
+        throws UnsupportedEncodingException
     {
         MockHttpServletRequest req = new MockHttpServletRequest(method, uri);
 
@@ -516,10 +520,11 @@ public class TestWebScriptServer
                 for (String arg : args)
                 {
                     String[] parts = arg.split("=");
-                    req.addParameter(parts[0], (parts.length == 2) ? parts[1] : null);
+                    req.addParameter(parts[0], (parts.length == 2) ? URLDecoder.decode(parts[1], "UTF-8") : null);
                 }
             }
-            req.setPathInfo(iArgIndex == -1 ? uri : uri.substring(0, iArgIndex));
+            String pathInfo = iArgIndex == -1 ? uri : uri.substring(0, iArgIndex);
+            req.setPathInfo(URLDecoder.decode(pathInfo, "UTF-8"));
         }
         
         return req;

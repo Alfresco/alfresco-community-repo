@@ -26,6 +26,7 @@ package org.alfresco.web.scripts;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,8 +38,13 @@ import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.template.AbsoluteUrlMethod;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptLocation;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
@@ -517,6 +523,84 @@ public abstract class AbstractWebScript implements WebScript
     {
         getWebScriptRegistry().getScriptProcessor().executeScript(location, model);
     }
+    
+    /**
+     * Helper to convert a Web Script Request URL to a Node Ref
+     * 
+     * 1) Node - {store_type}/{store_id}/{node_id} 
+     *
+     *    Resolve to node via its Node Reference.
+     *     
+     * 2) Path - {store_type}/{store_id}/{path}
+     * 
+     *    Resolve to node via its display path.
+     *    
+     * 3) QName - {store_type}/{store_id}/{child_qname_path}  TODO: Implement
+     * 
+     *    Resolve to node via its child qname path.
+     * 
+     * @param  referenceType  one of node, path or qname
+     * @return  reference  array of reference segments (as described above for each reference type)
+     */
+    protected NodeRef findNodeRef(String referenceType, String[] reference)
+    {
+        NodeRef nodeRef = null;
+        
+        // construct store reference
+        if (reference.length < 3)
+        {
+            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Reference " + Arrays.toString(reference) + " is not properly formed");
+        }
+        StoreRef storeRef = new StoreRef(reference[0], reference[1]);
+        NodeService nodeService = serviceRegistry.getNodeService();
+        if (nodeService.exists(storeRef))
+        {
+            if (referenceType.equals("node"))
+            {
+                NodeRef urlRef = new NodeRef(storeRef, reference[2]);
+                if (nodeService.exists(urlRef))
+                {
+                    nodeRef = urlRef;
+                }
+            }
+            
+            else if (referenceType.equals("path"))
+            {
+                // TODO: Allow a root path to be specified - for now, hard-code to Company Home
+//                NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+                NodeRef rootNodeRef = getRepositoryContext().getCompanyHome();
+                if (reference.length == 3)
+                {
+                    nodeRef = rootNodeRef;
+                }
+                else
+                {
+                    String[] path = new String[reference.length - /*2*/3];
+                    System.arraycopy(reference, /*2*/3, path, 0, path.length);
+                    
+                    try
+                    {
+                        FileFolderService ffService = serviceRegistry.getFileFolderService();
+                        FileInfo fileInfo = ffService.resolveNamePath(rootNodeRef, Arrays.asList(path));
+                        nodeRef = fileInfo.getNodeRef();
+                    }
+                    catch (FileNotFoundException e)
+                    {
+                        // NOTE: return null node ref
+                    }
+                }
+            }
+            
+            else
+            {
+                // TODO: Implement 'qname' style
+                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Web Script Node URL specified an invalid reference style of '" + referenceType + "'");
+            }
+        }
+        
+        return nodeRef;
+    }
+    
     
     /**
      * Status Template

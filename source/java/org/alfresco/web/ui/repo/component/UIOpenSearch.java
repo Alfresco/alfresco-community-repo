@@ -268,7 +268,7 @@ public class UIOpenSearch extends SelfRenderingComponent
       ConfigService cfgSvc = (ConfigService)FacesContextUtils.
             getRequiredWebApplicationContext(context).getBean("webscripts.config");
       SearchProxy searchProxy = (SearchProxy)FacesContextUtils.
-            getRequiredWebApplicationContext(context).getBean("webscript.org.alfresco.repository.searchproxy.get");
+            getRequiredWebApplicationContext(context).getBean("webscript.org.alfresco.repository.search.searchproxy.get");
       if (cfgSvc != null)
       {
          // get the OpenSearch configuration

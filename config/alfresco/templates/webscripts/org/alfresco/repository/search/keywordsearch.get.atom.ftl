@@ -26,7 +26,7 @@
 <#list search.results as row>
   <entry>
     <title>${row.name}</title>
-    <link rel="alternate" href="${absurl(url.context)}${row.url}"/>
+    <link rel="alternate" href="${absurl(url.serviceContext)}${row.url}"/>
     <icon>${absurl(url.context)}${row.icon16}</icon>       <#comment>TODO: What's the standard for entry icons?</#comment>
     <id>urn:uuid:${row.id}</id>
     <alf:noderef>${row.nodeRef}</alf:noderef>

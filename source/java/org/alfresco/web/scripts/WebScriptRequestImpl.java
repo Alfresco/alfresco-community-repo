@@ -43,16 +43,11 @@ public abstract class WebScriptRequestImpl implements WebScriptRequest
         WebScriptMatch match = getServiceMatch();
         if (match != null)
         {
-            String servicePath = getServiceMatch().getPath();
-            extensionPath = getPathInfo();
-            if (extensionPath != null)
+            String matchPath = getServiceMatch().getPath();
+            String pathInfo = getPathInfo();
+            if (pathInfo != null)
             {
-                int extIdx = extensionPath.indexOf(servicePath);
-                if (extIdx != -1)
-                {
-                    int extLength = (servicePath.endsWith("/") ? servicePath.length() : servicePath.length() + 1);
-                    extensionPath = extensionPath.substring(extIdx + extLength);
-                }
+                extensionPath = pathInfo.substring(matchPath.length());
             }
         }
         return extensionPath;

@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.model.ml;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +34,6 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -49,8 +47,6 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -77,7 +73,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Derek Hulley
  * @author Philippe Dubois
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class MultilingualContentServiceImpl implements MultilingualContentService
 {
@@ -85,7 +81,6 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
 
     private NodeService nodeService;
     private SearchService searchService;
-    private VersionService versionService;
     private PermissionService permissionService;
     private SearchParameters searchParametersMLRoot;
     private ContentFilterLanguagesService contentFilterLanguagesService;
@@ -136,8 +131,8 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         NodeRef mlContainerRootNodeRef = getMLContainerRoot();
         // Create the container
         PropertyMap versionProperties = new PropertyMap();
-        versionProperties.put(ContentModel.PROP_AUTO_VERSION, Boolean.FALSE);
-        versionProperties.put(ContentModel.PROP_INITIAL_VERSION, Boolean.FALSE);
+        //versionProperties.put(ContentModel.PROP_AUTO_VERSION, Boolean.FALSE);
+        //versionProperties.put(ContentModel.PROP_INITIAL_VERSION, Boolean.FALSE);
         ChildAssociationRef assocRef = nodeService.createNode(
                 mlContainerRootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
@@ -146,8 +141,8 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
                 versionProperties);
         NodeRef mlContainerNodeRef = assocRef.getChildRef();
         // TODO: Examine the usage of versioning - why is autoversioning on and used in the UI?
-//        // The model makes the container versionable by default, but why?
-//        nodeService.addAspect(mlContainerNodeRef, ContentModel.ASPECT_VERSIONABLE, versionProperties);
+        // The model makes the container versionable by default, but why?
+        nodeService.addAspect(mlContainerNodeRef, ContentModel.ASPECT_VERSIONABLE, versionProperties);
         // Set the permissions to allow anything by anyone
         permissionService.setPermission(
                 mlContainerNodeRef,
@@ -193,7 +188,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         // Done
         return mlContainerNodeRef;
     }
-    
+
     /**
      * Retrieve or create a <b>cm:mlDocument</b> container for the given node, which must have the
      * <b>cm:mlDocument</b> already applied.
@@ -312,7 +307,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         // done
         return mlContainerNodeRef;
     }
-    
+
     private boolean isPivotTranslation(NodeRef contentNodeRef)
     {
         Locale locale = (Locale) nodeService.getProperty(contentNodeRef, ContentModel.PROP_LOCALE);
@@ -359,7 +354,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
             return false;
         }
     }
-    
+
     /** @inheritDoc */
     public void makeTranslation(NodeRef contentNodeRef, Locale locale)
     {
@@ -432,7 +427,17 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     public void addTranslation(NodeRef newTranslationNodeRef, NodeRef translationOfNodeRef, Locale locale)
     {
         // Get the container
-        NodeRef mlContainerNodeRef = getOrCreateMLContainer(translationOfNodeRef, false);
+        NodeRef mlContainerNodeRef = null;
+
+        if(ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(nodeService.getType(translationOfNodeRef)))
+        {
+            mlContainerNodeRef = translationOfNodeRef;
+        }
+        else
+        {
+            mlContainerNodeRef = getOrCreateMLContainer(translationOfNodeRef, false);
+        }
+
         // Use the existing container to make the new content into a translation
         makeTranslationImpl(mlContainerNodeRef, newTranslationNodeRef, locale);
         // done
@@ -451,72 +456,6 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         NodeRef mlContainerNodeRef = getOrCreateMLContainer(translationNodeRef, false);
         // done
         return mlContainerNodeRef;
-    }
-
-    /** @inheritDoc */
-    public void createEdition( NodeRef translationNodeRef)
-    {
-        NodeRef mlContainerNodeRef = getOrCreateMLContainer(translationNodeRef, false);
-        // Ensure that the translation given is one of the children
-        getOrCreateMLContainer(translationNodeRef, false);
-        // Get all the container's children
-        List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(
-                mlContainerNodeRef,
-                ContentModel.ASSOC_MULTILINGUAL_CHILD,
-                RegexQNamePattern.MATCH_ALL);
-
-
-        // Get and store the translation verions associated to the mlContainer
-        List<Version> versions = new ArrayList<Version>(childAssocRefs.size());
-
-        for (ChildAssociationRef childAssoc : childAssocRefs)
-        {
-            versions.add(versionService.getCurrentVersion(childAssoc.getChildRef()));
-        }
-
-        Map<String, Serializable> editionProperties = new HashMap<String, Serializable>();
-        editionProperties.put(
-                VersionModel.PROP_QNAME_TRANSLATION_VERIONS.toString(),
-                (Serializable) versions
-            );
-
-        //     Version the container and all its children
-        versionService.createVersion(mlContainerNodeRef, editionProperties, true);
-
-        // Remove all the child documents apart from the given node
-        boolean found = false;
-        for (ChildAssociationRef childAssoc : childAssocRefs)
-        {
-            NodeRef documentNodeRef = childAssoc.getChildRef();
-            // Is this the node to keep?
-            if (documentNodeRef.equals(translationNodeRef))
-            {
-                // It is, so keep it
-                found = true;
-                continue;
-            }
-            // Delete it
-            nodeService.deleteNode(documentNodeRef);
-        }
-        // Check that we left a document
-        if (!found)
-        {
-            throw new AlfrescoRuntimeException(
-                    "The translation provided is not a child of the multilingual container: \n" +
-                    "   Container:   " + mlContainerNodeRef + "\n" +
-                    "   Translation: " + translationNodeRef);
-        }
-        // Done
-        if (logger.isDebugEnabled())
-        {
-            // Get the version information
-            Version mlContainerVersion = versionService.getCurrentVersion(mlContainerNodeRef);
-            String mlContainerVersionLabel = mlContainerVersion.getVersionLabel();
-            logger.debug(
-                    "Versioned multilingual container: \n" +
-                    "   Container:       " + mlContainerNodeRef + "\n" +
-                    "   Current Version: " + mlContainerVersionLabel);
-        }
     }
 
     /** @inheritDoc */
@@ -676,7 +615,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
             return nodeRefsByLocale.get(nearestLocale);
         }
     }
-    
+
     /**
      * @inheritDoc
      */
@@ -704,7 +643,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
                     "   Translation: " + translationOfNodeRef + "\n" +
                     "   Locale:      " + locale);
         }
-        
+
         FileInfo translationOfFileInfo = fileFolderService.getFileInfo(translationOfNodeRef);
         String translationOfName = translationOfFileInfo.getName();
         // If name is null, supply one
@@ -713,7 +652,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
             name = translationOfName;
         }
         // If there is a name clash, add the locale to the main portion of the filename
-        if (name.equals(translationOfName))
+        if (name.equalsIgnoreCase(translationOfName))
         {
             String localeStr = locale.toString();
             if (localeStr.endsWith("_"))
@@ -744,7 +683,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
                 parentNodeRef,
                 name,
                 ContentModel.TYPE_CONTENT).getNodeRef();
-        
+
         // add the translation to the container
         addTranslation(newTranslationNodeRef, translationOfNodeRef, locale);
 
@@ -788,15 +727,10 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         this.searchService = searchService;
    }
 
-   public void setVersionService(VersionService versionService)
-   {
-        this.versionService = versionService;
-   }
-
     public void setPermissionService(PermissionService permissionService)
-{
-    this.permissionService = permissionService;
-}
+    {
+        this.permissionService = permissionService;
+    }
 
     public void setContentFilterLanguagesService(ContentFilterLanguagesService contentFilterLanguagesService)
     {
@@ -806,5 +740,15 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     public void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
+    }
+
+    public NodeRef copyTranslationContainer(NodeRef translationNodeRef, NodeRef newParentRef)
+    {
+        throw new UnsupportedOperationException("This operation is not yet supported");
+    }
+
+    public void moveTranslationContainer(NodeRef translationNodeRef, NodeRef newParentRef)
+    {
+        throw new UnsupportedOperationException("This operation is not yet supported");
     }
 }

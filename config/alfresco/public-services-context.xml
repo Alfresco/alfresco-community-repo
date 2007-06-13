@@ -1,19 +1,19 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
- 
+
 <beans>
     <import resource="classpath:alfresco/public-services-security-context.xml"/>
-    
+
     <!-- Service Registry -->
-    
+
     <bean id="ServiceRegistry" class="org.alfresco.repo.service.ServiceDescriptorRegistry" />
-        
+
     <!-- Exception Translation -->
-    
+
     <bean id="exceptionTranslator" class="org.alfresco.repo.security.permissions.impl.ExceptionTranslatorMethodInterceptor"/>
-    
+
     <!-- Descriptor Service -->
-    
+
     <bean id="DescriptorService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.descriptor.DescriptorService</value>
@@ -27,9 +27,9 @@
             </list>
         </property>
     </bean>
-        
+
     <!-- AuditMethodInterceptor -->
-    
+
     <bean id="AuditMethodInterceptor" class="org.alfresco.repo.audit.AuditMethodInterceptor">
         <property name="auditComponent">
             <ref bean="auditComponent"/>
@@ -38,22 +38,22 @@
             <value>false</value>
         </property>
     </bean>
-   
-    
+
+
     <!-- Namespace Service -->
-    
+
     <alias name="namespaceService" alias="NamespaceService"/>
-    
+
     <!-- Transaction Service -->
-    
+
     <alias alias="TransactionService" name="transactionComponent"/>
-    
+
     <!-- Dictionary Service -->
-    
+
     <alias name="dictionaryService" alias="DictionaryService"/>
-        
+
     <!-- Node Service -->
-    
+
     <bean id="NodeService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <list>
@@ -76,7 +76,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="NodeService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -90,9 +90,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- Content Service -->
-    
+
     <bean id="ContentService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.repository.ContentService</value>
@@ -110,7 +110,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="ContentService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -121,17 +121,17 @@
             </props>
         </property>
     </bean>
-        
+
     <!-- Mime Type Service -->
-    
+
     <alias name="mimetypeService" alias="MimetypeService"/>
-    
+
     <!-- Content Filter Languages Service -->
-    
+
     <alias name="contentFilterLanguagesService" alias="ContentFilterLanguagesService"/>
-    
+
     <!-- Search Service -->
-    
+
     <bean id="SearchService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.search.SearchService</value>
@@ -148,8 +148,8 @@
             </list>
         </property>
     </bean>
-	
-	<bean id="ADMSearchService" class="org.springframework.aop.framework.ProxyFactoryBean">
+
+    <bean id="ADMSearchService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.search.SearchService</value>
         </property>
@@ -165,7 +165,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="SearchService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -176,9 +176,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- Category Service -->
-    
+
     <bean id="CategoryService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.search.CategoryService</value>
@@ -195,7 +195,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="CategoryService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -206,9 +206,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- Copy Service -->
-    
+
     <bean id="CopyService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.repository.CopyService</value>
@@ -225,7 +225,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="CopyService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -236,9 +236,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- Lock Service -->
-    
+
     <bean id="LockService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.lock.LockService</value>
@@ -255,7 +255,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="LockService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -266,9 +266,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- Version Service -->
-    
+
     <bean id="VersionService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.version.VersionService</value>
@@ -285,7 +285,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="VersionService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -296,9 +296,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- COCI Service -->
-    
+
     <bean id="CheckoutCheckinService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.coci.CheckOutCheckInService</value>
@@ -315,7 +315,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="CheckoutCheckinService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -326,9 +326,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- Rule Service -->
-    
+
     <bean id="RuleService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.rule.RuleService</value>
@@ -345,7 +345,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="RuleService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -356,9 +356,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- Importer Service -->
-    
+
     <bean id="ImporterService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.view.ImporterService</value>
@@ -375,7 +375,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="ImporterService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -386,9 +386,9 @@
             </props>
         </property>
     </bean>
-        
+
     <!-- Exporter Service -->
-    
+
     <bean id="ExporterService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.view.ExporterService</value>
@@ -403,7 +403,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="ExporterService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -414,9 +414,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- Action Service -->
-    
+
     <bean id="ActionService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.action.ActionService</value>
@@ -433,7 +433,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="ActionService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -444,9 +444,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- Permission Service -->
-    
+
     <bean id="PermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.security.PermissionService</value>
@@ -463,7 +463,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="PermissionService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -474,9 +474,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- Authority Service -->
-    
+
     <bean id="AuthorityService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.security.AuthorityService</value>
@@ -493,7 +493,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="AuthorityService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -504,9 +504,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- Ownable Service -->
-    
+
     <bean id="OwnableService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.security.OwnableService</value>
@@ -523,7 +523,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="OwnableService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -534,9 +534,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- Person Service -->
-    
+
     <bean id="PersonService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.security.PersonService</value>
@@ -553,7 +553,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="PersonService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -564,9 +564,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- Authentication Service -->
-    
+
     <bean id="AuthenticationService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.security.AuthenticationService</value>
@@ -583,7 +583,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="AuthenticationService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -600,9 +600,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- Template Service -->
-    
+
     <bean id="TemplateService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.repository.TemplateService</value>
@@ -619,7 +619,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="TemplateService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -630,9 +630,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- Script Service -->
-    
+
     <bean id="ScriptService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.repository.ScriptService</value>
@@ -649,7 +649,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="ScriptService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -660,9 +660,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- File/Folder Service -->
-    
+
     <bean id="FileFolderService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.model.FileFolderService</value>
@@ -682,7 +682,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="FileFolderService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -697,9 +697,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- The CrossRepositoryCopyService -->
-    
+
     <bean id="crossRepositoryCopyService" class="org.alfresco.repo.copy.CrossRepositoryCopyServiceImpl">
         <property name="avmService">
             <ref bean="indexingAVMService"/>
@@ -718,9 +718,9 @@
         </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService"/>
-        </property> 
+        </property>
     </bean>
-    
+
     <bean id="crossRepositoryCopyServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
             <ref bean="retryingWriteTxnAdvice"/>
@@ -731,7 +731,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="CrossRepositoryCopyService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <list>
@@ -747,9 +747,9 @@
             </list>
         </property>
     </bean>
-    
+
     <!-- The AVMService -->
-    
+
     <bean id="avmService" class="org.alfresco.repo.avm.AVMServiceImpl">
         <property name="avmRepository">
             <ref bean="avmRepository"/>
@@ -758,7 +758,7 @@
             <ref bean="lookupCacheListener"/>
         </property>
     </bean>
-    
+
     <bean id="avmServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
             <ref bean="retryingReadTxnAdvice"/>
@@ -848,7 +848,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="AVMService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <list>
@@ -881,7 +881,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="avmSnapShotTriggeredIndexingMethodInterceptor" class="org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor">
         <property name="avmService">
             <ref bean="avmService" />
@@ -892,27 +892,27 @@
         <property name="enableIndexing">
             <value>true</value>
         </property>
-		<property name="defaultMode">
+        <property name="defaultMode">
             <value>SYNCHRONOUS</value>
         </property>
-		<property name="indexingDefinitions">
-			<list>
-				<value>SYNCHRONOUS:TYPE:STAGING</value>
-				<value>UNINDEXED:TYPE:STAGING_PREVIEW</value>
-				<value>UNINDEXED:TYPE:AUTHOR</value>
-				<value>UNINDEXED:TYPE:AUTHOR_PREVIEW</value>
-				<value>UNINDEXED:TYPE:WORKFLOW</value>
-				<value>UNINDEXED:TYPE:WORKFLOW_PREVIEW</value>
-				<value>UNINDEXED:TYPE:AUTHOR_WORKFLOW</value>
-				<value>UNINDEXED:TYPE:AUTHOR_WORKFLOW_PREVIEW</value>
-				<value>ASYNCHRONOUS:NAME:avmAsynchronousTest</value>
-				<value>SYNCHRONOUS:NAME:.*</value>
-			</list>
-		</property>
+        <property name="indexingDefinitions">
+            <list>
+                <value>SYNCHRONOUS:TYPE:STAGING</value>
+                <value>UNINDEXED:TYPE:STAGING_PREVIEW</value>
+                <value>UNINDEXED:TYPE:AUTHOR</value>
+                <value>UNINDEXED:TYPE:AUTHOR_PREVIEW</value>
+                <value>UNINDEXED:TYPE:WORKFLOW</value>
+                <value>UNINDEXED:TYPE:WORKFLOW_PREVIEW</value>
+                <value>UNINDEXED:TYPE:AUTHOR_WORKFLOW</value>
+                <value>UNINDEXED:TYPE:AUTHOR_WORKFLOW_PREVIEW</value>
+                <value>ASYNCHRONOUS:NAME:avmAsynchronousTest</value>
+                <value>SYNCHRONOUS:NAME:.*</value>
+            </list>
+        </property>
     </bean>
-    
+
     <!-- The AVMSyncService -->
-    
+
     <bean id="avmSyncService" class="org.alfresco.repo.avm.AVMSyncServiceImpl">
         <property name="avmService">
             <ref bean="indexingAVMService"/>
@@ -921,7 +921,7 @@
             <ref bean="avmRepository"/>
         </property>
     </bean>
-    
+
     <!-- Read transaction advisor for sync service. -->
     <bean id="avmSyncServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
@@ -933,7 +933,7 @@
             </list>
         </property>
     </bean>
-    
+
     <!-- Write transaction advisor for sync service. -->
     <bean id="avmSyncServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
@@ -966,7 +966,7 @@
     </bean>
 
     <!-- Attribute Service -->
-        
+
     <!-- Read transaction advisor for attribute service. -->
     <bean id="attributeServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
@@ -982,7 +982,7 @@
             </list>
         </property>
     </bean>
-    
+
     <!-- Write transaction advisor for attribute service. -->
     <bean id="attributeServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
@@ -1018,7 +1018,7 @@
     </bean>
 
      <!-- Deployment Service. -->
-    
+
      <bean id="deploymentService" class="org.alfresco.repo.deploy.DeploymentServiceImpl">
         <property name="avmService">
             <ref bean="indexingAVMService"/>
@@ -1037,7 +1037,7 @@
         </property>
     </bean>
     -->
-    
+
     <bean id="deploymentServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
             <ref bean="retryingWriteTxnAdvice"/>
@@ -1068,7 +1068,7 @@
 
 
     <!-- AVM Locking Service. -->
-    
+
     <bean id="avmLockingServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
             <ref bean="retryingReadTxnAdvice"/>
@@ -1117,9 +1117,9 @@
             </list>
         </property>
     </bean>
-    
+
     <!-- Workflow Service -->
-    
+
     <bean id="WorkflowService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.workflow.WorkflowService</value>
@@ -1136,7 +1136,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="WorkflowService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -1147,9 +1147,9 @@
             </props>
         </property>
     </bean>
-        
+
     <!-- Audit Service -->
-    
+
     <bean id="AuditService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.audit.AuditService</value>
@@ -1166,7 +1166,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="AuditService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -1177,10 +1177,10 @@
             </props>
         </property>
     </bean>
-    
-    
+
+
     <!-- MultilingualContentService -->
-    
+
     <bean id="MultilingualContentService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.ml.MultilingualContentService</value>
@@ -1192,11 +1192,11 @@
             <list>
                 <idref local="MultilingualContentService_transaction"/>
                 <idref local="exceptionTranslator"/>
-                <idref bean="MultilingualContentService_security"/>   
+                <idref bean="MultilingualContentService_security"/>
             </list>
         </property>
     </bean>
-    
+
     <bean id="MultilingualContentService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -1209,9 +1209,38 @@
             </props>
         </property>
     </bean>
-    
+
+
+    <!-- EditionService -->
+
+    <bean id="EditionService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.ml.EditionService</value>
+        </property>
+        <property name="target">
+            <ref bean="editionService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="EditionService_transaction"/>
+                <idref bean="EditionService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="EditionService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
     <!-- ConfigurableService -->
-    
+
     <bean id="ConfigurableService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.repo.configuration.ConfigurableService</value>
@@ -1225,7 +1254,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="ConfigurableService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -1238,9 +1267,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- RegistryService -->
-    
+
     <bean id="RegistryService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.repo.admin.registry.RegistryService</value>
@@ -1254,7 +1283,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="RegistryService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -1266,9 +1295,9 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- ModuleService -->
-    
+
     <bean id="ModuleService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.module.ModuleService</value>
@@ -1282,7 +1311,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="ModuleService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -1294,7 +1323,7 @@
             </props>
         </property>
     </bean>
-    
+
 
 
 
@@ -1318,8 +1347,8 @@
             </list>
         </property>
     </bean>
-    
-    <!-- Write transaction advisor for link validation service. -->
+
+ <!-- Write transaction advisor for link validation service. -->
     <bean id="linkValidationServiceWriteTxnAdvisor" 
           class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">

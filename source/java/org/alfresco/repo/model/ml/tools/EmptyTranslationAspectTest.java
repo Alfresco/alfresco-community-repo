@@ -40,7 +40,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @see org.alfresco.service.cmr.ml.EmptyTranslationAspect
  * 
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class EmptyTranslationAspectTest extends AbstractMultilingualTestCases {
 

@@ -35,7 +35,7 @@ import java.util.Locale;
  * @see org.alfresco.service.cmr.ml.ContentFilterLanguagesService
  * @see org.alfresco.repo.model.ml.ContentFilterLanguagesMap
  * 
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class ContentFilterLanguagesMapTest extends AbstractMultilingualTestCases 
 {

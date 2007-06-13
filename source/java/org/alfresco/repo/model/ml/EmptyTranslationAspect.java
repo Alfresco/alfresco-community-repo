@@ -44,7 +44,7 @@ import org.alfresco.service.namespace.QName;
  *  
  * {@link ContentModel#ASPECT_MULTILINGUAL_EMPTY_TRANSLATION ml empty document aspect}
  *
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class EmptyTranslationAspect implements 
         CopyServicePolicies.OnCopyNodePolicy,

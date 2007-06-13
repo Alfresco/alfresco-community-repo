@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.repo.model.ml.tools;
@@ -33,6 +33,7 @@ import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
+import org.alfresco.service.cmr.ml.EditionService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -48,12 +49,12 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * Base multilingual test cases
- * 
+ *
  * @author yanipig
  */
-public abstract class AbstractMultilingualTestCases extends TestCase 
+public abstract class AbstractMultilingualTestCases extends TestCase
 {
-    
+
     protected static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
     protected ServiceRegistry serviceRegistry;
@@ -66,6 +67,8 @@ public abstract class AbstractMultilingualTestCases extends TestCase
     protected NodeRef folderNodeRef;
     protected ContentFilterLanguagesService contentFilterLanguagesService;
     protected NodeArchiveService nodeArchiveService;
+    protected EditionService editionService;
+
     @Override
     protected void setUp() throws Exception
     {
@@ -78,10 +81,11 @@ public abstract class AbstractMultilingualTestCases extends TestCase
         versionService = serviceRegistry.getVersionService();
         multilingualContentService = (MultilingualContentService) ctx.getBean("MultilingualContentService");
         contentFilterLanguagesService = (ContentFilterLanguagesService) ctx.getBean("ContentFilterLanguagesService");
-        
+        editionService = (EditionService) ctx.getBean("EditionService");
+
         // Run as admin
         authenticationComponent.setCurrentUser("admin");
-        
+
         // Create a folder to work in
         TransactionWork<NodeRef> createFolderWork = new TransactionWork<NodeRef>()
         {
@@ -101,7 +105,7 @@ public abstract class AbstractMultilingualTestCases extends TestCase
         };
         folderNodeRef = TransactionUtil.executeInUserTransaction(transactionService, createFolderWork);
     }
-    
+
     @Override
     protected void tearDown() throws Exception
     {
@@ -115,13 +119,13 @@ public abstract class AbstractMultilingualTestCases extends TestCase
             e.printStackTrace();
         }
     }
-    
+
     protected NodeRef createContent()
     {
         String name = "" + System.currentTimeMillis();
         return createContent(name);
     }
-   
+
     protected NodeRef createContent(String name)
     {
         NodeRef contentNodeRef = fileFolderService.create(
@@ -134,7 +138,7 @@ public abstract class AbstractMultilingualTestCases extends TestCase
         // done
         return contentNodeRef;
     }
-    
+
     public void testSetup() throws Exception
     {
         // Ensure that content can be created

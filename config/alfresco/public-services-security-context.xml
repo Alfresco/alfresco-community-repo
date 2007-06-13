@@ -4,13 +4,13 @@
 <!-- ========================== -->
 <!-- Enforcement of permissions -->
 <!-- ========================== -->
-    
+
 <!--                                                                                     -->
 <!-- This file defines the beans that intercept method calls to the repository services  -->
 <!-- and enforce security based on the currently authenticated user.                     -->
 <!--                                                                                     -->
-    
- 
+
+
 <beans>
 
 
@@ -38,7 +38,7 @@
             </props>
         </property>
     </bean>
-    
+
     <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.impl.PermissionServiceImpl">
         <property name="nodeService">
             <ref bean="nodeService" />
@@ -75,19 +75,19 @@
             </list>
         </property>
     </bean>
-    
+
     <!-- =================== -->
     <!-- Dynamic Authorities -->
     <!-- =================== -->
-    
-    
+
+
     <!-- The provider to evaluate if the current authentication is the owner of a node.  -->
     <bean id="ownerDynamicAuthority" class="org.alfresco.repo.security.permissions.dynamic.OwnerDynamicAuthority">
         <property name="ownableService">
             <ref bean="ownableService" />
         </property>
     </bean>
-    
+
     <!-- The provider to evaluate if the currfent authentication is the local owner on a -->
     <!-- node.                                                                           -->
     <bean id="lockOwnerDynamicAuthority" class="org.alfresco.repo.security.permissions.dynamic.LockOwnerDynamicAuthority">
@@ -114,43 +114,43 @@
             <ref bean="dictionaryService" />
         </property>
     </bean>
-    
+
     <!-- ====== -->
     <!-- Voters -->
     <!-- ====== -->
-    
+
     <!-- A voter to allow access base on the current authentication having authorities   -->
     <!-- starting with the prefix "ROLE_"                                                -->
     <!-- Any match grants                                                                -->
-    
+
     <bean id="roleVoter" class="net.sf.acegisecurity.vote.RoleVoter" abstract="false" singleton="true"
         lazy-init="default" autowire="default" dependency-check="default" >
         <property name="rolePrefix">
             <value>ROLE_</value>
         </property>
     </bean>
-    
+
     <!-- A voter to allow access base on the current authentication having authorities   -->
     <!-- starting with the prefix "GROUP_"                                               -->
     <!-- Any match grants                                                                -->
-    
+
     <bean id="groupVoter" class="net.sf.acegisecurity.vote.RoleVoter" abstract="false" singleton="true"
         lazy-init="default" autowire="default" dependency-check="default" >
         <property name="rolePrefix">
             <value>GROUP_</value>
         </property>
     </bean>
-    
+
     <!-- A voter to allow access based on node access control.                           -->
     <!-- These start ACL_NODE or ACL_PARENT and are followed by .methodArgumentPosition  -->
     <!-- then object type (prefix:localname) . permission                                -->
     <!--                                                                                 -->
     <!-- All permissions starting ACL_NODE and ACL_PARENT must be present for access to  -->
-    <!-- be granted.                                                                     --> 
+    <!-- be granted.                                                                     -->
     <!--                                                                                 -->
     <!-- Note: ff the context evaluates to null (e.g. doing an exists test on a node     -->
     <!-- that does not exist) then access will be allowed.                               -->
-        
+
     <bean id="aclEntryVoter" class="org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoter" abstract="false" singleton="true"
         lazy-init="default" autowire="default" dependency-check="default" >
        <property name="permissionService">
@@ -161,7 +161,7 @@
        </property>
        <property name="nodeService">
            <ref bean="nodeService"></ref>
-       </property>    
+       </property>
        <property name="authenticationService">
             <ref bean="authenticationService" />
        </property>
@@ -169,15 +169,15 @@
             <ref bean="authorityService" />
        </property>
     </bean>
-    
-    
+
+
     <!-- ======================= -->
     <!-- Access decision manager -->
     <!-- ======================= -->
-    
+
     <!-- The access decision manager asks voters in order if they should allow access    -->
     <!-- Role and group access do not require ACL based access                           -->
-    
+
     <bean id="accessDecisionManager" class="net.sf.acegisecurity.vote.AffirmativeBased">
         <property name="allowIfAllAbstainDecisions"><value>false</value></property>
         <property name="decisionVoters">
@@ -188,11 +188,11 @@
             </list>
         </property>
     </bean>
-   
+
     <!-- ======================================== -->
     <!-- Post method call application of security -->
     <!-- ======================================== -->
-   
+
     <bean id="afterAcl" class="org.alfresco.repo.security.permissions.impl.acegi.ACLEntryAfterInvocationProvider" abstract="false" singleton="true"
         lazy-init="default" autowire="default" dependency-check="default" >
         <property name="permissionService">
@@ -203,7 +203,7 @@
         </property>
         <property name="nodeService">
             <ref bean="nodeService"></ref>
-        </property>  
+        </property>
         <property name="authenticationService">
              <ref bean="authenticationServiceImpl" />
         </property>
@@ -214,9 +214,9 @@
             <value>${system.acl.maxPermissionChecks}</value>
         </property>
     </bean>
-   
-    <!-- Link up after method call security --> 
-   
+
+    <!-- Link up after method call security -->
+
     <bean id="afterInvocationManager" class="net.sf.acegisecurity.afterinvocation.AfterInvocationProviderManager">
         <property name="providers">
             <list>
@@ -224,41 +224,41 @@
             </list>
         </property>
     </bean>
-    
-    
+
+
     <!-- ================================ -->
     <!-- Beans that enforce secure access -->
     <!-- ================================ -->
-    
+
     <!-- Each bean defines a new methos security interceptor wired up with the           -->
     <!-- authenticationManager, accessDecisionManager and afterInvocationManager, which  -->
     <!-- can all be reused.                                                              -->
-    
+
     <!-- If one method cal requires security enforcement - all methods must gave a       -->
     <!-- security entry of some sort. ACL_ALLOW can be used to give access to all        -->
     <!-- ROLE_ADMINISTRATOR can be used to grant access to administrator related methods -->
-    
-    
+
+
     <!-- The namespace service does not enforce any security requirements                -->
     <bean id="NamespaceService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
-    
-    <!-- The dictionary service does not enforce any security requirements               --> 
+
+    <!-- The dictionary service does not enforce any security requirements               -->
     <bean id="DictionaryService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
-    
+
     <!-- ======================== -->
     <!-- Node service permissions -->
     <!-- ======================== -->
-    
+
     <!-- See the NodeService for the parameters required for each method call.           -->
-    <!--                                                                                 --> 
+    <!--                                                                                 -->
     <!-- getStores                                                                       -->
-    <!--      returns a list fo the stores to which the curent authentication has Read   --> 
+    <!--      returns a list fo the stores to which the curent authentication has Read   -->
     <!--      permission. (See the permission model defintion for what this means)       -->
     <!-- createStore                                                                     -->
     <!--      only a user with the administrator role can create new stores              -->
     <!-- exists                                                                          -->
     <!--      check if a node exists. If the current user does not have read access then -->
-    <!--      the node will not exist.                                                   --> 
+    <!--      the node will not exist.                                                   -->
     <!-- getRootNode                                                                     -->
     <!--      get the root node for a store - access will be denied for users who do not -->
     <!--      have Read permission for the root node of the store.                       -->
@@ -272,20 +272,20 @@
     <!--      required write properties permission on the parent                         -->
     <!-- getType                                                                         -->
     <!--      obtaining the type of a node requires read access                          -->
-    <!-- addAspect                                                                       --> 
+    <!-- addAspect                                                                       -->
     <!--      adding an aspect updates a multi-valued property so this requires write    -->
-    <!--      access to properties.                                                      -->   
-    <!-- removeAspect                                                                    --> 
+    <!--      access to properties.                                                      -->
+    <!-- removeAspect                                                                    -->
     <!--      removing an aspect updates a multi-valued property so this requires write  -->
-    <!--      access to properties.                                                      -->   
+    <!--      access to properties.                                                      -->
     <!-- hasAspect                                                                       -->
-    <!--      querying for an aspect requires read access to a property                  --> 
-    <!-- getAspects                                                                      --> 
+    <!--      querying for an aspect requires read access to a property                  -->
+    <!-- getAspects                                                                      -->
     <!--      querying for all aspect requires read access to a property                 -->
-    <!-- deleteNode                                                                      --> 
+    <!-- deleteNode                                                                      -->
     <!--      requires the delete permission                                             -->
     <!-- addChild                                                                        -->
-    <!--      requires create children on the parent                                     --> 
+    <!--      requires create children on the parent                                     -->
     <!-- removeChild                                                                     -->
     <!--      Requires delete children from the parent and delete for the child          -->
     <!-- removeChildAssociation                                                          -->
@@ -306,7 +306,7 @@
     <!--      It is possible that no children are accessible                             -->
     <!-- getPrimaryParent                                                                -->
     <!--      Requires read on the node an aceess error will be thrown if the primary    -->
-    <!--      parent can not be read                                                     -->                                                
+    <!--      parent can not be read                                                     -->
     <!-- createAssociation                                                               -->
     <!--      NOT SET YET                                                                -->
     <!-- removeAssociation                                                               -->
@@ -319,8 +319,8 @@
     <!--      Requires read for the node                                                 -->
     <!-- getPaths                                                                        -->
     <!--      Requires read for the node                                                 -->
-          
-    
+
+
     <bean id="NodeService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
@@ -365,11 +365,11 @@
             </value>
         </property>
     </bean>
-    
+
     <!-- ============================== -->
     <!-- FileFolder Service Permissions -->
     <!-- ============================== -->
-    
+
     <bean id="FileFolderService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
@@ -395,14 +395,14 @@
             </value>
         </property>
     </bean>
-    
+
     <!-- =========================== -->
     <!-- Content Service Permissions -->
     <!-- =========================== -->
-    
+
     <!-- Reading requires the permission to read content                                 -->
     <!-- Writing required the permission to write conent                                 -->
-    
+
     <bean id="ContentService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
@@ -420,22 +420,22 @@
             </value>
         </property>
     </bean>
-    
-    
+
+
     <!-- ================ -->
     <!-- MimeType Service -->
     <!-- ================ -->
-    
+
     <!-- There are no permissions around mime types -->
     <bean id="MimetypeService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
-    
+
     <!-- ============== -->
     <!-- Search Service -->
     <!-- ============== -->
-    
+
     <!-- All search results are filtered to exclude nodes that the current user can not        -->
     <!-- read. Other methods restrict queries to those nodes the user can read                 -->
-  
+
     <bean id="SearchService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
@@ -450,14 +450,14 @@
             </value>
         </property>
     </bean>
-   
+
     <!-- ================ -->
     <!-- Category Service -->
     <!-- ================ -->
-   
+
     <!-- Category queries are filtered for nodes that are visible to the current user    -->
     <!-- Other methods are unrestricted at the moment                                    -->
-   
+
     <bean id="CategoryService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
@@ -477,24 +477,24 @@
             </value>
         </property>
     </bean>
-    
-  
+
+
     <!-- ============ -->
     <!-- Copy Service -->
     <!-- ============ -->
-   
+
     <!-- The copy service does not require any security restrictions, they are imposed   -->
     <!-- by the node service it uses to do its work.                                     -->
-   
+
     <bean id="CopyService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
-    
+
     <!-- ================ -->
     <!-- The Lock Service -->
     <!-- ================ -->
-    
+
     <!-- Lock and Unlock require the related aspect specific permissions. Querying the   -->
     <!-- lock status just requires read access to the node.                              -->
-    
+
     <bean id="LockService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
@@ -510,23 +510,23 @@
             </value>
         </property>
     </bean>
-    
+
     <!-- =============== -->
     <!-- Version Service -->
     <!-- =============== -->
-   
+
     <!-- The version service does not have any restrictions applied at the moment. It    -->
     <!-- does not use a node service that would apply any permissions.                   -->
-   
+
     <bean id="VersionService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
-    
+
     <!-- =============================== -->
     <!-- Multilingual Content Service    -->
     <!-- =============================== -->
-   
+
     <!-- The version service does not have any restrictions applied at the moment. It    -->
     <!-- does not use a node service that would apply any permissions.                   -->
-   
+
     <bean id="MultilingualContentService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
     <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
@@ -543,19 +543,39 @@
                 org.alfresco.service.cmr.ml.MultilingualContentService.unmakeTranslation=ACL_NODE.0.sys:base.Write
                 org.alfresco.service.cmr.ml.MultilingualContentService.addTranslation=ACL_NODE.0.sys:base.Read,ACL_NODE.1.sys:base.Write
                 org.alfresco.service.cmr.ml.MultilingualContentService.addEmptyTranslation=ACL_NODE.0.sys:base.Read,ACL_NODE.0.sys:base.CreateChildren
-                org.alfresco.service.cmr.ml.MultilingualContentService.createEdition=ACL_NODE.0.sys:base.Write
+                org.alfresco.service.cmr.ml.MultilingualContentService.copyTranslationContainer=ACL_NODE.0.sys:base.Read,ACL_NODE.1.sys:base.CreateChildren
+                org.alfresco.service.cmr.ml.MultilingualContentService.moveTranslationContainer=ACL_NODE.0.sys:base.DeleteNode,ACL_NODE.1.sys:base.CreateChildren
             </value>
          </property>
     </bean>
+
+    <!-- =================== -->
+    <!-- Edition  Service    -->
+    <!-- =================== -->
+
+    <bean id="EditionService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+    <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="objectDefinitionSource">
+            <value>
+                org.alfresco.service.cmr.ml.EditionService.createEdition=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.ml.EditionService.getEditions=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.ml.EditionService.getVersionedTranslations=ACL_ALLOW
+                org.alfresco.service.cmr.ml.EditionService.getVersionedMetadatas=ACL_ALLOW
+            </value>
+         </property>
+    </bean>
+
     <!-- ============================== -->
     <!-- The Check-out/Check-in service -->
     <!-- ============================== -->
-    
+
     <!-- To check out a node requires that you have permission to check out the node and -->
     <!-- create the working copy in the specified location. Check in requires the        -->
     <!-- the associated permission, as does cancel check out. See the permission model   -->
     <!-- for how these permissions are granted.                                          -->
-    
+
     <bean id="CheckoutCheckinService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
@@ -568,42 +588,42 @@
                 org.alfresco.service.cmr.coci.CheckOutCheckInService.getWorkingCopy=ACL_NODE.0.sys:base.Read
             </value>
         </property>
-    </bean> 
-    
+    </bean>
+
     <!-- ================ -->
     <!-- The Rule Service -->
     <!-- ================ -->
-    
+
     <!-- The rule service does not require any security restrictions, they are imposed   -->
     <!-- by the node service it uses to do its work.                                     -->
-              
+
     <bean id="RuleService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
-    
+
     <!-- ==================== -->
     <!-- The Importer Service -->
     <!-- ==================== -->
-    
+
     <!-- The importer service does not require any security restrictions, they are       -->
     <!-- imposed by the node service it uses to do its work.                             -->
 
     <bean id="ImporterService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
-    
+
     <!-- ================== -->
     <!-- The Action Service -->
     <!-- ================== -->
-    
+
     <!-- The action service does not require any security restrictions, they are imposed -->
     <!-- by the node service it uses to do its work.                                     -->
     <bean id="ActionService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
-   
+
     <!-- ====================== -->
     <!-- The Permission Service -->
     <!-- ====================== -->
-     
+
     <!-- Requests to this service are controlled by the ReadPermissions and              -->
     <!-- and ChangePermissions permissions. Access to some methods are not restricted at -->
     <!-- the moment.                                                                     -->
-    
+
     <bean id="PermissionService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
@@ -626,13 +646,13 @@
             </value>
         </property>
     </bean>
-   
+
     <!-- ===================== -->
     <!-- The Authority Service -->
     <!-- ===================== -->
-   
+
     <!-- This service currently has no restrictions.                                     -->
-    
+
     <bean id="AuthorityService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
@@ -655,11 +675,11 @@
             </value>
         </property>
     </bean>
-   
+
    <!-- =============================================== -->
    <!-- The Authentication Service security interceptor -->
    <!-- =============================================== -->
- 
+
    <!-- NOTE: Authentication is excluded as it sets or clears authentication -->
    <!-- The same for validate ticaket -->
    <!-- Update authentication checks internally -->
@@ -690,14 +710,14 @@
             </value>
         </property>
     </bean>
-   
+
     <!-- =================== -->
     <!-- The Ownable Service -->
     <!-- =================== -->
-   
+
     <!-- This service currently has no restrictions.                                     -->
     <!-- TODO: respect the permissions on the ownable service                            -->
-   
+
     <bean id="OwnableService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
@@ -711,10 +731,10 @@
          </value>
         </property>
     </bean>
-    
-    
+
+
     <!-- Person Service -->
-    
+
      <bean id="PersonService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
@@ -737,37 +757,37 @@
          </value>
         </property>
     </bean>
-    
+
     <!-- ==================== -->
     <!-- The Template Service -->
     <!-- ==================== -->
-   
+
     <!-- This service currently has no restrictions. -->
-    
+
     <bean id="TemplateService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
-    
+
     <!-- ==================== -->
     <!-- The Script Service -->
     <!-- ==================== -->
-   
+
     <!-- This service currently has no restrictions. -->
-    
+
     <bean id="ScriptService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
-    
+
     <!-- ================ -->
     <!-- Workflow Service -->
     <!-- ================ -->
-    
+
     <!-- TODO: Add workflow security -->
-    
+
     <bean id="WorkflowService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
-    
+
     <!-- ============= -->
     <!-- Audit Service -->
     <!-- ============= -->
-    
+
     <!-- TODO: Add audit security -->
-    
+
     <bean id="AuditService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
-    
+
 </beans>

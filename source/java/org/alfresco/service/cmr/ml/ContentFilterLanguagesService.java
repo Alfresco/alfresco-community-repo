@@ -35,7 +35,7 @@ import org.alfresco.service.PublicService;
 /**
  * This service interface provides support for content filter languages .
  * 
- * @author yanipig
+ * @author Yannick Pignot
  *
  */
 @PublicService

@@ -37,7 +37,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @see org.alfresco.service.cmr.ml.MultilingualDocumentAspect
  * 
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCases 
 {

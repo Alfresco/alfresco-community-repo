@@ -2,9 +2,9 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-   
+
    <!-- File/folder specific service -->
-   
+
    <bean name="fileFolderService" class="org.alfresco.repo.model.filefolder.FileFolderServiceImpl" init-method="init">
       <property name="namespaceService"><ref bean="namespaceService" /></property>
       <property name="dictionaryService"><ref bean="dictionaryService" /></property>
@@ -39,7 +39,7 @@
       </property>
    </bean>
 
-   <bean id="mlContentInterceptor" class="org.alfresco.repo.model.ml.MLContentInterceptor" >
+  <bean id="mlContentInterceptor" class="org.alfresco.repo.model.ml.MLContentInterceptor" >
       <property name="nodeService">
          <ref bean="nodeService"/>
       </property>
@@ -50,8 +50,8 @@
          <ref bean="multilingualContentService"/>
       </property>
    </bean>
-    
-   
+
+
    <bean name="tempFileMarkerInterceptor" class="org.alfresco.repo.model.filefolder.TempFileMarkerInterceptor">
       <property name="nodeService">
          <ref bean="nodeService" />
@@ -64,7 +64,7 @@
          </list>
       </property>
    </bean>
-   
+
   <!-- Multilingual specific service -->
    <bean name="multilingualContentService" class="org.alfresco.repo.model.ml.MultilingualContentServiceImpl" >
       <property name="nodeService">
@@ -72,9 +72,6 @@
       </property>
       <property name="searchService">
          <ref bean="admSearchService" />
-      </property>
-      <property name="versionService">
-         <ref bean="versionService" />
       </property>
       <property name="permissionService">
          <ref bean="permissionService" />
@@ -84,6 +81,31 @@
       </property>
       <property name="fileFolderService">
          <ref bean="fileFolderService" />
+      </property>
+   </bean>
+
+   <!-- Edition service -->
+   <bean name="editionService" class="org.alfresco.repo.model.ml.EditionServiceImpl" >
+      <property name="nodeService">
+         <ref bean="NodeService" />
+      </property>
+      <property name="versionService">
+         <ref bean="VersionService" />
+      </property>
+      <property name="multilingualContentService">
+         <ref bean="MultilingualContentService" />
+      </property>
+      <property name="versionNodeService">
+         <ref bean="versionNodeService" />
+      </property>
+      <property name="policyBehaviourFilter">
+         <ref bean="policyBehaviourFilter" />
+      </property>
+      <property name="nodeArchiveService">
+         <ref bean="nodeArchiveService" />
+      </property>
+      <property name="fileFolderService">
+         <ref bean="FileFolderService" />
       </property>
    </bean>
 

@@ -45,7 +45,7 @@ import org.alfresco.service.namespace.QName;
  *
  * {@link ContentModel#TYPE_MULTILINGUAL_CONTAINER multilingual container type}
  *
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class MLContainerType implements
         NodeServicePolicies.OnUpdatePropertiesPolicy

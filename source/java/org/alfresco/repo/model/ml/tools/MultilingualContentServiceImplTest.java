@@ -24,11 +24,8 @@
  */
 package org.alfresco.repo.model.ml.tools;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import net.sf.acegisecurity.Authentication;
 
@@ -39,8 +36,6 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionHistory;
 
 /**
  * @see org.alfresco.repo.ml.MultilingualContentServiceImpl
@@ -231,58 +226,6 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         assertEquals("Empty translation name not generated correctly.", "Document2.txt", differentName);
     }
     
-    @SuppressWarnings("unused") 
-    public void testCreateEdition() throws Exception
-    {
-        // Make some content
-        NodeRef chineseContentNodeRef = createContent();
-        NodeRef frenchContentNodeRef = createContent();
-        NodeRef japaneseContentNodeRef = createContent();
-        // Add to container
-        multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
-        multilingualContentService.addTranslation(frenchContentNodeRef, chineseContentNodeRef, Locale.FRENCH);
-        multilingualContentService.addTranslation(japaneseContentNodeRef, chineseContentNodeRef, Locale.JAPANESE);
-
-        NodeRef mlContainerNodeRef = multilingualContentService.getTranslationContainer(chineseContentNodeRef);
-        // Check the container child count
-        assertEquals("Incorrect number of child nodes", 3, nodeService.getChildAssocs(mlContainerNodeRef).size());
-
-        // Version each of the documents
-        List<NodeRef> nodeRefs = new ArrayList<NodeRef>(3);
-        nodeRefs.add(chineseContentNodeRef);
-        nodeRefs.add(frenchContentNodeRef);
-        nodeRefs.add(japaneseContentNodeRef);
-        versionService.createVersion(nodeRefs, null);
-        // Get the current versions of each of the documents
-        Version chineseVersionPreEdition = versionService.getCurrentVersion(chineseContentNodeRef);
-        Version frenchVersionPreEdition = versionService.getCurrentVersion(frenchContentNodeRef);
-        Version japaneseVersionPreEdition = versionService.getCurrentVersion(japaneseContentNodeRef);
-        
-        // Create the edition, keeping the Chinese translation as the basis
-        multilingualContentService.createEdition(chineseContentNodeRef);
-        // Check the container child count
-        assertEquals("Incorrect number of child nodes", 1, nodeService.getChildAssocs(mlContainerNodeRef).size());
-        
-        // Get the document versions now
-        Version chineseVersionPostEdition = versionService.getCurrentVersion(chineseContentNodeRef);
-        assertFalse("Expected document to be gone", nodeService.exists(frenchContentNodeRef));
-        assertFalse("Expected document to be gone", nodeService.exists(japaneseContentNodeRef));
-        
-        // Now be sure that we can get the required information using the version service
-        VersionHistory mlContainerVersionHistory = versionService.getVersionHistory(mlContainerNodeRef);
-        Collection<Version> mlContainerVersions = mlContainerVersionHistory.getAllVersions();
-        // Loop through and get all the children of each version
-        for (Version mlContainerVersion : mlContainerVersions)
-        {
-            NodeRef versionedMLContainerNodeRef = mlContainerVersion.getFrozenStateNodeRef();
-            // Get all the children
-            Map<Locale, NodeRef> translationsByLocale = multilingualContentService.getTranslations(
-                    versionedMLContainerNodeRef);
-            // Count the children
-            int count = translationsByLocale.size();
-        }
-    }
-    
     public void testGetTranslationContainerPermissions() throws Exception
     {
         // Grant the guest user rights to our working folder
@@ -335,7 +278,6 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
             multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
             multilingualContentService.addTranslation(frenchContentNodeRef, chineseContentNodeRef, Locale.FRENCH);
             multilingualContentService.addEmptyTranslation(chineseContentNodeRef, null, Locale.JAPANESE);
-            multilingualContentService.createEdition(chineseContentNodeRef);
         }
         finally
         {

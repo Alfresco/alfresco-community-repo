@@ -45,7 +45,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * {@link org.alfresco.service.cmr.ml.ContentFilterLanguagesService Content Filter Languages Service}
  *
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class ContentFilterLanguagesMap implements ContentFilterLanguagesService
 {

@@ -28,7 +28,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -37,6 +39,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.IdScriptableObject;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
@@ -153,26 +156,50 @@ public class ValueConverter
             // set using a JavaScript Array object
             ScriptableObject values = (ScriptableObject)value;
             
-            if (value instanceof NativeArray)
+            if (value instanceof IdScriptableObject)
             {
-                // convert JavaScript array of values to a List of Serializable objects
-                Object[] propIds = values.getIds();
-                List<Serializable> propValues = new ArrayList<Serializable>(propIds.length);
-                for (int i=0; i<propIds.length; i++)
+                if (value instanceof NativeArray)
                 {
-                    // work on each key in turn
-                    Object propId = propIds[i];
-                    
-                    // we are only interested in keys that indicate a list of values
-                    if (propId instanceof Integer)
+                    // convert JavaScript array of values to a List of Serializable objects
+                    Object[] propIds = values.getIds();
+                    List<Serializable> propValues = new ArrayList<Serializable>(propIds.length);
+                    for (int i=0; i<propIds.length; i++)
                     {
-                        // get the value out for the specified key
-                        Serializable val = (Serializable)values.get((Integer)propId, values);
-                        // recursively call this method to convert the value
-                        propValues.add(convertValueForRepo(val));
+                        // work on each key in turn
+                        Object propId = propIds[i];
+                        
+                        // we are only interested in keys that indicate a list of values
+                        if (propId instanceof Integer)
+                        {
+                            // get the value out for the specified key
+                            Serializable val = (Serializable)values.get((Integer)propId, values);
+                            // recursively call this method to convert the value
+                            propValues.add(convertValueForRepo(val));
+                        }
                     }
+                    value = (Serializable)propValues;
                 }
-                value = (Serializable)propValues;
+                else
+                {
+                    // convert JavaScript map to values to a Map of Serializable objects
+                    Object[] propIds = values.getIds();
+                    Map<String, Serializable> propValues = new HashMap<String, Serializable>(propIds.length);
+                    for (int i=0; i<propIds.length; i++)
+                    {
+                        // work on each key in turn
+                        Object propId = propIds[i];
+                        
+                        // we are only interested in keys that indicate a list of values
+                        if (propId instanceof String)
+                        {
+                            // get the value out for the specified key
+                            Serializable val = (Serializable)values.get((String)propId, values);
+                            // recursively call this method to convert the value
+                            propValues.put((String)propId, convertValueForRepo(val));
+                        }
+                    }
+                    value = (Serializable)propValues;
+                }
             }
             else
             {

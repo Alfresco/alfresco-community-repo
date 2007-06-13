@@ -25,8 +25,11 @@
 package org.alfresco.repo.template;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.processor.BaseProcessor;
@@ -280,32 +283,12 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
     {
         // If we dont have a map in our hand we just return the passes model
         if (model instanceof Map)
-        {        
+        {
             Map<String, Object> freeMarkerModel = new HashMap<String, Object>(((Map)model).size());
-            
+
             // Look for the image resolver in the model
             TemplateImageResolver imageResolver = (TemplateImageResolver)((Map)model).get(TemplateService.KEY_IMAGE_RESOLVER);
-            
-            for (Object objKey : ((Map)model).keySet())
-            {
-                String key = (String)objKey;
-                if (key.equals(TemplateService.KEY_IMAGE_RESOLVER) == false)
-                {
-                    Object value = ((Map)model).get(key);
-                    if (value instanceof NodeRef)
-                    {
-                        // Concer the node reference to a template node
-                        freeMarkerModel.put(key, new TemplateNode((NodeRef)value, this.services, imageResolver));
-                    }
-                    else
-                    {
-                        // Just add the object to the free marker model
-                        freeMarkerModel.put(key, ((Map)model).get(key));
-                    }
-                }
-            }
-            
-            
+
             // add the template extensions to the model
             // the extensions include custom root helper objects and custom template method objects
             for (ProcessorExtension ext : this.processorExtensions.values())
@@ -316,12 +299,70 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
                 }
                 freeMarkerModel.put(ext.getExtensionName(), ext);
             }
-            
+
+            Map<String, Object> value = (Map<String, Object>)convertValue(model, imageResolver);
+            freeMarkerModel.putAll(value);
             return freeMarkerModel;
         }
         else
         {
-            return model;
+            return convertValue(model, null);
         }
     }
+
+    /**
+     * Converts a value to a freemarker value
+     * 
+     * @param value
+     * @param imageResolver
+     * @return
+     */
+    private Object convertValue(Object value, TemplateImageResolver imageResolver)
+    {
+        if (value instanceof NodeRef)
+        {
+            return new TemplateNode((NodeRef)value, this.services, imageResolver);
+        }
+        
+        else if (value instanceof Map)
+        {
+            Map<String, Object> map = (Map<String, Object>)value;
+            Map<String, Object> convertedMap = new HashMap<String, Object>(map.size());
+            for (String key : map.keySet())
+            {
+                if (key.equals(TemplateService.KEY_IMAGE_RESOLVER) == false)
+                {
+                    Object mapValue = map.get(key);
+                    convertedMap.put(key, convertValue(mapValue, imageResolver));
+                }
+            }
+            return convertedMap;
+        }
+        
+        else if (value instanceof List)
+        {
+            List<Object> list = (List<Object>)value;
+            List<Object> convertedList = new ArrayList<Object>(list.size());
+            for (Object listVal : list)
+            {
+                convertedList.add(convertValue(listVal, imageResolver));
+            }
+            return convertedList;
+        }
+        
+        else if (value instanceof Object[])
+        {
+            Object[] array = (Object[])value;
+            Object[] convertedArray = new Object[array.length];
+            int i = 0;
+            for (Object item : array)
+            {
+                convertedArray[i++] = convertValue(item, imageResolver);
+            }
+            return convertedArray;
+        }
+        
+        return value;
+    }
+    
 }

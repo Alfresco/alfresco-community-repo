@@ -33,7 +33,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * The action is available only if the node is a translation.  
  * 
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class MultilingualDetailsEvaluator implements ActionEvaluator
 {

@@ -151,8 +151,7 @@ public class AddTranslationlDialog extends AddContentDialog
       return multilingualContentService;
    }
 
-   public void setMultilingualContentService(
-         MultilingualContentService multilingualContentService)
+   public void setMultilingualContentService(MultilingualContentService multilingualContentService)
    {
       this.multilingualContentService = multilingualContentService;
    }

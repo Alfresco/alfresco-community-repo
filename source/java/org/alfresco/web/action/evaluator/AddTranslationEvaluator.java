@@ -39,7 +39,7 @@ import org.alfresco.web.bean.repository.Node;
  * If the node is not already Multilingual, locked, or if a translation exists for each available 
  * filter language, don't allow the action.
  * 
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class AddTranslationEvaluator implements ActionEvaluator
 {

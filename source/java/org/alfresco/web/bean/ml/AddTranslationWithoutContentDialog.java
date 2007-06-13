@@ -45,7 +45,7 @@ import org.alfresco.web.ui.common.Utils;
  * Dialog bean to add a new translation without content. I means, a new node is created
  * but it doesn't content the propertie <code>{http://www.alfresco.org/model/content/1.0}content</code>
  *
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class AddTranslationWithoutContentDialog extends BaseDialogBean
 {

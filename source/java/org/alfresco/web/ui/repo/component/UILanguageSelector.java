@@ -41,7 +41,7 @@ import org.alfresco.web.bean.users.SpaceUsersBean;
  * Component that holds a list of languages avalaiable to make a node multilingual.
  * 
  * 
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class UILanguageSelector extends UISelectOne
 {

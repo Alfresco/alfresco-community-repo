@@ -39,7 +39,7 @@ import org.alfresco.web.bean.repository.Node;
 /**
  * Dialog bean to edit an existing multilingual container.
  * 
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class EditMLContainerDialog extends  BaseDialogBean
 {

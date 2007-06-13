@@ -47,8 +47,8 @@
          <property-name>userPreferencesBean</property-name>
          <value>#{UserPreferencesBean}</value>
       </managed-property>
-   </managed-bean>  
-  
+   </managed-bean>
+
    <managed-bean>
       <description>
          The bean that edit the multilinguals properties of a document
@@ -88,8 +88,8 @@
          <property-name>namespaceService</property-name>
          <value>#{NamespaceService}</value>
       </managed-property>
-   </managed-bean>  
-  
+   </managed-bean>
+
    <managed-bean>
      <description>
         The bean that add a new translation without content
@@ -165,13 +165,13 @@
       <managed-property>
          <property-name>dictionaryService</property-name>
          <value>#{DictionaryService}</value>
-      </managed-property>      
+      </managed-property>
       <managed-property>
          <property-name>namespaceService</property-name>
          <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
-  
+
    <managed-bean>
       <description>
          The bean that backs up the Login screen
@@ -204,7 +204,7 @@
          <value>#{UserPreferencesBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that holds navigation state.
@@ -241,7 +241,7 @@
          <value>#{AuthenticationService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that holds folder browse state.
@@ -290,21 +290,21 @@
       </managed-property>
    </managed-bean>
 
-	<managed-bean>
-		<description>Bean that manages the dialog framework</description>
-		<managed-bean-name>DialogManager</managed-bean-name>
-		<managed-bean-class>org.alfresco.web.bean.dialog.DialogManager</managed-bean-class>
-		<managed-bean-scope>session</managed-bean-scope>
-	</managed-bean>
+   <managed-bean>
+      <description>Bean that manages the dialog framework</description>
+      <managed-bean-name>DialogManager</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.dialog.DialogManager</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+   </managed-bean>
 
    <managed-bean>
-		<description>Bean that manages the wizard framework</description>
-		<managed-bean-name>WizardManager</managed-bean-name>
-		<managed-bean-class>org.alfresco.web.bean.wizard.WizardManager</managed-bean-class>
-		<managed-bean-scope>session</managed-bean-scope>
-	</managed-bean>
-	
-	<managed-bean>
+      <description>Bean that manages the wizard framework</description>
+      <managed-bean-name>WizardManager</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wizard.WizardManager</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+   </managed-bean>
+
+   <managed-bean>
       <description>
          The bean that backs up the Create Space Dialog
       </description>
@@ -336,7 +336,7 @@
          <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Create Space Wizard
@@ -410,7 +410,7 @@
          <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>The bean that backs up the properties of Create Multilingual Space Dialog</description>
       <managed-bean-name>CreateMultilingualPropertiesBean</managed-bean-name>
@@ -425,8 +425,8 @@
          <value>#{NodeService}</value>
       </managed-property>
    </managed-bean>
-    
-       
+
+
    <managed-bean>
       <description>
          The bean that backs up the Create Multilingual Space Dialog
@@ -463,8 +463,8 @@
        <value>#{UserPreferencesBean}</value>
       </managed-property>
    </managed-bean>
-   
-        
+
+
    <managed-bean>
       <description>
          The bean that backs up the Create Multilingual Space Dialog
@@ -514,7 +514,7 @@
         <value>#{LoginBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that manages a users Clipboard state.
@@ -523,7 +523,7 @@
       <managed-bean-class>org.alfresco.web.bean.clipboard.ClipboardBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that manages the state for the Recent Spaces Shelf component.
@@ -540,7 +540,7 @@
          <value>#{BrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that manages the state for the User Shortcuts Shelf component.
@@ -561,7 +561,7 @@
          <value>#{PermissionService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that holds a state for the Advanced Search screen.
@@ -590,7 +590,7 @@
          <value>#{PermissionService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that holds state for the Users screen.
@@ -615,7 +615,7 @@
          <value>#{PersonService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that holds state for the Groups Management screens.
@@ -653,7 +653,7 @@
          <value>#{CategoryService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Edit Space Dialog
@@ -690,7 +690,7 @@
          <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Add Content Dialog
@@ -727,7 +727,7 @@
          <value>#{DictionaryService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Create Content Wizard
@@ -764,7 +764,7 @@
          <value>#{DictionaryService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the View Content Properties Dialog
@@ -789,7 +789,7 @@
          <value>#{BrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Set Content Properties Dialog
@@ -814,7 +814,7 @@
          <value>#{BrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Edit Content Properties Dialog
@@ -839,7 +839,7 @@
          <value>#{BrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Delete Content Dialog
@@ -876,7 +876,7 @@
          <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Link Properties Dialog
@@ -901,7 +901,7 @@
          <value>#{NavigationBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Create Rule Wizard
@@ -954,7 +954,7 @@
          <value>#{AuthorityService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Edit Rule Wizard
@@ -1007,7 +1007,7 @@
          <value>#{AuthorityService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Run Action Wizard
@@ -1052,7 +1052,7 @@
          <value>#{AuthorityService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the New User Wizard
@@ -1078,7 +1078,7 @@
       </managed-property>
       <managed-property>
          <property-name>authenticationService</property-name>
-         <value>#{AuthenticationService}</value>
+         <value>#{authenticationService}</value>
       </managed-property>
       <managed-property>
          <property-name>permissionService</property-name>
@@ -1097,7 +1097,7 @@
          <value>#{OwnableService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Manage Invited Users screens
@@ -1130,7 +1130,7 @@
          <value>#{PersonService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Manage Content Users screens
@@ -1163,7 +1163,7 @@
          <value>#{PersonService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Invite Users Wizard
@@ -1208,7 +1208,7 @@
          <value>#{AuthorityService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Invite Content Users Wizard
@@ -1253,7 +1253,7 @@
          <value>#{AuthorityService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Checkin and Checkout pages.
@@ -1286,7 +1286,7 @@
          <value>#{WorkflowService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that holds manage content rules state
@@ -1311,7 +1311,7 @@
          <value>#{NodeService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Backing bean used by the document details dialog
@@ -1351,7 +1351,7 @@
          <property-name>navigator</property-name>
          <value>#{NavigationBean}</value>
       </managed-property>
-	  <managed-property>
+     <managed-property>
          <property-name>multilingualContentService</property-name>
          <value>#{MultilingualContentService}</value>
       </managed-property>
@@ -1359,8 +1359,12 @@
          <property-name>contentFilterLanguagesService</property-name>
          <value>#{ContentFilterLanguagesService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>editionService</property-name>
+         <value>#{EditionService}</value>
+      </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Backing bean used by the Space details dialog
@@ -1393,7 +1397,7 @@
          <value>#{CopyService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Backing bean used by screens requiring access to lists of Templates
@@ -1410,7 +1414,7 @@
          <value>#{SearchService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Backing bean used by the document preview dialog
@@ -1427,7 +1431,7 @@
          <value>#{NavigationBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Backing bean used by the document preview dialog
@@ -1444,7 +1448,7 @@
          <value>#{NavigationBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>Backing bean used for the Export dialog</description>
       <managed-bean-name>ExportDialog</managed-bean-name>
@@ -1463,7 +1467,7 @@
          <value>#{ActionService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>Backing bean used for the Import dialog</description>
       <managed-bean-name>ImportDialog</managed-bean-name>
@@ -1518,7 +1522,7 @@
          <value>#{PermissionService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <!-- Forums managed beans -->
    <managed-bean>
       <description>
@@ -1556,7 +1560,7 @@
          <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Create Forums Dialog
@@ -1589,7 +1593,7 @@
          <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Create Forum Dialog
@@ -1622,7 +1626,7 @@
          <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Create Topic Dialog
@@ -1659,7 +1663,7 @@
          <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Create Post Dialog
@@ -1696,7 +1700,7 @@
          <value>#{DictionaryService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Edit Post Dialog
@@ -1733,7 +1737,7 @@
          <value>#{DictionaryService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Create Reply Dialog
@@ -1770,7 +1774,7 @@
          <value>#{DictionaryService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Create Discussion Dialog
@@ -1807,7 +1811,7 @@
          <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Delete Forum Space Dialog
@@ -1844,7 +1848,7 @@
          <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Delete Forum Dialog
@@ -1881,7 +1885,7 @@
          <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Delete Topic Dialog
@@ -1918,7 +1922,7 @@
          <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Delete Post Dialog
@@ -1955,7 +1959,7 @@
          <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that holds state for the Manage Deleted Items screen.
@@ -1980,7 +1984,7 @@
          <value>#{DictionaryService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Helper bean that caches the last item added to a multi
@@ -1990,15 +1994,15 @@
       <managed-bean-class>org.alfresco.web.bean.MultiValueEditorBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
    </managed-bean>
-   
+
    <managed-bean>
-		<description>Bean that manages the Dashboard framework</description>
-		<managed-bean-name>DashboardManager</managed-bean-name>
-		<managed-bean-class>org.alfresco.web.bean.dashboard.DashboardManager</managed-bean-class>
-		<managed-bean-scope>session</managed-bean-scope>
-	</managed-bean>
-	
-	<managed-bean>
+      <description>Bean that manages the Dashboard framework</description>
+      <managed-bean-name>DashboardManager</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.dashboard.DashboardManager</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+   </managed-bean>
+
+   <managed-bean>
       <description>
          The bean that backs up the Dashboard Config Wizard
       </description>
@@ -2014,7 +2018,7 @@
          <value>#{DashboardManager}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Manage Task Dialog
@@ -2063,7 +2067,7 @@
          <value>#{AVMSyncService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Manage Change Request Task Dialog
@@ -2120,7 +2124,7 @@
          <value>#{AVMBrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the View Completed Task Dialog
@@ -2161,7 +2165,7 @@
          <value>#{WorkflowService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <managed-bean-name>StartWorkflowWizard</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.workflow.StartWorkflowWizard</managed-bean-class>
@@ -2199,7 +2203,60 @@
          <value>#{WorkflowService}</value>
       </managed-property>
    </managed-bean>
-   
+
+   <managed-bean>
+      <description>
+         The bean that backs up the New Edition Wizard
+      </description>
+      <managed-bean-name>NewEditionWizard</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.ml.NewEditionWizard</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>editionService</property-name>
+         <value>#{EditionService}</value>
+      </managed-property>
+     <managed-property>
+         <property-name>multilingualContentService</property-name>
+         <value>#{MultilingualContentService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>contentFilterLanguagesService</property-name>
+         <value>#{ContentFilterLanguagesService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>lockService</property-name>
+         <value>#{LockService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>fileFolderService</property-name>
+         <value>#{FileFolderService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>namespaceService</property-name>
+         <value>#{NamespaceService}</value>
+      </managed-property>
+   </managed-bean>
+
    <managed-bean>
       <description>
          The bean that backs up the Cancel Workflow Dialog
@@ -2240,7 +2297,7 @@
          <value>#{WorkflowService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Reassign Task Dialog
@@ -2285,7 +2342,7 @@
          <value>#{PersonService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <managed-bean-name>WorkflowBean</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.workflow.WorkflowBean</managed-bean-class>
@@ -2315,7 +2372,7 @@
          <value>#{workflowInterpreter}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Email Space Users Dialog
@@ -2348,7 +2405,7 @@
          <value>#{mailService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Getting Started Dashlet page
@@ -2361,7 +2418,7 @@
          <value>#{NavigationBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the User Preferences page
@@ -2391,7 +2448,7 @@
       <managed-bean-class>org.alfresco.web.bean.SidebarBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
    </managed-bean>
-   
+
    <!-- ==================== WCM BEANS ==================== -->
    <managed-bean>
       <description>
@@ -2588,7 +2645,7 @@
          <value>#{FilePickerBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Create Website Wizard
@@ -2625,7 +2682,7 @@
          <value>#{PersonService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Edit Website Wizard
@@ -2666,7 +2723,7 @@
          <value>#{PersonService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Import Website Dialog
@@ -2695,7 +2752,7 @@
          <value>#{AVMBrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Invite Users Wizard a website
@@ -2744,7 +2801,7 @@
          <value>#{AVMBrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the website file/folder browsing screens
@@ -2777,7 +2834,7 @@
          <value>#{WorkflowService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the AVM file editing screens
@@ -2810,7 +2867,7 @@
          <value>#{FilePickerBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Edit Xml XForms dialog
@@ -2852,7 +2909,7 @@
          <value>#{AVMBrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Delete AVM File Dialog
@@ -2869,7 +2926,7 @@
          <value>#{AVMBrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Delete AVM Folder Dialog
@@ -2886,7 +2943,7 @@
          <value>#{AVMBrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Delete then browse AVM File Dialog
@@ -2903,7 +2960,7 @@
          <value>#{AVMBrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Delete then browse AVM Folder Dialog
@@ -2920,7 +2977,7 @@
          <value>#{AVMBrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Delete User Sandbox Dialog
@@ -2941,7 +2998,7 @@
          <value>#{NodeService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Create AVM Folder Dialog
@@ -2962,7 +3019,7 @@
          <value>#{NodeService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Create AVM Webapp Folder Dialog
@@ -2983,7 +3040,7 @@
          <value>#{NodeService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the AVM Add Content Dialog
@@ -3012,7 +3069,7 @@
          <value>#{AVMBrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Backing bean used by the AVM File details dialog
@@ -3037,7 +3094,7 @@
          <value>#{ActionService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Backing bean used by the AVM Folder details dialog
@@ -3058,7 +3115,7 @@
          <value>#{AVMBrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Edit AVM File Properties Dialog
@@ -3087,7 +3144,7 @@
          <value>#{AVMBrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Edit AVM Folder Properties Dialog
@@ -3116,7 +3173,7 @@
          <value>#{AVMBrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Delete Website Space Dialog
@@ -3145,7 +3202,7 @@
          <value>#{DictionaryService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Form Template Details dialog
@@ -3166,7 +3223,7 @@
          <value>#{WorkflowService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Form Template Templates dialog
@@ -3183,7 +3240,7 @@
          <value>#{CreateWebsiteWizard}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Form Template Workflow dialog
@@ -3200,7 +3257,7 @@
          <value>#{WorkflowService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Edit Form Template Details dialog
@@ -3221,7 +3278,7 @@
          <value>#{WorkflowService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Edit Form Template Templates dialog
@@ -3238,7 +3295,7 @@
          <value>#{EditWebsiteWizard}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Edit Form Template Workflow dialog
@@ -3255,7 +3312,7 @@
          <value>#{WorkflowService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Submit dialog
@@ -3292,7 +3349,7 @@
          <value>#{globalPathExcluder}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Submit Configure Workflow dialog
@@ -3309,7 +3366,7 @@
          <value>#{WorkflowService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Revert selected items Dialog
@@ -3326,7 +3383,7 @@
          <value>#{ActionService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Revert all items Dialog
@@ -3351,7 +3408,7 @@
          <value>#{globalPathExcluder}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Deploy Snapshot Dialog
@@ -3372,7 +3429,7 @@
          <value>#{NodeService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Change Expiration Date Dialog
@@ -3381,7 +3438,7 @@
       <managed-bean-class>org.alfresco.web.bean.wcm.ChangeExpirationDateDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Monitor Deployment Dialog
@@ -3398,7 +3455,7 @@
          <value>#{NodeService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the View Deployment Report Dialog
@@ -3453,7 +3510,7 @@
          <value>#{AVMService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <!-- ==================== COMPONENT GENERATOR BEANS ==================== -->
    <managed-bean>
       <description>
@@ -3462,14 +3519,14 @@
       <managed-bean-name>TextFieldGenerator</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.generator.TextFieldGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
-      <!-- 
+      <!--
       <managed-property>
          <property-name>size</property-name>
          <value>35</value>
       </managed-property>
       -->
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that generates a text area component
@@ -3488,7 +3545,7 @@
       </managed-property>
       -->
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that generates a checkbox component
@@ -3497,7 +3554,7 @@
       <managed-bean-class>org.alfresco.web.bean.generator.CheckboxGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that generates a date picker component
@@ -3505,7 +3562,7 @@
       <managed-bean-name>DatePickerGenerator</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.generator.DatePickerGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
-      <!-- 
+      <!--
       <managed-property>
          <property-name>startYear</property-name>
          <value>2008</value>
@@ -3520,7 +3577,7 @@
       </managed-property>
       -->
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that generates a datetime picker component
@@ -3528,7 +3585,7 @@
       <managed-bean-name>DateTimePickerGenerator</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.generator.DateTimePickerGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
-      <!-- 
+      <!--
       <managed-property>
          <property-name>startYear</property-name>
          <value>2008</value>
@@ -3543,7 +3600,7 @@
       </managed-property>
       -->
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that generates a label component
@@ -3552,7 +3609,7 @@
       <managed-bean-class>org.alfresco.web.bean.generator.LabelGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that generates a mime type selector component
@@ -3561,7 +3618,7 @@
       <managed-bean-class>org.alfresco.web.bean.generator.MimeTypeSelectorGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that generates a languages selector component
@@ -3596,7 +3653,7 @@
          <value>#{NodeService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that generates an image picker component
@@ -3605,7 +3662,7 @@
       <managed-bean-class>org.alfresco.web.bean.generator.SpaceIconPickerGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that generates a category selector component
@@ -3614,7 +3671,7 @@
       <managed-bean-class>org.alfresco.web.bean.generator.CategorySelectorGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that generates an association component
@@ -3623,7 +3680,7 @@
       <managed-bean-class>org.alfresco.web.bean.generator.AssociationGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that generates a child association component
@@ -3632,8 +3689,8 @@
       <managed-bean-class>org.alfresco.web.bean.generator.ChildAssociationGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
-	
-	<managed-bean>
+
+   <managed-bean>
       <description>
          Bean that generates a separator component
       </description>
@@ -3641,7 +3698,7 @@
       <managed-bean-class>org.alfresco.web.bean.generator.SeparatorGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that generates a label separator component
@@ -3650,7 +3707,7 @@
       <managed-bean-class>org.alfresco.web.bean.generator.LabelSeparatorGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that generates a label separator component rendered as a heading
@@ -3663,7 +3720,7 @@
          <value>wizardSectionHeading mainSubTitle</value>
       </managed-property>
    </managed-bean>
-   
+
    <!--
    <managed-bean>
       <description>
@@ -3678,9 +3735,9 @@
       </managed-property>
    </managed-bean>
    -->
-    
+
    <!-- ==================== AJAX BEANS ==================== -->
-   
+
    <managed-bean>
       <description>
          Bean that returns information on a node
@@ -3693,7 +3750,7 @@
          <value>#{NodeService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that returns information on a workflow task
@@ -3706,7 +3763,7 @@
          <value>#{WorkflowService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that accepts File uploads for the repository
@@ -3715,7 +3772,7 @@
       <managed-bean-class>org.alfresco.web.bean.ajax.FileUploadBean</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean backing ajax calls for the MySpaces portlet
@@ -3724,7 +3781,7 @@
       <managed-bean-class>org.alfresco.web.bean.ajax.MySpacesBean</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that returns manages the tree data for the navigator component
@@ -3783,7 +3840,7 @@
          <value>#{AVMBrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that returns deployment progress status

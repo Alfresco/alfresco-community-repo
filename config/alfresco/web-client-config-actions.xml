@@ -583,7 +583,7 @@
             <image>/images/icons/reset.gif</image>
             <action>#{NavigatorPluginBean.reset}</action>
          </action>
-         
+
          <!-- Make a document multilingual -->
          <action id="make_doc_multilingual">
             <permissions>
@@ -644,6 +644,17 @@
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
+         </action>
+
+         <!-- Manage ml container details  -->
+         <action id="new_edition">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <label-id>new_edition</label-id>
+            <tooltip-id>new_edition_tooltip</tooltip-id>
+            <image>/images/icons/new_edition_icon.gif</image>
+            <action>wizard:newEdition</action>
          </action>
 
          <!-- the 'action-group' elements define unique blocks of actions that reference the actions
@@ -762,6 +773,7 @@
          <action-group id="multilingual_details_actions">
             <action idref="add_translation" />
             <action idref="add_translation_wc" />
+            <action idref="new_edition" />
          </action-group>
 
          <!-- Actions Menu for Space Details screen -->

@@ -42,7 +42,7 @@ import org.alfresco.web.bean.repository.Node;
 /**
  * Dialog bean to make a node multilingual
  *
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class MakeMultilingualDialog extends BaseDialogBean
 {

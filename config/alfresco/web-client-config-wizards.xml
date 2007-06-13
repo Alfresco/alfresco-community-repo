@@ -3,9 +3,9 @@
    <config>
       <wizard-container>/jsp/wizard/container.jsp</wizard-container>
       <plain-wizard-container>/jsp/wizard/plain-container.jsp</plain-wizard-container>
-      
+
       <wizards>
-         
+
          <!-- Definition of a create Web Project wizard -->
          <wizard name="createWebsite" managed-bean="CreateWebsiteWizard"
                  title-id="create_website_title" description-id="create_website_desc"
@@ -47,7 +47,7 @@
                      instruction-id="create_website_finish_instruction" />
             </step>
          </wizard>
-         
+
          <!-- Definition of an edit Web Project wizard -->
          <wizard name="editWebsite" managed-bean="EditWebsiteWizard"
                  title-id="edit_website_title" description-id="edit_website_desc"
@@ -77,7 +77,7 @@
                      instruction-id="edit_website_finish_instruction" />
             </step>
          </wizard>
-         
+
          <!-- Definition of a Invite Website Users wizard -->
          <wizard name="inviteWebUsers" managed-bean="InviteWebsiteUsersWizard"
                  title-id="invite_webusers_title" description-id="invite_webusers_desc"
@@ -101,7 +101,7 @@
                      instruction-id="invite_webusers_finish_instruction" />
             </step>
          </wizard>
-         
+
          <!-- Definition of Invite Space Users wizard -->
          <wizard name="inviteSpaceUsers" managed-bean="InviteSpaceUsersWizard"
                  title-id="invite_title" description-id="invite_desc"
@@ -125,7 +125,7 @@
                      instruction-id="invite_finish_instruction" />
             </step>
          </wizard>
-         
+
          <!-- Definition of Invite Content Users wizard -->
          <wizard name="inviteContentUsers" managed-bean="InviteContentUsersWizard"
                  title-id="invite_content_title" description-id="invite_content_desc"
@@ -149,135 +149,135 @@
                      instruction-id="invite_finish_instruction" />
             </step>
          </wizard>
-         
+
          <!-- Definition of an advanced space wizard  -->
          <wizard name="createSpace" managed-bean="CreateSpaceWizard"
                  title-id="create_space_title" description-id="create_space_desc"
                  icon="/images/icons/create_space_large.gif">
             <step name="create-from" title-id="starting_space" description-id="create_space_step1_desc">
                <page path="/jsp/spaces/create-space-wizard/create-from.jsp"
-                     title-id="create_space_step1_title" 
+                     title-id="create_space_step1_title"
                      description-id="create_space_step1_desc"
                      instruction-id="default_instruction" />
             </step>
             <step name="options" title-id="space_options" description-id="create_space_step2_desc">
                <condition if="#{CreateSpaceWizard.createFrom == 'scratch'}">
-                  <page path="/jsp/spaces/create-space-wizard/from-scratch.jsp" 
-                        title-id="create_space_step2_title" 
-                        description-id="create_space_step2_desc" 
+                  <page path="/jsp/spaces/create-space-wizard/from-scratch.jsp"
+                        title-id="create_space_step2_title"
+                        description-id="create_space_step2_desc"
                         instruction-id="default_instruction" />
                </condition>
                <condition if="#{CreateSpaceWizard.createFrom == 'existing'}">
-                  <page path="/jsp/spaces/create-space-wizard/from-existing.jsp" 
-                        title-id="create_space_step2_title" 
-                        description-id="create_space_step2_desc" 
+                  <page path="/jsp/spaces/create-space-wizard/from-existing.jsp"
+                        title-id="create_space_step2_title"
+                        description-id="create_space_step2_desc"
                         instruction-id="default_instruction" />
                </condition>
                <condition if="#{CreateSpaceWizard.createFrom == 'template'}">
-                  <page path="/jsp/spaces/create-space-wizard/from-template.jsp" 
-                        title-id="create_space_step2_title" 
-                        description-id="create_space_step2_desc" 
+                  <page path="/jsp/spaces/create-space-wizard/from-template.jsp"
+                        title-id="create_space_step2_title"
+                        description-id="create_space_step2_desc"
                         instruction-id="default_instruction" />
                </condition>
             </step>
             <step name="details" title-id="space_details" description-id="create_space_step3_desc">
                <page path="/jsp/spaces/create-space-wizard/details.jsp"
-                     title-id="create_space_step3_title" 
-                     description-id="create_space_step3_desc" 
+                     title-id="create_space_step3_title"
+                     description-id="create_space_step3_desc"
                      instruction-id="default_instruction" />
             </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">
                <page path="/jsp/wizard/summary.jsp"
-                     title-id="summary" 
-                     description-id="summary_desc" 
+                     title-id="summary"
+                     description-id="summary_desc"
                      instruction-id="create_space_finish_instruction" />
             </step>
          </wizard>
-         
+
          <!-- Definition of the run action wizard -->
          <wizard name="runAction" managed-bean="RunActionWizard"
                  title-id="run_action_title" description-id="run_action_desc"
                  icon="/images/icons/new_rule_large.gif">
             <step name="actions" title-id="actions" description="">
-               <page path="/jsp/actions/actions.jsp" 
+               <page path="/jsp/actions/actions.jsp"
                      title-id="run_action_step1_title"
                      description=""
                      instruction-id="default_instruction" />
             </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">
                <page path="/jsp/wizard/summary.jsp"
-                     title-id="summary" 
-                     description-id="summary_desc" 
+                     title-id="summary"
+                     description-id="summary_desc"
                      instruction-id="run_action_finish_instruction" />
             </step>
          </wizard>
-         
+
          <!-- Definition of the create rule wizard -->
          <wizard name="createRule" managed-bean="CreateRuleWizard"
                  title-id="create_rule_title" description-id="create_rule_desc"
                  icon="/images/icons/new_rule_large.gif">
             <step name="conditions" title-id="conditions" description="">
-               <page path="/jsp/rules/conditions.jsp" 
+               <page path="/jsp/rules/conditions.jsp"
                      title-id="create_rule_step1_title"
                      description=""
                      instruction-id="default_instruction" />
-            </step>     
+            </step>
             <step name="actions" title-id="actions" description="">
-               <page path="/jsp/actions/actions.jsp" 
+               <page path="/jsp/actions/actions.jsp"
                      title-id="create_rule_step2_title"
                      description=""
                      instruction-id="default_instruction" />
             </step>
             <step name="details" title-id="details" description="">
-               <page path="/jsp/rules/details.jsp" 
+               <page path="/jsp/rules/details.jsp"
                      title-id="create_rule_step3_title"
                      description=""
                      instruction-id="default_instruction" />
             </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">
                <page path="/jsp/wizard/summary.jsp"
-                     title-id="summary" 
-                     description-id="summary_desc" 
+                     title-id="summary"
+                     description-id="summary_desc"
                      instruction-id="create_rule_finish_instruction" />
             </step>
          </wizard>
-         
+
          <!-- Definition of the edit rule wizard -->
          <wizard name="editRule" managed-bean="EditRuleWizard"
                  title-id="edit_rule_title" description-id="edit_rule_desc"
                  icon="/images/icons/new_rule_large.gif">
             <step name="conditions" title-id="conditions" description="">
-               <page path="/jsp/rules/conditions.jsp" 
+               <page path="/jsp/rules/conditions.jsp"
                      title-id="create_rule_step1_title"
                      description=""
                      instruction-id="default_instruction" />
-            </step>     
+            </step>
             <step name="actions" title-id="actions" description="">
-               <page path="/jsp/actions/actions.jsp" 
+               <page path="/jsp/actions/actions.jsp"
                      title-id="create_rule_step2_title"
                      description=""
                      instruction-id="default_instruction" />
             </step>
             <step name="details" title-id="details" description="">
-               <page path="/jsp/rules/details.jsp" 
+               <page path="/jsp/rules/details.jsp"
                      title-id="create_rule_step3_title"
                      description=""
                      instruction-id="default_instruction" />
             </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">
                <page path="/jsp/wizard/summary.jsp"
-                     title-id="summary" 
-                     description-id="summary_desc" 
+                     title-id="summary"
+                     description-id="summary_desc"
                      instruction-id="edit_rule_finish_instruction" />
             </step>
          </wizard>
-         
+
          <!-- Definition of the Create Content wizard -->
          <wizard name="createContent" managed-bean="CreateContentWizard"
                  title-id="create_content_title" description-id="create_content_desc"
                  icon="/images/icons/new_content_large.gif">
             <step name="details" title-id="details" description-id="create_content_step1_desc">
-               <page path="/jsp/content/create-content-wizard/details.jsp" 
+               <page path="/jsp/content/create-content-wizard/details.jsp"
                      title-id="create_content_step1_title"
                      description-id="create_content_step1_desc"
                      instruction-id="default_instruction" />
@@ -302,22 +302,22 @@
                      instruction-id="content_finish_instruction" />
             </step>
          </wizard>
-         
+
          <!-- Definition of the Create Web Content wizard -->
          <wizard name="createWebContent" managed-bean="CreateWebContentWizard"
                  title-id="create_web_content_title" description-id="create_web_content_desc"
                  icon="/images/icons/new_content_large.gif">
-            <step name="details" 
-         		  title-id="create_web_content_details_title" 
-         		  description-id="create_content_step1_desc">
-               <page path="/jsp/wcm/create-web-content-wizard/details.jsp" 
+            <step name="details"
+                 title-id="create_web_content_details_title"
+                 description-id="create_content_step1_desc">
+               <page path="/jsp/wcm/create-web-content-wizard/details.jsp"
                      title-id="create_web_content_details_step_title"
                      description-id="create_content_step1_desc"
                      instruction-id="default_instruction" />
             </step>
-            <step name="content" 
-         		  title-id="create_web_content_enter_content_title" 
-         		  description-id="create_content_step2_desc">
+            <step name="content"
+                 title-id="create_web_content_enter_content_title"
+                 description-id="create_content_step2_desc">
                <condition if="#{CreateWebContentWizard.mimeType == 'text/html'}">
                   <page path="/jsp/wcm/create-web-content-wizard/create-html.jsp"
                         title-id="create_web_content_enter_content_step_title"
@@ -338,39 +338,39 @@
             </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">
                <condition if="#{CreateWebContentWizard.mimeType == 'text/xml'}">
-   		         <page path="/jsp/wcm/create-web-content-wizard/summary.jsp"
+                  <page path="/jsp/wcm/create-web-content-wizard/summary.jsp"
                           title-id="summary"
                           description-id="create_web_content_summary_desc"
                           instruction-id="content_finish_instruction" />
-	            </condition>
+               </condition>
                <page path="/jsp/wizard/summary.jsp"
                      title-id="summary"
                      description-id="summary_desc"
                      instruction-id="content_finish_instruction" />
             </step>
          </wizard>
-         
+
          <!-- Definition of the create form wizard -->
          <wizard name="createForm" managed-bean="CreateFormWizard"
                  title-id="create_form_title" description-id="create_form_desc"
                  icon="/images/icons/create_form_large.gif">
-            <step name="form_details" title-id="create_form_form_details_title" 
+            <step name="form_details" title-id="create_form_form_details_title"
                   description-id="create_form_form_details_desc">
-               <page path="/jsp/wcm/create-form-wizard/details.jsp" 
+               <page path="/jsp/wcm/create-form-wizard/details.jsp"
                      title-id="create_form_form_details_step_title"
                      description-id="create_form_form_details_desc"
                      instruction-id="default_instruction" />
             </step>
-            <step name="configure_rendering_engine_templates" 
-                  title-id="create_form_configure_rendering_engine_templates_title" 
+            <step name="configure_rendering_engine_templates"
+                  title-id="create_form_configure_rendering_engine_templates_title"
                   description-id="create_form_configure_rendering_engine_templates_desc">
                <page path="/jsp/wcm/create-form-wizard/configure-rendering-engines.jsp"
                      title-id="create_form_configure_rendering_engine_templates_step_title"
                      description-id="create_form_configure_rendering_engine_templates_desc"
                      instruction-id="default_instruction" />
             </step>
-            <step name="select_default_workflow" 
-                  title-id="create_form_select_default_workflow_title" 
+            <step name="select_default_workflow"
+                  title-id="create_form_select_default_workflow_title"
                   description-id="create_form_select_default_workflow_desc">
                <page path="/jsp/wcm/create-form-wizard/select-default-workflow.jsp"
                      title-id="create_form_select_default_workflow_step_title"
@@ -389,23 +389,23 @@
          <wizard name="editForm" managed-bean="EditFormWizard"
                  title-id="edit_form_title" description-id="edit_form_desc"
                  icon="/images/icons/edit_form_large.gif">
-            <step name="form_details" title-id="create_form_form_details_title" 
+            <step name="form_details" title-id="create_form_form_details_title"
                   description-id="create_form_form_details_desc">
-               <page path="/jsp/wcm/create-form-wizard/details.jsp" 
+               <page path="/jsp/wcm/create-form-wizard/details.jsp"
                      title-id="create_form_form_details_step_title"
                      description-id="create_form_form_details_desc"
                      instruction-id="default_instruction" />
             </step>
-            <step name="configure_rendering_engine_templates" 
-                  title-id="create_form_configure_rendering_engine_templates_title" 
+            <step name="configure_rendering_engine_templates"
+                  title-id="create_form_configure_rendering_engine_templates_title"
                   description-id="create_form_configure_rendering_engine_templates_desc">
                <page path="/jsp/wcm/create-form-wizard/configure-rendering-engines.jsp"
                      title-id="create_form_configure_rendering_engine_templates_step_title"
                      description-id="create_form_configure_rendering_engine_templates_desc"
                      instruction-id="default_instruction" />
             </step>
-            <step name="select_default_workflow" 
-                  title-id="create_form_select_default_workflow_title" 
+            <step name="select_default_workflow"
+                  title-id="create_form_select_default_workflow_title"
                   description-id="create_form_select_default_workflow_desc">
                <page path="/jsp/wcm/create-form-wizard/select-default-workflow.jsp"
                      title-id="create_form_select_default_workflow_step_title"
@@ -445,51 +445,82 @@
                  title-id="configure_dashboard_title" description-id="configure_dashboard_desc"
                  icon="/images/icons/configure_dashboard_large.gif">
             <step name="layout" title-id="step_layout" description-id="configure_dashboard_step1_desc">
-               <page path="/jsp/dashboards/wizard/layout.jsp" 
+               <page path="/jsp/dashboards/wizard/layout.jsp"
                      title-id="configure_dashboard_step1_title"
                      description-id="configure_dashboard_step1_desc"
                      instruction-id="default_instruction" />
             </step>
             <step name="columns" title-id="step_columns" description-id="configure_dashboard_step2_desc">
-               <page path="/jsp/dashboards/wizard/columns.jsp" 
+               <page path="/jsp/dashboards/wizard/columns.jsp"
                      title-id="configure_dashboard_step2_title"
                      description-id="configure_dashboard_step2_desc"
                      instruction-id="default_instruction" />
             </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">
                <page path="/jsp/wizard/summary.jsp"
-                     title-id="summary" 
-                     description-id="summary_desc" 
+                     title-id="summary"
+                     description-id="summary_desc"
                      instruction-id="configure_dashboard_finish_instruction" />
             </step>
          </wizard>
-         
+
          <!-- Definition of the Start Workflow wizard -->
          <wizard name="startWorkflow" managed-bean="StartWorkflowWizard"
                  description-id="start_workflow_desc" icon="/images/icons/new_workflow_large.gif">
-            <step name="choose-workflow" title-id="step_choose_workflow" 
+            <step name="choose-workflow" title-id="step_choose_workflow"
                   description-id="start_workflow_choose_desc">
-               <page path="/jsp/workflow/start-workflow-wizard/choose-workflow.jsp" 
-                     title-id="start_workflow_choose_title" 
-                     description-id="start_workflow_choose_desc" 
+               <page path="/jsp/workflow/start-workflow-wizard/choose-workflow.jsp"
+                     title-id="start_workflow_choose_title"
+                     description-id="start_workflow_choose_desc"
                      instruction-id="default_instruction" />
             </step>
             <step name="options" title-id="step_workflow_options"
                   description-id="start_workflow_options_desc">
-               <page path="/jsp/workflow/start-workflow-wizard/workflow-options.jsp" 
+               <page path="/jsp/workflow/start-workflow-wizard/workflow-options.jsp"
                      title-id="start_workflow_options_title"
                      description-id="start_workflow_options_desc"
                      instruction-id="default_instruction" />
             </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">
                <page path="/jsp/wizard/summary.jsp"
-                     title-id="summary" 
-                     description-id="summary_desc" 
+                     title-id="summary"
+                     description-id="summary_desc"
                      instruction-id="start_workflow_finish_instruction" />
             </step>
          </wizard>
-         
+
+         <!-- Definition of the Start Workflow wizard -->
+         <wizard name="newEdition" managed-bean="NewEditionWizard"
+               title-id="new_edition_wizard_title"
+               description-id="new_edition_wizard_desc"
+               error-message-id="error_new_edition_wizard"
+                 icon="/images/icons/new_edition_large.gif">
+            <step name="choose-translation"
+                 title-id="step1_choose_translation"
+                  description-id="step1_choose_translation_desc">
+               <page path="/jsp/ml/new-edition-wizard/choose-translation.jsp"
+                     title-id="new_edition_choose_translation_title"
+                     description-id="new_edition_choose_translation_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="edition-details"
+                 title-id="step2_edition_details"
+                  description-id="step2_edition_details_desc">
+               <page path="/jsp/ml/new-edition-wizard/edition-details.jsp"
+                     title-id="new_edition_details_title"
+                     description-id="new_edition_details_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="edition-summary"
+                 title-id="step3_edition_summary"
+                  description-id="step3_edition_summary_desc">
+               <page path="/jsp/ml/new-edition-wizard/edition-summary.jsp"
+                     title-id="new_edition_summary_title"
+                     description-id="new_edition_summary_desc"
+                     instruction-id="new_edition_finish_instruction" />
+            </step>
+         </wizard>
       </wizards>
    </config>
-   
+
 </alfresco-config>

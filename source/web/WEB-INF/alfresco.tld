@@ -8,10 +8,10 @@
    <short-name>a</short-name>
    <display-name>Alfresco Common JSF Components</display-name>
    <description>
-      Tag library consisting of Alfresco common JSF components i.e. those that 
+      Tag library consisting of Alfresco common JSF components i.e. those that
       can be used in non-Alfresco projects
    </description>
-   
+
    <tag>
       <name>inputDatePicker</name>
       <tag-class>org.alfresco.web.ui.common.tag.InputDatePickerTag</tag-class>
@@ -20,78 +20,78 @@
       <description>
          Provides a custom renderer to display an input component with year, month, day drop-downs
       </description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
          <description>The component identifier for this component</description>
       </attribute>
-      
+
       <attribute>
          <name>value</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
          <description>The current value of this component</description>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
          <description> The value binding expression linking this component to a property in a backing bean</description>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>styleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>style</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>startYear</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
          <description>The year to appear first in the list</description>
       </attribute>
-      
+
       <attribute>
          <name>yearCount</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
          <description>The number of years to display in the list</description>
       </attribute>
-      
+
       <attribute>
          <name>showTime</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
          <description>Determines whether to show the time</description>
       </attribute>
-      
+
       <attribute>
          <name>initialiseIfNull</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
          <description>
             Whether to initialise the control showing today's date if the
-            underlying value in the model is null. This will also hide the 
+            underlying value in the model is null. This will also hide the
             None button thus disallowing the user to set the date back to null.
          </description>
       </attribute>
-      
+
       <attribute>
          <name>noneLabel</name>
          <required>false</required>
@@ -101,12 +101,12 @@
          </description>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>richList</name>
       <tag-class>org.alfresco.web.ui.common.tag.data.RichListTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          The RichList component is capable of rendering a list of java bean objects in multiple rendering
          modes. A List of objects is bound to the component through the value attribute and components
@@ -114,49 +114,49 @@
          within the list. The component provides mechanism to page and sort data through additional
          components
       </description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>value</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>styleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>style</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>headerStyleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rowStyleClass</name>
          <required>false</required>
@@ -168,55 +168,55 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>width</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-   
+
       <attribute>
          <name>var</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-   
+
       <attribute>
          <name>initialSortColumn</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-   
+
       <attribute>
          <name>initialSortDescending</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-   
+
       <attribute>
          <name>listConfig</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-   
+
       <attribute>
          <name>viewMode</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-   
+
       <attribute>
          <name>pageSize</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>column</name>
       <tag-class>org.alfresco.web.ui.common.tag.data.ColumnTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          The column component is a child of a data container component such as the RichList. It should
          always be contained within such a component. A column is simply a container for other components
@@ -224,31 +224,31 @@
          iterates over its content. The column has several well known facet components which can be used to
          specify child components used for specific purposes during the list rendering process.
       </description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>styleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>style</name>
          <required>false</required>
@@ -260,25 +260,25 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>actions</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>width</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>sortLink</name>
       <tag-class>org.alfresco.web.ui.common.tag.data.SortLinkTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          The sortLink component enables the user to sort a dataset by clicking an HTML link. The component
          must be a child of a data component. It is generally contained inside a header facet component
@@ -287,61 +287,61 @@
          sorting direction and the direction of sorting can be toggled by clicking the icon. The component
          does not require any developer intervention and therefore does not provide action command listeners.
       </description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>value</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>tooltip</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>styleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>style</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>tooltip</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>mode</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>label</name>
          <required>true</required>
@@ -353,7 +353,7 @@
       <name>dataPager</name>
       <tag-class>org.alfresco.web.ui.common.tag.data.DataPagerTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          The dataPager component enables a user to page through a large dataset. The component must be a
          child of a data component. It is generally contained within the footer area of a richList component
@@ -361,43 +361,43 @@
          component does not require any developer intervention and therefore does not provide action
          command listeners.
       </description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>styleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>style</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>panel</name>
       <tag-class>org.alfresco.web.ui.common.tag.PanelTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          The progressive panel component enables the user to hide/show areas of the UI to progressive
          display more complex areas of the UI as required. It also allows the developer to surround an
@@ -407,49 +407,49 @@
          id attribute specified if a progressive style panel is used - else an exception will occur when the
          panel visibility is toggled by the user!
       </description>
-      
+
       <attribute>
          <name>id</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>value</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>styleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>style</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>border</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>bgcolor</name>
          <required>false</required>
@@ -467,7 +467,7 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>titleBorder</name>
          <required>false</required>
@@ -485,19 +485,19 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-            
+
       <attribute>
          <name>expanded</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>expandedActionListener</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>facetsId</name>
          <required>false</required>
@@ -509,278 +509,278 @@
       <name>breadcrumb</name>
       <tag-class>org.alfresco.web.ui.common.tag.BreadcrumbTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          The breadcrumb component enables the manipulation and display of a separated path string. It
          displays HTML links to enable the user to immediately select any part of the breadcrumb path.
          The breadcrumb provides standard action and actionListener command properties for developers to
          handle user interaction with the component.
       </description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>value</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>tooltip</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>action</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>actionListener</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>style</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>styleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>separator</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>showRoot</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>actionLink</name>
       <tag-class>org.alfresco.web.ui.common.tag.ActionLinkTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          The actionLink component provides the user with a clickable link, image or both to represent an
          action in the UI. The component provides standard action and actionListener command properties
          for developers to handle user interaction.
       </description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>value</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>action</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>actionListener</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>href</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>target</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>style</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>styleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>tooltip</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>image</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>verticalAlign</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>showLink</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>padding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>onclick</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>immediate</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>booleanEvaluator</name>
       <tag-class>org.alfresco.web.ui.common.tag.evaluator.BooleanEvaluatorTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>value</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>valueSetEvaluator</name>
       <tag-class>org.alfresco.web.ui.common.tag.evaluator.ValueSetEvaluatorTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>value</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>stringEqualsEvaluator</name>
       <tag-class>org.alfresco.web.ui.common.tag.evaluator.StringEqualsEvaluatorTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>value</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>condition</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>menu</name>
       <tag-class>org.alfresco.web.ui.common.tag.MenuTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          The menu component displays a pop-up DHTML menu containing multiple ActionLink components.
          A simple link and/or image is displayed to the user, which when clicked will pop-up a menu of
@@ -788,79 +788,79 @@
          item. Evaluators can be used to wrap ActionLink components or simply use the rendered attribute
          directly to hide/show items as needed.
       </description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>tooltip</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>style</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>styleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>menuStyle</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>menuStyleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>itemSpacing</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>label</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>image</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>modeList</name>
       <tag-class>org.alfresco.web.ui.common.tag.ModeListTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          The ModeList component displays a graphical list of items, each with a label and optional icon
          image. Only one of the items can be selected at any time. The currently selected item is shown in
@@ -871,39 +871,39 @@
          retrieved from the component during the actionListener event handler.
          This component can be optionally rendered horizontally to display a toolbar like UI element. It
          also features a large number of configurable CSS style elements to make it highly flexible in
-         rendering style. 
+         rendering style.
       </description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>style</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>styleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>labelStyle</name>
          <required>false</required>
@@ -927,7 +927,7 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>disabledStyle</name>
          <required>false</required>
@@ -975,7 +975,7 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>selectedImage</name>
          <required>false</required>
@@ -987,7 +987,7 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>horizontal</name>
          <required>false</required>
@@ -999,7 +999,7 @@
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>width</name>
          <required>false</required>
@@ -1029,109 +1029,109 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>disabled</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>menu</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>menuImage</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>listItem</name>
       <tag-class>org.alfresco.web.ui.common.tag.ListItemTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          Represents a single item within the ModeList component.
       </description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>tooltip</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>label</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>description</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>image</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>value</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>disabled</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>listItems</name>
       <tag-class>org.alfresco.web.ui.common.tag.ListItemsTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>Represents listItem components held in a Map or List object</description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>value</name>
          <required>true</required>
@@ -1143,230 +1143,230 @@
       <name>imagePickerRadio</name>
       <tag-class>org.alfresco.web.ui.common.tag.ImagePickerRadioTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          The image picker component displays a list of images, of which one can be selected via radio
          buttons. The list can be configured to display the images in any number of columns. Each item
          in the list is represented by the modeListItem tag defined by the ModeList component.
          A spacing (between the elements in the list) can be configured as well as the inline style or
-         CSS class for the list 
+         CSS class for the list
       </description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>value</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>spacing</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>columns</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>style</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>styleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-            
+
       <attribute>
          <name>onclick</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>configSection</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>imagePickerRadioPanel</name>
       <tag-class>org.alfresco.web.ui.common.tag.ImagePickerRadioPanelTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          This component simply renders the image picker component inside a rounded
          corner panel.
       </description>
-      
+
       <attribute>
          <name>panelBorder</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>panelBgcolor</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>value</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>spacing</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>columns</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>style</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>styleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-            
+
       <attribute>
          <name>onclick</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>configSection</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>convertXMLDate</name>
       <tag-class>org.alfresco.web.ui.common.tag.XMLDateConverterTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          Allows the XMLDateConverter to be used on a page
       </description>
-      
+
       <attribute>
          <name>dateStyle</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>locale</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>pattern</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>timeStyle</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>timeZone</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>type</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>convertSize</name>
       <tag-class>org.alfresco.web.ui.common.tag.ByteSizeConverterTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          Allows the ByteSizeConverter to be used on a page
       </description>
    </tag>
-   
+
    <tag>
       <name>convertBoolean</name>
       <tag-class>org.alfresco.web.ui.common.tag.BooleanLabelConverterTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          Allows the BooleanLabelConverter to be used on a page
       </description>
    </tag>
-   
+
    <tag>
       <name>convertMultiValue</name>
       <tag-class>org.alfresco.web.ui.common.tag.MultiValueConverterTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          Allows the MulitValueConverter to be used on a page
       </description>
@@ -1376,56 +1376,56 @@
       <name>dynamicDescription</name>
       <tag-class>org.alfresco.web.ui.common.tag.description.DynamicDescriptionTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          Displays a description that dynamically changes when another input
          control on the page changes state
       </description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>selected</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>functionName</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>description</name>
       <tag-class>org.alfresco.web.ui.common.tag.description.DescriptionTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>Represents a description option</description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>controlValue</name>
          <required>true</required>
@@ -1436,289 +1436,289 @@
          <name>text</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
-      </attribute>      
+      </attribute>
    </tag>
-   
+
    <tag>
       <name>descriptions</name>
       <tag-class>org.alfresco.web.ui.common.tag.description.DescriptionsTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>Represents description options held in a Map object</description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>value</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>errors</name>
       <tag-class>org.alfresco.web.ui.common.tag.ErrorsTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>Displays global errors within a gradient panel</description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>message</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>styleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>infoClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>errorClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>style</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>tooltip</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>httpSessionState</name>
       <tag-class>org.alfresco.web.ui.common.tag.debug.HttpSessionStateTag</tag-class>
       <body-content>JSP</body-content>
       <description>Displays the current HTTP Session state in a table</description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>title</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>httpRequestState</name>
       <tag-class>org.alfresco.web.ui.common.tag.debug.HttpRequestStateTag</tag-class>
       <body-content>JSP</body-content>
       <description>Displays the current HTTP request state in a table</description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>title</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>httpRequestParams</name>
       <tag-class>org.alfresco.web.ui.common.tag.debug.HttpRequestParamsTag</tag-class>
       <body-content>JSP</body-content>
       <description>Displays the current HTTP request parameters in a table</description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>title</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>httpRequestHeaders</name>
       <tag-class>org.alfresco.web.ui.common.tag.debug.HttpRequestHeadersTag</tag-class>
       <body-content>JSP</body-content>
       <description>Displays the current HTTP request headers in a table</description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>title</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>httpApplicationState</name>
       <tag-class>org.alfresco.web.ui.common.tag.debug.HttpApplicationStateTag</tag-class>
       <body-content>JSP</body-content>
       <description>Displays the current HTTP Application state in a table</description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>title</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>systemProperties</name>
       <tag-class>org.alfresco.web.ui.common.tag.debug.SystemPropertiesTag</tag-class>
       <body-content>JSP</body-content>
       <description>Displays the system properties of the VM in a table</description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>title</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>repositoryProperties</name>
       <tag-class>org.alfresco.web.ui.common.tag.debug.RepositoryPropertiesTag</tag-class>
       <body-content>JSP</body-content>
       <description>Displays the Alfresco Repository properties in a table</description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>title</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>genericPicker</name>
       <tag-class>org.alfresco.web.ui.common.tag.GenericPickerTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>showFilter</name>
          <required>false</required>
@@ -1736,13 +1736,13 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>filterRefresh</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>multiSelect</name>
          <required>false</required>
@@ -1778,97 +1778,97 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>filters</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>queryCallback</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>outputText</name>
       <tag-class>org.alfresco.web.ui.common.tag.OutputTextTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>value</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>encodeForJavaScript</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>statusMessage</name>
       <tag-class>org.alfresco.web.ui.common.tag.StatusMessageTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          The Status Message component collects and displays the last N JSF messages with a well
          known message Id of "status". The last message collected is display, the messages can be
          paged through by the user. The last N messages are stored in a stack for display.
       </description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>value</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>styleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>style</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>border</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>bgcolor</name>
          <required>false</required>
@@ -1881,12 +1881,12 @@
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
    <tag>
       <name>selectList</name>
       <tag-class>org.alfresco.web.ui.common.tag.SelectListTag</tag-class>
       <body-content>JSP</body-content>
-      
+
       <description>
          The SelectList component displays a graphical list of items, each with a label and icon image.
          The list has three selection modes; single select (radio), multi-select (checkbox) and active
@@ -1898,55 +1898,55 @@
          used to bind required params. It is then up to the developer to retrieve the selected item param
          from the actionListener of the appropriate child component.
       </description>
-      
+
       <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>binding</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>rendered</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>style</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>styleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>itemStyle</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>itemStyleClass</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>var</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>multiSelect</name>
          <required>false</required>
@@ -1958,7 +1958,7 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>onchange</name>
          <required>false</required>
@@ -1970,12 +1970,403 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>values</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
-   
+
+   <!-- output_text -->
+   <tag>
+      <name>outputTextExprEnable</name>
+      <tag-class>org.apache.myfaces.taglib.html.HtmlOutputTextTag</tag-class>
+      <body-content>JSP</body-content>
+      <description>
+            Renders the value of the associated UIOutput component.  If this
+            element has an ID or CSS style properties, the text is wrapped in
+            a span element.
+
+            Unless otherwise specified, all attributes accept static values
+            or EL expressions.
+        </description>
+      <!-- UIOutput attributes -->
+      <!-- UIComponent attributes -->
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <type>java.lang.String</type>
+         <description>
+        The developer-assigned ID of this component.  The ID must be unique
+        within the scope of the tag's enclosing naming container (e.g.
+        h:form or f:subview).  This value must be a static value.
+    </description>
+      </attribute>
+      <attribute>
+         <name>binding</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <type>java.lang.String</type>
+         <description>
+        Identifies a backing bean property (of type UIComponent or appropriate
+        subclass) to bind to this component instance.  This value must be an
+        EL expression.
+    </description>
+      </attribute>
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <type>java.lang.String</type>
+         <description>
+        A boolean value that indicates whether this component should be rendered.
+        Default value: true.
+    </description>
+      </attribute>
+      <attribute>
+         <name>value</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <type>java.lang.String</type>
+         <description>
+        The initial value of this component. This value is generally
+        set as a value-binding in the form #{myBean.myProperty}, where
+        myProperty can be any data-type of Java (also user-defined data-types),
+        if a converter for this data-type exists.
+
+        Special cases:
+
+        1) f:selectItems - value needs to bind to a list (or an array) of javax.faces.model.SelectItem-instances
+
+        2) components implementing UISelectMany (e.g. h:selectManyCheckbox) -
+            value needs to bind to a list (or an array) of values, where the values need to be
+            of the same data-type as the choices of the associated f:selectItems-component
+
+        3) components implementing UIData (e.g. h:dataTable) -
+            value needs to bind to a list (or an array) of values,
+            which will be iterated over when the data-table is processed
+    </description>
+      </attribute>
+      <attribute>
+         <name>converter</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <type>java.lang.String</type>
+         <description>
+        An expression that specifies the Converter for this component.
+        If the value binding expression is a String, the String is used
+        as an ID to look up a Converter. If the value binding expression
+        is a Converter, uses that instance as the converter.
+
+        The value can either be a static value (ID case only) or an EL expression.
+    </description>
+      </attribute>
+      <!-- HTML 4.0 universal attributes -->
+      <attribute>
+         <name>dir</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: The direction of text display, either 'ltr' (left-to-right) or 'rtl' (right-to-left).</description>
+      </attribute>
+      <attribute>
+         <name>lang</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: The base language of this document.</description>
+      </attribute>
+      <attribute>
+         <name>style</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: CSS styling instructions.</description>
+      </attribute>
+      <attribute>
+         <name>title</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: An advisory title for this element.  Often used by the user agent as a tooltip.</description>
+      </attribute>
+      <attribute>
+         <name>styleClass</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>The CSS class for this element.  Corresponds to the HTML 'class' attribute.</description>
+      </attribute>
+      <!-- HTML 4.0 event-handler attributes -->
+      <attribute>
+         <name>onclick</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when the element is clicked.</description>
+      </attribute>
+      <attribute>
+         <name>ondblclick</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when the element is double-clicked.</description>
+      </attribute>
+      <attribute>
+         <name>onmousedown</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when the pointing device is pressed over this element.</description>
+      </attribute>
+      <attribute>
+         <name>onmouseup</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when the pointing device is released over this element.</description>
+      </attribute>
+      <attribute>
+         <name>onmouseover</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when the pointing device is moved into this element.</description>
+      </attribute>
+      <attribute>
+         <name>onmousemove</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when the pointing device is moved while it is in this element.</description>
+      </attribute>
+      <attribute>
+         <name>onmouseout</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when the pointing device is moves out of this element.</description>
+      </attribute>
+      <attribute>
+         <name>onkeypress</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when a key is pressed over this element.</description>
+      </attribute>
+      <attribute>
+         <name>onkeydown</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when a key is pressed down over this element.</description>
+      </attribute>
+      <attribute>
+         <name>onkeyup</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when a key is released over this element.</description>
+      </attribute>
+      <attribute>
+         <name>escape</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>
+                Indicates whether rendered markup should be escaped.
+                Default: true
+            </description>
+      </attribute>
+   </tag>
+
+   <!-- graphic_image -->
+   <tag>
+      <name>graphicImageExprEnable</name>
+      <tag-class>org.apache.myfaces.taglib.html.HtmlGraphicImageTag</tag-class>
+      <body-content>JSP</body-content>
+      <description>
+            Renders an HTML img element.
+
+            Unless otherwise specified, all attributes accept static values
+            or EL expressions.
+        </description>
+      <!-- UIGraphic attributes -->
+      <!-- UIComponent attributes -->
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <type>java.lang.String</type>
+         <description>
+        The developer-assigned ID of this component.  The ID must be unique
+        within the scope of the tag's enclosing naming container (e.g.
+        h:form or f:subview).  This value must be a static value.
+    </description>
+      </attribute>
+      <attribute>
+         <name>binding</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <type>java.lang.String</type>
+         <description>
+        Identifies a backing bean property (of type UIComponent or appropriate
+        subclass) to bind to this component instance.  This value must be an
+        EL expression.
+    </description>
+      </attribute>
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <type>java.lang.String</type>
+         <description>
+        A boolean value that indicates whether this component should be rendered.
+        Default value: true.
+    </description>
+      </attribute>
+      <attribute>
+         <name>url</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <type>java.lang.String</type>
+         <description>
+        An alias for the "value" attribute.
+    </description>
+      </attribute>
+      <attribute>
+         <name>value</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <type>java.lang.String</type>
+         <description>
+        The URL of the image.  If the URL starts with a '/', it is relative
+        to the context path of the web application.
+    </description>
+      </attribute>
+      <!-- HTML 4.0 universal attributes -->
+      <attribute>
+         <name>dir</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: The direction of text display, either 'ltr' (left-to-right) or 'rtl' (right-to-left).</description>
+      </attribute>
+      <attribute>
+         <name>lang</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: The base language of this document.</description>
+      </attribute>
+      <attribute>
+         <name>style</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: CSS styling instructions.</description>
+      </attribute>
+      <attribute>
+         <name>title</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: An advisory title for this element.  Often used by the user agent as a tooltip.</description>
+      </attribute>
+      <attribute>
+         <name>styleClass</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>The CSS class for this element.  Corresponds to the HTML 'class' attribute.</description>
+      </attribute>
+      <!-- HTML 4.0 event-handler attributes -->
+      <attribute>
+         <name>onclick</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when the element is clicked.</description>
+      </attribute>
+      <attribute>
+         <name>ondblclick</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when the element is double-clicked.</description>
+      </attribute>
+      <attribute>
+         <name>onmousedown</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when the pointing device is pressed over this element.</description>
+      </attribute>
+      <attribute>
+         <name>onmouseup</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when the pointing device is released over this element.</description>
+      </attribute>
+      <attribute>
+         <name>onmouseover</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when the pointing device is moved into this element.</description>
+      </attribute>
+      <attribute>
+         <name>onmousemove</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when the pointing device is moved while it is in this element.</description>
+      </attribute>
+      <attribute>
+         <name>onmouseout</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when the pointing device is moves out of this element.</description>
+      </attribute>
+      <attribute>
+         <name>onkeypress</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when a key is pressed over this element.</description>
+      </attribute>
+      <attribute>
+         <name>onkeydown</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when a key is pressed down over this element.</description>
+      </attribute>
+      <attribute>
+         <name>onkeyup</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <description>HTML: Script to be invoked when a key is released over this element.</description>
+      </attribute>
+      <!-- The subset of HTML 4.0 img attributes that are supported by the JSF 1.1 specification -->
+      <attribute>
+         <name>alt</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <type>java.lang.String</type>
+         <description>HTML: Specifies alternative text that can be used by a browser that can't show this element.</description>
+      </attribute>
+      <attribute>
+         <name>height</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <type>java.lang.String</type>
+         <description>HTML: Overrides the natural height of this image, by specifying height in pixels.</description>
+      </attribute>
+      <attribute>
+         <name>ismap</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <type>java.lang.String</type>
+         <description>HTML: Specifies server-side image map handling for this image.</description>
+      </attribute>
+      <attribute>
+         <name>longdesc</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <type>java.lang.String</type>
+         <description>HTML: A link to a long description of the image.</description>
+      </attribute>
+      <!-- "name" attribute cannot be set directly by user -->
+      <!-- "src" attribute cannot be set directly, use "url" instead! -->
+      <attribute>
+         <name>usemap</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <type>java.lang.String</type>
+         <description>HTML: Specifies an image map to use with this image.</description>
+      </attribute>
+      <attribute>
+         <name>width</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <type>java.lang.String</type>
+         <description>HTML: Overrides the natural width of this image, by specifying width in pixels.</description>
+      </attribute>
+   </tag>
+
 </taglib>

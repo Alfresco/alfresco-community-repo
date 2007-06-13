@@ -45,7 +45,7 @@ import org.alfresco.service.cmr.repository.NodeService;
  * The list of languages must contains the languages of each of this <b>non-empty</b>
  * translations.
  * 
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class MlContainerLanguageSelectorGenerator extends LanguageSelectorGenerator
 {

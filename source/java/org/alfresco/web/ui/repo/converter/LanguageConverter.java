@@ -35,7 +35,7 @@ import org.alfresco.web.app.servlet.FacesHelper;
 /**
  * Converter class to convert a Locale into a language libelle 
  * 
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class LanguageConverter implements Converter
 {

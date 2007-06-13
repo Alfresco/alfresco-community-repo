@@ -38,7 +38,7 @@ import org.alfresco.web.bean.repository.Node;
  * troublesome. Spreading translations of the same semantic message among several 
  * spaces could lead to confusion and problems.
  *  
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class CutNodeEvaluator implements ActionEvaluator
 {

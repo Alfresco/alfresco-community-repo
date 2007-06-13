@@ -41,7 +41,7 @@ import org.alfresco.web.ui.repo.converter.LanguageConverter;
 /**
  * Generates a LANGUAGE selector component.
  * 
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class LanguageSelectorGenerator extends BaseComponentGenerator
 {

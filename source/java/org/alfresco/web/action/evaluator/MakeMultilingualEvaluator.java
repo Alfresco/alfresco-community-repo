@@ -37,7 +37,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * If the node is already Multilingual don't allow the action.
  * 
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class MakeMultilingualEvaluator implements ActionEvaluator
 {

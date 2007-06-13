@@ -34,7 +34,7 @@ import org.alfresco.web.ui.repo.component.UIMimeTypeSelector;
 /**
  * Tag class for the Language selector component
  * 
- * @author yanipig
+ * @author Yannick Pignot
  */
 public class LanguageSelectorTag extends HtmlComponentTag
 {

@@ -167,7 +167,7 @@ public class FileContentStore extends AbstractContentStore
      * 
      * @see #setReadOnly(boolean)
      */
-    public File createNewFile(String newContentUrl) throws IOException
+    private File createNewFile(String newContentUrl) throws IOException
     {
         if (readOnly)
         {
@@ -180,7 +180,7 @@ public class FileContentStore extends AbstractContentStore
         File dir = file.getParentFile();
         if (!dir.exists())
         {
-            dir.mkdirs();
+            makeDirectory(dir);
         }
         
         // create a new, empty file
@@ -195,6 +195,46 @@ public class FileContentStore extends AbstractContentStore
         
         // done
         return file;
+    }
+    
+    /**
+     * Synchronized and retrying directory creation.  Repeated attempts will be made to create the
+     * directory, subject to a limit on the number of retries.
+     * 
+     * @param dir               the directory to create
+     * @throws IOException      if an IO error occurs
+     */
+    private synchronized void makeDirectory(File dir) throws IOException
+    {
+        /*
+         * Once in this method, the only contention will be from other file stores or processes.
+         * This is OK as we have retrying to sort it out.
+         */
+        if (dir.exists())
+        {
+            // Beaten to it during synchronization
+            return;
+        }
+        // 20 attempts with 20 ms wait each time
+        for (int i = 0; i < 20; i++)
+        {
+            boolean created = dir.mkdirs();
+            if (created)
+            {
+                // Successfully created
+                return;
+            }
+            // Wait
+            try { this.wait(20L); } catch (InterruptedException e) {}
+            // Did it get created in the meantime
+            if (dir.exists())
+            {
+                // Beaten to it while asleep
+                return;
+            }
+        }
+        // It still didn't succeed
+        throw new ContentIOException("Failed to create directory for file storage: " +  dir);
     }
     
     /**

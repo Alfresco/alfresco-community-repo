@@ -1166,6 +1166,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         // Loop through, extracting content URLs
         List<Serializable> convertedValues = new ArrayList<Serializable>(1000);
         TypeConverter converter = DefaultTypeConverter.INSTANCE;
+        int unflushedCount = 0;
         while(results.next())
         {
             Node node = (Node) results.get()[0];
@@ -1200,8 +1201,13 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                     }
                 }
             }
-            // evict all data from the session
-            getSession().clear();
+            unflushedCount++;
+            if (unflushedCount >= 1000)
+            {
+                // evict all data from the session
+                getSession().clear();
+                unflushedCount = 0;
+            }
         }
         return convertedValues;
     }

@@ -31,11 +31,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ImporterActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -95,44 +96,43 @@ public class ImportBean
          // check the file actually has contents
          if (this.file.length() > 0)
          {
-            UserTransaction tx = null;
-            
             try
             {
-               FacesContext context = FacesContext.getCurrentInstance();
-               tx = Repository.getUserTransaction(context);
-               tx.begin();
-               
-               // first of all we need to add the uploaded ACP/ZIP file to the repository
-               NodeRef acpNodeRef = addFileToRepository(context);
-               
-               // build the action params map based on the bean's current state
-               Map<String, Serializable> params = new HashMap<String, Serializable>(2, 1.0f);
-               params.put(ImporterActionExecuter.PARAM_DESTINATION_FOLDER, this.browseBean.getActionSpace().getNodeRef());
-               params.put(ImporterActionExecuter.PARAM_ENCODING, this.encoding);
-               
-               // build the action to execute
-               Action action = this.actionService.createAction(ImporterActionExecuter.NAME, params);
-               action.setExecuteAsynchronously(this.runInBackground);
-               
-               // execute the action on the ACP file
-               this.actionService.executeAction(action, acpNodeRef);
-               
-               if (logger.isDebugEnabled())
+               final FacesContext context = FacesContext.getCurrentInstance();
+               RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(context);
+               RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
                {
-                  logger.debug("Executed import action with action params of " + params);
-               }
-               
-               // commit the transaction
-               tx.commit();
+                  public Object execute() throws Throwable
+                  {
+                     // first of all we need to add the uploaded ACP/ZIP file to the repository
+                     NodeRef acpNodeRef = addFileToRepository(context);
+                     
+                     // build the action params map based on the bean's current state
+                     Map<String, Serializable> params = new HashMap<String, Serializable>(2, 1.0f);
+                     params.put(ImporterActionExecuter.PARAM_DESTINATION_FOLDER, browseBean.getActionSpace().getNodeRef());
+                     params.put(ImporterActionExecuter.PARAM_ENCODING, encoding);
+                     
+                     // build the action to execute
+                     Action action = actionService.createAction(ImporterActionExecuter.NAME, params);
+                     action.setExecuteAsynchronously(runInBackground);
+                     
+                     // execute the action on the ACP file
+                     actionService.executeAction(action, acpNodeRef);
+                     
+                     if (logger.isDebugEnabled())
+                     {
+                        logger.debug("Executed import action with action params of " + params);
+                     }
+                     return null;
+                  }
+               };
+               txnHelper.doInTransaction(callback);
                
                // reset the bean
                reset();
             }
             catch (Throwable e)
             {
-               // rollback the transaction
-               try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
                Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                      FacesContext.getCurrentInstance(), MSG_ERROR), e.toString()), e);
                outcome = null;

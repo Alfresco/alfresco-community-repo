@@ -297,7 +297,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         
         // Invoke policy behaviour
-        invokeBeforeUpdateNode(parentRef);
         invokeBeforeCreateNode(parentRef, assocTypeQName, assocQName, nodeTypeQName);
         invokeBeforeCreateNodeAssociation(parentRef, assocTypeQName, assocQName);
         
@@ -409,8 +408,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // get the primary parent assoc
         ChildAssoc oldAssoc = nodeDaoService.getPrimaryParentAssoc(nodeToMove);
         ChildAssociationRef oldAssocRef = oldAssoc.getChildAssocRef();
-        // get the old parent
-        Node oldParentNode = oldAssoc.getParent();
         
         boolean movingStore = !nodeToMoveRef.getStoreRef().equals(newParentRef.getStoreRef());
         
@@ -428,8 +425,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             invokeBeforeDeleteChildAssociation(oldAssocRef);
             invokeBeforeCreateChildAssociation(newParentRef, nodeToMoveRef, assocTypeQName, assocQName);
-            invokeBeforeUpdateNode(oldParentNode.getNodeRef());    // old parent will be updated
-            invokeBeforeUpdateNode(newParentRef);                  // new parent ditto
         }
         
         // remove the child assoc from the old parent
@@ -743,7 +738,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public ChildAssociationRef addChild(NodeRef parentRef, NodeRef childRef, QName assocTypeQName, QName assocQName)
     {
         // Invoke policy behaviours
-        invokeBeforeUpdateNode(parentRef);
         invokeBeforeCreateChildAssociation(parentRef, childRef, assocTypeQName, assocQName);
         
         // get the parent node and ensure that it is a container node
@@ -1262,9 +1256,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public AssociationRef createAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
             throws InvalidNodeRefException, AssociationExistsException
     {
-        // Invoke policy behaviours
-        invokeBeforeUpdateNode(sourceRef);
-        
         Node sourceNode = getNodeNotNull(sourceRef);
         Node targetNode = getNodeNotNull(targetRef);
         // see if it exists
@@ -1278,7 +1269,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         AssociationRef assocRef = assoc.getNodeAssocRef();
 
         // Invoke policy behaviours
-        invokeOnUpdateNode(sourceRef);
         invokeOnCreateAssociation(assocRef);
         
         return assocRef;
@@ -1298,14 +1288,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         AssociationRef assocRef = assoc.getNodeAssocRef();
         
-        // Invoke policy behaviours
-        invokeBeforeUpdateNode(sourceRef);
-        
         // delete it
         nodeDaoService.deleteNodeAssoc(assoc);
         
         // Invoke policy behaviours
-        invokeOnUpdateNode(sourceRef);
         invokeOnDeleteAssociation(assocRef);
     }
 

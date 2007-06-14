@@ -210,16 +210,6 @@
                   <td><img src="<%=request.getContextPath()%>/images/parts/statuspanel_9.gif" width=4 height=9></td>
                </tr>
                
-               <%-- Error Messages --%>
-               <tr valign=top>
-                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
-                  <td>
-                     <%-- messages tag to show messages not handled by other specific message tags --%> 
-                     <a:errors message="" infoClass="statusWarningText" errorClass="statusErrorText" />
-                  </td>
-                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width=4></td>
-               </tr>
-               
                <%-- Custom Template View --%>
                <a:panel id="custom-wrapper-panel" rendered="#{NavigationBean.currentNodeHasTemplate}">
                <tr valign=top>
@@ -520,6 +510,16 @@
                      
                      </a:panel>
                      
+                  </td>
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width=4></td>
+               </tr>
+               
+               <%-- Error Messages --%>
+               <tr valign=top>
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
+                  <td style="padding:4px">
+                     <%-- messages tag to show messages not handled by other specific message tags --%> 
+                     <a:errors message="" infoClass="statusWarningText" errorClass="statusErrorText" />
                   </td>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width=4></td>
                </tr>

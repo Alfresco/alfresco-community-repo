@@ -165,15 +165,6 @@ public final class SearchContext implements Serializable
       StringBuilder nameAttrBuf = new StringBuilder(128);
       StringBuilder additionalAttrsBuf = new StringBuilder(128);
       
-      /*Map<QName, StringBuilder> simpleAdditionalAttrBufs = new HashMap<QName, StringBuilder>();
-      if (this.simpleSearchAdditionalAttrs != null)
-      {
-         for (QName qName : this.simpleSearchAdditionalAttrs)
-         {
-            simpleAdditionalAttrBufs.put(qName, new StringBuilder(64));
-         }
-      }*/
-      
       if (text.length() != 0 && text.length() >= minimum)
       {
          if (text.indexOf(' ') == -1 && text.charAt(0) != '"')
@@ -422,7 +413,8 @@ public final class SearchContext implements Serializable
       
       String fullTextQuery = fullTextBuf.toString();
       String nameAttrQuery = nameAttrBuf.toString();
-      String additionalAttrsQuery = additionalAttrsBuf.toString();
+      String additionalAttrsQuery =
+         (this.simpleSearchAdditionalAttrs.size() != 0) ? additionalAttrsBuf.toString() : "";
       
       if (text.length() != 0 && text.length() >= minimum)
       {
@@ -430,7 +422,8 @@ public final class SearchContext implements Serializable
          switch (mode)
          {
             case SearchContext.SEARCH_ALL:
-               query = '(' + fileTypeQuery + " AND " + '(' + nameAttrQuery + ' ' + additionalAttrsQuery + ' ' + fullTextQuery + ')' + ')' + " OR " +
+               query = '(' + fileTypeQuery + " AND " + '(' + nameAttrQuery + ' ' + additionalAttrsQuery + ' ' + fullTextQuery + ')' + ')' +
+                       " OR " +
                        '(' + folderTypeQuery + " AND " + nameAttrQuery + ' ' + additionalAttrsQuery + ')';
                break;
             

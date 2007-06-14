@@ -57,13 +57,12 @@ public interface ContentAccessor
      * @param listener a listener that will be called for output stream
      *      event notification
      *      
-     * @see #setTransactionService(TransactionService)
+     * @see #setRetryingTransactionHelper(RetryingTransactionHelper)
      */
     public void addListener(ContentStreamListener listener);
     
     /**
      * Set the transaction helper for callbacks.
-     * @param helper
      */
     public void setRetryingTransactionHelper(RetryingTransactionHelper helper);
     

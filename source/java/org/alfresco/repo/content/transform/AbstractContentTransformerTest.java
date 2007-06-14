@@ -56,7 +56,7 @@ import org.springframework.context.ApplicationContext;
  */
 public abstract class AbstractContentTransformerTest extends TestCase
 {
-    private static String QUICK_CONTENT = "The quick brown fox jumps over the lazy dog";
+    protected static String QUICK_CONTENT = "The quick brown fox jumps over the lazy dog";
     private static String[] QUICK_WORDS = new String[] {
             "quick", "brown", "fox", "jumps", "lazy", "dog"};
     

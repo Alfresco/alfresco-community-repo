@@ -49,7 +49,7 @@ public class PdfBoxContentTransformer extends AbstractContentTransformer
         // TODO: Expand PDFBox usage to convert images to PDF and investigate other conversions
         
         if (!MimetypeMap.MIMETYPE_PDF.equals(sourceMimetype) ||
-                !MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype))
+            !MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype))
         {
             // only support PDF -> Text
             return 0.0;

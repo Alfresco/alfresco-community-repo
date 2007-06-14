@@ -102,11 +102,12 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
             catch (IOException err)
             {
                 // probably not an Outlook format MSG - ignore for now
-                logger.warn("Unable to extract meta-data from message: " + err.getMessage());
+                if (logger.isWarnEnabled())
+                    logger.warn("Unable to extract meta-data from message: " + err.getMessage());
             }
             
             // store multi-value extracted property
-            if (receipientEmails.get().size() != 0)
+            if (this.receipientEmails.get().size() != 0)
             {
                 destination.put(ContentModel.PROP_ADDRESSEES, (Serializable)receipientEmails.get());
             }

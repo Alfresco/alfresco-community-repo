@@ -716,7 +716,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * strings are 
      * <ul>
      *    <li><b>Null:</b>              Removed</li>
-     *    <li><b>Emtpty String:</b>     Passed to the {@link OverwritePolicy}</li>
+     *    <li><b>Empty String:</b>      Passed to the {@link OverwritePolicy}</li>
      *    <li><b>Non Serializable:</b>  Converted to String or fails if that is not possible</li>
      * </ul>
      * <p>

@@ -72,6 +72,7 @@ public class MimetypeMap implements MimetypeService
     public static final String MIMETYPE_OPENSEARCH_DESCRIPTION = "application/opensearchdescription+xml";
     public static final String MIMETYPE_ATOM = "application/atom+xml";
     public static final String MIMETYPE_RSS = "application/rss+xml";
+    public static final String MIMETYPE_RFC822 = "message/rfc822";
     // Open Document
     public static final String MIMETYPE_OPENDOCUMENT_TEXT = "application/vnd.oasis.opendocument.text";
     public static final String MIMETYPE_OPENDOCUMENT_TEXT_TEMPLATE = "application/vnd.oasis.opendocument.text-template";

@@ -242,6 +242,10 @@
          </list>
       </property>
    </bean>
+   
+   <bean id="transformer.OutlookMsg"
+         class="org.alfresco.repo.content.transform.MailContentTransformer"
+         parent="baseContentTransformer" />
 
    <!--
    <bean id="transformer.JMagick" class="org.alfresco.repo.content.transform.magick.JMagickContentTransformer" init-method="init" />

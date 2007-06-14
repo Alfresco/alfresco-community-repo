@@ -125,10 +125,6 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
 
         // execute
         Object result = executeScript(executionContext, services, expression, variableAccesses);
-        if (result instanceof ScriptNode)
-        {
-            result = new JBPMNode(((ScriptNode)result).getNodeRef(), services);
-        }
 
         // map script return variable to process context
         VariableAccess returnVariable = getWritableVariable(variableAccesses);
@@ -155,6 +151,10 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         Map<String, Object> inputMap = createInputMap(context, services, variableAccesses);
         ScriptService scriptService = services.getScriptService();
         Object result = scriptService.executeScriptString(expression, inputMap);
+        if (result instanceof NodeRef)
+        {
+            result = new JBPMNode((NodeRef)result, services);
+        }
         return result;
     }
     

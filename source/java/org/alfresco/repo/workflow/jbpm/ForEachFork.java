@@ -24,11 +24,13 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.dom4j.Element;
 import org.jbpm.graph.def.Node;
@@ -105,13 +107,16 @@ public class ForEachFork extends JBPMSpringActionHandler
                 }
                 
                 // expression evaluates to Node array
-                else if (eval instanceof org.alfresco.repo.jscript.ScriptNode[])
+                else if (eval instanceof Serializable[])
                 {
-                    org.alfresco.repo.jscript.ScriptNode[] nodes = (org.alfresco.repo.jscript.ScriptNode[])eval;
+                    Serializable[] nodes = (Serializable[])eval;
                     forEachColl = new ArrayList(nodes.length);
-                    for (org.alfresco.repo.jscript.ScriptNode node : nodes)
+                    for (Serializable node : nodes)
                     {
-                        forEachColl.add(new JBPMNode(node.getNodeRef(), services));
+                        if (node instanceof NodeRef)
+                        {
+                            forEachColl.add(new JBPMNode((NodeRef)node, services));
+                        }
                     }
                 }
                 

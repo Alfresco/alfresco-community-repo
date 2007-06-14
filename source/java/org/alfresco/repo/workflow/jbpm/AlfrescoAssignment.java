@@ -97,9 +97,9 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
                     {
                         actor = (String)eval;
                     }
-                    else if (eval instanceof ScriptNode)
+                    else if (eval instanceof JBPMNode)
                     {
-                        actor = mapAuthorityToName((ScriptNode)eval, false);
+                        actor = mapAuthorityToName((JBPMNode)eval, false);
                     }
                     if (actor == null)
                     {

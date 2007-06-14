@@ -27,6 +27,7 @@ package org.alfresco.repo.transaction;
 import java.sql.BatchUpdateException;
 import java.util.Random;
 
+import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
@@ -210,10 +211,12 @@ public class RetryingTransactionHelper
                 {
                     txn = fTxnService.getUserTransaction(readOnly);
                 }
-                // Do we need to handle transaction demarcation.  If 
-                // no, we cannot do retries, that will be up to the containing
-                // transaction.
-                isNew = txn.getStatus() == Status.STATUS_NO_TRANSACTION;
+                // Do we need to handle transaction demarcation.  If no, we cannot do retries,
+                // that will be up to the containing transaction.
+                isNew = newTransaction || txn.getStatus() == Status.STATUS_NO_TRANSACTION;
+                // Only start a transaction if required.  This check isn't necessary as the transactional
+                // behaviour ensures that the appropriate propogation is performed.  It is a useful and
+                // simple optimization.
                 if (isNew)
                 {
                     txn.begin();
@@ -223,7 +226,18 @@ public class RetryingTransactionHelper
                 // Only commit if we 'own' the transaction.
                 if (isNew)
                 {
-                    txn.commit();
+                    if (txn.getStatus() == Status.STATUS_MARKED_ROLLBACK)
+                    {
+                        // Something caused the transaction to be marked for rollback
+                        // There is no recovery or retrying with this
+                        txn.rollback();
+                    }
+                    else
+                    {
+                        // The transaction hasn't been flagged for failure so the commit
+                        // sould still be good.
+                        txn.commit();
+                    }
                 }
                 if (fgLogger.isDebugEnabled())
                 {
@@ -235,6 +249,13 @@ public class RetryingTransactionHelper
                     }
                 }
                 return result;
+            }
+            catch (RollbackException e)
+            {
+                // Our explicit rollback didn't work
+                throw new AlfrescoRuntimeException(
+                        "Unexpected rollback exception: \n" + e.getMessage(),
+                        e);
             }
             catch (Throwable e)
             {

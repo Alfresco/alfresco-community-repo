@@ -27,7 +27,6 @@ package org.alfresco.repo.transaction;
 import java.sql.BatchUpdateException;
 import java.util.Random;
 
-import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
@@ -57,7 +56,7 @@ public class RetryingTransactionHelper
     /**
      * Exceptions that trigger retries.
      */
-    private static final Class[] RETRY_EXCEPTIONS;
+    public static final Class[] RETRY_EXCEPTIONS;
     static
     {
         RETRY_EXCEPTIONS = new Class[] {
@@ -149,6 +148,7 @@ public class RetryingTransactionHelper
      * 
      * @param cb                The callback containing the unit of work.
      * @return                  Returns the result of the unit of work.
+     * @throws                  RuntimeException  all checked exceptions are converted
      */
     public <R> R doInTransaction(RetryingTransactionCallback<R> cb)
     {
@@ -167,6 +167,7 @@ public class RetryingTransactionHelper
      * @param cb                The callback containing the unit of work.
      * @param readOnly          Whether this is a read only transaction.
      * @return                  Returns the result of the unit of work.
+     * @throws                  RuntimeException  all checked exceptions are converted
      */
     public <R> R doInTransaction(RetryingTransactionCallback<R> cb, boolean readOnly)
     {
@@ -184,11 +185,12 @@ public class RetryingTransactionHelper
      * 
      * @param cb                The callback containing the unit of work.
      * @param readOnly          Whether this is a read only transaction.
-     * @param newTransaction    <tt>true</tt> to force a new transaction or
+     * @param requiresNew       <tt>true</tt> to force a new transaction or
      *                          <tt>false</tt> to partake in any existing transaction.
      * @return                  Returns the result of the unit of work.
+     * @throws                  RuntimeException  all checked exceptions are converted
      */
-    public <R> R doInTransaction(RetryingTransactionCallback<R> cb, boolean readOnly, boolean newTransaction)
+    public <R> R doInTransaction(RetryingTransactionCallback<R> cb, boolean readOnly, boolean requiresNew)
     {
         if (this.readOnly && !readOnly)
         {
@@ -203,7 +205,7 @@ public class RetryingTransactionHelper
             boolean isNew = false;
             try
             {
-                if (newTransaction)
+                if (requiresNew)
                 {
                     txn = fTxnService.getNonPropagatingUserTransaction();
                 }
@@ -211,12 +213,10 @@ public class RetryingTransactionHelper
                 {
                     txn = fTxnService.getUserTransaction(readOnly);
                 }
-                // Do we need to handle transaction demarcation.  If no, we cannot do retries,
-                // that will be up to the containing transaction.
-                isNew = newTransaction || txn.getStatus() == Status.STATUS_NO_TRANSACTION;
                 // Only start a transaction if required.  This check isn't necessary as the transactional
                 // behaviour ensures that the appropriate propogation is performed.  It is a useful and
                 // simple optimization.
+                isNew = requiresNew || txn.getStatus() == Status.STATUS_NO_TRANSACTION;
                 if (isNew)
                 {
                     txn.begin();
@@ -250,13 +250,6 @@ public class RetryingTransactionHelper
                 }
                 return result;
             }
-            catch (RollbackException e)
-            {
-                // Our explicit rollback didn't work
-                throw new AlfrescoRuntimeException(
-                        "Unexpected rollback exception: \n" + e.getMessage(),
-                        e);
-            }
             catch (Throwable e)
             {
                 // Somebody else 'owns' the transaction, so just rethrow.
@@ -268,7 +261,9 @@ public class RetryingTransactionHelper
                     }
                     else
                     {
-                        throw new AlfrescoRuntimeException("Unknown Exception.", e);
+                        throw new AlfrescoRuntimeException(
+                                "Exception from transactional callback: " + cb,
+                                e);
                     }
                 }
                 // Rollback if we can.
@@ -283,15 +278,15 @@ public class RetryingTransactionHelper
                     } 
                     catch (IllegalStateException e1) 
                     {
-                        throw new AlfrescoRuntimeException("Failure during rollback.", e1);
+                        throw new AlfrescoRuntimeException("Failure during rollback: " + cb, e1);
                     } 
                     catch (SecurityException e1) 
                     {
-                        throw new AlfrescoRuntimeException("Failure during rollback.", e1);
+                        throw new AlfrescoRuntimeException("Failure during rollback: " + cb, e1);
                     }
                     catch (SystemException e1) 
                     {
-                        throw new AlfrescoRuntimeException("Failure during rollback.", e1);
+                        throw new AlfrescoRuntimeException("Failure during rollback: " + cb, e1);
                     }
                 }
                 lastException = (e instanceof RuntimeException) ? 

@@ -30,8 +30,8 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -129,14 +129,15 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         try
         {
             // Transactional wrapper to attempt the restore
-            TransactionWork<NodeRef> restoreWork = new TransactionWork<NodeRef>()
+            RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+            RetryingTransactionCallback<NodeRef> restoreCallback = new RetryingTransactionCallback<NodeRef>()
             {
-                public NodeRef doWork() throws Exception
+                public NodeRef execute() throws Exception
                 {
                     return nodeService.restoreNode(archivedNodeRef, destinationNodeRef, assocTypeQName, assocQName);
                 }
             };
-            NodeRef newNodeRef = TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, restoreWork);
+            NodeRef newNodeRef = txnHelper.doInTransaction(restoreCallback, false, true);
             // success
             report.setRestoredNodeRef(newNodeRef);
             report.setStatus(RestoreStatus.SUCCESS);
@@ -274,9 +275,10 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
      */
     public void purgeArchivedNode(final NodeRef archivedNodeRef)
     {
-        TransactionWork<Object> deleteWork = new TransactionWork<Object>()
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        RetryingTransactionCallback<Object> deleteCallback = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 try
                 {
@@ -289,7 +291,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
                 return null;
             }
         };
-        TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, deleteWork);
+        txnHelper.doInTransaction(deleteCallback, false, true);
     }
 
     /**

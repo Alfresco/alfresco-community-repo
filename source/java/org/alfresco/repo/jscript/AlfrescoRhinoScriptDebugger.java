@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.jscript;
 
+import javax.swing.WindowConstants;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.apache.commons.logging.Log;
@@ -48,7 +50,14 @@ public class AlfrescoRhinoScriptDebugger extends Dim
 {
     // Logger
     private static final Log logger = LogFactory.getLog(AlfrescoRhinoScriptDebugger.class);
-    
+
+    private boolean active = false;
+    private boolean visible = false;
+    private ContextFactory factory = null; 
+    private Global global = null; 
+    private AlfrescoRhinoScriptDebugger dim = null;
+    private SwingGui gui = null;
+
     
     /**
      * Start the Debugger
@@ -57,24 +66,79 @@ public class AlfrescoRhinoScriptDebugger extends Dim
     {
         if (logger.isDebugEnabled())
         {
-            ContextFactory factory = ContextFactory.getGlobal();
-            Global global = new Global();
-            global.init(factory);        
-            
-            AlfrescoRhinoScriptDebugger dim = new AlfrescoRhinoScriptDebugger();
-            dim.setBreakOnExceptions(true);
-            dim.setBreakOnEnter(true);
-            dim.setBreakOnReturn(true);
-            
-            dim.attachTo(factory);
-            dim.setScopeProvider(IProxy.newScopeProvider((Scriptable)global));
-        
-            SwingGui gui = new SwingGui(dim, "Alfresco JavaScript Debugger");
-            gui.pack();
-            gui.setSize(600, 460);
-            gui.setVisible(true);
+            activate();
+            show();
         }
     }
+    
+    /**
+     * Activate the Debugger
+     */
+    public synchronized void activate()
+    {
+        factory = ContextFactory.getGlobal();
+        global = new Global();
+        global.init(factory);
+        dim = new AlfrescoRhinoScriptDebugger();
+        dim.setScopeProvider(IProxy.newScopeProvider((Scriptable)global));
+        gui = new SwingGui(dim, "Alfresco JavaScript Debugger");
+        gui.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        active = true;
+    }
+
+    /**
+     * Show the debugger
+     */
+    public synchronized void show()
+    {
+        if (!isActive())
+        {
+            activate();
+        }
+        
+        dim.setBreakOnExceptions(true);
+        dim.setBreakOnEnter(true);
+        dim.setBreakOnReturn(true);
+        dim.attachTo(factory);
+        gui.pack();
+        gui.setSize(600, 460);
+        gui.setVisible(true);
+        visible = true;
+    }
+    
+    /**
+     * Hide the Debugger
+     */
+    public synchronized void hide()
+    {
+        if (isVisible())
+        {
+            dim.detach();
+            gui.dispose();
+            visible = false;
+        }
+    }
+    
+    /**
+     * Is Debugger visible?
+     * 
+     * @return
+     */
+    public boolean isVisible()
+    {
+        return visible;
+    }
+    
+    /**
+     * Is Debugger active?
+     * 
+     * @return
+     */
+    public boolean isActive()
+    {
+        return active;
+    }
+    
 
     /* (non-Javadoc)
      * @see org.mozilla.javascript.tools.debugger.Dim#objectToString(java.lang.Object)
@@ -117,6 +181,7 @@ public class AlfrescoRhinoScriptDebugger extends Dim
          */
         private Scriptable scope;
 
+        
         /**
          * Creates a new IProxy.
          */
@@ -144,7 +209,6 @@ public class AlfrescoRhinoScriptDebugger extends Dim
         {
             if (type != EXIT_ACTION)
                 Kit.codeBug();
-            System.exit(0);
         }
 
         // ScopeProvider

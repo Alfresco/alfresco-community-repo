@@ -82,7 +82,7 @@ public class EhCacheTracerJob implements Job
     {
         if (cacheManager == null)
         {
-            cacheManager = CacheManager.getInstance();
+            cacheManager = InternalEhCacheManagerFactoryBean.getInstance();
         }
         
         long maxHeapSize = Runtime.getRuntime().maxMemory();

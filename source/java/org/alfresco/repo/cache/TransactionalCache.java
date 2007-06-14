@@ -41,7 +41,6 @@ import org.alfresco.util.EqualsHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.util.Assert;
 
 /**
@@ -535,40 +534,19 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     {
     }
 
+    /**
+     * NO-OP
+     */
     public void beforeCompletion()
     {
     }
 
     /**
-     * Check that the cache used is not out of date with the shared cache.
-     * Note that the clear flag is ignored as this would have removed all
-     * entries from the local caches anyway.
+     * NO-OP
      */
     @SuppressWarnings("unchecked")
     public void beforeCommit(boolean readOnly)
     {
-        if (isDebugEnabled)
-        {
-            logger.debug("Processing pre-commit");
-        }
-        
-        TransactionData txnData = getTransactionData();
-        // Process all the updates or new entries
-        for (Object obj : txnData.updatedItemsCache.getKeys())
-        {
-            Serializable key = (Serializable) obj;
-            Element element = txnData.updatedItemsCache.get(key);
-            CacheBucket<V> bucket = (CacheBucket<V>) element.getValue();
-            bucket.doPreCommit(sharedCache, key);
-        }
-        // Process all the removals
-        for (Object obj : txnData.removedItemsCache.getKeys())
-        {
-            Serializable key = (Serializable) obj;
-            Element element = txnData.removedItemsCache.get(key);
-            CacheBucket<V> bucket = (CacheBucket<V>) element.getValue();
-            bucket.doPreCommit(sharedCache, key);
-        }
     }
 
     /**
@@ -668,13 +646,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
          */
         BV getValue();
         /**
-         * Check that any new cache values have not been superceded by new values in the shared cache.
-         * 
-         * @param sharedCache       the cache to check
-         * @param key               the key that the bucket was stored against
-         */
-        void doPreCommit(SimpleCache<Serializable, BV> sharedCache, Serializable key);
-        /**
          * Flush the current bucket to the shared cache as far as possible.
          * 
          * @param sharedCache       the cache to flush to
@@ -701,19 +672,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         public BV getValue()
         {
             return value;
-        }
-        public void doPreCommit(SimpleCache<Serializable, BV> sharedCache, Serializable key)
-        {
-            if (sharedCache.contains(key))
-            {
-                // The shared cache has a value where there wasn't one before.  More than likely,
-                // this transaction would have used or modified that shared value.
-                throw new ConcurrencyFailureException(
-                        "New cache bucket found new shared cache entry: \n" +
-                        "   Cache: " + name + "\n" +
-                        "   Key:   " + key);
-                        
-            }
         }
         public void doPostCommit(SimpleCache<Serializable, BV> sharedCache, Serializable key)
         {
@@ -750,33 +708,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         {
             return originalValue;
         }
-        public void doPreCommit(SimpleCache<Serializable, BV> sharedCache, Serializable key)
-        {
-            if (sharedCache.contains(key))
-            {
-                BV sharedValue = sharedCache.get(key);
-                if (sharedValue == getOriginalValue())
-                {
-                    // The cache entry is safe for writing
-                }
-                else
-                {
-                    // The shared value has moved on since
-                    throw new ConcurrencyFailureException(
-                            "Update cache bucket found newer shared cache entry: \n" +
-                            "   Cache: " + name + "\n" +
-                            "   Key:   " + key);
-                }
-            }
-            else
-            {
-                // The key was removed from the shared cache.  This instance cannot update the entry.
-                throw new ConcurrencyFailureException(
-                        "Update cache bucket couldn't fine entry to update: \n" +
-                        "   Cache: " + name + "\n" +
-                        "   Key:   " + key);
-            }
-        }
         public void doPostCommit(SimpleCache<Serializable, BV> sharedCache, Serializable key)
         {
             BV sharedValue = sharedCache.get(key);
@@ -811,34 +742,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         public RemoveCacheBucket(BV originalValue)
         {
             super(originalValue, null);
-        }
-        public void doPreCommit(SimpleCache<Serializable, BV> sharedCache, Serializable key)
-        {
-            BV sharedValue = sharedCache.get(key);
-            if (sharedValue != null)
-            {
-                if (sharedValue == getOriginalValue())
-                {
-                    // The shared cache entry is the same as the one we were flagged to remove
-                }
-                else
-                {
-                    // The shared value has moved on since
-                    throw new ConcurrencyFailureException(
-                            "Remove cache bucket found newer shared cache entry: \n" +
-                            "   Cache: " + name + "\n" +
-                            "   Key:   " + key);
-                }
-            }
-            else
-            {
-                // The shared cache no longer has the value.  It is possible that the removal of the
-                // item is something that would have affected the behaviour of the current transaction.
-                throw new ConcurrencyFailureException(
-                        "Remove cache bucket found new shared cache entry: \n" +
-                        "   Cache: " + name + "\n" +
-                        "   Key:   " + key);
-            }
         }
         public void doPostCommit(SimpleCache<Serializable, BV> sharedCache, Serializable key)
         {

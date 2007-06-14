@@ -33,14 +33,12 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 import net.sf.ehcache.CacheManager;
 
-import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * @see org.alfresco.repo.cache.EhCacheAdapter
@@ -54,9 +52,9 @@ public class CacheTest extends TestCase
             );
     
     private ServiceRegistry serviceRegistry;
-    private SimpleCache<String, Serializable> standaloneCache;
-    private SimpleCache<String, Serializable> backingCache;
-    private SimpleCache<String, Serializable> transactionalCache;
+    private SimpleCache<String, Object> standaloneCache;
+    private SimpleCache<String, Object> backingCache;
+    private SimpleCache<String, Object> transactionalCache;
     private SimpleCache<String, Object> objectCache;
     
     @SuppressWarnings("unchecked")
@@ -64,9 +62,9 @@ public class CacheTest extends TestCase
     public void setUp() throws Exception
     {
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        standaloneCache = (SimpleCache<String, Serializable>) ctx.getBean("ehCache1");
-        backingCache = (SimpleCache<String, Serializable>) ctx.getBean("backingCache");
-        transactionalCache = (SimpleCache<String, Serializable>) ctx.getBean("transactionalCache");
+        standaloneCache = (SimpleCache<String, Object>) ctx.getBean("ehCache1");
+        backingCache = (SimpleCache<String, Object>) ctx.getBean("backingCache");
+        transactionalCache = (SimpleCache<String, Object>) ctx.getBean("transactionalCache");
         objectCache = (SimpleCache<String, Object>) ctx.getBean("objectCache");
     }
     
@@ -196,7 +194,7 @@ public class CacheTest extends TestCase
      * @param objectCount
      * @return Returns the time it took in <b>nanoseconds</b>.
      */
-    public long runPerformanceTestOnCache(SimpleCache<String, Serializable> cache, int objectCount)
+    public long runPerformanceTestOnCache(SimpleCache<String, Object> cache, int objectCount)
     {
         // preload
         for (int i = 0; i < objectCount; i++)
@@ -279,9 +277,8 @@ public class CacheTest extends TestCase
         }
     }
     
-    private static final Class[] CONCURRENCY_EXCEPTIONS = {ConcurrencyFailureException.class};
-    /** Execute the callback and ensure that the concurrent condition is detected */
-    private void executeAndCheck(RetryingTransactionCallback callback) throws Exception
+    /** Execute the callback and ensure that the backing cache is left with the expected value */
+    private void executeAndCheck(RetryingTransactionCallback callback, Serializable key, Object expectedValue) throws Throwable
     {
         TransactionService transactionService = serviceRegistry.getTransactionService();
         UserTransaction txn = transactionService.getUserTransaction();
@@ -290,13 +287,6 @@ public class CacheTest extends TestCase
             txn.begin();
             callback.execute();
             txn.commit();
-            fail("Failed to detect concurrent modification");
-        }
-        catch (Throwable e)
-        {
-            assertNotNull(
-                    "Expected a concurrency failure",
-                    ExceptionStackUtil.getCause(e, CONCURRENCY_EXCEPTIONS));
         }
         finally
         {
@@ -304,6 +294,7 @@ public class CacheTest extends TestCase
         }
     }
     
+    private static final String COMMON_KEY = "A";
     /**
      * <ul>
      *   <li>Add to the transaction cache</li>
@@ -311,18 +302,39 @@ public class CacheTest extends TestCase
      *   <li>Commit</li>
      * </ul>
      */
-    public void testConcurrentAddAgainstAdd() throws Exception
+    public void testConcurrentAddAgainstAdd()throws Throwable
     {
         RetryingTransactionCallback callback = new RetryingTransactionCallback()
         {
             public Object execute() throws Throwable
             {
-                transactionalCache.put("A", "AAA");
-                backingCache.put("A", "aaa");
+                transactionalCache.put(COMMON_KEY, "AAA");
+                backingCache.put(COMMON_KEY, "aaa");
                 return null;
             }
         };
-        executeAndCheck(callback);
+        executeAndCheck(callback, COMMON_KEY, null);
+    }
+    /**
+     * <ul>
+     *   <li>Add to the transaction cache</li>
+     *   <li>Add to the backing cache</li>
+     *   <li>Commit</li>
+     * </ul>
+     */
+    public void testConcurrentAddAgainstAddSame()throws Throwable
+    {
+        final Object commonValue = "AAA";
+        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        {
+            public Object execute() throws Throwable
+            {
+                transactionalCache.put(COMMON_KEY, commonValue);
+                backingCache.put(COMMON_KEY, commonValue);
+                return null;
+            }
+        };
+        executeAndCheck(callback, COMMON_KEY, commonValue);
     }
     /**
      * <ul>
@@ -331,18 +343,18 @@ public class CacheTest extends TestCase
      *   <li>Commit</li>
      * </ul>
      */
-    public void testConcurrentAddAgainstClear() throws Exception
+    public void testConcurrentAddAgainstClear()throws Throwable
     {
         RetryingTransactionCallback callback = new RetryingTransactionCallback()
         {
             public Object execute() throws Throwable
             {
-                transactionalCache.put("A", "AAA");
+                transactionalCache.put(COMMON_KEY, "AAA");
                 backingCache.clear();
                 return null;
             }
         };
-        executeAndCheck(callback);
+        executeAndCheck(callback, COMMON_KEY, null);
     }
     /**
      * <ul>
@@ -352,19 +364,19 @@ public class CacheTest extends TestCase
      *   <li>Commit</li>
      * </ul>
      */
-    public void testConcurrentUpdateAgainstUpdate() throws Exception
+    public void testConcurrentUpdateAgainstUpdate()throws Throwable
     {
         RetryingTransactionCallback callback = new RetryingTransactionCallback()
         {
             public Object execute() throws Throwable
             {
-                backingCache.put("A", "aaa1");
-                transactionalCache.put("A", "AAA");
-                backingCache.put("A", "aaa2");
+                backingCache.put(COMMON_KEY, "aaa1");
+                transactionalCache.put(COMMON_KEY, "AAA");
+                backingCache.put(COMMON_KEY, "aaa2");
                 return null;
             }
         };
-        executeAndCheck(callback);
+        executeAndCheck(callback, COMMON_KEY, null);
     }
     /**
      * <ul>
@@ -374,19 +386,19 @@ public class CacheTest extends TestCase
      *   <li>Commit</li>
      * </ul>
      */
-    public void testConcurrentUpdateAgainstUpdateNull() throws Exception
+    public void testConcurrentUpdateAgainstUpdateNull()throws Throwable
     {
         RetryingTransactionCallback callback = new RetryingTransactionCallback()
         {
             public Object execute() throws Throwable
             {
-                backingCache.put("A", "aaa1");
-                transactionalCache.put("A", "AAA");
-                backingCache.put("A", null);
+                backingCache.put(COMMON_KEY, "aaa1");
+                transactionalCache.put(COMMON_KEY, "AAA");
+                backingCache.put(COMMON_KEY, null);
                 return null;
             }
         };
-        executeAndCheck(callback);
+        executeAndCheck(callback, COMMON_KEY, null);
     }
     /**
      * <ul>
@@ -396,19 +408,19 @@ public class CacheTest extends TestCase
      *   <li>Commit</li>
      * </ul>
      */
-    public void testConcurrentUpdateNullAgainstUpdate() throws Exception
+    public void testConcurrentUpdateNullAgainstUpdate()throws Throwable
     {
         RetryingTransactionCallback callback = new RetryingTransactionCallback()
         {
             public Object execute() throws Throwable
             {
-                backingCache.put("A", "aaa1");
-                transactionalCache.put("A", null);
-                backingCache.put("A", "aaa2");
+                backingCache.put(COMMON_KEY, "aaa1");
+                transactionalCache.put(COMMON_KEY, null);
+                backingCache.put(COMMON_KEY, "aaa2");
                 return null;
             }
         };
-        executeAndCheck(callback);
+        executeAndCheck(callback, COMMON_KEY, null);
     }
     /**
      * <ul>
@@ -418,19 +430,19 @@ public class CacheTest extends TestCase
      *   <li>Commit</li>
      * </ul>
      */
-    public void testConcurrentUpdateAgainstRemove() throws Exception
+    public void testConcurrentUpdateAgainstRemove()throws Throwable
     {
         RetryingTransactionCallback callback = new RetryingTransactionCallback()
         {
             public Object execute() throws Throwable
             {
-                backingCache.put("A", "aaa1");
-                transactionalCache.put("A", "AAA");
-                backingCache.remove("A");
+                backingCache.put(COMMON_KEY, "aaa1");
+                transactionalCache.put(COMMON_KEY, "AAA");
+                backingCache.remove(COMMON_KEY);
                 return null;
             }
         };
-        executeAndCheck(callback);
+        executeAndCheck(callback, COMMON_KEY, null);
     }
     /**
      * <ul>
@@ -440,19 +452,19 @@ public class CacheTest extends TestCase
      *   <li>Commit</li>
      * </ul>
      */
-    public void testConcurrentUpdateAgainstClear() throws Exception
+    public void testConcurrentUpdateAgainstClear()throws Throwable
     {
         RetryingTransactionCallback callback = new RetryingTransactionCallback()
         {
             public Object execute() throws Throwable
             {
-                backingCache.put("A", "aaa1");
-                transactionalCache.put("A", "AAA");
+                backingCache.put(COMMON_KEY, "aaa1");
+                transactionalCache.put(COMMON_KEY, "AAA");
                 backingCache.clear();
                 return null;
             }
         };
-        executeAndCheck(callback);
+        executeAndCheck(callback, COMMON_KEY, null);
     }
     /**
      * <ul>
@@ -462,19 +474,19 @@ public class CacheTest extends TestCase
      *   <li>Commit</li>
      * </ul>
      */
-    public void testConcurrentRemoveAgainstUpdate() throws Exception
+    public void testConcurrentRemoveAgainstUpdate()throws Throwable
     {
         RetryingTransactionCallback callback = new RetryingTransactionCallback()
         {
             public Object execute() throws Throwable
             {
-                backingCache.put("A", "aaa1");
-                transactionalCache.remove("A");
-                backingCache.put("A", "aaa2");
+                backingCache.put(COMMON_KEY, "aaa1");
+                transactionalCache.remove(COMMON_KEY);
+                backingCache.put(COMMON_KEY, "aaa2");
                 return null;
             }
         };
-        executeAndCheck(callback);
+        executeAndCheck(callback, COMMON_KEY, null);
     }
     /**
      * <ul>
@@ -484,19 +496,19 @@ public class CacheTest extends TestCase
      *   <li>Commit</li>
      * </ul>
      */
-    public void testConcurrentRemoveAgainstRemove() throws Exception
+    public void testConcurrentRemoveAgainstRemove()throws Throwable
     {
         RetryingTransactionCallback callback = new RetryingTransactionCallback()
         {
             public Object execute() throws Throwable
             {
-                backingCache.put("A", "aaa1");
-                transactionalCache.remove("A");
-                backingCache.remove("A");
+                backingCache.put(COMMON_KEY, "aaa1");
+                transactionalCache.remove(COMMON_KEY);
+                backingCache.remove(COMMON_KEY);
                 return null;
             }
         };
-        executeAndCheck(callback);
+        executeAndCheck(callback, COMMON_KEY, null);
     }
     /**
      * <ul>
@@ -506,18 +518,18 @@ public class CacheTest extends TestCase
      *   <li>Commit</li>
      * </ul>
      */
-    public void testConcurrentRemoveAgainstClear() throws Exception
+    public void testConcurrentRemoveAgainstClear()throws Throwable
     {
         RetryingTransactionCallback callback = new RetryingTransactionCallback()
         {
             public Object execute() throws Throwable
             {
-                backingCache.put("A", "aaa1");
-                transactionalCache.remove("A");
+                backingCache.put(COMMON_KEY, "aaa1");
+                transactionalCache.remove(COMMON_KEY);
                 backingCache.clear();
                 return null;
             }
         };
-        executeAndCheck(callback);
+        executeAndCheck(callback, COMMON_KEY, null);
     }
 }

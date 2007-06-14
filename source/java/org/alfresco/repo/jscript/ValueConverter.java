@@ -52,6 +52,8 @@ import org.mozilla.javascript.Wrapper;
  */
 public class ValueConverter
 {
+    private static final String TYPE_DATE = "Date";
+    
     /**
      * Convert an object from any repository serialized value to a valid script object.
      * This includes converting Collection multi-value properties into JavaScript Array objects.
@@ -78,15 +80,15 @@ public class ValueConverter
         }
         else if (value instanceof QName || value instanceof StoreRef)
         {
-        	value = value.toString();
+        	   value = value.toString();
         }
         else if (value instanceof ChildAssociationRef)
         {
-        	value = new ChildAssociation(services, (ChildAssociationRef)value, scope);
+        	   value = new ChildAssociation(services, (ChildAssociationRef)value, scope);
         }
         else if (value instanceof AssociationRef)
         {
-        	value = new Association(services, (AssociationRef)value, scope);
+        	   value = new Association(services, (AssociationRef)value, scope);
         }
         else if (value instanceof Date)
         {
@@ -95,7 +97,7 @@ public class ValueConverter
             // value from the Java date - this will construct a JavaScript Date with the same value
             Date date = (Date)value;
             Object val = ScriptRuntime.newObject(
-                    Context.getCurrentContext(), scope, "Date", new Object[] {date.getTime()});
+                    Context.getCurrentContext(), scope, TYPE_DATE, new Object[] {date.getTime()});
             value = (Serializable)val;
         }
         else if (value instanceof Collection)
@@ -138,11 +140,11 @@ public class ValueConverter
         }
         else if (value instanceof ChildAssociation)
         {
-        	value = ((ChildAssociation)value).getChildAssociationRef();
+        	   value = ((ChildAssociation)value).getChildAssociationRef();
         }
         else if (value instanceof Association)
         {
-        	value = ((Association)value).getAssociationRef();
+        	   value = ((Association)value).getAssociationRef();
         }
         else if (value instanceof Wrapper)
         {
@@ -158,7 +160,16 @@ public class ValueConverter
             
             if (value instanceof IdScriptableObject)
             {
-                if (value instanceof NativeArray)
+                // TODO: add code here to use the dictionary and convert to correct value type
+                if (TYPE_DATE.equals(((IdScriptableObject)value).getClassName()))
+                {
+                    Object javaObj = Context.jsToJava(value, Date.class);
+                    if (javaObj instanceof Serializable)
+                    {
+                        value = (Serializable)javaObj;
+                    }
+                }
+                else if (value instanceof NativeArray)
                 {
                     // convert JavaScript array of values to a List of Serializable objects
                     Object[] propIds = values.getIds();
@@ -199,15 +210,6 @@ public class ValueConverter
                         }
                     }
                     value = (Serializable)propValues;
-                }
-            }
-            else
-            {
-                // TODO: add code here to use the dictionary and convert to correct value type
-                Object javaObj = Context.jsToJava(value, Date.class);
-                if (javaObj instanceof Serializable)
-                {
-                    value = (Serializable)javaObj;
                 }
             }
         }

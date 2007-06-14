@@ -108,7 +108,7 @@ public interface WorkflowComponent
     /**
      * Gets a Workflow Definition by unique name
      * 
-     * @param workflowName  workflow name e.g. jbpm://review
+     * @param workflowName  workflow name e.g. jbpm$wf:review
      * @return  the deployed workflow definition
      */
     public WorkflowDefinition getDefinitionByName(String workflowName);
@@ -116,7 +116,7 @@ public interface WorkflowComponent
     /**
      * Gets all (including previous) Workflow Definitions for the given unique name
      * 
-     * @param workflowName  workflow name e.g. jbpm://review
+     * @param workflowName  workflow name e.g. jbpm$wf:review
      * @return  the deployed workflow definition (or null if not found)
      */
     @Auditable(parameters = {"workflowName"})
@@ -150,7 +150,7 @@ public interface WorkflowComponent
      * Gets all "in-flight" workflow instances of the specified Workflow Definition
      * 
      * @param workflowDefinitionId  the workflow definition id
-     * @return  the list of "in-fligth" workflow instances
+     * @return  the list of "in-flight" workflow instances
      */
     public List<WorkflowInstance> getActiveWorkflows(String workflowDefinitionId);
     
@@ -179,7 +179,7 @@ public interface WorkflowComponent
     public Map<QName, Serializable> getPathProperties(String pathId); 
     
     /**
-     * Cancel an "in-fligth" Workflow instance
+     * Cancel an "in-flight" Workflow instance
      * 
      * @param workflowId  the workflow instance to cancel
      * @return  an updated representation of the workflow instance
@@ -187,7 +187,7 @@ public interface WorkflowComponent
     public WorkflowInstance cancelWorkflow(String workflowId);
 
     /**
-     * Delete an "in-fligth" Workflow instance
+     * Delete an "in-flight" Workflow instance
      * 
      * @param workflowId  the workflow instance to cancel
      * @return  an updated representation of the workflow instance

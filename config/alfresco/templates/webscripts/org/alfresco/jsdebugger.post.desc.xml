@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>Javascript Debugger Maintenance</shortname>
+  <description>Javascript Debugger Maintenance</description>
+  <url>/api/javascript/debugger?active={active?}</url>
+</webscript>

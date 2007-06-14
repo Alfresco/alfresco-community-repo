@@ -195,6 +195,14 @@
    <!--  Retrieve Web Script Description Document -->
    <bean id="webscript.org.alfresco.scriptdescription.get" class="org.alfresco.web.scripts.bean.ServiceDescription" parent="webscript" />
 
+   <!--  Javascript APIs -->
+   <bean id="webscript.org.alfresco.jsdebugger.get" class="org.alfresco.web.scripts.bean.JavascriptDebugger" parent="webscript">
+      <property name="debugger" ref="rhinoScriptDebugger" />
+   </bean>
+   <bean id="webscript.org.alfresco.jsdebugger.post" class="org.alfresco.web.scripts.bean.JavascriptDebuggerPost" parent="webscript">
+      <property name="debugger" ref="rhinoScriptDebugger" />
+   </bean>
+
    <!--  Authentication APIs -->
    <bean id="webscript.org.alfresco.repository.login.get" class="org.alfresco.web.scripts.bean.Login" parent="webscript">
       <property name="authenticationService" ref="authenticationService" />

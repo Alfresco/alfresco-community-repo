@@ -127,7 +127,7 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      * 
      * @return      Returns <tt>true</tt> if the {@link #getReliability(String) reliability}
      *              is greater than 0
@@ -163,7 +163,7 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public boolean extract(ContentReader reader, Map<QName, Serializable> destination) throws ContentIOException
     {
@@ -202,7 +202,7 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      * 
      * @param overwritePolicy       ignored
      * @param propertyMapping       ignored

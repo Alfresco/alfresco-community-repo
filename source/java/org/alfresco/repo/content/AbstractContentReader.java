@@ -238,7 +238,7 @@ public abstract class AbstractContentReader extends AbstractContentAccessor impl
     
     
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public FileChannel getFileChannel() throws ContentIOException
     {

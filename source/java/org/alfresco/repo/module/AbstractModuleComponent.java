@@ -155,7 +155,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public String getModuleId()
     {
@@ -171,7 +171,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public String getName()
     {
@@ -202,7 +202,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public String getDescription()
     {
@@ -221,7 +221,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public VersionNumber getSinceVersionNumber()
     {
@@ -237,7 +237,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public VersionNumber getAppliesFromVersionNumber()
     {
@@ -254,7 +254,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public VersionNumber getAppliesToVersionNumber()
     {
@@ -271,7 +271,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public List<ModuleComponent> getDependsOn()
     {
@@ -287,7 +287,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      * 
      * @return Returns <tt>true</tt> always.  Override as required.
      */
@@ -325,7 +325,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     protected abstract void executeInternal() throws Throwable;
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      * 
      * @see #executeInternal() the abstract method to be implemented by subclasses
      */

@@ -323,7 +323,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         return isPivot;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public boolean isTranslation(NodeRef contentNodeRef)
     {
         if (!nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
@@ -355,7 +355,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         }
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public void makeTranslation(NodeRef contentNodeRef, Locale locale)
     {
         NodeRef mlContainerNodeRef = makeTranslationImpl(null, contentNodeRef, locale);
@@ -369,7 +369,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         }
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public void unmakeTranslation(NodeRef translationNodeRef)
     {
         // Get the container
@@ -423,7 +423,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         }
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public void addTranslation(NodeRef newTranslationNodeRef, NodeRef translationOfNodeRef, Locale locale)
     {
         // Get the container
@@ -450,7 +450,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         }
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public NodeRef getTranslationContainer(NodeRef translationNodeRef)
     {
         NodeRef mlContainerNodeRef = getOrCreateMLContainer(translationNodeRef, false);
@@ -458,7 +458,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         return mlContainerNodeRef;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public Map<Locale, NodeRef> getTranslations(NodeRef translationOfNodeRef)
     {
         NodeRef mlContainerNodeRef = null;
@@ -499,7 +499,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         return nodeRefsByLocale;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public NodeRef getTranslationForLocale(NodeRef translationNodeRef, Locale locale)
     {
         // Get all the translations
@@ -530,7 +530,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         return nearestNodeRef;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public List<Locale> getMissingTranslations(NodeRef localizedNodeRef, boolean addThisNodeLocale)
     {
         List<Locale> foundLocales   = new ArrayList<Locale>(getTranslations(localizedNodeRef).keySet());
@@ -583,7 +583,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         return missingLocales;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public NodeRef getPivotTranslation(NodeRef nodeRef)
     {
         Locale containerLocale = null;
@@ -617,7 +617,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public NodeRef addEmptyTranslation(NodeRef translationOfNodeRef, String name, Locale locale)
     {

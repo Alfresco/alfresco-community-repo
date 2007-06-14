@@ -123,7 +123,7 @@ public class ModuleServiceImpl implements ModuleService
     }
     
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      * 
      * @see ModuleComponentHelper#startModules()
      */
@@ -133,7 +133,7 @@ public class ModuleServiceImpl implements ModuleService
     }
     
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public ModuleDetails getModule(String moduleId)
     {
@@ -145,7 +145,7 @@ public class ModuleServiceImpl implements ModuleService
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public List<ModuleDetails> getAllModules()
     {

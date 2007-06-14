@@ -124,7 +124,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public Authentication setCurrentAuthentication(Authentication authentication)
     {

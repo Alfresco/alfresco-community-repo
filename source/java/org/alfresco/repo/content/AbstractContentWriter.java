@@ -254,7 +254,7 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
     }
     
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public FileChannel getFileChannel(boolean truncate) throws ContentIOException
     {

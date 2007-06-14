@@ -1031,7 +1031,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     }
     
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public void removeProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
     {

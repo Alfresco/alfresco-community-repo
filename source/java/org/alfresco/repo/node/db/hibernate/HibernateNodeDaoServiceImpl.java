@@ -1043,7 +1043,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     }
     
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      * 
      * This includes a check to ensuret that only root nodes don't have primary parents
      */
@@ -1088,7 +1088,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
 
     private Set<NodeRef> warnedDuplicateParents = new HashSet<NodeRef>(3);
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      * 
      * This method includes a check for multiple primary parent associations.
      * The check doesn't fail but will warn (once per instance) of the occurence of

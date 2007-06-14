@@ -159,7 +159,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
     
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      * 
      * @see #setSupportedMimetypes(Collection)
      */
@@ -458,7 +458,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         initialized = true;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public long getExtractionTime()
     {
         return extractionTime;
@@ -484,7 +484,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public final boolean extract(ContentReader reader, Map<QName, Serializable> destination) throws ContentIOException
     {
@@ -492,7 +492,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public final boolean extract(
             ContentReader reader,

@@ -269,7 +269,7 @@ public class RegistryServiceImpl implements RegistryService
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public void addProperty(RegistryKey key, Serializable value)
     {

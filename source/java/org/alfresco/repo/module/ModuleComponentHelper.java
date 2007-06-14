@@ -189,7 +189,7 @@ public class ModuleComponentHelper
     }
     
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public synchronized void startModules()
     {

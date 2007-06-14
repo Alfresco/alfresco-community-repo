@@ -77,7 +77,7 @@ public class EditionServiceImpl implements EditionService
                         ContentModel.PROP_LOCALE
                     };
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public NodeRef createEdition(NodeRef startingTranslationNodeRef, Map<String, Serializable> versionProperties)
     {
         if (nodeService.hasAspect(startingTranslationNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
@@ -185,7 +185,7 @@ public class EditionServiceImpl implements EditionService
         return startNode;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public VersionHistory getEditions(NodeRef mlContainer)
     {
         VersionHistory editionHistory = null;
@@ -215,7 +215,7 @@ public class EditionServiceImpl implements EditionService
         return editionHistory;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public Map<QName, Serializable> getVersionedMetadatas(Version version)
     {
         NodeRef frozenNodeRef = version.getFrozenStateNodeRef();
@@ -245,7 +245,7 @@ public class EditionServiceImpl implements EditionService
         }
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public List<VersionHistory> getVersionedTranslations(Version mlContainerEdition)
     {
         // Ensure that the given version is an Edition of an mlContainer

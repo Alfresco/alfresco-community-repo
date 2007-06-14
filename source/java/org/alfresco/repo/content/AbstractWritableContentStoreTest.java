@@ -65,7 +65,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      * <p>
      * This implementation creates some content in the store and returns the new content URL.
      */

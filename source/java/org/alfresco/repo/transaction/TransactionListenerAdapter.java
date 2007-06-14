@@ -32,35 +32,35 @@ package org.alfresco.repo.transaction;
 public abstract class TransactionListenerAdapter implements TransactionListener
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public void flush()
     {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public void beforeCommit(boolean readOnly)
     {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public void beforeCompletion()
     {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public void afterCommit()
     {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public void afterRollback()
     {

@@ -327,18 +327,18 @@
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
-               org.alfresco.service.cmr.repository.NodeService.getStores=AFTER_ACL_NODE.sys:base.Read
+               org.alfresco.service.cmr.repository.NodeService.getStores=AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.createStore=ACL_METHOD.ROLE_ADMINISTRATOR
                org.alfresco.service.cmr.repository.NodeService.exists=ACL_ALLOW
-               org.alfresco.service.cmr.repository.NodeService.getNodeStatus=ACL_NODE.0.sys:base.Read
-               org.alfresco.service.cmr.repository.NodeService.getRootNode=ACL_NODE.0.sys:base.Read
+               org.alfresco.service.cmr.repository.NodeService.getNodeStatus=ACL_NODE.0.sys:base.ReadProperties
+               org.alfresco.service.cmr.repository.NodeService.getRootNode=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.createNode=ACL_NODE.0.sys:base.CreateChildren
                org.alfresco.service.cmr.repository.NodeService.moveNode=ACL_NODE.0.sys:base.DeleteNode,ACL_NODE.1.sys:base.CreateChildren
                org.alfresco.service.cmr.repository.NodeService.setChildAssociationIndex=ACL_PARENT.0.sys:base.WriteProperties
                org.alfresco.service.cmr.repository.NodeService.getType=ACL_ALLOW
-               org.alfresco.service.cmr.repository.NodeService.setType=ACL_NODE.0.sys:base.Write
-               org.alfresco.service.cmr.repository.NodeService.addAspect=ACL_NODE.0.sys:base.Write
-               org.alfresco.service.cmr.repository.NodeService.removeAspect=ACL_NODE.0.sys:base.Write
+               org.alfresco.service.cmr.repository.NodeService.setType=ACL_NODE.0.sys:base.WriteProperties
+               org.alfresco.service.cmr.repository.NodeService.addAspect=ACL_NODE.0.sys:base.WriteProperties
+               org.alfresco.service.cmr.repository.NodeService.removeAspect=ACL_NODE.0.sys:base.WriteProperties
                org.alfresco.service.cmr.repository.NodeService.hasAspect=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.getAspects=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.deleteNode=ACL_NODE.0.sys:base.DeleteNode
@@ -350,10 +350,10 @@
                org.alfresco.service.cmr.repository.NodeService.setProperties=ACL_NODE.0.sys:base.WriteProperties
                org.alfresco.service.cmr.repository.NodeService.setProperty=ACL_NODE.0.sys:base.WriteProperties
                org.alfresco.service.cmr.repository.NodeService.removeProperty=ACL_NODE.0.sys:base.WriteProperties
-               org.alfresco.service.cmr.repository.NodeService.getParentAssocs=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_PARENT.sys:base.Read
-               org.alfresco.service.cmr.repository.NodeService.getChildAssocs=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.Read
-               org.alfresco.service.cmr.repository.NodeService.getChildByName=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.Read
-               org.alfresco.service.cmr.repository.NodeService.getPrimaryParent=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_PARENT.sys:base.Read
+               org.alfresco.service.cmr.repository.NodeService.getParentAssocs=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_PARENT.sys:base.ReadProperties
+               org.alfresco.service.cmr.repository.NodeService.getChildAssocs=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.service.cmr.repository.NodeService.getChildByName=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.service.cmr.repository.NodeService.getPrimaryParent=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_PARENT.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.createAssociation=ROLE_AUTHENTICATED
                org.alfresco.service.cmr.repository.NodeService.removeAssociation=ROLE_AUTHENTICATED
                org.alfresco.service.cmr.repository.NodeService.getTargetAssocs=ROLE_AUTHENTICATED
@@ -376,14 +376,14 @@
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
-               org.alfresco.service.cmr.model.FileFolderService.list=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.Read
-               org.alfresco.service.cmr.model.FileFolderService.listFiles=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.Read
-               org.alfresco.service.cmr.model.FileFolderService.listFolders=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.Read
+               org.alfresco.service.cmr.model.FileFolderService.list=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.service.cmr.model.FileFolderService.listFiles=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.service.cmr.model.FileFolderService.listFolders=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.model.FileFolderService.search=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.Read
                org.alfresco.service.cmr.model.FileFolderService.searchSimple=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.Read
                org.alfresco.service.cmr.model.FileFolderService.rename=AFTER_ACL_NODE.sys:base.WriteProperties
                org.alfresco.service.cmr.model.FileFolderService.move=ACL_NODE.0.sys:base.DeleteNode,ACL_NODE.1.sys:base.CreateChildren
-               org.alfresco.service.cmr.model.FileFolderService.copy=ACL_NODE.0.sys:base.Read,ACL_NODE.1.sys:base.CreateChildren
+               org.alfresco.service.cmr.model.FileFolderService.copy=ACL_NODE.0.sys:base.ReadProperties,ACL_NODE.1.sys:base.CreateChildren
                org.alfresco.service.cmr.model.FileFolderService.create=ACL_NODE.0.sys:base.CreateChildren
                org.alfresco.service.cmr.model.FileFolderService.delete=ACL_NODE.0.sys:base.DeleteNode
                org.alfresco.service.cmr.model.FileFolderService.makeFolders=AFTER_ACL_PARENT.sys:base.CreateChildren
@@ -464,10 +464,10 @@
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
-                org.alfresco.service.cmr.search.CategoryService.getChildren=AFTER_ACL_NODE.sys:base.Read
-                org.alfresco.service.cmr.search.CategoryService.getCategories=AFTER_ACL_NODE.sys:base.Read
-                org.alfresco.service.cmr.search.CategoryService.getClassifications=AFTER_ACL_NODE.sys:base.Read
-                org.alfresco.service.cmr.search.CategoryService.getRootCategories=AFTER_ACL_NODE.sys:base.Read
+                org.alfresco.service.cmr.search.CategoryService.getChildren=AFTER_ACL_NODE.sys:base.ReadProperties
+                org.alfresco.service.cmr.search.CategoryService.getCategories=AFTER_ACL_NODE.sys:base.ReadProperties
+                org.alfresco.service.cmr.search.CategoryService.getClassifications=AFTER_ACL_NODE.sys:base.ReadProperties
+                org.alfresco.service.cmr.search.CategoryService.getRootCategories=AFTER_ACL_NODE.sys:base.ReadProperties
                 org.alfresco.service.cmr.search.CategoryService.getClassificationAspects=ACL_ALLOW
                 org.alfresco.service.cmr.search.CategoryService.createClassifiction=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.search.CategoryService.createRootCategory=ACL_METHOD.ROLE_ADMINISTRATOR
@@ -503,10 +503,10 @@
             <value>
                 org.alfresco.service.cmr.lock.LockService.lock=ACL_NODE.0.cm:lockable.Lock
                 org.alfresco.service.cmr.lock.LockService.unlock=ACL_NODE.0.cm:lockable.Unlock
-                org.alfresco.service.cmr.lock.LockService.getLockStatus=ACL_NODE.0.sys:base.Read
-                org.alfresco.service.cmr.lock.LockService.getLockType=ACL_NODE.0.sys:base.Read
-                org.alfresco.service.cmr.lock.LockService.checkForLock=ACL_NODE.0.sys:base.Read
-                org.alfresco.service.cmr.lock.LockService.getLocks=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.lock.LockService.getLockStatus=ACL_NODE.0.sys:base.ReadProperties
+                org.alfresco.service.cmr.lock.LockService.getLockType=ACL_NODE.0.sys:base.ReadProperties
+                org.alfresco.service.cmr.lock.LockService.checkForLock=ACL_NODE.0.sys:base.ReadProperties
+                org.alfresco.service.cmr.lock.LockService.getLocks=ACL_NODE.0.sys:base.ReadProperties
             </value>
         </property>
     </bean>
@@ -724,10 +724,10 @@
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
-                org.alfresco.service.cmr.security.OwnableService.getOwner=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.security.OwnableService.getOwner=ACL_NODE.0.sys:base.ReadProperties
                 org.alfresco.service.cmr.security.OwnableService.setOwner=ACL_NODE.0.cm:ownable.SetOwner
                 org.alfresco.service.cmr.security.OwnableService.takeOwnership=ACL_NODE.0.cm:ownable.TakeOwnership
-                org.alfresco.service.cmr.security.OwnableService.hasOwner=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.security.OwnableService.hasOwner=ACL_NODE.0.sys:base.ReadProperties
          </value>
         </property>
     </bean>
@@ -741,7 +741,7 @@
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
-                org.alfresco.service.cmr.security.PersonService.getPerson=AFTER_ACL_NODE.sys:base.Read
+                org.alfresco.service.cmr.security.PersonService.getPerson=AFTER_ACL_NODE.sys:base.ReadProperties
                 org.alfresco.service.cmr.security.PersonService.personExists=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.createMissingPeople=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.setCreateMissingPeople=ACL_METHOD.ROLE_ADMINISTRATOR

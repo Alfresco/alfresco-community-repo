@@ -72,14 +72,87 @@ public class UILinkValidationSummary extends AbstractLinkValidationReportCompone
       }
       
       // get the link validation state object to get the data from
+      ResourceBundle bundle = Application.getBundle(context);
       ResponseWriter out = context.getResponseWriter();
       LinkValidationState linkState = getValue();
       
       if (logger.isDebugEnabled())
          logger.debug("Rendering summary from state object: " + linkState);
       
-      // resolve all the strings holding data
-      ResourceBundle bundle = Application.getBundle(context);
+      if (linkState.getError() == null)
+      {
+         Object initialCheckOnly = this.getAttributes().get("initialCheckOnly");
+         if (initialCheckOnly instanceof Boolean && 
+             ((Boolean)initialCheckOnly).booleanValue())
+         {
+            out.write("<div style='padding: 4px 4px 2px 13px;'>");
+            renderInitialCheckSummary(context, out, linkState, bundle);
+            out.write("</div>");
+         }
+         else
+         {
+            String pattern = bundle.getString("files_links_still_broken");
+            String stillBroken = MessageFormat.format(pattern, 
+                     new Object[] {linkState.getNumberBrokenFiles(), linkState.getNumberBrokenLinks()});
+            pattern = bundle.getString("broken_links_fixed");
+            String linksFixed = MessageFormat.format(pattern, 
+                     new Object[] {linkState.getNumberFixedLinks()});
+            
+            // get the action to update the current status
+            UICommand updateStatusAction = aquireAction(context, "update_status_" + linkState.getStore());
+            
+            // render the summary area
+            out.write("<div class='linkValidationSummaryPanel'><div class='linkValidationReportTitle'>");
+            out.write(bundle.getString("summary"));
+            out.write("</div><table cellpadding='0' cellspacing='0'><tr>");
+            out.write("<td valign='top' class='linkValidationReportSubTitle'>");
+            out.write(bundle.getString("initial_check"));
+            out.write(":</td><td>");
+            renderInitialCheckSummary(context, out, linkState, bundle);
+            out.write("</td></tr><tr><td class='linkValidationReportSubTitle'>");
+            out.write(bundle.getString("current_status"));
+            out.write(":</td><td><div><img src='");
+            out.write(context.getExternalContext().getRequestContextPath());
+            out.write("/images/icons/broken_link.gif' style='vertical-align: -4px; padding-right: 4px;' >");
+            out.write(stillBroken);
+            out.write("<img src='");
+            out.write(context.getExternalContext().getRequestContextPath());
+            out.write("/images/icons/fixed_link.gif' style='vertical-align: -4px; padding-left: 6px; padding-right: 4px;' >");
+            out.write(linksFixed);
+            out.write("&nbsp;&nbsp;");
+            Utils.encodeRecursive(context, updateStatusAction);
+            out.write("</div></td></tr>");
+            out.write("</table></div>");
+         }
+      }
+      else
+      {
+         String pattern = bundle.getString("files_links_checked_error");
+         Date initialCheck = linkState.getInitialCheckCompletedAt();
+         String initialCheckTime = Utils.getDateTimeFormat(context).format(initialCheck);
+         String initialCheckSummary = MessageFormat.format(pattern, 
+                  new Object[] {initialCheckTime});
+         
+         out.write("<div class='linkValidationSummaryPanel'>");
+         out.write(initialCheckSummary);
+         out.write("&nbsp;<span class='errorMessage'>");
+         String err = linkState.getError().getMessage();
+         if (err == null)
+         {
+            out.write(linkState.getError().toString());
+         }
+         else
+         {
+            out.write(err);
+         }
+         out.write("</span></div>");
+      }
+   }
+
+   protected void renderInitialCheckSummary(FacesContext context, 
+            ResponseWriter out, LinkValidationState linkState,
+            ResourceBundle bundle) throws IOException
+   {
       String pattern = bundle.getString("files_links_checked");
       Date initialCheck = linkState.getInitialCheckCompletedAt();
       String initialCheckTime = Utils.getDateTimeFormat(context).format(initialCheck);
@@ -89,45 +162,16 @@ public class UILinkValidationSummary extends AbstractLinkValidationReportCompone
       pattern = bundle.getString("files_links_broken");
       String initialBrokenSummary = MessageFormat.format(pattern, 
                new Object[] {linkState.getInitialNumberBrokenFiles(), linkState.getInitialNumberBrokenLinks()});
-      pattern = bundle.getString("files_links_still_broken");
-      String stillBroken = MessageFormat.format(pattern, 
-               new Object[] {linkState.getNumberBrokenFiles(), linkState.getNumberBrokenLinks()});
-      pattern = bundle.getString("broken_links_fixed");
-      String linksFixed = MessageFormat.format(pattern, 
-               new Object[] {linkState.getNumberFixedLinks()});
       
-      // get the action to update the current status
-      UICommand updateStatusAction = aquireAction(context, "update_status_" + linkState.getStore());
-      
-      // render the summary area
-      out.write("<div class='linkValidationSummaryPanel'><div class='linkValidationReportTitle'>");
-      out.write(bundle.getString("summary"));
-      out.write("</div><table cellpadding='0' cellspacing='0'><tr>");
-      out.write("<td valign='top' class='linkValidationReportSubTitle'>");
-      out.write(bundle.getString("initial_check"));
-      out.write(":</td><td><div style='margin-bottom: 6px;'>");
+      out.write("<div style='margin-bottom: 6px;'>");
       out.write(initialCheckSummary);
       out.write("</div><div style='margin-bottom: 14px;'><img src='");
       out.write(context.getExternalContext().getRequestContextPath());
       out.write("/images/icons/broken_link.gif'' style='vertical-align: -4px; padding-right: 4px;'/>");
       out.write(initialBrokenSummary);
-      out.write("</div></td></tr>");
-      out.write("<tr><td class='linkValidationReportSubTitle'>");
-      out.write(bundle.getString("current_status"));
-      out.write(":</td><td><div><img src='");
-      out.write(context.getExternalContext().getRequestContextPath());
-      out.write("/images/icons/broken_link.gif' style='vertical-align: -4px; padding-right: 4px;' >");
-      out.write(stillBroken);
-      out.write("<img src='");
-      out.write(context.getExternalContext().getRequestContextPath());
-      out.write("/images/icons/fixed_link.gif' style='vertical-align: -4px; padding-left: 6px; padding-right: 4px;' >");
-      out.write(linksFixed);
-      out.write("&nbsp;&nbsp;");
-      Utils.encodeRecursive(context, updateStatusAction);
-      out.write("</div></td></tr>");
-      out.write("</table></div>");
+      out.write("</div>");
    }
-
+   
    @SuppressWarnings("unchecked")
    private UICommand aquireAction(FacesContext context, String actionId)
    {

@@ -314,6 +314,15 @@
       </dialogs>
    </config>
    
+   <config evaluator="node-type" condition="wcmwf:verifyBrokenLinksTask">
+      <dialogs>
+         <dialog name="manageTask" page="/jsp/wcm/manage-broken-links-task-dialog.jsp"
+                 managed-bean="ManageVerifyBrokenLinksTaskDialog" 
+                 icon="/images/icons/manage_workflow_task_large.gif" 
+                 description-id="manage_task_desc" />
+      </dialogs>
+   </config>
+   
    <config evaluator="node-type" condition="wcmwf:changeRequestTask">
       <dialogs>
          <dialog name="manageTask" page="/jsp/workflow/manage-task-dialog.jsp"

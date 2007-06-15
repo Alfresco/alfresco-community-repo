@@ -36,6 +36,7 @@ import org.alfresco.web.ui.common.tag.HtmlComponentTag;
 public class LinkValidationSummaryTag extends HtmlComponentTag
 {
    private String value;
+   private String initialCheckOnly;
    
    /**
     * @see javax.faces.webapp.UIComponentTag#getComponentType()
@@ -61,6 +62,7 @@ public class LinkValidationSummaryTag extends HtmlComponentTag
       super.setProperties(component);
       
       setStringProperty(component, "value", this.value);
+      setBooleanProperty(component, "initialCheckOnly", this.initialCheckOnly);
    }
    
    /**
@@ -70,6 +72,7 @@ public class LinkValidationSummaryTag extends HtmlComponentTag
    {
       super.release();
       this.value = null;
+      this.initialCheckOnly = null;
    }
    
    /**
@@ -78,5 +81,13 @@ public class LinkValidationSummaryTag extends HtmlComponentTag
    public void setValue(String value)
    {
       this.value = value;
+   }
+
+   /**
+    * @param initialCheckOnly true will make the component only show the initial check summary info
+    */
+   public void setInitialCheckOnly(String initialCheckOnly)
+   {
+      this.initialCheckOnly = initialCheckOnly;
    }
 }

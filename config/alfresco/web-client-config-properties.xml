@@ -444,6 +444,18 @@
       </property-sheet>
    </config>
 
+   <config evaluator="node-type" condition="wcmwf:verifyBrokenLinksTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" />
+         <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true"/>
+         <show-property name="wcmwf:label" read-only="true" />
+         <show-property name="wcmwf:launchDate" read-only="true" />
+         <show-property name="bpm:status" />
+         <show-property name="bpm:comment" component-generator="TextAreaGenerator" />
+      </property-sheet>
+   </config>
+   
    <config evaluator="node-type" condition="wcmwf:reviewTask" replace="true">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />

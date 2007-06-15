@@ -303,6 +303,13 @@
       </attribute>
       
       <attribute>
+         <name>initialCheckOnly</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>Only shows the initial check summary if set to true, false by default</description>
+      </attribute>
+      
+      <attribute>
          <name>id</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>

@@ -61,20 +61,20 @@ public class LinkValidationState
    private Date initialCheckedCompletedAt;
    private boolean checkBeenReRun = false;
    
-   private int noFilesCheckedStart = 0;
-   private int noFilesCheckedLast = 0;
+   private int noFilesCheckedStart = -1;
+   private int noFilesCheckedLast = -1;
    
-   private int noLinksCheckedStart = 0;
-   private int noLinksCheckedLast = 0;
+   private int noLinksCheckedStart = -1;
+   private int noLinksCheckedLast = -1;
    
-   private int noBrokenFilesStart = 0;
-   private int noBrokenFilesLast = 0;
+   private int noBrokenFilesStart = -1;
+   private int noBrokenFilesLast = -1;
    
-   private int noBrokenLinksStart = 0;
-   private int noBrokenLinksLast = 0;
+   private int noBrokenLinksStart = -1;
+   private int noBrokenLinksLast = -1;
    
-   private int noFixedFiles = 0;
-   private int noFixedLinks = 0;
+   private int noFixedFiles = -1;
+   private int noFixedLinks = -1;
    
    private List<String> brokenStaticFilesStart;
    private List<String> brokenFormsStart;
@@ -87,6 +87,8 @@ public class LinkValidationState
    
    private Map<String, List<String>> brokenLinksByFile;
    private Map<String, List<String>> brokenFilesByForm;
+   
+   private Throwable cause;
    
    private static Log logger = LogFactory.getLog(LinkValidationState.class);
    
@@ -118,6 +120,14 @@ public class LinkValidationState
    public Date getInitialCheckCompletedAt()
    {
       return this.initialCheckedCompletedAt;
+   }
+   
+   /**
+    * @return The error that caused the last report to fail
+    */
+   public Throwable getError()
+   {
+      return this.cause;
    }
    
    /**
@@ -291,7 +301,8 @@ public class LinkValidationState
    public String toString()
    {
       StringBuilder buffer = new StringBuilder(super.toString());
-      buffer.append(" (store=").append(this.store).append(")");
+      buffer.append(" (store=").append(this.store);
+      buffer.append(" error=").append(this.cause).append(")");
       return buffer.toString();
    }
    
@@ -301,67 +312,73 @@ public class LinkValidationState
    public void processReport(LinkValidationReport report, boolean rerunReport)
    {
       this.checkBeenReRun = rerunReport;
+      this.cause = report.getError();
       
-      if (rerunReport == false)
+      if (this.cause == null)
       {
-         // setup initial counts
-         this.noBrokenFilesStart = report.getNumberBrokenFiles();
-         this.noBrokenLinksStart = report.getNumberBrokenLinks();
-         this.noFilesCheckedStart = report.getNumberFilesChecked();
-         this.noLinksCheckedStart = report.getNumberLinksChecked();
-         this.noBrokenFilesLast = report.getNumberBrokenFiles();
-         this.noBrokenLinksLast = report.getNumberBrokenLinks();
-         this.noFilesCheckedLast = report.getNumberFilesChecked();
-         this.noLinksCheckedLast = report.getNumberLinksChecked();
-         
-         // setup fixed lists
-         this.fixedFiles = new ArrayList<String>(this.noBrokenFilesStart);
-         this.fixedForms = new ArrayList<String>(this.noBrokenFilesStart);
-
-         // process the broken files and determine which ones are static files
-         // and which ones are generated
-         processFiles(report.getFilesWithBrokenLinks(), rerunReport, report);
-      }
-      else
-      {
-         // update the relevant counts
-         this.noBrokenFilesLast = report.getNumberBrokenFiles();
-         this.noBrokenLinksLast = report.getNumberBrokenLinks();
-         this.noFilesCheckedLast = report.getNumberFilesChecked();
-         this.noLinksCheckedLast = report.getNumberLinksChecked();
-         
-         this.noFixedFiles = this.noBrokenFilesStart - this.noBrokenFilesLast;
-         this.noFixedLinks = this.noBrokenLinksStart - this.noBrokenLinksLast;
-         
-         if (this.noFixedFiles < 0)
+         if (rerunReport == false)
          {
+            // setup initial counts
+            this.noBrokenFilesStart = report.getNumberBrokenFiles();
+            this.noBrokenLinksStart = report.getNumberBrokenLinks();
+            this.noFilesCheckedStart = report.getNumberFilesChecked();
+            this.noLinksCheckedStart = report.getNumberLinksChecked();
+            this.noBrokenFilesLast = report.getNumberBrokenFiles();
+            this.noBrokenLinksLast = report.getNumberBrokenLinks();
+            this.noFilesCheckedLast = report.getNumberFilesChecked();
+            this.noLinksCheckedLast = report.getNumberLinksChecked();
             this.noFixedFiles = 0;
-         }
-         if (this.noFixedLinks < 0)
-         {
             this.noFixedLinks = 0;
+            
+            // setup fixed lists
+            this.fixedFiles = new ArrayList<String>(this.noBrokenFilesStart);
+            this.fixedForms = new ArrayList<String>(this.noBrokenFilesStart);
+   
+            // process the broken files and determine which ones are static files
+            // and which ones are generated
+            processFiles(report.getFilesWithBrokenLinks(), rerunReport, report);
          }
-         
-         // process the broken files and determine which ones are static files
-         // and which ones are generated
-         processFiles(report.getFilesWithBrokenLinks(), rerunReport, report);
-         
-         // go through the list of files & forms still broken and find which ones
-         // were fixed in the last re-run of the report
-         for (String file : this.brokenStaticFilesStart)
+         else
          {
-            if (this.brokenStaticFilesLast.contains(file) == false &&
-                this.fixedFiles.contains(file) == false)
+            // update the relevant counts
+            this.noBrokenFilesLast = report.getNumberBrokenFiles();
+            this.noBrokenLinksLast = report.getNumberBrokenLinks();
+            this.noFilesCheckedLast = report.getNumberFilesChecked();
+            this.noLinksCheckedLast = report.getNumberLinksChecked();
+            
+            this.noFixedFiles = this.noBrokenFilesStart - this.noBrokenFilesLast;
+            this.noFixedLinks = this.noBrokenLinksStart - this.noBrokenLinksLast;
+            
+            if (this.noFixedFiles < 0)
             {
-               this.fixedFiles.add(file);
+               this.noFixedFiles = 0;
             }
-         }
-         for (String file : this.brokenFormsStart)
-         {
-            if (this.brokenFormsLast.contains(file) == false &&
-                this.fixedForms.contains(file) == false)
+            if (this.noFixedLinks < 0)
             {
-               this.fixedForms.add(file);
+               this.noFixedLinks = 0;
+            }
+            
+            // process the broken files and determine which ones are static files
+            // and which ones are generated
+            processFiles(report.getFilesWithBrokenLinks(), rerunReport, report);
+            
+            // go through the list of files & forms still broken and find which ones
+            // were fixed in the last re-run of the report
+            for (String file : this.brokenStaticFilesStart)
+            {
+               if (this.brokenStaticFilesLast.contains(file) == false &&
+                   this.fixedFiles.contains(file) == false)
+               {
+                  this.fixedFiles.add(file);
+               }
+            }
+            for (String file : this.brokenFormsStart)
+            {
+               if (this.brokenFormsLast.contains(file) == false &&
+                   this.fixedForms.contains(file) == false)
+               {
+                  this.fixedForms.add(file);
+               }
             }
          }
       }

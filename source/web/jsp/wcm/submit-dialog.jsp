@@ -79,6 +79,15 @@
         onkeyup="javascript:checkButtonState();" />
 </h:panelGrid>
 
+<%--
+<h:panelGrid columns="2" cellspacing="0" cellpadding="2" style="margin-left: 20px; margin-top: 6px;">
+   <h:selectBooleanCheckbox id="links-chkbox" value="#{DialogManager.bean.validateLinks}" />
+   <h:outputText value="#{msg.check_links}" escape="false" />
+   <h:outputText value="&nbsp;" escape="false" />
+   <h:outputText value="#{msg.check_links_info}" />
+</h:panelGrid>
+--%>
+
 <h:panelGrid columns="1" cellpadding="2" style="padding-top:16px;padding-bottom:4px;"
       width="100%" rowClasses="wizardSectionHeading">
    <h:outputText value="&nbsp;#{msg.workflow}" escape="false" />

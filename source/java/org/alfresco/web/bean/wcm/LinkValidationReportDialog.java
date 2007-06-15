@@ -49,6 +49,7 @@ public class LinkValidationReportDialog extends BaseDialogBean
    protected ActionService actionService;
    
    private String store;
+   private String cancelOutcome;
    
    private static final Log logger = LogFactory.getLog(LinkValidationReportDialog.class);
    
@@ -65,6 +66,18 @@ public class LinkValidationReportDialog extends BaseDialogBean
       
       if (logger.isDebugEnabled())
          logger.debug("Showing link validation report for store '" + store + "'");
+      
+      String directView = parameters.get("directView");
+      if (directView != null && directView.equals("true"))
+      {
+         this.cancelOutcome = super.getDefaultCancelOutcome();
+      }
+      else
+      {
+         this.cancelOutcome =  AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
+                               AlfrescoNavigationHandler.OUTCOME_SEPARATOR +
+                               "browseWebsite";
+      }
    }
 
    @SuppressWarnings("unchecked")
@@ -84,6 +97,12 @@ public class LinkValidationReportDialog extends BaseDialogBean
    }
    
    @Override
+   public boolean getFinishButtonDisabled()
+   {
+      return false;
+   }
+
+   @Override
    public String getFinishButtonLabel()
    {
       return Application.getMessage(FacesContext.getCurrentInstance(), "rerun_report");
@@ -98,9 +117,7 @@ public class LinkValidationReportDialog extends BaseDialogBean
    @Override
    protected String getDefaultCancelOutcome()
    {
-      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
-             AlfrescoNavigationHandler.OUTCOME_SEPARATOR +
-             "browseWebsite";
+      return this.cancelOutcome;
    }
    
    // ------------------------------------------------------------------------------

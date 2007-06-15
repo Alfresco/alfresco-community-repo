@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.linkvalidation.HrefValidationProgress;
 import org.alfresco.linkvalidation.LinkValidationAction;
@@ -43,6 +44,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,7 +61,7 @@ public class LinkValidationRunDialog extends BaseDialogBean
    protected ActionService actionService;
    
    private String store;
-   private NodeRef storeRef;
+   private NodeRef storePathRef;
    private boolean rerun = false;
    
    private static final Log logger = LogFactory.getLog(LinkValidationRunDialog.class);
@@ -79,7 +81,7 @@ public class LinkValidationRunDialog extends BaseDialogBean
       store = parameters.get("store");
       
       String storePath = this.store + ":/";
-      this.storeRef = AVMNodeConverter.ToNodeRef(-1, storePath);
+      this.storePathRef = AVMNodeConverter.ToNodeRef(-1, storePath);
       
       this.rerun = false;
       String rerunParam = parameters.get("rerun");
@@ -104,7 +106,7 @@ public class LinkValidationRunDialog extends BaseDialogBean
       
       // create and execute the action in the background
       Action action = this.actionService.createAction(LinkValidationAction.NAME, args);
-      this.actionService.executeAction(action, this.storeRef, false, true);
+      this.actionService.executeAction(action, this.storePathRef, false, true);
    }
    
    @SuppressWarnings("unchecked")
@@ -125,48 +127,65 @@ public class LinkValidationRunDialog extends BaseDialogBean
       // on the store the link check was run on, retrieve it and see if
       // the link check was successful.
       
-      PropertyValue val = this.avmService.getStoreProperty(this.store, 
-               SandboxConstants.PROP_LINK_VALIDATION_REPORT);
-      if (val != null)
+      FacesContext context = FacesContext.getCurrentInstance();
+      UserTransaction tx = null;
+  
+      try
       {
-         LinkValidationReport report = (LinkValidationReport)val.getSerializableValue();
-         if (report != null)
+         tx = Repository.getUserTransaction(context, true);
+         tx.begin();
+         
+         PropertyValue val = this.avmService.getStoreProperty(this.store, 
+                  SandboxConstants.PROP_LINK_VALIDATION_REPORT);
+         if (val != null)
          {
-            if (report.wasSuccessful())
+            LinkValidationReport report = (LinkValidationReport)val.getSerializableValue();
+            if (report != null)
             {
-               // setup the context required by the reporting components to display the results
-               if (this.rerun)
+               if (report.wasSuccessful())
                {
-                  this.avmBrowseBean.getLinkValidationState().updateState(report);
+                  // setup the context required by the reporting components to display the results
+                  if (this.rerun)
+                  {
+                     this.avmBrowseBean.getLinkValidationState().updateState(report);
+                  }
+                  else
+                  {
+                     LinkValidationState state = new LinkValidationState(this.store, report);
+                     this.avmBrowseBean.setLinkValidationState(state);
+                  }
+         
+                  Map<String, String> params = new HashMap<String, String>(1);
+                  params.put("store", this.store);
+                  Application.getDialogManager().setupParameters(params);
+                  
+                  outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
+                            AlfrescoNavigationHandler.OUTCOME_SEPARATOR +
+                            "dialog:linkValidationReport";
                }
                else
                {
-                  LinkValidationState state = new LinkValidationState(this.store, report);
-                  this.avmBrowseBean.setLinkValidationState(state);
+                  String errorMsg = Application.getMessage(context, "link_validation_unknown_error");
+                  Throwable cause = report.getError();
+                  if (cause != null)
+                  {
+                     errorMsg = Application.getMessage(context, "link_validation_error") + ": " +
+                           cause.getMessage();
+                  }
+                  
+                  Utils.addErrorMessage(errorMsg);
                }
-      
-               Map<String, String> params = new HashMap<String, String>(1);
-               params.put("store", this.store);
-               Application.getDialogManager().setupParameters(params);
-               
-               outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
-                         AlfrescoNavigationHandler.OUTCOME_SEPARATOR +
-                         "dialog:linkValidationReport";
-            }
-            else
-            {
-               FacesContext context = FacesContext.getCurrentInstance();
-               String errorMsg = Application.getMessage(context, "link_validation_unknown_error");
-               Throwable cause = report.getError();
-               if (cause != null)
-               {
-                  errorMsg = Application.getMessage(context, "link_validation_error") + ": " +
-                        cause.getMessage();
-               }
-               
-               Utils.addErrorMessage(errorMsg);
             }
          }
+         
+         // commit the changes
+         tx.commit();
+      }
+      catch (Throwable e)
+      {
+         // rollback the transaction
+         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+         Utils.addErrorMessage(formatErrorMessage(e), e);
       }
       
       return outcome;

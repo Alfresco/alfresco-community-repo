@@ -97,6 +97,7 @@ public class SubmitDialog extends BaseDialogBean
    private String[] workflowSelectedValue;
    private boolean enteringExpireDate = false;
    private boolean startedFromWorkflow = false;
+   private boolean validateLinks = false;
    private Date defaultExpireDate;
    private Date launchDate;
    
@@ -195,6 +196,7 @@ public class SubmitDialog extends BaseDialogBean
       this.defaultExpireDate = new Date();
       this.workflowSelectedValue = null;
       this.launchDate = null;
+      this.validateLinks = false;
       
       // determine if the dialog has been started from a workflow
       Boolean bool = new Boolean(this.parameters.get(PARAM_STARTED_FROM_WORKFLOW));
@@ -330,6 +332,7 @@ public class SubmitDialog extends BaseDialogBean
                      params.put(WCMWorkflowModel.PROP_FROM_PATH, 
                               AVMUtil.buildStoreRootPath(this.avmBrowseBean.getSandbox()));
                      params.put(WCMWorkflowModel.PROP_LAUNCH_DATE, this.launchDate);
+                     params.put(WCMWorkflowModel.PROP_VALIDATE_LINKS, new Boolean(this.validateLinks));
                      params.put(WCMWorkflowModel.ASSOC_WEBPROJECT, 
                               this.avmBrowseBean.getWebsite().getNodeRef());
                      
@@ -515,6 +518,22 @@ public class SubmitDialog extends BaseDialogBean
    public void setLaunchDate(Date launchDate)
    {
       this.launchDate = launchDate;
+   }
+
+   /**
+    * @return Flag to indicate whether links should be validated
+    */
+   public boolean isValidateLinks()
+   {
+      return this.validateLinks;
+   }
+
+   /**
+    * @param validateLinks Flag to indicate whether links should be validated
+    */
+   public void setValidateLinks(boolean validateLinks)
+   {
+      this.validateLinks = validateLinks;
    }
 
    /**

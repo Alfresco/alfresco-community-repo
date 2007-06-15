@@ -71,7 +71,7 @@
 </#list>
 <#if taskNum = 0>
    <tr>
-      <td>(No tasks)</td>
+      <td class="noItems">(No tasks)</td>
    </tr>
 </#if>
    </table>

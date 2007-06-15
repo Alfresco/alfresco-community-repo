@@ -21,7 +21,6 @@
    <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.1.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/my_alfresco.js"></script>
-	<script type="text/javascript" src="/firebug.js"></script>
 </head>
 <body>
 
@@ -38,7 +37,7 @@
 <div class="header">My Checked Out Documents<span class="headerExtra"><span class="toggle">&nbsp;</span></span></div>
 
 <div id="checkedoutList" class="containerMedium togglePanel">
-   <table>
+   <table width="265">
 <#assign rowNum=0>
 <#assign query="@cm\\:workingCopyOwner:${person.properties.userName}">
    <#list companyhome.childrenByLuceneSearch[query] as child>
@@ -65,6 +64,11 @@
       </tr>
       </#if>
    </#list>
+   <#if rowNum = 0>
+      <tr>
+         <td class="noItems">(No documents)</td>
+      </tr>
+   </#if>
    </table>
 </div>
 
@@ -101,14 +105,20 @@
          </td>
       </tr>
 </#list>
+<#if taskNum = 0>
+      <tr>
+         <td class="noItems">(No tasks)</td>
+      </tr>
+</#if>
    </table>
 </div>
 
-<div class="header">Other Actions</div>
+<div class="header">Actions</div>
 
 <div id="documentActions">
    <div id="nonStatusText">
       <ul>
+<#if d.isDocument>
          <li>
             <a title="Save to Alfresco" href="${url.serviceContext}/office/navigation?p=${path?url}">
                <img src="${url.context}/images/office/save_to_alfresco.gif" alt="Save to Alfresco" />
@@ -116,19 +126,13 @@
             </a>
             <br />Allows you to place the current document under Alfresco management.
          </li>
+</#if>
          <li>
-            <a title="Browse Alfresco" href="${url.serviceContext}/office/navigation?p=${path?url}">
-               <img src="${url.context}/images/office/navigator.gif" alt="Browse Alfresco" />
-               Browse Alfresco
+            <a title="Create Collaboration Space" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${d.id}&amp;cc=true">
+               <img src="${url.context}/images/office/create_space.gif" alt="Create Collaboration Space" />
+               Create Collaboration Space
             </a>
-            <br />Navigate around the Alfresco repository for documents.
-         </li>
-         <li>
-            <a title="Search" href="${url.serviceContext}/office/search?p=${path?url}">
-               <img src="${url.context}/images/office/search.gif" alt="Search" />
-               Find Documents
-            </a>
-            <br />Search Alfresco for documents by name and content.
+            <br />Create a new Collaboration Space in the Alfresco Repository
          </li>
          <li>
             <a title="Launch Alfresco" href="${url.context}/navigate/browse?ticket=${session.ticket}" rel="_blank">

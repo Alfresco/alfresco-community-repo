@@ -6,10 +6,20 @@ var OfficeNavigation =
 {
    TOGGLE_AMOUNT: 150,
    ANIM_LENGTH: 800,
+   CREATE_SPACE_HEIGHT: 108,
+   CREATE_SPACE_TEMPLATE: 16,
    
    init: function()
    {
       OfficeNavigation.setupToggles();
+      OfficeNavigation.setupCreateSpace();
+
+      // Did we arrive here from the "Create collaboration space" shortcut?      
+      if (window.queryObject.cc)
+      {
+         OfficeNavigation.showCreateSpace();
+      }
+
    },
    
    setupToggles: function()
@@ -83,6 +93,101 @@ var OfficeNavigation =
             fxPanel.start(animPanel);
          });
       });
+   },
+   
+   setupCreateSpace: function()
+   {
+      var panel = $('createSpacePanel');
+      panel.defaultHeight = 0;
+      panel.setStyle('display', 'block');
+      panel.setStyle('height', panel.defaultHeight);
+   },
+   
+   showCreateSpace: function()
+   {
+      var panel = $('createSpacePanel');
+      // Animation
+      var fxPanel = new Fx.Style(panel, 'height',
+      {
+         duration: OfficeNavigation.ANIM_LENGTH,
+         transition: Fx.Transitions.Back.easeOut,
+         onComplete: function()
+         {
+            $('spaceName').focus();
+         }
+      });
+
+      if (!panel.isOpen)
+      {      
+         panel.isOpen = true;
+         var openHeight = OfficeNavigation.CREATE_SPACE_HEIGHT;
+         if ($('spaceTemplate'))
+         {
+            openHeight += OfficeNavigation.CREATE_SPACE_TEMPLATE;
+         }
+         fxPanel.start(panel.getStyle('height').toInt(), openHeight);
+      }
+      else
+      {
+         OfficeNavigation.hideCreateSpace();
+      }
+   },
+
+   hideCreateSpace: function()
+   {
+      var panel = $('createSpacePanel');
+      // Animation
+      var fxPanel = new Fx.Style(panel, 'height',
+      {
+         duration: OfficeNavigation.ANIM_LENGTH,
+         transition: Fx.Transitions.Back.easeIn,
+         onComplete: function()
+         {
+            panel.isOpen = false;
+         }
+      });
+      
+      fxPanel.start(panel.getStyle('height').toInt(), panel.defaultHeight);
+   },
+
+   submitCreateSpace: function(commandURL, nodeId)
+   {
+      var spcName = $('spaceName').value,
+         spcTitle = $('spaceTitle').value,
+         spcDescription = $('spaceDescription').value;
+         
+      var spcTemplate;
+      if ($('spaceTemplate'))
+      {
+         spcTemplate = $('spaceTemplate').value;
+      }
+
+      OfficeAddin.showStatusText("Creating space...", "ajax_anim.gif", false);
+      var actionURL = commandURL + "?a=newspace&n=" + nodeId;
+      actionURL += "&sn=" + encodeURI(spcName);
+      actionURL += "&st=" + encodeURI(spcTitle);
+      actionURL += "&sd=" + encodeURI(spcDescription);
+      actionURL += "&t=" + encodeURI(spcTemplate);
+      var myAjax = new Ajax(actionURL, {
+         method: 'get',
+         headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
+         onComplete: function(textResponse, xmlResponse)
+         {
+            // Remove any trailing hash
+            var href = window.location.href.replace("#", "")
+            // Remove any previous "&st=" strings
+            href = href.replace(/[?&]st=([^&$]+)/g, "");
+            // Remove any previous "&cc=" strings
+            href = href.replace(/[?&]cc=([^&$]+)/g, "");
+            // Optionally add a status string
+            if (textResponse != "")
+            {
+               href += "&st=" + encodeURI(textResponse);
+            }
+            window.location.href = href;
+         }
+      });
+      myAjax.request();
    }
 };
 

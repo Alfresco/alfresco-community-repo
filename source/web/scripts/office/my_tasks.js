@@ -179,10 +179,8 @@ var OfficeMyTasks =
       myAjax.request();
    },
    
-   startWorkflow: function(useTemplate, Doc)
+   startWorkflow: function(commandURL, Doc)
    {
-//      OfficeAddin.runAction('${doc_actions}','makepdf','${d.id}', '');"
-
       var wrkType=$('wrkType').value;
       // wrkAssignTo should be "First Last (Username)"
       var wrkAssignTo=$('wrkAssignTo').value;
@@ -195,7 +193,7 @@ var OfficeMyTasks =
       var wrkDescription=$('wrkDescription').value;
       
       OfficeAddin.showStatusText("Starting workflow...", "ajax_anim.gif", false);
-      var actionURL = useTemplate + "?a=workflow&d=" + Doc;
+      var actionURL = commandURL + "?a=workflow&d=" + Doc;
       actionURL += "&wt=" + wrkType;
       actionURL += "&at=" + wrkAssignTo;
       // Date supplied?

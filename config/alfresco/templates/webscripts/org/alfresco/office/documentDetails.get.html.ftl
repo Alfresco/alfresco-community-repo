@@ -43,10 +43,11 @@
                <img src="${url.context}${d.icon32}" alt="${d.name}" />
             </td>
             <td style="padding-top: 4px;">
-               <span style="font-weight:bold; vertical-align: top;">${d.name}
+               <span style="font-weight:bold; vertical-align: top;">
    <#if d.isLocked >
                   <img src="${url.context}/images/office/lock.gif" alt="Locked" title="Locked" style="margin: -2px 0px;" />
    </#if>
+                  ${d.name}
                </span>
                <br />
                <table style="margin-top: 4px;">

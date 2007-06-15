@@ -12,6 +12,7 @@
    <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.1.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/navigation.js"></script>
+	<script type="text/javascript" src="/firebug.js"></script>
 </head>
 <body>
 
@@ -53,63 +54,99 @@
 <div class="header">Spaces in ${thisSpace.name}<span class="headerExtra"><span class="toggle">&nbsp;</span></span></div>
 
 <div id="spaceList" class="containerMedium togglePanel">
-   <table width="265">
+   <div id="createSpaceContainer">
+      <div id="createSpace" onclick="OfficeNavigation.showCreateSpace();">
+         <img src="${url.context}/images/office/create_space.gif" alt="Create new space" />
+         <span style="vertical-align: top;">Create New <#if args.cc?exists>Collaboration </#if>Space...</span>
+      </div>
+      <div id="createSpacePanel">
+         <div id="createSpaceParameters">
+            <div class="spaceParam">Name:</div>
+            <div class="spaceValue">
+               <input id="spaceName" type="text" value="" />
+            </div>
+            <div class="spaceParam">Title:</div>
+            <div class="spaceValue">
+               <input id="spacetitle" type="text" value="" />
+            </div>
+            <div class="spaceParam">Description:</div>
+            <div class="spaceValue">
+               <input id="spaceDescription" type="text" value="" />
+            </div>
+<#assign xpath="app:dictionary/app:space_templates/*">
+<#assign templates = companyhome.childrenByXPath[xpath]>
+<#if (templates?size > 0)>
+            <div class="spaceParam">Template:</div>
+            <div class="spaceValue">
+               <select id="spaceTemplate" style="width: 172px;">
+                  <option selected="selected" value="">(None)</option>
+   <#list templates as template>
+                  <option value="${template.id}">${template.name}</option>
+   </#list>
+               </select>
+            </div>
+</#if>
+            <div class="spaceParam">&nbsp;</div>
+            <div class="spaceValue">
+               <a class="spaceAction" href="#" onclick="OfficeNavigation.submitCreateSpace('${url.serviceContext}/office/docActions', '${thisSpace.id}');">
+                  Submit
+               </a>
+               <a class="spaceAction" href="#" onclick="OfficeNavigation.hideCreateSpace();">
+                  Cancel
+               </a>
+            </div>
+         </div>
+      </div>
+   </div>
 <#assign spacesFound = 0>
 <#list thisSpace.children as child>
    <#if child.isContainer>
       <#assign spacesFound = spacesFound + 1>
-      <tr class="${(spacesFound % 2 = 0)?string("odd", "even")}">
-         <td style="width: 32px;">
+      <div class="spaceItem ${(spacesFound % 2 = 0)?string("even", "odd")}">
+         <span style="float: left; width: 36px;">
             <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${child.id}"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
-         </td>
-         <td>
+         </span>
+         <span>
             <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${child.id}" title="Open ${child.name}">
                <span class="bold">${child.name}</span>
             </a>
       <#if child.properties.description?exists>
       		<br/>${child.properties.description}
       </#if>
-         </td>
-      </tr>
+         </span>
+      </div>
    </#if>
 </#list>
 <#if spacesFound = 0>
-      <tr>
-         <td>(No subspaces)</td>
-      </tr>
+      <div class="noItems">(No subspaces)</div>
 </#if>
-   </table>
 </div>
 
 <div class="header">Documents in ${thisSpace.name}<span class="headerExtra"><span class="toggle">&nbsp;</span></span></div>
 
 <div id="documentList" class="containerMedium togglePanel">
-   <table width="265">
 <#assign documentsFound = 0>
 <#list thisSpace.children as child>
    <#if child.isDocument>
       <#assign documentsFound = documentsFound + 1>
       <#assign webdavPath = (child.displayPath?substring(13) + '/' + child.name)?url('ISO-8859-1')?replace('%2F', '/')?replace('\'', '\\\'') />
-      <tr class="${(documentsFound % 2 = 0)?string("odd", "even")}">
-         <td valign="top" style="width: 32px;">
+      <div class="documentItem ${(documentsFound % 2 = 0)?string("even", "odd")}">
+         <span style="float: left; width: 36px;">
       <#if child.name?ends_with(".doc")>
             <a href="#" onclick="window.external.openDocument('${webdavPath}')"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
       <#else>
             <a href="${url.context}${child.url}?ticket=${session.ticket}" rel="_blank"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
       </#if>
-         </td>
-         <td>
+         </span>
+         <span>
       <#if child.name?ends_with(".doc")>
-            <a href="#" onclick="window.external.openDocument('${webdavPath}')" title="Open ${child.name}">
-               <span class="bold">${child.name}</span>
-            </a><br/>
+            <a href="#" onclick="window.external.openDocument('${webdavPath}')"><span class="bold">${child.name}</span></a>
       <#else>
-            <a href="${url.context}${child.url}?ticket=${session.ticket}" rel="_blank" title="Open ${child.name}">
-               <span class="bold">${child.name}</span>
-            </a><br/>
+            <a href="${url.context}${child.url}?ticket=${session.ticket}" rel="_blank"><span class="bold">${child.name}</span></a>
       </#if>
+            <br />
       <#if child.properties.description?exists>
-		      ${child.properties.description}<br/>
+		      ${child.properties.description}<br />
       </#if>
             Modified: ${child.properties.modified?datetime}, Size: ${(child.size / 1024)?int}Kb<br/>
       <#if child.isLocked >
@@ -123,25 +160,23 @@
       <#if !child.isLocked >
             <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','delete','${child.id}', 'Are you sure you want to delete this document?');"><img src="${url.context}/images/office/delete.gif" style="padding:3px 6px 2px 0px;" alt="Delete..." title="Delete" /></a>
       </#if>
-         </td>
-      </tr>
+         </span>
+      </div>
    </#if>
 </#list>
 <#if documentsFound = 0>
-      <tr>
-         <td>(No documents)</td>
-      </tr>
+      <div class="noItems">(No documents)</div>
 </#if>
-   </table>
 </div>
 
-<div class="header">Document Actions</div>
+<div class="header">Actions</div>
 
 <#assign currentPath = thisSpace.displayPath  + '/' + thisSpace.name />
 <#assign webdavPath = currentPath?substring(13)?url('ISO-8859-1')?replace('%2F', '/')?replace('\'', '\\\'') />
 <div id="documentActionsNavigation">
    <div id="nonStatusText">
       <ul>
+<#if node.isDocument>
          <li>
             <a href="#" onclick="window.external.saveToAlfresco('${webdavPath}')">
                <img src="${url.context}/images/office/save_to_alfresco.gif" alt="Save to Alfresco" />
@@ -149,7 +184,8 @@
             </a>
             <br />Allows you to place the current document under Alfresco management.
          </li>
-    <#if args.search?exists>
+</#if>
+<#if args.search?exists>
          <li>
             <a href="${url.serviceContext}/office/search?p=${path?url}&amp;searchagain=${args.search?url}&amp;maxresults=${args.maxresults}">
                <img src="${url.context}/images/office/search_again.gif" alt="Back to results" />
@@ -157,7 +193,7 @@
             </a>
             <br />Return to the search tab.
          </li>
-    </#if>
+</#if>
       </ul>
    </div>
    

@@ -48,6 +48,7 @@ input.button {
 
 .bold {
    font-weight: bold;
+   overflow-x: hidden;
 }
 
 #tabBar {
@@ -186,6 +187,14 @@ input.button {
 .even {
    background-color: #ffffff !important;
 }
+.new {
+   background-color: #ffffcc !important;
+   cursor: pointer;
+}
+.noItems {
+   text-align: center;
+   padding-top: 20px;
+}
 
 #currentSpaceInfo {
    background: #fff;
@@ -197,6 +206,77 @@ input.button {
    overflow: none;
    margin: 0px 4px;
    padding: 2px 0px 2px 2px;
+}
+
+#createSpaceContainer {
+   border-bottom: 1px dashed #ccc;
+   overflow: hidden;
+   padding: 2px 2px 0px;
+   width: 261px;
+}
+
+#createSpace {
+   cursor: pointer;
+}
+
+#createSpacePanel {
+   display: none;
+   overflow: hidden;
+}
+
+#createSpaceParameters {
+   background-color: #ffffcc;
+   border: 1px solid #ccc;
+   margin: 2px;
+   padding: 2px 0px 4px 0px;
+   overflow: hidden;
+}
+
+.spaceParam {
+   clear: both;
+   float: left;
+   padding: 4px 4px 0px 0px;
+   text-align: right;
+   width: 64px;
+}
+
+.spaceValue {
+   float: left;
+   padding: 2px 0px 0px 0px;
+   width: 180px;
+}
+.spaceValue select, .spaceValue input, .spaceValue textarea {
+   font-family: tahoma, sans-serif;
+   font-size: 8pt;
+   margin: 0px 1px 1px 1px;   
+   padding: 0px 0px 0px 0px;
+   width: 168px;
+}
+
+.spaceAction {
+   background-color: #cce6ff;
+   border: 1px solid #0073e6;
+   color: #0073e6;
+   float: left;
+   font-size: 11px;
+   font-weight: bold;
+   cursor: pointer;
+   margin: 0px 4px 0px 2px;
+   padding: 4px;
+   filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#cce6ff');
+}
+
+.spaceItem {
+   border-bottom: 1px solid #eee;
+   padding: 2px 0px 6px 0px;
+   height: 26px;
+   width: 265px;
+}
+
+.documentItem {
+   border-bottom: 1px solid #eee;
+   padding: 2px 0px 6px 0px;
+   width: 265px;
 }
 
 #documentActions {

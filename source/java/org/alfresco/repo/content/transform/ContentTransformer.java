@@ -26,6 +26,7 @@ package org.alfresco.repo.content.transform;
 
 import java.util.Map;
 
+import org.alfresco.repo.content.ContentWorker;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -35,7 +36,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
  * 
  * @author Derek Hulley
  */
-public interface ContentTransformer
+public interface ContentTransformer extends ContentWorker
 {
     /**
      * Provides the approximate accuracy with which this transformer can

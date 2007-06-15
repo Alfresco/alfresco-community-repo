@@ -254,6 +254,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * be used to extract values from the documents.  The metadata extraction becomes fully
      * configuration-driven, i.e. declaring further mappings will result in more values being
      * extracted from the documents.
+     * <p>
+     * Most extractors will not be using this method.  For an example of its use, see the
+     * {@linkplain OpenDocumentMetadataExtracter OpenDocument extractor}, which uses the mapping
+     * to select specific user properties from a document.
      */
     protected final Map<String, Set<QName>> getMapping()
     {
@@ -324,7 +328,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         for (Map.Entry entry : mappingProperties.entrySet())
         {
             String propertyName = (String) entry.getKey();
-            if (propertyName.startsWith("namespace.prefix."))
+            if (propertyName.startsWith(NAMESPACE_PROPERTY_PREFIX))
             {
                 String prefix = propertyName.substring(17);
                 String namespace = (String) entry.getValue();
@@ -677,15 +681,15 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * system administrators can accurately determine how to best enhance or override the
      * default mapping.
      * <p>
-     * If the default mapping is declared in a properties file, then the
-     * {@link #readMappingProperties(String)} method can be used to quickly generate the
-     * return value:
-     * <pre>
-     *      protected Map<String, Set<QName>> getDefaultMapping()
+     * If the default mapping is declared in a properties file other than the one named after
+     * the class, then the {@link #readMappingProperties(String)} method can be used to quickly
+     * generate the return value:
+     * <pre><code>
+     *      protected Map<<String, Set<QName>> getDefaultMapping()
      *      {
      *          return readMappingProperties(DEFAULT_MAPPING);
      *      }
-     * </pre>
+     * </code></pre>
      * The map can also be created in code either statically or during the call.
      * 
      * @return              Returns the default, static mapping.  It may not be null.

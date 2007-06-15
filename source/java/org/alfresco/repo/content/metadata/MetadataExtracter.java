@@ -28,17 +28,20 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.content.ContentWorker;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
 
 /**
  * Interface for document property extracters.
+ * <p>
+ * Please pardon the incorrect spelling of <i>extractor</i>.
  * 
  * @author Jesper Steen Møller
  * @author Derek Hulley
  */
-public interface MetadataExtracter
+public interface MetadataExtracter extends ContentWorker
 {
     /**
      * A enumeration of functional property overwrite policies.  These determine whether extracted properties are

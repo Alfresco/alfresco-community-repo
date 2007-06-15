@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<!-- Test configurations for XmlMetadataExtracters -->
+<beans>
+   <import resource="classpath:alfresco/application-context.xml" />
+   
+   <!-- An extractor that operates on Alfresco models -->
+   <bean id="extracter.xml.AlfrescoModelMetadataExtracter"
+         class="org.alfresco.repo.content.metadata.xml.XPathMetadataExtracter"
+         parent="baseMetadataExtracter"
+         init-method="init" >
+      <property name="mappingProperties">
+         <bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+            <property name="location">
+               <value>classpath:xml-metadata/alfresco-model-mappings.properties</value>
+            </property>
+         </bean>
+      </property>
+      <property name="xpathMappingProperties">
+         <bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+            <property name="location">
+               <value>classpath:xml-metadata/alfresco-model-xpath-mappings.properties</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- An extractor that operates on Eclipse project files -->
+   <bean id="extracter.xml.EclipseProjectMetadataExtracter"
+         class="org.alfresco.repo.content.metadata.xml.XPathMetadataExtracter"
+         parent="baseMetadataExtracter"
+         init-method="init" >
+      <property name="mappingProperties">
+         <bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+            <property name="location">
+               <value>classpath:xml-metadata/eclipse-project-mappings.properties</value>
+            </property>
+         </bean>
+      </property>
+      <property name="xpathMappingProperties">
+         <bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+            <property name="location">
+               <value>classpath:xml-metadata/eclipse-project-xpath-mappings.properties</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+</beans>

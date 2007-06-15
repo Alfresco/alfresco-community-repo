@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005-2007 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -42,6 +42,7 @@ import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
@@ -80,12 +81,12 @@ import org.w3c.dom.Document;
  *   </li>
  * </ul>
  * <p>
- * The mapping of document properties to XPaths must look as follows:
- * <pre>
- *    # Get the author
- *    author=/root/author@name
- * </pre>
+ * All values are extracted as text values and therefore all XPath statements must evaluate to a node
+ * that can be rendered as text.
  * 
+ * @see AbstractMappingMetadataExtracter#setMappingProperties(Properties)
+ * @see #setXpathMappingProperties(Properties)
+ * @since 2.1
  * @author Derek Hulley
  */
 public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter implements NamespaceContext
@@ -105,13 +106,27 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
     public XPathMetadataExtracter()
     {
         super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)));
+        try
+        {
+            documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            xpathFactory = XPathFactory.newInstance();
+        }
+        catch (Throwable e)
+        {
+            throw new AlfrescoRuntimeException("Failed to initialize XML metadata extractor", e);
+        }
     }
 
     /** {@inheritDoc} */
     public String getNamespaceURI(String prefix)
     {
         ParameterCheck.mandatoryString("prefix", prefix);
-        return namespacesByPrefix.get(prefix);
+        String namespace = namespacesByPrefix.get(prefix);
+        if (namespace == null)
+        {
+            throw new AlfrescoRuntimeException("Prefix '" + prefix + "' is not associated with a namespace.");
+        }
+        return namespace;
     }
 
     /** {@inheritDoc} */
@@ -150,12 +165,11 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
      * The Xpath mapping is of the form:
      * <pre>
      * # Namespaces prefixes
-     * namespace.prefix.cm=http://www.alfresco.org/model/content/1.0
      * namespace.prefix.my=http://www....com/alfresco/1.0
      * 
      * # Mapping
-     * editor=/cm:some-xpath-1
-     * title=/my:some-xpath-2
+     * editor=/my:example-element/@cm:editor
+     * title=/my:example-element/text()
      * </pre>
      */
     public void setXpathMappingProperties(Properties xpathMappingProperties)
@@ -169,16 +183,18 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
     protected void init()
     {
         PropertyCheck.mandatory(this, "xpathMappingProperties", xpathExpressionMapping);
-        try
-        {
-            documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            xpathFactory = XPathFactory.newInstance();
-        }
-        catch (Throwable e)
-        {
-            throw new AlfrescoRuntimeException("Failed to initialize XML metadata extractor", e);
-        }
+        // Get the base class to set up its mappings
         super.init();
+        // Remove all XPath expressions that aren't going to be used
+        Map<String, Set<QName>> mapping = getMapping();
+        Set<String> xpathExpressionMappingKeys = new HashSet<String>(xpathExpressionMapping.keySet());
+        for (String xpathMappingKey : xpathExpressionMappingKeys)
+        {
+            if (!mapping.containsKey(xpathMappingKey))
+            {
+                xpathExpressionMapping.remove(xpathMappingKey);
+            }
+        }
     }
 
     /**
@@ -232,7 +248,7 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
             String documentProperty = element.getKey();
             XPathExpression xpathExpression = element.getValue();
             // Execute it
-            String value = xpathExpression.evaluate(document);
+            String value = (String) xpathExpression.evaluate(document, XPathConstants.STRING);
             // Put the value
             rawProperties.put(documentProperty, value);
         }
@@ -258,8 +274,6 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
                 namespacesByPrefix.put(prefix, namespace);
             }
         }
-        // Get the mapping that will be applied by the base class
-        Map<String, Set<QName>> finalMapping = getMapping();
         // Create the mapping
         for (Map.Entry entry : xpathMappingProperties.entrySet())
         {
@@ -268,11 +282,6 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
             if (documentProperty.startsWith(NAMESPACE_PROPERTY_PREFIX))
             {
                 // Ignore these now
-                continue;
-            }
-            // If the property is not going to be mapped, then just ignore it too
-            if (!finalMapping.containsKey(documentProperty))
-            {
                 continue;
             }
             // Construct the XPath
@@ -285,10 +294,12 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
             }
             catch (XPathExpressionException e)
             {
-                throw new AlfrescoRuntimeException(
-                        "Failed to path XPath expression: \n" +
+                throw new AlfrescoRuntimeException("\n" +
+                        "Failed to create XPath expression: \n" +
                         "   Document property: " + documentProperty + "\n" +
-                        "   XPath:             " + xpathStr);
+                        "   XPath:             " + xpathStr + "\n" +
+                        "   Error: " + e.getMessage(),
+                        e);
             }
             // Persist it
             xpathExpressionMapping.put(documentProperty, xpathExpression);

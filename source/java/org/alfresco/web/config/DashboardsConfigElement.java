@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.config;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -45,6 +46,7 @@ public class DashboardsConfigElement extends ConfigElementAdapter
    
    private Map<String, LayoutDefinition> layoutDefs = new LinkedHashMap<String, LayoutDefinition>(4, 1.0f);
    private Map<String, DashletDefinition> dashletDefs = new LinkedHashMap<String, DashletDefinition>(8, 1.0f);
+   private List<String> defaultDashlets = null;
    private boolean allowGuestConfig = false;
    
    /**
@@ -91,6 +93,18 @@ public class DashboardsConfigElement extends ConfigElementAdapter
          combinedElement.allowGuestConfig = newElement.allowGuestConfig;
       }
       
+      // the default-dashlets list is completely replaced if config is overriden
+      if (newElement.defaultDashlets != null)
+      {
+         combinedElement.defaultDashlets =
+            (List<String>)((ArrayList<String>)newElement.defaultDashlets).clone();
+      }
+      else if (this.defaultDashlets != null)
+      {
+         combinedElement.defaultDashlets =
+            (List<String>)((ArrayList<String>)this.defaultDashlets).clone();
+      }
+      
       return combinedElement;
    }
    
@@ -132,6 +146,20 @@ public class DashboardsConfigElement extends ConfigElementAdapter
    public Collection<DashletDefinition> getDashlets()
    {
       return this.dashletDefs.values();
+   }
+   
+   /*package*/ void addDefaultDashlet(String id)
+   {
+      if (this.defaultDashlets == null)
+      {
+         this.defaultDashlets = new ArrayList<String>(2);
+      }
+      this.defaultDashlets.add(id);
+   }
+   
+   public Collection<String> getDefaultDashlets()
+   {
+      return this.defaultDashlets;
    }
    
    /**

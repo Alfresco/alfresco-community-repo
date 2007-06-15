@@ -162,16 +162,17 @@ public class DashboardManager
                Page page = new Page("default", layout);
                Column defaultColumn = new Column();
                
-               // add the default dashlet(s) to the column
-               DashletDefinition dashlet = config.getDashletDefinition(DASHLET_STARTEDDEFAULT);
-               if (dashlet != null)
+               // add the default dashlet(s) to the column as specified in the config
+               if (config.getDefaultDashlets() != null)
                {
-                  defaultColumn.addDashlet(dashlet);
-               }
-               dashlet = config.getDashletDefinition(DASHLET_TASKSDEFAULT);
-               if (dashlet != null)
-               {
-                  defaultColumn.addDashlet(dashlet);
+                  for (String id : config.getDefaultDashlets())
+                  {
+                     DashletDefinition dashlet = config.getDashletDefinition(id);
+                     if (dashlet != null)
+                     {
+                        defaultColumn.addDashlet(dashlet);
+                     }
+                  }
                }
                
                // add the column to the page and we are done

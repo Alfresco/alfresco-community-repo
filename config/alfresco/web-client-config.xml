@@ -193,6 +193,7 @@
    
    <config evaluator="string-compare" condition="Dashboards">
       <!-- Dashboard layouts and available dashlets for the My Alfresco pages -->
+      <!-- see http://wiki.alfresco.com/wiki/User_Configurable_Dashboards -->
       <dashboards>
          <layouts>
             <!-- the mandatory "default" layout - will be used for all users initially -->
@@ -209,17 +210,18 @@
                   label-id="layout_three_column_label" description-id="layout_three_column_desc"
                   jsp="/jsp/dashboards/layouts/three-column.jsp" />
          </layouts>
+         
          <dashlets>
             <!-- this is the default dashlet shown in the default layout initially -->
             <!-- the default dashlet must have the id of 'getting-started' -->
             <dashlet id="getting-started" label-id="dashlet_gettingstarted_label"
                   description-id="dashlet_gettingstarted_desc"
                   jsp="/jsp/dashboards/dashlets/getting-started.jsp" allow-narrow="false" />
-            <dashlet id="tasks-active" label-id="tasks_active_title" description-id="tasks_active_desc"
-                  jsp="/jsp/workflow/tasks-active-dashlet.jsp" allow-narrow="false" />
             <!-- this dashlet 'tasks-todo' is also shown by default for all users -->
             <dashlet id="tasks-todo" label-id="my_tasks_todo_title" description-id="my_tasks_todo_desc"
                   jsp="/jsp/workflow/tasks-todo-dashlet.jsp" allow-narrow="false" />
+            <dashlet id="tasks-active" label-id="tasks_active_title" description-id="tasks_active_desc"
+                  jsp="/jsp/workflow/tasks-active-dashlet.jsp" allow-narrow="false" />
             <dashlet id="pooled-tasks" label-id="pooled_tasks_title" description-id="pooled_tasks_desc"
                   jsp="/jsp/workflow/pooled-tasks-todo-dashlet.jsp" allow-narrow="false" />
             <dashlet id="tasks-completed" label-id="my_tasks_completed_title" description-id="my_tasks_completed_desc"
@@ -235,6 +237,15 @@
             <dashlet id="mywebforms-webscript" label="My Web Forms" description="My Web Forms WebScript"
                   jsp="/jsp/dashboards/dashlets/mywebforms-webscript.jsp" /> 
          </dashlets>
+         
+         <!-- configuration of the default dashlets to display when users login for the first time -->
+         <!-- if this config is removed, then no dashlets will be shown by default -->
+         <!-- overides of this config should redefine the entire list, not assume additions to it -->
+         <default-dashlets>
+            <dashlet id="getting-started" />
+            <dashlet id="tasks-todo" />
+         </default-dashlets>
+         
          <!-- set true allow the Guest user to configure the dashboard view - false by default -->
          <allow-guest-config>false</allow-guest-config>
       </dashboards>

@@ -85,6 +85,14 @@
       </mandatory-aspects>
     </type>
 
+    <type name="wcmwf:verifyBrokenLinksTask">
+      <parent>wcmwf:workflowTask</parent>
+      <mandatory-aspects>
+        <aspect>bpm:assignees</aspect>
+        <aspect>wcmwf:submission</aspect>
+      </mandatory-aspects>
+    </type>
+    
     <type name="wcmwf:reviewTask">
       <parent>wcmwf:workflowTask</parent>
       <overrides>
@@ -214,6 +222,11 @@
           <title>Launch Date</title>
           <description>Date the content in the submission should be committed</description>
           <type>d:datetime</type>
+        </property>
+        <property name="wcmwf:validateLinks">
+          <title>Validate Links</title>
+          <description>Determines whether links should be verified before entering the review cycle</description>
+          <type>d:boolean</type>
         </property>
       </properties>
     </aspect>

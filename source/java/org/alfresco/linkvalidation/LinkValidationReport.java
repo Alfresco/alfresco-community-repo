@@ -44,9 +44,9 @@ import java.util.Map;
  */
 public class LinkValidationReport implements Serializable
 {
-   private int numberFilesChecked = 0;
-   private int numberLinksChecked = 0;
-   private int numberBrokenLinks = 0;
+   private int numberFilesChecked = -1;
+   private int numberLinksChecked = -1;
+   private int numberBrokenLinks = -1;
    private boolean successful = true;
    
    private Throwable error;

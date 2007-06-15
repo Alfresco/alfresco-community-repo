@@ -36,5 +36,6 @@ public interface WCMWorkflowModel
     static final QName PROP_FROM_PATH = QName.createQName(NamespaceService.WCMWF_MODEL_1_0_URI, "fromPath");
     static final QName PROP_LABEL = QName.createQName(NamespaceService.WCMWF_MODEL_1_0_URI, "label");
     static final QName PROP_LAUNCH_DATE = QName.createQName(NamespaceService.WCMWF_MODEL_1_0_URI, "launchDate");
+    static final QName PROP_VALIDATE_LINKS = QName.createQName(NamespaceService.WCMWF_MODEL_1_0_URI, "validateLinks");
     static final QName ASSOC_WEBPROJECT = QName.createQName(NamespaceService.WCMWF_MODEL_1_0_URI, "webproject");
 }

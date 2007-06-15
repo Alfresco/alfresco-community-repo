@@ -207,7 +207,7 @@ public class UIWebScript extends SelfRenderingComponent
     */
    public void setScriptUrl(String scriptUrl)
    {
-      this.scriptUrl = scriptUrl;
+      this.scriptUrl = getFacesContext().getExternalContext().getRequestContextPath() + scriptUrl;
    }
 
    /**

@@ -31,5 +31,5 @@
 #
 # PostgreSQL dialect
 #
-#org.hibernate.dialect.PostgreSQLDialect
+#hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 #hibernate.query.substitutions=true TRUE, false FALSE

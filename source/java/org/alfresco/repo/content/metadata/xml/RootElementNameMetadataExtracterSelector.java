@@ -78,26 +78,6 @@ public class RootElementNameMetadataExtracterSelector
     }
 
     /**
-     * Set the SAX parser factory to use to parse the incoming documents.  If not set,
-     * the default system-wide SAX parser factory is used.
-     * 
-     * @param factoryClassName      A {@link SAXParserFactory} class name
-     */
-    public void setSAXParserFactoryClass(String factoryClassName)
-    {
-        try
-        {
-            saxParserFactory = SAXParserFactory.newInstance(
-                    factoryClassName,
-                    this.getClass().getClassLoader());
-        }
-        catch (Throwable e)
-        {
-            throw new IllegalArgumentException("Unable to load SAX parser factory from class: " + factoryClassName);
-        }
-    }
-
-    /**
      * Optionally set the mimetypes supported.  They must be XML formats that the chosen
      * parser will be able to handle.
      * 

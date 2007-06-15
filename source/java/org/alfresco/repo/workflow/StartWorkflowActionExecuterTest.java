@@ -67,7 +67,7 @@ public class StartWorkflowActionExecuterTest extends BaseSpringTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
         
         // Create the store and get the root node
-        rootNodeRef = nodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "spacesStore"));
+        rootNodeRef = nodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore"));
         this.nodeRef = this.nodeService.createNode(
                 this.rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,

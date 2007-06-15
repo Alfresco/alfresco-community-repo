@@ -167,7 +167,8 @@ public class LuceneAnalyser extends Analyzer
 
                 if (propertyQName.equals(ContentModel.PROP_USER_USERNAME)
                         || propertyQName.equals(ContentModel.PROP_USERNAME)
-                        || propertyQName.equals(ContentModel.PROP_AUTHORITY_NAME))
+                        || propertyQName.equals(ContentModel.PROP_AUTHORITY_NAME)
+                        || propertyQName.equals(ContentModel.PROP_MEMBERS))
                 {
                     analyser = new VerbatimAnalyser(true);
                 }

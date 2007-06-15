@@ -783,4 +783,21 @@
         </property>
     </bean>
 
+	<bean id="patch.groupMembersAsIdentifiers" class="org.alfresco.repo.admin.patch.impl.GroupTokenisationPatch" parent="basePatch" >
+        <property name="id"><value>patch.groupMembersAsIdentifiers</value></property>
+        <property name="description"><value>patch.groupMembersAsIdentifiers.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>56</value></property>
+        <property name="targetSchema"><value>57</value></property>
+        <!-- bootstrap view -->
+        <property name="userImporterBootstrap">
+            <ref bean="userBootstrap" />
+        </property>
+        <property name="indexerAndSearcher">
+            <ref bean="indexerAndSearcherFactory" />
+        </property>
+    </bean>
+
+	
+	
 </beans>

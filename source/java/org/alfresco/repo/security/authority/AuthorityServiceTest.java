@@ -24,18 +24,25 @@
  */
 package org.alfresco.repo.security.authority;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
@@ -522,5 +529,249 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth1, false).contains(auth5));
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth1, false).contains("andy"));
         
+    }
+
+    
+    public void test_AR_1510()
+    {
+        personService.getPerson("andy1");
+        personService.getPerson("andy2");
+        personService.getPerson("andy3");
+        personService.getPerson("andy4");
+        personService.getPerson("andy5");
+        personService.getPerson("andy6");
+        assertEquals(0, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
+        assertEquals(0, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
+        String auth1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "one");
+        pubAuthorityService.addAuthority(auth1, "andy1");
+        String auth2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth1, "two");
+        pubAuthorityService.addAuthority(auth2, "andy1");
+        pubAuthorityService.addAuthority(auth2, "andy2");
+        String auth3 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth2, "three");
+        pubAuthorityService.addAuthority(auth3, "andy3");
+        String auth4 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth3, "four");
+        pubAuthorityService.addAuthority(auth4, "andy1");
+        pubAuthorityService.addAuthority(auth4, "andy4");
+        String auth5 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth4, "five");
+        pubAuthorityService.addAuthority(auth5, "andy1");
+        pubAuthorityService.addAuthority(auth5, "andy5");
+        String auth6 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth3, "six");
+        pubAuthorityService.addAuthority(auth6, "andy1");
+        pubAuthorityService.addAuthority(auth6, "andy5");
+        pubAuthorityService.addAuthority(auth6, "andy6");
+       
+        assertEquals(2, pubAuthorityService.getContainedAuthorities(null, auth1, true).size());
+        assertEquals(11, pubAuthorityService.getContainedAuthorities(null, auth1, false).size());
+        assertEquals(3, pubAuthorityService.getContainedAuthorities(null, auth2, true).size());
+        assertEquals(10, pubAuthorityService.getContainedAuthorities(null, auth2, false).size());
+        assertEquals(3, pubAuthorityService.getContainedAuthorities(null, auth3, true).size());
+        assertEquals(8, pubAuthorityService.getContainedAuthorities(null, auth3, false).size());
+        assertEquals(3, pubAuthorityService.getContainedAuthorities(null, auth4, true).size());
+        assertEquals(4, pubAuthorityService.getContainedAuthorities(null, auth4, false).size());
+        assertEquals(2, pubAuthorityService.getContainedAuthorities(null, auth5, true).size());
+        assertEquals(2, pubAuthorityService.getContainedAuthorities(null, auth5, false).size());
+        assertEquals(3, pubAuthorityService.getContainedAuthorities(null, auth6, true).size());
+        assertEquals(3, pubAuthorityService.getContainedAuthorities(null, auth6, false).size());
+        
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy1", true).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy1", false).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy2", true).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy2", false).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy3", true).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy3", false).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy4", true).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy4", false).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy5", true).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy5", false).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy6", true).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy6", false).size());
+     
+        assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth1, true).size());
+        assertEquals(5, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth1, false).size());
+        assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth2, true).size());
+        assertEquals(4, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth2, false).size());
+        assertEquals(2, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth3, true).size());
+        assertEquals(3, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth3, false).size());
+        assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth4, true).size());
+        assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth4, false).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth5, true).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth5, false).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth6, true).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth6, false).size());
+        
+        assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth1, true).size());
+        assertEquals(6, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth1, false).size());
+        assertEquals(2, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth2, true).size());
+        assertEquals(6, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth2, false).size());
+        assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth3, true).size());
+        assertEquals(5, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth3, false).size());
+        assertEquals(2, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth4, true).size());
+        assertEquals(3, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth4, false).size());
+        assertEquals(2, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth5, true).size());
+        assertEquals(2, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth5, false).size());
+        assertEquals(3, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth6, true).size());
+        assertEquals(3, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth6, false).size());
+        
+        // containing
+        
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(null, auth1, true).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(null, auth1, false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(null, auth2, true).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(null, auth2, false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(null, auth3, true).size());
+        assertEquals(2, pubAuthorityService.getContainingAuthorities(null, auth3, false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(null, auth4, true).size());
+        assertEquals(3, pubAuthorityService.getContainingAuthorities(null, auth4, false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(null, auth5, true).size());
+        assertEquals(4, pubAuthorityService.getContainingAuthorities(null, auth5, false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(null, auth6, true).size());
+        assertEquals(3, pubAuthorityService.getContainingAuthorities(null, auth6, false).size());
+        
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth1, true).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth1, false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth2, true).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth2, false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth3, true).size());
+        assertEquals(2, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth3, false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth4, true).size());
+        assertEquals(3, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth4, false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth5, true).size());
+        assertEquals(4, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth5, false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth6, true).size());
+        assertEquals(3, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth6, false).size());
+        
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth1, true).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth1, false).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth2, true).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth2, false).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth3, true).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth3, false).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth4, true).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth4, false).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth5, true).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth5, false).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth6, true).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth6, false).size());
+        
+        
+        assertEquals(5, pubAuthorityService.getContainingAuthorities(null, "andy1", true).size());
+        assertEquals(6, pubAuthorityService.getContainingAuthorities(null, "andy1", false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(null, "andy2", true).size());
+        assertEquals(2, pubAuthorityService.getContainingAuthorities(null, "andy2", false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(null, "andy3", true).size());
+        assertEquals(3, pubAuthorityService.getContainingAuthorities(null, "andy3", false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(null, "andy4", true).size());
+        assertEquals(4, pubAuthorityService.getContainingAuthorities(null, "andy4", false).size());
+        assertEquals(2, pubAuthorityService.getContainingAuthorities(null, "andy5", true).size());
+        assertEquals(6, pubAuthorityService.getContainingAuthorities(null, "andy5", false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(null, "andy6", true).size());
+        assertEquals(4, pubAuthorityService.getContainingAuthorities(null, "andy6", false).size());
+        
+        assertEquals(5, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy1", true).size());
+        assertEquals(6, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy1", false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy2", true).size());
+        assertEquals(2, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy2", false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy3", true).size());
+        assertEquals(3, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy3", false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy4", true).size());
+        assertEquals(4, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy4", false).size());
+        assertEquals(2, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy5", true).size());
+        assertEquals(6, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy5", false).size());
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy6", true).size());
+        assertEquals(4, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy6", false).size());
+        
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, "andy1", true).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, "andy1", false).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, "andy2", true).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, "andy2", false).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, "andy3", true).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, "andy3", false).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, "andy4", true).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, "andy4", false).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, "andy5", true).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, "andy5", false).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, "andy6", true).size());
+        assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, "andy6", false).size());
+    }
+    
+    
+    
+    /**
+     * Test toknisation of group members
+     *
+     */
+    public void test_AR_1517__AND__AR_1411()
+    {
+        personService.getPerson("1234");
+        assertTrue(personService.personExists("1234"));
+        personService.getPerson("Loon");
+        assertTrue(personService.personExists("Loon"));
+        personService.getPerson("andy");
+        assertTrue(personService.personExists("andy"));
+        personService.createPerson(createDefaultProperties("Novalike", "Nova", "Like", "Nove@Like", "Sun", null));
+        assertTrue(personService.personExists("Novalike"));
+        personService.getPerson("1andy");
+        assertTrue(personService.personExists("1andy"));
+        personService.getPerson("andy2");
+        assertTrue(personService.personExists("andy2"));
+        personService.getPerson("an3dy");
+        assertTrue(personService.personExists("an3dy"));
+        
+        
+        assertEquals(0, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
+        assertEquals(0, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
+        String auth1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "one");
+        pubAuthorityService.addAuthority(auth1, "1234");
+        String auth2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "two");
+        pubAuthorityService.addAuthority(auth2, "andy");
+        String auth3 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "three");
+        pubAuthorityService.addAuthority(auth3, "Novalike");
+        String auth4 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "four");
+        pubAuthorityService.addAuthority(auth4, "1andy");
+        String auth5 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "five");
+        pubAuthorityService.addAuthority(auth5, "andy2");
+        String auth6 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "six");
+        pubAuthorityService.addAuthority(auth6, "an3dy");
+        
+       
+        assertEquals(1, pubAuthorityService.getContainedAuthorities(null, auth1, true).size());
+        assertTrue(pubAuthorityService.getContainedAuthorities(null, auth1, true).contains("1234"));
+        assertEquals(1, pubAuthorityService.getContainedAuthorities(null, auth2, true).size());
+        assertTrue(pubAuthorityService.getContainedAuthorities(null, auth2, true).contains("andy"));
+        assertEquals(1, pubAuthorityService.getContainedAuthorities(null, auth3, true).size());
+        assertTrue(pubAuthorityService.getContainedAuthorities(null, auth3, true).contains("Novalike"));
+        assertEquals(1, pubAuthorityService.getContainedAuthorities(null, auth4, true).size());
+        assertTrue(pubAuthorityService.getContainedAuthorities(null, auth4, true).contains("1andy"));
+        assertEquals(1, pubAuthorityService.getContainedAuthorities(null, auth5, true).size());
+        assertTrue(pubAuthorityService.getContainedAuthorities(null, auth5, true).contains("andy2"));
+        assertEquals(1, pubAuthorityService.getContainedAuthorities(null, auth6, true).size());
+        assertTrue(pubAuthorityService.getContainedAuthorities(null, auth6, true).contains("an3dy"));
+        
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(null, "1234", false).size());
+        assertTrue(pubAuthorityService.getContainingAuthorities(null, "1234", false).contains(auth1));
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(null, "andy", false).size());
+        assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth2));
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(null, "Novalike", false).size());
+        assertTrue(pubAuthorityService.getContainingAuthorities(null, "Novalike", false).contains(auth3));
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(null, "1andy", false).size());
+        assertTrue(pubAuthorityService.getContainingAuthorities(null, "1andy", false).contains(auth4));
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(null, "andy2", false).size());
+        assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy2", false).contains(auth5));
+        assertEquals(1, pubAuthorityService.getContainingAuthorities(null, "an3dy", false).size());
+        assertTrue(pubAuthorityService.getContainingAuthorities(null, "an3dy", false).contains(auth6));
+        
+    }
+    
+    private Map<QName, Serializable> createDefaultProperties(String userName, String firstName, String lastName,
+            String email, String orgId, NodeRef home)
+    {
+        HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        properties.put(ContentModel.PROP_USERNAME, userName);
+        properties.put(ContentModel.PROP_HOMEFOLDER, home);
+        properties.put(ContentModel.PROP_FIRSTNAME, firstName);
+        properties.put(ContentModel.PROP_LASTNAME, lastName);
+        properties.put(ContentModel.PROP_EMAIL, email);
+        properties.put(ContentModel.PROP_ORGID, orgId);
+        return properties;
     }
 }

@@ -126,7 +126,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
             nodeService.setProperty(parentRef, ContentModel.PROP_MEMBERS, members);
             userToAuthorityCache.remove(childName);
         }
-        else if  (AuthorityType.getAuthorityType(childName).equals(AuthorityType.GROUP))
+        else if (AuthorityType.getAuthorityType(childName).equals(AuthorityType.GROUP))
         {
             NodeRef childRef = getAuthorityOrNull(childName);
             if (childRef == null)
@@ -139,7 +139,8 @@ public class AuthorityDAOImpl implements AuthorityDAO
         }
         else
         {
-            throw new AlfrescoRuntimeException("Authorities of the type "+AuthorityType.getAuthorityType(childName)+" may not be added to other authorities");
+            throw new AlfrescoRuntimeException("Authorities of the type "
+                    + AuthorityType.getAuthorityType(childName) + " may not be added to other authorities");
         }
 
     }
@@ -250,11 +251,11 @@ public class AuthorityDAOImpl implements AuthorityDAO
 
     public Set<String> getContainingAuthorities(AuthorityType type, String name, boolean immediate)
     {
-        if (AuthorityType.getAuthorityType(name).equals(AuthorityType.USER) && ! immediate && (type == null))
+        if (AuthorityType.getAuthorityType(name).equals(AuthorityType.USER) && !immediate && (type == null))
         {
             // Cache user to authority look ups
             HashSet<String> authorities = userToAuthorityCache.get(name);
-            if(authorities == null)
+            if (authorities == null)
             {
                 authorities = new HashSet<String>();
                 findAuthorities(type, name, authorities, true, !immediate);
@@ -264,9 +265,9 @@ public class AuthorityDAOImpl implements AuthorityDAO
         }
         else
         {
-           HashSet<String> authorities = new HashSet<String>();
-           findAuthorities(type, name, authorities, true, !immediate);
-           return authorities;
+            HashSet<String> authorities = new HashSet<String>();
+            findAuthorities(type, name, authorities, true, !immediate);
+            return authorities;
         }
     }
 
@@ -279,12 +280,35 @@ public class AuthorityDAOImpl implements AuthorityDAO
         }
         else if (AuthorityType.getAuthorityType(name).equals(AuthorityType.USER))
         {
-            for (NodeRef ref : getUserContainers(name))
+            if (parents)
             {
-                findAuthorities(type, ref, authorities, parents, recursive, true);
+                for (NodeRef ref : getUserContainers(name))
+                {
+                    if (recursive)
+                    {
+                        findAuthorities(type, ref, authorities, parents, recursive, true);
+                    }
+                    else
+                    {
+                        String authorityName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService
+                                .getProperty(ref, ContentModel.PROP_AUTHORITY_NAME));
+                        if (type == null)
+                        {
+                            authorities.add(authorityName);
+                        }
+                        else
+                        {
+                            AuthorityType authorityType = AuthorityType.getAuthorityType(authorityName);
+                            if (authorityType.equals(type))
+                            {
+                                authorities.add(authorityName);
+                            }
+                        }
+                    }
+                }
             }
-
         }
+
         else
         {
             NodeRef ref = getAuthorityOrNull(name);
@@ -511,14 +535,14 @@ public class AuthorityDAOImpl implements AuthorityDAO
             QName type = nodeService.getType(authorityRef);
             if (type.equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
             {
-                name = (String)nodeService.getProperty(authorityRef, ContentModel.PROP_AUTHORITY_NAME);
+                name = (String) nodeService.getProperty(authorityRef, ContentModel.PROP_AUTHORITY_NAME);
             }
             else if (type.equals(ContentModel.TYPE_AUTHORITY))
             {
-                name = (String)nodeService.getProperty(authorityRef, ContentModel.PROP_USER_USERNAME);
+                name = (String) nodeService.getProperty(authorityRef, ContentModel.PROP_USER_USERNAME);
             }
         }
         return name;
     }
-    
+
 }

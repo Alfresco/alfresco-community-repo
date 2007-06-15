@@ -335,9 +335,9 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
      * 
      * @param storeRef
      * @param deltaId
-     * @param config 
+     * @param config
      * @return - the indexer instance
-     * @throws LuceneIndexException 
+     * @throws LuceneIndexException
      */
     public static ADMLuceneIndexerImpl getUpdateIndexer(StoreRef storeRef, String deltaId, LuceneConfig config)
             throws LuceneIndexException
@@ -446,10 +446,6 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
     }
 
-    
-
-    
-
     static class Counter
     {
         int countInParent = 0;
@@ -486,6 +482,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
         /**
          * Helper class to hold two related objects
+         * 
          * @param first
          * @param second
          */
@@ -497,6 +494,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
         /**
          * Get the first
+         * 
          * @return - first
          */
         public F getFirst()
@@ -506,6 +504,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
         /**
          * Get the second
+         * 
          * @return -second
          */
         public S getSecond()
@@ -518,8 +517,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             boolean includeDirectoryDocuments)
     {
         NodeRef nodeRef = new NodeRef(stringNodeRef);
-        
-        
+
         Map<ChildAssociationRef, Counter> nodeCounts = getNodeCounts(nodeRef);
         List<Document> docs = new ArrayList<Document>();
         ChildAssociationRef qNameRef = null;
@@ -715,11 +713,12 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
      *            true to ignore all properties that must be indexed non-atomically
      * @return Returns true if the property was indexed atomically, or false if it should be done asynchronously
      */
-    protected boolean indexProperty(NodeRef nodeRef, QName propertyName, Serializable value, Document doc, boolean indexAtomicPropertiesOnly)
+    protected boolean indexProperty(NodeRef nodeRef, QName propertyName, Serializable value, Document doc,
+            boolean indexAtomicPropertiesOnly)
     {
         String attributeName = "@"
                 + QName.createQName(propertyName.getNamespaceURI(), ISO9075.encode(propertyName.getLocalName()));
-    
+
         boolean store = true;
         boolean index = true;
         boolean tokenise = true;
@@ -727,7 +726,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         boolean isContent = false;
         boolean isMultiLingual = false;
         boolean isText = false;
-    
+
         PropertyDefinition propertyDef = getDictionaryService().getProperty(propertyName);
         if (propertyDef != null)
         {
@@ -749,7 +748,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             // we are only doing atomic properties and the property is definitely non-atomic
             return false;
         }
-    
+
         if (!indexAtomicPropertiesOnly)
         {
             doc.removeFields(propertyName.toString());
@@ -774,7 +773,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 // nothing to index
                 continue;
             }
-    
+
             if (isContent)
             {
                 ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, serializableValue);
@@ -789,7 +788,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                 doc.add(new Field(attributeName + ".size", Long.toString(contentData.getSize()), Field.Store.NO,
                         Field.Index.TOKENIZED, Field.TermVector.NO));
-    
+
                 // TODO: Use the node locale in preferanced to the system locale
                 Locale locale = contentData.getLocale();
                 if (locale == null)
@@ -806,7 +805,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 }
                 doc.add(new Field(attributeName + ".locale", locale.toString().toLowerCase(), Field.Store.NO,
                         Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-    
+
                 ContentReader reader = contentService.getReader(nodeRef, propertyName);
                 if (reader != null && reader.exists())
                 {
@@ -852,7 +851,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             writer.setEncoding("UTF-8");
                             try
                             {
-    
+
                                 transformer.transform(reader, writer);
                                 // point the reader to the new-written content
                                 reader = writer.getReader();
@@ -890,7 +889,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         // isr = new InputStreamReader(ris);
                         // }
                         // doc.add(new Field("TEXT", isr, Field.TermVector.NO));
-    
+
                         InputStream ris = reader.getReader().getContentInputStream();
                         try
                         {
@@ -928,7 +927,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             {
                 Field.Store fieldStore = store ? Field.Store.YES : Field.Store.NO;
                 Field.Index fieldIndex;
-    
+
                 if (index)
                 {
                     if (tokenise)
@@ -944,7 +943,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 {
                     fieldIndex = Field.Index.NO;
                 }
-    
+
                 if ((fieldIndex != Field.Index.NO) || (fieldStore != Field.Store.NO))
                 {
                     if (isMultiLingual)
@@ -962,20 +961,23 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                     else if (isText)
                     {
                         // Temporary special case for uids and gids
-                        if(propertyName.equals(ContentModel.PROP_USER_USERNAME) || propertyName.equals(ContentModel.PROP_USERNAME) || propertyName.equals(ContentModel.PROP_AUTHORITY_NAME))
+                        if (propertyName.equals(ContentModel.PROP_USER_USERNAME)
+                                || propertyName.equals(ContentModel.PROP_USERNAME)
+                                || propertyName.equals(ContentModel.PROP_AUTHORITY_NAME)
+                                || propertyName.equals(ContentModel.PROP_MEMBERS))
                         {
                             doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
                         }
-    
+
                         // TODO: Use the node locale in preferanced to the system locale
                         Locale locale = null;
-    
+
                         Serializable localeProperty = nodeService.getProperty(nodeRef, ContentModel.PROP_LOCALE);
                         if (localeProperty != null)
                         {
                             locale = DefaultTypeConverter.INSTANCE.convert(Locale.class, localeProperty);
                         }
-    
+
                         if (locale == null)
                         {
                             locale = I18NUtil.getLocale();
@@ -999,10 +1001,10 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 }
             }
         }
-    
+
         return wereAllAtomic;
     }
-    
+
     /**
      * Does the node type or any applied aspect allow this node to have child associations?
      * 
@@ -1235,7 +1237,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             "Failed to execute query to find content which needs updating in the index", e);
                 }
 
-                for(int i = 0; i < hits.length(); i++)
+                for (int i = 0; i < hits.length(); i++)
                 {
                     Document doc = hits.doc(i);
                     Helper helper = new Helper(doc.getField("ID").stringValue(), doc.getField("TX").stringValue());
@@ -1275,7 +1277,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                     {
                         // Document document = helper.document;
                         NodeRef ref = new NodeRef(helper.ref);
-//                      bypass nodes that have disappeared
+                        // bypass nodes that have disappeared
                         if (!nodeService.exists(ref))
                         {
                             continue;
@@ -1373,7 +1375,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         flushPending();
         // prepareToMergeIntoMain();
     }
-    
+
     protected void doCommit() throws IOException
     {
         if (indexUpdateStatus == IndexUpdateStatus.ASYNCHRONOUS)
@@ -1391,18 +1393,18 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             callBack.indexCompleted(store, remainingCount, null);
         }
     }
-    
+
     protected void doRollBack() throws IOException
     {
         if (callBack != null)
         {
             callBack.indexCompleted(store, 0, null);
-        }   
+        }
     }
-    
+
     protected void doSetRollbackOnly() throws IOException
     {
-        
+
     }
 
 }

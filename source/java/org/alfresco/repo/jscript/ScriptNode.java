@@ -1218,7 +1218,7 @@ public class ScriptNode implements Serializable, Scopeable
         
         ChildAssociationRef childAssocRef = this.nodeService.createNode(
                 this.nodeRef, createQName(assocName),
-                QName.createQName(NamespaceService.ALFRESCO_URI, QName.createValidLocalName(name)),
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(name)),
                 createQName(type), props);
         
         reset();

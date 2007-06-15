@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -1115,6 +1116,9 @@ public class ScriptNode implements Serializable, Scopeable
         
         FileInfo fileInfo = this.services.getFileFolderService().create(this.nodeRef, name,
                 ContentModel.TYPE_CONTENT);
+        
+        reset();
+        
         return newInstance(fileInfo.getNodeRef(), this.services, this.scope);
     }
     
@@ -1131,6 +1135,9 @@ public class ScriptNode implements Serializable, Scopeable
         
         FileInfo fileInfo = this.services.getFileFolderService().create(this.nodeRef, name,
                 ContentModel.TYPE_FOLDER);
+        
+        reset();
+        
         return newInstance(fileInfo.getNodeRef(), this.services, this.scope);
     }
     
@@ -1214,9 +1221,40 @@ public class ScriptNode implements Serializable, Scopeable
                 QName.createQName(NamespaceService.ALFRESCO_URI, QName.createValidLocalName(name)),
                 createQName(type), props);
         
+        reset();
+        
         return newInstance(childAssocRef.getChildRef(), this.services, this.scope);
     }
     
+    /**
+     * Add an existing node as a child of this node.
+     * 
+     * @param node  node to add as a child of this node
+     */
+    public void addNode(ScriptNode node)
+    {
+        ParameterCheck.mandatory("node", node);
+        nodeService.addChild(this.nodeRef, node.nodeRef, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS);
+        reset();
+    }
+
+    /**
+     * Remove an existing child node of this node.
+     *
+     * Severs all parent-child relationships between two nodes.
+     * <p>
+     * The child node will be cascade deleted if one of the associations was the
+     * primary association, i.e. the one with which the child node was created.
+     * 
+     * @param node  child node to remove
+     */
+    public void removeNode(ScriptNode node)
+    {
+        ParameterCheck.mandatory("node", node);
+        nodeService.removeChild(this.nodeRef, node.nodeRef);
+        reset();
+    }
+
     /**
      * Create an association between this node and the specified target node.
      * 
@@ -1229,6 +1267,7 @@ public class ScriptNode implements Serializable, Scopeable
         ParameterCheck.mandatoryString("Association Type Name", assocType);
         
         this.nodeService.createAssociation(this.nodeRef, target.nodeRef, createQName(assocType));
+        reset();
     }
     
     /**
@@ -1243,6 +1282,7 @@ public class ScriptNode implements Serializable, Scopeable
         ParameterCheck.mandatoryString("Association Type Name", assocType);
         
         this.nodeService.removeAssociation(this.nodeRef, target.nodeRef, createQName(assocType));
+        reset();
     }
     
     /**

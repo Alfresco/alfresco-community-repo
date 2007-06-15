@@ -80,10 +80,14 @@ public interface VersionServicePolicies
 		 * WARNING: implementing behaviour for this policy effects the versioning behaviour of the 
 		 * type the behaviour is registered against.
 		 * 
-		 * @param classRef
-		 * @param versionableNode
-		 * @param versionProperties
-		 * @param nodeDetails
+         * @param classRef
+         *            the class reference
+         * @param versionableNode
+         *            the versionable node reference
+         * @param versionProperties
+         *            the version properties
+         * @param nodeDetails
+         *            the details of the node to be versioned
 		 */
 		public void onCreateVersion(
 				QName classRef,

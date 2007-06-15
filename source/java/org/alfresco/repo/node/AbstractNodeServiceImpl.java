@@ -235,7 +235,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     protected void invokeBeforeCreateNode(NodeRef parentNodeRef, QName assocTypeQName, QName assocQName, QName childNodeTypeQName)
     {
         // execute policy for node type
-        NodeServicePolicies.BeforeCreateNodePolicy policy = beforeCreateNodeDelegate.get(parentNodeRef, childNodeTypeQName);
+        NodeServicePolicies.BeforeCreateNodePolicy policy = beforeCreateNodeDelegate.get(childNodeTypeQName);
         policy.beforeCreateNode(parentNodeRef, assocTypeQName, assocQName, childNodeTypeQName);
     }
 

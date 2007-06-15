@@ -236,11 +236,12 @@ public interface LockService
    /**
     * Checks to see if the node is locked or not.  Gets the user reference from the current 
     * session.
-    * <p>
-    * Throws a NodeLockedException based on the lock status of the lock, the user ref and the
-    * lock type.
     * 
-    * @param nodeRef   the node reference
+    * @param nodeRef    the node reference
+    * 
+    * @throws NodeLockedException
+    *                   thrown if the node is locked.  This is based on the lock status of the lock,
+    *                   the user ref and the lock type.
     */
    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
    public void checkForLock(NodeRef nodeRef);   

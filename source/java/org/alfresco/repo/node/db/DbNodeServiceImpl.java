@@ -298,7 +298,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // Invoke policy behaviour
         invokeBeforeCreateNode(parentRef, assocTypeQName, assocQName, nodeTypeQName);
-        invokeBeforeCreateNodeAssociation(parentRef, assocTypeQName, assocQName);
         
         // get the store that the parent belongs to
         StoreRef storeRef = parentRef.getStoreRef();
@@ -320,6 +319,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // create the node instance
         Node childNode = nodeDaoService.newNode(store, newId, nodeTypeQName);
+        NodeRef childNodeRef = childNode.getNodeRef();
+
+        // We now have enough to declare the child association creation
+        invokeBeforeCreateChildAssociation(parentRef, childNodeRef, assocTypeQName, assocQName);
         
         // Get the parent node
         Node parentNode = getNodeNotNull(parentRef);
@@ -351,7 +354,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // Invoke policy behaviour
         invokeOnCreateNode(childAssocRef);
-        invokeOnCreateNodeAssociation(childAssocRef);
+        invokeOnCreateChildAssociation(childAssocRef);
         if (propertiesAfter != null)
         {
             invokeOnUpdateProperties(childAssocRef.getChildRef(), propertiesBefore, propertiesAfter);

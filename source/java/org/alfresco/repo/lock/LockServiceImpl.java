@@ -35,10 +35,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.copy.CopyServicePolicies;
+import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.version.VersionServicePolicies;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.lock.LockType;
@@ -62,7 +65,13 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
-public class LockServiceImpl implements LockService
+public class LockServiceImpl implements LockService,
+                                        NodeServicePolicies.BeforeCreateChildAssociationPolicy,
+                                        NodeServicePolicies.BeforeUpdateNodePolicy,
+                                        NodeServicePolicies.BeforeDeleteNodePolicy,
+                                        CopyServicePolicies.OnCopyNodePolicy,
+                                        VersionServicePolicies.BeforeCreateVersionPolicy,
+                                        VersionServicePolicies.OnCreateVersionPolicy
 {
     /**
      * The node service
@@ -155,21 +164,34 @@ public class LockServiceImpl implements LockService
     public void initialise()
     {
         // Register the various class behaviours to enable lock checking
+        this.policyComponent.bindAssociationBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateChildAssociation"),
+                ContentModel.ASPECT_LOCKABLE,
+                new JavaBehaviour(this, "beforeCreateChildAssociation"));
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateVersion"), ContentModel.ASPECT_LOCKABLE,
-                new JavaBehaviour(this, "checkForLock"));
-        this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "beforeUpdateNode"),
-                ContentModel.ASPECT_LOCKABLE, new JavaBehaviour(this, "checkForLock"));
-        this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
-                ContentModel.ASPECT_LOCKABLE, new JavaBehaviour(this, "checkForLock"));
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeUpdateNode"),
+                ContentModel.ASPECT_LOCKABLE,
+                new JavaBehaviour(this, "beforeUpdateNode"));
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
+                ContentModel.ASPECT_LOCKABLE,
+                new JavaBehaviour(this, "beforeDeleteNode"));
 
         // Register onCopy class behaviour
-        this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyNode"),
-                ContentModel.ASPECT_LOCKABLE, new JavaBehaviour(this, "onCopy"));
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyNode"),
+                ContentModel.ASPECT_LOCKABLE,
+                new JavaBehaviour(this, "onCopyNode"));
 
         // Register the onCreateVersion behavior for the version aspect
-        this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateVersion"),
-                ContentModel.ASPECT_LOCKABLE, new JavaBehaviour(this, "onCreateVersion"));
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateVersion"),
+                ContentModel.ASPECT_LOCKABLE,
+                new JavaBehaviour(this, "beforeCreateVersion"));
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateVersion"),
+                ContentModel.ASPECT_LOCKABLE,
+                new JavaBehaviour(this, "onCreateVersion"));
     }
     
     /**
@@ -418,7 +440,7 @@ public class LockServiceImpl implements LockService
     }
 
     /**
-     * @see LockService#checkForLock(NodeRef)
+     * {@inheritDoc}
      */
     public void checkForLock(NodeRef nodeRef) throws NodeLockedException
     {
@@ -439,27 +461,57 @@ public class LockServiceImpl implements LockService
                     if (LockType.WRITE_LOCK.equals(lockType) == true && 
                         LockStatus.LOCKED.equals(currentLockStatus) == true)
                     {
-                        // Error since we are trying to preform an operation
-                        // on a locked node
+                        // Error since we are trying to preform an operation on a locked node
                         throw new NodeLockedException(nodeRef);
                     }
                     else if (LockType.READ_ONLY_LOCK.equals(lockType) == true &&
                              (LockStatus.LOCKED.equals(currentLockStatus) == true || LockStatus.LOCK_OWNER.equals(currentLockStatus) == true))
                     {
-                        // Error since there is a read only lock on this object
-                        // and all
+                        // Error since there is a read only lock on this object and all
                         // modifications are prevented
                         throw new NodeLockedException(nodeRef);
                     }
                 }
                 catch (AspectMissingException exception)
                 {
-                    // Ignore since this indicates that the node does not have
-                    // the lock
-                    // aspect applied
+                    // Ignore since this indicates that the node does not have the lock aspect applied
                 }
             }
         }
+    }
+
+    /**
+     * Ensures that the parent is not locked.
+     * 
+     * @see #checkForLock(NodeRef)
+     */
+    public void beforeCreateChildAssociation(
+            NodeRef parentNodeRef,
+            NodeRef childNodeRef,
+            QName assocTypeQName,
+            QName assocQName)
+    {
+        checkForLock(parentNodeRef);
+    }
+
+    /**
+     * Ensures that node is not locked.
+     * 
+     * @see #checkForLock(NodeRef)
+     */
+    public void beforeUpdateNode(NodeRef nodeRef)
+    {
+        checkForLock(nodeRef);
+    }
+
+    /**
+     * Ensures that node is not locked.
+     * 
+     * @see #checkForLock(NodeRef)
+     */
+    public void beforeDeleteNode(NodeRef nodeRef)
+    {
+        checkForLock(nodeRef);
     }
 
     /**
@@ -467,15 +519,26 @@ public class LockServiceImpl implements LockService
      * <p>
      * Ensures that the propety values of the lock aspect are not copied onto
      * the destination node.
-     * 
-     * @see org.alfresco.repo.copy.CopyServicePolicies.OnCopyNodePolicy#onCopyNode(QName,
-     *      NodeRef, StoreRef, boolean, PolicyScope)
      */
-    public void onCopy(QName sourceClassRef, NodeRef sourceNodeRef, StoreRef destinationStoreRef,
-            boolean copyToNewNode, PolicyScope copyDetails)
+    public void onCopyNode(
+            QName classRef,
+            NodeRef sourceNodeRef,
+            StoreRef destinationStoreRef,
+            boolean copyToNewNode,
+            PolicyScope copyDetails)
     {
         // Add the lock aspect, but do not copy any of the properties
         copyDetails.addAspect(ContentModel.ASPECT_LOCKABLE);
+    }
+
+    /**
+     * Ensures that node is not locked.
+     * 
+     * @see #checkForLock(NodeRef)
+     */
+    public void beforeCreateVersion(NodeRef versionableNode)
+    {
+        checkForLock(versionableNode);
     }
 
     /**
@@ -483,17 +546,11 @@ public class LockServiceImpl implements LockService
      * <p>
      * Ensures that the property valies of the lock aspect are not 'frozen' in
      * the version store.
-     * 
-     * @param classRef
-     *            the class reference
-     * @param versionableNode
-     *            the versionable node reference
-     * @param versionProperties
-     *            the version properties
-     * @param nodeDetails
-     *            the details of the node to be versioned
      */
-    public void onCreateVersion(QName classRef, NodeRef versionableNode, Map<String, Serializable> versionProperties,
+    public void onCreateVersion(
+            QName classRef,
+            NodeRef versionableNode,
+            Map<String, Serializable> versionProperties,
             PolicyScope nodeDetails)
     {
         // Add the lock aspect, but do not version the property values

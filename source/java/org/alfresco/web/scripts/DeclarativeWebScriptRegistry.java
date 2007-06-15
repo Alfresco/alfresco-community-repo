@@ -335,8 +335,6 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
             {
                 subpath = path.createChildPath(part);
                 packageByPath.put(subpath.getPath(), subpath);
-                if (logger.isDebugEnabled())
-                    logger.debug("Registered Web Script package " + subpath.getPath());
             }      
             path = subpath;
         }
@@ -366,8 +364,6 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                 {
                     subpath = path.createChildPath(part);
                     uriByPath.put(subpath.getPath(), subpath);
-                    if (logger.isDebugEnabled())
-                        logger.debug("Registered Web Script URI Path " + subpath.getPath());
                 }
                 path = subpath;
             }

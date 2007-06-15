@@ -153,9 +153,14 @@ public class AuthenticationServiceImpl implements AuthenticationService
 
     public String getCurrentTicket()
     {
-        return ticketComponent.getTicket(getCurrentUserName());
+        return ticketComponent.getCurrentTicket(getCurrentUserName());
     }
 
+    public String getNewTicket()
+    {
+        return ticketComponent.getNewTicket(getCurrentUserName());
+    }
+    
     public void clearCurrentSecurityContext()
     {
         authenticationComponent.clearCurrentSecurityContext();

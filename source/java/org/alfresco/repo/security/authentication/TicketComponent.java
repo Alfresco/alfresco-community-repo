@@ -34,14 +34,23 @@ package org.alfresco.repo.security.authentication;
 public interface TicketComponent
 {
     /**
-     * Register a ticket
+     * Register a new ticket
      * 
-     * @param authentication
-     * @return
+     * @param userName
+     * @return - the ticket
      * @throws AuthenticationException
      */
-    public String getTicket(String userName) throws AuthenticationException;
+    public String getNewTicket(String userName) throws AuthenticationException;
 
+    /**
+     * Get the current ticket
+     * 
+     * @param userName
+     * @return - the ticket
+     */
+    
+    public String getCurrentTicket(String userName);
+    
     /**
      * Check that a certificate is valid and can be used in place of a login.
      * 
@@ -62,13 +71,30 @@ public interface TicketComponent
      * </ol>
      * </ol>
      * 
-     * @param authentication
-     * @return
+     * @param ticket
+     * @return - the user name
      * @throws AuthenticationException
      */
     public String validateTicket(String ticket) throws AuthenticationException;
     
+    /**
+     * Invalidate the tickets by id
+     * @param ticket
+     */
     public void invalidateTicketById(String ticket);
     
+    /**
+     * Invalidate all user tickets
+     * 
+     * @param userName
+     */
     public void invalidateTicketByUser(String userName);
+    
+    /**
+     * Get the authority for the given ticket
+     * 
+     * @param ticket
+     * @return the authority
+     */
+    public String getAuthorityForTicket(String ticket);
 }

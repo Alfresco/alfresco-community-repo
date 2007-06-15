@@ -301,6 +301,22 @@ public class ChainingAuthenticationServiceImpl implements AuthenticationService
         }
         return null;
     }
+    
+    public String getNewTicket()
+    {
+        for (AuthenticationService authService : getUsableAuthenticationServices())
+        {
+            try
+            {
+                return authService.getNewTicket();
+            }
+            catch (AuthenticationException e)
+            {
+                // Ignore and chain
+            }
+        }
+        return null;
+    }
 
     public void clearCurrentSecurityContext()
     {

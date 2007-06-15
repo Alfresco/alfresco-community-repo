@@ -179,6 +179,13 @@ public interface AuthenticationService
     public String getCurrentTicket();
     
     /**
+     * Get the current ticket as a string
+     * @return
+     */
+    @Auditable
+    public String getNewTicket();
+    
+    /**
      * Remove the current security information
      *
      */

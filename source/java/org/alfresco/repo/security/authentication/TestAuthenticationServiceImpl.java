@@ -315,7 +315,20 @@ public class TestAuthenticationServiceImpl implements AuthenticationService
 
     }
 
+    // TODO: Fix this up
     public String getCurrentTicket()
+    {
+        String currentUser = getCurrentUserName();
+        String ticket = userToTicket.get(currentUser);
+        if (ticket == null)
+        {
+            ticket = GUID.generate();
+            userToTicket.put(currentUser, ticket);
+        }
+        return ticket;
+    }
+    
+    public String getNewTicket()
     {
         String currentUser = getCurrentUserName();
         String ticket = userToTicket.get(currentUser);

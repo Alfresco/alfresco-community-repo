@@ -174,6 +174,10 @@ public interface ContentModel
     static final QName ASPECT_TEMPLATABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "templatable");
     static final QName PROP_TEMPLATE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "template");
     
+    // Webscriptable aspect
+    static final QName ASPECT_WEBSCRIPTABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "webscriptable");
+    static final QName PROP_WEBSCRIPT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "webscript");
+    
     // Dictionary model
     static final QName TYPE_DICTIONARY_MODEL = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "dictionaryModel");
     static final QName PROP_MODEL_NAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "modelName");

@@ -350,6 +350,17 @@
          </properties>
       </aspect>
       
+      <aspect name="cm:webscriptable">
+         <title>Webscriptable</title>
+         <properties>
+            <property name="cm:webscript">
+               <title>Webscript</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+      </aspect>
+      
       <aspect name="cm:complianceable">
          <title>Complianceable</title>
          <parent>cm:auditable</parent>

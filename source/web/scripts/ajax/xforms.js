@@ -814,7 +814,7 @@ dojo.declare("alfresco.xforms.RichTextEditor",
              function(xform, xformsNode, params) 
              {
                this._focused = false;
-               this._tinyMCE_buttons = params;
+               this._params = params;
                if (!this.statics.tinyMCEInitialized)
                {
                  this.statics.tinyMCEInitialized = true;
@@ -846,9 +846,13 @@ dojo.declare("alfresco.xforms.RichTextEditor",
 
                  this.statics.currentInstance = this;
 
-                 tinyMCE.settings.theme_advanced_buttons1 = this._tinyMCE_buttons[0] || "";
-                 tinyMCE.settings.theme_advanced_buttons2 = this._tinyMCE_buttons[1] || "";
-                 tinyMCE.settings.theme_advanced_buttons3 = this._tinyMCE_buttons[2] || "";
+                 tinyMCE.settings.theme_advanced_buttons1 = this._params["theme_advanced_buttons1"] || "";
+                 tinyMCE.settings.theme_advanced_buttons2 = this._params["theme_advanced_buttons2"] || "";
+                 tinyMCE.settings.theme_advanced_buttons3 = this._params["theme_advanced_buttons3"] || "";
+                 if (this._params["height"])
+                 {
+                   tinyMCE.settings.height = parseInt(this._params["height"]);
+                 }
                  tinyMCE.addMCEControl(this.widget, this.id);
                  
                  var editorDocument = tinyMCE.getInstanceById(this.id).getDoc();
@@ -868,9 +872,17 @@ dojo.declare("alfresco.xforms.RichTextEditor",
                {
                  attach_point.appendChild(this.domNode);
                  dojo.html.prependClass(this.domNode, "xformsTextArea");
+                 if (this._params["height"])
+                 {
+                   this.domNode.style.height = parseInt(this._params["height"]) + "px";
+                 }
                  this.widget = document.createElement("div");
                  this.domNode.appendChild(this.widget);
                  dojo.html.prependClass(this.widget, "xformsTextArea");
+                 if (this._params["height"])
+                 {
+                   this.widget.style.height = parseInt(this._params["height"]) + "px";
+                 }
                  this.widget.style.border = "1px solid black";
                  this.widget.style.overflow = "auto";
                  this.widget.innerHTML = this.getInitialValue() || "";

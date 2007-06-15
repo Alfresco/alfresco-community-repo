@@ -40,13 +40,14 @@
                    javascript-class-name="alfresco.xforms.PlainTextEditor"/>
            <widget xforms-type="xf:textarea"
                    javascript-class-name="alfresco.xforms.RichTextEditor">
-             <param>bold,italic,underline,separator,forecolor,backcolor,separator,link,unlink,image</param>
+             <param name="theme_advanced_buttons1">bold,italic,underline,separator,forecolor,backcolor,separator,link,unlink,image</param>
            </widget>
            <widget xforms-type="xf:textarea"
                    appearance="full"
                    javascript-class-name="alfresco.xforms.RichTextEditor">
-             <param>bold,italic,underline,strikethrough,separator,fontselect,fontsizeselect</param>
-             <param>link,unlink,image,separator,justifyleft,justifycenter,justifyright,justifyfull,separator,bullist,numlist,separator,undo,redo,separator,forecolor,backcolor</param>
+             <param name="theme_advanced_buttons1">bold,italic,underline,strikethrough,separator,fontselect,fontsizeselect</param>
+             <param name="theme_advanced_buttons2">link,unlink,image,separator,justifyleft,justifycenter,justifyright,justifyfull,separator,bullist,numlist,separator,undo,redo,separator,forecolor,backcolor</param>
+             <param name="height">400</param>
            </widget>
            <widget xforms-type="xf:upload" javascript-class-name="alfresco.xforms.FilePicker"/>
            <widget xforms-type="xf:range" javascript-class-name="alfresco.xforms.NumericalRange"/>

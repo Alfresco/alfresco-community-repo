@@ -278,7 +278,7 @@ public class XFormsProcessor
          public final String xmlSchemaType;
          public final String appearance;
          public final String javascriptClassName;
-         private List<String> params;
+         private final Map<String, String> params = new HashMap<String, String>();
 
          public WidgetConfigElement(final String xformsType,
                                     final String xmlSchemaType,
@@ -295,20 +295,16 @@ public class XFormsProcessor
             this.javascriptClassName = javascriptClassName;
          }
 
-         public void addParam(final String p)
+         public void addParam(final String k, final String v)
          {
-            if (this.params == null)
-            {
-               this.params = new LinkedList();
-            }
-            this.params.add(p);
+            this.params.put(k, v);
          }
 
-         public List<String> getParams()
+         public Map<String, String> getParams()
          {
             return (this.params == null 
-                    ? (List<String>)Collections.EMPTY_LIST
-                    : Collections.unmodifiableList(this.params));
+                    ? (Map<String, String>)Collections.EMPTY_MAP
+                    : Collections.unmodifiableMap(this.params));
          }
 
          public int compareTo(final WidgetConfigElement other)
@@ -367,7 +363,7 @@ public class XFormsProcessor
          final List<ConfigElement> params = ce.getChildren("param");
          for (final ConfigElement p : params)
          {
-            wce.addParam(p.getValue());
+            wce.addParam(p.getAttribute("name"), p.getValue());
          }
          widgetConfigs.add(wce);
       }
@@ -391,7 +387,10 @@ public class XFormsProcessor
             final JSONObject o = new JSONObject();
             schemaTypeObject.put(s, o);
             o.put("className", wce.javascriptClassName);
-            o.put("params", wce.getParams());
+            if (wce.getParams().size() != 0)
+            {
+               o.put("params", new JSONObject(wce.getParams()));
+            }
          }
          return result;
       }

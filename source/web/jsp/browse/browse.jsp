@@ -193,7 +193,7 @@
                                  <a:listItem value="details" label="#{msg.details_view}" />
                                  <a:listItem value="icons" label="#{msg.view_icon}" />
                                  <a:listItem value="list" label="#{msg.view_browse}" />
-                                 <a:listItem value="dashboard" label="#{msg.custom_view}" disabled="#{!NavigationBean.currentNodeHasTemplate}" />
+                                 <a:listItem value="dashboard" label="#{msg.custom_view}" disabled="#{!NavigationBean.hasCustomView}" />
                               </a:modeList>
                            </td>
                         </tr>
@@ -211,14 +211,15 @@
                </tr>
                
                <%-- Custom Template View --%>
-               <a:panel id="custom-wrapper-panel" rendered="#{NavigationBean.currentNodeHasTemplate}">
+               <a:panel id="custom-wrapper-panel" rendered="#{NavigationBean.hasCustomView}">
                <tr valign=top>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
                      <a:panel id="custom-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle"
                               label="#{msg.custom_view}" progressive="true"
                               expanded='#{BrowseBean.panels["custom-panel"]}' expandedActionListener="#{BrowseBean.expandPanel}">
-                        <r:template id="template" template="#{NavigationBean.currentNodeTemplate}" model="#{NavigationBean.templateModel}" />
+                        <r:webScript id="webscript" scriptUrl="#{NavigationBean.currentNodeWebscript}" context="#{NavigationBean.currentNode.nodeRef}" rendered="#{NavigationBean.hasWebscriptView}" />
+                        <r:template id="template" template="#{NavigationBean.currentNodeTemplate}" model="#{NavigationBean.templateModel}" rendered="#{!NavigationBean.hasWebscriptView && NavigationBean.hasTemplateView}" />
                      </a:panel>
                   </td>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width=4></td>

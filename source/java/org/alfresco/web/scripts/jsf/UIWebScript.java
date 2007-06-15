@@ -67,6 +67,10 @@ public class UIWebScript extends SelfRenderingComponent
    
    /** WebScript URL to execute */
    private String scriptUrl = null;
+   
+   /** User defined script context value */
+   private Object context = null;
+   
    private boolean scriptUrlModified = false;
    
    private WebScriptRegistry registry;
@@ -104,6 +108,7 @@ public class UIWebScript extends SelfRenderingComponent
       super.restoreState(context, values[0]);
       this.scriptUrl = (String)values[1];
       this.scriptUrlModified = (Boolean)values[2];
+      this.context = values[3];
    }
    
    /**
@@ -112,7 +117,7 @@ public class UIWebScript extends SelfRenderingComponent
    public Object saveState(FacesContext context)
    {
       Object values[] = new Object[] {
-         super.saveState(context), this.scriptUrl, this.scriptUrlModified};
+         super.saveState(context), this.scriptUrl, this.scriptUrlModified, this.context};
       return values;
    }
 
@@ -163,11 +168,35 @@ public class UIWebScript extends SelfRenderingComponent
    @Override
    public void encodeBegin(FacesContext context) throws IOException
    {
+      String scriptUrl = getScriptUrl();
+      
+      Object scriptContext = getContext();
+      if (scriptContext != null)
+      {
+         // context object supplied, perform simple variable substitution
+         if (scriptContext instanceof Map)
+         {
+            Map<String, Object> scriptContextMap = (Map<String, Object>)scriptContext;
+            for (String key : scriptContextMap.keySet())
+            {
+               scriptUrl = scriptUrl.replace(key, scriptContextMap.get(key).toString());
+            }
+         }
+         else
+         {
+            // currently we only support {noderef} replacement directly
+            // TODO: move the variable substitution into the WebScript engine - pass in
+            //       a bag of context objects i.e. name/value pairs of well known keys
+            //       allow common values such as noderef, nodeid, path, user etc.
+            scriptUrl = scriptUrl.replace("{noderef}", scriptContext.toString());
+         }
+      }
+      
       // execute WebScript
       if (logger.isDebugEnabled())
-         logger.debug("Processing UIWebScript encodeBegin(): " + getScriptUrl());
+         logger.debug("Processing UIWebScript encodeBegin(): " + scriptUrl);
       
-      WebScriptRuntime runtime = new WebScriptJSFRuntime(context, getScriptUrl());
+      WebScriptRuntime runtime = new WebScriptJSFRuntime(context, scriptUrl);
       runtime.executeScript();
    }
    
@@ -191,10 +220,32 @@ public class UIWebScript extends SelfRenderingComponent
          ValueBinding vb = getValueBinding("scriptUrl");
          if (vb != null)
          {
-            this.scriptUrl = (String)vb.getValue(getFacesContext());
+            this.scriptUrl = getFacesContext().getExternalContext().getRequestContextPath() +
+                             (String)vb.getValue(getFacesContext());
          }
       }
       return this.scriptUrl;
+   }
+   
+   /**
+    * @return the user defined script context object
+    */
+   public Object getContext()
+   {
+      ValueBinding vb = getValueBinding("context");
+      if (vb != null)
+      {
+         this.context = vb.getValue(getFacesContext());
+      }
+      return this.context;
+   }
+
+   /**
+    * @param context the user defined script context to set
+    */
+   public void setContext(Object context)
+   {
+      this.context = context;
    }
    
    
@@ -209,7 +260,7 @@ public class UIWebScript extends SelfRenderingComponent
       public WebScriptEvent(UIComponent component, String url)
       {
          super(component);
-         Url = url;
+         this.Url = url;
       }
       
       public String Url = null;

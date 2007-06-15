@@ -2100,6 +2100,12 @@
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
+      
+      <attribute>
+         <name>context</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
    </tag>
    
 </taglib>

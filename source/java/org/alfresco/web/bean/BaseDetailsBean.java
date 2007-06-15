@@ -43,7 +43,9 @@ import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.OwnableService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
@@ -80,6 +82,9 @@ public abstract class BaseDetailsBean
    /** CopyService bean reference */
    protected CopyService copyService;
    
+   /** The PermissionService reference */
+   protected PermissionService permissionService;
+   
    /** Selected template Id */
    protected String template;
    
@@ -103,7 +108,7 @@ public abstract class BaseDetailsBean
    // Bean property getters and setters 
    
    /**
-    * Sets the BrowseBean instance to use to retrieve the current Space
+    * Sets the BrowseBean instance to use to retrieve the current node
     * 
     * @param browseBean BrowseBean instance
     */
@@ -149,6 +154,14 @@ public abstract class BaseDetailsBean
    }
    
    /**
+    * @param permissionService The PermissionService to set.
+    */
+   public void setPermissionService(PermissionService permissionService)
+   {
+      this.permissionService = permissionService;
+   }
+   
+   /**
     * @return Returns the panels expanded state map.
     */
    public Map<String, Boolean> getPanels()
@@ -172,7 +185,7 @@ public abstract class BaseDetailsBean
    public abstract Node getNode();
    
    /**
-    * Returns the id of the current space
+    * Returns the id of the current node
     * 
     * @return The id
     */
@@ -182,9 +195,9 @@ public abstract class BaseDetailsBean
    }
    
    /**
-    * Returns the name of the current space
+    * Returns the name of the current node
     * 
-    * @return Name of the current space
+    * @return Name of the current 
     */
    public String getName()
    {
@@ -208,8 +221,8 @@ public abstract class BaseDetailsBean
     */
    public String getWebdavUrl()
    {
-      Node space = getLinkResolvedNode();
-      return Utils.generateURL(FacesContext.getCurrentInstance(), space, URLMode.WEBDAV);
+      Node node = getLinkResolvedNode();
+      return Utils.generateURL(FacesContext.getCurrentInstance(), node, URLMode.WEBDAV);
    }
    
    /**
@@ -219,8 +232,8 @@ public abstract class BaseDetailsBean
     */
    public String getCifsPath()
    {
-      Node space = getLinkResolvedNode();
-      return Utils.generateURL(FacesContext.getCurrentInstance(), space, URLMode.CIFS);
+      Node node = getLinkResolvedNode();
+      return Utils.generateURL(FacesContext.getCurrentInstance(), node, URLMode.CIFS);
    }
 
    /**
@@ -259,23 +272,55 @@ public abstract class BaseDetailsBean
    }
    
    /**
-    * @return true if the current document has the 'templatable' aspect applied and
-    *         references a template that currently exists in the system.
+    * @return true if the current node has a custom Template or Webscript view applied and
+    *         references a template/webscript that currently exists in the system.
     */
-   public boolean isTemplatable()
+   public boolean getHasCustomView()
    {
-      NodeRef templateRef = (NodeRef)getNode().getProperties().get(ContentModel.PROP_TEMPLATE);
-      return (getNode().hasAspect(ContentModel.ASPECT_TEMPLATABLE) &&
-              templateRef != null && nodeService.exists(templateRef));
+      return getHasWebscriptView() || getHasTemplateView();
    }
    
    /**
-    * @return String of the NodeRef for the dashboard template used by the space if any 
+    * @return true if the current node has a Template based custom view available
+    */
+   public boolean getHasTemplateView()
+   {
+      if (getNode().hasAspect(ContentModel.ASPECT_TEMPLATABLE))
+      {
+         NodeRef templateRef = (NodeRef)getNode().getProperties().get(ContentModel.PROP_TEMPLATE);
+         return (templateRef != null && this.nodeService.exists(templateRef) &&
+                 this.permissionService.hasPermission(templateRef, PermissionService.READ) == AccessStatus.ALLOWED);
+      }
+      return false;
+   }
+   
+   /**
+    * @return true if the current node has a Webscript based custom view available
+    */
+   public boolean getHasWebscriptView()
+   {
+      if (getNode().hasAspect(ContentModel.ASPECT_WEBSCRIPTABLE))
+      {
+         return (getNode().getProperties().get(ContentModel.PROP_WEBSCRIPT) != null);
+      }
+      return false;
+   }
+   
+   /**
+    * @return String of the NodeRef for the custom view for the node
     */
    public String getTemplateRef()
    {
       NodeRef ref = (NodeRef)getNode().getProperties().get(ContentModel.PROP_TEMPLATE);
       return ref != null ? ref.toString() : null;
+   }
+   
+   /**
+    * @return Webscript URL for the custom view for the node
+    */
+   public String getWebscriptUrl()
+   {
+      return (String)getNode().getProperties().get(ContentModel.PROP_WEBSCRIPT);
    }
    
    /**
@@ -304,7 +349,7 @@ public abstract class BaseDetailsBean
       if (this.workflowProperties == null && 
           getNode().hasAspect(ApplicationModel.ASPECT_SIMPLE_WORKFLOW))
       {
-         // get the exisiting properties for the document
+         // get the exisiting properties for the node
          Map<String, Object> props = getNode().getProperties();
          
          String approveStepName = (String)props.get(
@@ -364,7 +409,7 @@ public abstract class BaseDetailsBean
    
    /**
     * Saves the details of the workflow stored in workflowProperties
-    * to the current document
+    * to the current node
     *  
     * @return The outcome string
     */
@@ -447,7 +492,7 @@ public abstract class BaseDetailsBean
          };
          txnHelper.doInTransaction(callback);
          
-         // reset the state of the current document so it reflects the changes just made
+         // reset the state of the current node so it reflects the changes just made
          getNode().reset();
          
          outcome = "finish";
@@ -510,7 +555,7 @@ public abstract class BaseDetailsBean
          };
          txnHelper.doInTransaction(callback);
          
-         // if this was called via the document details dialog we need to reset the document node
+         // if this was called via the node details dialog we need to reset the node
          if (getNode() != null)
          {
             getNode().reset();
@@ -575,7 +620,7 @@ public abstract class BaseDetailsBean
          };
          txnHelper.doInTransaction(callback);
          
-         // if this was called via the document details dialog we need to reset the document node
+         // if this was called via the node details dialog we need to reset the node
          if (getNode() != null)
          {
             getNode().reset();
@@ -596,7 +641,7 @@ public abstract class BaseDetailsBean
    // Action event handlers
    
    /**
-    * Action handler to apply the selected Template and Templatable aspect to the current Space
+    * Action handler to apply the selected Template and Templatable aspect to the current node
     */
    public void applyTemplate(ActionEvent event)
    {
@@ -628,7 +673,7 @@ public abstract class BaseDetailsBean
    }
    
    /**
-    * Action handler to remove a dashboard template from the current Space
+    * Action handler to remove a custom view template from the current node
     */
    public void removeTemplate(ActionEvent event)
    {
@@ -649,7 +694,7 @@ public abstract class BaseDetailsBean
    }
    
    /**
-    * Action Handler to take Ownership of the current Space
+    * Action Handler to take Ownership of the current node
     */
    public void takeOwnership(final ActionEvent event)
    {

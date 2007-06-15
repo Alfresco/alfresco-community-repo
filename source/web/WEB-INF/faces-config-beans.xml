@@ -240,6 +240,10 @@
          <property-name>authenticationService</property-name>
          <value>#{AuthenticationService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>permissionService</property-name>
+         <value>#{PermissionService}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>
@@ -1363,6 +1367,10 @@
          <property-name>editionService</property-name>
          <value>#{EditionService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>permissionService</property-name>
+         <value>#{PermissionService}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>
@@ -1395,6 +1403,10 @@
       <managed-property>
          <property-name>copyService</property-name>
          <value>#{CopyService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>permissionService</property-name>
+         <value>#{PermissionService}</value>
       </managed-property>
    </managed-bean>
 

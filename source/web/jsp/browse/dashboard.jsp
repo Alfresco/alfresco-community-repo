@@ -120,7 +120,8 @@
                      
                      <a:panel id="dashboard-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle" label="#{msg.custom_view}">
                         
-                        <r:template id="template" template="#{NavigationBean.currentNodeTemplate}" model="#{NavigationBean.templateModel}" />
+                        <r:webScript id="webscript" scriptUrl="#{NavigationBean.currentNodeWebscript}" context="#{NavigationBean.currentNode.nodeRef}" rendered="#{NavigationBean.hasWebscriptView}" />
+                        <r:template id="template" template="#{NavigationBean.currentNodeTemplate}" model="#{NavigationBean.templateModel}" rendered="#{!NavigationBean.hasWebscriptView && NavigationBean.hasTemplateView}" />
                         
                      </a:panel>
                      

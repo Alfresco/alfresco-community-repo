@@ -61,6 +61,7 @@ public class WebScriptTag extends BaseComponentTag
    {
       super.setProperties(component);
       setStringProperty(component, "scriptUrl", this.scriptUrl);
+      setStringProperty(component, "context", this.context);
    }
    
    /**
@@ -70,18 +71,32 @@ public class WebScriptTag extends BaseComponentTag
    {
       super.release();
       this.scriptUrl = null;
+      this.context = null;
    }
    
    /**
-    * Set the scriptUrl
+    * Set the script service Url
     *
-    * @param scriptUrl     the scriptUrl
+    * @param scriptUrl     the script service Url
     */
    public void setScriptUrl(String scriptUrl)
    {
       this.scriptUrl = scriptUrl;
    }
+   
+   /**
+    * Set the script context
+    *
+    * @param context     the script context
+    */
+   public void setContext(String context)
+   {
+      this.context = context;
+   }
 
+
+   /** the script context */
+   private String context;
 
    /** the scriptUrl */
    private String scriptUrl;

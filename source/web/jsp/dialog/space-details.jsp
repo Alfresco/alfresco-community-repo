@@ -146,11 +146,12 @@
                                     <tr>
                                        <td align=left>
                                           <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write" id="evalApply">
-                                             <a:actionLink id="actDashboard" value="#{msg.apply_template}" rendered="#{SpaceDetailsBean.templatable == false}" action="dialog:applyTemplate" />
+                                             <a:actionLink id="actDashboard" value="#{msg.apply_template}" rendered="#{!SpaceDetailsBean.hasCustomView}" action="dialog:applyTemplate" />
                                           </r:permissionEvaluator>
-                                          <a:panel id="template-panel" rendered="#{SpaceDetailsBean.templatable == true}">
+                                          <a:panel id="template-panel" rendered="#{SpaceDetailsBean.hasCustomView}">
                                              <div style="padding:4px;border: 1px dashed #cccccc">
-                                                <r:template id="dashboard" template="#{SpaceDetailsBean.templateRef}" model="#{SpaceDetailsBean.templateModel}" />
+                                                <r:webScript id="webscript" scriptUrl="#{SpaceDetailsBean.webscriptUrl}" context="#{SpaceDetailsBean.space.nodeRef}" rendered="#{SpaceDetailsBean.hasWebscriptView}" />
+                                                <r:template id="dashboard" template="#{SpaceDetailsBean.templateRef}" model="#{SpaceDetailsBean.templateModel}" rendered="#{!SpaceDetailsBean.hasWebscriptView && SpaceDetailsBean.hasTemplateView}" />
                                              </div>
                                           </a:panel>
                                        </td>

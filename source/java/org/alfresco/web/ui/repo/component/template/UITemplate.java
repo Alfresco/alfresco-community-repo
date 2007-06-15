@@ -58,8 +58,6 @@ import org.apache.log4j.Logger;
  */
 public class UITemplate extends SelfRenderingComponent
 {
-   //private final static String ENGINE_DEFAULT = "freemarker";
-   
    private static Logger logger = Logger.getLogger(UITemplate.class);
    
    /** Template name/classpath */
@@ -182,34 +180,30 @@ public class UITemplate extends SelfRenderingComponent
     */
    private Object getTemplateModel(Object model, String template)
    {
-      //if (getEngine().equals(ENGINE_DEFAULT))
-      //{
-         // create an instance of the default FreeMarker template object model
-         FacesContext fc = FacesContext.getCurrentInstance();
-         ServiceRegistry services = Repository.getServiceRegistry(fc);
-         User user = Application.getCurrentUser(fc);
+      // create an instance of the default FreeMarker template object model
+      FacesContext fc = FacesContext.getCurrentInstance();
+      ServiceRegistry services = Repository.getServiceRegistry(fc);
+      User user = Application.getCurrentUser(fc);
+      
+      // add the template itself to the model
+      NodeRef templateRef = null;
+      if (template.indexOf(StoreRef.URI_FILLER) != -1)
+      {
+         // found a noderef template
+         templateRef = new NodeRef(template);
+      }
+      
+      Map root = DefaultModelHelper.buildDefaultModel(services, user, templateRef);
+      
+      // merge models
+      if (model instanceof Map)
+      {
+         if (logger.isDebugEnabled())
+            logger.debug("Found valid Map model to merge with FreeMarker: " + model);
          
-         // add the template itself to the model
-         NodeRef templateRef = null;
-         if (template.indexOf(StoreRef.URI_FILLER) != -1)
-         {
-            // found a noderef template
-            templateRef = new NodeRef(template);
-         }
-         
-         Map root = DefaultModelHelper.buildDefaultModel(services, user, templateRef);
-         
-         // merge models
-         if (model instanceof Map)
-         {
-            if (logger.isDebugEnabled())
-               logger.debug("Found valid Map model to merge with FreeMarker: " + model);
-            
-            root.putAll((Map)model);
-         }
-         
-         model = root;
-     // }
+         root.putAll((Map)model);
+      }
+      model = root;
       
       return model;
    }

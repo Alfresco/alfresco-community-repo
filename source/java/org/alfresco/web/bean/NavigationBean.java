@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -154,6 +155,14 @@ public class NavigationBean
    public void setAuthenticationService(AuthenticationService authService)
    {
       this.authService = authService;
+   }
+   
+   /**
+    * @param permissionService The PermissionService to set.
+    */
+   public void setPermissionService(PermissionService permissionService)
+   {
+      this.permissionService = permissionService;
    }
 
    /**
@@ -444,38 +453,56 @@ public class NavigationBean
    }
    
    /**
-    * @return true if the current node has a template view available
+    * @return true if the current node has a custom view available
     */
-   public boolean getCurrentNodeHasTemplate()
+   public boolean getHasCustomView()
    {
-      boolean templateView = false;
+      return getHasWebscriptView() || getHasTemplateView();
+   }
+   
+   /**
+    * @return true if the current node has a Template based custom view available
+    */
+   public boolean getHasTemplateView()
+   {
       Node node = getCurrentNode();
       if (node.hasAspect(ContentModel.ASPECT_TEMPLATABLE))
       {
          NodeRef templateRef = (NodeRef)node.getProperties().get(ContentModel.PROP_TEMPLATE);
-         try
-         {
-            templateView = (templateRef != null && this.nodeService.exists(templateRef));
-         }
-         catch (AccessDeniedException err)
-         {
-            // default to false if no access to template
-         }
+         return (templateRef != null && this.nodeService.exists(templateRef) &&
+                 this.permissionService.hasPermission(templateRef, PermissionService.READ) == AccessStatus.ALLOWED);
       }
-      return templateView;
+      return false;
    }
    
    /**
-    * @return the NodeRef.toString() for the current node template view if it has one set 
+    * @return true if the current node has a Webscript based custom view available
+    */
+   public boolean getHasWebscriptView()
+   {
+      Node node = getCurrentNode();
+      if (node.hasAspect(ContentModel.ASPECT_WEBSCRIPTABLE))
+      {
+         return (node.getProperties().get(ContentModel.PROP_WEBSCRIPT) != null);
+      }
+      return false;
+   }
+   
+   /**
+    * @return the NodeRef.toString() for the current node Template custom view if it has one 
     */
    public String getCurrentNodeTemplate()
    {
-      String strRef = null;
-      if (getCurrentNodeHasTemplate() == true)
-      {
-         strRef = getCurrentNode().getProperties().get(ContentModel.PROP_TEMPLATE).toString();
-      }
-      return strRef;
+      NodeRef ref = (NodeRef)getCurrentNode().getProperties().get(ContentModel.PROP_TEMPLATE);
+      return ref != null ? ref.toString() : null;
+   }
+   
+   /**
+    * @return the service url for the current node Webscript custom view if it has one 
+    */
+   public String getCurrentNodeWebscript()
+   {
+      return (String)getCurrentNode().getProperties().get(ContentModel.PROP_WEBSCRIPT);
    }
    
    /**
@@ -486,8 +513,8 @@ public class NavigationBean
    @SuppressWarnings("unchecked")
    public Map getTemplateModel()
    {
-      HashMap model = new HashMap(1, 1.0f);
-
+      HashMap model = new HashMap(2, 1.0f);
+      
       model.put("space", getCurrentNode().getNodeRef());
       model.put(TemplateService.KEY_IMAGE_RESOLVER, 
             new TemplateImageResolver() 
@@ -927,6 +954,9 @@ public class NavigationBean
    
    /** The Authentication service bean reference */
    protected AuthenticationService authService;
+   
+   /** The PermissionService reference */
+   protected PermissionService permissionService;
    
    /** Cached path to our CIFS server and top level node DIR */
    private String cifsServerPath;

@@ -22,34 +22,34 @@
 *  
 *  
 *  Author  Jon Cox  <jcox@alfresco.com>
-*  File    BrokenHrefConcordanceDifference.java
+*  File    HrefManifestEntry.java
 *----------------------------------------------------------------------------*/
 
-package org.alfresco.linkvalidation;
+package  org.alfresco.linkvalidation;
 
+import java.io.Serializable;
 import java.util.List;
-import java.util.ArrayList;
 
-public class BrokenHrefConcordanceDifference
+/**
+*  Contains a (possibly filtered) list of the hrefs within a file.
+*  Common uses of this class are to fetch the links in a web page
+*  or just the broken ones (i.e.: response status 400-599).
+*/
+public class HrefManifestEntry implements Serializable
 {
+    static final long serialVersionUID = 6532525229716576911L;
 
-    List<HrefConcordanceEntry> repaired_;
-    List<HrefConcordanceEntry> newly_broken_;
+    protected String       file_;
+    protected List<String> hrefs_;
 
-    public BrokenHrefConcordanceDifference()
+    public  HrefManifestEntry( String         file, 
+                                List<String>  hrefs
+                             )
     {
-        repaired_     =  new  ArrayList<HrefConcordanceEntry>();
-        newly_broken_ =  new  ArrayList<HrefConcordanceEntry>();
+        file_   = file;
+        hrefs_  = hrefs;
     }
 
-    public List<HrefConcordanceEntry> getRepairedHrefConcordanceEntries()
-    {
-        return repaired_;
-    }
-
-    public List<HrefConcordanceEntry> getNewlyBrokenHrefConcordanceEntries( )
-    {
-        return newly_broken_;
-    }
+    public String       getFileName()  { return file_; }
+    public List<String> getHrefs()     { return hrefs_;}
 }
-

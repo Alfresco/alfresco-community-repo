@@ -116,7 +116,7 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
             this.linkValidationService.updateHrefInfo(store, false, 10000, 30000, 5, monitor);
             
             // retrieve the manifest of all the broken links and files
-            List<HrefManifest> manifests = this.linkValidationService.getBrokenHrefManifests(store);
+            List<HrefManifestEntry> manifests = this.linkValidationService.getBrokenHrefManifestEntries(store);
             
             // create the report object using the link check results
             report = new LinkValidationReport(monitor, manifests);

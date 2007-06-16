@@ -137,49 +137,24 @@ public interface LinkValidationService
 
     /**
     *  This function is just a convenience wrapper for calling  
-    *  getHrefManifests with statusGTE=400 and statusLTE=599.
+    *  getHrefManifestEntries with statusGTE=400 and statusLTE=599.
     */
-    public List<HrefManifest> getBrokenHrefManifests( 
-                                 String storeNameOrWebappPath
-                              )  throws AVMNotFoundException;
+    public List<HrefManifestEntry> getBrokenHrefManifestEntries( 
+                                      String storeNameOrWebappPath
+                                   )  throws AVMNotFoundException;
 
     /**
     *  Returns a manifest consisting of just the broken hrefs 
     *  within each file containing one or more broken href. 
-    *  The HrefManifest list is sorted in increasing lexicographic 
-    *  order by file name.  The hrefs within each HrefManifest
+    *  The HrefManifestEntry list is sorted in increasing lexicographic 
+    *  order by file name.  The hrefs within each HrefManifestEntry
     *  are also sorted in increasing lexicographic order.
     */
-    public List<HrefManifest> getHrefManifests( 
+    public List<HrefManifestEntry> getHrefManifestEntries( 
                                   String storeNameOrWebappPath,
                                   int    statusGTE,
                                   int    statusLTE) throws 
                                   AVMNotFoundException;
-
-    /**
-    *  This function is just a convenience wrapper for calling  
-    *  getHrefManifest with statusGTE=400 and statusLTE=599.
-    *  <p>
-    *  Note:  If you want to get the broken links in every file in 
-    *  a webapp or store, it's much more efficient to use 
-    *  getBrokenHrefManifests instead of this function.
-    */
-    public HrefManifest getBrokenHrefManifest( String path) 
-                                               throws AVMNotFoundException;
-
-    /**
-    *  Returns a manifest of all the hrefs within the file specified by 'path'
-    *  whose response status is greater than or equal to statusGTE, 
-    *  and less than or equal to statusLTE.
-    *  <p>
-    *  Note:  If you want to get a list of manifests of every file in a
-    *  webapp or store, it's much more efficient to use getHrefManifests
-    *  instead of this function.
-    */
-    public HrefManifest getHrefManifest( String path,
-                                         int    statusGTE,
-                                         int    statusLTE) throws 
-                                         AVMNotFoundException;
 
 
     /**
@@ -203,16 +178,25 @@ public interface LinkValidationService
     */
     public List<String> getHrefsDependentUponFile(String path);
 
+    public HrefDifference getHrefDifference( 
+                              String                 srcWebappPath, 
+                              String                 dstWebappPath, 
+                              int                    connectTimeout,
+                              int                    readTimeout,
+                              int                    nthreads,
+                              HrefValidationProgress progress
+                          ) throws AVMNotFoundException;
 
-    /**
-    *  Don't use yet - does nothing at the moment.
-    */
-    public BrokenHrefConcordanceDifference getBrokenHrefConcordanceDifference(
-                                               int         srcVersion, 
-                                               String      srcPath,
-                                               int         dstVersion, 
-                                               String      dstPath,
-                                               HrefValidationProgress progress)
+
+    public HrefDifference getHrefDifference( int                    srcVersion,
+                                             String                 srcWebappPath,
+                                             int                    dstVersion,
+                                             String                 dstWebappPath,
+                                             int                    connectTimeout,
+                                             int                    readTimeout,
+                                             int                    nthreads,
+                                             HrefValidationProgress progress)
                                            throws AVMNotFoundException;
+
 }
 

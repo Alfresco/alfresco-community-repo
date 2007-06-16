@@ -51,7 +51,7 @@ public class LinkValidationReport implements Serializable
    
    private Throwable error;
    private List<String> brokenFiles;
-   private Map<String, HrefManifest> brokenLinksByFile;
+   private Map<String, HrefManifestEntry> brokenLinksByFile;
    
    private static final long serialVersionUID = 7562964706845609991L;
    
@@ -62,7 +62,7 @@ public class LinkValidationReport implements Serializable
     *               of files containing broken links
     * @param manifests The manifest of broken links and files
     */
-   public LinkValidationReport(HrefValidationProgress status, List<HrefManifest> manifests)
+   public LinkValidationReport(HrefValidationProgress status, List<HrefManifestEntry> manifests)
    {
       this.numberFilesChecked = status.getFileUpdateCount();
       this.numberLinksChecked = status.getUrlUpdateCount();
@@ -71,10 +71,10 @@ public class LinkValidationReport implements Serializable
       this.brokenFiles = new ArrayList<String>(manifests.size());
       
       // create a map of broken links by file.
-      this.brokenLinksByFile = new HashMap<String, HrefManifest>(manifests.size());
+      this.brokenLinksByFile = new HashMap<String, HrefManifestEntry>(manifests.size());
       
       // build the required list and maps
-      for (HrefManifest manifest : manifests)
+      for (HrefManifestEntry manifest : manifests)
       {
          String fileName = manifest.getFileName();
          this.brokenFiles.add(fileName);
@@ -125,7 +125,7 @@ public class LinkValidationReport implements Serializable
    {
       List<String> links = null;
       
-      HrefManifest manifest = this.brokenLinksByFile.get(file);
+      HrefManifestEntry manifest = this.brokenLinksByFile.get(file);
       if (manifest != null)
       {
          links = manifest.getHrefs();

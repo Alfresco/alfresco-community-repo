@@ -22,33 +22,49 @@
 *  
 *  
 *  Author  Jon Cox  <jcox@alfresco.com>
-*  File    HrefManifestEntry.java
+*  File    HrefStatusMap.java
 *----------------------------------------------------------------------------*/
 
 package  org.alfresco.linkvalidation;
 
-import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
-import java.util.ArrayList;
-
+import org.alfresco.util.Pair;
+  
 /**
-*  Contains a (possibly filtered) list of the hrefs within a file.
-*  Common uses of this class are to fetch the links in a web page
-*  or just the broken ones (i.e.: response status 400-599).
+*  A synchronized wrapper for the ephemeral cache of href status results.
+*  The key is a url, the value is a pair consisting of the url's status code
+*  and the list of files accessed when the URL is requested, if known.
+*
+*  This class also allows the non-synchronized map it wraps to be extracted. 
 */
-public class HrefManifest 
+public class HrefStatusMap 
 {
-    protected List<HrefManifestEntry> manifest_entries_;
+    Map<  String,  Pair<Integer,List<String>>> status_;
 
-    public  HrefManifest()
-    {
-        manifest_entries_ = new ArrayList<HrefManifestEntry>();
+    public  HrefStatusMap()
+    { 
+        status_ = new HashMap<String,Pair<Integer,List<String>>>();
     }
 
-    public List<HrefManifestEntry>  getManifestEntries() { return manifest_entries_;}
+    public  HrefStatusMap( Map<String,Pair<Integer,List<String>>> status ) 
+    { status_ = status; }
 
-    synchronized void add( HrefManifestEntry entry )
+
+    /**
+    *  Takes the url and the Pair: status code, file dependency list
+    */
+    public synchronized void put( String url, Pair<Integer,List<String>> status)
     {
-        manifest_entries_.add( entry );
+        status_.put( url, status );
     }
+
+    public synchronized  Pair<Integer,List<String>> get( String url)
+    {
+        return status_.get( url );
+    }
+
+    Map<  String,  Pair<Integer,List<String>>>  getStatusMap() { return status_;}
 }
+

@@ -9,13 +9,14 @@
 <head>
 	<title>Browse Spaces and Documents</title>
 	<link rel="stylesheet" type="text/css" href="${url.context}/css/office.css" />
+<!--[if IE 6]>
+   <link rel="stylesheet" type="text/css" href="${url.context}/css/office_ie6.css" />
+<![endif]-->
    <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.1.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/navigation.js"></script>
-	<script type="text/javascript" src="/firebug.js"></script>
 </head>
 <body>
-
 <div id="tabBar">
    <ul>
       <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path?url}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
@@ -156,6 +157,7 @@
       <#else>
             <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','checkout','${child.id}', '');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="Check Out" title="Check Out" /></a>
       </#if>
+            <a href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;w=new&amp;wd=${child.id}"><img src="${url.context}/images/office/new_workflow.gif" style="padding:3px 6px 2px 0px;" alt="Create Workflow..." title="Create Workflow..." /></a>
             <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="Make PDF..." title="Make PDF" /></a>
       <#if !child.isLocked >
             <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','delete','${child.id}', 'Are you sure you want to delete this document?');"><img src="${url.context}/images/office/delete.gif" style="padding:3px 6px 2px 0px;" alt="Delete..." title="Delete" /></a>
@@ -176,13 +178,13 @@
 <div id="documentActionsNavigation">
    <div id="nonStatusText">
       <ul>
-<#if node.isDocument>
+<#if !node.isDocument>
          <li>
             <a href="#" onclick="window.external.saveToAlfresco('${webdavPath}')">
                <img src="${url.context}/images/office/save_to_alfresco.gif" alt="Save to Alfresco" />
                Save to Alfresco
             </a>
-            <br />Allows you to place the current document under Alfresco management.
+            <br />Save the document to the current Space.
          </li>
 </#if>
 <#if args.search?exists>

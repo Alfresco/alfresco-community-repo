@@ -159,10 +159,8 @@ var OfficeMyTasks =
          {
             // Remove any trailing hash
             var href = window.location.href.replace("#", "")
-            // Remove any previous "&st=" string
-            href = href.replace(/[?&]st=([^&$]+)/g, "");
-            // Remove any previous "&w=" string
-            href = href.replace(/[?&]w=([^&$]+)/g, "");
+            // Remove any "st" and "w" parameters
+            href = OfficeAddin.removeParameters(href, "st|w");
             // Optionally add a status string
             if (successMessage != "")
             {
@@ -209,10 +207,8 @@ var OfficeMyTasks =
          {
             // Remove any trailing hash
             var href = window.location.href.replace("#", "")
-            // Remove any previous "&st=" strings
-            href = href.replace(/[?&]st=([^&$]+)/g, "");
-            // Remove any previous "&w=" strings
-            href = href.replace(/[?&]w=([^&$]+)/g, "");
+            // Remove any previous "st", "w" or "wd" parameters
+            href = OfficeAddin.removeParameters(href, "st|w|wd");
             // Optionally add a status string
             if (textResponse != "")
             {

@@ -31,7 +31,7 @@ TABLE, TR, TD {
 ul {
    margin: 0px;
    list-style: none;
-   padding: 2px 0px 0px 24px;
+   padding: 2px 0px 0px 2px;
 }
 
 input.button {
@@ -288,6 +288,9 @@ input.button {
    height: 150px;
    width: 282px;
 }
+#documentActions ul {
+   padding: 2px 0px 0px 24px;
+}
 #documentActions li a {
    font-weight: bold;
    margin: 0px 0px 0px -22px;
@@ -305,6 +308,9 @@ input.button {
    margin: 0px 4px;
    height: 89px;
    width: 282px;
+}
+#documentActionsNavigation ul {
+   padding: 2px 0px 0px 24px;
 }
 #documentActionsNavigation li a {
    font-weight: bold;

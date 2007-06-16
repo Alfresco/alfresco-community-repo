@@ -175,10 +175,8 @@ var OfficeNavigation =
          {
             // Remove any trailing hash
             var href = window.location.href.replace("#", "")
-            // Remove any previous "&st=" strings
-            href = href.replace(/[?&]st=([^&$]+)/g, "");
-            // Remove any previous "&cc=" strings
-            href = href.replace(/[?&]cc=([^&$]+)/g, "");
+            // Remove any "st" and "cc" parameters
+            href = OfficeAddin.removeParameters(href, "st|cc");
             // Optionally add a status string
             if (textResponse != "")
             {

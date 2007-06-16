@@ -1,0 +1,40 @@
+.header {
+   padding: 5px 0px 0px 4px;
+   margin: 0px 0px 0px 0px;
+   height: 16px;
+}
+
+.toggle {
+   margin-top: 0px;
+   position: relative;
+   top: -2px;
+}
+
+.containerBig {
+   margin: 0px 4px 0px 2px;
+}
+.containerMedium {
+   margin: 0px 4px 0px 2px;
+}
+.containerSmall {
+   margin: 0px 4px 0px 2px;
+}
+
+.containerSearchResults {
+   margin: 0px 4px 0px 2px;
+}
+
+#currentSpaceInfo {
+   margin: 0px 4px 0px 2px;
+}
+
+#documentActions {
+   margin: 0px 4px 0px 2px;
+}
+
+#documentActionsNavigation {
+   margin: 0px 4px 0px 2px;
+}
+#documentActionsNavigation ul {
+   padding: 2px 0px 0px 24px;
+}

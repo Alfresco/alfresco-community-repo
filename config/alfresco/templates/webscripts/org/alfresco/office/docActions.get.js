@@ -152,7 +152,6 @@ else  // Non document-based actions
    catch(e)
    {
       resultString = "Action failed due to exception";
-      resultString = e.toString();
    }
 }
 model.resultString = resultString;

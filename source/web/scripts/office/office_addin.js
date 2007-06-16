@@ -3,7 +3,7 @@
  */
 var OfficeAddin = 
 {
-   ANIM_LENGTH: 300,
+   ANIM_LENGTH: 500,
    STATUS_FADE: 10000,
    LIST_DEF_HEIGHT: 204,
    
@@ -18,7 +18,8 @@ var OfficeAddin =
       {
          var objResponse = Json.evaluate(this.queryObject.st);
          var imgSuccess = (objResponse.statusCode ? "action_successful.gif" : "action_failed.gif");
-         OfficeAddin.showStatusText(objResponse.statusString, imgSuccess, true);
+         var colBackground = (objResponse.statusCode ? "#50ff50" : "#ff5050");
+         OfficeAddin.showStatusText(objResponse.statusString, imgSuccess, true, colBackground);
       }
       
       OfficeAddin.makeExternalLinks();
@@ -46,7 +47,7 @@ var OfficeAddin =
       return obj;
    },
 
-   showStatusText: function(statusText, statusImage, fadeOut)
+   showStatusText: function(statusText, statusImage, fadeOut, colBackground)
    {
       var e = $("statusText");
       if (statusImage)
@@ -74,7 +75,8 @@ var OfficeAddin =
                OfficeAddin.hideStatusText.delay(OfficeAddin.STATUS_FADE);
             }
          }
-         fx.start('#ffffcc', '#ffffff');
+         var colBackground = (colBackground == null) ? "#ffffcc" : colBackground;
+         fx.start(colBackground, "#ffffff");
       }
    },
    
@@ -105,8 +107,8 @@ var OfficeAddin =
          {
             // Remove any trailing hash
             var href = window.location.href.replace("#", "")
-            // Remove any previous "&st=" strings
-            href = href.replace(/[?&]st=([^&$]+)/g, "");
+            // Remove any previous "st" parameters
+            href = OfficeAddin.removeParameters(href, "st");
             // Optionally add a status string
             if (textResponse != "")
             {
@@ -134,6 +136,27 @@ var OfficeAddin =
       }
    
       return contextPath;
+   },
+   
+   /* Removes params "param1|param2...|paramN" from a URL */
+   removeParameters: function(theUrl, theParams)
+   {
+      var regexp = new RegExp("[?&](" + theParams + ")=([^&$]+)", "g");
+      var url = theUrl.replace(regexp, "");
+
+      // Check that an href still contains a "?" after removing parameters
+      var pos = url.indexOf("?");
+      if (pos == -1)
+      {
+         // None found - do we have an "&" ?
+         pos = url.indexOf("&");
+         if (pos != -1)
+         {
+            // Yes - so replace the first one with a "?"
+            url = url.substring(0, pos) + "?" + url.substring(pos+1);
+         }
+      }
+      return url;
    }
 };
 

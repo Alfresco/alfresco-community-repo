@@ -1,23 +1,29 @@
 <#assign doc_actions="${url.serviceContext}/office/docActions">
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
-<#if args.n?exists><#assign node=args.n><#else><#assign node=companyhome></#if>
-<#-- resolve the path (from Company Home) into a node -->
-<#if path?starts_with("/Company Home")>
-   <#if path?length=13>
-      <#assign d=companyhome>
-   <#elseif companyhome.childByNamePath[args.p[14..]]?exists>
-      <#assign d=companyhome.childByNamePath[args.p[14..]]>
+<#if docWorkflow?exists>
+   <#assign d=docWorkflow>
+<#else>
+   <#-- resolve the path (from Company Home) into a node -->
+   <#if path?starts_with("/Company Home")>
+      <#if path?length=13>
+         <#assign d=companyhome>
+      <#elseif companyhome.childByNamePath[args.p[14..]]?exists>
+         <#assign d=companyhome.childByNamePath[args.p[14..]]>
+      <#else>
+         <#assign d=companyhome>
+      </#if>
    <#else>
       <#assign d=companyhome>
    </#if>
-<#else>
-   <#assign d=companyhome>
 </#if>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
 	<title>My Tasks</title>
 	<link rel="stylesheet" type="text/css" href="${url.context}/css/office.css" />
+<!--[if IE 6]>
+   <link rel="stylesheet" type="text/css" href="${url.context}/css/office_ie6.css" />
+<![endif]-->
    <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.1.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/ajax/autocompleter.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/ajax/date_picker.js"></script>
@@ -29,7 +35,7 @@
 <div id="tabBar">
    <ul>
       <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path?url}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${node.id}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
+      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${d.id}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
       <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path?url}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
       <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path?url}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
       <li id="current"><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path?url}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>

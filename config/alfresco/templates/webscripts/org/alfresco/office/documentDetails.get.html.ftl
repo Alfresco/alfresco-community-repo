@@ -17,6 +17,9 @@
 <head>
    <title>Document Details</title>
    <link rel="stylesheet" type="text/css" href="${url.context}/css/office.css" />
+<!--[if IE 6]>
+   <link rel="stylesheet" type="text/css" href="${url.context}/css/office_ie6.css" />
+<![endif]-->
    <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.1.js"></script>
    <script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
 </head>
@@ -142,10 +145,10 @@
 
 <div id="documentActions">
    <div id="nonStatusText">
-<#if d.isDocument>
       <ul>
-         <#if d.isLocked >
-         <#elseif hasAspect(d, "cm:workingcopy") == 1>
+<#if d.isDocument>
+   <#if d.isLocked >
+   <#elseif hasAspect(d, "cm:workingcopy") == 1>
          <li>
             <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','checkin','${d.id}', '');">
                <img src="${url.context}/images/office/checkin.gif" alt="Check In">
@@ -153,7 +156,7 @@
             </a>
             <br />Check in the current document.
          </li>
-         <#else>
+   <#else>
          <li>
             <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','checkout','${d.id}', '');">
                <img src="${url.context}/images/office/checkout.gif" alt="Check Out">
@@ -161,7 +164,7 @@
             </a>
             <br />Check out the current document to a working copy.
          </li>
-         </#if>
+   </#if>
          <li>
             <a href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;w=new">
                <img src="${url.context}/images/office/new_workflow.gif" alt="Start Workflow" />
@@ -169,6 +172,7 @@
             </a>
             <br />Start Advanced Workflow for the current document.
          </li>
+   <#if d.name?ends_with(".doc")>
          <li>
             <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','makepdf','${d.id}', '');">
                <img src="${url.context}/images/office/makepdf.gif" alt="Transform to PDF" />
@@ -176,6 +180,7 @@
             </a>
             <br />Transform the current document to Adobe PDF format.
          </li>
+    </#if>
          <li>
             <a href="${url.context}/navigate/showOfficeAddin/workspace/SpacesStore/${d.id}?ticket=${session.ticket}" rel="_blank">
                <img src="${url.context}/images/office/document_details.gif" alt="Open Full Details" />
@@ -183,11 +188,16 @@
             </a>
             <br />Open the document details in the Alfresco Web Client.
          </li>
-      </ul>
-
 <#else>
-      No actions available.
+         <li>
+            <a title="Save to Alfresco" href="${url.serviceContext}/office/navigation?p=${path?url}">
+               <img src="${url.context}/images/office/save_to_alfresco.gif" alt="Save to Alfresco" />
+               Save to Alfresco
+            </a>
+            <br />Allows you to place the current document under Alfresco management.
+         </li>
 </#if>
+      </ul>
    </div>
    
    <div id="statusText"></div>

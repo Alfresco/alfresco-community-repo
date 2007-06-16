@@ -18,6 +18,9 @@
 <head>
 	<title>My Alfresco</title>
 	<link rel="stylesheet" type="text/css" href="${url.context}/css/office.css" />
+<!--[if IE 6]>
+   <link rel="stylesheet" type="text/css" href="${url.context}/css/office_ie6.css" />
+<![endif]-->
    <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.1.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/my_alfresco.js"></script>
@@ -59,7 +62,10 @@
          </#if>
             Modified: ${child.properties.modified?datetime} (${(child.size / 1024)?int}Kb)<br/>
             <a href="#" onclick="OfficeAddin.runAction('checkin','${child.id}', '');"><img src="${url.context}/images/office/checkin.gif" style="padding:3px 6px 2px 0px;" alt="Check In" title="Check In" /></a>
+            <a href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;w=new&amp;wd=${child.id}"><img src="${url.context}/images/office/new_workflow.gif" style="padding:3px 6px 2px 0px;" alt="Create Workflow..." title="Create Workflow..." /></a>
+         <#if !child.name?ends_with(".pdf")>
             <a href="#" onclick="OfficeAddin.runAction('makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="Make PDF..." title="Make PDF" /></a>
+         </#if>
          </td>
       </tr>
       </#if>

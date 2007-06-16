@@ -37,8 +37,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.transaction.NotSupportedException;
-import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.config.JNDIConstants;
@@ -57,7 +55,6 @@ import org.alfresco.repo.search.IndexMode;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.impl.lucene.AVMLuceneIndexer;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
-import org.alfresco.repo.search.impl.lucene.analysis.NumericEncoder;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
@@ -261,6 +258,11 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             DeploymentService depService = (DeploymentService) fContext.getBean("DeploymentService");
             setupBasicTree();
+            fService.addAspect("main:/a", ContentModel.ASPECT_REFERENCEABLE);
+            fService.addAspect("main:/a/b", ContentModel.ASPECT_REFERENCEABLE);
+            fService.addAspect("main:/a/b/c", ContentModel.ASPECT_REFERENCEABLE);
+            fService.addAspect("main:/a/b/c/foo", ContentModel.ASPECT_REFERENCEABLE);
+            fService.addAspect("main:/a/b/c/bar", ContentModel.ASPECT_REFERENCEABLE);
             // TestDeploymentCallback callback = new TestDeploymentCallback();
             fService.createStore("target");
             DeploymentReport report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin",

@@ -490,6 +490,10 @@ public class DeploymentServiceImpl implements DeploymentService
         List<QName> aspects = fAVMService.getAspects(version, src.getPath());
         for (QName aspect : aspects)
         {
+            if (remote.hasAspect(-1, dst.getPath(), aspect))
+            {
+                continue;
+            }
             remote.addAspect(dst.getPath(), aspect);
         }
         remote.setGuid(dst.getPath(), src.getGuid());

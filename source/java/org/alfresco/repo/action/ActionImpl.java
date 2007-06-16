@@ -142,6 +142,17 @@ public class ActionImpl extends ParameterizedItemImpl
         this.actionDefinitionName = actionDefinitionName;
     }
     
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Action")
+          .append("[ id=").append(getId())
+          .append(", node=").append(nodeRef)
+          .append(" ]");
+        return sb.toString();
+    }
+
     /**
      * @see org.alfresco.service.cmr.action.Action#getTitle()
      */

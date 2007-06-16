@@ -27,6 +27,7 @@ package org.alfresco.repo.action;
 import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.rule.RuleServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -116,6 +117,22 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
                 actionChain,
                 executedRules);
         threadPoolExecutor.execute(runnable);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            // get the stack trace
+            Exception e = new Exception();
+            e.fillInStackTrace();
+            StackTraceElement[] trace = e.getStackTrace();
+            StringBuilder sb = new StringBuilder();
+            sb.append("\n")
+              .append("Placed action on execution queue: \n")
+              .append("   Action:     " + action);
+            String msg = sb.toString();
+            sb = new StringBuilder();
+            StackTraceUtil.buildStackTrace(msg, trace, sb, -1);
+            logger.debug(sb);
+        }
     }
 
     /**

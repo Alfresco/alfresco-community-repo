@@ -27,6 +27,7 @@ package org.alfresco.repo.rule;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,8 +61,7 @@ import org.alfresco.repo.dictionary.M2Aspect;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
@@ -160,15 +160,15 @@ public class RuleServiceCoverageTest extends TestCase
         
         //authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
         //authenticationComponent.setSystemUserAsCurrentUser();
-        TransactionWork<Object> setUserWork = new TransactionWork<Object>()
+        RetryingTransactionCallback<Object> setUserCallback = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 authenticationComponent.setCurrentUser("admin");
                 return null;
             }
         };
-        TransactionUtil.executeInUserTransaction(transactionService, setUserWork);
+        transactionService.getRetryingTransactionHelper().doInTransaction(setUserCallback);
             
         this.testStoreRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         this.rootNodeRef = this.nodeService.getRootNode(this.testStoreRef);
@@ -218,7 +218,7 @@ public class RuleServiceCoverageTest extends TestCase
         genCatProp.setIndexed(true);
         genCatProp.setIndexedAtomically(true);
         genCatProp.setMandatory(true);
-        genCatProp.setMultiValued(false);
+        genCatProp.setMultiValued(true);
         genCatProp.setStoredInIndex(true);
         genCatProp.setTokenisedInIndex(true);
         genCatProp.setType("d:" + DataTypeDefinition.CATEGORY.getLocalName());        
@@ -246,11 +246,10 @@ public class RuleServiceCoverageTest extends TestCase
      */
     public void testAsyncRuleExecution() 
     {        
-        final NodeRef newNodeRef = TransactionUtil.executeInUserTransaction(
-                this.transactionService,
-                new TransactionUtil.TransactionWork<NodeRef>()
+        final NodeRef newNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<NodeRef>()
                 {
-                    public NodeRef doWork()
+                    public NodeRef execute()
                     {
                         RuleServiceCoverageTest.this.nodeService.addAspect(
                                 RuleServiceCoverageTest.this.nodeRef, 
@@ -677,9 +676,11 @@ public class RuleServiceCoverageTest extends TestCase
         addContentToNode(newNodeRef2);
         
         // Check that the category value has been set
-        NodeRef setValue = (NodeRef)this.nodeService.getProperty(newNodeRef2, CAT_PROP_QNAME);
+        // It has been declared as a multi-value property, so we expect that here
+        Collection<NodeRef> setValue = (Collection<NodeRef>) this.nodeService.getProperty(newNodeRef2, CAT_PROP_QNAME);
         assertNotNull(setValue);
-        assertEquals(this.catROne, setValue);
+        assertEquals(1, setValue.size());
+        assertEquals(this.catROne, setValue.toArray()[0]);
 }
         
     
@@ -1078,11 +1079,10 @@ public class RuleServiceCoverageTest extends TestCase
         
         this.ruleService.saveRule(this.nodeRef, rule);
          
-        List<NodeRef> list = TransactionUtil.executeInUserTransaction(
-        		this.transactionService,
-        		new TransactionUtil.TransactionWork<List<NodeRef>>()
+        List<NodeRef> list = transactionService.getRetryingTransactionHelper().doInTransaction(
+        		new RetryingTransactionCallback<List<NodeRef>>()
         		{
-					public List<NodeRef> doWork()
+					public List<NodeRef> execute()
 					{
 						// Create a new node and check-it out
 				        NodeRef newNodeRef = RuleServiceCoverageTest.this.nodeService.createNode(
@@ -1459,9 +1459,9 @@ public class RuleServiceCoverageTest extends TestCase
         this.nodeService.setProperty(nodeRef2, ContentModel.PROP_NAME, "testName2");
         assertTrue(this.nodeService.hasAspect(nodeRef2, ContentModel.ASPECT_VERSIONABLE));
         
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
                 props.put(ContentModel.PROP_NAME, "testName");

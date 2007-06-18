@@ -68,6 +68,8 @@ import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.avm.deploy.DeploymentReport;
 import org.alfresco.service.cmr.avm.deploy.DeploymentService;
+import org.alfresco.service.cmr.avm.locking.AVMLockingException;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -83,6 +85,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -98,6 +101,51 @@ import org.alfresco.util.Pair;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
+    /**
+     * Minimal testing of Locking Aware service.
+     */
+    public void testLockingAwareService()
+    {
+        AVMService oldService = fService;
+        fService = (AVMService)fContext.getBean("AVMLockingAwareService");
+        AVMLockingService lockingService = (AVMLockingService)fContext.getBean("AVMLockingService");
+        AuthenticationService authService = (AuthenticationService)fContext.getBean("AuthenticationService");
+        try
+        {
+            lockingService.addWebProject("main");
+            fService.setStoreProperty("main", QName.createQName(null, ".dns.main"), 
+                    new PropertyValue(QName.createQName(null, "silly"), "Nothing."));
+            fService.createStore("test");
+            fService.setStoreProperty("test", QName.createQName(null, ".dns.test.main"), 
+                    new PropertyValue(QName.createQName(null, "silly"), "Nothing."));
+            setupBasicTree0();
+            authService.authenticateAsGuest();
+            assertEquals(2, lockingService.getUsersLocks("admin").size());
+            List<AVMDifference> diffs = fSyncService.compare(-1, "main:/", -1, "test:/", null);
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            try
+            {
+                fService.getFileOutputStream("test:/a/b/c/foo").close();
+                fail("Shouldn't be able to lock.");
+            }
+            catch (AVMLockingException ale)
+            {
+                // Do nothing.  Success.
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+        finally
+        {
+            fService = oldService;
+            lockingService.removeWebProject("main");
+            authService.authenticate("admin", "admin".toCharArray());
+        }
+    }
+    
     /**
      * Test async indexing.
      * @throws Exception

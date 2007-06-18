@@ -80,7 +80,7 @@ public class AVMServiceTestBase extends TestCase
      */
     private long fStartTime;
 
-    protected TransactionService fTransactionService;
+    protected static TransactionService fTransactionService;
 
     protected static IndexerAndSearcher fIndexerAndSearcher;
     
@@ -224,7 +224,7 @@ public class AVMServiceTestBase extends TestCase
     /**
      * Setup a basic tree.
      */
-    protected void setupBasicTree()
+    protected void setupBasicTree0()
         throws IOException
     {
         fService.createDirectory("main:/", "a");
@@ -248,10 +248,13 @@ public class AVMServiceTestBase extends TestCase
         writer.putContent("I am main:/a/b/c/bar");
        
         fService.createSnapshot("main", null, null);
-        
-        
+    }
+     
+    protected void setupBasicTree()
+        throws IOException
+    {
+        setupBasicTree0();
         runQueriesAgainstBasicTree("main");
-        
     }
 
     protected void runQueriesAgainstBasicTree(String store)

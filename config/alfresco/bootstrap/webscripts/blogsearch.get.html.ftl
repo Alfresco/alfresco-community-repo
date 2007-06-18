@@ -1,7 +1,7 @@
 <html>
   <body>
     <img src="${url.context}/images/logo/AlfrescoLogo32.png" alt="Alfresco" />
-    Category search: ${url.extension}
+    Blog query: ${args.q}
     <br>
     <table>
 <#list resultset as node>

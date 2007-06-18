@@ -27,7 +27,7 @@ package org.alfresco.web.app.servlet;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.SocketException;
-import java.text.MessageFormat;
+import java.util.Date;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +39,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.util.ISO8601DateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -47,9 +48,11 @@ import org.apache.commons.logging.LogFactory;
  * <p>
  * Requests can be of the form:<br/>
  * <pre>
- * /alfresco/downloadDirect?contentUrl=some-url?ticket=auth
- *    <b>some-url</b> is a ContentStore-specific URL 
- *    <b>auth</b> is a valid authentication token for an admin user 
+ * /alfresco/downloadDirect?contentUrl=some-url?ticket=auth?infoOnly=value
+ *    <b>contentUrl</b> is a ContentStore-specific URL 
+ *    <b>ticket</b> is a valid authentication token for an admin user 
+ *    <b>infoOnly</b> is set to true to leave off the binary stream and just send
+ *                    the data about the content. 
  * </pre>
  * This serlet is intended to be accessed to retrieve the binary content from
  * the content stores.  If you wish to retrieve content from a client, use
@@ -59,6 +62,11 @@ import org.apache.commons.logging.LogFactory;
  * <ul>
  *   <li><b>Contet not found:</b> 204 NO CONTENT</li>
  *   <li><b>Access denied:</b>    403 FORBIDDEN</li>
+ * </ul>
+ * The following header values are set:
+ * <ul>
+ *   <li><b>alfresco.dr.size:</b> The content size</li>
+ *   <li><b>alfresco.dr.lastModified:</b> The last modified date</li>
  * </ul>
  * 
  * @since 2.1
@@ -70,11 +78,14 @@ public class DownloadRawContentServlet extends BaseServlet
 
    private static Log logger = LogFactory.getLog(DownloadRawContentServlet.class);
     
-   private static final String DEFAULT_URL  = "/downloadDirect?contentUrl={0}?ticket=?";
    private static final String DEFAULT_MIMETYPE = MimetypeMap.MIMETYPE_BINARY;
    private static final String DEFAULT_ENCODING = "utf-8";
 
    private static final String ARG_CONTENT_URL = "contentUrl";
+   private static final String ARG_INFO_ONLY = "infoOnly";
+   
+   private static final String HEADER_SIZE = "alfresco.dr.size";
+   private static final String HEADER_LAST_MODIFIED = "alfresco.dr.lastModified";
    
    protected void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException
    {
@@ -111,6 +122,8 @@ public class DownloadRawContentServlet extends BaseServlet
       {
          throw new IllegalArgumentException("Download URL did not contain parameter '" + ARG_CONTENT_URL + "':" + uri); 
       }
+      String infoOnlyStr = req.getParameter(ARG_INFO_ONLY);
+      boolean infoOnly = (infoOnlyStr == null) ? false : Boolean.parseBoolean(infoOnlyStr);
 
       ServiceRegistry serviceRegistry = getServiceRegistry(getServletContext());
       ContentService contentService = serviceRegistry.getContentService();
@@ -141,50 +154,44 @@ public class DownloadRawContentServlet extends BaseServlet
          return;
       }
       
-      // Fill repsonse details
+      // Fill response details
       res.setContentType(DEFAULT_MIMETYPE);
       res.setCharacterEncoding(DEFAULT_ENCODING);
       
-      // Pass the stream to the response
-      try
+      long readerSize = reader.getSize();
+      Date readerLastModified = new Date(reader.getLastModified());
+      // Set the content info
+      res.setIntHeader(HEADER_SIZE, (int) readerSize);
+      res.setHeader(HEADER_LAST_MODIFIED, ISO8601DateFormat.format(readerLastModified));
+      
+      // Pass the stream to the response, unless only the content info was requested
+      if (!infoOnly)
       {
-         OutputStream clientOs = res.getOutputStream();
-         reader.getContent( clientOs );                     // Streams closed for us
-      }
-      catch (SocketException e1)
-      {
-         // Not a problem
-         if (logger.isDebugEnabled())
+         try
          {
-            logger.debug(
-                  "Client aborted stream read:\n" +
-                  "   Content URL: " + contentUrl);
+            OutputStream clientOs = res.getOutputStream();
+            reader.getContent( clientOs );                     // Streams closed for us
+         }
+         catch (SocketException e1)
+         {
+            // Not a problem
+            if (logger.isDebugEnabled())
+            {
+               logger.debug(
+                     "Client aborted stream read:\n" +
+                     "   Content URL: " + contentUrl);
+            }
+         }
+         catch (ContentIOException e2)
+         {
+            // Not a problem
+            if (logger.isDebugEnabled())
+            {
+               logger.debug(
+                     "Client aborted stream read:\n" +
+                     "   Content URL: " + contentUrl);
+            }
          }
       }
-      catch (ContentIOException e2)
-      {
-         // Not a problem
-         if (logger.isDebugEnabled())
-         {
-            logger.debug(
-                  "Client aborted stream read:\n" +
-                  "   Content URL: " + contentUrl);
-         }
-      }
-   }
-   
-   /**
-    * Helper to generate a URL based on the ContentStore URL and ticket.
-    * 
-    * @param contentUrl    the content URL - never null
-    * @param ticket        the authentication ticket
-    * 
-    * @return              Returns the URL with which to access the servlet
-    */
-   public final static String generateURL(String contentUrl, String ticket)
-   {
-      return MessageFormat.format(
-            DEFAULT_URL,
-            contentUrl, ticket);
    }
 }

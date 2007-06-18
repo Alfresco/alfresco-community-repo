@@ -333,6 +333,12 @@
 	    <property name="retryingTransactionHelper">
 	        <ref bean="retryingTransactionHelper"/>
 	    </property>
+	    <property name="nodeService">
+	        <ref bean="nodeService"/>
+	    </property>
+	    <property name="searchService">
+	        <ref bean="searchService"/>
+	    </property>
 	</bean>
 
 </beans>

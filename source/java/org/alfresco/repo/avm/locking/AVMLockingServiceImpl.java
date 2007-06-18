@@ -30,10 +30,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.repo.attributes.ListAttributeValue;
 import org.alfresco.repo.attributes.MapAttributeValue;
 import org.alfresco.repo.attributes.StringAttributeValue;
+import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.attributes.AttrQueryEquals;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -42,6 +44,12 @@ import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
@@ -60,6 +68,11 @@ public class AVMLockingServiceImpl implements AVMLockingService
     public static final String STORES = "stores";
     
     /**
+     * SearchService for access to web project properties.
+     */
+    private SearchService fSearchService;
+    
+    /**
      * AttributeService reference.
      */
     private AttributeService fAttributeService;
@@ -73,6 +86,11 @@ public class AVMLockingServiceImpl implements AVMLockingService
      * PersonService reference.
      */
     private PersonService fPersonService;
+
+    /**
+     * The NodeService.
+     */
+    private NodeService fNodeService;
     
     /**
      * Transaction Helper reference.
@@ -117,6 +135,16 @@ public class AVMLockingServiceImpl implements AVMLockingService
     public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
     {
         fRetryingTransactionHelper = helper;
+    }
+    
+    public void setSearchService(SearchService service)
+    {
+        fSearchService = service;
+    }
+
+    public void setNodeService(NodeService service)
+    {
+        fNodeService = service;
     }
     
     public void init()
@@ -327,7 +355,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
         keys.add(webProject);
         if (fAttributeService.getAttribute(keys) != null)
         {
-            throw new AVMExistsException("Web Project Exists: " + webProject);
+            return;
         }
         keys.remove(2);
         fAttributeService.setAttribute(keys, webProject, new MapAttributeValue());
@@ -515,6 +543,23 @@ public class AVMLockingServiceImpl implements AVMLockingService
         if (fAuthorityService.isAdminAuthority(user))
         {
             return true;
+        }
+        StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
+        ResultSet results = fSearchService.query(storeRef, "lucene", "@wca\\:avmstore:\"" + webProject + "\" +TYPE:\"wca:webfolder\"");
+        System.out.println(results.getNodeRefs());
+        if (results.getNodeRefs().size() == 1)
+        {
+            List<ChildAssociationRef> children = fNodeService.getChildAssocs(results.getNodeRefs().get(0));
+            for (ChildAssociationRef child : children)
+            {
+                NodeRef childRef = child.getChildRef();
+                if (fNodeService.getType(childRef).equals(WCMAppModel.TYPE_WEBUSER) &&
+                    fNodeService.getProperty(childRef, WCMAppModel.PROP_WEBUSERNAME).equals(user) &&
+                    fNodeService.getProperty(childRef, WCMAppModel.PROP_WEBUSERROLE).equals("ContentManager"))
+                {
+                    return true;
+                }
+            }
         }
         String[] storePath = avmPath.split(":");
         if (storePath.length != 2)

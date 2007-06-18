@@ -89,7 +89,7 @@ public interface AVMLockingService
     public List<AVMLock> getUsersLocks(String user);
     
     /**
-     * Add a web project to the locking tables.
+     * Add a web project to the locking tables if it doesn't already exist.
      * @param webProject The web project name.
      */
     public void addWebProject(String webProject);

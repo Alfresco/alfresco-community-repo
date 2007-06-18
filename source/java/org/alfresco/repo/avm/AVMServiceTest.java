@@ -112,7 +112,6 @@ public class AVMServiceTest extends AVMServiceTestBase
         AuthenticationService authService = (AuthenticationService)fContext.getBean("AuthenticationService");
         try
         {
-            lockingService.addWebProject("main");
             fService.setStoreProperty("main", QName.createQName(null, ".dns.main"), 
                     new PropertyValue(QName.createQName(null, "silly"), "Nothing."));
             fService.createStore("test");

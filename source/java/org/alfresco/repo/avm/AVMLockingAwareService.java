@@ -825,6 +825,7 @@ public class AVMLockingAwareService implements AVMService
             {
                 throw new AVMLockingException(userName + " does not have access to " + path);
             }
+            fLockingService.addWebProject(webProject);
             if (fLockingService.getLock(webProject, storePath[1]) == null)
             {
                 List<String> owners = new ArrayList<String>();

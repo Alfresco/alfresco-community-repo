@@ -26,15 +26,17 @@ if (behaviour.args == null)
 }
 else
 {
-    if (behaviour.args.length == 1)    
+    if (behaviour.args.length == 2)    
     {
         var childAssoc = behaviour.args[0];
+        var isNewNode = behaviour.args[1];
         logger.log("Assoc type: " + childAssoc.type);
         logger.log("Assoc name: " + childAssoc.name);
         logger.log("Parent node: " + childAssoc.parent.id);
         logger.log("Child node: " + childAssoc.child.id);
         logger.log("Is primary: " + childAssoc.isPrimary());
         logger.log("Nth sibling: " + childAssoc.nthSibling);
+        logger.log("Is new node: " + isNewNode);
     }
     else
     {
@@ -45,7 +47,10 @@ else
 
 if (scriptFailed == false)
 {
-    childAssoc.child.addAspect("cm:versionable");
-    childAssoc.child.save();
+    if (isNewNode == true)
+    {
+        childAssoc.child.addAspect("cm:versionable");
+        childAssoc.child.save();
+    }
 }
 

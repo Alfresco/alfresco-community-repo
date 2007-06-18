@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+  <xs:element name="referenced-string" type="xs:normalizedString"/>
+  <xs:element name="repeat-constraints-test">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="zero-to-one" type="xs:normalizedString" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="one-to-one" type="xs:normalizedString" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="one-to-inf" type="xs:normalizedString" minOccurs="1" maxOccurs="unbounded"/>
+        <xs:element name="zero-to-inf" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="one-to-five" type="xs:normalizedString" minOccurs="1" maxOccurs="5"/>
+        <xs:element name="three-to-five" type="xs:normalizedString" minOccurs="3" maxOccurs="5"/>
+        <xs:element name="zero-to-five" type="xs:normalizedString" minOccurs="0" maxOccurs="5"/>
+        <xs:element ref="referenced-string" minOccurs="1" maxOccurs="unbounded"/>
+        <xs:element name="nested-outer-zero-to-inf" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="nested-zero-to-inf-inner-zero-to-inf" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:element name="nested-zero-to-inf-inner-one-to-inf" type="xs:normalizedString" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="nested-outer-one-to-inf" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="nested-one-to-inf-inner-zero-to-inf" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:element name="nested-one-to-inf-inner-one-to-inf" type="xs:normalizedString" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="nested-outer-three-to-five" minOccurs="3" maxOccurs="5">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="nested-three-to-five-inner-zero-to-inf" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:element name="nested-three-to-five-inner-one-to-inf" type="xs:normalizedString" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="nested-outer-outer-three-to-inf" minOccurs="3" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="nested-outer-outer-string" type="xs:normalizedString" minOccurs="1" maxOccurs="1"/>
+              <xs:element name="nested-outer-inner-five-to-inf" minOccurs="5" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="nested-outer-inner-string" type="xs:normalizedString" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="nested-inner-inner-seven-to-inf" type="xs:normalizedString" minOccurs="7" maxOccurs="unbounded"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

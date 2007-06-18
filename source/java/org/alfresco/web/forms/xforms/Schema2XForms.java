@@ -272,7 +272,8 @@ public class Schema2XForms
                                                 formSection,
                                                 schema,
                                                 rootElementDecl,
-                                                "/" + getElementName(rootElementDecl, xformsDocument),
+                                                "/" + this.getElementName(rootElementDecl, xformsDocument),
+                                                new SchemaUtil.Occurance(1, 1),
                                                 resourceBundle);
       if (rootGroup.getNodeName() != NamespaceConstants.XFORMS_PREFIX + ":group")
       {
@@ -818,27 +819,6 @@ public class Schema2XForms
       return result;
    }
 
-   private Element addAnyType(final Document xformsDocument,
-                              final Element modelSection,
-                              final Element formSection,
-                              final XSModel schema,
-                              final XSTypeDefinition controlType,
-                              final XSElementDeclaration owner,
-                              final String pathToRoot,
-                              final ResourceBundle resourceBundle)
-   {
-      return this.addSimpleType(xformsDocument,
-                                modelSection,
-                                formSection,
-                                schema,
-                                controlType,
-                                owner.getName(),
-                                owner,
-                                pathToRoot,
-                                SchemaUtil.getOccurance(owner),
-                                resourceBundle);
-   }
-
    private void addAttributeSet(final Document xformsDocument,
                                 final Element modelSection,
                                 final Element defaultInstanceElement,
@@ -973,6 +953,7 @@ public class Schema2XForms
                                   final XSComplexTypeDefinition controlType,
                                   final XSElementDeclaration owner,
                                   String pathToRoot,
+                                  final SchemaUtil.Occurance occurs,
                                   boolean relative,
                                   final boolean checkIfExtension,
                                   final ResourceBundle resourceBundle)
@@ -1000,13 +981,13 @@ public class Schema2XForms
                                                     formSection,
                                                     owner,
                                                     resourceBundle);
-      final SchemaUtil.Occurance o = SchemaUtil.getOccurance(owner);
+//      final SchemaUtil.Occurance o = SchemaUtil.getOccurance(owner);
       final Element repeatSection = this.addRepeatIfNecessary(xformsDocument,
                                                               modelSection,
                                                               groupElement,
                                                               controlType,
-                                                              o,
-                                                              pathToRoot);
+                                                              pathToRoot,
+                                                              occurs);
       if (repeatSection != groupElement)
       {
          groupElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
@@ -1042,9 +1023,11 @@ public class Schema2XForms
                                   modelSection,
                                   repeatSection,
                                   schema,
-                                  (XSSimpleTypeDefinition) base,
+                                  (XSSimpleTypeDefinition)base,
+                                  owner.getName(),
                                   owner,
                                   pathToRoot,
+                                  occurs,
                                   resourceBundle);
             }
             else
@@ -1132,6 +1115,7 @@ public class Schema2XForms
                               final XSModel schema,
                               final XSElementDeclaration elementDecl,
                               final String pathToRoot,
+                              final SchemaUtil.Occurance occurs,
                               final ResourceBundle resourceBundle)
       throws FormBuilderException
    {
@@ -1158,22 +1142,26 @@ public class Schema2XForms
                                    formSection,
                                    schema,
                                    (XSSimpleTypeDefinition) controlType,
+                                   elementDecl.getName(),
                                    elementDecl,
                                    pathToRoot,
+                                   occurs,
                                    resourceBundle);
       }
 
       if (controlType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE &&
           "anyType".equals(controlType.getName()))
       {
-         return this.addAnyType(xformsDocument,
-                                modelSection,
-                                formSection,
-                                schema,
-                                (XSComplexTypeDefinition)controlType,
-                                elementDecl,
-                                pathToRoot,
-                                resourceBundle);
+         return this.addSimpleType(xformsDocument,
+                                   modelSection,
+                                   formSection,
+                                   schema,
+                                   (XSComplexTypeDefinition)controlType,
+                                   elementDecl.getName(),
+                                   elementDecl,
+                                   pathToRoot,
+                                   occurs,
+                                   resourceBundle);
       }
 
       if (controlType.getTypeCategory() != XSTypeDefinition.COMPLEX_TYPE)
@@ -1237,22 +1225,21 @@ public class Schema2XForms
 
       if (!relative)
       {
-         LOGGER.debug("addElement: bind is not relative for "
-                      + elementDecl.getName());
+         LOGGER.debug("addElement: bind is not relative for " + elementDecl.getName());
       }
       else
       {
-         final SchemaUtil.Occurance o = SchemaUtil.getOccurance(elementDecl);
+//         final SchemaUtil.Occurance occurs = SchemaUtil.getOccurance(elementDecl);
          //create the bind in case it is a repeat
          LOGGER.debug("Adding empty bind for control " + controlType +
                       " type " + typeName + 
                       " nodeset " + pathToRoot +
-                      " occurs " + o);
+                      " occurs " + occurs);
 
          // create the <xforms:bind> element and add it to the model.
          final Element bindElement = 
             this.createBind(xformsDocument, 
-                            pathToRoot + (o.isRepeated() ? "[position() != last()]" : ""));
+                            pathToRoot + (occurs.isRepeated() ? "[position() != last()]" : ""));
          final String bindId = bindElement.getAttributeNS(null, "id");
 
          modelSection.appendChild(bindElement);
@@ -1260,7 +1247,7 @@ public class Schema2XForms
                                schema,
                                controlType,
                                null,
-                               o);
+                               occurs);
       }
       return this.addComplexType(xformsDocument,
                                  modelSection,
@@ -1270,6 +1257,7 @@ public class Schema2XForms
                                  (XSComplexTypeDefinition)controlType,
                                  elementDecl,
                                  pathToRoot,
+                                 occurs,
                                  true,
                                  false,
                                  resourceBundle);
@@ -1343,6 +1331,7 @@ public class Schema2XForms
                                                                (XSComplexTypeDefinition)controlType,
                                                                elementDecl,
                                                                pathToRoot,
+                                                               SchemaUtil.getOccurance(elementDecl),
                                                                true,
                                                                false,
                                                                resourceBundle);
@@ -1390,6 +1379,7 @@ public class Schema2XForms
                                                           (XSComplexTypeDefinition) type,
                                                           elementDecl,
                                                           pathToRoot,
+                                                          SchemaUtil.getOccurance(elementDecl),
                                                           true,
                                                           true,
                                                           resourceBundle);
@@ -1464,7 +1454,7 @@ public class Schema2XForms
                          final XSComplexTypeDefinition controlType,
                          final XSElementDeclaration owner,
                          final String pathToRoot,
-                         final SchemaUtil.Occurance o,
+                         final SchemaUtil.Occurance occurs,
                          final boolean checkIfExtension,
                          final ResourceBundle resourceBundle)
       throws FormBuilderException
@@ -1478,8 +1468,8 @@ public class Schema2XForms
                                                               modelSection,
                                                               formSection,
                                                               owner.getTypeDefinition(),
-                                                              o,
-                                                              pathToRoot);
+                                                              pathToRoot,
+                                                              occurs);
 
       if (LOGGER.isDebugEnabled())
       {
@@ -1492,16 +1482,15 @@ public class Schema2XForms
       {
          final XSParticle currentNode = (XSParticle)particles.item(counter);
          XSTerm term = currentNode.getTerm();
-
+         final SchemaUtil.Occurance childOccurs = new SchemaUtil.Occurance(currentNode);
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug("	: next term = " + term.getName());
+            LOGGER.debug("	: next term = " + term.getName() +
+                         " occurs = " + childOccurs);
          }
 
-         final SchemaUtil.Occurance childOccurs = new SchemaUtil.Occurance(currentNode);
          if (term instanceof XSModelGroup)
          {
-
             if (LOGGER.isDebugEnabled())
             {
                LOGGER.debug("	term is a group");
@@ -1590,6 +1579,7 @@ public class Schema2XForms
                                          schema,
                                          element,
                                          pathToRoot,
+                                         childOccurs,
                                          resourceBundle);
                }
                else
@@ -1610,6 +1600,7 @@ public class Schema2XForms
                                       schema,
                                       element,
                                       pathToRoot,
+                                      childOccurs,
                                       resourceBundle);
             }
          }
@@ -1634,9 +1625,11 @@ public class Schema2XForms
                                   final XSModel schema,
                                   final XSElementDeclaration element,
                                   final String pathToRoot,
+                                  final SchemaUtil.Occurance occurs,
                                   final ResourceBundle resourceBundle)
       throws FormBuilderException   
    {
+      LOGGER.debug("addElement to group " + element + " at "  + pathToRoot);
       //add it normally
       final String elementName = this.getElementName(element, xformsDocument);
       final String path = (pathToRoot.length() == 0
@@ -1657,24 +1650,25 @@ public class Schema2XForms
                       schema,
                       element,
                       path,
+                      occurs,
                       resourceBundle);
 
-      final SchemaUtil.Occurance elementOccurs = SchemaUtil.getOccurance(element);
-      LOGGER.debug("adding " + (elementOccurs.maximum == 1
+//      final SchemaUtil.Occurance occurs = SchemaUtil.getOccurance(element);
+      LOGGER.debug("adding " + (occurs.maximum == 1
                                 ? 1
-                                : elementOccurs.minimum + 1) +
+                                : occurs.minimum + 1) +
                    " default instance element for " + elementName +
                    " at path " + path);
       // update the default instance
-      if (elementOccurs.isRepeated())
+      if (occurs.isRepeated())
       {
-         LOGGER.debug("adding " + (elementOccurs.minimum + 1) +
+         LOGGER.debug("adding " + (occurs.minimum + 1) +
                       " default instance elements for " + elementName +
                       " at path " + path);
-         for (int i = 0; i < elementOccurs.minimum + 1; i++)
+         for (int i = 0; i < occurs.minimum + 1; i++)
          {
             final Element e = (Element)newDefaultInstanceElement.cloneNode(true);
-            if (i == elementOccurs.minimum)
+            if (i == occurs.minimum)
             {
                e.setAttributeNS(NamespaceService.ALFRESCO_URI,
                                 NamespaceService.ALFRESCO_PREFIX + ":prototype",
@@ -1687,7 +1681,7 @@ public class Schema2XForms
       {
          LOGGER.debug("adding one default instance element for " + elementName +
                       " at path " + path);
-         if (elementOccurs.minimum == 0)
+         if (occurs.minimum == 0)
          {
             newDefaultInstanceElement.setAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS,
                                                      NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX + ":nil",
@@ -1704,8 +1698,8 @@ public class Schema2XForms
                                         final Element modelSection,
                                         final Element formSection,
                                         final XSTypeDefinition controlType,
-                                        final SchemaUtil.Occurance o ,
-                                        final String pathToRoot)
+                                        final String pathToRoot,
+                                        final SchemaUtil.Occurance o)
    {
 
       // add xforms:repeat section if this element re-occurs
@@ -1789,13 +1783,14 @@ public class Schema2XForms
                                  final String owningElementName,
                                  final XSObject owner,
                                  final String pathToRoot,
-                                 final SchemaUtil.Occurance o,
+                                 final SchemaUtil.Occurance occurs,
                                  final ResourceBundle resourceBundle)
    {
       if (LOGGER.isDebugEnabled())
       {
          LOGGER.debug("addSimpleType for " + controlType.getName() +
-                      " (owningElementName=" + owningElementName + ")");
+                      " (owningElementName=" + owningElementName + ")" +
+                      " occurs = " + occurs);
          if (owner != null)
          {
             LOGGER.debug("owner is " + owner.getClass() +
@@ -1805,13 +1800,13 @@ public class Schema2XForms
 
       // create the <xforms:bind> element and add it to the model.
       Element bindElement = 
-         this.createBind(xformsDocument, pathToRoot + (o.isRepeated() ? "[position() != last()]" : ""));
+         this.createBind(xformsDocument, pathToRoot + (occurs.isRepeated() ? "[position() != last()]" : ""));
       String bindId = bindElement.getAttributeNS(null, "id");
       modelSection.appendChild(bindElement);
-      bindElement = this.startBindElement(bindElement, schema, controlType, owner, o);
+      bindElement = this.startBindElement(bindElement, schema, controlType, owner, occurs);
 
       // add a group if a repeat !
-      if (owner instanceof XSElementDeclaration && o.maximum != 1)
+      if (owner instanceof XSElementDeclaration && occurs.maximum != 1)
       {
          final Element groupElement = this.createGroup(xformsDocument,
                                                        modelSection,
@@ -1831,8 +1826,8 @@ public class Schema2XForms
                                                               modelSection,
                                                               formSection,
                                                               controlType,
-                                                              o,
-                                                              pathToRoot);
+                                                              pathToRoot,
+                                                              occurs);
 
       // create the form control element
       //put a wrapper for the repeat content, but only if it is really a repeat
@@ -1856,7 +1851,7 @@ public class Schema2XForms
                                                          owner,
                                                          bindId,
                                                          bindElement,
-                                                         o,
+                                                         occurs,
                                                          resourceBundle);
       repeatSection.appendChild(formControl);
 
@@ -1873,27 +1868,6 @@ public class Schema2XForms
       //this.addSelector(xformsDocument, (Element) formControl.getParentNode());
 
       return formSection;
-   }
-
-   private Element addSimpleType(final Document xformsDocument,
-                                 final Element modelSection,
-                                 final Element formSection,
-                                 final XSModel schema,
-                                 final XSSimpleTypeDefinition controlType,
-                                 final XSElementDeclaration owner,
-                                 final String pathToRoot,
-                                 final ResourceBundle resourceBundle)
-   {
-      return this.addSimpleType(xformsDocument,
-                                modelSection,
-                                formSection,
-                                schema,
-                                controlType,
-                                owner.getName(),
-                                owner,
-                                pathToRoot,
-                                SchemaUtil.getOccurance(owner),
-                                resourceBundle);
    }
 
    private Element addSimpleType(final Document xformsDocument,

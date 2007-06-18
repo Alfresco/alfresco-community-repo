@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            elementFormDefault="qualified">
-  <xs:element name="simple-test">
+  <xs:element name="one-string-test">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="string" type="xs:normalizedString" default="default string value"/>
+        <xs:element name="string" type="xs:normalizedString" default="default-value"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

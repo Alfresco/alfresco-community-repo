@@ -51,23 +51,14 @@ public class SchemaUtil
 
       public Occurance(final XSParticle particle)
       {
-         if (particle == null)
-         {
-            this.minimum = 1;
-            this.maximum = 1;
-         }
-         else
-         {
-            this.minimum = particle.getMinOccurs();
-            this.maximum = (particle.getMaxOccursUnbounded()
-                            ? Occurance.UNBOUNDED
-                            : particle.getMaxOccurs());
-         }
+         this(particle.getMinOccurs(), (particle.getMaxOccursUnbounded()
+                                        ? Occurance.UNBOUNDED
+                                        : particle.getMaxOccurs()));
       }
 
       public Occurance(final int minimum)
       {
-         this(minimum, UNBOUNDED);
+         this(minimum, Occurance.UNBOUNDED);
       }
 
       public Occurance(final int minimum, final int maximum)
@@ -737,8 +728,7 @@ public class SchemaUtil
       //get occurance on encosing element declaration
       final XSParticle particle =
          SchemaUtil.findCorrespondingParticleInComplexType(elDecl);
-      final Occurance result = new Occurance(particle);
-
+      final Occurance result = particle == null ? new Occurance(1, 1) : new Occurance(particle);
       if (LOGGER.isDebugEnabled())
       {
          LOGGER.debug("getOccurance for " + elDecl.getName() + 

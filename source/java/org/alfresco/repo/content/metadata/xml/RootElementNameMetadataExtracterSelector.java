@@ -104,10 +104,7 @@ public class RootElementNameMetadataExtracterSelector
      */
     public MetadataExtracter getWorker(ContentReader reader)
     {
-        /*
-         * Is xml the only mimetype to support?
-         */
-        if (!reader.getMimetype().equals(MimetypeMap.MIMETYPE_XML))
+        if (!supportedMimetypes.contains(reader.getMimetype()))
         {
             return null;
         }

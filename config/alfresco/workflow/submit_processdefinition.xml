@@ -16,7 +16,7 @@
         <transition name="" to="initialise"/>
     </start-state>
 
-    <node name="initialise">
+    <decision name="initialise">
         <event type="node-enter">
             <script>
                 <variable name="wcmwf_reviewCycle" access="write"/>
@@ -24,9 +24,32 @@
                    wcmwf_reviewCycle = 1;
                 </expression>
             </script>
+        </event>        
+        <transition name="" to="serialorparallel" />
+        <transition name="checklinks" to="checklinks">
+           <condition>#{wcmwf_validateLinks != null &amp;&amp; wcmwf_validateLinks == true}</condition>
+        </transition>
+    </decision>
+    
+    <!--                                -->
+    <!-- Validate Links being submitted -->
+    <!--                                -->
+    
+    <decision name="checklinks">
+        <event type="node-enter">
+            <action class="org.alfresco.repo.avm.wf.AVMSubmitLinkChecker" />
         </event>
-        <transition name="" to="serialorparallel"/>
-    </node>
+        <transition name="brokenlinkspresent" to="verifybrokenlinks" />
+        <transition name="nobrokenlinks" to="serialorparallel" >
+            <condition>#{wcmwf_brokenLinks == 0}</condition>
+        </transition>
+    </decision>
+    
+    <task-node name="verifybrokenlinks">
+        <task name="wcmwf:verifyBrokenLinksTask" swimlane="initiator" />
+        <transition name="abort" to="end" />
+        <transition name="continue" to="serialorparallel" />
+    </task-node>
 
     <!--                                      -->
     <!-- Split into Serial or Parallel Review -->

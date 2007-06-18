@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.scripts;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.alfresco.repo.template.FreeMarkerProcessor;
@@ -123,8 +124,13 @@ public class TemplateProcessor extends FreeMarkerProcessor implements Applicatio
             Template template = templateConfig.getTemplate(templatePath);
             hasTemplate = (template != null);
         }
+        catch(FileNotFoundException e)
+        {
+            // NOTE: return false as template is not found
+        }
         catch(IOException e)
         {
+            throw new WebScriptException("Failed to retrieve template " + templatePath, e);
         }
         return hasTemplate;
     }

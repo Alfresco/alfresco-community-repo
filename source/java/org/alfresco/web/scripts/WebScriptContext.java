@@ -188,6 +188,17 @@ public class WebScriptContext implements ApplicationContextAware, ApplicationLis
         });
     }
     
+
+    /**
+     * Gets the root home of the company home store
+     * 
+     * @return  root node ref
+     */
+    public NodeRef getRootHome()
+    {
+        return nodeService.getRootNode(companyHomeStore);
+    }
+
     /**
      * Gets the Company Home
      *  
@@ -224,5 +235,5 @@ public class WebScriptContext implements ApplicationContextAware, ApplicationLis
     {
         return (NodeRef)nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER);
     }
-    
+        
 }

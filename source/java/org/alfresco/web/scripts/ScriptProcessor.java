@@ -105,7 +105,7 @@ public class ScriptProcessor
      */
     public Object executeScript(ScriptLocation location, Map<String, Object> model)
     {
-        return scriptService.executeScript(location, model);        
+        return scriptService.executeScript("javascript", location, model);        
     }
 
     /**

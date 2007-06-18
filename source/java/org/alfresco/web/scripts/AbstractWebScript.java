@@ -34,7 +34,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.template.AbsoluteUrlMethod;
 import org.alfresco.service.ServiceRegistry;
@@ -226,16 +225,21 @@ public abstract class AbstractWebScript implements WebScript
         if (getDescription().getRequiredAuthentication() != RequiredAuthentication.none &&
             getDescription().getRequiredTransaction() != RequiredTransaction.none)
         {
+            NodeRef rootHome = scriptContext.getRootHome();
+            if (rootHome != null)
+            {
+                model.put("roothome", rootHome);
+            }
             NodeRef companyHome = scriptContext.getCompanyHome();
             if (companyHome != null)
             {
-                model.put("companyhome", new ScriptNode(scriptContext.getCompanyHome(), serviceRegistry));
+                model.put("companyhome", companyHome);
             }
             NodeRef person = scriptContext.getPerson();
             if (person != null)
             {
-                model.put("person", new ScriptNode(person, serviceRegistry));
-                model.put("userhome", new ScriptNode(scriptContext.getUserHome(person), serviceRegistry));
+                model.put("person", person);
+                model.put("userhome", scriptContext.getUserHome(person));
             }
         }
 
@@ -273,10 +277,15 @@ public abstract class AbstractWebScript implements WebScript
         if (getDescription().getRequiredAuthentication() != RequiredAuthentication.none &&
             getDescription().getRequiredTransaction() != RequiredTransaction.none)
         {
+            NodeRef rootHome = scriptContext.getRootHome();
+            if (rootHome != null)
+            {
+                model.put("roothome", rootHome);
+            }            
             NodeRef companyHome = scriptContext.getCompanyHome();
             if (companyHome != null)
             {
-                model.put("companyhome", scriptContext.getCompanyHome());
+                model.put("companyhome", companyHome);
             }
             NodeRef person = scriptContext.getPerson();
             if (person != null)
@@ -316,7 +325,10 @@ public abstract class AbstractWebScript implements WebScript
      */
     final protected void renderTemplate(String templatePath, Map<String, Object> model, Writer writer)
     {
+        long start = System.currentTimeMillis();
         getWebScriptRegistry().getTemplateProcessor().process(templatePath, model, writer);
+        if (logger.isDebugEnabled())
+            logger.debug("Rendered template " + templatePath + " in " + (System.currentTimeMillis() - start) + "ms");
     }
     
     /**
@@ -521,7 +533,10 @@ public abstract class AbstractWebScript implements WebScript
      */
     final protected void executeScript(ScriptLocation location, Map<String, Object> model)
     {
+        long start = System.currentTimeMillis();
         getWebScriptRegistry().getScriptProcessor().executeScript(location, model);
+        if (logger.isDebugEnabled())
+            logger.debug("Executed script " + location.toString() + " in " + (System.currentTimeMillis() - start) + "ms");
     }
     
     /**

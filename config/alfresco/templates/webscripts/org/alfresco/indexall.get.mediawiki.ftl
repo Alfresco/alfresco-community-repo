@@ -10,7 +10,7 @@ Back to [[HTTP API]].
 
 Welcome to the reference documentation for the Alfresco [[HTTP API]].
 
-This document was generated from the URL
+This document was generated from the Alfresco Server URL
 
  GET <nowiki>http://</nowiki><host>:<port>${url.service}
 
@@ -19,7 +19,7 @@ on ${date?datetime} using Alfresco v${server.version}.
 
 = Web Script Reference =
 
-This section provides technical information for all ${webscripts?size} [[Web Scripts]], organised by Web Script Package. 
+This section provides technical information for all ${webscripts?size} [[Web Scripts]], organized by Web Script Package. 
 
 Documentation for each Web Script includes:
 

@@ -32,7 +32,7 @@ ok> get <path>
     
     <path> URL relative to /alfresco/service
     
-    e.g. get /blog/category?c=Web20
+    e.g. get /blog/search?q=tutorial
 
 ok> put <path>
 

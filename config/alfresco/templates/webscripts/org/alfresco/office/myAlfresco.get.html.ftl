@@ -61,10 +61,10 @@
             ${child.properties.description}<br/>
          </#if>
             Modified: ${child.properties.modified?datetime} (${(child.size / 1024)?int}Kb)<br/>
-            <a href="#" onclick="OfficeAddin.runAction('checkin','${child.id}', '');"><img src="${url.context}/images/office/checkin.gif" style="padding:3px 6px 2px 0px;" alt="Check In" title="Check In" /></a>
+            <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','checkin','${child.id}', '');"><img src="${url.context}/images/office/checkin.gif" style="padding:3px 6px 2px 0px;" alt="Check In" title="Check In" /></a>
             <a href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;w=new&amp;wd=${child.id}"><img src="${url.context}/images/office/new_workflow.gif" style="padding:3px 6px 2px 0px;" alt="Create Workflow..." title="Create Workflow..." /></a>
          <#if !child.name?ends_with(".pdf")>
-            <a href="#" onclick="OfficeAddin.runAction('makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="Make PDF..." title="Make PDF" /></a>
+            <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="Make PDF..." title="Make PDF" /></a>
          </#if>
          </td>
       </tr>
@@ -102,12 +102,12 @@
    </#if>
          </td>
          <td>
-            ${t.description?html} (${t.type?html})
-            <#if hasDue>
+            <span style="font-weight: bold;">${t.description?html}</span> (${t.type?html})
+   <#if hasDue>
                <br />Due date: ${due?date}
-            <#else>
+   <#else>
                <br />(No due date)
-            </#if>
+   </#if>
          </td>
       </tr>
 </#list>

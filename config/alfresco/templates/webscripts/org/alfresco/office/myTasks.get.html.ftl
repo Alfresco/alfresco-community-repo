@@ -76,9 +76,9 @@
       </tr>
 </#list>
 <#if taskNum = 0>
-   <tr>
-      <td class="noItems">(No tasks)</td>
-   </tr>
+      <tr>
+         <td class="noItems">(No tasks)</td>
+      </tr>
 </#if>
    </table>
 </div>
@@ -118,7 +118,7 @@
                <img src="${url.context}/images/office/date.gif" alt="date" />
             </div>
             <div class="taskParam">Description:</div>
-            <div class="taskValue"><textarea id="wrkDescription"></textarea></div>
+            <div class="taskValue"><textarea id="wrkDescription" rows="4" style="height:54px;"></textarea></div>
             <div class="taskParam">&nbsp;</div>
             <div class="taskValue">
                <a class="taskAction" href="#" onclick="OfficeMyTasks.startWorkflow('${url.serviceContext}/office/docActions', '${d.id}');">

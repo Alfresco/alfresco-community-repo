@@ -9,7 +9,7 @@
             styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" 
             altRowStyleClass="recordSetRowAlt" width="100%" pageSize="10"
             initialSortColumn="created" initialSortDescending="true" 
-            rendered="#{not empty WorkflowBean.pooledTasks}">
+            rendered="#{not empty WorkflowBean.pooledTasks}" refreshOnBind="true">
    
    <%-- Primary column for details view mode --%>
    <a:column id="col1" primary="true" width="200" style="padding:2px;text-align:left">

@@ -72,6 +72,7 @@ public class RichListTag extends BaseComponentTag
       this.headerStyleClass = null;
       this.width = null;
       this.pageSize = null;
+      this.refreshOnBind = null;
    }
    
    /**
@@ -93,6 +94,7 @@ public class RichListTag extends BaseComponentTag
       setStringProperty(component, "headerStyleClass", this.headerStyleClass);
       setStringProperty(component, "width", this.width);
       setIntProperty(component, "pageSize", this.pageSize);
+      setBooleanProperty(component, "refreshOnBind", this.refreshOnBind);
    }
    
    
@@ -228,10 +230,23 @@ public class RichListTag extends BaseComponentTag
    {
       this.headerStyleClass = headerStyleClass;
    }
+   
+   /**
+    * Set the refreshOnBind flag. True to force the list to retrieve bound data on bind(). 
+    *
+    * @param refreshOnBind     the refreshOnBind
+    */
+   public void setRefreshOnBind(String refreshOnBind)
+   {
+      this.refreshOnBind = refreshOnBind;
+   }
 
 
    // ------------------------------------------------------------------------------
    // Private data
+   
+   /** the refreshOnBind */
+   private String refreshOnBind;
    
    /** the header row CSS Class */
    private String headerStyleClass;

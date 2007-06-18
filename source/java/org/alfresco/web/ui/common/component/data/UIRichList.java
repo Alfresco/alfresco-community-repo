@@ -114,6 +114,7 @@ public class UIRichList extends UIComponentBase implements IDataContainer
       this.pageSize = ((Integer)values[7]).intValue();
       this.initialSortColumn = (String)values[8];
       this.initialSortDescending = ((Boolean)values[9]).booleanValue();
+      this.refreshOnBind = ((Boolean)values[10]).booleanValue();
    }
    
    /**
@@ -121,18 +122,19 @@ public class UIRichList extends UIComponentBase implements IDataContainer
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[10];
-      // standard component attributes are saved by the super class
-      values[0] = super.saveState(context);
-      values[1] = Integer.valueOf(this.currentPage);
-      values[2] = this.sortColumn;
-      values[3] = (this.sortDescending ? Boolean.TRUE : Boolean.FALSE);
-      values[4] = this.value;
-      values[5] = this.dataModel;
-      values[6] = this.viewMode;
-      values[7] = Integer.valueOf(this.pageSize);
-      values[8] = this.initialSortColumn;
-      values[9] = (this.initialSortDescending ? Boolean.TRUE : Boolean.FALSE);
+      Object values[] = new Object[] {
+            // standard component attributes are saved by the super class
+            super.saveState(context),
+            Integer.valueOf(this.currentPage),
+            this.sortColumn,
+            (this.sortDescending ? Boolean.TRUE : Boolean.FALSE),
+            this.value,
+            this.dataModel,
+            this.viewMode,
+            Integer.valueOf(this.pageSize),
+            this.initialSortColumn,
+            (this.initialSortDescending ? Boolean.TRUE : Boolean.FALSE),
+            this.refreshOnBind};
       
       return (values);
    }
@@ -201,6 +203,31 @@ public class UIRichList extends UIComponentBase implements IDataContainer
    public void setViewMode(String viewMode)
    {
       this.viewMode = viewMode;
+   }
+   
+   /**
+    * Get the refreshOnBind flag.
+    *
+    * @return the refreshOnBind
+    */
+   public boolean getRefreshOnBind()
+   {
+      ValueBinding vb = getValueBinding("refreshOnBind");
+      if (vb != null)
+      {
+         this.refreshOnBind = (Boolean)vb.getValue(getFacesContext());
+      }
+      return this.refreshOnBind;
+   }
+
+   /**
+    * Set the refreshOnBind flag. True to force the list to retrieve bound data on bind().
+    *
+    * @param refreshOnBind     the refreshOnBind
+    */
+   public void setRefreshOnBind(boolean refreshOnBind)
+   {
+      this.refreshOnBind = refreshOnBind;
    }
    
    /**
@@ -414,6 +441,11 @@ public class UIRichList extends UIComponentBase implements IDataContainer
     */
    public void bind()
    {
+      if (getRefreshOnBind() == true)
+      {
+         this.value = null;
+         this.dataModel = null;
+      }
       int rowCount = getDataModel().size();
       // if a page size is specified, then we use that
       int pageSize = getPageSize();
@@ -528,6 +560,7 @@ public class UIRichList extends UIComponentBase implements IDataContainer
    private int pageSize = -1;
    private String initialSortColumn = null;
    private boolean initialSortDescending = false;
+   private boolean refreshOnBind = false;
    
    // transient component state that exists during a single page refresh only
    private int rowIndex = -1;

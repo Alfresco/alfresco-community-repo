@@ -28,14 +28,8 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.StringTokenizer;
 
-import javax.faces.FactoryFinder;
 import javax.faces.application.NavigationHandler;
-import javax.faces.application.ViewHandler;
-import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
-import javax.faces.context.FacesContextFactory;
-import javax.faces.lifecycle.Lifecycle;
-import javax.faces.lifecycle.LifecycleFactory;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -259,10 +253,6 @@ public class ExternalAccessServlet extends BaseServlet
          // perform the appropriate JSF navigation outcome
          NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
          navigationHandler.handleNavigation(fc, null, outcome);
-         LifecycleFactory lifecycleFactory = (LifecycleFactory)FactoryFinder.getFactory(FactoryFinder.LIFECYCLE_FACTORY);
-         Lifecycle lifecycle = lifecycleFactory.getLifecycle(LifecycleFactory.DEFAULT_LIFECYCLE);
-         lifecycle.render(fc);
-         return;
       }
       else if (OUTCOME_DIALOG.equals(outcome) || OUTCOME_WIZARD.equals(outcome))
       {

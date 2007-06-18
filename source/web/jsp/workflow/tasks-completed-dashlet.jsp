@@ -9,7 +9,7 @@
             styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" 
             altRowStyleClass="recordSetRowAlt" width="100%" pageSize="10"
             initialSortColumn="bpm:completionDate" initialSortDescending="true"
-            rendered="#{not empty WorkflowBean.tasksCompleted}">
+            rendered="#{not empty WorkflowBean.tasksCompleted}" refreshOnBind="true">
 
    <%-- Primary column for details view mode --%>
    <a:column id="col1" primary="true" width="200" style="padding:2px;text-align:left">

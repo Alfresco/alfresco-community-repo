@@ -239,16 +239,18 @@ public interface NodeServicePolicies
         /**
          * Called before a node child association is created.
          * 
-         * @param parentNodeRef
-         * @param childNodeRef 
-         * @param assocTypeQName the type of the association
-         * @param assocQName the name of the association
+         * @param parentNodeRef         the parent node reference
+         * @param childNodeRef          the child node reference
+         * @param assocTypeQName        the type of the association
+         * @param assocQName            the name of the association
+         * @param isNewNode             <tt>true</tt> if the node is new or <tt>false</tt> if the node is being linked in
          */
         public void beforeCreateChildAssociation(
                 NodeRef parentNodeRef,
                 NodeRef childNodeRef,
                 QName assocTypeQName,
-                QName assocQName);
+                QName assocQName,
+                boolean isNewNode);
     }
     
     public interface OnCreateChildAssociationPolicy extends AssociationPolicy
@@ -256,9 +258,10 @@ public interface NodeServicePolicies
         /**
          * Called after a node child association has been created.
          * 
-         * @param childAssocRef the child association that has been created
+         * @param childAssocRef         the child association that has been created
+         * @param isNewNode             <tt>true</tt> if the node is new or <tt>false</tt> if the node is being linked in
          */
-        public void onCreateChildAssociation(ChildAssociationRef childAssocRef);
+        public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode);
     }
     
     public interface BeforeDeleteChildAssociationPolicy extends AssociationPolicy

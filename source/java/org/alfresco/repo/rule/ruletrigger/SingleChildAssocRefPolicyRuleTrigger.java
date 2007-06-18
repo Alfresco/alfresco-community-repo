@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.rule.ruletrigger;
 
+import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.rule.RuleServiceException;
@@ -32,7 +33,22 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class SingleChildAssocRefPolicyRuleTrigger extends RuleTriggerAbstractBase
+/**
+ * A rule trigger for the creation of <b>secondary child associations</b>.
+ * <p>
+ * Policy names supported are:
+ * <ul>
+ *   <li>{@linkplain NodeServicePolicies.OnCreateChildAssociationPolicy}</li>
+ *   <li>{@linkplain NodeServicePolicies.BeforeDeleteChildAssociationPolicy}</li>
+ * </ul>
+ * 
+ * @author Roy Wetherall
+ */
+public class SingleChildAssocRefPolicyRuleTrigger
+        extends RuleTriggerAbstractBase
+        implements NodeServicePolicies.OnCreateChildAssociationPolicy,
+                   NodeServicePolicies.BeforeDeleteChildAssociationPolicy
+
 {
 	private static final String ERR_POLICY_NAME_NOT_SET = "Unable to register rule trigger since policy name has not been set.";
 	
@@ -77,24 +93,38 @@ public class SingleChildAssocRefPolicyRuleTrigger extends RuleTriggerAbstractBas
 			this.policyComponent.bindClassBehaviour(
 					QName.createQName(this.policyNamespace, this.policyName), 
 					this, 
-					new JavaBehaviour(this, "policyBehaviour"));
+					new JavaBehaviour(this, policyName));
 		}
 		else
 		{
 			this.policyComponent.bindAssociationBehaviour(
 					QName.createQName(this.policyNamespace, this.policyName), 
 					this, 
-					new JavaBehaviour(this, "policyBehaviour"));
+					new JavaBehaviour(this, policyName));
 		}
 	}
 
-	public void policyBehaviour(ChildAssociationRef childAssocRef)
-	{
+    public void beforeDeleteChildAssociation(ChildAssociationRef childAssocRef)
+    {
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("Single child assoc trigger (policy = " + this.policyName + ") fired for parent node " + childAssocRef.getParentRef() + " and child node " + childAssocRef.getChildRef());
         }
         
-		triggerRules(childAssocRef.getParentRef(), childAssocRef.getChildRef());
-	}
+        triggerRules(childAssocRef.getParentRef(), childAssocRef.getChildRef());
+    }
+
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
+    {
+        if (isNewNode)
+        {
+            return;
+        }
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug("Single child assoc trigger (policy = " + this.policyName + ") fired for parent node " + childAssocRef.getParentRef() + " and child node " + childAssocRef.getChildRef());
+        }
+        
+        triggerRules(childAssocRef.getParentRef(), childAssocRef.getChildRef());
+    }
 }

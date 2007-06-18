@@ -322,7 +322,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         NodeRef childNodeRef = childNode.getNodeRef();
 
         // We now have enough to declare the child association creation
-        invokeBeforeCreateChildAssociation(parentRef, childNodeRef, assocTypeQName, assocQName);
+        invokeBeforeCreateChildAssociation(parentRef, childNodeRef, assocTypeQName, assocQName, true);
         
         // Get the parent node
         Node parentNode = getNodeNotNull(parentRef);
@@ -354,7 +354,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // Invoke policy behaviour
         invokeOnCreateNode(childAssocRef);
-        invokeOnCreateChildAssociation(childAssocRef);
+        invokeOnCreateChildAssociation(childAssocRef, true);
         if (propertiesAfter != null)
         {
             invokeOnUpdateProperties(childAssocRef.getChildRef(), propertiesBefore, propertiesAfter);
@@ -427,7 +427,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         else
         {
             invokeBeforeDeleteChildAssociation(oldAssocRef);
-            invokeBeforeCreateChildAssociation(newParentRef, nodeToMoveRef, assocTypeQName, assocQName);
+            invokeBeforeCreateChildAssociation(newParentRef, nodeToMoveRef, assocTypeQName, assocQName, false);
         }
         
         // remove the child assoc from the old parent
@@ -467,7 +467,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         else
         {
-            invokeOnCreateChildAssociation(newAssoc.getChildAssocRef());
+            invokeOnCreateChildAssociation(newAssoc.getChildAssocRef(), false);
             invokeOnDeleteChildAssociation(oldAssoc.getChildAssocRef());
         }
         invokeOnMoveNode(oldAssocRef, newAssocRef);
@@ -741,7 +741,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public ChildAssociationRef addChild(NodeRef parentRef, NodeRef childRef, QName assocTypeQName, QName assocQName)
     {
         // Invoke policy behaviours
-        invokeBeforeCreateChildAssociation(parentRef, childRef, assocTypeQName, assocQName);
+        invokeBeforeCreateChildAssociation(parentRef, childRef, assocTypeQName, assocQName, false);
         
         // get the parent node and ensure that it is a container node
         Node parentNode = getNodeNotNull(parentRef);
@@ -764,7 +764,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         getPaths(childNodeRef, false);
 
         // Invoke policy behaviours
-        invokeOnCreateChildAssociation(assocRef);
+        invokeOnCreateChildAssociation(assocRef, false);
         
         return assoc.getChildAssocRef();
     }

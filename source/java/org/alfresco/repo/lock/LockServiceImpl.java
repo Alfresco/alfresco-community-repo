@@ -489,7 +489,8 @@ public class LockServiceImpl implements LockService,
             NodeRef parentNodeRef,
             NodeRef childNodeRef,
             QName assocTypeQName,
-            QName assocQName)
+            QName assocQName,
+            boolean isNewNode)
     {
         checkForLock(parentNodeRef);
     }

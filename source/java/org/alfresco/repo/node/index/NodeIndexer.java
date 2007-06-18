@@ -109,9 +109,12 @@ public class NodeIndexer
         indexer.deleteNode(childAssocRef);
     }
 
-    public void onCreateChildAssociation(ChildAssociationRef childAssocRef)
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNew)
     {
-        indexer.createChildRelationship(childAssocRef);
+        if (!isNew)
+        {
+            indexer.createChildRelationship(childAssocRef);
+        }
     }
 
     public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)

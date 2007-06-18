@@ -231,6 +231,9 @@ public class IncompleteNodeTagger
         }
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
@@ -238,6 +241,9 @@ public class IncompleteNodeTagger
         saveAssoc(nodeRef, null);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void onUpdateProperties(
             NodeRef nodeRef,
             Map<QName, Serializable> before,
@@ -247,6 +253,8 @@ public class IncompleteNodeTagger
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Save the node for checking of properties.
      * The {@link org.alfresco.model.ContentModel#ASPECT_INCOMPLETE incomplete} aspect is
      * not processed.
@@ -279,20 +287,21 @@ public class IncompleteNodeTagger
     }
     
     /**
-     * @see AssocSourceTypeIntegrityEvent
-     * @see AssocTargetTypeIntegrityEvent
-     * @see AssocSourceMultiplicityIntegrityEvent
-     * @see AssocTargetMultiplicityIntegrityEvent
-     * @see AssocTargetRoleIntegrityEvent
+     * {@inheritDoc}
+     * <p>
+     * This only saves the node for checking if it is <i>not</i> new.  The create of the
+     * node will handle it.
      */
-    public void onCreateChildAssociation(ChildAssociationRef childAssocRef)
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNew)
     {
-        saveAssoc(childAssocRef.getParentRef(), childAssocRef.getTypeQName());
+        if (!isNew)
+        {
+            saveAssoc(childAssocRef.getParentRef(), childAssocRef.getTypeQName());
+        }
     }
 
     /**
-     * @see AssocSourceMultiplicityIntegrityEvent
-     * @see AssocTargetMultiplicityIntegrityEvent
+     * {@inheritDoc}
      */
     public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
@@ -300,10 +309,7 @@ public class IncompleteNodeTagger
     }
 
     /**
-     * @see AssocSourceTypeIntegrityEvent
-     * @see AssocTargetTypeIntegrityEvent
-     * @see AssocSourceMultiplicityIntegrityEvent
-     * @see AssocTargetMultiplicityIntegrityEvent
+     * {@inheritDoc}
      */
     public void onCreateAssociation(AssociationRef nodeAssocRef)
     {
@@ -311,8 +317,7 @@ public class IncompleteNodeTagger
     }
 
     /**
-     * @see AssocSourceMultiplicityIntegrityEvent
-     * @see AssocTargetMultiplicityIntegrityEvent
+     * {@inheritDoc}
      */
     public void onDeleteAssociation(AssociationRef nodeAssocRef)
     {

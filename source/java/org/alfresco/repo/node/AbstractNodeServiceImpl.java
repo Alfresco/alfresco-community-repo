@@ -439,19 +439,19 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      * @see NodeServicePolicies.BeforeCreateChildAssociationPolicy#beforeCreateChildAssociation(NodeRef,
      *      NodeRef, QName, QName)
      */
-    protected void invokeBeforeCreateChildAssociation(NodeRef parentNodeRef, NodeRef childNodeRef, QName assocTypeQName, QName assocQName)
+    protected void invokeBeforeCreateChildAssociation(NodeRef parentNodeRef, NodeRef childNodeRef, QName assocTypeQName, QName assocQName, boolean isNewNode)
     {
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(parentNodeRef);
         // execute policy for node type
         NodeServicePolicies.BeforeCreateChildAssociationPolicy policy = beforeCreateChildAssociationDelegate.get(parentNodeRef, qnames, assocTypeQName);
-        policy.beforeCreateChildAssociation(parentNodeRef, childNodeRef, assocTypeQName, assocQName);
+        policy.beforeCreateChildAssociation(parentNodeRef, childNodeRef, assocTypeQName, assocQName, isNewNode);
     }
 
     /**
      * @see NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(ChildAssociationRef)
      */
-    protected void invokeOnCreateChildAssociation(ChildAssociationRef childAssocRef)
+    protected void invokeOnCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
         // Get the parent reference and the assoc type qName
         NodeRef parentNodeRef = childAssocRef.getParentRef();
@@ -460,7 +460,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         Set<QName> qnames = getTypeAndAspectQNames(parentNodeRef);
         // execute policy for node type and aspects
         NodeServicePolicies.OnCreateChildAssociationPolicy policy = onCreateChildAssociationDelegate.get(parentNodeRef, qnames, assocTypeQName);
-        policy.onCreateChildAssociation(childAssocRef);
+        policy.onCreateChildAssociation(childAssocRef, isNewNode);
     }
 
     /**

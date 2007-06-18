@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.rule.ruletrigger;
 
+import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -38,10 +39,18 @@ import org.apache.commons.logging.LogFactory;
  * We use this specialised trigger for create node beaucse of a problem with the CIFS integration.
  * <p>
  * The create node trigger will only be fired if the object is NOT a sub-type of content.
+ * <p>
+ * Policy names supported are:
+ * <ul>
+ *   <li>{@linkplain NodeServicePolicies.OnCreateChildAssociationPolicy}</li>
+ *   <li>{@linkplain NodeServicePolicies.BeforeDeleteChildAssociationPolicy}</li>
+ *   <li>{@linkplain NodeServicePolicies.OnCreateNodePolicy}</li>
+ * </ul>
  * 
  * @author Roy Wetherall
  */
 public class CreateNodeRuleTrigger extends SingleChildAssocRefPolicyRuleTrigger
+        implements NodeServicePolicies.OnCreateNodePolicy
 {
     /**
      * The logger
@@ -55,7 +64,10 @@ public class CreateNodeRuleTrigger extends SingleChildAssocRefPolicyRuleTrigger
         this.dictionaryService = dictionaryService;
     }
     
-    public void policyBehaviour(ChildAssociationRef childAssocRef)
+    /**
+     * {@inheritDoc}
+     */
+    public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         // Only fire the rule if the node is question has no potential to contain content
         // TODO we need to find a better way to do this .. how can this be resolved in CIFS??

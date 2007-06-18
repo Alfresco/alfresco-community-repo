@@ -328,7 +328,7 @@ public class IntegrityChecker
         save(event);
         
         // check that the multiplicity and other properties of the new association are allowed
-        onCreateChildAssociation(childAssocRef);
+        onCreateChildAssociation(childAssocRef, false);
         
         // check mandatory aspects
         event = new AspectsIntegrityEvent(nodeService, dictionaryService, childRef);
@@ -426,14 +426,21 @@ public class IntegrityChecker
     }
 
     /**
+     * This handles the creation of secondary child associations.
+     * 
      * @see AssocSourceTypeIntegrityEvent
      * @see AssocTargetTypeIntegrityEvent
      * @see AssocSourceMultiplicityIntegrityEvent
      * @see AssocTargetMultiplicityIntegrityEvent
      * @see AssocTargetRoleIntegrityEvent
      */
-    public void onCreateChildAssociation(ChildAssociationRef childAssocRef)
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNew)
     {
+        if (isNew)
+        {
+            return;
+        }
+        
         IntegrityEvent event = null;
         // check source type
         event = new AssocSourceTypeIntegrityEvent(

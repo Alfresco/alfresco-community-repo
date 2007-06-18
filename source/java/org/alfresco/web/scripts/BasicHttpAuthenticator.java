@@ -69,10 +69,12 @@ public class BasicHttpAuthenticator implements WebScriptServletAuthenticator
         // 
 
         String authorization = req.getHeader("Authorization");
+        String ticket = req.getParameter("alf_ticket");
         
         if (logger.isDebugEnabled())
         {
             logger.debug("HTTP Authorization provided: " + (authorization != null && authorization.length() > 0));
+            logger.debug("URL ticket provided: " + (ticket != null && ticket.length() > 0));
         }
         
         // authenticate as guest, if service allows
@@ -83,6 +85,24 @@ public class BasicHttpAuthenticator implements WebScriptServletAuthenticator
 
             authenticationService.authenticateAsGuest();
             authorized = true;
+        }
+        
+        // authenticate as specified by explicit ticket on url
+        else if (ticket != null && ticket.length() > 0)
+        {
+            try
+            {
+                if (logger.isDebugEnabled())
+                    logger.debug("Authenticating (URL argument) ticket " + ticket);
+    
+                // assume a ticket has been passed
+                authenticationService.validate(ticket);
+                authorized = true;
+            }
+            catch(AuthenticationException e)
+            {
+                // failed authentication
+            }
         }
         
         // authenticate as specified by HTTP Basic Authentication
@@ -101,7 +121,7 @@ public class BasicHttpAuthenticator implements WebScriptServletAuthenticator
                 if (parts.length == 1)
                 {
                     if (logger.isDebugEnabled())
-                        logger.debug("Authenticating ticket " + parts[0]);
+                        logger.debug("Authenticating (BASIC HTTP) ticket " + parts[0]);
 
                     // assume a ticket has been passed
                     authenticationService.validate(parts[0]);
@@ -110,7 +130,7 @@ public class BasicHttpAuthenticator implements WebScriptServletAuthenticator
                 else
                 {
                     if (logger.isDebugEnabled())
-                        logger.debug("Authenticating user " + parts[0]);
+                        logger.debug("Authenticating (BASIC HTTP) user " + parts[0]);
 
                     // assume username and password passed
                     if (parts[0].equals(AuthenticationUtil.getGuestUserName()))

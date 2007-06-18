@@ -160,7 +160,7 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
         finally
         {
             if (logger.isInfoEnabled())
-                logger.info("Registered " + webscriptsById.size() + " Web Scripts " + webscriptsByURL.size() + ", URLs (in " + (System.currentTimeMillis() - startTime) + "ms)");
+                logger.info("Registered " + webscriptsById.size() + " Web Scripts, " + webscriptsByURL.size() + " URLs (in " + (System.currentTimeMillis() - startTime) + "ms)");
         }        
     }
     

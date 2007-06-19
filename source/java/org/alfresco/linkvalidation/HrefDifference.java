@@ -28,58 +28,68 @@
 package org.alfresco.linkvalidation;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class HrefDifference
 {
-    HrefStatusMap  href_status_map_;    //status of links + maybe dep info
-    HrefManifest   href_manifest_;      // overall manifest in of change
+    protected HrefStatusMap href_status_map_;  // status of links/maybe dep info
+    protected HrefManifest  href_manifest_;    // overall manifest in of change
 
-    // Hrefs no longer used by the system anywhere
-    HashMap<String,String> obsolete_href_md5_;
+    // Lazily computed values 
+    protected HrefManifest broken_in_newmod_;    // errors in new files 
+    protected HrefManifest broken_by_deletion_;  // err via new deletions
 
-    HrefManifest broken_in_newmod_;     // errors in new files 
-    HrefManifest broken_by_del_;        // errors caused by new deletions
-    HrefManifest repaired_by_delmod_;   // fix by removing links (mod or del)
-    HrefManifest repaired_by_new_;      // new file satisfies broken dep
+    // Only computed when merging diffs
+    protected List<String> repaired_by_delmod_;  // fix by removing links
+    protected List<String> repaired_by_new_;     // file satisfied broken dep
 
+    // Temp values used in lazy computation
+    protected HashMap<String, List<String>>  broken_manifest_map_;
+    protected HashMap<String,String>         deleted_file_md5_;
 
-    public HrefDifference()
+    // href attribute lookup prefix
+    String href_attr_;
+    String src_store_;
+    String dst_store_;
+    String src_webapp_url_base_;
+    String dst_webapp_url_base_;
+    
+    HrefDifference(String href_attr,
+                   String src_store,
+                   String dst_store,
+                   String src_webapp_url_base,
+                   String dst_webapp_url_base)
     {
-        href_manifest_      = new HrefManifest();
-        href_status_map_    = new HrefStatusMap();
-        obsolete_href_md5_  = new HashMap<String,String>();
+        href_attr_           = href_attr;
+        src_store_           = src_store;
+        dst_store_           = dst_store;
+        src_webapp_url_base_ = src_webapp_url_base;
+        dst_webapp_url_base_ = dst_webapp_url_base;
 
-        broken_by_del_      = new HrefManifest();
-        broken_in_newmod_   = new HrefManifest();
-        repaired_by_delmod_ = new HrefManifest();
-        repaired_by_new_    = new HrefManifest();
+        href_manifest_   = new HrefManifest();
+        href_status_map_ = new HrefStatusMap();
+
+        broken_manifest_map_ = new HashMap<String, List<String>>();
+        deleted_file_md5_    = new HashMap<String,String>();
     }
 
-    public HrefManifest getHrefManifest()   { return href_manifest_;     }
-    public HrefStatusMap getHrefStatusMap() { return href_status_map_;   }
-    Map<String,String> getObsoleteHrefMd5() { return obsolete_href_md5_; }
 
-    public HrefManifest getBrokenByDeletionHrefManifest( )
-    {
-        return broken_by_del_;
-    }
+    public HrefManifest getHrefManifest()   { return href_manifest_;   }
+    public HrefStatusMap getHrefStatusMap() { return href_status_map_; }
 
-    public HrefManifest getBrokenInNewModHrefManifest()
-    {
-        return broken_in_newmod_;
-    }
+    String getHrefAttr()         { return href_attr_;}
+    String getSrcStore()         { return src_store_;}
+    String getDstStore()         { return dst_store_;}
+    String getSrcWebappUrlBase() { return src_webapp_url_base_; }
+    String getDstWebappUrlBase() { return dst_webapp_url_base_; }
 
-    public HrefManifest getRepairedByDeletionAndModHrefManifest()
-    {
-        return repaired_by_delmod_;
-    }
-
-    public HrefManifest  getRepairedByNewHreManifest()
-    {
-        return repaired_by_new_;
+    Map<String,String> getDeletedFileMd5() { return deleted_file_md5_; }
+    Map<String, List<String>> getBrokenManifestMap() 
+    { 
+        return broken_manifest_map_;
     }
 }
 

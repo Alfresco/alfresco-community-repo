@@ -187,16 +187,10 @@ public interface LinkValidationService
                               HrefValidationProgress progress
                           ) throws AVMNotFoundException;
 
+    public HrefManifest getHrefManifestBrokenByDelete(HrefDifference hdiff);
+    public HrefManifest getHrefManifestBrokenByNewOrMod(HrefDifference hdiff);
 
-    public HrefDifference getHrefDifference( int                    srcVersion,
-                                             String                 srcWebappPath,
-                                             int                    dstVersion,
-                                             String                 dstWebappPath,
-                                             int                    connectTimeout,
-                                             int                    readTimeout,
-                                             int                    nthreads,
-                                             HrefValidationProgress progress)
-                                           throws AVMNotFoundException;
-
+    public List<String> getHrefListFixedByDeleteOrMod(HrefDifference hdiff);
+    public List<String> getHrefListFixedByNew(HrefDifference hdiff);
 }
 

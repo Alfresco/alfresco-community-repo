@@ -67,6 +67,9 @@
             <ref bean="layerIssuer" />
          </list>
       </property>
+      <property name="avmLockingAwareService">
+      	 <ref bean="avmLockingAwareService"/>
+      </property>
    </bean>
 
 	<!-- Bootstrap AVM Locking Service. -->

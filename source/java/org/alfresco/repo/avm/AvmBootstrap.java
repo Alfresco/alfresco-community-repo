@@ -44,9 +44,16 @@ public class AvmBootstrap extends AbstractLifecycleBean
 {
     private List<Issuer> issuers;
     
+    private AVMLockingAwareService avmLockingAwareService;
+    
     public AvmBootstrap()
     {
         issuers = new ArrayList<Issuer>(0);
+    }
+    
+    public void setAvmLockingAwareService(AVMLockingAwareService service)
+    {
+        avmLockingAwareService = service;
     }
 
     /**
@@ -69,6 +76,7 @@ public class AvmBootstrap extends AbstractLifecycleBean
         {
             issuer.initialize();
         }
+        avmLockingAwareService.init();
     }
 
     /** NO-OP */

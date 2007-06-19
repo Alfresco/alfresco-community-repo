@@ -751,15 +751,8 @@
 	<!-- The AVMLockingAwareService -->
 	
 	<bean id="avmLockingAwareService" class="org.alfresco.repo.avm.AVMLockingAwareService">
-	    <property name="avmService">
-	    	<ref bean="avmService"/>
-	    </property>
-	    <property name="avmLockingService">
-	    	<ref bean="avmLockingService"/>
-	    </property>
-	    <property name="authenticationService">
-	    	<ref bean="authenticationService"/>
-	    </property>
+		<!-- Because of circular dependendencies, this bean's dependencies
+		     are grabbed at bootstrap time. -->
 	</bean>
 
     <bean id="AVMLockingAwareService" class="org.springframework.aop.framework.ProxyFactoryBean">

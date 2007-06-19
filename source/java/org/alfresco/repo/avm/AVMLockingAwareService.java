@@ -49,12 +49,15 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * An AVMLockingService aware implemantation of AVMService.
  * @author britt
  */
-public class AVMLockingAwareService implements AVMService
+public class AVMLockingAwareService implements AVMService, ApplicationContextAware
 {
     private AVMService fService;
     
@@ -62,25 +65,27 @@ public class AVMLockingAwareService implements AVMService
     
     private AuthenticationService fAuthenticationService;
     
+    private ApplicationContext fContext;
+    
     public AVMLockingAwareService()
     {
     }
 
-    public void setAvmService(AVMService service)
+    /* (non-Javadoc)
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
-        fService = service;
+        fContext = applicationContext;
     }
     
-    public void setAvmLockingService(AVMLockingService service)
+    public void init()
     {
-        fLockingService = service;
+        fService = (AVMService)fContext.getBean("avmService");
+        fLockingService = (AVMLockingService)fContext.getBean("avmLockingService");
+        fAuthenticationService = (AuthenticationService)fContext.getBean("authenticationService");
     }
-    
-    public void setAuthenticationService(AuthenticationService service)
-    {
-        fAuthenticationService = service;
-    }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.AVMService#addAspect(java.lang.String, org.alfresco.service.namespace.QName)
      */

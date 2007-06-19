@@ -339,9 +339,9 @@
 	    <property name="searchService">
 	        <ref bean="searchService"/>
 	    </property>
+	    <property name="webProjectStore">
+	        <value>workspace://SpacesStore</value>
+	    </property>
 	</bean>
 
 </beans>
-
-	
-	

@@ -823,12 +823,12 @@ public class AVMLockingAwareService implements AVMService
             String userName = fAuthenticationService.getCurrentUserName();
             if (!fLockingService.hasAccess(webProject, path, userName))
             {
-                throw new AVMLockingException(userName + " does not have access to " + path);
+                throw new AVMLockingException("avmlockservice.locked", new Object[]{path});
             }
             fLockingService.addWebProject(webProject);
             if (fLockingService.getLock(webProject, storePath[1]) == null)
             {
-                List<String> owners = new ArrayList<String>();
+                List<String> owners = new ArrayList<String>(1);
                 owners.add(userName);
                 AVMLock lock = new AVMLock(webProject, storePath[0], storePath[1], AVMLockingService.Type.DISCRETIONARY, owners);
                 fLockingService.lockPath(lock);

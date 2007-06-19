@@ -28,6 +28,8 @@ package org.alfresco.service.cmr.avm.locking;
 import java.io.Serializable;
 import java.util.List;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+
 /**
  * Service to handle AVM locking.
  * @author britt
@@ -122,6 +124,15 @@ public interface AVMLockingService
      * @return Whether the user has access.
      */
     public boolean hasAccess(String webProject, String avmPath, String user);
+    
+    /**
+     * Is the user allowed to do anything to the given asset, other than read?
+     * @param webProjectRef The NodeRef to the web project that this path is being checked in.
+     * @param avmPath A full avmPath
+     * @param user The name of the user, group, role to check on.
+     * @return Whether the user has access.
+     */
+    public boolean hasAccess(NodeRef webProjectRef, String avmPath, String user);
     
     /**
      * Get the names of all the web projects the service knows about.

@@ -35,7 +35,6 @@ import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.repo.attributes.ListAttributeValue;
 import org.alfresco.repo.attributes.MapAttributeValue;
 import org.alfresco.repo.attributes.StringAttributeValue;
-import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.attributes.AttrQueryEquals;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -53,6 +52,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.MD5;
 import org.alfresco.util.Pair;
 
@@ -66,6 +66,13 @@ public class AVMLockingServiceImpl implements AVMLockingService
     public static final String WEB_PROJECTS = "web_projects";
     public static final String USERS = "users";
     public static final String STORES = "stores";
+    
+    private static final String ROLE_CONTENT_MANAGER = "ContentManager";
+    
+    /**
+     * Store name containing the web project nodes.
+     */
+    private String webProjectStore;
     
     /**
      * SearchService for access to web project properties.
@@ -97,8 +104,13 @@ public class AVMLockingServiceImpl implements AVMLockingService
      */
     private RetryingTransactionHelper fRetryingTransactionHelper;
     
-    public AVMLockingServiceImpl()
+    
+    /**
+     * @param webProjectStore The webProjectStore to set
+     */
+    public void setWebProjectStore(String webProjectStore)
     {
+        this.webProjectStore = webProjectStore;
     }
 
     /**
@@ -175,7 +187,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
     public AVMLock getLock(String webProject, String path)
     {
         path = normalizePath(path);
-        List<String> keys = new ArrayList<String>();
+        List<String> keys = new ArrayList<String>(3);
         keys.add(LOCK_TABLE);
         keys.add(WEB_PROJECTS);
         keys.add(webProject);
@@ -211,7 +223,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
      */
     public List<AVMLock> getUsersLocks(String user)
     {
-        List<String> keys = new ArrayList<String>();
+        List<String> keys = new ArrayList<String>(3);
         keys.add(LOCK_TABLE);
         keys.add(USERS);
         keys.add(user);
@@ -294,7 +306,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
     {
         path = normalizePath(path);
         String pathKey = MD5.Digest(path.getBytes());
-        List<String> keys = new ArrayList<String>();
+        List<String> keys = new ArrayList<String>(4);
         keys.add(LOCK_TABLE);
         keys.add(WEB_PROJECTS);
         keys.add(webProject);
@@ -326,7 +338,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
             }
             userKeys.remove(2);
         }
-        List<String> storeKeys = new ArrayList<String>();
+        List<String> storeKeys = new ArrayList<String>(3);
         storeKeys.add(LOCK_TABLE);
         storeKeys.add(STORES);
         String store = lock.getStore();
@@ -349,7 +361,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
      */
     public void addWebProject(String webProject)
     {
-        List<String> keys = new ArrayList<String>();
+        List<String> keys = new ArrayList<String>(3);
         keys.add(LOCK_TABLE);
         keys.add(WEB_PROJECTS);
         keys.add(webProject);
@@ -366,7 +378,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
      */
     public List<AVMLock> getWebProjectLocks(String webProject)
     {
-        List<String> keys = new ArrayList<String>();
+        List<String> keys = new ArrayList<String>(3);
         keys.add(LOCK_TABLE);
         keys.add(WEB_PROJECTS);
         keys.add(webProject);
@@ -387,7 +399,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
      */
     public void removeWebProject(String webProject)
     {
-        List<String> userKeys = new ArrayList<String>();
+        List<String> userKeys = new ArrayList<String>(2);
         userKeys.add(LOCK_TABLE);
         userKeys.add(USERS);
         List<String> users = fAttributeService.getKeys(userKeys);
@@ -430,7 +442,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
             storeKeys.remove(2);
             fAttributeService.setAttribute(storeKeys, store, storeLocks);
         }
-        List<String> keys = new ArrayList<String>();
+        List<String> keys = new ArrayList<String>(2);
         keys.add(LOCK_TABLE);
         keys.add(WEB_PROJECTS);
         fAttributeService.removeAttribute(keys, webProject);
@@ -441,7 +453,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
      */
     public List<AVMLock> getStoreLocks(String store)
     {
-        List<AVMLock> locks = new ArrayList<AVMLock>();
+        List<AVMLock> locks = new ArrayList<AVMLock>(3);
         List<String> keys = new ArrayList<String>();
         keys.add(LOCK_TABLE);
         keys.add(STORES);
@@ -514,7 +526,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
      */
     public void removeStoreLocks(String store)
     {
-        List<String> storeKeys = new ArrayList<String>();
+        List<String> storeKeys = new ArrayList<String>(3);
         storeKeys.add(LOCK_TABLE);
         storeKeys.add(STORES);
         storeKeys.add(store);
@@ -544,21 +556,47 @@ public class AVMLockingServiceImpl implements AVMLockingService
         {
             return true;
         }
-        StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-        ResultSet results = fSearchService.query(storeRef, "lucene", "@wca\\:avmstore:\"" + webProject + "\" +TYPE:\"wca:webfolder\"");
-        System.out.println(results.getNodeRefs());
+        StoreRef storeRef = new StoreRef(this.webProjectStore);
+        ResultSet results = fSearchService.query(
+                storeRef,
+                SearchService.LANGUAGE_LUCENE,
+                "@wca\\:avmstore:\"" + webProject + "\" +TYPE:\"wca:webfolder\"");
         if (results.getNodeRefs().size() == 1)
         {
-            List<ChildAssociationRef> children = fNodeService.getChildAssocs(results.getNodeRefs().get(0));
-            for (ChildAssociationRef child : children)
+            return hasAccess(webProject, results.getNodeRefs().get(0), avmPath, user);
+        }
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#hasAccess(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String)
+     */
+    public boolean hasAccess(NodeRef webProjectRef, String avmPath, String user)
+    {
+        if (fPersonService.getPerson(user) == null &&
+            !fAuthorityService.authorityExists(user))
+        {
+            return false;
+        }
+        if (fAuthorityService.isAdminAuthority(user))
+        {
+            return true;
+        }
+        String webProject = (String)fNodeService.getProperty(webProjectRef, WCMAppModel.PROP_AVMSTORE);
+        return hasAccess(webProject, webProjectRef, avmPath, user);
+    }
+
+    private boolean hasAccess(String webProject, NodeRef webProjectRef, String avmPath, String user)
+    {
+        List<ChildAssociationRef> children = fNodeService.getChildAssocs(
+                webProjectRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+        for (ChildAssociationRef child : children)
+        {
+            NodeRef childRef = child.getChildRef();
+            if (fNodeService.getProperty(childRef, WCMAppModel.PROP_WEBUSERNAME).equals(user) &&
+                fNodeService.getProperty(childRef, WCMAppModel.PROP_WEBUSERROLE).equals(ROLE_CONTENT_MANAGER))
             {
-                NodeRef childRef = child.getChildRef();
-                if (fNodeService.getType(childRef).equals(WCMAppModel.TYPE_WEBUSER) &&
-                    fNodeService.getProperty(childRef, WCMAppModel.PROP_WEBUSERNAME).equals(user) &&
-                    fNodeService.getProperty(childRef, WCMAppModel.PROP_WEBUSERROLE).equals("ContentManager"))
-                {
-                    return true;
-                }
+                return true;
             }
         }
         String[] storePath = avmPath.split(":");
@@ -619,7 +657,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
      */
     public List<String> getWebProjects()
     {
-        List<String> keys = new ArrayList<String>();
+        List<String> keys = new ArrayList<String>(2);
         keys.add(LOCK_TABLE);
         keys.add(WEB_PROJECTS);
         return fAttributeService.getKeys(keys);

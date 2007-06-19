@@ -157,7 +157,7 @@ public class ScriptableQNameMap<K,V> extends QNameMap<K,V> implements Scriptable
      */
     public Object[] getIds()
     {
-        return null;
+        return keySet().toArray();
     }
 
     /**

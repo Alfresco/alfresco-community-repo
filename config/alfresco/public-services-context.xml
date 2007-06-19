@@ -752,7 +752,7 @@
 	
 	<bean id="avmLockingAwareService" class="org.alfresco.repo.avm.AVMLockingAwareService">
 		<!-- Because of circular dependendencies, this bean's dependencies
-		     are grabbed at bootstrap time. -->
+		     are grabbed at bootstrap time.x -->
 	</bean>
 
     <bean id="AVMLockingAwareService" class="org.springframework.aop.framework.ProxyFactoryBean">

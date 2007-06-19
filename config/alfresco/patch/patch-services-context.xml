@@ -815,5 +815,16 @@
             </list>
         </property>
     </bean>
-		
+    
+	<bean id="patch.AVMLocking" class="org.alfresco.repo.admin.patch.impl.AVMLockingPatch" parent="basePatch">
+        <property name="id"><value>patch.AVMLocking</value></property>
+        <property name="description"><value>patch.AVMLocking.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>58</value></property>
+        <property name="targetSchema"><value>59</value></property>
+        <property name="avmLockingService">
+            <ref bean="avmLockingService"/>
+        </property>
+    </bean>
+    
 </beans>

@@ -25,18 +25,25 @@
 package org.alfresco.repo.action.executer;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
+import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
@@ -45,7 +52,7 @@ import org.alfresco.util.GUID;
  * Test of the ActionExecuter for extracting metadata. Note: This test makes
  * assumptions about the PDF test data for PdfBoxExtracter.
  * 
- * @author Jesper Steen M�ller
+ * @author Jesper Steen Møller
  */
 public class ContentMetadataExtracterTest extends BaseSpringTest
 {
@@ -90,7 +97,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
         cw.putContent(AbstractContentTransformerTest.loadQuickTestFile("pdf"));
 
         // Get the executer instance
-        this.executer = (ContentMetadataExtracter) this.applicationContext.getBean(ContentMetadataExtracter.NAME);
+        this.executer = (ContentMetadataExtracter) this.applicationContext.getBean("extract-metadata");
     }
 
     /**
@@ -118,6 +125,60 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
         assertEquals(QUICK_TITLE, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_TITLE));
         assertEquals(QUICK_DESCRIPTION, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_DESCRIPTION));
         assertEquals(QUICK_CREATOR, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_AUTHOR));
+    }
+    
+    private static final QName PROP_UNKNOWN_1 = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "unkown1");
+    private static final QName PROP_UNKNOWN_2 = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "unkown2");
+    private static class UnknownMetadataExtracter extends AbstractMappingMetadataExtracter
+    {
+        public UnknownMetadataExtracter()
+        {
+            Properties mappingProperties = new Properties();
+            mappingProperties.put("unknown1", PROP_UNKNOWN_1.toString());
+            mappingProperties.put("unknown2", PROP_UNKNOWN_2.toString());
+            setMappingProperties(mappingProperties);
+        }
+        @Override
+        protected Map<String, Set<QName>> getDefaultMapping()
+        {
+            // No need to give anything back as we have explicitly set the mapping already
+            return new HashMap<String, Set<QName>>(0);
+        }
+        @Override
+        public boolean isSupported(String sourceMimetype)
+        {
+            return sourceMimetype.equals(MimetypeMap.MIMETYPE_BINARY);
+        }
+
+        public Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
+        {
+            Map<String, Serializable> rawMap = newRawMap();
+            rawMap.put("unknown1", new Integer(1));
+            rawMap.put("unknown2", "TWO");
+            return rawMap;
+        }
+    }
+    
+    public void testUnknownProperties()
+    {
+        MetadataExtracterRegistry registry = (MetadataExtracterRegistry) applicationContext.getBean("metadataExtracterRegistry");
+        UnknownMetadataExtracter extracterUnknown = new UnknownMetadataExtracter();
+        extracterUnknown.setRegistry(registry);
+        extracterUnknown.register();
+        // Now add some content with a binary mimetype
+        ContentWriter cw = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        cw.setMimetype(MimetypeMap.MIMETYPE_BINARY);
+        cw.putContent("Content for " + getName());
+        
+        ActionImpl action = new ActionImpl(null, ID, SetPropertyValueActionExecuter.NAME, null);
+        executer.execute(action, this.nodeRef);
+        
+        // The unkown properties should be present
+        Serializable prop1 = nodeService.getProperty(nodeRef, PROP_UNKNOWN_1);
+        Serializable prop2 = nodeService.getProperty(nodeRef, PROP_UNKNOWN_2);
+        
+        assertNotNull("Unknown property is null", prop1);
+        assertNotNull("Unknown property is null", prop2);
     }
 
     /**
@@ -148,9 +209,5 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
 
         // But this one should have been set
         assertEquals(QUICK_DESCRIPTION, this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_DESCRIPTION));
-
     }
-
-    // If we implement other policies than "pragmatic", they should be tested as
-    // well...
 }

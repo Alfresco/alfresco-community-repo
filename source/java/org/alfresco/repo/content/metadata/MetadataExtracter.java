@@ -25,6 +25,7 @@
 package org.alfresco.repo.content.metadata;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,9 +62,9 @@ public interface MetadataExtracter extends ContentWorker
         EAGER
         {
             @Override
-            public boolean applyProperties(Map<QName, Serializable> extractedProperties, Map<QName, Serializable> targetProperties)
+            public Map<QName, Serializable> applyProperties(Map<QName, Serializable> extractedProperties, Map<QName, Serializable> targetProperties)
             {
-                boolean modified = false;
+                Map<QName, Serializable> modifiedProperties = new HashMap<QName, Serializable>(7);
                 for (Map.Entry<QName, Serializable> entry : extractedProperties.entrySet())
                 {
                     QName propertyQName = entry.getKey();
@@ -74,9 +75,9 @@ public interface MetadataExtracter extends ContentWorker
                         continue;
                     }
                     targetProperties.put(propertyQName, extractedValue);
-                    modified = true;
+                    modifiedProperties.put(propertyQName, extractedValue);
                 }
-                return modified;
+                return modifiedProperties;
             }
         },
         /**
@@ -91,12 +92,12 @@ public interface MetadataExtracter extends ContentWorker
         PRAGMATIC
         {
             @Override
-            public boolean applyProperties(Map<QName, Serializable> extractedProperties, Map<QName, Serializable> targetProperties)
+            public Map<QName, Serializable> applyProperties(Map<QName, Serializable> extractedProperties, Map<QName, Serializable> targetProperties)
             {
                 /*
                  * Negative and positive checks are mixed in the loop.
                  */
-                boolean modified = false;
+                Map<QName, Serializable> modifiedProperties = new HashMap<QName, Serializable>(7);
                 for (Map.Entry<QName, Serializable> entry : extractedProperties.entrySet())
                 {
                     QName propertyQName = entry.getKey();
@@ -111,7 +112,7 @@ public interface MetadataExtracter extends ContentWorker
                     {
                         // There is nothing currently
                         targetProperties.put(propertyQName, extractedValue);
-                        modified = true;
+                        modifiedProperties.put(propertyQName, extractedValue);
                         continue;
                     }
                     Serializable originalValue = targetProperties.get(propertyQName);
@@ -119,7 +120,7 @@ public interface MetadataExtracter extends ContentWorker
                     {
                         // The current value is null
                         targetProperties.put(propertyQName, extractedValue);
-                        modified = true;
+                        modifiedProperties.put(propertyQName, extractedValue);
                         continue;
                     }
                     // Check the string representation
@@ -135,13 +136,13 @@ public interface MetadataExtracter extends ContentWorker
                         {
                             // The original string is trivial
                             targetProperties.put(propertyQName, extractedValue);
-                            modified = true;
+                            modifiedProperties.put(propertyQName, extractedValue);
                             continue;
                         }
                     }
                     // We have some other object as the original value, so keep it
                 }
-                return modified;
+                return modifiedProperties;
             }
         },
         /**
@@ -157,9 +158,9 @@ public interface MetadataExtracter extends ContentWorker
         CAUTIOUS
         {
             @Override
-            public boolean applyProperties(Map<QName, Serializable> extractedProperties, Map<QName, Serializable> targetProperties)
+            public Map<QName, Serializable> applyProperties(Map<QName, Serializable> extractedProperties, Map<QName, Serializable> targetProperties)
             {
-                boolean modified = false;
+                Map<QName, Serializable> modifiedProperties = new HashMap<QName, Serializable>(7);
                 for (Map.Entry<QName, Serializable> entry : extractedProperties.entrySet())
                 {
                     QName propertyQName = entry.getKey();
@@ -176,18 +177,20 @@ public interface MetadataExtracter extends ContentWorker
                         continue;
                     }
                     targetProperties.put(propertyQName, extractedValue);
-                    modified = true;
+                    modifiedProperties.put(propertyQName, extractedValue);
                 }
-                return modified;
+                return modifiedProperties;
             }
         };
 
         /**
          * Apply the overwrite policy for the extracted properties.
          * 
-         * @return Returns true if <i>any</i> properties were set on the target properties
+         * @return
+         *          Returns a map of all properties that were applied to the target map.  If the result is
+         *          an empty map, then the target map remains unchanged.
          */
-        public boolean applyProperties(Map<QName, Serializable> extractedProperties, Map<QName, Serializable> targetProperties)
+        public Map<QName, Serializable> applyProperties(Map<QName, Serializable> extractedProperties, Map<QName, Serializable> targetProperties)
         {
             throw new UnsupportedOperationException("Override this method");
         }
@@ -235,12 +238,40 @@ public interface MetadataExtracter extends ContentWorker
      * 
      * @param reader                the source of the content
      * @param destination           the map of properties to populate (essentially a return value)
-     * @return                      Returns <tt>true</tt> if the destination map was modified
+     * @return                      Returns a map of all properties on the destination map that were
+     *                              added or modified.  If the return map is empty, then no properties
+     *                              were modified.
      * @throws ContentIOException   if a detectable error occurs
      * 
      * @see #extract(ContentReader, OverwritePolicy, Map, Map)
      */
-    public boolean extract(ContentReader reader, Map<QName, Serializable> destination) throws ContentIOException;
+    public Map<QName, Serializable> extract(ContentReader reader, Map<QName, Serializable> destination);
+
+    /**
+     * Extracts the metadata values from the content provided by the reader and source
+     * mimetype to the supplied map.
+     * <p>
+     * The extraction viability can be determined by an up front call to {@link #isSupported(String)}.
+     * <p>
+     * The source mimetype <b>must</b> be available on the
+     * {@link org.alfresco.service.cmr.repository.ContentAccessor#getMimetype()} method
+     * of the reader.
+     * 
+     * @param reader                the source of the content
+     * @param overwritePolicy       the policy stipulating how the system properties must be
+     *                              overwritten if present
+     * @param destination           the map of properties to populate (essentially a return value)
+     * @return                      Returns a map of all properties on the destination map that were
+     *                              added or modified.  If the return map is empty, then no properties
+     *                              were modified.
+     * @throws ContentIOException   if a detectable error occurs
+     * 
+     * @see #extract(ContentReader, OverwritePolicy, Map, Map)
+     */
+    public Map<QName, Serializable> extract(
+            ContentReader reader,
+            OverwritePolicy overwritePolicy,
+            Map<QName, Serializable> destination);
 
     /**
      * Extracts the metadata from the content provided by the reader and source
@@ -260,14 +291,16 @@ public interface MetadataExtracter extends ContentWorker
      *                              overwritten if present
      * @param destination           the map of properties to populate (essentially a return value)
      * @param mapping               a mapping of document-specific properties to system properties.
-     * @return                      Returns <tt>true</tt> if the destination map was modified
+     * @return                      Returns a map of all properties on the destination map that were
+     *                              added or modified.  If the return map is empty, then no properties
+     *                              were modified.
      * @throws ContentIOException   if a detectable error occurs
      * 
      * @see #extract(ContentReader, Map)
      */
-    public boolean extract(
+    public Map<QName, Serializable> extract(
             ContentReader reader,
             OverwritePolicy overwritePolicy,
             Map<QName, Serializable> destination,
-            Map<String, Set<QName>> mapping) throws ContentIOException;
+            Map<String, Set<QName>> mapping);
 }

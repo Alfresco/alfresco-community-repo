@@ -25,9 +25,10 @@
 package org.alfresco.repo.action.executer;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.metadata.MetadataExtracter;
@@ -46,40 +47,15 @@ import org.alfresco.service.namespace.QName;
 /**
  * Extract metadata from any added content.
  * <p>
- * The metadata is extracted from the content and compared to the current
- * property values.  Missing or zero-length properties are replaced,
- * otherwise they are left as is.<br/>
- * <i>This may change if the action gets parameterized in future</i>.
+ * Currently, the default {@linkplain MetadataExtracter.OverwritePolicy overwrite policy}
+ * for each extracter is used. (TODO: Add overwrite policy as a parameter.)
+ * 
+ * @see MetadataExtracter.OverwritePolicy
  * 
  * @author Jesper Steen Møller
  */
 public class ContentMetadataExtracter extends ActionExecuterAbstractBase
 {
-    /**
-     * Action constants
-     */
-    public static final String NAME = "extract-metadata";
-
-    /*
-     * TODO: Action parameters.
-     * 
-     * Currently none exist, but it may be nice to add a 'policy' parameter for
-     * overwriting the extracted properties, with the following possible values:
-     * 1) Never: Never overwrite node properties that
-     * exist (i.e. preserve values, nulls, and blanks)
-     * 2) Pragmatic: Write
-     * extracted properties if they didn't exist before, are null, or evaluate
-     * to an empty string.
-     * 3) Always: Always store the extracted properes.
-     * 
-     * Policies 1 and 2 will preserve previously set properties in case nodes
-     * are moved/copied, making this action run on the same content several
-     * times. However, if a property is deliberately cleared (e.g. by putting
-     * the empty string into the "decription" field), the pragmatic policy would
-     * indeed overwrite it. The current implementation matches the 'pragmatic'
-     * policy.
-     */
-
     /**
      * The node service
      */
@@ -140,68 +116,77 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
      */
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
-        if (this.nodeService.exists(actionedUponNodeRef) == true)
+        if (!nodeService.exists(actionedUponNodeRef))
         {
-            ContentReader cr = contentService.getReader(actionedUponNodeRef, ContentModel.PROP_CONTENT);
+            // Node is gone
+            return;
+        }
+        ContentReader reader = contentService.getReader(actionedUponNodeRef, ContentModel.PROP_CONTENT);
+        // The reader may be null, e.g. for folders and the like
+        if (reader == null || reader.getMimetype() == null)
+        {
+            // No content to extract data from
+            return;
+        }
+        String mimetype = reader.getMimetype();
+        MetadataExtracter extracter = metadataExtracterRegistry.getExtracter(mimetype);
+        if (extracter == null)
+        {
+            // There is no extracter to use
+            return;
+        }
+        
+        // Get all the node's properties
+        Map<QName, Serializable> nodeProperties = nodeService.getProperties(actionedUponNodeRef);
+        
+        // TODO: The override policy should be a parameter here.  Instead, we'll use the default policy
+        //       set on the extracter.
+        // Give the node's properties to the extracter to be modified
+        Map<QName, Serializable> modifiedProperties = extracter.extract(
+                reader,
+                /*OverwritePolicy.PRAGMATIC,*/
+                nodeProperties);
 
-            // 'cr' may be null, e.g. for folders and the like
-            if (cr != null && cr.getMimetype() != null)
+        // If none of the properties where changed, then there is nothing more to do
+        if (modifiedProperties.size() == 0)
+        {
+            return;
+        }
+        
+        // Check that all properties have the appropriate aspect applied
+        Set<QName> requiredAspectQNames = new HashSet<QName>(3);
+        
+        for (QName propertyQName : modifiedProperties.keySet())
+        {
+            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+            if (propertyDef == null)
             {
-                MetadataExtracter me = metadataExtracterRegistry.getExtracter(cr.getMimetype());
-                if (me != null)
-                {
-                    Map<QName, Serializable> newProps = new HashMap<QName, Serializable>(7, 0.5f);
-                    me.extract(cr, newProps);
-
-                    Map<QName, Serializable> allProps = nodeService.getProperties(actionedUponNodeRef);
-
-                    /*
-                     * The code below implements a modestly conservative
-                     * 'preserve' policy which shouldn't override values
-                     * accidentally.
-                     */
-
-                    boolean changed = false;
-                    for (QName key : newProps.keySet())
-                    {
-                        // check if we need to add an aspect for the prop
-                        ClassDefinition propClass = dictionaryService.getProperty(key).getContainerClass();
-                        if (propClass.isAspect() &&
-                            nodeService.hasAspect(actionedUponNodeRef, propClass.getName()) == false)
-                        {
-                            Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>(3, 1.0f);
-                            for (QName defKey : propClass.getProperties().keySet())
-                            {
-                                if (dictionaryService.getProperty(defKey).isMandatory())
-                                {
-                                    aspectProps.put(defKey, allProps.get(defKey));
-                                    allProps.remove(defKey);
-                                }
-                            }
-                            nodeService.addAspect(actionedUponNodeRef, propClass.getName(), aspectProps);
-                        }
-                        
-                        Serializable value = newProps.get(key);
-                        if (value == null)
-                        {
-                            continue; // Content extracters shouldn't do this
-                        }
-                        
-                        // Look up the old value, and check for nulls
-                        Serializable oldValue = allProps.get(key);
-                        if (oldValue == null || oldValue.toString().length() == 0)
-                        {
-                            allProps.put(key, value);
-                            changed = true;
-                        }
-                    }
-                    
-                    if (changed)
-                    {
-                        nodeService.setProperties(actionedUponNodeRef, allProps);
-                    }
-                }
+                // The property is not defined in the model
+                continue;
             }
+            ClassDefinition propertyContainerDef = propertyDef.getContainerClass();
+            if (propertyContainerDef.isAspect())
+            {
+                QName aspectQName = propertyContainerDef.getName();
+                requiredAspectQNames.add(aspectQName);
+            }
+        }
+        
+        // Add all the properties to the node BEFORE we add the aspects
+        nodeService.setProperties(actionedUponNodeRef, nodeProperties);
+        
+        // Add each of the aspects, as required
+        for (QName requiredAspectQName : requiredAspectQNames)
+        {
+             if (nodeService.hasAspect(actionedUponNodeRef, requiredAspectQName))
+             {
+                 // The node has the aspect already
+                 continue;
+             }
+             else
+             {
+                 nodeService.addAspect(actionedUponNodeRef, requiredAspectQName, null);
+             }
         }
     }
 

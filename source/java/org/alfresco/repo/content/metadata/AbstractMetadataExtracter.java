@@ -26,6 +26,7 @@ package org.alfresco.repo.content.metadata;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,6 +44,7 @@ import org.apache.commons.logging.LogFactory;
  * @deprecated Use the {@link org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter}
  * 
  * @author Jesper Steen Møller
+ * @author Derek Hulley
  */
 abstract public class AbstractMetadataExtracter implements MetadataExtracter
 {
@@ -164,15 +166,43 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
 
     /**
      * {@inheritDoc}
+     * <p>
+     * A {@linkplain OverwritePolicy#PRAGMATIC pragmatic} overwrite policy will be applied.
      */
-    public boolean extract(ContentReader reader, Map<QName, Serializable> destination) throws ContentIOException
+    public Map<QName, Serializable> extract(ContentReader reader, Map<QName, Serializable> destination)
+    {
+        return extract(reader, OverwritePolicy.PRAGMATIC, destination);
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @param propertyMapping       ignored
+     * 
+     * @see #extract(ContentReader, Map)
+     */
+    public final Map<QName, Serializable> extract(
+            ContentReader reader,
+            OverwritePolicy overwritePolicy,
+            Map<QName, Serializable> destination) throws ContentIOException
     {
         // check the reliability
         checkReliability(reader);
         
+        Map<QName, Serializable> newProperties = new HashMap<QName, Serializable>(13);
         try
         {
-            extractInternal(reader, destination);
+            extractInternal(reader, newProperties);
+            // Apply the overwrite policy
+            Map<QName, Serializable> modifiedProperties = overwritePolicy.applyProperties(newProperties, destination);
+            // done
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Completed metadata extraction: \n" +
+                        "   reader: " + reader + "\n" +
+                        "   extracter: " + this);
+            }
+            return modifiedProperties;
         }
         catch (Throwable e)
         {
@@ -182,23 +212,14 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
         }
         finally
         {
-            // check that the reader was closed
-            if (!reader.isClosed())
+            // check that the reader was closed (if used)
+            if (reader.isChannelOpen())
             {
                 logger.error("Content reader not closed by metadata extracter: \n" +
                         "   reader: " + reader + "\n" +
                         "   extracter: " + this);
             }
         }
-        
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Completed metadata extraction: \n" +
-                    "   reader: " + reader + "\n" +
-                    "   extracter: " + this);
-        }
-        return true;
     }
 
     /**
@@ -209,7 +230,7 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
      * 
      * @see #extract(ContentReader, Map)
      */
-    public final boolean extract(
+    public final Map<QName, Serializable> extract(
             ContentReader reader,
             OverwritePolicy overwritePolicy,
             Map<QName, Serializable> destination,

@@ -354,8 +354,9 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             while (tokenizer.hasMoreTokens())
             {
                 String qnameStr = tokenizer.nextToken().trim();
+                // Check if we need to resolve a namespace reference
                 int index = qnameStr.indexOf(QName.NAMESPACE_PREFIX);
-                if (index > -1)
+                if (index > -1 && qnameStr.charAt(0) != QName.NAMESPACE_BEGIN)
                 {
                     String prefix = qnameStr.substring(0, index);
                     String suffix = qnameStr.substring(index + 1);
@@ -490,7 +491,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * {@inheritDoc}
      */
-    public final boolean extract(ContentReader reader, Map<QName, Serializable> destination) throws ContentIOException
+    public final Map<QName, Serializable> extract(ContentReader reader, Map<QName, Serializable> destination)
     {
         return extract(reader, this.overwritePolicy, destination, this.mapping);
     }
@@ -498,11 +499,22 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * {@inheritDoc}
      */
-    public final boolean extract(
+    public final Map<QName, Serializable> extract(
+            ContentReader reader,
+            OverwritePolicy overwritePolicy,
+            Map<QName, Serializable> destination)
+    {
+        return extract(reader, overwritePolicy, destination, this.mapping);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public final Map<QName, Serializable> extract(
             ContentReader reader,
             OverwritePolicy overwritePolicy,
             Map<QName, Serializable> destination,
-            Map<String, Set<QName>> mapping) throws ContentIOException
+            Map<String, Set<QName>> mapping)
     {
         // Done
         if (logger.isDebugEnabled())
@@ -522,14 +534,14 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         // check the reliability
         checkIsSupported(reader);
         
-        boolean changed = false;
+        Map<QName, Serializable> changedProperties = null;
         try
         {
             Map<String, Serializable> rawMetadata = extractRaw(reader);
             // Convert to system properties (standalone)
             Map<QName, Serializable> systemProperties = mapRawToSystem(rawMetadata);
             // Now use the proper overwrite policy
-            changed = overwritePolicy.applyProperties(systemProperties, destination);
+            changedProperties = overwritePolicy.applyProperties(systemProperties, destination);
         }
         catch (Throwable e)
         {
@@ -539,8 +551,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         }
         finally
         {
-            // check that the reader was closed
-            if (!reader.isClosed())
+            // check that the reader was closed (if used)
+            if (reader.isChannelOpen())
             {
                 logger.error("Content reader not closed by metadata extracter: \n" +
                         "   reader: " + reader + "\n" +
@@ -554,9 +566,9 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             logger.debug("Completed metadata extraction: \n" +
                     "   reader:    " + reader + "\n" +
                     "   extracter: " + this + "\n" +
-                    "   changed:   " + changed);
+                    "   changed:   " + changedProperties);
         }
-        return changed;
+        return changedProperties;
     }
     
     /**

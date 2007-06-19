@@ -233,4 +233,18 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
         return false;
     }
 
+    public Set<String> getAuthoritiesForUser(String currentUserName)
+    {
+        Set<String> authorities = new HashSet<String>();
+        if (adminUsers.contains(currentUserName))
+        {
+            authorities.addAll(adminSet);
+        }
+        if(AuthorityType.getAuthorityType(currentUserName) != AuthorityType.GUEST)
+        {
+           authorities.addAll(allSet);
+        }
+        return authorities;
+    }
+
 }

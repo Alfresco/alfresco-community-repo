@@ -76,6 +76,12 @@ public interface AuthorityService
     public Set<String> getAuthorities();
 
     /**
+     * Get the authorities for the given user
+     */
+    @Auditable(parameters = {"userName"})
+    public Set<String> getAuthoritiesForUser(String userName);
+    
+    /**
      * Get all authorities by type.
      * 
      * @param type -

@@ -126,8 +126,13 @@ public class AuthorityServiceImpl implements AuthorityService
 
     public Set<String> getAuthorities()
     {
-        Set<String> authorities = new HashSet<String>();
         String currentUserName = authenticationComponent.getCurrentUserName();
+        return getAuthoritiesForUser(currentUserName);
+    }
+
+    public Set<String> getAuthoritiesForUser(String currentUserName)
+    {
+        Set<String> authorities = new HashSet<String>();
         if (adminUsers.contains(currentUserName))
         {
             authorities.addAll(adminSet);
@@ -139,7 +144,7 @@ public class AuthorityServiceImpl implements AuthorityService
         authorities.addAll(getContainingAuthorities(null, currentUserName, false));
         return authorities;
     }
-
+    
     public Set<String> getAllAuthorities(AuthorityType type)
     {
         Set<String> authorities = new HashSet<String>();

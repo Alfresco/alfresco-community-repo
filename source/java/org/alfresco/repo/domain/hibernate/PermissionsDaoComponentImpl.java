@@ -26,6 +26,7 @@ package org.alfresco.repo.domain.hibernate;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -36,9 +37,13 @@ import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.DbAuthority;
 import org.alfresco.repo.domain.DbPermission;
 import org.alfresco.repo.domain.DbPermissionKey;
+import org.alfresco.repo.domain.Node;
+import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
+import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
+import org.alfresco.repo.security.permissions.impl.PermissionReferenceImpl;
 import org.alfresco.repo.security.permissions.impl.PermissionsDaoComponent;
 import org.alfresco.repo.security.permissions.impl.SimpleNodePermissionEntry;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionEntry;
@@ -46,31 +51,40 @@ import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.repo.transaction.TransactionalDao;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.hibernate.Query;
+import org.hibernate.ScrollMode;
+import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
- * Support for accessing persisted permission information.
- * 
- * This class maps between persisted objects and the external API defined in the
- * PermissionsDAO interface.
+ * Support for accessing persisted permission information. This class maps between persisted objects and the external
+ * API defined in the PermissionsDAO interface.
  * 
  * @author andyh
  */
-public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements PermissionsDaoComponent, TransactionalDao
+public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements PermissionsDaoComponent,
+        TransactionalDao
 {
     private static final boolean INHERIT_PERMISSIONS_DEFAULT = true;
+
     public static final String QUERY_GET_PERMISSION = "permission.GetPermission";
+
     public static final String QUERY_GET_AC_ENTRIES_FOR_AUTHORITY = "permission.GetAccessControlEntriesForAuthority";
+
+    public static final String QUERY_GET_ALL_AC_ENTRIES_FOR_AUTHORITY = "permission.GetAllAccessControlEntriesForAuthority";
+
     public static final String QUERY_GET_AC_ENTRIES_FOR_PERMISSION = "permission.GetAccessControlEntriesForPermission";
-    
+
+    public static final String QUERY_FIND_NODES_BY_PERMISSION = "permission.FindNodesByPermission";
+
     private Map<String, AccessControlListDAO> fProtocolToACLDAO;
-    
+
     private AccessControlListDAO fDefaultACLDAO;
 
     /** a uuid identifying this unique instance */
@@ -100,7 +114,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         PermissionsDaoComponentImpl that = (PermissionsDaoComponentImpl) obj;
         return this.uuid.equals(that.uuid);
     }
-    
+
     /**
      * @see #uuid
      */
@@ -110,8 +124,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
     }
 
     /**
-     * Does this <tt>Session</tt> contain any changes which must be
-     * synchronized with the store?
+     * Does this <tt>Session</tt> contain any changes which must be synchronized with the store?
      * 
      * @return true => changes are pending
      */
@@ -126,7 +139,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
             }
         };
         // execute the callback
-        return ((Boolean)getHibernateTemplate().execute(callback)).booleanValue();
+        return ((Boolean) getHibernateTemplate().execute(callback)).booleanValue();
     }
 
     /**
@@ -136,12 +149,12 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
     {
         getSession().flush();
     }
-        
+
     public void setProtocolToACLDAO(Map<String, AccessControlListDAO> map)
     {
         fProtocolToACLDAO = map;
     }
-    
+
     public void setDefaultACLDAO(AccessControlListDAO defaultACLDAO)
     {
         fDefaultACLDAO = defaultACLDAO;
@@ -166,10 +179,8 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         if (acl == null)
         {
             // there isn't an access control list for the node - spoof a null one
-            SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(
-                    nodeRef,
-                    true,
-                    Collections.<SimplePermissionEntry> emptySet());
+            SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(nodeRef, true, Collections
+                    .<SimplePermissionEntry> emptySet());
             npe = snpe;
         }
         else
@@ -179,10 +190,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         // done
         if (logger.isDebugEnabled())
         {
-            logger.debug(
-                    "Created access control list for node: \n" +
-                    "   node: " + nodeRef + "\n" +
-                    "   acl: " + npe);
+            logger.debug("Created access control list for node: \n" + "   node: " + nodeRef + "\n" + "   acl: " + npe);
         }
         return npe;
     }
@@ -190,14 +198,15 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
     /**
      * Get the persisted access control list or create it if required.
      * 
-     * @param nodeRef - the node for which to create the list
-     * @param create - create the object if it is missing
+     * @param nodeRef -
+     *            the node for which to create the list
+     * @param create -
+     *            create the object if it is missing
      * @return Returns the current access control list or null if not found
      */
     private DbAccessControlList getAccessControlList(NodeRef nodeRef, boolean create)
     {
-        DbAccessControlList acl = 
-            getACLDAO(nodeRef).getAccessControlList(nodeRef);
+        DbAccessControlList acl = getACLDAO(nodeRef).getAccessControlList(nodeRef);
         if (acl == null && create)
         {
             acl = createAccessControlList(nodeRef);
@@ -205,32 +214,27 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         // done
         if (logger.isDebugEnabled())
         {
-            logger.debug("Retrieved access control list: \n" +
-                    "   node: " + nodeRef + "\n" +
-                    "   list: " + acl);
+            logger.debug("Retrieved access control list: \n" + "   node: " + nodeRef + "\n" + "   list: " + acl);
         }
         return acl;
     }
-    
+
     /**
-     * Creates an access control list for the node and removes the entry from
-     * the nullPermsionCache.
+     * Creates an access control list for the node and removes the entry from the nullPermsionCache.
      */
     private DbAccessControlList createAccessControlList(NodeRef nodeRef)
     {
         DbAccessControlList acl = new DbAccessControlListImpl();
         acl.setInherits(INHERIT_PERMISSIONS_DEFAULT);
         getHibernateTemplate().save(acl);
-        
+
         // maintain inverse
         getACLDAO(nodeRef).setAccessControlList(nodeRef, acl);
-        
+
         // done
         if (logger.isDebugEnabled())
         {
-            logger.debug("Created Access Control List: \n" +
-                    "   node: " + nodeRef + "\n" +
-                    "   list: " + acl);
+            logger.debug("Created Access Control List: \n" + "   node: " + nodeRef + "\n" + "   list: " + acl);
         }
         return acl;
     }
@@ -241,7 +245,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         try
         {
             acl = getAccessControlList(nodeRef, false);
-    }
+        }
         catch (InvalidNodeRefException e)
         {
             return;
@@ -258,14 +262,13 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
     @SuppressWarnings("unchecked")
     public void deletePermissions(final String authority)
     {
-        // get the authority 
+        // get the authority
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
-                Query query = session
-                        .getNamedQuery(QUERY_GET_AC_ENTRIES_FOR_AUTHORITY)
-                        .setString("authorityRecipient", authority);
+                Query query = session.getNamedQuery(QUERY_GET_AC_ENTRIES_FOR_AUTHORITY).setString("authorityRecipient",
+                        authority);
                 return (Integer) HibernateHelper.deleteDbAccessControlEntries(session, query);
             }
         };
@@ -296,16 +299,15 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         // done
         if (logger.isDebugEnabled())
         {
-            logger.debug("Deleted " + deletedCount + "entries for criteria: \n" +
-                    "   node: " + nodeRef + "\n" +
-                    "   authority: " + authority);
+            logger.debug("Deleted "
+                    + deletedCount + "entries for criteria: \n" + "   node: " + nodeRef + "\n" + "   authority: "
+                    + authority);
         }
     }
 
     /**
-     * Deletes all permission entries (access control list entries) that match
-     * the given criteria.  Note that the access control list for the node is
-     * not deleted.
+     * Deletes all permission entries (access control list entries) that match the given criteria. Note that the access
+     * control list for the node is not deleted.
      */
     public void deletePermission(NodeRef nodeRef, String authority, PermissionReference permission)
     {
@@ -327,10 +329,9 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         // done
         if (logger.isDebugEnabled())
         {
-            logger.debug("Deleted " + deletedCount + "entries for criteria: \n" +
-                    "   node: " + nodeRef + "\n" +
-                    "   permission: " + permission + "\n" +
-                    "   authority: " + authority);
+            logger.debug("Deleted "
+                    + deletedCount + "entries for criteria: \n" + "   node: " + nodeRef + "\n" + "   permission: "
+                    + permission + "\n" + "   authority: " + authority);
         }
     }
 
@@ -362,17 +363,17 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
             }
         }
     }
-    
+
     /**
-     * @param nodeRef the node against which to join
-     * @param authority the authority against which to join
-     * @param perm the permission against which to join
+     * @param nodeRef
+     *            the node against which to join
+     * @param authority
+     *            the authority against which to join
+     * @param perm
+     *            the permission against which to join
      * @return Returns all access control entries that match the criteria
      */
-    private DbAccessControlEntry getAccessControlEntry(
-            NodeRef nodeRef,
-            String authority,
-            PermissionReference permission)
+    private DbAccessControlEntry getAccessControlEntry(NodeRef nodeRef, String authority, PermissionReference permission)
     {
         DbAccessControlList acl = getAccessControlList(nodeRef, false);
         DbAccessControlEntry entry = null;
@@ -384,10 +385,9 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         // done
         if (logger.isDebugEnabled())
         {
-            logger.debug("" + (entry == null ? "Did not find" : "Found") + " entry for criteria: \n" +
-                    "   node: " + nodeRef + "\n" +
-                    "   authority: " + authority + "\n" +
-                    "   permission: " + permission);
+            logger.debug(""
+                    + (entry == null ? "Did not find" : "Found") + " entry for criteria: \n" + "   node: " + nodeRef
+                    + "\n" + "   authority: " + authority + "\n" + "   permission: " + permission);
         }
         return entry;
     }
@@ -419,7 +419,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         final QName qname = permissionRef.getQName();
         final String name = permissionRef.getName();
         Session session = getSession();
-        
+
         DbPermission dbPermission = DbPermissionImpl.find(session, qname, name);
 
         // create if necessary
@@ -435,11 +435,8 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
 
     public void setPermission(PermissionEntry permissionEntry)
     {
-        setPermission(
-                permissionEntry.getNodeRef(),
-                permissionEntry.getAuthority(),
-                permissionEntry.getPermissionReference(),
-                permissionEntry.isAllowed());
+        setPermission(permissionEntry.getNodeRef(), permissionEntry.getAuthority(), permissionEntry
+                .getPermissionReference(), permissionEntry.isAllowed());
     }
 
     public void setPermission(NodePermissionEntry nodePermissionEntry)
@@ -447,7 +444,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         NodeRef nodeRef = nodePermissionEntry.getNodeRef();
 
         // Get the access control list
-        //   Note the logic here requires to know whether it was created or not
+        // Note the logic here requires to know whether it was created or not
         DbAccessControlList acl = getAccessControlList(nodeRef, false);
         if (acl != null)
         {
@@ -495,7 +492,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
             }
         }
     }
-    
+
     public boolean getInheritParentPermissions(NodeRef nodeRef)
     {
         DbAccessControlList acl = null;
@@ -522,33 +519,29 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
 
     private SimpleNodePermissionEntry createSimpleNodePermissionEntry(NodeRef nodeRef)
     {
-        DbAccessControlList acl = 
-            getACLDAO(nodeRef).getAccessControlList(nodeRef);
+        DbAccessControlList acl = getACLDAO(nodeRef).getAccessControlList(nodeRef);
         if (acl == null)
         {
             // there isn't an access control list for the node - spoof a null one
-            SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(
-                    nodeRef,
-                    true,
-                    Collections.<SimplePermissionEntry> emptySet());
+            SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(nodeRef, true, Collections
+                    .<SimplePermissionEntry> emptySet());
             return snpe;
         }
         else
         {
             Set<DbAccessControlEntry> entries = acl.getEntries();
-            SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(
-                    nodeRef,
-                    acl.getInherits(),
+            SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(nodeRef, acl.getInherits(),
                     createSimplePermissionEntries(nodeRef, entries));
             return snpe;
         }
     }
 
     /**
-     * @param entries access control entries
+     * @param entries
+     *            access control entries
      * @return Returns a unique set of entries that can be given back to the outside world
      */
-    private Set<SimplePermissionEntry> createSimplePermissionEntries(NodeRef nodeRef, 
+    private Set<SimplePermissionEntry> createSimplePermissionEntries(NodeRef nodeRef,
             Collection<DbAccessControlEntry> entries)
     {
         if (entries == null)
@@ -566,18 +559,14 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         return spes;
     }
 
-    private static SimplePermissionEntry createSimplePermissionEntry(NodeRef nodeRef, 
-            DbAccessControlEntry ace)
+    private static SimplePermissionEntry createSimplePermissionEntry(NodeRef nodeRef, DbAccessControlEntry ace)
     {
         if (ace == null)
         {
             return null;
         }
-        return new SimplePermissionEntry(
-                nodeRef,
-                createSimplePermissionReference(ace.getPermission()),
-                ace.getAuthority().getRecipient(),
-                ace.isAllowed() ? AccessStatus.ALLOWED : AccessStatus.DENIED);
+        return new SimplePermissionEntry(nodeRef, createSimplePermissionReference(ace.getPermission()), ace
+                .getAuthority().getRecipient(), ace.isAllowed() ? AccessStatus.ALLOWED : AccessStatus.DENIED);
     }
 
     private static SimplePermissionReference createSimplePermissionReference(DbPermission perm)
@@ -586,14 +575,14 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         {
             return null;
         }
-        return new SimplePermissionReference(
-                perm.getTypeQname(),
-                perm.getName());
+        return new SimplePermissionReference(perm.getTypeQname(), perm.getName());
     }
-    
+
     /**
      * Helper to choose appropriate NodeService for the given NodeRef
-     * @param nodeRef The NodeRef to dispatch from.
+     * 
+     * @param nodeRef
+     *            The NodeRef to dispatch from.
      * @return The appropriate NodeService.
      */
     private AccessControlListDAO getACLDAO(NodeRef nodeRef)
@@ -604,5 +593,81 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
             return fDefaultACLDAO;
         }
         return ret;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissions(final String authority)
+    {
+        // get the authority
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_ALL_AC_ENTRIES_FOR_AUTHORITY).setString(
+                        "authorityRecipient", authority);
+
+                Map<NodeRef, Set<AccessPermission>> result = new HashMap<NodeRef, Set<AccessPermission>>();
+
+                ScrollableResults entities = query.scroll(ScrollMode.FORWARD_ONLY);
+                while (entities.next())
+                {
+                    DbAccessControlEntry entry = (DbAccessControlEntry) entities.get(0);
+                    // DbAccessControlList acl = (DbAccessControlList) entities.get(1);
+                    Node node = (Node) entities.get(2);
+                    DbPermission dbPermission = entry.getPermission();
+                    PermissionReferenceImpl pr = new PermissionReferenceImpl(dbPermission.getTypeQname(), dbPermission
+                            .getName());
+                    AccessStatus accessStatus = entry.isAllowed() ? AccessStatus.ALLOWED : AccessStatus.DENIED;
+                    AccessPermission ap = new AccessPermissionImpl(pr.toString(), accessStatus, entry.getAuthority()
+                            .getRecipient());
+                    NodeRef nodeRef = node.getNodeRef();
+                    Set<AccessPermission> nodeSet = result.get(nodeRef);
+                    if (nodeSet == null)
+                    {
+                        nodeSet = new HashSet<AccessPermission>();
+                        result.put(nodeRef, nodeSet);
+                    }
+                    nodeSet.add(ap);
+                }
+
+                return result;
+            }
+        };
+        return (Map<NodeRef, Set<AccessPermission>>) getHibernateTemplate().execute(callback);
+
+    }
+
+    public Set<NodeRef> findNodeByPermission(final String authority, final PermissionReference permission, final boolean allow)
+    {
+        // get the authority
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_FIND_NODES_BY_PERMISSION).setString(
+                        "authorityRecipient", authority).setBoolean("allow", allow).setString("permissionName", permission.getName()).setString("permissionTypeQname", permission.getQName().toString());
+
+                Set<NodeRef> result = new HashSet<NodeRef>();
+
+                ScrollableResults entities = query.scroll(ScrollMode.FORWARD_ONLY);
+                while (entities.next())
+                {
+                    DbAccessControlEntry entry = (DbAccessControlEntry) entities.get(0);
+                    // DbAccessControlList acl = (DbAccessControlList) entities.get(1);
+                    Node node = (Node) entities.get(2);
+                    DbPermission dbPermission = entry.getPermission();
+                    PermissionReferenceImpl pr = new PermissionReferenceImpl(dbPermission.getTypeQname(), dbPermission
+                            .getName());
+                    AccessStatus accessStatus = entry.isAllowed() ? AccessStatus.ALLOWED : AccessStatus.DENIED;
+                    AccessPermission ap = new AccessPermissionImpl(pr.toString(), accessStatus, entry.getAuthority()
+                            .getRecipient());
+                    NodeRef nodeRef = node.getNodeRef();
+                    result.add(nodeRef);
+                }
+
+                return result;
+            }
+        };
+        return (Set<NodeRef>) getHibernateTemplate().execute(callback);
     }
 }

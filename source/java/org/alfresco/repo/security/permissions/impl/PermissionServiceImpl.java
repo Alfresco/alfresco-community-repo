@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import net.sf.acegisecurity.Authentication;
@@ -52,7 +53,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -280,74 +280,6 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         return accessPermissions;
     }
 
-    private class AccessPermissionImpl implements AccessPermission
-    {
-        private String permission;
-
-        private AccessStatus accessStatus;
-
-        private String authority;
-
-        private AuthorityType authorityType;
-
-        AccessPermissionImpl(String permission, AccessStatus accessStatus, String authority)
-        {
-            this.permission = permission;
-            this.accessStatus = accessStatus;
-            this.authority = authority;
-            this.authorityType = AuthorityType.getAuthorityType(authority);
-        }
-
-        public String getPermission()
-        {
-            return permission;
-        }
-
-        public AccessStatus getAccessStatus()
-        {
-            return accessStatus;
-        }
-
-        public String getAuthority()
-        {
-            return authority;
-        }
-
-        public AuthorityType getAuthorityType()
-        {
-            return authorityType;
-        }
-
-        @Override
-        public String toString()
-        {
-            return accessStatus + " " + this.permission + " - " + this.authority + " (" + this.authorityType + ")";
-        }
-
-        @Override
-        public boolean equals(Object o)
-        {
-            if (this == o)
-            {
-                return true;
-            }
-            if (!(o instanceof AccessPermissionImpl))
-            {
-                return false;
-            }
-            AccessPermissionImpl other = (AccessPermissionImpl) o;
-            return this.getPermission().equals(other.getPermission())
-                    && (this.getAccessStatus() == other.getAccessStatus() && (this.getAccessStatus().equals(other
-                            .getAccessStatus())));
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return ((authority.hashCode() * 37) + permission.hashCode()) * 37 + accessStatus.hashCode();
-        }
-    }
-
     public Set<String> getSettablePermissions(NodeRef nodeRef)
     {
         Set<PermissionReference> settable = getSettablePermissionReferences(nodeRef);
@@ -495,13 +427,16 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         {
             auths.add(authority.getAuthority());
         }
-        if (dynamicAuthorities != null)
+        if (nodeRef != null)
         {
-            for (DynamicAuthority da : dynamicAuthorities)
+            if (dynamicAuthorities != null)
             {
-                if (da.hasAuthority(nodeRef, user.getUsername()))
+                for (DynamicAuthority da : dynamicAuthorities)
                 {
-                    auths.add(da.getAuthority());
+                    if (da.hasAuthority(nodeRef, user.getUsername()))
+                    {
+                        auths.add(da.getAuthority());
+                    }
                 }
             }
         }
@@ -698,7 +633,8 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             // Set the required node permissions
             if (required.equals(getPermissionReference(ALL_PERMISSIONS)))
             {
-                nodeRequirements = modelDAO.getRequiredPermissions(getPermissionReference(PermissionService.FULL_CONTROL), typeQName, aspectQNames,
+                nodeRequirements = modelDAO.getRequiredPermissions(
+                        getPermissionReference(PermissionService.FULL_CONTROL), typeQName, aspectQNames,
                         RequiredPermission.On.NODE);
             }
             else
@@ -1198,5 +1134,57 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         {
             return value;
         }
+    }
+
+    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForTheCurrentUser()
+    {
+        String currentUser = authenticationComponent.getCurrentUserName();
+        return getAllSetPermissions(currentUser);
+    }
+
+    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissions(String authority)
+    {
+        return permissionsDaoComponent.getAllSetPermissions(authority);
+    }
+
+    public Set<NodeRef> findNodesByAssignedPermissionForTheCurrentUser(String permission, boolean allow, boolean includeContainingAuthorities,
+            boolean exactPermissionMatch)
+    {
+        String currentUser = authenticationComponent.getCurrentUserName();
+        return findNodesByAssignedPermission(currentUser, permission, allow, includeContainingAuthorities, exactPermissionMatch);
+    }
+
+    public Set<NodeRef> findNodesByAssignedPermission(String authority, String permission, boolean allow,
+            boolean includeContainingAuthorities, boolean includeContainingPermissions)
+    {
+        // TODO: owned nodes and add owner rights ??
+        // Does not include dynamic permissions (they would have to be done by query - e.g. owership and OWNER rights)
+        // Does not include ACEGI auth object authorities
+        Set<String> authorities = new HashSet<String>();
+        authorities.add(authority);
+        if (includeContainingAuthorities)
+        {
+            authorities.addAll(authorityService.getAuthoritiesForUser(authority));
+        }
+
+        HashSet<NodeRef> answer = new HashSet<NodeRef>();
+
+        PermissionReference pr = getPermissionReference(permission);
+        Set<PermissionReference> permissions = new HashSet<PermissionReference>();
+        permissions.add(pr);
+
+        if (includeContainingPermissions)
+        {
+            permissions.addAll(modelDAO.getGrantingPermissions(pr));
+        }
+
+        for (PermissionReference perm : permissions)
+        {
+            for (String auth : authorities)
+            {
+                answer.addAll(permissionsDaoComponent.findNodeByPermission(auth, perm, allow));
+            }
+        }
+        return answer;
     }
 }

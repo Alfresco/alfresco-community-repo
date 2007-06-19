@@ -151,6 +151,29 @@
       where
          ace.authority.recipient = :authorityRecipient
    </query>
+	
+   <query name="permission.GetAllAccessControlEntriesForAuthority">
+      select
+         ace, acl, node
+      from  org.alfresco.repo.domain.hibernate.NodeImpl as node     
+	     join   node.accessControlList  as acl 
+	     join   acl.entries             as ace
+      where
+         ace.authority.recipient = :authorityRecipient
+   </query>
+	
+   <query name="permission.FindNodesByPermission">
+      select
+         ace, acl, node
+      from  org.alfresco.repo.domain.hibernate.NodeImpl as node     
+	     join   node.accessControlList  as acl 
+	     join   acl.entries             as ace
+      where
+         ace.authority.recipient = :authorityRecipient and
+	     ace.allowed = :allow and
+	     ace.permission.name = :permissionName and
+	     ace.permission.typeQname = :permissionTypeQname
+   </query>
    
    <query name="permission.patch.GetAccessControlEntriesToChangePermissionOn" >
       select

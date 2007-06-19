@@ -24,7 +24,9 @@
  */
 package org.alfresco.repo.security.permissions.noop;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
@@ -223,5 +225,25 @@ public class PermissionServiceNOOPImpl
     public void setPermission(PermissionEntry permissionEntry)
     {
         throw new UnsupportedOperationException();
+    }
+
+    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForTheCurrentUser()
+    {
+        return Collections.<NodeRef, Set<AccessPermission>>emptyMap();
+    }
+
+    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissions(String authority)
+    {
+        return Collections.<NodeRef, Set<AccessPermission>>emptyMap();
+    }
+
+    public Set<NodeRef> findNodesByAssignedPermissionForTheCurrentUser(String permission, boolean allow, boolean includeContainingAuthorities, boolean exactPermissionMatch)
+    {
+        return Collections.<NodeRef>emptySet();
+    }
+
+    public Set<NodeRef> findNodesByAssignedPermission(String authority, String permission, boolean allow, boolean includeContainingAuthorities, boolean exactPermissionMatch)
+    {
+        return Collections.<NodeRef>emptySet();
     }
 }

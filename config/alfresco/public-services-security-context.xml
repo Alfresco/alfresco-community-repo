@@ -643,6 +643,10 @@
                 org.alfresco.service.cmr.security.PermissionService.setInheritParentPermissions=ACL_NODE.0.sys:base.ChangePermissions
                 org.alfresco.service.cmr.security.PermissionService.getInheritParentPermissions=ACL_ALLOW
                 org.alfresco.service.cmr.security.PermissionService.clearPermission=ACL_NODE.0.sys:base.ChangePermissions
+				org.alfresco.service.cmr.security.PermissionService.findNodesByAssignedPermission=ACL_METHOD.ROLE_ADMINISTRATOR
+				org.alfresco.service.cmr.security.PermissionService.findNodesByAssignedPermissionForTheCurrentUser=ACL_ALLOW
+				org.alfresco.service.cmr.security.PermissionService.getAllSetPermissions=ACL_METHOD.ROLE_ADMINISTRATOR
+				org.alfresco.service.cmr.security.PermissionService.getAllSetPermissionsForTheCurrentUser=ACL_ALLOW
             </value>
         </property>
     </bean>
@@ -672,6 +676,7 @@
                 org.alfresco.service.cmr.security.AuthorityService.getShortName=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getName=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.authorityExists=ACL_METHOD.ROLE_ADMINISTRATOR
+				org.alfresco.service.cmr.security.AuthorityService.getAuthoritiesForUser=ACL_METHOD.ROLE_ADMINISTRATOR
             </value>
         </property>
     </bean>

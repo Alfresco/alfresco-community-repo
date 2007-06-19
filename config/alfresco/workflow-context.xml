@@ -96,4 +96,7 @@
       <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>
    </bean>
 
+   <!-- Workflow Patch Deployer -->
+   <bean id="workflowPatchDeployer" parent="workflowDeployer" singleton="false"/>
+
 </beans>

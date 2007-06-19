@@ -1467,6 +1467,36 @@
    </tag>
    
    <tag>
+      <name>actionInstanceEvaluator</name>
+      <tag-class>org.alfresco.web.ui.repo.tag.evaluator.ActionInstanceEvaluatorTag</tag-class>
+      <body-content>JSP</body-content>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>value</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>evaluatorClassName</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>binding</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
+   <tag>
       <name>multiValueSelector</name>
       <tag-class>org.alfresco.web.ui.repo.tag.MultiValueSelectorTag</tag-class>
       <body-content>JSP</body-content>

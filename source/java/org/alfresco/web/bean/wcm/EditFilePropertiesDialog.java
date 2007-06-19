@@ -26,7 +26,9 @@ package org.alfresco.web.bean.wcm;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
@@ -34,6 +36,9 @@ import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.locking.AVMLock;
+import org.alfresco.service.cmr.avm.locking.AVMLockingException;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -55,7 +60,7 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
 {
    protected AVMBrowseBean avmBrowseBean;
    protected AVMService avmService;
-   
+   protected AVMLockingService avmLockingService;
    
    // ------------------------------------------------------------------------------
    // Bean property getters and setters 
@@ -76,6 +81,14 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
       this.avmService = avmService;
    }
    
+   /**
+    * @param avmLockingService The AVMLockingService to set
+    */
+   public void setAvmLockingService(AVMLockingService avmLockingService)
+   {
+      this.avmLockingService = avmLockingService;
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Dialog implementation
@@ -93,77 +106,106 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
          throws Exception
    {
       NodeRef nodeRef = this.editableNode.getNodeRef();
-      Map<String, Object> editedProps = this.editableNode.getProperties();
+      String webProjectId = this.avmBrowseBean.getWebProject().getStoreId();
+      String avmPath = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
+      String[] storePath = avmPath.split(":");
+      String username = Application.getCurrentUser(context).getUserName();
       
-      // handle the name property separately, it is a special case for AVM nodes
-      String name = (String)editedProps.get(ContentModel.PROP_NAME);
-      if (name != null)
+      try
       {
-         editedProps.remove(ContentModel.PROP_NAME);
-      }
-      
-      // we need to put all the properties from the editable bag back into 
-      // the format expected by the repository
-      Map<QName, Serializable> repoProps = this.nodeService.getProperties(nodeRef);
-      
-      // but first extract and deal with the special mimetype property for ContentData
-      String mimetype = (String)editedProps.get(TEMP_PROP_MIMETYPE);
-      if (mimetype != null)
-      {
-         // remove temporary prop from list so it isn't saved with the others
-         editedProps.remove(TEMP_PROP_MIMETYPE);
-         ContentData contentData = (ContentData)editedProps.get(ContentModel.PROP_CONTENT);
-         if (contentData != null)
-         {
-            contentData = ContentData.setMimetype(contentData, mimetype);
-            editedProps.put(ContentModel.PROP_CONTENT.toString(), contentData);
+         if (this.avmLockingService.hasAccess(webProjectId, avmPath, username) == false)
+         {  
+            throw new AVMLockingException("avmlockservice.locked", new Object[]{avmPath});
          }
-      }
-      
-      // add the "titled" aspect if required, properties will get set below
-      if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED) == false)
-      {
-         nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
-      }
-      
-      // add the remaining properties
-      Iterator<String> iterProps = editedProps.keySet().iterator();
-      while (iterProps.hasNext())
-      {
-         String propName = iterProps.next();
-         QName qname = QName.createQName(propName);
-         
-         // make sure the property is represented correctly
-         Serializable propValue = (Serializable)editedProps.get(propName);
-         
-         // check for empty strings when using number types, set to null in this case
-         if ((propValue != null) && (propValue instanceof String) && 
-             (propValue.toString().length() == 0))
+         else
          {
-            PropertyDefinition propDef = this.dictionaryService.getProperty(qname);
-            if (propDef != null)
+            if (this.avmLockingService.getLock(webProjectId, avmPath) == null)
             {
-               if (propDef.getDataType().getName().equals(DataTypeDefinition.DOUBLE) || 
-                   propDef.getDataType().getName().equals(DataTypeDefinition.FLOAT) ||
-                   propDef.getDataType().getName().equals(DataTypeDefinition.INT) || 
-                   propDef.getDataType().getName().equals(DataTypeDefinition.LONG))
-               {
-                  propValue = null;
-               }
+                List<String> owners = new ArrayList<String>(1);
+                owners.add(username);
+                AVMLock lock = new AVMLock(webProjectId, storePath[0], storePath[1], AVMLockingService.Type.DISCRETIONARY, owners);
+                this.avmLockingService.lockPath(lock);
+            }
+         }
+         Map<String, Object> editedProps = this.editableNode.getProperties();
+         
+         // handle the name property separately, it is a special case for AVM nodes
+         String name = (String)editedProps.get(ContentModel.PROP_NAME);
+         if (name != null)
+         {
+            editedProps.remove(ContentModel.PROP_NAME);
+         }
+         
+         // we need to put all the properties from the editable bag back into 
+         // the format expected by the repository
+         Map<QName, Serializable> repoProps = this.nodeService.getProperties(nodeRef);
+         
+         // but first extract and deal with the special mimetype property for ContentData
+         String mimetype = (String)editedProps.get(TEMP_PROP_MIMETYPE);
+         if (mimetype != null)
+         {
+            // remove temporary prop from list so it isn't saved with the others
+            editedProps.remove(TEMP_PROP_MIMETYPE);
+            ContentData contentData = (ContentData)editedProps.get(ContentModel.PROP_CONTENT);
+            if (contentData != null)
+            {
+               contentData = ContentData.setMimetype(contentData, mimetype);
+               editedProps.put(ContentModel.PROP_CONTENT.toString(), contentData);
             }
          }
          
-         repoProps.put(qname, propValue);
+         // add the "titled" aspect if required, properties will get set below
+         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED) == false)
+         {
+            this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
+         }
+         
+         // add the remaining properties
+         Iterator<String> iterProps = editedProps.keySet().iterator();
+         while (iterProps.hasNext())
+         {
+            String propName = iterProps.next();
+            QName qname = QName.createQName(propName);
+            
+            // make sure the property is represented correctly
+            Serializable propValue = (Serializable)editedProps.get(propName);
+            
+            // check for empty strings when using number types, set to null in this case
+            if ((propValue != null) && (propValue instanceof String) && 
+                (propValue.toString().length() == 0))
+            {
+               PropertyDefinition propDef = this.dictionaryService.getProperty(qname);
+               if (propDef != null)
+               {
+                  if (propDef.getDataType().getName().equals(DataTypeDefinition.DOUBLE) || 
+                      propDef.getDataType().getName().equals(DataTypeDefinition.FLOAT) ||
+                      propDef.getDataType().getName().equals(DataTypeDefinition.INT) || 
+                      propDef.getDataType().getName().equals(DataTypeDefinition.LONG))
+                  {
+                     propValue = null;
+                  }
+               }
+            }
+            
+            repoProps.put(qname, propValue);
+         }
+         
+         // send the properties back to the repository
+         this.nodeService.setProperties(nodeRef, repoProps);
+         
+         // perform the rename last as for an AVM it changes the NodeRef
+         if (name != null)
+         {
+            this.fileFolderService.rename(nodeRef, name);
+            editedProps.put(ContentModel.PROP_NAME.toString(), name);
+         }
       }
-      
-      // send the properties back to the repository
-      this.nodeService.setProperties(nodeRef, repoProps);
-      
-      // perform the rename last as for an AVM it changes the NodeRef
-      if (name != null)
+      finally
       {
-         this.fileFolderService.rename(nodeRef, name);
-         editedProps.put(ContentModel.PROP_NAME.toString(), name);
+         if (this.avmLockingService.getLock(webProjectId, avmPath) != null)
+         {
+            this.avmLockingService.removeLock(webProjectId, avmPath);
+         }
       }
       
       return outcome;

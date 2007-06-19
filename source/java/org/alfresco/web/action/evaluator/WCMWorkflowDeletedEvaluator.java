@@ -30,7 +30,6 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.wf.AVMSubmittedAspect;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.util.Pair;
-import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
@@ -41,22 +40,27 @@ import org.alfresco.web.bean.wcm.AVMUtil;
  * 
  * @author Kevin Roast
  */
-public class WCMWorkflowDeletedEvaluator implements ActionEvaluator
+public class WCMWorkflowDeletedEvaluator extends WCMLockEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */
    public boolean evaluate(final Node node)
    {
-      final FacesContext facesContext = FacesContext.getCurrentInstance();
-      final AVMService avmService = Repository.getServiceRegistry(facesContext).getAVMService();
-      final Pair<Integer, String> p = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef());
-      final int version = p.getFirst();
-      final String path = p.getSecond();
-      
-      // evaluate to true if we are within a workflow store (i.e. list of resources in the task
-      // dialog) or not part of an already in-progress workflow
-      return (AVMUtil.isWorkflowStore(AVMUtil.getStoreName(path)) ||
-              avmService.hasAspect(version, path, AVMSubmittedAspect.ASPECT) == false);
+      boolean proceed = false;
+      if (super.evaluate(node))
+      {
+         final FacesContext facesContext = FacesContext.getCurrentInstance();
+         final AVMService avmService = Repository.getServiceRegistry(facesContext).getAVMService();
+         final Pair<Integer, String> p = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef());
+         final int version = p.getFirst();
+         final String path = p.getSecond();
+
+         // evaluate to true if we are within a workflow store (i.e. list of resources in the task
+         // dialog) or not part of an already in-progress workflow
+         proceed = (AVMUtil.isWorkflowStore(AVMUtil.getStoreName(path)) ||
+                    avmService.hasAspect(version, path, AVMSubmittedAspect.ASPECT) == false);
+      }
+      return proceed;
    }
 }

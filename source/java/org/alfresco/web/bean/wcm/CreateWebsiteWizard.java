@@ -43,6 +43,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -88,8 +89,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
    private static Log logger = LogFactory.getLog(CreateWebsiteWizard.class);
    
    protected boolean editMode = false;
-   
    protected String dnsName;
+   
    protected String title;
    protected String name;
    protected String description;
@@ -99,6 +100,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    protected AVMService avmService;
    protected WorkflowService workflowService;
    protected PersonService personService;
+   protected AVMLockingService avmLockingService;
    
    /** datamodel for table of selected forms */
    protected DataModel formsDataModel = null;
@@ -216,6 +218,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
          
          // navigate to the Websites folder so we can see the newly created folder
          this.navigator.setCurrentNodeId(websiteParent.getId());
+         
+         // inform the locking service about this new instance
+         this.avmLockingService.addWebProject(avmStore);
          
          outcome = AlfrescoNavigationHandler.CLOSE_WIZARD_OUTCOME;
       }
@@ -369,6 +374,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
    public void setPersonService(PersonService personService)
    {
       this.personService = personService;
+   }
+   
+   /**
+    * @param avmLockingService The AVMLockingService to set
+    */
+   public void setAvmLockingService(AVMLockingService avmLockingService)
+   {
+      this.avmLockingService = avmLockingService;
    }
 
    

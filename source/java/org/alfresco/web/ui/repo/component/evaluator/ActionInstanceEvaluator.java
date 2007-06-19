@@ -25,7 +25,10 @@
 package org.alfresco.web.ui.repo.component.evaluator;
 
 import javax.faces.context.FacesContext;
+import javax.faces.el.ValueBinding;
 
+import org.alfresco.config.ConfigException;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.ui.common.component.evaluator.BaseEvaluator;
@@ -72,6 +75,7 @@ public class ActionInstanceEvaluator extends BaseEvaluator
       // standard component attributes are restored by the super class
       super.restoreState(context, values[0]);
       this.evaluator = (ActionEvaluator)values[1];
+      this.evaluatorClassName = (String)values[2];
    }
    
    /**
@@ -79,10 +83,11 @@ public class ActionInstanceEvaluator extends BaseEvaluator
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[2];
-      // standard component attributes are saved by the super class
-      values[0] = super.saveState(context);
-      values[1] = this.evaluator;
+      Object values[] = new Object[] {
+         // standard component attributes are saved by the super class
+         super.saveState(context),
+         this.evaluator,
+         this.evaluatorClassName };
       return (values);
    }
    
@@ -91,6 +96,24 @@ public class ActionInstanceEvaluator extends BaseEvaluator
     */
    public ActionEvaluator getEvaluator()
    {
+      if (this.evaluator == null)
+      {
+         Object objEvaluator;
+         try
+         {
+            Class clazz = Class.forName(getEvaluatorClassName());
+            objEvaluator = clazz.newInstance();
+         }
+         catch (Throwable err)
+         {
+            throw new AlfrescoRuntimeException("Unable to construct action evaluator: " + getEvaluatorClassName());
+         }
+         if (objEvaluator instanceof ActionEvaluator == false)
+         {
+            throw new AlfrescoRuntimeException("Must implement ActionEvaluator interface: " + getEvaluatorClassName());
+         }
+         this.evaluator = (ActionEvaluator)objEvaluator;
+      }
       return this.evaluator;
    }
    
@@ -102,6 +125,27 @@ public class ActionInstanceEvaluator extends BaseEvaluator
       this.evaluator = evaluator;
    }
    
+   /**
+    * @return the evaluatorClassName
+    */
+   public String getEvaluatorClassName()
+   {
+      ValueBinding vb = getValueBinding("evaluatorClassName");
+      if (vb != null)
+      {
+         this.evaluatorClassName = (String)vb.getValue(getFacesContext());
+      }
+      return this.evaluatorClassName;
+   }
+
+   /**
+    * @param evaluatorClassName the evaluatorClassName to set
+    */
+   public void setEvaluatorClassName(String evaluatorClassName)
+   {
+      this.evaluatorClassName = evaluatorClassName;
+   }
    
    private ActionEvaluator evaluator;
+   private String evaluatorClassName;
 }

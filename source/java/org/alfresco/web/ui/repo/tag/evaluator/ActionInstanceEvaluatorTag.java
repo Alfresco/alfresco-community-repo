@@ -40,4 +40,36 @@ public class ActionInstanceEvaluatorTag extends GenericEvaluatorTag
    {
       return "org.alfresco.faces.ActionInstanceEvaluator";
    }
+   
+   /**
+    * @see javax.faces.webapp.UIComponentTag#setProperties(javax.faces.component.UIComponent)
+    */
+   protected void setProperties(UIComponent component)
+   {
+      super.setProperties(component);
+      setStringProperty(component, "evaluatorClassName", this.evaluatorClassName);
+   }
+   
+   /**
+    * @see javax.servlet.jsp.tagext.Tag#release()
+    */
+   public void release()
+   {
+      super.release();
+      this.evaluatorClassName = null;
+   }
+   
+   /**
+    * Set the evaluatorClassName
+    *
+    * @param evaluatorClassName     the evaluatorClassName
+    */
+   public void setEvaluatorClassName(String evaluatorClassName)
+   {
+      this.evaluatorClassName = evaluatorClassName;
+   }
+
+
+   /** the evaluatorClassName */
+   private String evaluatorClassName;  
 }

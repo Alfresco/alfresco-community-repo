@@ -20,47 +20,40 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.web.action.evaluator;
 
 import javax.faces.context.FacesContext;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.avm.wf.AVMSubmittedAspect;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.util.Pair;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
+import org.alfresco.web.action.ActionEvaluator;
+import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMUtil;
+import org.alfresco.web.bean.wcm.AVMBrowseBean;
 
 /**
- * UI Action Evaluator - return true if the node is not part of an in-progress WCM workflow.
+ * Evaluator to return if a item is accessable due to a WCM user level lock.
  * 
  * @author Kevin Roast
  */
-public class WCMWorkflowEvaluator extends WCMLockEvaluator
+public class WCMLockEvaluator implements ActionEvaluator
 {
    /**
-    * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
+    * @return true if the item is not locked by another user
     */
-   public boolean evaluate(final Node node)
+   public boolean evaluate(Node node)
    {
-      boolean proceed = false;
-      if (super.evaluate(node))
-      {
-          final FacesContext facesContext = FacesContext.getCurrentInstance();
-          final AVMService avmService = Repository.getServiceRegistry(facesContext).getAVMService();
-          final Pair<Integer, String> p = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef());
-          final int version = p.getFirst();
-          final String path = p.getSecond();
-          
-          // evaluate to true if we are not deleted and within a workflow store (i.e. list of resources
-          // in the task dialog) or not part of an already in-progress workflow
-          proceed = ((AVMUtil.isWorkflowStore(AVMUtil.getStoreName(path)) ||
-                      avmService.hasAspect(version, path, AVMSubmittedAspect.ASPECT) == false) &&
-                     avmService.lookup(version, path) != null);
-      }
-      return proceed;
+      FacesContext fc = FacesContext.getCurrentInstance();
+      AVMLockingService avmLockService = Repository.getServiceRegistry(fc).getAVMLockingService();
+      AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(fc, AVMBrowseBean.BEAN_NAME);
+      
+      String path = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef()).getSecond();
+      String username = Application.getCurrentUser(fc).getUserName();
+      
+      return avmLockService.hasAccess(avmBrowseBean.getWebProject().getNodeRef(), path, username);
    }
 }

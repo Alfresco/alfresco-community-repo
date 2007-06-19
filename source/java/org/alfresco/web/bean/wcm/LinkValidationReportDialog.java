@@ -31,6 +31,7 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.util.ParameterCheck;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
@@ -49,7 +50,11 @@ public class LinkValidationReportDialog extends BaseDialogBean
    protected ActionService actionService;
    
    private String store;
+   private String webapp;
+   private String webappPath;
    private String cancelOutcome;
+   private String fromTaskDialog;
+   private String compareToStaging;
    
    private static final Log logger = LogFactory.getLog(LinkValidationReportDialog.class);
    
@@ -61,16 +66,26 @@ public class LinkValidationReportDialog extends BaseDialogBean
    {
       super.init(parameters);
       
+      // check required params are present
+      this.store = parameters.get("store");
+      this.webapp = parameters.get("webapp");
+      ParameterCheck.mandatoryString("store", this.store);
+      ParameterCheck.mandatoryString("webapp", this.webapp);
+
       // setup context for dialog
-      store = parameters.get("store");
+      this.webappPath = AVMUtil.buildStoreWebappPath(this.store, this.webapp);
+      this.compareToStaging = parameters.get("compareToStaging");
       
       if (logger.isDebugEnabled())
-         logger.debug("Showing link validation report for store '" + store + "'");
-      
-      String directView = parameters.get("directView");
-      if (directView != null && directView.equals("true"))
+         logger.debug("Showing link validation report for webapp '" + webappPath + "'");
+
+      // use a different cancel outcome if we were launched from the task dialog
+      this.fromTaskDialog = parameters.get("fromTaskDialog");
+      if (this.fromTaskDialog != null && this.fromTaskDialog.equals("true"))
       {
-         this.cancelOutcome = super.getDefaultCancelOutcome();
+         this.cancelOutcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
+                              AlfrescoNavigationHandler.OUTCOME_SEPARATOR +
+                              "myalfresco";
       }
       else
       {
@@ -85,10 +100,13 @@ public class LinkValidationReportDialog extends BaseDialogBean
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       if (logger.isDebugEnabled())
-         logger.debug("Re-running link validation report for store '" + store + "'");
+         logger.debug("Re-running link validation report for webapp '" + this.webappPath + "'");
       
       Map<String, String> params = new HashMap<String, String>(1);
       params.put("store", this.store);
+      params.put("webapp", this.webapp);
+      params.put("fromTaskDialog", this.fromTaskDialog);
+      params.put("compareToStaging", this.compareToStaging);
       Application.getDialogManager().setupParameters(params);
       
       return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
@@ -126,11 +144,14 @@ public class LinkValidationReportDialog extends BaseDialogBean
    public String updateStatus()
    {
       if (logger.isDebugEnabled())
-         logger.debug("Updating status for link validation report for store '" + store + "'");
+         logger.debug("Updating status for link validation report for webapp '" + this.webappPath + "'");
       
       Map<String, String> params = new HashMap<String, String>(1);
       params.put("store", this.store);
-      params.put("rerun", "true");
+      params.put("webapp", this.webapp);
+      params.put("fromTaskDialog", this.fromTaskDialog);
+      params.put("compareToStaging", this.compareToStaging);
+      params.put("update", "true");
       Application.getDialogManager().setupParameters(params);
       
       return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 

@@ -142,6 +142,7 @@
                                  <a:actionLink id="actLinks" value="#{msg.check_links}" image="/images/icons/run_link_validation.gif" 
                                                actionListener="#{DialogManager.setupParameters}" action="dialog:runLinkValidation">
                                     <f:param name="store" value="#{AVMBrowseBean.stagingStore}" />
+                                    <f:param name="webapp" value="#{AVMBrowseBean.webapp}" />
                                  </a:actionLink>
                                  &nbsp;
                                  <a:actionLink id="actBrowse" value="#{msg.sandbox_browse}" image="/images/icons/space_small.gif" 

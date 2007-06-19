@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.ParameterCheck;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
@@ -61,8 +62,12 @@ public class LinkValidationRunDialog extends BaseDialogBean
    protected ActionService actionService;
    
    private String store;
-   private NodeRef storePathRef;
-   private boolean rerun = false;
+   private String webapp;
+   private String webappPath;
+   private String fromTaskDialog;
+   private NodeRef webappPathRef;
+   private boolean update = false;
+   private boolean compareToStaging = false;
    
    private static final Log logger = LogFactory.getLog(LinkValidationRunDialog.class);
    
@@ -74,39 +79,49 @@ public class LinkValidationRunDialog extends BaseDialogBean
    {
       super.init(parameters);
       
-      // TODO: determine whether the virtualisation server is running, if it's not
-      //       we need to throw an exception to reflect that
+      // check required params are present
+      this.store = parameters.get("store");
+      this.webapp = parameters.get("webapp");
+      ParameterCheck.mandatoryString("store", this.store);
+      ParameterCheck.mandatoryString("webapp", this.webapp);
       
       // setup context for dialog
-      store = parameters.get("store");
+      this.fromTaskDialog = parameters.get("fromTaskDialog");
+      this.webappPath = AVMUtil.buildStoreWebappPath(this.store, this.webapp);
+      this.webappPathRef = AVMNodeConverter.ToNodeRef(-1, this.webappPath);
       
-      String storePath = this.store + ":/";
-      this.storePathRef = AVMNodeConverter.ToNodeRef(-1, storePath);
-      
-      this.rerun = false;
-      String rerunParam = parameters.get("rerun");
-      if (rerunParam != null && rerunParam.equals("true"))
+      this.update = false;
+      String updateParam = parameters.get("update");
+      if (updateParam != null && updateParam.equals("true"))
       {
-         this.rerun = true;
+         this.update = true;
+      }
+      
+      this.compareToStaging = false;
+      String compareToStagingParam = parameters.get("compareToStaging");
+      if (compareToStagingParam != null && compareToStagingParam.equals("true"))
+      {
+         this.compareToStaging = true;
       }
       
       if (logger.isDebugEnabled())
       {
-         if (this.rerun)
-            logger.debug("Starting re-run link validation check for store '" + store + "'");
+         if (this.update)
+            logger.debug("Starting update link validation check for webapp '" + this.webappPath + "'");
          else
-            logger.debug("Starting initial link validation check for store '" + store + "'");
+            logger.debug("Starting initial link validation check for webapp '" + this.webappPath + "'");
       }
       
       // create context required to run and monitor the link check
       HrefValidationProgress monitor = new HrefValidationProgress();
       Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
       args.put(LinkValidationAction.PARAM_MONITOR, monitor);
+      args.put(LinkValidationAction.PARAM_COMPARE_TO_STAGING, new Boolean(this.compareToStaging));
       this.avmBrowseBean.setLinkValidationMonitor(monitor);
       
       // create and execute the action in the background
       Action action = this.actionService.createAction(LinkValidationAction.NAME, args);
-      this.actionService.executeAction(action, this.storePathRef, false, true);
+      this.actionService.executeAction(action, this.webappPathRef, false, true);
    }
    
    @SuppressWarnings("unchecked")
@@ -145,18 +160,21 @@ public class LinkValidationRunDialog extends BaseDialogBean
                if (report.wasSuccessful())
                {
                   // setup the context required by the reporting components to display the results
-                  if (this.rerun)
+                  if (this.update)
                   {
                      this.avmBrowseBean.getLinkValidationState().updateState(report);
                   }
                   else
                   {
-                     LinkValidationState state = new LinkValidationState(this.store, report);
+                     LinkValidationState state = new LinkValidationState(report);
                      this.avmBrowseBean.setLinkValidationState(state);
                   }
          
                   Map<String, String> params = new HashMap<String, String>(1);
                   params.put("store", this.store);
+                  params.put("webapp", this.webapp);
+                  params.put("fromTaskDialog", this.fromTaskDialog);
+                  params.put("compareToStaging", Boolean.toString(this.compareToStaging));
                   Application.getDialogManager().setupParameters(params);
                   
                   outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 

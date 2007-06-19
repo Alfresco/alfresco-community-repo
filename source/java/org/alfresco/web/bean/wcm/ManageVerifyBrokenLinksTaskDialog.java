@@ -48,6 +48,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ManageVerifyBrokenLinksTaskDialog extends ManageTaskDialog
 {
+   protected String store;
+   protected String webapp;
    protected AVMBrowseBean avmBrowseBean;
    
    private static final Log logger = LogFactory.getLog(ManageVerifyBrokenLinksTaskDialog.class);
@@ -77,7 +79,7 @@ public class ManageVerifyBrokenLinksTaskDialog extends ManageTaskDialog
          String storeName = this.workflowPackage.getStoreRef().getIdentifier();
          
          if (logger.isDebugEnabled())
-            logger.debug("Retrieving link validation report for store '" + storeName + "'");
+            logger.debug("Retrieving link validation report from store '" + storeName + "'");
          
          PropertyValue val = this.avmService.getStoreProperty(storeName, 
                   SandboxConstants.PROP_LINK_VALIDATION_REPORT);
@@ -86,7 +88,14 @@ public class ManageVerifyBrokenLinksTaskDialog extends ManageTaskDialog
             LinkValidationReport report = (LinkValidationReport)val.getSerializableValue();
             if (report != null)
             {
-               LinkValidationState state = new LinkValidationState(storeName, report);
+               this.store = report.getStore();
+               this.webapp = report.getWebapp();
+               
+               if (logger.isDebugEnabled())
+                  logger.debug("Found link validation report for webapp '" + 
+                               AVMUtil.buildStoreWebappPath(this.store, this.webapp) + "'");
+               
+               LinkValidationState state = new LinkValidationState(report);
                this.avmBrowseBean.setLinkValidationState(state);
                
                if (logger.isDebugEnabled())
@@ -110,14 +119,14 @@ public class ManageVerifyBrokenLinksTaskDialog extends ManageTaskDialog
    
    public String viewLinkReport()
    {
-      String storeName = this.workflowPackage.getStoreRef().getIdentifier();
-      
       if (logger.isDebugEnabled())
-         logger.debug("Viewing link validation report for store '" + storeName + "'");
+         logger.debug("Viewing link validation report for webapp '" + 
+                      AVMUtil.buildStoreWebappPath(this.store, this.webapp) + "'");
       
       Map<String, String> params = new HashMap<String, String>(1);
-      params.put("store", storeName);
-      params.put("directView", "true");
+      params.put("store", this.store);
+      params.put("webapp", this.webapp);
+      params.put("fromTaskDialog", "true");
       Application.getDialogManager().setupParameters(params);
       
       return "dialog:linkValidationReport";

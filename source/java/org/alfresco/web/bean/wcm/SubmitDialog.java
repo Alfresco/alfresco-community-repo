@@ -64,6 +64,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.NameMatcher;
+import org.alfresco.util.VirtServerUtils;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.BrowseBean;
@@ -75,8 +76,6 @@ import org.alfresco.web.forms.FormInstanceDataImpl;
 import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
-import org.alfresco.web.ui.wcm.WebResources;
-import org.alfresco.util.VirtServerUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -97,7 +96,7 @@ public class SubmitDialog extends BaseDialogBean
    private String[] workflowSelectedValue;
    private boolean enteringExpireDate = false;
    private boolean startedFromWorkflow = false;
-   private boolean validateLinks = false;
+   private boolean validateLinks = true;
    private Date defaultExpireDate;
    private Date launchDate;
    
@@ -196,7 +195,7 @@ public class SubmitDialog extends BaseDialogBean
       this.defaultExpireDate = new Date();
       this.workflowSelectedValue = null;
       this.launchDate = null;
-      this.validateLinks = false;
+      this.validateLinks = true;
       
       // determine if the dialog has been started from a workflow
       Boolean bool = new Boolean(this.parameters.get(PARAM_STARTED_FROM_WORKFLOW));
@@ -332,7 +331,10 @@ public class SubmitDialog extends BaseDialogBean
                      params.put(WCMWorkflowModel.PROP_FROM_PATH, 
                               AVMUtil.buildStoreRootPath(this.avmBrowseBean.getSandbox()));
                      params.put(WCMWorkflowModel.PROP_LAUNCH_DATE, this.launchDate);
-                     params.put(WCMWorkflowModel.PROP_VALIDATE_LINKS, new Boolean(this.validateLinks));
+                     params.put(WCMWorkflowModel.PROP_VALIDATE_LINKS, 
+                              new Boolean(this.validateLinks));
+                     params.put(WCMWorkflowModel.PROP_WEBAPP, 
+                              this.avmBrowseBean.getWebapp());
                      params.put(WCMWorkflowModel.ASSOC_WEBPROJECT, 
                               this.avmBrowseBean.getWebsite().getNodeRef());
                      

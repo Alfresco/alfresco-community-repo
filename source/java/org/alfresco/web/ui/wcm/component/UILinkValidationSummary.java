@@ -93,7 +93,7 @@ public class UILinkValidationSummary extends AbstractLinkValidationReportCompone
          {
             String pattern = bundle.getString("files_links_still_broken");
             String stillBroken = MessageFormat.format(pattern, 
-                     new Object[] {linkState.getNumberBrokenFiles(), linkState.getNumberBrokenLinks()});
+                     new Object[] {linkState.getNumberBrokenLinks(), linkState.getNumberBrokenFiles()});
             pattern = bundle.getString("broken_links_fixed");
             String linksFixed = MessageFormat.format(pattern, 
                      new Object[] {linkState.getNumberFixedLinks()});
@@ -161,7 +161,7 @@ public class UILinkValidationSummary extends AbstractLinkValidationReportCompone
                              linkState.getInitialNumberLinksChecked()});
       pattern = bundle.getString("files_links_broken");
       String initialBrokenSummary = MessageFormat.format(pattern, 
-               new Object[] {linkState.getInitialNumberBrokenFiles(), linkState.getInitialNumberBrokenLinks()});
+               new Object[] {linkState.getInitialNumberBrokenLinks(), linkState.getInitialNumberBrokenFiles()});
       
       out.write("<div style='margin-bottom: 6px;'>");
       out.write(initialCheckSummary);

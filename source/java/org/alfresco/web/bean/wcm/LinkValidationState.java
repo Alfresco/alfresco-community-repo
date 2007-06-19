@@ -58,8 +58,9 @@ import org.apache.commons.logging.LogFactory;
 public class LinkValidationState
 {
    private String store;
-   private Date initialCheckedCompletedAt;
+   private String webapp;
    private boolean checkBeenReRun = false;
+   private Date initialCheckCompletedAt;
    
    private int noFilesCheckedStart = -1;
    private int noFilesCheckedLast = -1;
@@ -95,10 +96,10 @@ public class LinkValidationState
    /**
     * Default constructor
     */
-   public LinkValidationState(String store, LinkValidationReport initialReport)
+   public LinkValidationState(LinkValidationReport initialReport)
    {
-      this.store = store;
-      this.initialCheckedCompletedAt = new Date();
+      this.store = initialReport.getStore();
+      this.webapp = initialReport.getWebapp();
       
       processReport(initialReport, false);
    }
@@ -115,11 +116,19 @@ public class LinkValidationState
    }
    
    /**
+    * @return The webapp within a store this validaton state represents
+    */
+   public String getWebapp()
+   {
+      return this.webapp;
+   }
+   
+   /**
     * @return The date the initial check was completed
     */
    public Date getInitialCheckCompletedAt()
    {
-      return this.initialCheckedCompletedAt;
+      return this.initialCheckCompletedAt;
    }
    
    /**
@@ -293,6 +302,14 @@ public class LinkValidationState
     */
    public void updateState(LinkValidationReport newReport)
    {
+      // make sure the updated report has the same store and webapp
+      // as the initial report
+      if ((newReport.getStore().equals(this.store) == false) || 
+          (newReport.getWebapp().equals(this.webapp) == false))
+      {
+         throw new IllegalStateException("Can not update a report from a different store or webapp!");
+      }
+      
       // process the new report
       processReport(newReport, true);
    }
@@ -302,6 +319,7 @@ public class LinkValidationState
    {
       StringBuilder buffer = new StringBuilder(super.toString());
       buffer.append(" (store=").append(this.store);
+      buffer.append(" webapp=").append(this.webapp);
       buffer.append(" error=").append(this.cause).append(")");
       return buffer.toString();
    }
@@ -309,14 +327,20 @@ public class LinkValidationState
    // ------------------------------------------------------------------------------
    // Private Helpers
 
-   public void processReport(LinkValidationReport report, boolean rerunReport)
+   public void processReport(LinkValidationReport report, boolean updatedReport)
    {
-      this.checkBeenReRun = rerunReport;
+      this.checkBeenReRun = updatedReport;
       this.cause = report.getError();
       
+      // make sure there is an initial check completed date
+      if (this.initialCheckCompletedAt == null)
+      {
+         this.initialCheckCompletedAt = report.getCheckCompletedAt();
+      }
+         
       if (this.cause == null)
       {
-         if (rerunReport == false)
+         if (updatedReport == false)
          {
             // setup initial counts
             this.noBrokenFilesStart = report.getNumberBrokenFiles();
@@ -336,7 +360,7 @@ public class LinkValidationState
    
             // process the broken files and determine which ones are static files
             // and which ones are generated
-            processFiles(report.getFilesWithBrokenLinks(), rerunReport, report);
+            processFiles(report.getFilesWithBrokenLinks(), updatedReport, report);
          }
          else
          {
@@ -360,7 +384,7 @@ public class LinkValidationState
             
             // process the broken files and determine which ones are static files
             // and which ones are generated
-            processFiles(report.getFilesWithBrokenLinks(), rerunReport, report);
+            processFiles(report.getFilesWithBrokenLinks(), updatedReport, report);
             
             // go through the list of files & forms still broken and find which ones
             // were fixed in the last re-run of the report
@@ -384,7 +408,7 @@ public class LinkValidationState
       }
    }
    
-   protected void processFiles(List<String> files, boolean rerunReport, LinkValidationReport report)
+   protected void processFiles(List<String> files, boolean updatedReport, LinkValidationReport report)
    {
       AVMService avmService = Repository.getServiceRegistry(
                FacesContext.getCurrentInstance()).getAVMService();
@@ -393,7 +417,7 @@ public class LinkValidationState
       
       if (logger.isDebugEnabled())
       {
-         if (rerunReport)
+         if (updatedReport)
             logger.debug("Processing files from updated report: " + report);
          else
             logger.debug("Processing files from initial report: " + report);
@@ -442,6 +466,11 @@ public class LinkValidationState
                genFiles.add(file);
                this.brokenFilesByForm.put(xmlPath, genFiles);
             }
+            else
+            {
+               if (logger.isDebugEnabled())
+                  logger.debug("Ignoring generated XML file: " + file);
+            }
          }
          else
          {
@@ -456,7 +485,7 @@ public class LinkValidationState
       }
       
       // if this is the first run of the report setup the initial lists
-      if (rerunReport == false)
+      if (updatedReport == false)
       {
          this.brokenStaticFilesStart = new ArrayList<String>(this.brokenStaticFilesLast.size());
          this.brokenStaticFilesStart.addAll(this.brokenStaticFilesLast);

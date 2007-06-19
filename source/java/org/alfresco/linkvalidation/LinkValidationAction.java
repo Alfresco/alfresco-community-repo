@@ -27,6 +27,7 @@ package org.alfresco.linkvalidation;
 
 import java.util.List;
 
+import org.alfresco.config.JNDIConstants;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.avm.AVMNodeConverter;
@@ -51,6 +52,7 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
 {
     public static final String NAME = "avm-link-validation";
 
+    public static final String PARAM_COMPARE_TO_STAGING = "compare-to-staging";
     public static final String PARAM_MONITOR = "monitor";
 
     private LinkValidationService linkValidationService;
@@ -81,6 +83,8 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
+        paramList.add(new ParameterDefinitionImpl(PARAM_COMPARE_TO_STAGING, DataTypeDefinition.BOOLEAN, 
+                 false, getParamDisplayLabel(PARAM_COMPARE_TO_STAGING)));
         paramList.add(new ParameterDefinitionImpl(PARAM_MONITOR, DataTypeDefinition.ANY, false, 
                  getParamDisplayLabel(PARAM_MONITOR)));
     }
@@ -88,38 +92,86 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        // get the store to check the links for (is represented by the actioned upon node)
+        // get the webapp path to check the links for (is represented by the actioned upon node)
         Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(actionedUponNodeRef);
-        String path = avmVersionPath.getSecond();
+        String webappPath = avmVersionPath.getSecond();
         
         // get store name and path parts.
-        String [] storePath = path.split(":");
-        if (storePath.length != 2)
+        String [] webappParts = webappPath.split(":");
+        if (webappParts.length != 2)
         {
-            throw new AVMSyncException("Malformed source path: " + path);
+            throw new AVMSyncException("Malformed source path: " + webappPath);
+        }
+
+        // extract the store name
+        String storeName = actionedUponNodeRef.getStoreRef().getIdentifier();
+        
+        // extract the webapp name
+        String webappName = webappPath.substring(webappPath.lastIndexOf("/")+1);
+        
+        // get the compare to staging flag
+        String destWebappPath = null;
+        Boolean compareToStaging = (Boolean)action.getParameterValue(PARAM_COMPARE_TO_STAGING);
+        if (compareToStaging != null)
+        {
+           if (compareToStaging.booleanValue())
+           {
+              // get the corresponding path in the staging area for the given source
+              PropertyValue val = this.avmService.getStoreProperty(storeName, SandboxConstants.PROP_WEBSITE_NAME);
+              if (val != null)
+              {
+                 String stagingStoreName = val.getStringValue();
+                 destWebappPath = stagingStoreName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" +
+                                  JNDIConstants.DIR_DEFAULT_APPBASE + "/" + webappName;
+              }
+           }
         }
         
-        // extract the store name
-        String store = storePath[0];
-       
         // get the monitor object
         HrefValidationProgress monitor = (HrefValidationProgress)action.getParameterValue(PARAM_MONITOR);
         
         if (logger.isDebugEnabled())
-            logger.debug("Performing link validation check for store '" + store + "'");
+        {
+            if (destWebappPath == null)
+            {
+                logger.debug("Performing link validation check for webapp '" + webappPath + "'");
+            }
+            else
+            {
+               logger.debug("Performing link validation check for webapp '" + webappPath + "', comparing against '" +
+                            destWebappPath + "'");
+            }
+        }
         
         LinkValidationReport report = null;
         try
         {
-            // firstly call updateHrefInfo to scan the whole store for broken links
-            // NOTE: currently this is NOT done incrementally
-            this.linkValidationService.updateHrefInfo(store, false, 10000, 30000, 5, monitor);
+            // determine which API to call depending on whether there is a destination webapp present 
+            if (destWebappPath != null)
+            {
+                // get the object to represent the broken files
+                HrefDifference hdiff = this.linkValidationService.getHrefDifference(webappPath, destWebappPath, 
+                         10000, 30000, 5, monitor);
+                
+                // get the broken files created due to deletions and new/modified files
+                HrefManifest brokenByDelete = this.linkValidationService.getHrefManifestBrokenByDelete(hdiff);
+                HrefManifest brokenByNewOrMod = this.linkValidationService.getHrefManifestBrokenByNewOrMod(hdiff);
+                
+                // create the report object using the 2 sets of results
+                report = new LinkValidationReport(storeName, webappName, monitor, brokenByDelete, brokenByNewOrMod);
+            }
+            else
+            {
+                // firstly call updateHrefInfo to scan the whole store for broken links
+                // NOTE: currently this is NOT done incrementally
+                this.linkValidationService.updateHrefInfo(webappPath, false, 10000, 30000, 5, monitor);
             
-            // retrieve the manifest of all the broken links and files
-            List<HrefManifestEntry> manifests = this.linkValidationService.getBrokenHrefManifestEntries(store);
-            
-            // create the report object using the link check results
-            report = new LinkValidationReport(monitor, manifests);
+                // retrieve the manifest of all the broken links and files for the webapp
+                List<HrefManifestEntry> manifests = this.linkValidationService.getBrokenHrefManifestEntries(webappPath);
+                
+                // create the report object using the link check results
+                report = new LinkValidationReport(storeName, webappName, monitor, manifests);
+            }
         }
         catch (Throwable err)
         {
@@ -129,15 +181,15 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
             }
             else
             {
-               report = new LinkValidationReport(err);
+               report = new LinkValidationReport(storeName, webappName, err);
             }
             
             logger.error("Link Validation Error: ", err);
         }
         
         // store the report as a store property on the store we ran the link check on
-        this.avmService.deleteStoreProperty(store, SandboxConstants.PROP_LINK_VALIDATION_REPORT);
-        this.avmService.setStoreProperty(store, SandboxConstants.PROP_LINK_VALIDATION_REPORT, 
+        this.avmService.deleteStoreProperty(storeName, SandboxConstants.PROP_LINK_VALIDATION_REPORT);
+        this.avmService.setStoreProperty(storeName, SandboxConstants.PROP_LINK_VALIDATION_REPORT, 
                  new PropertyValue(DataTypeDefinition.ANY, report));
    }
 }

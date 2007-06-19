@@ -31,7 +31,6 @@ import org.alfresco.config.JNDIConstants;
 import org.alfresco.linkvalidation.HrefValidationProgress;
 import org.alfresco.linkvalidation.LinkValidationAction;
 import org.alfresco.linkvalidation.LinkValidationReport;
-import org.alfresco.linkvalidation.LinkValidationService;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.workflow.jbpm.JBPMNode;
@@ -41,8 +40,6 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.util.Pair;
 import org.apache.log4j.Logger;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
@@ -89,21 +86,20 @@ public class AVMSubmitLinkChecker extends JBPMSpringActionHandler
     {
         // retrieve the workflow sandbox (the workflow package)
         NodeRef pkg = ((JBPMNode)executionContext.getContextInstance().getVariable("bpm_package")).getNodeRef();
-        Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(pkg);
-
-        // remove the trailing www from the path
-        String path = pkgPath.getSecond();
-        path = path.substring(0, (path.length()-JNDIConstants.DIR_DEFAULT_WWW.length()));
-        NodeRef storePath = AVMNodeConverter.ToNodeRef(-1, path);
         
         // get the store name
         String storeName = pkg.getStoreRef().getIdentifier();
 
+        // retrieve the webapp name from the workflow execution context
+        String webappName = (String)executionContext.getContextInstance().getVariable("wcmwf_webapp");
+        String webappPath = storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" +
+                            JNDIConstants.DIR_DEFAULT_APPBASE + "/" + webappName;
+        NodeRef webappPathRef = AVMNodeConverter.ToNodeRef(-1, webappPath);
+        
         if (logger.isDebugEnabled())
-            logger.info("Found workflow store to check links for: " + path);
+            logger.debug("Checking links in workflow webapp: " + webappPath);
 
-        // create and execute the action in the background
-        Throwable cause = null;
+        // create and execute the action
         int brokenLinks = -1;
         
         try
@@ -111,8 +107,15 @@ public class AVMSubmitLinkChecker extends JBPMSpringActionHandler
            HrefValidationProgress monitor = new HrefValidationProgress();
            Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
            args.put(LinkValidationAction.PARAM_MONITOR, monitor);
+           
+           // TODO: determine what should happen here, comparing against staging
+           //       does not work as the webapp is not virtualised yet so workflow
+           //       always goes straight to 'review'. Temporarily removed the flag
+           //       so just the workflow store gets checked.
+           
+//           args.put(LinkValidationAction.PARAM_COMPARE_TO_STAGING, Boolean.TRUE);
            Action action = this.fActionService.createAction(LinkValidationAction.NAME, args);
-           this.fActionService.executeAction(action, storePath, false, false);
+           this.fActionService.executeAction(action, webappPathRef, false, false);
            
            // retrieve the deployment report from the store property
            PropertyValue val = this.fAVMService.getStoreProperty(storeName, 
@@ -124,10 +127,6 @@ public class AVMSubmitLinkChecker extends JBPMSpringActionHandler
                {
                   brokenLinks = report.getNumberBrokenLinks();
                }
-               else
-               {
-                  cause = report.getError();
-               }
            }
            
            if (logger.isDebugEnabled())
@@ -135,16 +134,10 @@ public class AVMSubmitLinkChecker extends JBPMSpringActionHandler
         }
         catch (Throwable err)
         {
-           cause = err;
+           logger.error(err);
         }
         
-        // set the number of broken links in a variable
-        if (brokenLinks == -1)
-        {
-           // TODO: Decide how to handle errors,
-           //       for now just return -1 and the workflow can decide
-        }
-        
+        // set the number of broken links in a variable, -1 indicates an error occured
         executionContext.setVariable("wcmwf_brokenLinks", brokenLinks);
     }
 }

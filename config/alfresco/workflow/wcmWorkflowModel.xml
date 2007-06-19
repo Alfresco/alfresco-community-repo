@@ -228,6 +228,11 @@
           <description>Determines whether links should be verified before entering the review cycle</description>
           <type>d:boolean</type>
         </property>
+        <property name="wcmwf:webapp">
+          <title>Webapp</title>
+          <description>The webapp within the workflow store to check links for</description>
+          <type>d:text</type>
+        </property>
       </properties>
     </aspect>
 

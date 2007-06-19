@@ -27,9 +27,12 @@ package org.alfresco.linkvalidation;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.alfresco.util.ParameterCheck;
 
 /**
  * Object representing the result of a link validation action being executed.
@@ -44,10 +47,13 @@ import java.util.Map;
  */
 public class LinkValidationReport implements Serializable
 {
+   private String store;
+   private String webapp;
    private int numberFilesChecked = -1;
    private int numberLinksChecked = -1;
    private int numberBrokenLinks = -1;
    private boolean successful = true;
+   private Date completedAt;
    
    private Throwable error;
    private List<String> brokenFiles;
@@ -56,44 +62,99 @@ public class LinkValidationReport implements Serializable
    private static final long serialVersionUID = 7562964706845609991L;
    
    /**
-    * Constructs a link validation report from the results of a check
+    * Constructs a link validation report from the results of a check of the 
+    * staging area.
     * 
+    * @param store The store the link check was run against
+    * @param webapp The webapp within the store the check was run against
     * @param status The object containing status i.e. file, link counts and the list
     *               of files containing broken links
     * @param manifests The manifest of broken links and files
     */
-   public LinkValidationReport(HrefValidationProgress status, List<HrefManifestEntry> manifests)
+   public LinkValidationReport(String store, String webapp, HrefValidationProgress status, 
+            List<HrefManifestEntry> manifests)
    {
+      this.store = store;
+      this.webapp = webapp;
+      this.completedAt = new Date();
       this.numberFilesChecked = status.getFileUpdateCount();
       this.numberLinksChecked = status.getUrlUpdateCount();
       
-      // create a list of broken files
+      // create list and map
       this.brokenFiles = new ArrayList<String>(manifests.size());
-      
-      // create a map of broken links by file.
       this.brokenLinksByFile = new HashMap<String, HrefManifestEntry>(manifests.size());
       
-      // build the required list and maps
-      for (HrefManifestEntry manifest : manifests)
-      {
-         String fileName = manifest.getFileName();
-         this.brokenFiles.add(fileName);
-         this.brokenLinksByFile.put(fileName, manifest);
-         this.numberBrokenLinks = this.numberBrokenLinks + manifest.getHrefs().size();
-      }
+      // build the required list and map
+      storeBrokenFiles(manifests);
+   }
+   
+   /**
+    * Constructs a link validation report from the results of a comparison check
+    * between the staging area and another sandbox i.e. an authors sandbox or a 
+    * workflow sandbox.
+    * 
+    * @param store The store the link check was run against
+    * @param webapp The webapp within the store the check was run against
+    * @param status The object containing status i.e. file, link counts and the list
+    *               of files containing broken links
+    * @param brokenByDelete Object representing the broken links caused by deleted assets
+    * @param brokenByNewOrMod Object representing the broken links caused by new or 
+    *                         modified assets
+    */
+   public LinkValidationReport(String store, String webapp, HrefValidationProgress status, 
+            HrefManifest brokenByDelete, HrefManifest brokenByNewOrMod)
+   {
+      this.store = store;
+      this.webapp = webapp;
+      this.completedAt = new Date();
+      this.numberFilesChecked = status.getFileUpdateCount();
+      this.numberLinksChecked = status.getUrlUpdateCount();
+      
+      // get the lists of broken files
+      List<HrefManifestEntry> byDelete = brokenByDelete.getManifestEntries();
+      List<HrefManifestEntry> byNewOrMod = brokenByNewOrMod.getManifestEntries();
+      
+      // create list and map
+      this.brokenFiles = new ArrayList<String>(byDelete.size() + byNewOrMod.size());
+      this.brokenLinksByFile = new HashMap<String, HrefManifestEntry>(
+               byDelete.size() + byNewOrMod.size());
+      
+      // build the required list and map
+      storeBrokenFiles(byDelete);
+      storeBrokenFiles(byNewOrMod);
    }
    
    /**
     * Constructs a link validation report from an error that occurred
-    * 
+    *
+    * @param store The store the link check was run against
+    * @param webapp The webapp within the store the check was run against
     * @param error The error that caused the link check to fail
     */
-   public LinkValidationReport(Throwable error)
+   public LinkValidationReport(String store, String webapp, Throwable error)
    {
+      this.store = store;
+      this.webapp = webapp;
+      this.completedAt = new Date();
       this.setError(error);
       
       this.brokenFiles = Collections.emptyList();
       this.brokenLinksByFile = Collections.emptyMap();
+   }
+   
+   public String getStore()
+   {
+      return this.store;
+   }
+   
+   public String getWebapp()
+   {
+      return this.webapp;
+   }
+   
+   public Date getCheckCompletedAt()
+   {
+      return this.completedAt;
    }
    
    public int getNumberFilesChecked()
@@ -148,6 +209,34 @@ public class LinkValidationReport implements Serializable
    public Throwable getError()
    {
       return this.error;
+   }
+   
+   @Override
+   public String toString()
+   {
+      StringBuilder buffer = new StringBuilder(super.toString());
+      buffer.append(" (store=").append(this.store);
+      buffer.append(" webapp=").append(this.webapp);
+      buffer.append(" error=").append(this.error).append(")");
+      return buffer.toString();
+   }
+   
+   /**
+    * Stores the given list of manifest entries in the internal lists and maps
+    * 
+    * @param manifests Manifest entries to store
+    */
+   protected void storeBrokenFiles(List<HrefManifestEntry> manifests)
+   {
+      ParameterCheck.mandatory("manifests", manifests);
+      
+      for (HrefManifestEntry manifest : manifests)
+      {
+         String fileName = manifest.getFileName();
+         this.brokenFiles.add(fileName);
+         this.brokenLinksByFile.put(fileName, manifest);
+         this.numberBrokenLinks = this.numberBrokenLinks + manifest.getHrefs().size();
+      }
    }
 }
 

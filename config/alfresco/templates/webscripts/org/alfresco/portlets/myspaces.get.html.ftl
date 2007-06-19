@@ -92,7 +92,7 @@
       <#-- resolved path, filter and home.noderef required as arguments -->
       <script>
          MySpaces.ServiceContext="${url.serviceContext}";
-         MySpaces.ScriptUrlEncoder=eval("MySpaces.ScriptUrlEncoder=" + unescape("${url.getClientUrlFunction("encUrl")}"));
+         MySpaces.ScriptUrlEncoder=eval("MySpaces.ScriptUrlEncoder=" + unescape("${clienturlfunction("encUrl")}"));
          MySpaces.Path="${path?replace("\"","\\\"")}";
          MySpaces.Filter="${filter}";
          MySpaces.Home="${home.nodeRef}";

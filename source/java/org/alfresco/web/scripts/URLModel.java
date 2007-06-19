@@ -33,7 +33,6 @@ package org.alfresco.web.scripts;
 public class URLModel
 {
     private WebScriptRequest req;
-    private WebScriptResponse res;
     
     /**
      * Construct
@@ -41,10 +40,9 @@ public class URLModel
      * @param req
      * @param res
      */
-    URLModel(WebScriptRequest req, WebScriptResponse res)
+    URLModel(WebScriptRequest req)
     {
         this.req = req;
-        this.res = res;
     }
 
     /**
@@ -157,15 +155,4 @@ public class URLModel
         return getExtension();
     }
     
-    /**
-     * Gets the client url encoding function script 
-     * 
-     * @param name      name of the function object to return
-     * 
-     * @return script to encode urls on the client
-     */
-    public String getClientUrlFunction(String name)
-    {
-        return res.getEncodeScriptUrlFunction(name);
-    }
 }

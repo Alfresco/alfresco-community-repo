@@ -246,7 +246,7 @@ public abstract class AbstractWebScript implements WebScript
         // add web script context
         model.put("args", createArgModel(req));
         model.put("guest", req.isGuest());
-        model.put("url", new URLModel(req, res));
+        model.put("url", new URLModel(req));
         model.put("server", new ServerModel(descriptorService.getServerDescriptor()));
 
         // add custom model
@@ -298,12 +298,13 @@ public abstract class AbstractWebScript implements WebScript
         // add web script context
         model.put("args", createArgModel(req));
         model.put("guest", req.isGuest());
-        model.put("url", new URLModel(req, res));
+        model.put("url", new URLModel(req));
         model.put("server", new ServerModel(descriptorService.getServerDescriptor()));
         
         // add template support
         model.put("absurl", new AbsoluteUrlMethod(req.getServerPath()));
         model.put("scripturl", new ScriptUrlMethod(req, res));
+        model.put("clienturlfunction", new ClientUrlFunctionMethod(res));
         model.put("date", new Date());
         model.put(TemplateService.KEY_IMAGE_RESOLVER, getWebScriptRegistry().getTemplateImageResolver());
         

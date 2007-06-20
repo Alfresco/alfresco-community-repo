@@ -28,6 +28,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -57,6 +58,7 @@ public class RetryingTransactionHelperTest extends TestCase
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
     private ServiceRegistry serviceRegistry;
+    private AuthenticationComponent authenticationComponent;
     private TransactionService transactionService;
     private NodeService nodeService;
     private RetryingTransactionHelper txnHelper;
@@ -68,10 +70,14 @@ public class RetryingTransactionHelperTest extends TestCase
     public void setUp() throws Exception
     {
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         transactionService = serviceRegistry.getTransactionService();
         nodeService = serviceRegistry.getNodeService();
         txnHelper = transactionService.getRetryingTransactionHelper();
 
+        // authenticate
+        authenticationComponent.setSystemUserAsCurrentUser();
+        
         StoreRef storeRef = nodeService.createStore(
                 StoreRef.PROTOCOL_WORKSPACE,
                 "test-" + getName() + "-" + System.currentTimeMillis());
@@ -82,6 +88,12 @@ public class RetryingTransactionHelperTest extends TestCase
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, getName()),
                 ContentModel.TYPE_CMOBJECT).getChildRef();
+    }
+    
+    @Override
+    public void tearDown() throws Exception
+    {
+        try { authenticationComponent.clearCurrentSecurityContext(); } catch (Throwable e) {}
     }
     
     public void testSetUp() throws Exception

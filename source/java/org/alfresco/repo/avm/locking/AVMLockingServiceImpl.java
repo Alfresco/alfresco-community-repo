@@ -560,7 +560,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
         ResultSet results = fSearchService.query(
                 storeRef,
                 SearchService.LANGUAGE_LUCENE,
-                "@wca\\:avmstore:\"" + webProject + "\" +TYPE:\"wca:webfolder\"");
+                "TYPE:wca\\:webfolder +@wca\\:avmstore:\"" + webProject + '"');
         if (results.getNodeRefs().size() == 1)
         {
             return hasAccess(webProject, results.getNodeRefs().get(0), avmPath, user);

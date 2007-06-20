@@ -190,7 +190,8 @@ public interface LinkValidationService
     public HrefManifest getHrefManifestBrokenByDelete(HrefDifference hdiff);
     public HrefManifest getHrefManifestBrokenByNewOrMod(HrefDifference hdiff);
 
-    public List<String> getHrefListFixedByDeleteOrMod(HrefDifference hdiff);
-    public List<String> getHrefListFixedByNew(HrefDifference hdiff);
+    /**
+    *  Merges an HrefDifference into the master href info table.
+    */ 
+    public void mergeHrefDiff( HrefDifference hdiff);
 }
-

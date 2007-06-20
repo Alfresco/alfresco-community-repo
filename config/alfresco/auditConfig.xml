@@ -37,7 +37,7 @@
     
     <!-- The COCI Service -->
     
-    <Service name="CheckOutCheckInService">
+    <Service name="CheckoutCheckinService">
         <Method name="getWorkingCopy" mode="none"/>
     </Service>
     

@@ -116,7 +116,16 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
             NodeRef spaceRef = this.serviceRegistry.getRuleService().getOwningNodeRef(action);
             if (spaceRef == null)
             {
-                spaceRef = nodeService.getPrimaryParent(actionedUponNodeRef).getParentRef();
+                // the actionedUponNodeRef may actually be a space
+                if (this.serviceRegistry.getDictionaryService().isSubClass(
+                        nodeService.getType(actionedUponNodeRef), ContentModel.TYPE_FOLDER))
+                {
+                    spaceRef = actionedUponNodeRef;
+                }
+                else
+                {
+                    spaceRef = nodeService.getPrimaryParent(actionedUponNodeRef).getParentRef();
+                }
             }
             
             if (this.scriptLocation != null || (scriptRef != null && nodeService.exists(scriptRef) == true))

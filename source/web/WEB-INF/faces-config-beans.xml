@@ -2691,7 +2691,7 @@
       </managed-property>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmSyncService</property-name>
@@ -2913,7 +2913,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmSyncService</property-name>
@@ -2926,10 +2926,6 @@
       <managed-property>
          <property-name>avmBrowseBean</property-name>
          <value>#{AVMBrowseBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
       </managed-property>
       <managed-property>
          <property-name>filePickerBean</property-name>

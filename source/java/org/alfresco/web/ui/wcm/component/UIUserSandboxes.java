@@ -719,6 +719,10 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write("</a></td><td>");
                   out.write(linkPrefix);
                   out.write(name);
+                  UIAVMLockIcon lockIcon = (UIAVMLockIcon)fc.getApplication().createComponent("org.alfresco.faces.AVMLockIcon");
+                  lockIcon.setId("lock_" + FacesHelper.makeLegalId(name));
+                  lockIcon.setValue(sourcePath);
+                  Utils.encodeRecursive(fc, lockIcon);
                   out.write("</a>");
                }
                else

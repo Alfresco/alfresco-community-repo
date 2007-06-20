@@ -178,8 +178,7 @@ public class RenderingEngineTemplateImpl
    public String getOutputPathForRendition(final FormInstanceData formInstanceData, final String currentAVMPath)
    {
       final ServiceRegistry sr = this.getServiceRegistry();
-      final NodeService nodeService = sr.getNodeService();
-      final AVMService avmService = sr.getAVMService();
+      final AVMService avmService = this.getAVMService();
 
       final String formInstanceDataAVMPath = formInstanceData.getPath();
 
@@ -253,7 +252,7 @@ public class RenderingEngineTemplateImpl
       SAXException,
       RenderingEngine.RenderingException
    {
-      final AVMService avmService = this.getServiceRegistry().getAVMService();
+      final AVMService avmService = this.getAVMService();
       final boolean isRegenerate = avmService.lookup(-1, renditionAvmPath) != null;
       if (!isRegenerate)
       {
@@ -330,7 +329,7 @@ public class RenderingEngineTemplateImpl
                 new PropertyValue(DataTypeDefinition.TEXT,
                                   AVMUtil.getStoreRelativePath(formInstanceData.getPath())));
 
-      final AVMService avmService = this.getServiceRegistry().getAVMService();
+      final AVMService avmService = this.getAVMService();
       avmService.setNodeProperties(rendition.getPath(), props);
    }
 
@@ -555,6 +554,11 @@ public class RenderingEngineTemplateImpl
       return new FormDataFunctions((AVMRemote)wac.getBean("avmRemote"));
    }
 
+   private AVMService getAVMService()
+   {
+      return this.getServiceRegistry().getAVMService();
+   }
+
    private ServiceRegistry getServiceRegistry()
    {
       final FacesContext fc = FacesContext.getCurrentInstance();
@@ -570,5 +574,6 @@ public class RenderingEngineTemplateImpl
    {
       return this.getClass().getName() + "{name : " + this.getName() + "}";
    }
+
 }
 

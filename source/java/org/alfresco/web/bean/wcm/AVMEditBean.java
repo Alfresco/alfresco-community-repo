@@ -39,7 +39,6 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
@@ -95,9 +94,6 @@ public class AVMEditBean
    /** The ContentService bean reference */
    protected ContentService contentService;
    
-   /** The NodeService bean reference */
-   protected NodeService nodeService;
-
    /** The FilePickerBean reference */
    protected FilePickerBean filePickerBean;
    
@@ -145,14 +141,6 @@ public class AVMEditBean
       this.contentService = contentService;
    }
    
-   /**
-    * @param nodeService      The nodeService to set.
-    */
-   public void setNodeService(final NodeService nodeService)
-   {
-      this.nodeService = nodeService;
-   }
-
    /**
     * @return Returns the current AVM node context.
     */

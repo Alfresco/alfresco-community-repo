@@ -32,8 +32,10 @@ import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.Pair;
@@ -101,11 +103,11 @@ public class RenditionImpl
    public FormInstanceData getPrimaryFormInstanceData()
       throws FileNotFoundException
    {
-      final AVMService avmService = this.getServiceRegistry().getAVMService();
-      final NodeService nodeService = this.getServiceRegistry().getNodeService();
+      final AVMService avmService = this.getAVMService();
       final String fidAVMStoreRelativePath = (String)
-         nodeService.getProperty(this.nodeRef, 
-                                 WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA);
+         avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
+                                    AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
+                                    WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA).getValue(DataTypeDefinition.TEXT);
       String avmStore = AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond();
       avmStore = avmStore.substring(0, avmStore.indexOf(':'));
       final String path = avmStore + ':' + fidAVMStoreRelativePath;
@@ -113,7 +115,7 @@ public class RenditionImpl
       {
          throw new FileNotFoundException("unable to find primary form instance data " + path);
       }
-      return new FormInstanceDataImpl(AVMNodeConverter.ToNodeRef(-1, path));
+      return new FormInstanceDataImpl(-1, path);
    }
 
    /** the rendering engine template that generated this rendition */
@@ -121,20 +123,36 @@ public class RenditionImpl
    {
       if (this.renderingEngineTemplate == null)
       {
-         final NodeService nodeService = this.getServiceRegistry().getNodeService();
-         final NodeRef retNodeRef = (NodeRef)
-            nodeService.getProperty(this.nodeRef, 
-                                    WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE);
+         final AVMService avmService = this.getAVMService();
+         PropertyValue pv = 
+            avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
+                                       AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
+                                       WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE);
+         if (pv == null)
+         {
+            LOGGER.debug("property " + WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE +
+                         " not set on " + this.getPath());
+            return null;
+         }
+
+         final NodeRef retNodeRef = (NodeRef)pv.getValue(DataTypeDefinition.NODE_REF);
          if (retNodeRef == null)
          {
             LOGGER.debug("unable to locate parent rendering engine template of rendition " +
                          this.getPath());
             return null;
          }
+         pv = avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
+                                         AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
+                                         WCMAppModel.PROP_PARENT_RENDITION_PROPERTIES);
+         if (pv == null)
+         {
+            LOGGER.debug("property " + WCMAppModel.PROP_PARENT_RENDITION_PROPERTIES +
+                         " not set on " + this.getPath());
+            return null;
+         }
 
-         final NodeRef rpNodeRef = (NodeRef)
-            nodeService.getProperty(this.nodeRef, 
-                                    WCMAppModel.PROP_PARENT_RENDITION_PROPERTIES);
+         final NodeRef rpNodeRef = (NodeRef)pv.getValue(DataTypeDefinition.NODE_REF);
          if (rpNodeRef == null)
          {
             LOGGER.debug("unable to locate parent rendering engine template properties of rendition " +
@@ -169,7 +187,7 @@ public class RenditionImpl
 
    public OutputStream getOutputStream()
    {
-      final AVMService avmService = this.getServiceRegistry().getAVMService();
+      final AVMService avmService = this.getAVMService();
       final Pair<Integer, String> p = AVMNodeConverter.ToAVMVersionPath(this.nodeRef);
       return (avmService.lookup(p.getFirst(), p.getSecond()) == null
               ? avmService.createFile(AVMNodeConverter.SplitBase(p.getSecond())[0],
@@ -192,6 +210,11 @@ public class RenditionImpl
       SAXException
    {
       this.getRenderingEngineTemplate().render(formInstanceData, this);
+   }
+
+   private AVMService getAVMService()
+   {
+      return this.getServiceRegistry().getAVMService();
    }
 
    private ServiceRegistry getServiceRegistry()

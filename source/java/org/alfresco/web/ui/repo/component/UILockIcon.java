@@ -25,6 +25,7 @@
 package org.alfresco.web.ui.repo.component;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
@@ -38,6 +39,7 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 import org.alfresco.web.ui.repo.WebResources;
+import org.springframework.util.StringUtils;
 
 /**
  * @author Kevin Roast
@@ -79,16 +81,17 @@ public class UILockIcon extends SelfRenderingComponent
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[7];
-      // standard component attributes are saved by the super class
-      values[0] = super.saveState(context);
-      values[1] = this.lockImage;
-      values[2] = this.lockOwnerImage;
-      values[3] = this.align;
-      values[4] = this.width;
-      values[5] = this.height;
-      values[6] = this.value;
-      return (values);
+      return new Object[] 
+      {
+         // standard component attributes are saved by the super class
+         super.saveState(context),
+         this.lockImage,
+         this.lockOwnerImage,
+         this.align,
+         this.width,
+         this.height,
+         this.value
+      };
    }
    
    /**
@@ -100,14 +103,10 @@ public class UILockIcon extends SelfRenderingComponent
       {
          return;
       }
-      
-      ResponseWriter out = context.getResponseWriter();
-      
+
       // get the value and see if the image is locked
       NodeService nodeService = getNodeService(context);
-      boolean locked = false;
-      boolean lockedOwner = false;
-      
+      String lockUser = null;
       Object val = getValue();
       NodeRef ref = null;
       if (val instanceof NodeRef)
@@ -115,15 +114,26 @@ public class UILockIcon extends SelfRenderingComponent
          ref = (NodeRef)val;
          if (nodeService.exists(ref) && nodeService.hasAspect(ref, ContentModel.ASPECT_LOCKABLE) == true)
          {
-            String lockerUser = (String)nodeService.getProperty(ref, ContentModel.PROP_LOCK_OWNER);
-            if (lockerUser != null)
-            {
-               locked = true;
-               lockedOwner = (lockerUser.equals(Application.getCurrentUser(context).getUserName()));
-            }
+            lockUser = (String)nodeService.getProperty(ref, ContentModel.PROP_LOCK_OWNER);
          }
       }
-      
+      final boolean locked = lockUser != null;
+      final boolean lockedOwner = locked && (lockUser.equals(Application.getCurrentUser(context).getUserName()));
+
+      this.encodeBegin(context, locked, lockedOwner, new String[] { lockUser });
+   }
+
+   protected void encodeBegin(final FacesContext context,
+                              final boolean locked,
+                              final boolean lockedOwner,
+                              final String[] lockUser)
+      throws IOException
+   {
+      if (isRendered() == false)
+      {
+         return;
+      }
+      ResponseWriter out = context.getResponseWriter();
       String msg = null;
       
       if (locked == true)
@@ -157,15 +167,14 @@ public class UILockIcon extends SelfRenderingComponent
          }
          else
          {
-            String lockingUser = (String)nodeService.getProperty(ref, ContentModel.PROP_LOCK_OWNER);
-            msg = Application.getMessage(context, MSG_LOCKED_USER);
+            msg = MessageFormat.format(Application.getMessage(context, MSG_LOCKED_USER), lockUser.length);
             if (getLockedUserTooltip() != null)
             {
                msg = getLockedUserTooltip();
             }
             StringBuilder buf = new StringBuilder(32);
             msg = buf.append(msg).append(" '")
-                     .append(lockingUser)
+                     .append(StringUtils.arrayToDelimitedString(lockUser, ", "))
                      .append("'").toString();
          }
          

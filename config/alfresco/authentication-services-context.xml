@@ -173,26 +173,30 @@
     -->
     
 
-
-
     <!-- The person service.                                                -->
 
-    <bean id="personService" class="org.alfresco.repo.security.person.PersonServiceImpl">
-		<property name="nodeService">
-		    <ref bean="nodeService" />
-		</property>
-		<property name="searchService">
-		    <ref bean="admSearchService" />
-		</property>
-		<property name="permissionServiceSPI">
-			<ref bean="permissionServiceImpl" />
-		</property>
+    <bean id="personService" class="org.alfresco.repo.security.person.PersonServiceImpl" init-method="init">
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="searchService">
+            <ref bean="admSearchService" />
+        </property>
+        <property name="permissionServiceSPI">
+            <ref bean="permissionServiceImpl" />
+        </property>
         <property name="authorityService">
            <ref bean="authorityService" />
         </property>
-		<property name="namespacePrefixResolver">
-			<ref bean="namespaceService" />
-		</property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="policyComponent">
+            <ref bean="policyComponent"/>
+        </property>
+        <property name="personCache">
+            <ref bean="personCache" />
+        </property>
         <!-- Configurable properties.                                 -->
         <!--                                                          -->
         <!-- TODO:                                                    -->
@@ -214,7 +218,7 @@
         <property name="createMissingPeople">
            <value>${server.transaction.allow-writes}</value>
         </property>
-		<property name="userNamesAreCaseSensitive">
+        <property name="userNamesAreCaseSensitive">
           <value>${user.name.caseSensitive}</value>
         </property>
         <!-- New properties after 1.4.0 to deal with duplicate user ids when found -->
@@ -235,20 +239,20 @@
 
     <bean name="homeFolderManager" class="org.alfresco.repo.security.person.HomeFolderManager">
         <property name="nodeService">
-		    <ref bean="nodeService" />
-		</property>
+            <ref bean="nodeService" />
+        </property>
         <property name="policyComponent">
-		    <ref bean="policyComponent" />
-		</property>
+            <ref bean="policyComponent" />
+        </property>
         <property name="defaultProvider">
-		    <ref bean="personalHomeFolderProvider" />
-		</property>
+            <ref bean="personalHomeFolderProvider" />
+        </property>
     </bean>
     
     <bean name="companyHomeFolderProvider" class="org.alfresco.repo.security.person.ExistingPathBasedHomeFolderProvider">
         <property name="serviceRegistry">
-		    <ref bean="ServiceRegistry" />
-		</property>
+            <ref bean="ServiceRegistry" />
+        </property>
         <property name="path">
            <value>/${spaces.company_home.childname}</value>
         </property>
@@ -256,14 +260,14 @@
            <value>${spaces.store}</value>
         </property>
         <property name="homeFolderManager">
-			<ref bean="homeFolderManager" />
-		</property>
+            <ref bean="homeFolderManager" />
+        </property>
     </bean>
     
     <bean name="guestHomeFolderProvider" class="org.alfresco.repo.security.person.ExistingPathBasedHomeFolderProvider">
         <property name="serviceRegistry">
-		    <ref bean="ServiceRegistry" />
-		</property>
+            <ref bean="ServiceRegistry" />
+        </property>
         <property name="path">
            <value>/${spaces.company_home.childname}/${spaces.guest_home.childname}</value>
         </property>
@@ -271,8 +275,8 @@
            <value>${spaces.store}</value>
         </property>
         <property name="homeFolderManager">
-			<ref bean="homeFolderManager" />
-		</property>
+            <ref bean="homeFolderManager" />
+        </property>
         <property name="userPemissions">
             <set>
                 <value>Consumer</value>
@@ -282,14 +286,14 @@
     
     <bean name="bootstrapHomeFolderProvider" class="org.alfresco.repo.security.person.BootstrapHomeFolderProvider">
         <property name="homeFolderManager">
-			<ref bean="homeFolderManager" />
-		</property>
+            <ref bean="homeFolderManager" />
+        </property>
     </bean>
     
     <bean name="personalHomeFolderProvider" class="org.alfresco.repo.security.person.UIDBasedHomeFolderProvider">
         <property name="serviceRegistry">
-		    <ref bean="ServiceRegistry" />
-		</property>
+            <ref bean="ServiceRegistry" />
+        </property>
         <property name="path">
            <value>/${spaces.company_home.childname}</value>
         </property>
@@ -297,8 +301,8 @@
            <value>${spaces.store}</value>
         </property>
         <property name="homeFolderManager">
-			<ref bean="homeFolderManager" />
-		</property>
+            <ref bean="homeFolderManager" />
+        </property>
         <property name="inheritsPermissionsOnCreate">
             <value>false</value>
         </property>
@@ -313,11 +317,11 @@
             </set>
         </property>
     </bean>
-	
-	<bean name="userHomesHomeFolderProvider" class="org.alfresco.repo.security.person.UIDBasedHomeFolderProvider">
+    
+    <bean name="userHomesHomeFolderProvider" class="org.alfresco.repo.security.person.UIDBasedHomeFolderProvider">
         <property name="serviceRegistry">
-		    <ref bean="ServiceRegistry" />
-		</property>
+            <ref bean="ServiceRegistry" />
+        </property>
         <property name="path">
            <value>/${spaces.company_home.childname}/${spaces.user_homes.childname}</value>
         </property>
@@ -325,8 +329,8 @@
            <value>${spaces.store}</value>
         </property>
         <property name="homeFolderManager">
-			<ref bean="homeFolderManager" />
-		</property>
+            <ref bean="homeFolderManager" />
+        </property>
         <property name="inheritsPermissionsOnCreate">
             <value>false</value>
         </property>

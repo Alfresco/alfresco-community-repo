@@ -207,5 +207,42 @@
          <value>10</value>
       </property>
    </bean>
+   
+   <!-- ===================================== -->
+   <!-- Person username to NodeRef cache      -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Person -->
+   
+   <bean name="personSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.personCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for Person -->
+   
+   <bean name="personCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="personSharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <!-- Eh cache area -->
+      <property name="name">
+         <value>org.alfresco.personTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>1000</value>
+      </property>
+   </bean>
 
 </beans>

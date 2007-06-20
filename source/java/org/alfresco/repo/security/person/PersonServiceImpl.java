@@ -35,8 +35,12 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.ldap.LDAPPersonExportSource;
+import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -49,12 +53,14 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class PersonServiceImpl implements PersonService
+public class PersonServiceImpl implements PersonService,
+    NodeServicePolicies.OnCreateNodePolicy, NodeServicePolicies.BeforeDeleteNodePolicy
 {
     private static Log s_logger = LogFactory.getLog(PersonServiceImpl.class);
 
@@ -81,6 +87,8 @@ public class PersonServiceImpl implements PersonService
     private PermissionServiceSPI permissionServiceSPI;
 
     private NamespacePrefixResolver namespacePrefixResolver;
+    
+    private PolicyComponent policyComponent;
 
     private boolean createMissingPeople;
 
@@ -97,6 +105,9 @@ public class PersonServiceImpl implements PersonService
     private boolean lastIsBest = true;
 
     private boolean includeAutoCreated = false;
+    
+    /** a transactionally-safe cache to be injected */
+    private SimpleCache<String, NodeRef> personCache;
 
     static
     {
@@ -110,9 +121,19 @@ public class PersonServiceImpl implements PersonService
         mutableProperties = Collections.unmodifiableSet(props);
     }
 
-    public PersonServiceImpl()
+    /**
+     * Spring bean init method
+     */
+    public void init()
     {
-        super();
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
+                ContentModel.TYPE_PERSON,
+                new JavaBehaviour(this, "onCreateNode"));
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
+                ContentModel.TYPE_PERSON,
+                new JavaBehaviour(this, "beforeDeleteNode"));
     }
 
     public boolean getUserNamesAreCaseSensitive()
@@ -149,7 +170,27 @@ public class PersonServiceImpl implements PersonService
     {
         this.processDuplicates = processDuplicates;
     }
+    
+    /**
+     * Set the username to person cache.
+     * 
+     * @param personCache     a transactionally safe cache
+     */
+    public void setPersonCache(SimpleCache<String, NodeRef> personCache)
+    {
+        this.personCache = personCache;
+    }
 
+    /**
+     * Retrieve the person NodeRef for a username key. Depending on configuration missing people
+     * will be created if not found, else a NoSuchPersonException exception will be thrown.
+     * 
+     * @param userName of the person NodeRef to retrieve
+     * 
+     * @return NodeRef of the person as specified by the username
+     * 
+     * @throws NoSuchPersonException
+     */
     public NodeRef getPerson(String userName)
     {
         NodeRef personNode = getPersonOrNull(userName);
@@ -163,7 +204,6 @@ public class PersonServiceImpl implements PersonService
             {
                 throw new NoSuchPersonException(userName);
             }
-
         }
         else
         {
@@ -176,83 +216,86 @@ public class PersonServiceImpl implements PersonService
         return getPersonOrNull(caseSensitiveUserName) != null;
     }
 
-    public NodeRef getPersonOrNull(String searchUserName)
+    private NodeRef getPersonOrNull(String searchUserName)
     {
-        NodeRef returnRef = null;
-
-        SearchParameters sp = new SearchParameters();
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("TYPE:\\{http\\://www.alfresco.org/model/content/1.0\\}person +@cm\\:userName:\""
-                + searchUserName + "\"");
-        sp.addStore(storeRef);
-        sp.excludeDataInTheCurrentTransaction(false);
-
-        ResultSet rs = null;
-
-        boolean singleton = true;
-
-        try
+        NodeRef returnRef = this.personCache.get(searchUserName);
+        if (returnRef == null)
         {
-            rs = searchService.query(sp);
-
-            for (ResultSetRow row : rs)
+            SearchParameters sp = new SearchParameters();
+            sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+            sp.setQuery("@cm\\:userName:\"" + searchUserName + "\"");
+            sp.addStore(storeRef);
+            sp.excludeDataInTheCurrentTransaction(false);
+    
+            ResultSet rs = null;
+    
+            boolean singleton = true;
+    
+            try
             {
-
-                NodeRef nodeRef = row.getNodeRef();
-                if (nodeService.exists(nodeRef))
+                rs = searchService.query(sp);
+    
+                for (ResultSetRow row : rs)
                 {
-                    String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
-                            nodeRef, ContentModel.PROP_USERNAME));
-
-                    if (userNamesAreCaseSensitive)
+                    NodeRef nodeRef = row.getNodeRef();
+                    if (nodeService.exists(nodeRef))
                     {
-                        if (realUserName.equals(searchUserName))
+                        String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
+                                nodeRef, ContentModel.PROP_USERNAME));
+    
+                        if (userNamesAreCaseSensitive)
                         {
-                            if (returnRef == null)
+                            if (realUserName.equals(searchUserName))
                             {
-                                returnRef = nodeRef;
-                            }
-                            else
-                            {
-                                singleton = false;
-                                break;
+                                if (returnRef == null)
+                                {
+                                    returnRef = nodeRef;
+                                }
+                                else
+                                {
+                                    singleton = false;
+                                    break;
+                                }
                             }
                         }
-                    }
-                    else
-                    {
-                        if (realUserName.equalsIgnoreCase(searchUserName))
+                        else
                         {
-                            if (returnRef == null)
+                            if (realUserName.equalsIgnoreCase(searchUserName))
                             {
-                                returnRef = nodeRef;
-                            }
-                            else
-                            {
-                                singleton = false;
-                                break;
+                                if (returnRef == null)
+                                {
+                                    returnRef = nodeRef;
+                                }
+                                else
+                                {
+                                    singleton = false;
+                                    break;
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        finally
-        {
-            if (rs != null)
+            finally
             {
-                rs.close();
+                if (rs != null)
+                {
+                    rs.close();
+                }
             }
+            if (singleton)
+            {
+                returnRef = returnRef;
+            }
+            else
+            {
+                returnRef = handleDuplicates(searchUserName);
+            }
+            
+            // add to cache
+            this.personCache.put(searchUserName, returnRef);
         }
-
-        if (singleton)
-        {
-            return returnRef;
-        }
-        else
-        {
-            return handleDuplicates(searchUserName);
-        }
+        return returnRef;
     }
 
     private NodeRef handleDuplicates(String searchUserName)
@@ -298,8 +341,7 @@ public class PersonServiceImpl implements PersonService
     {
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("TYPE:\\{http\\://www.alfresco.org/model/content/1.0\\}person +@cm\\:userName:\""
-                + searchUserName + "\"");
+        sp.setQuery("@cm\\:userName:\"" + searchUserName + "\"");
         sp.addStore(storeRef);
         sp.excludeDataInTheCurrentTransaction(false);
 
@@ -349,8 +391,7 @@ public class PersonServiceImpl implements PersonService
     {
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("TYPE:\\{http\\://www.alfresco.org/model/content/1.0\\}person +@cm\\:userName:\""
-                + searchUserName + "\"");
+        sp.setQuery("@cm\\:userName:\"" + searchUserName + "\"");
         sp.addStore(storeRef);
         sp.excludeDataInTheCurrentTransaction(false);
 
@@ -402,8 +443,7 @@ public class PersonServiceImpl implements PersonService
     {
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("TYPE:\\{http\\://www.alfresco.org/model/content/1.0\\}person +@cm\\:userName:\""
-                + searchUserName + "\"");
+        sp.setQuery("@cm\\:userName:\"" + searchUserName + "\"");
         sp.addStore(storeRef);
         sp.excludeDataInTheCurrentTransaction(false);
         if (lastIsBest)
@@ -646,7 +686,30 @@ public class PersonServiceImpl implements PersonService
         }
         return nodes;
     }
+    
+    // Policies
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
+     */
+    public void onCreateNode(ChildAssociationRef childAssocRef)
+    {
+        NodeRef personRef = childAssocRef.getChildRef();
+        String username = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
+        this.personCache.put(username, personRef);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public void beforeDeleteNode(NodeRef nodeRef)
+    {
+        String username = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
+        this.personCache.remove(username);
+    }
+
+    // IOC Setters
+    
     public void setCreateMissingPeople(boolean createMissingPeople)
     {
         this.createMissingPeople = createMissingPeople;
@@ -676,6 +739,11 @@ public class PersonServiceImpl implements PersonService
     {
         this.searchService = searchService;
     }
+    
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
 
     public void setStoreUrl(String storeUrl)
     {
@@ -693,7 +761,4 @@ public class PersonServiceImpl implements PersonService
         }
         return null;
     }
-
-    // IOC Setters
-
 }

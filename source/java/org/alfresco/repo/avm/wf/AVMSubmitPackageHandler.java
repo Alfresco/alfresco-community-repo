@@ -24,17 +24,22 @@ package org.alfresco.repo.avm.wf;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.workflow.jbpm.JBPMNode;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
@@ -60,6 +65,11 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
     private AVMSubmittedAspect fAVMSubmittedAspect;
 
     /**
+     * The AVMLockingService instance.
+     */
+    private AVMLockingService fAVMLockingService;
+
+    /**
      * The AVMSubmitTransactionListener instance 
      * (for JMX notification of virtualization server after commit/rollback).
      */
@@ -73,8 +83,9 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
     @Override
     protected void initialiseHandler(BeanFactory factory) 
     {
-        fAVMService = (AVMService)factory.getBean("AVMService");
-        fAVMSyncService = (AVMSyncService)factory.getBean("AVMSyncService");
+        fAVMService = (AVMService)factory.getBean(ServiceRegistry.AVM_SERVICE.getLocalName());
+        fAVMSyncService = (AVMSyncService)factory.getBean(ServiceRegistry.AVM_SYNC_SERVICE.getLocalName());
+        fAVMLockingService = (AVMLockingService)factory.getBean(ServiceRegistry.AVM_LOCKING_SERVICE.getLocalName());
         fAVMSubmittedAspect = (AVMSubmittedAspect)factory.getBean("AVMSubmittedAspect");
         fAVMSubmitTransactionListener = (AVMSubmitTransactionListener) factory.getBean("AVMSubmitTransactionListener");
 
@@ -85,23 +96,28 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
      * Do the actual work.
      * @param executionContext The context to get stuff from.
      */
-    public void execute(ExecutionContext executionContext) throws Exception 
+    public void execute(final ExecutionContext executionContext) 
+       throws Exception 
     {
         // TODO: Allow submit parameters to be passed into this action handler
         //       rather than pulling directly from execution context
         
-        NodeRef pkg = ((JBPMNode)executionContext.getContextInstance().getVariable("bpm_package")).getNodeRef();
-        Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(pkg);
+        final NodeRef pkg = ((JBPMNode)executionContext.getContextInstance().getVariable("bpm_package")).getNodeRef();
+        final Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(pkg);
 
         // submit the package changes
-        String description = (String)executionContext.getContextInstance().getVariable("bpm_workflowDescription");
-        String tag = (String)executionContext.getContextInstance().getVariable("wcmwf_label");
-        AVMNodeDescriptor pkgDesc = fAVMService.lookup(pkgPath.getFirst(), pkgPath.getSecond());
-        String targetPath = pkgDesc.getIndirection();
-		List<AVMDifference> stagingDiffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, targetPath, null);
-        for (AVMDifference diff : stagingDiffs)
+        final String description = (String)executionContext.getContextInstance().getVariable("bpm_workflowDescription");
+        final String tag = (String)executionContext.getContextInstance().getVariable("wcmwf_label");
+        final AVMNodeDescriptor pkgDesc = fAVMService.lookup(pkgPath.getFirst(), pkgPath.getSecond());
+        final String targetPath = pkgDesc.getIndirection();
+        final Map<QName, PropertyValue> dnsProperties = this.fAVMService.queryStorePropertyKey(targetPath.split(":")[0], QName.createQName(null, ".dns%"));
+        String webProject = dnsProperties.keySet().iterator().next().getLocalName();
+        webProject = webProject.substring(webProject.lastIndexOf('.') + 1, webProject.length());
+        final List<AVMDifference> stagingDiffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, targetPath, null);
+        for (final AVMDifference diff : stagingDiffs)
         {
             fAVMSubmittedAspect.clearSubmitted(diff.getSourceVersion(), diff.getSourcePath());
+            this.fAVMLockingService.removeLock(webProject, diff.getSourcePath().substring(diff.getSourcePath().indexOf(":") + 1));
         }
         
         // Allow AVMSubmitTransactionListener to inspect the staging diffs
@@ -112,7 +128,6 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
         // webapp itself (e.g.: WEB-INF/web.xml, WEB-INF/lib/*.jar), etc.
 
         AlfrescoTransactionSupport.bindResource("staging_diffs", stagingDiffs);
-
 
         fAVMSyncService.update(stagingDiffs, null, false, false, true, true, tag, description);
 

@@ -488,6 +488,9 @@
     	<property name="avmService">
     	    <ref bean="indexingAVMService"/>
     	</property>
+    	<property name="avmLockingService">
+    	    <ref bean="AVMLockingService"/>
+    	</property>
     	<property name="publicAction">
     	    <value>false</value>
     	</property>

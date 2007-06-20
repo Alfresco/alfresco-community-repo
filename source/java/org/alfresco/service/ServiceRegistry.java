@@ -107,6 +107,7 @@ public interface ServiceRegistry
     static final QName OWNABLE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "OwnableService");
     static final QName PERSON_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "PersonService");
     static final QName AVM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMService");
+    static final QName AVM_LOCKING_AWARE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMLockingAwareService");
     static final QName AVM_SYNC_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMSyncService");
     static final QName CROSS_REPO_COPY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CrossRepositoryCopyService");
     static final QName ATTRIBUTE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AttributeService");
@@ -301,6 +302,13 @@ public interface ServiceRegistry
      */
     @NotAuditable
     AVMService getAVMService();
+
+    /**
+     * Get the AVMLockingAwareService.
+     * @return The AVM locking aware service (or null if one is not provided);    
+     */
+    @NotAuditable
+    AVMService getAVMLockingAwareService();
     
     /**
      * Get the AVM Sync Service.

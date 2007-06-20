@@ -323,6 +323,15 @@ public class ServiceDescriptorRegistry
     {
         return (AVMService)getService(AVM_SERVICE);
     }
+
+    /**
+     * Get the AVMService.
+     * @return The AVMService or null if there is none.
+     */
+    public AVMService getAVMLockingAwareService()
+    {
+        return (AVMService)getService(AVM_LOCKING_AWARE_SERVICE);
+    }
     
     /**
      * Get the AVM Sync Service.

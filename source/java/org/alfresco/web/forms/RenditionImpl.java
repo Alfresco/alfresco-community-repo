@@ -103,7 +103,7 @@ public class RenditionImpl
    public FormInstanceData getPrimaryFormInstanceData()
       throws FileNotFoundException
    {
-      final AVMService avmService = this.getAVMService();
+      final AVMService avmService = this.getServiceRegistry().getAVMLockingAwareService();
       final String fidAVMStoreRelativePath = (String)
          avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
                                     AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
@@ -123,7 +123,7 @@ public class RenditionImpl
    {
       if (this.renderingEngineTemplate == null)
       {
-         final AVMService avmService = this.getAVMService();
+         final AVMService avmService = this.getServiceRegistry().getAVMLockingAwareService();
          PropertyValue pv = 
             avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
                                        AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
@@ -187,7 +187,7 @@ public class RenditionImpl
 
    public OutputStream getOutputStream()
    {
-      final AVMService avmService = this.getAVMService();
+      final AVMService avmService = this.getServiceRegistry().getAVMLockingAwareService();
       final Pair<Integer, String> p = AVMNodeConverter.ToAVMVersionPath(this.nodeRef);
       return (avmService.lookup(p.getFirst(), p.getSecond()) == null
               ? avmService.createFile(AVMNodeConverter.SplitBase(p.getSecond())[0],
@@ -210,11 +210,6 @@ public class RenditionImpl
       SAXException
    {
       this.getRenderingEngineTemplate().render(formInstanceData, this);
-   }
-
-   private AVMService getAVMService()
-   {
-      return this.getServiceRegistry().getAVMService();
    }
 
    private ServiceRegistry getServiceRegistry()

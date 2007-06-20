@@ -19,7 +19,8 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's
  * FLOSS exception.  You should have recieved a copy of the text describing
  * the FLOSS exception, and it is also available here:
- * http://www.alfresco.com/legal/licensing" */
+ * http://www.alfresco.com/legal/licensing" 
+ */
 package org.alfresco.web.forms;
 
 import java.io.*;
@@ -176,7 +177,7 @@ public class FormInstanceDataImpl
 
    public List<Rendition> getRenditions()
    {
-      final AVMService avmService = this.getServiceRegistry().getAVMService();
+      final AVMService avmService = this.getServiceRegistry().getAVMLockingAwareService();
       final PropertyValue pv = 
          avmService.getNodeProperty(-1, this.getPath(), WCMAppModel.PROP_RENDITIONS);
       final Collection<Serializable> renditionPaths = (pv == null 

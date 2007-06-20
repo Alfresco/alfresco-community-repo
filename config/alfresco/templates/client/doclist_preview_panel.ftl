@@ -17,16 +17,23 @@
       <td width="300">
          <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
-               <td class="docAction docActionCheckout">Checkout</td>
+<#if node.isLocked >
+               <td class="docAction docActionLocked">(Locked)</td>
+<#elseif hasAspect(node, "cm:workingcopy") == 1>
+               <td class="docAction docActionCheckin" <#if node.hasPermission("CheckIn")>onclick='event.cancelBubble=true;MyDocs.checkinItem("${node.name}", "${node.nodeRef}");'</#if>>Check In</td>
+<#else>
+               <td class="docAction docActionCheckout" <#if node.hasPermission("CheckOut")>onclick='event.cancelBubble=true;MyDocs.checkoutItem("${node.name}", "${node.nodeRef}");'</#if>>Check Out</td>
+</#if>
                <td class="docAction docActionEditDetails">Edit Details</td>
             </tr>
             <tr>
                <td class="docAction docActionUpdate">Update</td>
-               <td class="docAction docActionViewContent">View Content</td>
+               <td class="docAction docActionViewContent" onclick="window.open('${url.context}${node.downloadUrl}', '_blank');">View Content</td>
             </tr>
             <tr>
-               <td class="docAction docActionDelete">Delete</td>
-               <td class="docAction docActionMoreActions">More Actions...</td>
+               <td class="docAction docActionDelete" <#if node.hasPermission("Delete")>onclick='event.cancelBubble=true;MyDocs.deleteItem("${node.name}", "${node.nodeRef}");'</#if>>Delete</td>
+<#assign navurl='/navigate/showDocDetails/' + node.nodeRef.storeRef.protocol + '/' + node.nodeRef.storeRef.identifier + '/' + node.nodeRef.id>
+               <td class="docAction docActionMoreActions" onclick="window.open('${url.context}${navurl}', '_blank');">More Actions...</td>
             </tr>
          </table>
       </td>

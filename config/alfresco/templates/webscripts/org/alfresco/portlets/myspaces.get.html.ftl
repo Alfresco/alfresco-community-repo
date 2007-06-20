@@ -81,7 +81,7 @@
             <th><a class="spacefilterLink <#if filter=3>spacefilterLinkSelected</#if>" href="${scripturl("?f=3&p=${path?url}")}">My Items</a></th>
             <th><a class="spacefilterLink <#if filter=4>spacefilterLinkSelected</#if>" href="${scripturl("?f=4&p=${path?url}")}">Recently Modified</a></th>
             <td align=right>
-               <a href="${scripturl("?f=${filter}&p=${path?url}")}" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" class="spaceImageIcon">Refresh</a>
+               <a href="#" onclick="MySpaces.start(); return false;" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" class="spaceImageIcon">Refresh</a>
             </td>
          </tr>
       </table>
@@ -160,6 +160,7 @@ a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited
 
 #spacePanelOverlay
 {
+   background-color: #fff;
    background-image: url(${url.context}/images/icons/ajax_anim.gif);
    background-position: center;
    background-repeat: no-repeat;

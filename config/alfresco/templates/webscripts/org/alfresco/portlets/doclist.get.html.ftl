@@ -45,75 +45,36 @@
    <td height=40>
       <table border=0 cellspacing=8 cellpadding=0 width=100%>
          <tr>
-            <th><a class="docfilterLink <#if filter=0>docfilterLinkSelected</#if>" href="${scripturl("?f=0&p=${path?url}&q=${query?url}")}">All Items</a></th>
-            <th><a class="docfilterLink <#if filter=1>docfilterLinkSelected</#if>" href="${scripturl("?f=1&p=${path?url}&q=${query?url}")}">Word Documents</a></th>
-            <th><a class="docfilterLink <#if filter=2>docfilterLinkSelected</#if>" href="${scripturl("?f=2&p=${path?url}&q=${query?url}")}">HTML Documents</a></th>
-            <th><a class="docfilterLink <#if filter=3>docfilterLinkSelected</#if>" href="${scripturl("?f=3&p=${path?url}&q=${query?url}")}">PDF Documents</a></th>
-            <th><a class="docfilterLink <#if filter=4>docfilterLinkSelected</#if>" href="${scripturl("?f=4&p=${path?url}&q=${query?url}")}">Recently Modified</a></th>
+            <th><a id="docFilter0" class="docfilterLink <#if filter=0>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(0); return false;">All Items</a></th>
+            <th><a id="docFilter1" class="docfilterLink <#if filter=1>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(1); return false;">Word Documents</a></th>
+            <th><a id="docFilter2" class="docfilterLink <#if filter=2>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(2); return false;">HTML Documents</a></th>
+            <th><a id="docFilter3" class="docfilterLink <#if filter=3>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(3); return false;">PDF Documents</a></th>
+            <th><a id="docFilter4" class="docfilterLink <#if filter=4>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(4); return false;">Recently Modified</a></th>
             <td align=right>
-               <a href="${scripturl("?f=${filter}&p=${path?url}&q=${query?url}")}" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px">Refresh</a>
+               <a href="#" onclick="MyDocs.start(); return false;" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px">Refresh</a>
             </td>
          </tr>
       </table>
    </td>
 </tr>
 <tr><td>
+   <div id="docPanelOverlay"></div>
    <div id="docPanel">
-      <#assign weekms=1000*60*60*24*7>
-      <#assign count=0>
-      <#if home?exists>
-         <#assign docs=home.children?sort_by('name')>
-      <#else>
-         <#assign docs=companyhome.childrenByLuceneSearch[args.q]?sort_by('name')>
-      </#if>
-      <#list docs as d>
-         <#if d.isDocument>
-            <#if (filter=0) ||
-                 (filter=1 && d.mimetype="application/msword") ||
-                 (filter=2 && d.mimetype="text/html") ||
-                 (filter=3 && d.mimetype="application/pdf") ||
-                 (filter=4 && (dateCompare(d.properties["cm:modified"],date,weekms) == 1 || dateCompare(d.properties["cm:created"], date, weekms) == 1))>
-            <#assign count=count+1>
-            <div class="docRow">
-               <div class="docIcon">
-                  <a href="${url.context}${d.url}" target="new"><img class="docIconImage" alt="" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border=0></a>
-               </div>
-               <div style="display:none"><img class="docIconImage64" alt="" width="64" height="64" src="${url.context}${d.icon64}"></div>
-               <div class="docItem">
-                  ${d.name?html}
-                  <span class="docInfo" onclick="event.cancelBubble=true; AlfNodeInfoMgr.toggle('${d.nodeRef}',this);">
-                     <img src="${url.context}/images/icons/popup.gif" class="popupImage" width="16" height="16" />
-                  </span>
-               </div>
-               <div class="docDetail">
-                  <table cellpadding="2" cellspacing="0" border="0">
-      	            <tr>
-      	               <td>
-      	                  <span class="docMetaprop">Description:</span>&nbsp;<span class="docMetadata"><#if d.properties.description?exists>${d.properties.description?html}<#else>&nbsp;</#if></span><br />
-         	               <span class="docMetaprop">Modified:</span>&nbsp;<span class="docMetadata">${d.properties.modified?datetime}</span><br />
-         	               <span class="docMetaprop">Modified By:</span>&nbsp;<span class="docMetadata">${d.properties.modifier}</span>
-      	               </td>
-      	               <td width="24">&nbsp;</td>
-      	               <td>
-      	                  <span class="docMetaprop">Created:</span>&nbsp;<span class="docMetadata">${d.properties.created?datetime}</span><br />
-         	               <span class="docMetaprop">Created By:</span>&nbsp;<span class="docMetadata">${d.properties.creator}</span><br />
-      	                  <span class="docMetaprop">Size:</span>&nbsp;<span class="docMetadata">${(d.size/1000)?string("0.##")} KB</span>
-      	               </td>
-      	            </tr>
-      	         </table>
-               </div>
-               <div class="docResource doclistAjaxWait" id="${d.nodeRef}"></div>
-            </div>
-            </#if>
-         </#if>
-      </#list>
+      <#-- populated via an AJAX call to 'doclistpanel' webscript -->
+      <#-- resolved path, filter and home.noderef required as arguments -->
+      <script>
+         MyDocs.ServiceContext="${url.serviceContext}";
+         MyDocs.Filter="${filter}";
+         MyDocs.Home="${home.nodeRef}";
+         MyDocs.Query="${query?replace("\"","\\\"")}";
+      </script>
    </div>
 </td>
 </tr>
 <tr>
 <td>
    <div class="docFooter">
-      Showing ${count} items(s)
+      Showing <span id="docCount">0</span> items(s)
    </div>
 </td>
 </tr>
@@ -158,6 +119,18 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
    border-top: 1px solid #CCD4DB;
    border-bottom: 1px solid #CCD4DB;
    visibility: hidden;
+}
+
+#docPanelOverlay
+{
+   background-color: #fff;
+   background-image: url(${url.context}/images/icons/ajax_anim.gif);
+   background-position: center;
+   background-repeat: no-repeat;
+   position: absolute;
+   height: 320px;
+   width: 716px;
+   overflow: hidden;
 }
 
 .docRow
@@ -275,6 +248,21 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
    background-image: url(${url.context}/images/icons/doclist_action_checkout.png);
    border-bottom: none;
    border-right: none;
+}
+
+.docActionCheckin
+{
+   background-image: url(${url.context}/images/icons/doclist_action_checkin.png);
+   border-bottom: none;
+   border-right: none;
+}
+
+.docActionLocked
+{
+   background-image: url(${url.context}/images/icons/doclist_action_locked.png);
+   border-bottom: none;
+   border-right: none;
+   cursor: default !important;
 }
 
 .docActionEditDetails

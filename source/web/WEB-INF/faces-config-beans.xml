@@ -3853,6 +3853,15 @@
 
    <managed-bean>
       <description>
+         Bean backing the ajax requests from various Portlet webscripts
+      </description>
+      <managed-bean-name>PortletActionsBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.ajax.PortletActionsBean</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+
+   <managed-bean>
+      <description>
          Bean that returns manages the tree data for the navigator component
       </description>
       <managed-bean-name>NavigatorPluginBean</managed-bean-name>

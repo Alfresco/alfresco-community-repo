@@ -17,6 +17,9 @@ var MySpaces = {
    {
       if ($('spacePanel'))
       {
+         // show AJAX loading overlay
+         $('spacePanelOverlay').setStyle('visibility', 'visible');
+         $('spacePanel').setStyle('visibility', 'hidden');
          // fire off the ajax request to populate the spaces list - the 'myspacespanel' webscript
          // is responsible for rendering just the contents of the main panel div
          YAHOO.util.Connect.asyncRequest(
@@ -613,10 +616,10 @@ var MySpaces = {
    {
       if (confirm("Are you sure you want to delete: " + name))
       {
-         // ajax call to create space
+         // ajax call to delete item
          YAHOO.util.Connect.asyncRequest(
             "POST",
-            getContextPath() + '/ajax/invoke/MySpacesBean.deleteItem',
+            getContextPath() + '/ajax/invoke/PortletActionsBean.deleteItem',
             {
                success: function(response)
                {

@@ -5,14 +5,55 @@ var MyDocs = {
    DETAIL_MARGIN: 56,
    TITLE_FONT_SIZE: 18,
    RESOURCE_PANEL_HEIGHT: 150,
+   ServiceContext: null,
+   Filter: null,
+   Home: null,
+   Query: null,
 
    start: function()
    {
       if ($('docPanel'))
       {
-         MyDocs.parseDocPanels();
-         $('docPanel').setStyle('visibility', 'visible');
+         // show AJAX loading overlay
+         $('docPanelOverlay').setStyle('visibility', 'visible');
+         $('docPanel').setStyle('visibility', 'hidden');
+         // fire off the ajax request to populate the doc list - the 'doclistpanel' webscript
+         // is responsible for rendering just the contents of the main panel div
+         YAHOO.util.Connect.asyncRequest(
+            "GET",
+            MyDocs.ServiceContext + '/doclistpanel?f='+MyDocs.Filter+'&h='+MyDocs.Home+'&q='+MyDocs.Query,
+            {
+               success: function(response)
+               {
+                  // push the response into the doc panel div
+                  $('docPanel').setHTML(response.responseText);
+                  
+                  // extract the count value from a hidden div and display it
+                  $('docCount').setHTML($('docCountValue').innerHTML);
+                  
+                  // wire up all the events and animations
+                  MyDocs.init();
+               },
+               failure: function(response)
+               {
+                  // display the error
+                  $('docPanel').setHTML("Sorry, data currently unavailable.");
+                  
+                  // hide the ajax wait panel and show the main doc panel
+                  $('docPanelOverlay').setStyle('visibility', 'hidden');
+                  $('docPanel').setStyle('visibility', 'visible');
+               }
+            }
+         );
       }
+   },
+   
+   init: function()
+   {
+      MyDocs.parseDocPanels();
+      // hide the ajax wait panel and show the main doc panel
+      $('docPanel').setStyle('visibility', 'visible');
+      $('docPanelOverlay').setStyle('visibility', 'hidden');
    },
 
    parseDocPanels: function()
@@ -404,6 +445,119 @@ var MyDocs = {
          fxInfo.start(animInfo);
          fxImage.start(animImage);
       });
+   },
+
+   /**
+    * Update the view filter
+    */
+   filter: function(filter)
+   {
+      $$('.docfilterLink').each(function(filterLink, i)
+      {
+         if (i == filter)
+         {
+            filterLink.addClass("docfilterLinkSelected");
+         }
+         else
+         {
+            filterLink.removeClass("docfilterLinkSelected");
+         }
+      });
+      MyDocs.Filter = filter;
+      MyDocs.start();
+   },
+
+   /**
+    * Delete a document item
+    */
+   deleteItem: function(name, noderef)
+   {
+      if (confirm("Are you sure you want to delete: " + name))
+      {
+         // ajax call to delete item
+         YAHOO.util.Connect.asyncRequest(
+            "POST",
+            getContextPath() + '/ajax/invoke/PortletActionsBean.deleteItem',
+            {
+               success: function(response)
+               {
+                  if (response.responseText.indexOf("OK:") == 0)
+                  {
+                     MyDocs.start();
+                  }
+                  else
+                  {
+                     alert("Error during delete of item: " + response.responseText);
+                  }
+               },
+               failure: function(response)
+               {
+                  alert("Error during delete of item: " + response.responseText);
+               }
+            }, 
+            "noderef=" + noderef
+         );
+      }
+   },
+
+   /**
+    * Check Out a document item
+    */
+   checkoutItem: function(name, noderef)
+   {
+      // ajax call to delete item
+      YAHOO.util.Connect.asyncRequest(
+         "POST",
+         getContextPath() + '/ajax/invoke/PortletActionsBean.checkoutItem',
+         {
+            success: function(response)
+            {
+               if (response.responseText.indexOf("OK:") == 0)
+               {
+                  MyDocs.start();
+               }
+               else
+               {
+                  alert("Error during check out of item: " + response.responseText);
+               }
+            },
+            failure: function(response)
+            {
+               alert("Error during check out of item: " + response.responseText);
+            }
+         }, 
+         "noderef=" + noderef
+      );
+   },
+
+   /**
+    * Check In a document item
+    */
+   checkinItem: function(name, noderef)
+   {
+      // ajax call to delete item
+      YAHOO.util.Connect.asyncRequest(
+         "POST",
+         getContextPath() + '/ajax/invoke/PortletActionsBean.checkinItem',
+         {
+            success: function(response)
+            {
+               if (response.responseText.indexOf("OK:") == 0)
+               {
+                  MyDocs.start();
+               }
+               else
+               {
+                  alert("Error during check in of item: " + response.responseText);
+               }
+            },
+            failure: function(response)
+            {
+               alert("Error during check in of item: " + response.responseText);
+            }
+         }, 
+         "noderef=" + noderef
+      );
    }
 };
 

@@ -36,10 +36,13 @@ import org.alfresco.filesys.server.filesys.FileExistsException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.servlet.BaseServlet;
 import org.alfresco.web.app.servlet.ajax.InvokeCommand;
@@ -49,61 +52,80 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Bean backing the ajax requests from the MySpaces portlet webscript.
+ * Bean backing the ajax requests from various Portlet webscripts.
  * 
- * @author Kevin Roast
+ * @author Mike Hatfield
  */
-public class MySpacesBean
+public class PortletActionsBean
 {
-   private static Log logger = LogFactory.getLog(MySpacesBean.class);
+   private static Log logger = LogFactory.getLog(PortletActionsBean.class);
    
    @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_HTML)
-   public void createSpace() throws Exception
+   public void deleteItem() throws Exception
    {
       FacesContext fc = FacesContext.getCurrentInstance();
       ResponseWriter out = fc.getResponseWriter();
       
       Map<String, String> requestMap = fc.getExternalContext().getRequestParameterMap();
-      String path = (String)requestMap.get("path");
-      String name = (String)requestMap.get("name");
-      String title = (String)requestMap.get("title");
-      String description = (String)requestMap.get("description");
-      
-      if (logger.isDebugEnabled())
-         logger.debug("MySpacesBean.createSpace() path=" + path + " name=" + name +
-               " title=" + title + " description=" + description);
-      
-      try
+      String strNodeRef = (String)requestMap.get("noderef");
+      if (strNodeRef != null && strNodeRef.length() != 0)
       {
-         if (path != null && name != null)
+         try
          {
-            NodeRef containerRef = FileUploadBean.pathToNodeRef(fc, path);
-            if (containerRef != null)
-            {
-               NodeService nodeService = Repository.getServiceRegistry(fc).getNodeService();
-               FileFolderService ffService = Repository.getServiceRegistry(fc).getFileFolderService();
-               FileInfo folderInfo = ffService.create(containerRef, name, ContentModel.TYPE_FOLDER);
-               if (logger.isDebugEnabled())
-                  logger.debug("Created new folder: " + folderInfo.getNodeRef().toString());
-               
-               // apply the uifacets aspect - icon, title and description properties
-               Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(4, 1.0f);
-               uiFacetsProps.put(ApplicationModel.PROP_ICON, CreateSpaceWizard.DEFAULT_SPACE_ICON_NAME);
-               uiFacetsProps.put(ContentModel.PROP_TITLE, title);
-               uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, description);
-               nodeService.addAspect(folderInfo.getNodeRef(), ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
-               
-               out.write("OK: " + folderInfo.getNodeRef().toString());
-            }
+            Repository.getServiceRegistry(fc).getFileFolderService().delete(new NodeRef(strNodeRef));
+            out.write("OK: " + strNodeRef);
+         }
+         catch (Throwable err)
+         {
+            out.write("ERROR: " + err.getMessage());
          }
       }
-      catch (FileExistsException ferr)
+   }
+
+   @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_HTML)
+   public void checkoutItem() throws Exception
+   {
+      FacesContext fc = FacesContext.getCurrentInstance();
+      ResponseWriter out = fc.getResponseWriter();
+      
+      Map<String, String> requestMap = fc.getExternalContext().getRequestParameterMap();
+      String strNodeRef = (String)requestMap.get("noderef");
+      if (strNodeRef != null && strNodeRef.length() != 0)
       {
-         out.write("ERROR: A file with that name already exists.");
+         try
+         {
+            Repository.getServiceRegistry(fc).getCheckOutCheckInService().checkout(new NodeRef(strNodeRef));
+            out.write("OK: " + strNodeRef);
+         }
+         catch (Throwable err)
+         {
+            out.write("ERROR: " + err.getMessage());
+         }
       }
-      catch (Throwable err)
+   }
+
+   @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_HTML)
+   public void checkinItem() throws Exception
+   {
+      FacesContext fc = FacesContext.getCurrentInstance();
+      ResponseWriter out = fc.getResponseWriter();
+      
+      Map<String, String> requestMap = fc.getExternalContext().getRequestParameterMap();
+      String strNodeRef = (String)requestMap.get("noderef");
+      if (strNodeRef != null && strNodeRef.length() != 0)
       {
-         out.write("ERROR: " + err.getMessage());
+         try
+         {
+            Map<String, Serializable> props = new HashMap<String, Serializable>(2, 1.0f);
+            props.put(Version.PROP_DESCRIPTION, "");
+            props.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
+            Repository.getServiceRegistry(fc).getCheckOutCheckInService().checkin(new NodeRef(strNodeRef), props);
+            out.write("OK: " + strNodeRef);
+         }
+         catch (Throwable err)
+         {
+            out.write("ERROR: " + err.getMessage());
+         }
       }
    }
 }

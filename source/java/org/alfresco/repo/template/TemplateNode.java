@@ -26,6 +26,9 @@ package org.alfresco.repo.template;
 
 import java.io.Serializable;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +43,7 @@ import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
@@ -48,6 +52,7 @@ import org.alfresco.service.namespace.QNameMap;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.StringUtils;
 import org.xml.sax.InputSource;
 
 import freemarker.ext.dom.NodeModel;
@@ -77,7 +82,9 @@ public class TemplateNode extends BasePermissionsNode
     
     /** The child associations from this node */
     private Map<String, List<TemplateNode>> childAssocs = null;
-    
+
+    private final static String CONTENT_DOWNLOAD_URL = "/d/a/{0}/{1}/{2}/{3}";
+
     /** Cached values */
     protected NodeRef nodeRef;
     private String name;
@@ -450,6 +457,34 @@ public class TemplateNode extends BasePermissionsNode
         return this.imageResolver;
     }
     
+    /**
+     * @return For a content document, this method returns the download URL to the content for
+     *         the default content property (@see ContentModel.PROP_CONTENT)
+     *         <p>
+     *         For a container node, this method returns an empty string
+     */
+    public String getDownloadUrl()
+    {
+        if (getIsDocument() == true)
+        {
+            try
+            {
+                return MessageFormat.format(CONTENT_DOWNLOAD_URL, new Object[] {
+                        nodeRef.getStoreRef().getProtocol(),
+                        nodeRef.getStoreRef().getIdentifier(),
+                        nodeRef.getId(),
+                        StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") } );
+            }
+            catch (UnsupportedEncodingException err)
+            {
+                throw new TemplateException("Failed to encode content URL for node: " + nodeRef, err);
+            }
+        }
+        else
+        {
+            return "";
+        }
+    }
     
     // ------------------------------------------------------------------------------
     // Inner classes

@@ -85,19 +85,22 @@ public class AVMUndoSandboxListAction extends ActionExecuterAbstractBase
             }
 
             final Map<QName, PropertyValue> dnsProperties = fAVMService.queryStorePropertyKey(item.getSecond().split(":")[0], QName.createQName(null, ".dns%"));
-            String webProject = dnsProperties.keySet().iterator().next().getLocalName();
-            webProject = webProject.substring(webProject.lastIndexOf('.') + 1, webProject.length());
-            String path = item.getSecond().substring(item.getSecond().indexOf(":") + 1);
-            if (fgLogger.isDebugEnabled())
-               fgLogger.debug("unlocking file " + path + " in web project " + webProject);
+            if (dnsProperties.size() == 1)
+            {
+                String webProject = dnsProperties.keySet().iterator().next().getLocalName();
+                webProject = webProject.substring(webProject.lastIndexOf('.') + 1, webProject.length());
+                String path = item.getSecond().substring(item.getSecond().indexOf(":") + 1);
+                if (fgLogger.isDebugEnabled())
+                    fgLogger.debug("unlocking file " + path + " in web project " + webProject);
 
-            if (fAVMLockingService.getLock(webProject, path) != null)
-            {
-               fAVMLockingService.removeLock(webProject, path);
-            }
-            else
-            {
-               fgLogger.warn("expected file " + path + " in " + webProject + " to be locked");
+                if (fAVMLockingService.getLock(webProject, path) != null)
+                {
+                    fAVMLockingService.removeLock(webProject, path);
+                }
+                else
+                {
+                    fgLogger.warn("expected file " + path + " in " + webProject + " to be locked");
+                }
             }
         }
     }

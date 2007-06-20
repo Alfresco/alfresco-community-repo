@@ -24,12 +24,22 @@
  */
 package org.alfresco.repo.template;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchService;
 
 /**
  * Representation of an AVM Store for the template model. Accessed via the AVM helper object
@@ -129,5 +139,48 @@ public class AVMTemplateStore
             }
         }
         return node;
+    }
+    
+    /**
+     * 
+     * @param query
+     * @return
+     */
+    public List<AVMTemplateNode> luceneSearch(String query)
+    {
+        List<AVMTemplateNode> nodes = null;
+        
+        // perform the search against the repo
+        ResultSet results = null;
+        try
+        {
+            results = this.services.getSearchService().query(
+                    new StoreRef(StoreRef.PROTOCOL_AVM, this.descriptor.getName()),
+                    SearchService.LANGUAGE_LUCENE,
+                    query);
+            
+            if (results.length() != 0)
+            {
+                nodes = new ArrayList<AVMTemplateNode>(results.length());
+                for (ResultSetRow row : results)
+                {
+                    NodeRef nodeRef = row.getNodeRef();
+                    nodes.add(new AVMTemplateNode(nodeRef, this.services, this.resolver));
+                }
+            }
+        }
+        catch (Throwable err)
+        {
+            throw new AlfrescoRuntimeException("Failed to execute search: " + query, err);
+        }
+        finally
+        {
+            if (results != null)
+            {
+                results.close();
+            }
+        }
+        
+        return (nodes != null ? nodes : (List)Collections.emptyList());
     }
 }

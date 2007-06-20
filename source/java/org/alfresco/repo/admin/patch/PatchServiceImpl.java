@@ -201,7 +201,8 @@ public class PatchServiceImpl implements PatchService
     {
         // get the patch from the DAO
         AppliedPatch appliedPatch = patchDaoService.getAppliedPatch(patch.getId());
-        if (appliedPatch != null && appliedPatch.getSucceeded())
+        // We bypass the patch if it was executed successfully
+        if (appliedPatch != null && appliedPatch.getWasExecuted() && appliedPatch.getSucceeded())
         {
             // it has already been applied
             if (logger.isDebugEnabled())

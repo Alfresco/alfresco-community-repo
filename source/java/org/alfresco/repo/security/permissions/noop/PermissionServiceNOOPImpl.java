@@ -227,17 +227,17 @@ public class PermissionServiceNOOPImpl
         throw new UnsupportedOperationException();
     }
 
-    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForTheCurrentUser()
+    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForCurrentUser()
     {
         return Collections.<NodeRef, Set<AccessPermission>>emptyMap();
     }
 
-    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissions(String authority)
+    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForAuthority(String authority)
     {
         return Collections.<NodeRef, Set<AccessPermission>>emptyMap();
     }
 
-    public Set<NodeRef> findNodesByAssignedPermissionForTheCurrentUser(String permission, boolean allow, boolean includeContainingAuthorities, boolean exactPermissionMatch)
+    public Set<NodeRef> findNodesByAssignedPermissionForCurrentUser(String permission, boolean allow, boolean includeContainingAuthorities, boolean exactPermissionMatch)
     {
         return Collections.<NodeRef>emptySet();
     }

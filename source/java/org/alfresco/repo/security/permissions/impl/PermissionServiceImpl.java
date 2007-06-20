@@ -1136,18 +1136,18 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         }
     }
 
-    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForTheCurrentUser()
+    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForCurrentUser()
     {
         String currentUser = authenticationComponent.getCurrentUserName();
-        return getAllSetPermissions(currentUser);
+        return getAllSetPermissionsForAuthority(currentUser);
     }
 
-    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissions(String authority)
+    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForAuthority(String authority)
     {
         return permissionsDaoComponent.getAllSetPermissions(authority);
     }
 
-    public Set<NodeRef> findNodesByAssignedPermissionForTheCurrentUser(String permission, boolean allow, boolean includeContainingAuthorities,
+    public Set<NodeRef> findNodesByAssignedPermissionForCurrentUser(String permission, boolean allow, boolean includeContainingAuthorities,
             boolean exactPermissionMatch)
     {
         String currentUser = authenticationComponent.getCurrentUserName();

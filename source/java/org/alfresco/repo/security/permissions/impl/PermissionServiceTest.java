@@ -1818,9 +1818,9 @@ public class PermissionServiceTest extends AbstractPermissionTest
         NodeRef n9 = nodeService.createNode(n1, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}nine"), ContentModel.TYPE_FOLDER).getChildRef();
         NodeRef n10 = nodeService.createNode(n1, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}ten"), ContentModel.TYPE_FOLDER).getChildRef();
 
-        assertEquals(0, permissionService.getAllSetPermissionsForTheCurrentUser().size());
-        assertEquals(0, permissionService.getAllSetPermissions("admin").size());
-        assertEquals(0, permissionService.getAllSetPermissions("andy").size());
+        assertEquals(0, permissionService.getAllSetPermissionsForCurrentUser().size());
+        assertEquals(0, permissionService.getAllSetPermissionsForAuthority("admin").size());
+        assertEquals(0, permissionService.getAllSetPermissionsForAuthority("andy").size());
 
         permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ_CHILDREN), "admin", AccessStatus.ALLOWED));
         permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ_CONTENT), "admin", AccessStatus.ALLOWED));
@@ -1837,42 +1837,42 @@ public class PermissionServiceTest extends AbstractPermissionTest
         permissionService.setPermission(new SimplePermissionEntry(n10, getPermission(PermissionService.READ_CHILDREN), "admin", AccessStatus.DENIED));
         permissionService.setPermission(new SimplePermissionEntry(n10, getPermission(PermissionService.READ_CHILDREN), "andy", AccessStatus.ALLOWED));
 
-        assertEquals(10, permissionService.getAllSetPermissionsForTheCurrentUser().size());
-        assertEquals(10, permissionService.getAllSetPermissions("admin").size());
-        assertEquals(2, permissionService.getAllSetPermissions("andy").size());
-        assertNull(permissionService.getAllSetPermissionsForTheCurrentUser().get(rootNodeRef));
-        assertNull(permissionService.getAllSetPermissions("admin").get(rootNodeRef));
-        assertNull(permissionService.getAllSetPermissions("andy").get(rootNodeRef));
-        assertEquals(2, permissionService.getAllSetPermissionsForTheCurrentUser().get(n1).size());
-        assertEquals(2, permissionService.getAllSetPermissions("admin").get(n1).size());
-        assertNull(permissionService.getAllSetPermissions("andy").get(n1));
-        assertEquals(1, permissionService.getAllSetPermissionsForTheCurrentUser().get(n2).size());
-        assertEquals(1, permissionService.getAllSetPermissions("admin").get(n2).size());
-        assertEquals(1, permissionService.getAllSetPermissions("andy").get(n2).size());
-        assertEquals(1, permissionService.getAllSetPermissionsForTheCurrentUser().get(n3).size());
-        assertEquals(1, permissionService.getAllSetPermissions("admin").get(n3).size());
-        assertNull(permissionService.getAllSetPermissions("andy").get(n3));
-        assertEquals(1, permissionService.getAllSetPermissionsForTheCurrentUser().get(n4).size());
-        assertEquals(1, permissionService.getAllSetPermissions("admin").get(n4).size());
-        assertNull(permissionService.getAllSetPermissions("andy").get(n4));
-        assertEquals(1, permissionService.getAllSetPermissionsForTheCurrentUser().get(n5).size());
-        assertEquals(1, permissionService.getAllSetPermissions("admin").get(n5).size());
-        assertNull(permissionService.getAllSetPermissions("andy").get(n5));
-        assertEquals(1, permissionService.getAllSetPermissionsForTheCurrentUser().get(n6).size());
-        assertEquals(1, permissionService.getAllSetPermissions("admin").get(n6).size());
-        assertNull(permissionService.getAllSetPermissions("andy").get(n6));
-        assertEquals(1, permissionService.getAllSetPermissionsForTheCurrentUser().get(n7).size());
-        assertEquals(1, permissionService.getAllSetPermissions("admin").get(n7).size());
-        assertNull(permissionService.getAllSetPermissions("andy").get(n7));
-        assertEquals(1, permissionService.getAllSetPermissionsForTheCurrentUser().get(n8).size());
-        assertEquals(1, permissionService.getAllSetPermissions("admin").get(n8).size());
-        assertNull(permissionService.getAllSetPermissions("andy").get(n8));
-        assertEquals(1, permissionService.getAllSetPermissionsForTheCurrentUser().get(n9).size());
-        assertEquals(1, permissionService.getAllSetPermissions("admin").get(n9).size());
-        assertNull(permissionService.getAllSetPermissions("andy").get(n9));
-        assertEquals(1, permissionService.getAllSetPermissionsForTheCurrentUser().get(n10).size());
-        assertEquals(1, permissionService.getAllSetPermissions("admin").get(n10).size());
-        assertEquals(1, permissionService.getAllSetPermissions("andy").get(n10).size());
+        assertEquals(10, permissionService.getAllSetPermissionsForCurrentUser().size());
+        assertEquals(10, permissionService.getAllSetPermissionsForAuthority("admin").size());
+        assertEquals(2, permissionService.getAllSetPermissionsForAuthority("andy").size());
+        assertNull(permissionService.getAllSetPermissionsForCurrentUser().get(rootNodeRef));
+        assertNull(permissionService.getAllSetPermissionsForAuthority("admin").get(rootNodeRef));
+        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(rootNodeRef));
+        assertEquals(2, permissionService.getAllSetPermissionsForCurrentUser().get(n1).size());
+        assertEquals(2, permissionService.getAllSetPermissionsForAuthority("admin").get(n1).size());
+        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n1));
+        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n2).size());
+        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n2).size());
+        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("andy").get(n2).size());
+        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n3).size());
+        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n3).size());
+        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n3));
+        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n4).size());
+        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n4).size());
+        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n4));
+        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n5).size());
+        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n5).size());
+        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n5));
+        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n6).size());
+        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n6).size());
+        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n6));
+        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n7).size());
+        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n7).size());
+        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n7));
+        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n8).size());
+        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n8).size());
+        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n8));
+        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n9).size());
+        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n9).size());
+        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n9));
+        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n10).size());
+        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n10).size());
+        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("andy").get(n10).size());
 
     }
 
@@ -1897,8 +1897,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         String groupAuth = authorityService.createAuthority(AuthorityType.GROUP, null, "G");
         authorityService.addAuthority(groupAuth, "andy");
 
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser("Consumer", true, false, false), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser("Consumer", false, false, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser("Consumer", true, false, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser("Consumer", false, false, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", "Consumer", true, false, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", "Consumer", false, false, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", "Consumer", true, false, false), storeRef).size());
@@ -1921,8 +1921,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         permissionService.setPermission(new SimplePermissionEntry(n4, getPermission(PermissionService.READ_CHILDREN), groupAuth, AccessStatus.ALLOWED));
         permissionService.setPermission(new SimplePermissionEntry(n5, getPermission(PermissionService.READ_CONTENT), groupAuth, AccessStatus.ALLOWED));
 
-        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.CONSUMER, true, false, false), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.CONSUMER, false, false, false), storeRef).size());
+        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, true, false, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, false, false, false), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONSUMER, true, false, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONSUMER, false, false, false), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONSUMER, true, false, false), storeRef).size());
@@ -1930,8 +1930,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONSUMER, true, false, false), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONSUMER, false, false, false), storeRef).size());
 
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.CONTRIBUTOR, true, false, false), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.CONTRIBUTOR, false, false, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR, true, false, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR, false, false, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONTRIBUTOR, true, false, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONTRIBUTOR, false, false, false), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONTRIBUTOR, true, false, false), storeRef).size());
@@ -1939,8 +1939,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONTRIBUTOR, true, false, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONTRIBUTOR, false, false, false), storeRef).size());
 
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ, true, false, false), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ, false, false, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, true, false, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, false, false, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ, true, false, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ, false, false, false), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ, true, false, false), storeRef).size());
@@ -1948,8 +1948,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ, true, false, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ, false, false, false), storeRef).size());
 
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ_CONTENT, true, false, false), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ_CONTENT, false, false, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT, true, false, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT, false, false, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CONTENT, true, false, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CONTENT, false, false, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CONTENT, true, false, false), storeRef).size());
@@ -1957,8 +1957,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CONTENT, true, false, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CONTENT, false, false, false), storeRef).size());
 
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ_CHILDREN, true, false, false), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ_CHILDREN, false, false, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN, true, false, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN, false, false, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CHILDREN, true, false, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CHILDREN, false, false, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CHILDREN, true, false, false), storeRef).size());
@@ -1968,13 +1968,13 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
         // Include groups for exact match
 
-        for (NodeRef nodeRef : permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.CONSUMER, true, true, false))
+        for (NodeRef nodeRef : permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, true, true, false))
         {
             System.out.println("Found " + nodeService.getPath(nodeRef));
         }
 
-        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.CONSUMER, true, true, false), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.CONSUMER, false, true, false), storeRef).size());
+        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, true, true, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, false, true, false), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONSUMER, true, true, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONSUMER, false, true, false), storeRef).size());
         assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONSUMER, true, true, false), storeRef).size());
@@ -1982,8 +1982,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONSUMER, true, true, false), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONSUMER, false, true, false), storeRef).size());
 
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.CONTRIBUTOR, true, true, false), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.CONTRIBUTOR, false, true, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR, true, true, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR, false, true, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONTRIBUTOR, true, true, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONTRIBUTOR, false, true, false), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONTRIBUTOR, true, true, false), storeRef).size());
@@ -1991,8 +1991,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONTRIBUTOR, true, true, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONTRIBUTOR, false, true, false), storeRef).size());
 
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ, true, true, false), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ, false, true, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, true, true, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, false, true, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ, true, true, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ, false, true, false), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ, true, true, false), storeRef).size());
@@ -2000,8 +2000,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ, true, true, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ, false, true, false), storeRef).size());
 
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ_CONTENT, true, true, false), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ_CONTENT, false, true, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT, true, true, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT, false, true, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CONTENT, true, true, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CONTENT, false, true, false), storeRef).size());
         assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CONTENT, true, true, false), storeRef).size());
@@ -2009,8 +2009,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CONTENT, true, true, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CONTENT, false, true, false), storeRef).size());
 
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ_CHILDREN, true, true, false), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ_CHILDREN, false, true, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN, true, true, false), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN, false, true, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CHILDREN, true, true, false), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CHILDREN, false, true, false), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CHILDREN, true, true, false), storeRef).size());
@@ -2020,8 +2020,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
         // Include inexact permission
 
-        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.CONSUMER, true, false, true), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.CONSUMER, false, false, true), storeRef).size());
+        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, true, false, true), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, false, false, true), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONSUMER, true, false, true), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONSUMER, false, false, true), storeRef).size());
         assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONSUMER, true, false, true), storeRef).size());
@@ -2029,8 +2029,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONSUMER, true, false, true), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONSUMER, false, false, true), storeRef).size());
 
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.CONTRIBUTOR, true, false, true), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.CONTRIBUTOR, false, false, true), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR, true, false, true), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR, false, false, true), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONTRIBUTOR, true, false, true), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONTRIBUTOR, false, false, true), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONTRIBUTOR, true, false, true), storeRef).size());
@@ -2038,8 +2038,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONTRIBUTOR, true, false, true), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONTRIBUTOR, false, false, true), storeRef).size());
 
-        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ, true, false, true), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ, false, false, true), storeRef).size());
+        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, true, false, true), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, false, false, true), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ, true, false, true), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ, false, false, true), storeRef).size());
         assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ, true, false, true), storeRef).size());
@@ -2047,8 +2047,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ, true, false, true), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ, false, false, true), storeRef).size());
 
-        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ_CONTENT, true, false, true), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ_CONTENT, false, false, true), storeRef).size());
+        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT, true, false, true), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT, false, false, true), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CONTENT, true, false, true), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CONTENT, false, false, true), storeRef).size());
         assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CONTENT, true, false, true), storeRef).size());
@@ -2056,8 +2056,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CONTENT, true, false, true), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CONTENT, false, false, true), storeRef).size());
 
-        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ_CHILDREN, true, false, true), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ_CHILDREN, false, false, true), storeRef).size());
+        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN, true, false, true), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN, false, false, true), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CHILDREN, true, false, true), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CHILDREN, false, false, true), storeRef).size());
         assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CHILDREN, true, false, true), storeRef).size());
@@ -2067,8 +2067,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
         // Inexact for all
 
-        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.CONSUMER, true, true, true), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.CONSUMER, false, true, true), storeRef).size());
+        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, true, true, true), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, false, true, true), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONSUMER, true, true, true), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONSUMER, false, true, true), storeRef).size());
         assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONSUMER, true, true, true), storeRef).size());
@@ -2076,8 +2076,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONSUMER, true, true, true), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONSUMER, false, true, true), storeRef).size());
 
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.CONTRIBUTOR, true, true, true), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.CONTRIBUTOR, false, true, true), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR, true, true, true), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR, false, true, true), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONTRIBUTOR, true, true, true), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONTRIBUTOR, false, true, true), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONTRIBUTOR, true, true, true), storeRef).size());
@@ -2085,8 +2085,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONTRIBUTOR, true, true, true), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONTRIBUTOR, false, true, true), storeRef).size());
 
-        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ, true, true, true), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ, false, true, true), storeRef).size());
+        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, true, true, true), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, false, true, true), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ, true, true, true), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ, false, true, true), storeRef).size());
         assertEquals(4, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ, true, true, true), storeRef).size());
@@ -2094,8 +2094,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ, true, true, true), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ, false, true, true), storeRef).size());
 
-        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ_CONTENT, true, true, true), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ_CONTENT, false, true, true), storeRef).size());
+        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT, true, true, true), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT, false, true, true), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CONTENT, true, true, true), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CONTENT, false, true, true), storeRef).size());
         assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CONTENT, true, true, true), storeRef).size());
@@ -2103,8 +2103,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CONTENT, true, true, true), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CONTENT, false, true, true), storeRef).size());
 
-        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ_CHILDREN, true, true, true), storeRef).size());
-        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForTheCurrentUser(PermissionService.READ_CHILDREN, false, true, true), storeRef).size());
+        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN, true, true, true), storeRef).size());
+        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN, false, true, true), storeRef).size());
         assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CHILDREN, true, true, true), storeRef).size());
         assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CHILDREN, false, true, true), storeRef).size());
         assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CHILDREN, true, true, true), storeRef).size());

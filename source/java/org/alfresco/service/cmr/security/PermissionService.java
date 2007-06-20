@@ -294,7 +294,7 @@ public interface PermissionService
      * @return - A map of noderefs to permissions set
      */
     @Auditable
-    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForTheCurrentUser();
+    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForCurrentUser();
 
     /**
      * Get all the permissions set for the given authority
@@ -303,7 +303,7 @@ public interface PermissionService
      * @return - A map of noderefs to permissions set
      */
     @Auditable(parameters = { "authority" })
-    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissions(String authority);
+    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForAuthority(String authority);
 
     /**
      * Find all the nodes where the current user has explicitly been assigned the specified permission.
@@ -319,7 +319,7 @@ public interface PermissionService
      * @return - the set of nodes where the user is assigned the permission
      */
     @Auditable(parameters = { "permission", "allow", "includeContainingAuthorities", "includeContainingPermissions" })
-    public Set<NodeRef> findNodesByAssignedPermissionForTheCurrentUser(String permission, boolean allow, boolean includeContainingAuthorities,
+    public Set<NodeRef> findNodesByAssignedPermissionForCurrentUser(String permission, boolean allow, boolean includeContainingAuthorities,
             boolean includeContainingPermissions);
 
     /**

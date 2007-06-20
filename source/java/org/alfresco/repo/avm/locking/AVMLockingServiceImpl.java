@@ -169,6 +169,21 @@ public class AVMLockingServiceImpl implements AVMLockingService
                 Attribute table = fAttributeService.getAttribute(LOCK_TABLE);
                 if (table != null)
                 {
+                    Attribute stores = fAttributeService.getAttribute(LOCK_TABLE + '/' + STORES);
+                    if (stores == null)
+                    {
+                        fAttributeService.setAttribute(LOCK_TABLE, STORES, new MapAttributeValue());
+                    }
+                    Attribute users = fAttributeService.getAttribute(LOCK_TABLE + '/' + USERS);
+                    if (users == null)
+                    {
+                        fAttributeService.setAttribute(LOCK_TABLE, USERS, new MapAttributeValue());
+;                   }
+                    Attribute webProjects = fAttributeService.getAttribute(LOCK_TABLE + '/' + WEB_PROJECTS);
+                    if (webProjects == null)
+                    {
+                        fAttributeService.setAttribute(LOCK_TABLE, WEB_PROJECTS, new MapAttributeValue());
+                    }
                     return null;
                 }
                 fAttributeService.setAttribute("", LOCK_TABLE, new MapAttributeValue());

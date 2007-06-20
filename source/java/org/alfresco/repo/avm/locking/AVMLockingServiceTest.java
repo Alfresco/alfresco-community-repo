@@ -25,17 +25,27 @@
 
 package org.alfresco.repo.avm.locking;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
+import org.alfresco.service.cmr.remote.RepoRemote;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import junit.framework.TestCase;
@@ -60,6 +70,12 @@ public class AVMLockingServiceTest extends TestCase
     
     private static AuthenticationComponent fAuthenticationComponent;
     
+    private static NodeService fNodeService;
+    
+    private static RepoRemote fRepoRemote;
+    
+    private static NodeRef fWebProject;
+    
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
      */
@@ -76,7 +92,16 @@ public class AVMLockingServiceTest extends TestCase
             fAuthenticationService = (AuthenticationService)fContext.getBean("AuthenticationService");
             fAuthenticationComponent = (AuthenticationComponent)fContext.getBean("AuthenticationComponent");
             fAuthenticationComponent.setSystemUserAsCurrentUser();
+            fNodeService = (NodeService)fContext.getBean("NodeService");
+            fRepoRemote = (RepoRemote)fContext.getBean("RepoRemoteService");
         }
+        // Set up a fake web project.
+        NodeRef root = fRepoRemote.getRoot();
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        properties.put(WCMAppModel.PROP_AVMSTORE, "alfresco");
+        fWebProject = fNodeService.createNode(root, ContentModel.ASSOC_CONTAINS, 
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "alfresco"), 
+                WCMAppModel.TYPE_AVMWEBFOLDER, properties).getChildRef();
         // Set up sample users groups and roles.
         fAuthenticationService.createAuthentication("Buffy", "Buffy".toCharArray());
         fPersonService.getPerson("Buffy");
@@ -123,6 +148,7 @@ public class AVMLockingServiceTest extends TestCase
         fAuthorityService.deleteAuthority("GROUP_Scoobies");
         fAuthorityService.deleteAuthority("ROLE_SUPER_POWERED");
         fAuthorityService.deleteAuthority("GROUP_vampires");
+        fNodeService.deleteNode(fWebProject);
     }
     
     public void testAll()

@@ -44,11 +44,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.workflow.ManageTaskDialog;
 import org.alfresco.web.bean.workflow.WorkflowUtil;
+import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -61,28 +60,37 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ManageChangeRequestTaskDialog extends ManageTaskDialog
 {
+   protected boolean doResubmitNow = false;
    protected AVMBrowseBean avmBrowseBean;
    protected AVMSubmittedAspect avmSubmittedAspect;
    
    private final static Log logger = LogFactory.getLog(ManageChangeRequestTaskDialog.class);
    
-   /**
-    * @param avmBrowseBean AVMBrowseBean instance
-    */
-   public void setAvmBrowseBean(AVMBrowseBean avmBrowseBean)
+   // ------------------------------------------------------------------------------
+   // Dialog implementation
+   
+   @Override
+   public void init(Map<String, String> parameters)
    {
-      this.avmBrowseBean = avmBrowseBean;
+      super.init(parameters);
+      
+      // reset the doResubmit flag
+      this.doResubmitNow = false;
+   }
+   
+   @Override
+   public List<DialogButtonConfig> getAdditionalButtons()
+   {
+      List<DialogButtonConfig> buttons = super.getAdditionalButtons();
+      
+      buttons.add(new DialogButtonConfig(ID_PREFIX + "resubmit", null, "task_done_resubmit_all",
+                         "#{DialogManager.bean.transitionAndResubmit}", "false", null));
+      
+      return buttons;
    }
 
-   /**
-    * Sets the avm submitted aspect service to use
-    * 
-    * @param avmSubmittedAspect AVMSubmittedAspect instance
-    */
-   public void setAvmSubmittedAspect(AVMSubmittedAspect avmSubmittedAspect)
-   {
-      this.avmSubmittedAspect = avmSubmittedAspect;
-   }
+   // ------------------------------------------------------------------------------
+   // Event handlers
    
    @Override
    public String transition()
@@ -129,30 +137,11 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
          // update the users main store with the changes from the workflow store
          this.avmSyncService.update(diffs, null, false, false, true, true, null, null);
          
-         // start the submission dialog with the list of paths to submit
-         if (logger.isDebugEnabled())
-            logger.debug("starting submit dialog with expired paths: " + submitPaths);
-
-         // get hold of the node ref that represents the web project the expired items
-         // belong to and get the name of the users main store
-         NodeRef userStoreNodeRef = (NodeRef)this.nodeService.getProperty(
-                  this.workflowPackage, WCMModel.PROP_AVM_DIR_INDIRECTION);
-         String userStoreAvmPath = AVMNodeConverter.ToAVMVersionPath(userStoreNodeRef).getSecond();
-         String userStoreName = AVMUtil.getStoreName(userStoreAvmPath);
-         String stagingStoreName = this.avmService.getStoreProperty(userStoreName, 
-                  SandboxConstants.PROP_WEBSITE_NAME).getStringValue();
-         NodeRef webProjectRef = AVMUtil.getWebProjectNodeFromStore(stagingStoreName);
-         
-         // update the UI context to the web project
-         this.browseBean.clickSpace(webProjectRef);
-         this.avmBrowseBean.setupSandboxAction(userStoreName, 
-                  Application.getCurrentUser(context).getUserName());
-         
-         // setup the context for the submit dialog and initialise it
-         this.avmBrowseBean.setExpiredNodes(submitNodes);
-         Map<String, String> dialogParams = new HashMap<String, String>(1);
-         dialogParams.put(SubmitDialog.PARAM_STARTED_FROM_WORKFLOW, Boolean.TRUE.toString());
-         Application.getDialogManager().setupParameters(dialogParams);
+         // re-submit all the items now if requested
+         if (this.doResubmitNow)
+         {
+            setupSubmitDialog(context, submitPaths, submitNodes);
+         }
          
          // signal the default transition to the workflow task
          this.workflowService.endTask(this.task.id, null);
@@ -160,10 +149,14 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
          // commit the changes
          tx.commit();
          
-         // if we get this far close the task dialog and open the submit dialog
-         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
-                   AlfrescoNavigationHandler.OUTCOME_SEPARATOR + 
-                   AlfrescoNavigationHandler.DIALOG_PREFIX + "submitSandboxItems";
+         // if we get this far close the task dialog
+         if (this.doResubmitNow)
+         {
+            // open the submit dialog if re-submitting
+            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
+                      AlfrescoNavigationHandler.OUTCOME_SEPARATOR + 
+                      AlfrescoNavigationHandler.DIALOG_PREFIX + "submitSandboxItems";
+         }
       }
       catch (Throwable e)
       {
@@ -174,5 +167,76 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
       }
       
       return outcome;
+   }
+   
+   /**
+    * Event handler for the 'Task Done & Re-Submit All' button
+    */
+   public String transitionAndResubmit()
+   {
+      this.doResubmitNow = true;
+      return this.transition();
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Setters
+   
+   /**
+    * @param avmBrowseBean AVMBrowseBean instance
+    */
+   public void setAvmBrowseBean(AVMBrowseBean avmBrowseBean)
+   {
+      this.avmBrowseBean = avmBrowseBean;
+   }
+
+   /**
+    * Sets the avm submitted aspect service to use
+    * 
+    * @param avmSubmittedAspect AVMSubmittedAspect instance
+    */
+   public void setAvmSubmittedAspect(AVMSubmittedAspect avmSubmittedAspect)
+   {
+      this.avmSubmittedAspect = avmSubmittedAspect;
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Helper methods
+   
+   /**
+    * Submits all the expired items immediately after the task is completed
+    * by launching the submit dialog with the expired items set as the modified
+    * items
+    * 
+    * @param context Faces context
+    * @param submitPaths The list of paths being submitted
+    * @param submitNodes Node desriptor for each node being submitted
+    */
+   protected void setupSubmitDialog(FacesContext context, List<String> submitPaths, 
+            List<AVMNodeDescriptor> submitNodes)
+   {
+      // start the submission dialog with the list of paths to submit
+      if (logger.isDebugEnabled())
+         logger.debug("starting submit dialog with expired paths: " + submitPaths);
+
+      // get hold of the node ref that represents the web project the expired items
+      // belong to and get the name of the users main store
+      NodeRef userStoreNodeRef = (NodeRef)this.nodeService.getProperty(
+               this.workflowPackage, WCMModel.PROP_AVM_DIR_INDIRECTION);
+      String userStoreAvmPath = AVMNodeConverter.ToAVMVersionPath(userStoreNodeRef).getSecond();
+      String userStoreName = AVMUtil.getStoreName(userStoreAvmPath);
+      String stagingStoreName = this.avmService.getStoreProperty(userStoreName, 
+               SandboxConstants.PROP_WEBSITE_NAME).getStringValue();
+      NodeRef webProjectRef = AVMUtil.getWebProjectNodeFromStore(stagingStoreName);
+      
+      // update the UI context to the web project
+      this.browseBean.clickSpace(webProjectRef);
+      this.avmBrowseBean.setupSandboxAction(userStoreName, 
+               Application.getCurrentUser(context).getUserName());
+      
+      // setup the context for the submit dialog and initialise it
+      this.avmBrowseBean.setExpiredNodes(submitNodes);
+      Map<String, String> dialogParams = new HashMap<String, String>(1);
+      dialogParams.put(SubmitDialog.PARAM_STARTED_FROM_WORKFLOW, Boolean.TRUE.toString());
+      Application.getDialogManager().setupParameters(dialogParams);
    }
 }

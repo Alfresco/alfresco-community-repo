@@ -24,24 +24,30 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.jscript.ValueConverter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
+import org.alfresco.service.namespace.QName;
 import org.dom4j.Element;
 import org.jbpm.context.def.VariableAccess;
 import org.jbpm.context.exe.ContextInstance;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.jbpm.graph.exe.Token;
 import org.jbpm.jpdl.xml.JpdlXmlReader;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
 import org.springframework.beans.factory.BeanFactory;
 import org.xml.sax.InputSource;
 
@@ -151,13 +157,40 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         Map<String, Object> inputMap = createInputMap(context, services, variableAccesses);
         ScriptService scriptService = services.getScriptService();
         Object result = scriptService.executeScriptString(expression, inputMap);
-        if (result instanceof NodeRef)
-        {
-            result = new JBPMNode((NodeRef)result, services);
-        }
+        result = convertForJBPM(result, services);
         return result;
     }
     
+    /**
+     * Convert values for JBPM Context
+     * 
+     * @param value
+     * @param services
+     * @return
+     */
+    private static Object convertForJBPM(Object value, ServiceRegistry services)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+        else if (value instanceof NodeRef)
+        {
+            value = new JBPMNode(((NodeRef)value), services);
+        }
+        else if (value instanceof Collection)
+        {
+            // recursively convert each value in the collection
+            Collection<Object> collection = (Collection<Object>)value;
+            Collection<Object> converted = new ArrayList<Object>();
+            for (Object obj : collection)
+            {
+                converted.add(convertForJBPM(obj, services));
+            }
+            value = converted;
+        }
+        return value;
+    }
 
     /**
      * Construct map of arguments to pass to script
@@ -285,5 +318,5 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         }
         return writable;
     }
-
+    
 }

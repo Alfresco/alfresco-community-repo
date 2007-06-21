@@ -24,6 +24,10 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.security.authority.AuthorityDAO;
@@ -148,6 +152,21 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
                             }
                             assignedPooledActors[i++] = actor;
                         }
+                    }
+                    if (eval instanceof Collection)
+                    {
+                        List<String> actors = new ArrayList<String>();
+                        Collection<Object> nodes = (Collection<Object>)eval;
+                        for (Object node : nodes)
+                        {
+                            if (node instanceof ScriptNode)
+                            {
+                                String actor = mapAuthorityToName((ScriptNode)node, true);
+                                actors.add(actor);
+                            }
+                        }
+                        assignedPooledActors = new String[actors.size()];
+                        actors.toArray(assignedPooledActors);
                     }
                     else if (eval instanceof ScriptNode)
                     {

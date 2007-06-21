@@ -117,7 +117,7 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
         for (final AVMDifference diff : stagingDiffs)
         {
             fAVMSubmittedAspect.clearSubmitted(diff.getSourceVersion(), diff.getSourcePath());
-            this.fAVMLockingService.removeLock(webProject, diff.getSourcePath().substring(diff.getSourcePath().indexOf(":") + 1));
+            recursivelyRemoveLocks(webProject, diff.getSourceVersion(), diff.getSourcePath());
         }
         
         // Allow AVMSubmitTransactionListener to inspect the staging diffs
@@ -143,6 +143,23 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
             fAVMSyncService.update(sandboxDiffs, null, true, true, false, false, tag, description);
             AVMDAOs.Instance().fAVMNodeDAO.flush();
             fAVMSyncService.flatten(from, targetPath);
+        }
+    }
+
+    private void recursivelyRemoveLocks(String webProject, int version, String path)
+    {
+        AVMNodeDescriptor desc = fAVMService.lookup(version, path, true);
+        if (desc.isFile() || desc.isDeletedFile())
+        {
+            fAVMLockingService.removeLock(webProject, path.substring(path.indexOf(":") + 1));
+        }
+        else
+        {
+            Map<String, AVMNodeDescriptor> list = fAVMService.getDirectoryListing(version, path, true);
+            for (AVMNodeDescriptor child : list.values())
+            {
+                recursivelyRemoveLocks(webProject, version, child.getPath());
+            }
         }
     }
 }

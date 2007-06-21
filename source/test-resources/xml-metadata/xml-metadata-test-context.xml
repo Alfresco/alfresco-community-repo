@@ -47,4 +47,59 @@
       </property>
    </bean>
    
+   <!-- A selector that checks root element names -->
+   <bean
+         id="extracter.xml.selector.RootElementSelector"
+         class="org.alfresco.repo.content.selector.RootElementNameContentWorkerSelector"
+         init-method="init">
+      <property name="workers">
+         <map>
+            <entry key="BOGUS_ROOT_ELEMENT">
+               <null />
+            </entry>
+            <entry key="model">
+               <ref bean="extracter.xml.AlfrescoModelMetadataExtracter" />
+            </entry>
+            <entry key="projectDescription">
+               <ref bean="extracter.xml.EclipseProjectMetadataExtracter" />
+            </entry>
+         </map>
+      </property>
+   </bean>
+   
+   <!-- A selector that executes XPath statements -->
+   <bean
+         id="extracter.xml.selector.XPathSelector"
+         class="org.alfresco.repo.content.selector.XPathContentWorkerSelector"
+         init-method="init">
+      <property name="workers">
+         <map>
+            <entry key="/my:test">
+               <null />
+            </entry>
+            <entry key="/model[@name='fm:forummodel']">
+               <ref bean="extracter.xml.AlfrescoModelMetadataExtracter" />
+            </entry>
+            <entry key="/projectDescription">
+               <ref bean="extracter.xml.EclipseProjectMetadataExtracter" />
+            </entry>
+         </map>
+      </property>
+   </bean>
+   
+   <!-- The wrapper XML metadata extracter -->
+   <bean
+         id="extracter.xml.XMLMetadataExtracter"
+         class="org.alfresco.repo.content.metadata.xml.XmlMetadataExtracter"
+         parent="baseMetadataExtracter">
+      <property name="overwritePolicy">
+         <value>EAGER</value>
+      </property>
+      <property name="selectors">
+         <list>
+            <ref bean="extracter.xml.selector.XPathSelector" />
+         </list>
+      </property>
+   </bean>
+   
 </beans>

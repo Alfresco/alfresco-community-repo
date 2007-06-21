@@ -222,6 +222,8 @@ public interface MetadataExtracter extends ContentWorker
      * reliant transformers will be used for a specific extraction.
      * 
      * @return Returns the approximate number of milliseconds per transformation
+     * 
+     * @deprecated          Generally not useful or used.  Extraction is normally specifically configured.
      */
     public long getExtractionTime();
 

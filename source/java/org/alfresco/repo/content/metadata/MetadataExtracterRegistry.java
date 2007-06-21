@@ -145,7 +145,6 @@ public class MetadataExtracterRegistry
      */
     private MetadataExtracter findBestExtracter(String sourceMimetype)
     {
-        long bestTime = Long.MAX_VALUE;
         logger.debug("Finding best extracter for " + sourceMimetype);
 
         MetadataExtracter bestExtracter = null;
@@ -157,12 +156,7 @@ public class MetadataExtracterRegistry
                 // extraction not achievable
                 continue;
             }
-            long time = ext.getExtractionTime();
-            if (time < bestTime)
-            {
-                bestExtracter = ext;
-                bestTime = time;
-            }
+            bestExtracter = ext;
         }
         return bestExtracter;
     }

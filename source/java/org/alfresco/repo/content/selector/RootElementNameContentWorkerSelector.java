@@ -22,7 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.content.metadata.xml;
+package org.alfresco.repo.content.selector;
 
 import java.io.InputStream;
 import java.util.Collections;
@@ -33,11 +33,11 @@ import java.util.Set;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.alfresco.repo.content.ContentWorkerSelector;
+import org.alfresco.repo.content.ContentWorker;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.metadata.MetadataExtracter;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.xml.sax.Attributes;
@@ -48,33 +48,38 @@ import org.xml.sax.helpers.DefaultHandler;
  * A selector that looks at the root node of an XML document to determine which worker to provide.
  * There are many ways to identify XML documents and this is probably the simplest.  Alternate
  * implementations might execute a series of xpath statements or look for specific namespace
- * declarations in the document.  The net result is the same, i.e. given an XML document, an
- * extracter is provided to the caller.
- * <p>
- * In this selector, there is no guarantee that the different extracters will generate the same
- * (or even nearly the same) metadata.  It is up to the configurer to ensure that if it is a
- * requirement, but otherwise each extracter is responsible for its own mappings.  Mostly, though,
- * a root node match will imply a structure that has the necessary metadata.
+ * declarations in the document.  The net result is the same, i.e. given an XML document, a
+ * worker is provided to the caller.
  * 
  * @since 2.1
  * @author Derek Hulley
  */
-public class RootElementNameMetadataExtracterSelector
+public class RootElementNameContentWorkerSelector<W extends ContentWorker>
         extends DefaultHandler
-        implements ContentWorkerSelector<MetadataExtracter>
+        implements ContentWorkerSelector<ContentWorker>
 {
-    private static Log logger = LogFactory.getLog(RootElementNameMetadataExtracterSelector.class);
+    private static Log logger = LogFactory.getLog(RootElementNameContentWorkerSelector.class);
     
     private SAXParserFactory saxParserFactory;
     private Set<String> supportedMimetypes;
-    private Map<String, MetadataExtracter> extractersByRootElementName;
+    private Map<String, W> workersByRootElementName;
     
-    public RootElementNameMetadataExtracterSelector()
+    public RootElementNameContentWorkerSelector()
     {
         saxParserFactory = SAXParserFactory.newInstance();
         supportedMimetypes = new HashSet<String>();
         supportedMimetypes.add(MimetypeMap.MIMETYPE_XML);
-        extractersByRootElementName = Collections.emptyMap();
+        workersByRootElementName = Collections.emptyMap();
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(50);
+        sb.append("RootElementNameContentWorkerSelector")
+          .append("[ workers=").append(workersByRootElementName)
+          .append("]");
+        return sb.toString();
     }
 
     /**
@@ -89,26 +94,35 @@ public class RootElementNameMetadataExtracterSelector
     }
 
     /**
-     * Set the extractors to use.
+     * Set the workers to choose from.
      * 
-     * @param extracters            a map of {@linkplain MetadataExtracter} instances
+     * @param workers               a map of {@linkplain ContentWorker} instances
      *                              keyed by root element name
      */
-    public void setExtracters(Map<String, MetadataExtracter> extracters)
+    public void setWorkers(Map<String, W> workers)
     {
-        this.extractersByRootElementName = extracters;
+        this.workersByRootElementName = workers;
     }
 
     /**
-     * Performs a match of the root element name to find the correct extracter.
+     * Checks the configuration.
      */
-    public MetadataExtracter getWorker(ContentReader reader)
+    public void init()
+    {
+        PropertyCheck.mandatory(this, "workers", workersByRootElementName);
+        PropertyCheck.mandatory(this, "supportedMimetypes", supportedMimetypes);
+    }
+    
+    /**
+     * Performs a match of the root element name to find the correct content worker.
+     */
+    public W getWorker(ContentReader reader)
     {
         if (!supportedMimetypes.contains(reader.getMimetype()))
         {
             return null;
         }
-        MetadataExtracter extracter = null;
+        W worker = null;
         InputStream is = null;
         String rootElementName = null;
         try
@@ -121,11 +135,15 @@ public class RootElementNameMetadataExtracterSelector
         catch (RootElementFoundException e)
         {
             rootElementName = e.getElementName();
-            extracter = extractersByRootElementName.get(rootElementName);
+            worker = workersByRootElementName.get(rootElementName);
         }
         catch (Throwable e)
         {
-            throw new ContentIOException("Failed to extract root element from XML document", e);
+            throw new ContentIOException("\n" +
+                    "Failed to extract root element from XML document: \n" +
+                    "   Reader:   " + reader + "\n" +
+                    "   Selector: " + this,
+                    e);
         }
         finally
         {
@@ -138,18 +156,18 @@ public class RootElementNameMetadataExtracterSelector
         if (logger.isDebugEnabled())
         {
             logger.debug("\n" +
-                    "Chosen metadata extracter for reader: \n" +
+                    "Chosen content worker for reader: \n" +
                     "   Reader:       " + reader + "\n" +
                     "   Root Element: " + rootElementName + "\n" +
-                    "   Extracter:    " + extracter);
+                    "   Worker:       " + worker);
         }
-        return extracter;
+        return worker;
     }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException
     {
-        throw new RootElementFoundException(localName);
+        throw new RootElementFoundException(qName);
     }
 
     /**

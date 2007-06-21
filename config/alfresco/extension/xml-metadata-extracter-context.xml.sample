@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<!--
+   Sample configuration of a XmlMetadataExtracters.
+   
+   This show how XML metadata extraction can be set up to extract metadata from different
+   formats of XML.
+   
+   Since: 2.1
+   Author: Derek Hulley
+-->
+<beans>
+   
+   <!-- An extractor that operates on Alfresco Model XML -->
+   <bean id="extracter.xml.sample.AlfrescoModelMetadataExtracter"
+         class="org.alfresco.repo.content.metadata.xml.XPathMetadataExtracter"
+         parent="baseMetadataExtracter"
+         init-method="init" >
+      <property name="mappingProperties">
+         <!--
+            The properties can also be specified using a properties file on the classpath, e.g.:
+            <bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+               <property name="location">
+                  <value>classpath:alfresco/extension/xml-metadata/AlfrescoModel-xpath-mappings.properties</value>
+               </property>
+            </bean>
+         -->
+         <bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+            <property name="properties">
+               <props>
+                  <prop key="namespace.prefix.cm">http://www.alfresco.org/model/content/1.0</prop>
+                  <prop key="author">cm:author</prop>
+                  <prop key="title">cm:title</prop>
+                  <prop key="description">cm:description</prop>
+               </props>
+            </property>
+         </bean>
+      </property>
+      <property name="xpathMappingProperties">
+         <bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+            <property name="properties">
+               <props>
+                  <prop key="namespace.prefix.fm">http://www.alfresco.org/model/forum/1.0</prop>
+                  <prop key="author">/model/author/text()</prop>
+                  <prop key="title">/model/@name</prop>
+                  <prop key="description">/model/description/text()</prop>
+                  <prop key="version">/model/version/text()</prop>
+               </props>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!--
+      This selector examines the XML documents, executing the given XPath statements until a
+      result is found.
+   -->
+   <bean
+         id="extracter.xml.sample.selector.XPathSelector"
+         class="org.alfresco.repo.content.selector.XPathContentWorkerSelector"
+         init-method="init">
+      <property name="workers">
+         <map>
+            <entry key="/my:test">
+               <null />
+            </entry>
+            <entry key="/model">
+               <ref bean="extracter.xml.sample.AlfrescoModelMetadataExtracter" />
+            </entry>
+         </map>
+      </property>
+   </bean>
+   
+   <!--
+      This is the face of the XML metadata extraction.  If passes the XML document to each of
+      the selectors, until one of them gives back a MetadataExtracter, which is then used as
+      normal to extract the values.  The overwrite policy of the embedded extracters has no
+      effect.  It is only this extracter's policy that is used.
+   -->
+   <bean
+         id="extracter.xml.sample.XMLMetadataExtracter"
+         class="org.alfresco.repo.content.metadata.xml.XmlMetadataExtracter"
+         parent="baseMetadataExtracter">
+      <property name="overwritePolicy">
+         <value>EAGER</value>
+      </property>
+      <property name="selectors">
+         <list>
+            <ref bean="extracter.xml.sample.selector.XPathSelector" />
+         </list>
+      </property>
+   </bean>
+   
+</beans>

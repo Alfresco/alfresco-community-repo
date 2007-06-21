@@ -93,7 +93,6 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     
     private MetadataExtracterRegistry registry;
     private MimetypeService mimetypeService;
-    private long extractionTime;
     private boolean initialized;
     
     private Set<String> supportedMimetypes;
@@ -101,12 +100,23 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     private Map<String, Set<QName>> mapping;
     private boolean inheritDefaultMapping;
 
+    /**
+     * Default constructor.  If this is called, then {@link #isSupported(String)} should
+     * be implemented.  This is useful when the list of supported mimetypes is not known
+     * when the instance is constructed.  Alternatively, once the set becomes known, call
+     * {@link #setSupportedMimetypes(Collection)}.
+     *
+     * @see #isSupported(String)
+     * @see #setSupportedMimetypes(Collection)
+     */
     protected AbstractMappingMetadataExtracter()
     {
         this(Collections.<String>emptySet());
     }
 
     /**
+     * Constructor that can be used when the list of supported mimetypes is known up front.
+     * 
      * @param supportedMimetypes    the set of mimetypes supported by default
      */
     protected AbstractMappingMetadataExtracter(Set<String> supportedMimetypes)
@@ -179,11 +189,27 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * @param overwritePolicy   the policy to apply when there are existing system properties
+     * Set the policy to use when existing values are encountered.  Depending on how the extracer
+     * is called, this may not be relevant, i.e an empty map of existing properties may be passed
+     * in by the client code, which may follow its own overwrite strategy.
+     * 
+     * @param overwritePolicy       the policy to apply when there are existing system properties
      */
     public void setOverwritePolicy(OverwritePolicy overwritePolicy)
     {
         this.overwritePolicy = overwritePolicy;
+    }
+
+    /**
+     * Set the policy to use when existing values are encountered.  Depending on how the extracer
+     * is called, this may not be relevant, i.e an empty map of existing properties may be passed
+     * in by the client code, which may follow its own overwrite strategy.
+     * 
+     * @param overwritePolicyStr    the policy to apply when there are existing system properties
+     */
+    public void setOverwritePolicy(String overwritePolicyStr)
+    {
+        this.overwritePolicy = OverwritePolicy.valueOf(overwritePolicyStr);
     }
 
     /**
@@ -410,10 +436,6 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         {
             registry.register(this);
         }
-        else
-        {
-            logger.warn("No registry provided.  Not registering: " + this);
-        }
     }
     
     /**
@@ -466,7 +488,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /** {@inheritDoc} */
     public long getExtractionTime()
     {
-        return extractionTime;
+        return 1000L;
     }
 
     /**
@@ -510,7 +532,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * {@inheritDoc}
      */
-    public final Map<QName, Serializable> extract(
+    public Map<QName, Serializable> extract(
             ContentReader reader,
             OverwritePolicy overwritePolicy,
             Map<QName, Serializable> destination,

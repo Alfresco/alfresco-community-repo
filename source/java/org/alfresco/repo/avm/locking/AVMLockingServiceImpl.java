@@ -329,7 +329,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
         Attribute lockData = fAttributeService.getAttribute(keys);
         if (lockData == null)
         {
-            throw new AVMNotFoundException("Lock does not exist: " + webProject + " " + path);
+            return;
         }
         keys.remove(3);
         fAttributeService.removeAttribute(keys, pathKey);

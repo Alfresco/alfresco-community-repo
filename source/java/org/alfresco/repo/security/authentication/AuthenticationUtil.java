@@ -241,6 +241,14 @@ public abstract class AuthenticationUtil
         ContextHolder.setContext(null);
     }
 
+    /**
+     * Execute a unit of work as a given user.  The thread's authenticated user will be
+     * returned to its normal state after the call.
+     * 
+     * @param runAsWork     the unit of work to do
+     * @param uid           the user ID
+     * @return              Returns the work's return value
+     */
     public static <R> R runAs(RunAsWork<R> runAsWork, String uid)
     {
         String currentUser = AuthenticationUtil.getCurrentUserName();

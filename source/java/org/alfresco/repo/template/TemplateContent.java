@@ -24,6 +24,13 @@
  */
 package org.alfresco.repo.template;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.text.MessageFormat;
+
+import org.alfresco.service.cmr.repository.TemplateException;
+import org.springframework.util.StringUtils;
+
 
 /**
  * Contract for Template API objects that support content on the 'cm:content' default property.
@@ -45,6 +52,14 @@ public interface TemplateContent extends TemplateProperties
      *         For a container node, this method return the URL to browse to the folder in the web-client
      */
     public String getUrl();
+    
+    /**
+     * @return For a content document, this method returns the download URL to the content for
+     *         the default content property (@see ContentModel.PROP_CONTENT)
+     *         <p>
+     *         For a container node, this method returns an empty string
+     */
+    public String getDownloadUrl();
     
     /**
      * @return The mimetype encoding for content attached to the node from the default content property

@@ -56,6 +56,7 @@ import org.springframework.util.StringUtils;
 public abstract class BaseContentNode implements TemplateContent
 {
     protected final static String CONTENT_DEFAULT_URL = "/d/d/{0}/{1}/{2}/{3}";
+    protected final static String CONTENT_DOWNLOAD_URL = "/d/a/{0}/{1}/{2}/{3}";
     protected final static String CONTENT_PROP_URL    = "/d/d/{0}/{1}/{2}/{3}?property={4}";
     protected final static String FOLDER_BROWSE_URL   = "/n/browse/{0}/{1}/{2}";
     
@@ -350,6 +351,35 @@ public abstract class BaseContentNode implements TemplateContent
                     getNodeRef().getStoreRef().getProtocol(),
                     getNodeRef().getStoreRef().getIdentifier(),
                     getNodeRef().getId() } );
+        }
+    }
+    
+    /**
+     * @return For a content document, this method returns the download URL to the content for
+     *         the default content property (@see ContentModel.PROP_CONTENT)
+     *         <p>
+     *         For a container node, this method returns an empty string
+     */
+    public String getDownloadUrl()
+    {
+        if (getIsDocument() == true)
+        {
+            try
+            {
+               return MessageFormat.format(CONTENT_DOWNLOAD_URL, new Object[] {
+                        getNodeRef().getStoreRef().getProtocol(),
+                        getNodeRef().getStoreRef().getIdentifier(),
+                        getNodeRef().getId(),
+                        StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") });
+            }
+            catch (UnsupportedEncodingException err)
+            {
+                throw new TemplateException("Failed to encode content download URL for node: " + getNodeRef(), err);
+            }
+        }
+        else
+        {
+            return "";
         }
     }
     

@@ -58,6 +58,7 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -97,7 +98,9 @@ public class ScriptNode implements Serializable, Scopeable
     private final static String NAMESPACE_BEGIN = "" + QName.NAMESPACE_BEGIN;
     
     private final static String CONTENT_DEFAULT_URL = "/d/d/{0}/{1}/{2}/{3}";
+    private final static String CONTENT_DOWNLOAD_URL = "/d/a/{0}/{1}/{2}/{3}";
     private final static String CONTENT_PROP_URL = "/d/d/{0}/{1}/{2}/{3}?property={4}";
+    private final static String CONTENT_DOWNLOAD_PROP_URL = "/d/a/{0}/{1}/{2}/{3}?property={4}";
     private final static String FOLDER_BROWSE_URL = "/n/browse/{0}/{1}/{2}";
     
     /** Root scope for this object */
@@ -826,6 +829,40 @@ public class ScriptNode implements Serializable, Scopeable
         return getUrl();
     }
     
+    /**
+     * @return For a content document, this method returns the download URL to the content for
+     *         the default content property (@see ContentModel.PROP_CONTENT)
+     *         <p>
+     *         For a container node, this method returns an empty string
+     */
+    public String getDownloadUrl()
+    {
+        if (getIsDocument() == true)
+        {
+            try
+            {
+               return MessageFormat.format(CONTENT_DOWNLOAD_URL, new Object[] {
+                        nodeRef.getStoreRef().getProtocol(),
+                        nodeRef.getStoreRef().getIdentifier(),
+                        nodeRef.getId(),
+                        StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") });
+            }
+            catch (UnsupportedEncodingException err)
+            {
+                throw new AlfrescoRuntimeException("Failed to encode content download URL for node: " + nodeRef, err);
+            }
+        }
+        else
+        {
+            return "";
+        }
+    }
+
+    public String jsGet_downloadUrl()
+    {
+        return getDownloadUrl();
+    }
+
     /**
      * @return The mimetype encoding for content attached to the node from the default content property
      *         (@see ContentModel.PROP_CONTENT)
@@ -2135,6 +2172,39 @@ public class ScriptNode implements Serializable, Scopeable
             return getUrl();
         }
         
+        /**
+         * @return download URL to the content for a document item only
+         */
+        public String getDownloadUrl()
+        {
+            if (getIsDocument() == true)
+            {
+                try
+                {
+                   return MessageFormat.format(CONTENT_DOWNLOAD_PROP_URL, new Object[] {
+                            nodeRef.getStoreRef().getProtocol(),
+                            nodeRef.getStoreRef().getIdentifier(),
+                            nodeRef.getId(),
+                            StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20"),
+                            StringUtils.replace(URLEncoder.encode(property.toString(), "UTF-8"), "+", "%20") });
+                }
+                catch (UnsupportedEncodingException err)
+                {
+                    throw new AlfrescoRuntimeException("Failed to encode content download URL for node: " + nodeRef, err);
+                }
+            }
+            else
+            {
+                return "";
+            }
+        }
+
+        public String jsGet_downloadUrl()
+        {
+            return getDownloadUrl();
+        }
+        
+
         public long getSize()
         {
             return contentData.getSize();

@@ -130,7 +130,7 @@
                      <a:panel id="staging-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle" label="#{msg.staging_sandbox}">
                         
                         <%-- Staging Sandbox Info --%>
-                        <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "lbgrey", "white"); %>
+                        <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "innerwhite", "white"); %>
                         <table cellspacing=2 cellpadding=2 border=0 width=100%>
                            <tr>
                               <td align=left width=32>
@@ -213,7 +213,7 @@
                               </td>
                            </tr>
                         </table>
-                        <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "lbgrey"); %>
+                        <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "innerwhite"); %>
                         
                      </a:panel>
                      

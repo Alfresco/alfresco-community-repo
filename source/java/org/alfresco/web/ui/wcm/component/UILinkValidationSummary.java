@@ -38,6 +38,7 @@ import javax.faces.el.MethodBinding;
 
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.wcm.LinkValidationState;
+import org.alfresco.web.ui.common.PanelGenerator;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.apache.commons.logging.Log;
@@ -101,10 +102,16 @@ public class UILinkValidationSummary extends AbstractLinkValidationReportCompone
             // get the action to update the current status
             UICommand updateStatusAction = aquireAction(context, "update_status_" + linkState.getStore());
             
-            // render the summary area
-            out.write("<div class='linkValidationSummaryPanel'><div class='linkValidationReportTitle'>");
+            
+            out.write("<div class='linkValidationSummaryPanel'>");
+            
+            // render the summary area with a surrounding panel
+            PanelGenerator.generatePanelStart(out, context.getExternalContext().getRequestContextPath(), 
+                     "innerwhite", "white");
+            
+            out.write("<div class='linkValidationReportTitle'>");
             out.write(bundle.getString("summary"));
-            out.write("</div><table cellpadding='0' cellspacing='0'><tr>");
+            out.write("</div><table cellpadding='0' cellspacing='0' style='margin-bottom: 6px;'><tr>");
             out.write("<td valign='top' class='linkValidationReportSubTitle'>");
             out.write(bundle.getString("initial_check"));
             out.write(":</td><td>");
@@ -122,7 +129,13 @@ public class UILinkValidationSummary extends AbstractLinkValidationReportCompone
             out.write("&nbsp;&nbsp;");
             Utils.encodeRecursive(context, updateStatusAction);
             out.write("</div></td></tr>");
-            out.write("</table></div>");
+            out.write("</table>");
+            
+            // finish the surrounding panel
+            PanelGenerator.generatePanelEnd(out, context.getExternalContext().getRequestContextPath(),
+                        "innerwhite");
+            
+            out.write("</div>");
          }
       }
       else

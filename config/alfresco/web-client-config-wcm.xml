@@ -26,6 +26,11 @@
          	<!-- the delay (in seconds) to apply to a deployment (for testing and demo purposes) -->
          	<delay>30</delay>
          </deployment>
+         
+         <links-management>
+            <!-- frequency (in seconds) of polling checks to get latest status of a link check -->
+            <progress-polling-frequency>2</progress-polling-frequency>
+         </links-management>
 
          <xforms>
            <widget xforms-type="xf:group" 

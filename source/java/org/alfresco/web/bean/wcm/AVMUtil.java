@@ -335,11 +335,11 @@ public final class AVMUtil
     * </p>
     * 
     * @return Number of seconds between each call to the server (in seconds).
-    *         The default is 5.
+    *         The default is 2.
     */
    public static int getRemoteDeploymentPollingFrequency()
    {
-      int pollFreq = 5;
+      int pollFreq = 2;
       
       ConfigElement deploymentConfig = getDeploymentConfig();
       if (deploymentConfig != null)
@@ -441,6 +441,45 @@ public final class AVMUtil
       }
       
       return delay;
+   }
+   
+   /**
+    * Returns the number of seconds between each call back to the server to
+    * obtain the latest status of a link validation check.
+    * <p>
+    * This value is read from the &lt;wcm&gt; config section in
+    * web-client-config-wcm.xml
+    * </p>
+    * 
+    * @return Number of seconds between each call to the server (in seconds).
+    *         The default is 2.
+    */
+   public static int getLinkValidationPollingFrequency()
+   {
+      int pollFreq = 2;
+      
+      ConfigElement linkMngmtConfig = getLinksManagementConfig();
+      if (linkMngmtConfig != null)
+      {
+         ConfigElement elem = linkMngmtConfig.getChild("progress-polling-frequency");
+         if (elem != null)
+         {
+            try
+            {
+               int value = Integer.parseInt(elem.getValue());
+               if (value > 0)
+               {
+                  pollFreq = value;
+               }
+            }
+            catch (NumberFormatException nfe)
+            {
+               // do nothing, just use the default
+            }
+         }
+      }
+      
+      return pollFreq;
    }
    
    /**
@@ -969,6 +1008,21 @@ public final class AVMUtil
       return deploymentConfig;
    }
    
+   private static ConfigElement getLinksManagementConfig()
+   {
+      if (linksManagementConfig == null)
+      {
+         ConfigService cfgService = Application.getConfigService(FacesContext.getCurrentInstance());
+         ConfigElement wcmCfg = cfgService.getGlobalConfig().getConfigElement("wcm");
+         if (wcmCfg != null)
+         {
+            linksManagementConfig = wcmCfg.getChild("links-management");
+         }
+      }
+      
+      return linksManagementConfig;
+   }
+   
    // Component Separator.
    private static final String STORE_SEPARATOR = "--";
    
@@ -999,5 +1053,6 @@ public final class AVMUtil
       Pattern.compile("([^:]+:/" + JNDIConstants.DIR_DEFAULT_WWW +
                       "/" + JNDIConstants.DIR_DEFAULT_APPBASE + ")(.*)");
    
-   private static ConfigElement deploymentConfig = null; 
+   private static ConfigElement deploymentConfig = null;
+   private static ConfigElement linksManagementConfig = null;
 }

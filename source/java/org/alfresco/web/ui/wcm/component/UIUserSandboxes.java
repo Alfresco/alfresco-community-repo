@@ -344,7 +344,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   // for each user sandbox, generate an outer panel table
                   PanelGenerator.generatePanelStart(out,
                         context.getExternalContext().getRequestContextPath(),
-                        "white",
+                        "innerwhite",
                         "white");
                   
                   // components for the current username, preview, browse and modified items inner list
@@ -481,7 +481,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   // end the outer panel for this sandbox
                   PanelGenerator.generatePanelEnd(out,
                         context.getExternalContext().getRequestContextPath(),
-                        "white");
+                        "innerwhite");
                   
                   // spacer row
                   if (index++ < userInfoRefs.size() - 1)

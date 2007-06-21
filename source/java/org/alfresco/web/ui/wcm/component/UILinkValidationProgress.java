@@ -33,6 +33,7 @@ import javax.faces.context.ResponseWriter;
 import javax.faces.el.MethodBinding;
 
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -85,7 +86,14 @@ public class UILinkValidationProgress extends SelfRenderingComponent
       UIActionLink action = findOrCreateHiddenAction(context);
       Utils.encodeRecursive(context, action);
       
+      // determine the polling frequency value
+      int pollFreq = AVMUtil.getLinkValidationPollingFrequency();
+      
       // output the script
+      out.write("<script type='text/javascript'>");
+      out.write("Alfresco.linkMonitorPollFreq = ");
+      out.write(Integer.toString(pollFreq));
+      out.write(";</script>\n");
       out.write("<script type='text/javascript' src='");
       out.write(context.getExternalContext().getRequestContextPath());
       out.write("/scripts/ajax/link-validation-progress.js'></script>\n");

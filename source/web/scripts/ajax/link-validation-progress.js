@@ -1,15 +1,11 @@
 Alfresco.LinkValidationMonitor = function() 
 {
    this.url = getContextPath() + '/ajax/invoke/LinkValidationProgressBean.getStatus';
-   this.failedMsg = '';
-   this.successMsg = '';
 }
 
 Alfresco.LinkValidationMonitor.prototype = 
 {
    url: null,
-   failedMsg: null,
-   successMsg: null,
    retrieveLinkValidationStatus: function() 
    {
       YAHOO.util.Connect.asyncRequest('GET', this.url,
@@ -45,7 +41,7 @@ Alfresco.LinkValidationMonitor.prototype =
       } 
       else 
       {
-         setTimeout('Alfresco.linkMonitor.retrieveLinkValidationStatus()', 2000);
+         setTimeout('Alfresco.linkMonitor.retrieveLinkValidationStatus()', Alfresco.linkMonitorPollFreq*1000);
       }
    },
    handleError: function(ajaxResponse) 

@@ -60,7 +60,7 @@ public class ApplicationContextHelper
      * Closes and releases the application context.  On the next call to
      * {@link #getApplicationContext()}, a new context will be given.
      */
-    public synchronized void closeApplicationContext()
+    public static synchronized void closeApplicationContext()
     {
         if (instance == null)
         {

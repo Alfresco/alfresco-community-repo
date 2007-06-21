@@ -173,42 +173,6 @@
    </bean>
    
    <!-- ===================================== -->
-   <!-- Authentication Ticket Cache           -->
-   <!-- ===================================== -->
-
-   <!-- The cross-transaction shared cache for In-Memory Tickets -->
-   
-   <bean name="ticketsSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
-      <property name="cache">
-         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
-            <property name="cacheManager">
-               <ref bean="internalEHCacheManager" />
-            </property>
-            <property name="cacheName">
-               <value>org.alfresco.cache.ticketsCache</value>
-            </property>
-         </bean>
-      </property>
-   </bean>
-   
-   <!-- The transactional cache for In-Memory Tickets -->
-   
-   <bean name="ticketsCache" class="org.alfresco.repo.cache.TransactionalCache">
-      <property name="sharedCache">
-         <ref bean="ticketsSharedCache" />
-      </property>
-      <property name="cacheManager" >
-         <ref bean="transactionalEHCacheManager" />
-      </property>
-      <property name="name">
-         <value>org.alfresco.ticketsTransactionalCache</value>
-      </property>
-      <property name="maxCacheSize">
-         <value>10</value>
-      </property>
-   </bean>
-   
-   <!-- ===================================== -->
    <!-- Person username to NodeRef cache      -->
    <!-- ===================================== -->
 
@@ -245,4 +209,40 @@
       </property>
    </bean>
 
+   <!-- ===================================== -->
+   <!-- Authentication Ticket Cache           -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for In-Memory Tickets -->
+   
+   <bean name="ticketsSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.ticketsCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for In-Memory Tickets -->
+   
+   <bean name="ticketsCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="ticketsSharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.ticketsTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>10</value>
+      </property>
+   </bean>
+   
 </beans>

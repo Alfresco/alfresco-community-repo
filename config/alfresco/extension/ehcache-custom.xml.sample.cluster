@@ -484,6 +484,23 @@
     </cache>
 
     <cache
+        name="org.alfresco.cache.personCache"
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+
+
+    </cache>
+
+    <cache
         name="org.alfresco.cache.ticketsCache"
         maxElementsInMemory="1000"
         eternal="true"

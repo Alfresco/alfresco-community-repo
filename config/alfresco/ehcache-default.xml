@@ -281,6 +281,12 @@
         overflowToDisk="false"
         />
     <cache 
+        name="org.alfresco.cache.personCache" 
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+    <cache 
         name="org.alfresco.cache.ticketsCache" 
         maxElementsInMemory="1000"
         eternal="true"

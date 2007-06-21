@@ -625,77 +625,74 @@ public class BrowseBean implements IContextListener
             // create our Node representation from the NodeRef
             NodeRef nodeRef = fileInfo.getNodeRef();
             
-            if (this.nodeService.exists(nodeRef))
+            // find it's type so we can see if it's a node we are interested in
+            QName type = this.nodeService.getType(nodeRef);
+            
+            // make sure the type is defined in the data dictionary
+            TypeDefinition typeDef = this.dictionaryService.getType(type);
+            
+            if (typeDef != null)
             {
-               // find it's type so we can see if it's a node we are interested in
-               QName type = this.nodeService.getType(nodeRef);
+               MapNode node = null;
                
-               // make sure the type is defined in the data dictionary
-               TypeDefinition typeDef = this.dictionaryService.getType(type);
-               
-               if (typeDef != null)
+               // look for File content node
+               if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
                {
-                  MapNode node = null;
+                  // create our Node representation
+                  node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
+                  setupCommonBindingProperties(node);
                   
-                  // look for Space folder node
-                  if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) == true && 
-                      this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
-                  {
-                     // create our Node representation
-                     node = new MapNode(nodeRef, this.nodeService, true);
-                     node.addPropertyResolver("icon", this.resolverSpaceIcon);
-                     node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
-                     
-                     this.containerNodes.add(node);
-                  }
-                  // look for File content node
-                  else if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
-                  {
-                     // create our Node representation
-                     node = new MapNode(nodeRef, this.nodeService, true);
-                     setupCommonBindingProperties(node);
-                     
-                     this.contentNodes.add(node);
-                  }
-                  // look for File Link object node
-                  else if (ApplicationModel.TYPE_FILELINK.equals(type))
-                  {
-                     // create our File Link Node representation
-                     node = new MapNode(nodeRef, this.nodeService, true);
-                     node.addPropertyResolver("url", this.resolverLinkUrl);
-                     node.addPropertyResolver("webdavUrl", this.resolverLinkWebdavUrl);
-                     node.addPropertyResolver("cifsPath", this.resolverLinkCifsPath);
-                     node.addPropertyResolver("fileType16", this.resolverFileType16);
-                     node.addPropertyResolver("fileType32", this.resolverFileType32);
-                     node.addPropertyResolver("size", this.resolverSize);
-                     node.addPropertyResolver("lang", this.resolverLang);
-                     
-                     this.contentNodes.add(node);
-                  }
-                  else if (ApplicationModel.TYPE_FOLDERLINK.equals(type))
-                  {
-                     // create our Folder Link Node representation
-                     node = new MapNode(nodeRef, this.nodeService, true);
-                     node.addPropertyResolver("icon", this.resolverSpaceIcon);
-                     node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
-                     
-                     this.containerNodes.add(node);
-                  }
+                  this.contentNodes.add(node);
+               }
+               // look for Space folder node
+               else if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) == true && 
+                        this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
+               {
+                  // create our Node representation
+                  node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
+                  node.addPropertyResolver("icon", this.resolverSpaceIcon);
+                  node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
                   
-                  // inform any listeners that a Node wrapper has been created
-                  if (node != null)
+                  this.containerNodes.add(node);
+               }
+               // look for File Link object node
+               else if (ApplicationModel.TYPE_FILELINK.equals(type))
+               {
+                  // create our File Link Node representation
+                  node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
+                  node.addPropertyResolver("url", this.resolverLinkUrl);
+                  node.addPropertyResolver("webdavUrl", this.resolverLinkWebdavUrl);
+                  node.addPropertyResolver("cifsPath", this.resolverLinkCifsPath);
+                  node.addPropertyResolver("fileType16", this.resolverFileType16);
+                  node.addPropertyResolver("fileType32", this.resolverFileType32);
+                  node.addPropertyResolver("size", this.resolverSize);
+                  node.addPropertyResolver("lang", this.resolverLang);
+                  
+                  this.contentNodes.add(node);
+               }
+               else if (ApplicationModel.TYPE_FOLDERLINK.equals(type))
+               {
+                  // create our Folder Link Node representation
+                  node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
+                  node.addPropertyResolver("icon", this.resolverSpaceIcon);
+                  node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
+                  
+                  this.containerNodes.add(node);
+               }
+               
+               // inform any listeners that a Node wrapper has been created
+               if (node != null)
+               {
+                  for (NodeEventListener listener : getNodeEventListeners())
                   {
-                     for (NodeEventListener listener : getNodeEventListeners())
-                     {
-                        listener.created(node, type);
-                     }
+                     listener.created(node, type);
                   }
                }
-               else
-               {
-                  if (logger.isEnabledFor(Priority.WARN))
-                     logger.warn("Found invalid object in database: id = " + nodeRef + ", type = " + type);
-               }
+            }
+            else
+            {
+               if (logger.isEnabledFor(Priority.WARN))
+                  logger.warn("Found invalid object in database: id = " + nodeRef + ", type = " + type);
             }
          }
          

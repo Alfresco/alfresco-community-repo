@@ -24,12 +24,14 @@
  */
 package org.alfresco.web.bean.repository;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Lighweight client side representation of a node held in the repository, which
@@ -68,6 +70,25 @@ public class MapNode extends Node implements Map<String, Object>
       {
          getProperties();
       }
+   }
+   
+   /**
+    * Constructor
+    * 
+    * @param nodeRef        The NodeRef this Node wrapper represents
+    * @param nodeService    The node service to use to retrieve data for this node
+    * @param props          The properties of the node, already retrieved from NodeService
+    */
+   public MapNode(NodeRef nodeRef, NodeService nodeService, Map<QName, Serializable> props)
+   {
+      super(nodeRef);
+      
+      for (QName qname: props.keySet())
+      {
+         Serializable propValue = props.get(qname);
+         this.properties.put(qname.toString(), propValue);
+      }
+      this.propsRetrieved = true;
    }
    
    

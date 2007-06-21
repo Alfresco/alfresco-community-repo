@@ -198,8 +198,11 @@ public class FileFolderServiceImpl implements FileFolderService
         List<FileInfo> results = new ArrayList<FileInfo>(nodeRefs.size());
         for (NodeRef nodeRef : nodeRefs)
         {
-            FileInfo fileInfo = toFileInfo(nodeRef, true);
-            results.add(fileInfo);
+            if (nodeService.exists(nodeRef))
+            {
+                FileInfo fileInfo = toFileInfo(nodeRef, true);
+                results.add(fileInfo);
+            }
         }
         return results;
     }

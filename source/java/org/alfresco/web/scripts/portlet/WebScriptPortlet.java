@@ -92,7 +92,19 @@ public class WebScriptPortlet implements Portlet
         registry = (DeclarativeWebScriptRegistry)ctx.getBean("webscripts.registry");
         transactionHelper = (RetryingTransactionHelper)ctx.getBean("retryingTransactionHelper");
         authorityService = (AuthorityService)ctx.getBean("authorityService");
-        authenticator = (WebScriptPortletAuthenticator)ctx.getBean("webscripts.authenticator.jsr168");
+        
+        // retrieve authenticator via portlet initialization parameter
+        String authenticatorId = config.getInitParameter("authenticator");
+        if (authenticatorId == null || authenticatorId.length() == 0)
+        {
+            authenticatorId = "webscripts.authenticator.jsr168";
+        }
+        Object bean = ctx.getBean(authenticatorId);
+        if (bean == null || !(bean instanceof WebScriptPortletAuthenticator))
+        {
+            throw new PortletException("Initialisation parameter 'authenticator' does not refer to a Web Script authenticator (" + authenticatorId + ")");
+        }
+        authenticator = (WebScriptPortletAuthenticator)bean;
     }
 
     /* (non-Javadoc)

@@ -95,7 +95,11 @@
    </bean>
 
    <!--  JSR-168 Authenticator (Portal based) -->
-   <bean id="webscripts.authenticator.jsr168" class="org.alfresco.web.scripts.portlet.WebClientPortletAuthenticator">
+   <bean id="webscripts.authenticator.jsr168" class="org.alfresco.web.scripts.portlet.JSR168PortletAuthenticator">
+      <property name="authenticationService" ref="AuthenticationService" />
+   </bean>
+   <!--  -->
+   <bean id="webscripts.authenticator.jsr168.webclient" class="org.alfresco.web.scripts.portlet.WebClientPortletAuthenticator">
       <property name="scriptContext" ref="webscripts.context" />
       <property name="authenticationService" ref="AuthenticationService" />
    </bean>

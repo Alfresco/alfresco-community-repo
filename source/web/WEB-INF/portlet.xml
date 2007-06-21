@@ -28,6 +28,10 @@
         <portlet-class>org.alfresco.web.scripts.portlet.WebScriptPortlet</portlet-class>
         
         <init-param>
+           <name>authenticator</name>
+           <value>webscripts.authenticator.jsr168.webclient</value>
+        </init-param>
+        <init-param>
            <name>scriptUrl</name>
            <value>/alfresco/168s/mytasks</value>
         </init-param>
@@ -48,6 +52,10 @@
         <portlet-name>AlfrescoDocList</portlet-name>
         <portlet-class>org.alfresco.web.scripts.portlet.WebScriptPortlet</portlet-class>
         
+        <init-param>
+           <name>authenticator</name>
+           <value>webscripts.authenticator.jsr168.webclient</value>
+        </init-param>
         <init-param>
            <name>scriptUrl</name>
            <value>/alfresco/168s/doclist</value>
@@ -70,6 +78,10 @@
         <portlet-class>org.alfresco.web.scripts.portlet.WebScriptPortlet</portlet-class>
         
         <init-param>
+           <name>authenticator</name>
+           <value>webscripts.authenticator.jsr168.webclient</value>
+        </init-param>
+        <init-param>
            <name>scriptUrl</name>
            <value>/alfresco/168s/myspaces</value>
         </init-param>
@@ -90,6 +102,10 @@
         <portlet-name>AlfrescoMyWebForms</portlet-name>
         <portlet-class>org.alfresco.web.scripts.portlet.WebScriptPortlet</portlet-class>
         
+        <init-param>
+           <name>authenticator</name>
+           <value>webscripts.authenticator.jsr168.webclient</value>
+        </init-param>
         <init-param>
            <name>scriptUrl</name>
            <value>/alfresco/168s/mywebforms</value>

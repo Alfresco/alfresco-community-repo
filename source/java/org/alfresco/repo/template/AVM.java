@@ -66,6 +66,20 @@ public class AVM extends BaseTemplateProcessorExtension
     }
 
     /**
+     * @return a list of all AVM stores in the system
+     */
+    public List<AVMTemplateStore> getStores()
+    {
+        List<AVMStoreDescriptor> stores = this.services.getAVMService().getStores();
+        List<AVMTemplateStore> results = new ArrayList<AVMTemplateStore>(stores.size());
+        for (AVMStoreDescriptor store : stores)
+        {
+            results.add(new AVMTemplateStore(this.services, getTemplateImageResolver(), store));
+        }
+        return results;
+    }
+    
+    /**
      * Return an AVM store object for the specified store name
      * 
      * @param store         Store name to lookup

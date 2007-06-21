@@ -24,10 +24,16 @@
  */
 package org.alfresco.repo.jscript;
 
+import java.util.List;
+
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.util.ParameterCheck;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
 
 /**
  * Helper to access AVM nodes from a script context.
@@ -49,6 +55,45 @@ public final class AVM extends BaseScopableProcessorExtension
         this.services = serviceRegistry;
     }
 
+    /**
+     * @return a array of all AVM stores in the system
+     */
+    public Object[] getStores()
+    {
+        List<AVMStoreDescriptor> stores = this.services.getAVMService().getStores();
+        Object[] results = new Object[stores.size()];
+        int i=0;
+        for (AVMStoreDescriptor store : stores)
+        {
+            results[i++] = new AVMScriptStore(this.services, store, getScope());
+        }
+        return results;
+    }
+    
+    public Scriptable jsGet_stores()
+    {
+        return Context.getCurrentContext().newArray(getScope(), getStores());
+    }
+    
+    /**
+     * Return an AVM store object for the specified store name
+     * 
+     * @param store         Store name to lookup
+     * 
+     * @return the AVM store object for the specified store or null if not found
+     */
+    public AVMScriptStore lookupStore(String store)
+    {
+        ParameterCheck.mandatoryString("Store", store);
+        AVMScriptStore avmStore = null;
+        AVMStoreDescriptor descriptor = this.services.getAVMService().getStore(store);
+        if (descriptor != null)
+        {
+            avmStore = new AVMScriptStore(this.services, descriptor, getScope());
+        }
+        return avmStore;
+    }
+    
     /**
      * Return an AVM Node representing the public store root folder.
      * 

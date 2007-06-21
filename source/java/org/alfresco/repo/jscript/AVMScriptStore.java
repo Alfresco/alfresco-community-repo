@@ -22,49 +22,45 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing
  */
-package org.alfresco.repo.template;
+package org.alfresco.repo.jscript;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.template.AVM;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
 
 /**
- * Representation of an AVM Store for the template model. Accessed via the AVM helper object
- * and is responsible for returning AVMTemplateNode objects via various mechanisms.
- * 
  * @author Kevin Roast
  */
-public class AVMTemplateStore
+public class AVMScriptStore
 {
     private ServiceRegistry services;
     private AVMStoreDescriptor descriptor;
-    private TemplateImageResolver resolver;
+    private Scriptable scope;
     
     /**
      * Constructor
      * 
      * @param services
-     * @param resolver
      * @param store         Store descriptor this object represents
+     * @param scope
      */
-    public AVMTemplateStore(ServiceRegistry services, TemplateImageResolver resolver, AVMStoreDescriptor store)
+    public AVMScriptStore(ServiceRegistry services, AVMStoreDescriptor store, Scriptable scope)
     {
         this.descriptor = store;
         this.services = services;
-        this.resolver = resolver;
+        this.scope = scope;
     }
     
     /**
@@ -75,12 +71,22 @@ public class AVMTemplateStore
         return this.descriptor.getName();
     }
     
+    public String jsGet_name()
+    {
+        return getName();
+    }
+    
     /**
      * @return Store name
      */
     public String getId()
     {
         return this.descriptor.getName();
+    }
+    
+    public String jsGet_id()
+    {
+        return getId();
     }
     
     /**
@@ -91,6 +97,11 @@ public class AVMTemplateStore
         return this.descriptor.getCreator();
     }
     
+    public String jsGet_creator()
+    {
+        return getCreator();
+    }
+    
     /**
      * @return Creation date of the store
      */
@@ -99,17 +110,23 @@ public class AVMTemplateStore
         return new Date(this.descriptor.getCreateDate());
     }
     
+    public Serializable jsGet_createdDate()
+    {
+        return new ValueConverter().convertValueForScript(
+                this.services, this.scope, null, getCreatedDate());
+    }
+    
     /**
      * @return the root node of all webapps in the store
      */
-    public AVMTemplateNode getLookupRoot()
+    public AVMNode lookupRoot()
     {
-        AVMTemplateNode rootNode = null;
+        AVMNode rootNode = null;
         String rootPath = this.descriptor.getName() + ':' + AVM.getWebappsFolderPath();
         AVMNodeDescriptor nodeDesc = this.services.getAVMService().lookup(-1, rootPath);
         if (nodeDesc != null)
         {
-            rootNode = new AVMTemplateNode(rootPath, -1, this.services, this.resolver);
+            rootNode = new AVMNode(AVMNodeConverter.ToNodeRef(-1, rootPath), this.services, this.scope);
         }
         return rootNode;
     }
@@ -122,9 +139,9 @@ public class AVMTemplateStore
      * 
      * @return node if found, null otherwise.
      */
-    public AVMTemplateNode lookupNode(String path)
+    public AVMNode lookupNode(String path)
     {
-        AVMTemplateNode node = null;
+        AVMNode node = null;
         if (path != null && path.length() != 0)
         {
             if (path.charAt(0) != '/')
@@ -135,7 +152,7 @@ public class AVMTemplateStore
             AVMNodeDescriptor nodeDesc = this.services.getAVMService().lookup(-1, path);
             if (nodeDesc != null)
             {
-                node = new AVMTemplateNode(path, -1, this.services, this.resolver);
+                node = new AVMNode(path, -1, this.services, this.scope);
             }
         }
         return node;
@@ -146,11 +163,11 @@ public class AVMTemplateStore
      * 
      * @param query     Lucene
      * 
-     * @return list of AVM node objects as results - empty list if no results found
+     * @return array of AVM node object results - empty array if no results found
      */
-    public List<AVMTemplateNode> luceneSearch(String query)
+    public Scriptable luceneSearch(String query)
     {
-        List<AVMTemplateNode> nodes = null;
+        Object[] nodes = null;
         
         // perform the search against the repo
         ResultSet results = null;
@@ -163,11 +180,11 @@ public class AVMTemplateStore
             
             if (results.length() != 0)
             {
-                nodes = new ArrayList<AVMTemplateNode>(results.length());
-                for (ResultSetRow row : results)
+                nodes = new Object[results.length()];
+                for (int i=0; i<results.length(); i++)
                 {
-                    NodeRef nodeRef = row.getNodeRef();
-                    nodes.add(new AVMTemplateNode(nodeRef, this.services, this.resolver));
+                    ResultSetRow row = results.getRow(i);
+                    nodes[i] = new AVMNode(row.getNodeRef(), this.services, this.scope);
                 }
             }
         }
@@ -183,6 +200,13 @@ public class AVMTemplateStore
             }
         }
         
-        return (nodes != null ? nodes : (List)Collections.emptyList());
+        if (nodes != null)
+        {
+            return Context.getCurrentContext().newArray(this.scope, nodes);
+        }
+        else
+        {
+            return Context.getCurrentContext().newArray(this.scope, 0);
+        }
     }
 }

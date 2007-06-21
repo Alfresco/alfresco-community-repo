@@ -48,36 +48,35 @@ public class AVMNode extends ScriptNode
     private AVMNodeDescriptor avmRef;
     private QName type;
     
-    /**
-     * Constructor
-     * 
-     * @param nodeRef
-     * @param services
-     * @param resolver
-     */
+    
     public AVMNode(NodeRef nodeRef, ServiceRegistry services)
     {
         this(nodeRef, services, null);
     }
 
-    /**
-     * Constructor
-     * 
-     * @param nodeRef
-     * @param services
-     * @param resolver
-     * @param scope
-     */
     public AVMNode(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
     {
         super(nodeRef, services, scope);
+        
         Pair<Integer, String> versionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        this.path = versionPath.getSecond();
-        this.version = versionPath.getFirst();
-        AVMNodeDescriptor descriptor = this.services.getAVMService().lookup(this.version, this.path, true);
+        init(versionPath.getSecond(), versionPath.getFirst());
+    }
+    
+    public AVMNode(String path, int version, ServiceRegistry services, Scriptable scope)
+    {
+        super(AVMNodeConverter.ToNodeRef(version, path), services, scope);
+        
+        init(path, version);
+    }
+    
+    private void init(String path, int version)
+    {
+        this.path = path;
+        this.version = version;
+        AVMNodeDescriptor descriptor = this.services.getAVMService().lookup(version, path, true);
         if (descriptor == null)
         {
-            throw new IllegalArgumentException("Invalid node specified: " + nodeRef.toString());
+            throw new IllegalArgumentException("Invalid node specified: " + this.nodeRef.toString());
         }
         this.avmRef = descriptor;
         this.deleted = descriptor.isDeleted();

@@ -207,6 +207,14 @@ public class DocumentDetailsBean extends BaseDetailsBean
    }
 
    /**
+    * Adds the node to the dispatch context so that overridden dialogs can be picked up
+    */
+   public void setupEditContext(ActionEvent event)
+   {
+      this.navigator.setupDispatchContext(getDocument());
+   }
+   
+   /**
     * Save the state of the panel that was expanded/collapsed
     */
    public void expandPanel(ActionEvent event)

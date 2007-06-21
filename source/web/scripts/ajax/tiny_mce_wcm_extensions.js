@@ -27,19 +27,25 @@
 
 function alfresco_TinyMCE_urlconverter_callback(href, element, onsave)
 {
-//  dojo.debug("request to convert " + href + " onsave = " + onsave);
+  var result = null;
   if (onsave)
   {
-    return (href && href.startsWith(alfresco.constants.AVM_WEBAPP_URL)
-            ? href.substring(alfresco.constants.AVM_WEBAPP_URL.length)
-            : href);
+    result = (href && href.startsWith(alfresco.constants.AVM_WEBAPP_URL)
+              ? href.substring(alfresco.constants.AVM_WEBAPP_URL.length)
+              : href);
   }
   else
   {
-    return (href && href.startsWith("/")
-            ? alfresco.constants.AVM_WEBAPP_URL + href
-            : href);
+    result = (href && href.startsWith("/")
+              ? alfresco.constants.AVM_WEBAPP_URL + href
+              : href);
   }
+  if (href && href.startsWith(document.location.href))
+  {
+    result = href.substring(document.location.href.length);
+  }
+//  dojo.debug("alfresco_TinyMCE_urlconverter_callback('" + href + "', ... , " + onsave + ") = " + result);
+  return result;
 }
 
 function alfresco_TinyMCE_execcommand_callback(editor_id, elm, command, user_interface, value)

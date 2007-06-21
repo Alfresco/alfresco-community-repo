@@ -417,6 +417,10 @@ public class CreateFormWizard
                  this.getSchemaFileName().length() == 0 ||
                  this.getSchemaRootElementNameChoices().size() == 0);
       }
+      case 2:
+      {
+         return this.getRenderingEngineTemplateFileName() != null;
+      }
       default:
       {
          return false;

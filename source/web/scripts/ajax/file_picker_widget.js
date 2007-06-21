@@ -427,6 +427,11 @@ _showPicker: function(data)
                               "xformsRow" + (i % 2 ? "Even" : "Odd"));
     this.contentDiv.appendChild(row);
   }
+  
+  if (data.getAttribute("error") && data.getAttribute("error").length != 0)
+  {
+    this._showStatus(data.getAttribute("error"), true);
+  }
 },
 
 _createRow: function(fileName, webappRelativePath,  isDirectory, fileTypeImage, rowClass)

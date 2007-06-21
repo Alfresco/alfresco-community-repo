@@ -24,6 +24,7 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.*;
 
 import javax.faces.context.ExternalContext;
@@ -131,8 +132,8 @@ public class FilePickerBean
          final String previewStorePath = 
             AVMUtil.getCorrespondingPathInPreviewStore(this.getCurrentAVMPath());
          currentPath = AVMUtil.buildPath(previewStorePath,
-                                              currentPath,
-                                              AVMUtil.PathRelation.WEBAPP_RELATIVE);
+                                         currentPath,
+                                         AVMUtil.PathRelation.WEBAPP_RELATIVE);
       }
       LOGGER.debug(this + ".getFilePickerData(" + currentPath + ")");
 
@@ -144,9 +145,12 @@ public class FilePickerBean
       final AVMNodeDescriptor currentNode = this.avmService.lookup(-1, currentPath);
       if (currentNode == null)
       {
-         final Element errorElement = result.createElement("error");
-         errorElement.appendChild(result.createTextNode("Path " + currentPath + " not found"));
-         filePickerDataElement.appendChild(errorElement);
+         currentPath = AVMUtil.getWebappRelativePath(currentPath);
+         
+         filePickerDataElement.setAttribute("error", 
+                                            MessageFormat.format(Application.getMessage(facesContext, "error_not_found"),
+                                                                 currentPath.substring(currentPath.lastIndexOf("/") + 1, currentPath.length()),
+                                                                 currentPath.lastIndexOf("/") == 0 ? "/" : currentPath.substring(0, currentPath.lastIndexOf("/"))));
          currentPath = this.getCurrentAVMPath();
       }
       else if (! currentNode.isDirectory())

@@ -521,6 +521,15 @@
       <property name="publicAction">
           <value>false</value>
       </property>
+      <property name="noThreads">
+         <value>5</value>
+      </property>
+      <property name="connectionTimeout">
+         <value>10000</value>
+      </property>
+      <property name="readTimeout">
+         <value>30000</value>
+      </property>
     </bean>
     
     <!-- Scheduled action helper beans -->

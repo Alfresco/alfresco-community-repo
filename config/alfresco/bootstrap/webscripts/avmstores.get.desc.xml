@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>AVM Stores Sample</shortname>
+  <description>Sample demonstrating the listing of AVM stores</description>
+  <url>/sample/avm/stores</url>
+  <format default="html"/>
+  <authentication>admin</authentication>
+  <transaction>required</transaction>
+</webscript>

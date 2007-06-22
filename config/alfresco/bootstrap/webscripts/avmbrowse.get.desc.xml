@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>AVM Browse Sample</shortname>
+  <description>Sample demonstrating the listing of AVM folder contents</description>
+  <url>/sample/avm/path/{storeid}/{path}</url>
+  <format default="html">argument</format>
+  <authentication>guest</authentication>
+  <transaction>required</transaction>
+</webscript>

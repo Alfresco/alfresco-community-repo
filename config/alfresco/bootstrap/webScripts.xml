@@ -323,6 +323,86 @@
                             </view:properties>
                             <view:associations></view:associations>
                           </cm:content>
+                          <cm:content view:childName="cm:avmstores.get.desc.xml">
+                            <view:aspects>
+                              <cm:titled></cm:titled>
+                              <cm:author></cm:author>
+                              <app:inlineeditable></app:inlineeditable>
+                            </view:aspects>
+                            <view:properties>
+                              <app:editInline>true</app:editInline>
+                              <cm:description></cm:description>
+                              <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/avmstores.get.desc.xml|mimetype=text/xml|size=|encoding=UTF-8|locale=en_US_</cm:content>
+                              <cm:title>avmstores.get.desc.xml</cm:title>
+                              <cm:author></cm:author>
+                              <cm:name>avmstores.get.desc.xml</cm:name>
+                            </view:properties>
+                            <view:associations></view:associations>
+                          </cm:content>
+                          <cm:content view:childName="cm:avmstores.get.html.ftl">
+                            <view:aspects>
+                              <cm:titled></cm:titled>
+                              <cm:author></cm:author>
+                              <app:inlineeditable></app:inlineeditable>
+                            </view:aspects>
+                            <view:properties>
+                              <app:editInline>true</app:editInline>
+                              <cm:description></cm:description>
+                              <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/avmstores.get.html.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=en_US_</cm:content>
+                              <cm:title>avmstores.get.html.ftl</cm:title>
+                              <cm:author></cm:author>
+                              <cm:name>avmstores.get.html.ftl</cm:name>
+                            </view:properties>
+                            <view:associations></view:associations>
+                          </cm:content>
+                          <cm:content view:childName="cm:avmbrowse.get.js">
+                            <view:aspects>
+                              <cm:titled></cm:titled>
+                              <app:inlineeditable></app:inlineeditable>
+                              <cm:author></cm:author>
+                            </view:aspects>
+                            <view:properties>
+                              <app:editInline>true</app:editInline>
+                              <cm:description></cm:description>
+                              <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/avmbrowse.get.js|mimetype=application/x-javascript|size=|encoding=UTF-8|locale=en_US_</cm:content>
+                              <cm:title>avmbrowse.get.js</cm:title>
+                              <cm:author></cm:author>
+                              <cm:name>avmbrowse.get.js</cm:name>
+                            </view:properties>
+                            <view:associations></view:associations>
+                          </cm:content>
+                          <cm:content view:childName="cm:avmbrowse.get.desc.xml">
+                            <view:aspects>
+                              <cm:titled></cm:titled>
+                              <cm:author></cm:author>
+                              <app:inlineeditable></app:inlineeditable>
+                            </view:aspects>
+                            <view:properties>
+                              <app:editInline>true</app:editInline>
+                              <cm:description></cm:description>
+                              <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/avmbrowse.get.desc.xml|mimetype=text/xml|size=|encoding=UTF-8|locale=en_US_</cm:content>
+                              <cm:title>avmbrowse.get.desc.xml</cm:title>
+                              <cm:author></cm:author>
+                              <cm:name>avmbrowse.get.desc.xml</cm:name>
+                            </view:properties>
+                            <view:associations></view:associations>
+                          </cm:content>
+                          <cm:content view:childName="cm:avmbrowse.get.html.ftl">
+                            <view:aspects>
+                              <cm:titled></cm:titled>
+                              <cm:author></cm:author>
+                              <app:inlineeditable></app:inlineeditable>
+                            </view:aspects>
+                            <view:properties>
+                              <app:editInline>true</app:editInline>
+                              <cm:description></cm:description>
+                              <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/avmbrowse.get.html.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=en_US_</cm:content>
+                              <cm:title>avmbrowse.get.html.ftl</cm:title>
+                              <cm:author></cm:author>
+                              <cm:name>avmbrowse.get.html.ftl</cm:name>
+                            </view:properties>
+                            <view:associations></view:associations>
+                          </cm:content>
                         </cm:contains>
                       </view:associations>
                     </cm:folder>

@@ -43,7 +43,7 @@ import org.mozilla.javascript.Scriptable;
 /**
  * @author Kevin Roast
  */
-public class AVMScriptStore
+public class AVMScriptStore implements Serializable
 {
     private ServiceRegistry services;
     private AVMStoreDescriptor descriptor;

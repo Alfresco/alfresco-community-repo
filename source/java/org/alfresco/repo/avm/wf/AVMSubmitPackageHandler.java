@@ -146,6 +146,10 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
         }
     }
 
+    /**
+     * Recursively remove locks from a path. Walking child folders looking for files
+     * to remove locks from.
+     */
     private void recursivelyRemoveLocks(String webProject, int version, String path)
     {
         AVMNodeDescriptor desc = fAVMService.lookup(version, path, true);

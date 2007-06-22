@@ -814,7 +814,15 @@ public interface AVMService
      */
     public List<Pair<Integer, String>> getPathsInStoreHead(AVMNodeDescriptor desc, String store);
     
-
+    /**
+     * Get all paths to a given node in a single store in a single non-head version.
+     * @param desc The node descriptor.
+     * @param store The name of the store.
+     * @param version The version.
+     * @return A List of AVM paths.
+     */
+    public List<String> getPathsInStoreVersion(AVMNodeDescriptor desc, String store, int version);
+    
     /**
      * Get the indirection path for a node in a layered context
      * whether that indirection path is primary or non-primary

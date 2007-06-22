@@ -102,6 +102,45 @@ import org.alfresco.util.Pair;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test getStoreVersionRootPaths().
+     */
+    public void testGetStoreVersionRootPaths()
+    {
+        try
+        {
+            setupBasicTree();
+            AVMNodeDescriptor desc = fService.lookup(-1, "main:/a/b/c/foo");
+            List<String> paths = fService.getPathsInStoreVersion(desc, "main", 1);
+            assertEquals(1, paths.size());
+            assertEquals("main:/a/b/c/foo", paths.get(0));
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            fService.createSnapshot("main", null, null);
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            fService.createSnapshot("main", null, null);
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            fService.createSnapshot("main", null, null);
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            fService.createSnapshot("main", null, null);
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            fService.createSnapshot("main", null, null);
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            fService.createSnapshot("main", null, null);
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            fService.createSnapshot("main", null, null);
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            fService.createSnapshot("main", null, null);
+            paths = fService.getPathsInStoreVersion(desc, "main", 1);
+            assertEquals(1, paths.size());
+            assertEquals("main:/a/b/c/foo", paths.get(0));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+    }
+    
+    /**
      * Minimal testing of Locking Aware service.
      */
     public void testLockingAwareService()

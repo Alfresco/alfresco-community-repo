@@ -216,6 +216,14 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#getPathsInStoreVersion(org.alfresco.service.cmr.avm.AVMNodeDescriptor, java.lang.String, int)
+     */
+    public List<String> getPathsInStoreVersion(AVMNodeDescriptor desc, String store, int version)
+    {
+        return fService.getPathsInStoreVersion(desc, store, version);
+    }
+
+    /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.AVMService#getAspects(int, java.lang.String)
      */
     public List<QName> getAspects(int version, String path)

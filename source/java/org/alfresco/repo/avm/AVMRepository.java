@@ -1559,6 +1559,18 @@ public class AVMRepository
     }
     
     /**
+     * Alternate version.
+     * @param components
+     * @param storeName
+     * @param paths
+     */
+    private void addPath(List<String> components, String storeName,
+                         List<String> paths)
+    {
+        paths.add(makePath(components, storeName));
+    }
+    
+    /**
      * Helper for generating paths.
      * @param components The path components.
      * @param storeName The store that the path is in.
@@ -2614,6 +2626,50 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
+        }
+    }
+
+    public List<String> getPathsInStoreVersion(AVMNodeDescriptor desc, String store, int version)
+    {
+        AVMNode node = fAVMNodeDAO.getByID(desc.getId());
+        if (node == null)
+        {
+            throw new AVMNotFoundException("Not found: " + desc.getPath());
+        }
+        List<String> paths = new ArrayList<String>();
+        List<String> components = new ArrayList<String>();
+        recursiveGetStoreVersionPaths(store, node, version, components, paths);
+        return paths;
+    }
+    
+    /**
+     * Do the actual work.
+     * @param node The current node.
+     * @param components The currently accumulated path components.
+     * @param paths The list to put full paths in.
+     */
+    private void recursiveGetStoreVersionPaths(String storeName, AVMNode node, int version, List<String> components, 
+                                               List<String> paths)
+    {
+        if (node.getIsRoot())
+        {
+            VersionRoot versionRoot = fVersionRootDAO.getByRoot(node);
+            if (versionRoot.getAvmStore().getName().equals(storeName) &&
+                versionRoot.getVersionID() == version)
+            {
+                addPath(components, storeName, paths);
+                return;
+            }
+            return;
+        }
+        List<ChildEntry> entries = fChildEntryDAO.getByChild(node);
+        for (ChildEntry entry : entries)
+        {
+            String name = entry.getKey().getName();
+            components.add(name);
+            AVMNode parent = entry.getKey().getParent();
+            recursiveGetStoreVersionPaths(storeName, parent, version, components, paths);
+            components.remove(components.size() - 1);
         }
     }
 }

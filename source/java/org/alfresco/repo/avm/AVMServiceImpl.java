@@ -764,6 +764,18 @@ public class AVMServiceImpl implements AVMService
         return fAVMRepository.getPathsInStoreHead(desc, store);
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#getPathsInStoreVersion(org.alfresco.service.cmr.avm.AVMNodeDescriptor, java.lang.String, int)
+     */
+    public List<String> getPathsInStoreVersion(AVMNodeDescriptor desc, String store, int version)
+    {
+        if (desc == null || store == null || version < 1)
+        {
+            throw new AVMBadArgumentException("Illegal null argument or invalid version.");
+        }
+        return fAVMRepository.getPathsInStoreVersion(desc, store, version);
+    }
+
     /**
      * Purge an AVMStore.  Permanently delete everything that 
      * is only referenced in that AVMStore.

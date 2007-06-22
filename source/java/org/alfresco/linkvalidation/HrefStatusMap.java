@@ -34,8 +34,12 @@ import org.alfresco.util.Pair;
   
 /**
 *  A synchronized wrapper for the ephemeral cache of href status results.
-*  The key is a url, the value is a pair consisting of the url's status code
-*  and the list of files accessed when the URL is requested, if known.
+*  
+*  The key is the raw url that was tested (not an md5sum),
+*  the value is a pair consisting of the url's status code,
+*  and the list of files accessed when the URL is requested,
+*  if known.  Note that all url & file data are in the namespace
+*  of the proposed changeset (e.g.: the workflow).
 *
 *  This class also allows the non-synchronized map it wraps to be extracted. 
 */

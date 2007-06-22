@@ -35,8 +35,18 @@ import java.util.Map;
 
 public class HrefDifference
 {
+    /**
+    *  The href_status_map_ is a map of URLs the tuple of their 
+    *  return status & list of dependencies.
+    */
     protected HrefStatusMap href_status_map_;  // status of links/maybe dep info
-    protected HrefManifest  href_manifest_;    // overall manifest in of change
+
+    /** 
+    *   The href_manifest_ contains a List<HrefManifestEntry> objects.
+    *   Each HrefManifestEntry contains a file name,
+    *   and possibly a list of hrefs within that file.
+    */
+    protected HrefManifest  href_manifest_;  
 
     // Lazily computed values 
     protected HrefManifest broken_in_newmod_;    // errors in new files 
@@ -50,27 +60,36 @@ public class HrefDifference
     protected HashMap<String, List<String>>  broken_manifest_map_;
     protected HashMap<String,String>         deleted_file_md5_;
 
-    // href attribute lookup prefix
-    String href_attr_;
-    String src_store_;
+    
+    String href_attr_;          // href attribute lookup prefix
+    String src_store_;          
     String dst_store_;
     String src_webapp_url_base_;
     String dst_webapp_url_base_;
+    int    connect_timeout_;
+    int    read_timeout_;
+    int    nthreads_;
     
     HrefDifference(String href_attr,
                    String src_store,
                    String dst_store,
                    String src_webapp_url_base,
-                   String dst_webapp_url_base)
+                   String dst_webapp_url_base,
+                   int    connect_timeout,
+                   int    read_timeout,
+                   int    nthreads)
     {
         href_attr_           = href_attr;
         src_store_           = src_store;
         dst_store_           = dst_store;
         src_webapp_url_base_ = src_webapp_url_base;
         dst_webapp_url_base_ = dst_webapp_url_base;
+        connect_timeout_     = connect_timeout;
+        read_timeout_        = read_timeout_;
+        nthreads_            = nthreads;
 
-        href_manifest_   = new HrefManifest();
-        href_status_map_ = new HrefStatusMap();
+        href_manifest_       = new HrefManifest();
+        href_status_map_     = new HrefStatusMap();
 
         broken_manifest_map_ = new HashMap<String, List<String>>();
         deleted_file_md5_    = new HashMap<String,String>();
@@ -85,6 +104,10 @@ public class HrefDifference
     String getDstStore()         { return dst_store_;}
     String getSrcWebappUrlBase() { return src_webapp_url_base_; }
     String getDstWebappUrlBase() { return dst_webapp_url_base_; }
+    int    getConnectTimeout()   { return connect_timeout_; }
+    int    getReadTimeout()      { return read_timeout_; }
+    int    getNthreads()         { return nthreads_; }
+
 
     Map<String,String> getDeletedFileMd5() { return deleted_file_md5_; }
     Map<String, List<String>> getBrokenManifestMap() 

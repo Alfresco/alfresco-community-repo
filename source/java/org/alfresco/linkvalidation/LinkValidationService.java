@@ -179,13 +179,14 @@ public interface LinkValidationService
     public List<String> getHrefsDependentUponFile(String path);
 
     public HrefDifference getHrefDifference( 
-                              String                 srcWebappPath, 
-                              String                 dstWebappPath, 
-                              int                    connectTimeout,
-                              int                    readTimeout,
-                              int                    nthreads,
-                              HrefValidationProgress progress
-                          ) throws AVMNotFoundException;
+                                   String                 srcWebappPath, 
+                                   String                 dstWebappPath, 
+                                   int                    connectTimeout,
+                                   int                    readTimeout,
+                                   int                    nthreads,
+                                   HrefValidationProgress progress)
+                          throws   AVMNotFoundException,
+                                   LinkValidationAbortedException;
 
     public HrefManifest getHrefManifestBrokenByDelete(HrefDifference hdiff);
     public HrefManifest getHrefManifestBrokenByNewOrMod(HrefDifference hdiff);

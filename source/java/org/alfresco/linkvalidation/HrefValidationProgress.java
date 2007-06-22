@@ -56,6 +56,7 @@ public class HrefValidationProgress implements Serializable
     AtomicInteger file_update_count_;
     AtomicInteger url_update_count_;
     AtomicBoolean is_done_;
+    AtomicBoolean is_aborted_;
 
     public HrefValidationProgress() 
     {
@@ -64,6 +65,7 @@ public class HrefValidationProgress implements Serializable
         file_update_count_   = new AtomicInteger();
         url_update_count_    = new AtomicInteger();
         is_done_             = new AtomicBoolean( false );
+        is_aborted_          = new AtomicBoolean( false );
     }
 
     /**
@@ -81,6 +83,25 @@ public class HrefValidationProgress implements Serializable
     */
     public int getDirUpdateCount()    { return dir_update_count_.intValue(); }
 
+    /**
+    *  Tell the thread that is validating hrefs to abort its current 
+    *  operation, and cause that operation to declare it "done" and throw 
+    *  LinkValidationAbortedException.
+    *  
+    *  Thus, if you have an observer polling progress & checking isDone(), 
+    *  they'll also see that things are "finished", and can check to see 
+    *  whether it's because isAborted() is true.
+    */
+    public void abort()        
+    { 
+        is_aborted_.set( true ); 
+        setDone( true );
+    }
+
+    /**
+    *  Indicates whether or not the validation operation was halted by abort().
+    */
+    public boolean isAborted() { return is_aborted_.get(); }
 
     /**
     *  Returns the number of files that have been completely 

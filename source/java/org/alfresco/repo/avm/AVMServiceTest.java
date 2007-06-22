@@ -108,7 +108,6 @@ public class AVMServiceTest extends AVMServiceTestBase
     {
         AVMService oldService = fService;
         fService = (AVMService)fContext.getBean("AVMLockingAwareService");
-        AVMLockingService lockingService = (AVMLockingService)fContext.getBean("AVMLockingService");
         AuthenticationService authService = (AuthenticationService)fContext.getBean("AuthenticationService");
         try
         {
@@ -119,18 +118,9 @@ public class AVMServiceTest extends AVMServiceTestBase
                     new PropertyValue(QName.createQName(null, "silly"), "Nothing."));
             setupBasicTree0();
             authService.authenticateAsGuest();
-            assertEquals(2, lockingService.getUsersLocks("admin").size());
+            assertEquals(0, fLockingService.getUsersLocks("admin").size());
             List<AVMDifference> diffs = fSyncService.compare(-1, "main:/", -1, "test:/", null);
             fSyncService.update(diffs, null, false, false, false, false, null, null);
-            try
-            {
-                fService.getFileOutputStream("test:/a/b/c/foo").close();
-                fail("Shouldn't be able to lock.");
-            }
-            catch (AVMLockingException ale)
-            {
-                // Do nothing.  Success.
-            }
         }
         catch (Exception e)
         {
@@ -140,7 +130,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         finally
         {
             fService = oldService;
-            lockingService.removeWebProject("main");
+            fLockingService.removeWebProject("main");
             authService.authenticate("admin", "admin".toCharArray());
         }
     }

@@ -821,8 +821,18 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     
     private void grabLock(String path)
     {
+        AVMNodeDescriptor desc = fService.lookup(-1, path, false);
+        if (desc != null && desc.isDirectory())
+        {
+            return;
+        }
         String[] storePath = splitPath(path);
         String webProject = getWebProject(storePath[0]);
+        if (webProject != null && webProject.equals(storePath[0]))
+        {
+            // Don't do locking in staging.
+            return;
+        }
         if (webProject != null)
         {
             String userName = fAuthenticationService.getCurrentUserName();

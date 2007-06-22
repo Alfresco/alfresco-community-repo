@@ -36,6 +36,7 @@ import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -84,6 +85,8 @@ public class AVMServiceTestBase extends TestCase
 
     protected static IndexerAndSearcher fIndexerAndSearcher;
     
+    protected static AVMLockingService fLockingService;
+    
     /**
      * Setup for AVM tests.  Note that we set the polling
      * interval for the reaper to 4 seconds so that tests will
@@ -100,6 +103,7 @@ public class AVMServiceTestBase extends TestCase
             fSyncService = (AVMSyncService)fContext.getBean("AVMSyncService");
             fIndexerAndSearcher = (IndexerAndSearcher)fContext.getBean("indexerAndSearcherFactory");
             fTransactionService = (TransactionService)fContext.getBean("transactionComponent");
+            fLockingService = (AVMLockingService)fContext.getBean("AVMLockingService");
             AuthenticationService authService = (AuthenticationService)fContext.getBean("AuthenticationService");
             authService.authenticate("admin", "admin".toCharArray());
             CreateStoreTxnListener cstl = (CreateStoreTxnListener)fContext.getBean("createStoreTxnListener");
@@ -144,6 +148,7 @@ public class AVMServiceTestBase extends TestCase
             );
         }
         fService.createStore("main");
+        fLockingService.addWebProject("main");
         fStartTime = System.currentTimeMillis();
     }
 

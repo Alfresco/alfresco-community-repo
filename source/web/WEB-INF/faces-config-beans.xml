@@ -3548,10 +3548,10 @@
    
    <managed-bean>
       <description>
-         The bean that backs up the Run Link Validation Dialog
+         The bean that backs up the Link Validation Dialog
       </description>
-      <managed-bean-name>LinkValidationRunDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wcm.LinkValidationRunDialog</managed-bean-class>
+      <managed-bean-name>LinkValidationDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.LinkValidationDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmBrowseBean</property-name>
@@ -3560,23 +3560,6 @@
       <managed-property>
          <property-name>actionService</property-name>
          <value>#{ActionService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
-      </managed-property>
-   </managed-bean>
-   
-   <managed-bean>
-      <description>
-         The bean that backs up the Link Validation Report Dialog
-      </description>
-      <managed-bean-name>LinkValidationReportDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wcm.LinkValidationReportDialog</managed-bean-class>
-      <managed-bean-scope>session</managed-bean-scope>
-      <managed-property>
-         <property-name>avmBrowseBean</property-name>
-         <value>#{AVMBrowseBean}</value>
       </managed-property>
       <managed-property>
          <property-name>avmService</property-name>

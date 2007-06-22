@@ -195,7 +195,7 @@ public class UILinkValidationSummary extends AbstractLinkValidationReportCompone
       {
          if (actionId.equals(component.getId()))
          {
-            action = (UIActionLink)component;
+            action = (UICommand)component;
             break;
          }
       }

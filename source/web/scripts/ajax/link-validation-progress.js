@@ -57,8 +57,7 @@ Alfresco.initLinkValidationMonitor = function()
 }
 
 Alfresco.linkMonitor = null;
-window.onload = Alfresco.initLinkValidationMonitor;
-
+YAHOO.util.Event.on(window, "load", Alfresco.initLinkValidationMonitor);
 
 
 

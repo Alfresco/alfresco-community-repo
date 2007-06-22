@@ -42,7 +42,6 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
-import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
@@ -51,11 +50,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Implementation of the run link validation dialog.
+ * Implementation of the link validation dialog.
+ * 
+ * The dialog is in one of 2 modes, either running a report showing progress
+ * or showing the results of an executed link check.
  * 
  * @author gavinc
  */
-public class LinkValidationRunDialog extends BaseDialogBean
+public class LinkValidationDialog extends BaseDialogBean
 {
    protected AVMBrowseBean avmBrowseBean;
    protected AVMService avmService;
@@ -64,12 +66,12 @@ public class LinkValidationRunDialog extends BaseDialogBean
    private String store;
    private String webapp;
    private String webappPath;
-   private String fromTaskDialog;
    private NodeRef webappPathRef;
+   private boolean runningReport = false;
    private boolean update = false;
    private boolean compareToStaging = false;
    
-   private static final Log logger = LogFactory.getLog(LinkValidationRunDialog.class);
+   private static final Log logger = LogFactory.getLog(LinkValidationDialog.class);
    
    // ------------------------------------------------------------------------------
    // Dialog implementation
@@ -86,9 +88,15 @@ public class LinkValidationRunDialog extends BaseDialogBean
       ParameterCheck.mandatoryString("webapp", this.webapp);
       
       // setup context for dialog
-      this.fromTaskDialog = parameters.get("fromTaskDialog");
       this.webappPath = AVMUtil.buildStoreWebappPath(this.store, this.webapp);
       this.webappPathRef = AVMNodeConverter.ToNodeRef(-1, this.webappPath);
+      
+      this.runningReport = false;
+      String modeParam = parameters.get("mode");
+      if (modeParam != null && modeParam.equalsIgnoreCase("runReport"))
+      {
+         this.runningReport = true;
+      }
       
       this.update = false;
       String updateParam = parameters.get("update");
@@ -99,36 +107,64 @@ public class LinkValidationRunDialog extends BaseDialogBean
       
       this.compareToStaging = false;
       String compareToStagingParam = parameters.get("compareToStaging");
-      if (compareToStagingParam != null && compareToStagingParam.equals("true"))
+      if (compareToStagingParam != null && compareToStagingParam.equalsIgnoreCase("true"))
       {
          this.compareToStaging = true;
       }
       
       if (logger.isDebugEnabled())
       {
-         if (this.update)
-            logger.debug("Starting update link validation check for webapp '" + this.webappPath + "'");
+         if (this.runningReport)
+         {
+            if (this.update)
+               logger.debug("Starting update link validation check for webapp '" + this.webappPath + "'");
+            else
+               logger.debug("Starting initial link validation check for webapp '" + this.webappPath + "'");
+         }
          else
-            logger.debug("Starting initial link validation check for webapp '" + this.webappPath + "'");
+         {
+            logger.debug("Showing link validation report for webapp '" + this.webappPath + "'");
+         }
       }
-      
-      // create context required to run and monitor the link check
-      HrefValidationProgress monitor = new HrefValidationProgress();
-      Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-      args.put(LinkValidationAction.PARAM_MONITOR, monitor);
-      args.put(LinkValidationAction.PARAM_COMPARE_TO_STAGING, new Boolean(this.compareToStaging));
-      this.avmBrowseBean.setLinkValidationMonitor(monitor);
-      
-      // create and execute the action in the background
-      Action action = this.actionService.createAction(LinkValidationAction.NAME, args);
-      this.actionService.executeAction(action, this.webappPathRef, false, true);
+
+      // execute the report if required
+      if (this.runningReport)
+      {
+         executeReport();
+      }
    }
    
    @SuppressWarnings("unchecked")
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      return outcome;
+      if (logger.isDebugEnabled())
+         logger.debug("Starting fresh link validation check for webapp '" + this.webappPath + "'");
+      
+      // indicate we need a new report produced then execute
+      this.update = false;
+      this.runningReport = true;
+      executeReport();
+      
+      return null;
+   }
+   
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
+      return this.runningReport;
+   }
+
+   @Override
+   public String getFinishButtonLabel()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), "rerun_report");
+   }
+
+   @Override
+   public String getCancelButtonLabel()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), "close");
    }
    
    // ------------------------------------------------------------------------------
@@ -136,7 +172,18 @@ public class LinkValidationRunDialog extends BaseDialogBean
    
    public String linkCheckCompleted()
    {
-      String outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+      String outcome = null;
+      
+      // indicate that we are now showing a report
+      this.runningReport = false;
+
+      if (logger.isDebugEnabled())
+      {
+         if (this.update)
+            logger.debug("Link check has completed, updating state object");
+         else
+            logger.debug("Link check has completed, creating state object");
+      }
       
       // the link validation report should be stored as a store property
       // on the store the link check was run on, retrieve it and see if
@@ -157,41 +204,15 @@ public class LinkValidationRunDialog extends BaseDialogBean
             LinkValidationReport report = (LinkValidationReport)val.getSerializableValue();
             if (report != null)
             {
-               if (report.wasSuccessful())
+               // setup the context required by the reporting components to display the results
+               if (this.update)
                {
-                  // setup the context required by the reporting components to display the results
-                  if (this.update)
-                  {
-                     this.avmBrowseBean.getLinkValidationState().updateState(report);
-                  }
-                  else
-                  {
-                     LinkValidationState state = new LinkValidationState(report);
-                     this.avmBrowseBean.setLinkValidationState(state);
-                  }
-         
-                  Map<String, String> params = new HashMap<String, String>(1);
-                  params.put("store", this.store);
-                  params.put("webapp", this.webapp);
-                  params.put("fromTaskDialog", this.fromTaskDialog);
-                  params.put("compareToStaging", Boolean.toString(this.compareToStaging));
-                  Application.getDialogManager().setupParameters(params);
-                  
-                  outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
-                            AlfrescoNavigationHandler.OUTCOME_SEPARATOR +
-                            "dialog:linkValidationReport";
+                  this.avmBrowseBean.getLinkValidationState().updateState(report);
                }
                else
                {
-                  String errorMsg = Application.getMessage(context, "link_validation_unknown_error");
-                  Throwable cause = report.getError();
-                  if (cause != null)
-                  {
-                     errorMsg = Application.getMessage(context, "link_validation_error") + ": " +
-                           cause.getMessage();
-                  }
-                  
-                  Utils.addErrorMessage(errorMsg);
+                  LinkValidationState state = new LinkValidationState(report);
+                  this.avmBrowseBean.setLinkValidationState(state);
                }
             }
          }
@@ -209,8 +230,62 @@ public class LinkValidationRunDialog extends BaseDialogBean
       return outcome;
    }
    
+   /**
+    * Sets up the dialog to update the status and display the differences
+    * 
+    * @return The outcome, null to stay on this page
+    */
+   public String updateStatus()
+   {
+      if (logger.isDebugEnabled())
+         logger.debug("Updating status for link validation report for webapp '" + this.webappPath + "'");
+      
+      // indicate we need an update report produced then execute
+      this.update = true;
+      this.runningReport = true;
+      executeReport();
+      
+      return null;
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Helpers
+   
+   protected void executeReport()
+   {
+      if (logger.isDebugEnabled())
+         logger.debug("Creating LinkValidationAction to run report for webapp '" + this.webappPath + "'");
+      
+      // create context required to run and monitor the link check
+      HrefValidationProgress monitor = new HrefValidationProgress();
+      Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
+      args.put(LinkValidationAction.PARAM_MONITOR, monitor);
+      args.put(LinkValidationAction.PARAM_COMPARE_TO_STAGING, new Boolean(this.compareToStaging));
+      this.avmBrowseBean.setLinkValidationMonitor(monitor);
+      
+      // create and execute the action in the background
+      Action action = this.actionService.createAction(LinkValidationAction.NAME, args);
+      this.actionService.executeAction(action, this.webappPathRef, false, true);
+   }
+   
    // ------------------------------------------------------------------------------
    // Bean getters and setters
+   
+   /**
+    * @return true if the dialog is currently running a report
+    */
+   public boolean getRunningReport()
+   {
+      return this.runningReport;
+   }
+   
+   /**
+    * @return true if the dialog is currently showing a report
+    */
+   public boolean getShowingReport()
+   {
+      return !this.runningReport;
+   }
    
    /**
     * @param avmBrowseBean    The AVM BrowseBean to set

@@ -379,10 +379,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   params.put("store", mainStore);
                   params.put("username", username);
                   params.put("webapp", this.getWebapp());
+                  params.put("mode", "runReport");
                   params.put("compareToStaging", "true");
                   Utils.encodeRecursive(context, aquireAction(
                         context, mainStore, username, ACT_SANDBOX_CHECK_LINKS, "/images/icons/run_link_validation.gif",
-                        "#{DialogManager.setupParameters}", "dialog:runLinkValidation", null, params));
+                        "#{DialogManager.setupParameters}", "dialog:linkValidation", null, params));
                   out.write("&nbsp;&nbsp;");
                   
                   // Browse Sandbox

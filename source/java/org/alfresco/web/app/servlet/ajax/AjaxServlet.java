@@ -105,12 +105,15 @@ public class AjaxServlet extends BaseServlet
             return;
          }
          
+         setNoCacheHeaders(response);
+         
          uri = uri.substring(request.getContextPath().length() + "/".length());
          final String[] tokens = uri.split("/");
          if (tokens.length < 3)
          {
             throw new AlfrescoRuntimeException("Servlet URL did not contain all required args: " + uri); 
          }
+         
          // retrieve the command from the URL
          final String commandName = tokens[1];
          // retrieve the binding expression from the URL

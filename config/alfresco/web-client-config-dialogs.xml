@@ -247,17 +247,11 @@
                  icon="/images/icons/deploy_large.gif" title-id="monitor_deployment_title" 
                  description-id="monitor_deployment_desc" show-ok-button="false" />
                  
-         <dialog name="runLinkValidation" page="/jsp/wcm/run-link-validation.jsp" 
-                 managed-bean="LinkValidationRunDialog"
+         <dialog name="linkValidation" page="/jsp/wcm/link-validation.jsp" 
+                 managed-bean="LinkValidationDialog"
                  icon="/images/icons/link_validation_report_large.gif" 
-                 title-id="run_link_validaton_title" 
-                 description-id="run_link_validaton_desc" show-ok-button="false" />
-                 
-        <dialog name="linkValidationReport" page="/jsp/wcm/link-validation-report.jsp" 
-                 managed-bean="LinkValidationReportDialog"
-                 icon="/images/icons/link_validation_report_large.gif" 
-                 title-id="link_validaton_report_title" 
-                 description-id="link_validaton_report_desc" />
+                 title-id="link_validaton_dialog_title" 
+                 description-id="link_validaton_dialog_desc" />
          
          <dialog name="editXmlInline" page="/jsp/wcm/edit-xml-inline.jsp" 
                  managed-bean="EditXmlInlineDialog" icon="/images/icons/edit_large.gif"

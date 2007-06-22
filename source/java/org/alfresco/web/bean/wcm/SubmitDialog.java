@@ -50,6 +50,7 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -122,6 +123,7 @@ public class SubmitDialog extends BaseDialogBean
    protected AVMBrowseBean avmBrowseBean;
    protected WorkflowService workflowService;
    protected AVMSyncService avmSyncService;
+   protected AVMLockingService avmLockingService;
    protected NameMatcher nameMatcher;
    
    /** Current workflow for dialog context */
@@ -151,6 +153,14 @@ public class SubmitDialog extends BaseDialogBean
    public void setAvmSyncService(AVMSyncService avmSyncService)
    {
       this.avmSyncService = avmSyncService;
+   }
+   
+   /**
+    * @param avmLockingService The AVMLockingService to set
+    */
+   public void setAvmLockingService(AVMLockingService avmLockingService)
+   {
+      this.avmLockingService = avmLockingService;
    }
    
    /**
@@ -373,13 +383,14 @@ public class SubmitDialog extends BaseDialogBean
             AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
             diffs.add(diff);
             
+            // recursively remove locks from this item
+            recursivelyRemoveLocks(this.avmBrowseBean.getWebProject().getStoreId(), -1, srcPath);
+            
             // If nothing has required notifying the virtualization server
             // so far, check to see if destPath forces a notification
             // (e.g.:  it might be a path to a jar file within WEB-INF/lib).
-
             if ( (this.virtUpdatePath == null) &&
-                  VirtServerUtils.requiresUpdateNotification( destPath )
-               )
+                  VirtServerUtils.requiresUpdateNotification( destPath ) )
             {
                this.virtUpdatePath = destPath;
             }
@@ -396,6 +407,27 @@ public class SubmitDialog extends BaseDialogBean
       
       return outcome;
    }
+   
+    /**
+     * Recursively remove locks from a path. Walking child folders looking for files
+     * to remove locks from.
+     */
+    private void recursivelyRemoveLocks(String webProject, int version, String path)
+    {
+        AVMNodeDescriptor desc = this.avmService.lookup(version, path, true);
+        if (desc.isFile() || desc.isDeletedFile())
+        {
+            this.avmLockingService.removeLock(webProject, path.substring(path.indexOf(":") + 1));
+        }
+        else
+        {
+            Map<String, AVMNodeDescriptor> list = avmService.getDirectoryListing(version, path, true);
+            for (AVMNodeDescriptor child : list.values())
+            {
+                recursivelyRemoveLocks(webProject, version, child.getPath());
+            }
+        }
+    }
 
    /**
     * Handle notification to the virtualization server 

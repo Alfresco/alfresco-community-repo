@@ -3055,6 +3055,10 @@
          <value>#{AVMService}</value>
       </managed-property>
       <managed-property>
+         <property-name>avmLockingService</property-name>
+         <value>#{AVMLockingService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>avmBrowseBean</property-name>
          <value>#{AVMBrowseBean}</value>
       </managed-property>
@@ -3195,10 +3199,6 @@
       <managed-property>
          <property-name>avmService</property-name>
          <value>#{AVMService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>avmLockingService</property-name>
-         <value>#{AVMLockingService}</value>
       </managed-property>
       <managed-property>
          <property-name>fileFolderService</property-name>
@@ -3396,6 +3396,10 @@
       <managed-property>
          <property-name>avmSyncService</property-name>
          <value>#{AVMSyncService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmLockingService</property-name>
+         <value>#{AVMLockingService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmBrowseBean</property-name>

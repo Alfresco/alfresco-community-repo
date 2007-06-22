@@ -31,6 +31,7 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -52,7 +53,11 @@ public class DeleteSandboxDialog extends BaseDialogBean
    
    protected AVMService avmService;
    protected AVMBrowseBean avmBrowseBean;
+   protected AVMLockingService avmLockingService;
    
+   
+   // ------------------------------------------------------------------------------
+   // Bean property getters and setters 
    
    /**
     * @param avmBrowseBean The avmBrowseBean to set.
@@ -68,6 +73,14 @@ public class DeleteSandboxDialog extends BaseDialogBean
    public void setAvmService(AVMService avmService)
    {
       this.avmService = avmService;
+   }
+   
+   /**
+    * @param avmLockingService The AVMLockingService to set
+    */
+   public void setAvmLockingService(AVMLockingService avmLockingService)
+   {
+      this.avmLockingService = avmLockingService;
    }
    
    
@@ -118,17 +131,21 @@ public class DeleteSandboxDialog extends BaseDialogBean
                //     accessing a preview layer whose main layer has been torn
                //     out from under it.
                AVMUtil.removeVServerWebapp(path, true);
-
+               
                // TODO: Use the .sandbox-id.  property to delete all sandboxes,
                //       rather than assume a sandbox always had a single preview
                //       layer attached.
-
+               
                // purge the user main sandbox store from the system
                this.avmService.purgeStore(sandbox);
-
+               // remove any locks this user may have
+               this.avmLockingService.removeStoreLocks(sandbox);
+               
                // purge the user preview sandbox store from the system
                sandbox = AVMUtil.buildUserPreviewStoreName(storeRoot, username);
                this.avmService.purgeStore(sandbox);
+               // remove any locks this user may have
+               this.avmLockingService.removeStoreLocks(sandbox);
                
                // remove the association to this web project user meta-data
                this.nodeService.removeChild(website.getNodeRef(), ref.getChildRef());

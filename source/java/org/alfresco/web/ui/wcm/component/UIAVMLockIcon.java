@@ -48,6 +48,8 @@ import org.alfresco.web.ui.repo.component.UILockIcon;
  */
 public class UIAVMLockIcon extends UILockIcon
 {
+   public static final String ALFRESCO_FACES_AVMLOCKICON = "org.alfresco.faces.AVMLockIcon";
+   
    // ------------------------------------------------------------------------------
    // Component implementation
    
@@ -56,7 +58,7 @@ public class UIAVMLockIcon extends UILockIcon
     */
    public String getFamily()
    {
-      return "org.alfresco.faces.AVMLockIcon";
+      return ALFRESCO_FACES_AVMLOCKICON;
    }
    
    
@@ -77,7 +79,7 @@ public class UIAVMLockIcon extends UILockIcon
       boolean locked = false;
       boolean lockedOwner = false;
       Object val = getValue();
-      List<String> lockUser = null;
+      List<String> lockUsers = null;
       final String avmPath = (val instanceof NodeRef 
                               ? AVMNodeConverter.ToAVMVersionPath((NodeRef)val).getSecond() 
                               : (val instanceof String
@@ -93,15 +95,14 @@ public class UIAVMLockIcon extends UILockIcon
             {
                locked = true;
                final User currentUser = Application.getCurrentUser(context);
-               lockUser = lock.getOwners();
-               lockedOwner = (webProject.isManager(currentUser) || 
-                              lockUser.contains(currentUser.getUserName()));
+               lockUsers = lock.getOwners();
+               lockedOwner = (lockUsers.contains(currentUser.getUserName()));
             }
          }
       }
       this.encodeBegin(context, 
                        locked, 
                        lockedOwner, 
-                       lockUser == null ? new String[0] : (String[])lockUser.toArray(new String[lockUser.size()]));
+                       lockUsers == null ? new String[0] : (String[])lockUsers.toArray(new String[lockUsers.size()]));
    }
 }

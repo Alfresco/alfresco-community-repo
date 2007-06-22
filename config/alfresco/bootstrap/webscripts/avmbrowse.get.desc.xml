@@ -3,6 +3,6 @@
   <description>Sample demonstrating the listing of AVM folder contents</description>
   <url>/sample/avm/path/{storeid}/{path}</url>
   <format default="html">argument</format>
-  <authentication>guest</authentication>
+  <authentication>admin</authentication>
   <transaction>required</transaction>
 </webscript>

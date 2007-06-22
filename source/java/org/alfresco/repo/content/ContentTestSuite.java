@@ -25,6 +25,7 @@
 package org.alfresco.repo.content;
 
 import org.alfresco.repo.content.cleanup.ContentStoreCleanerTest;
+import org.alfresco.repo.content.encoding.CharsetFinderTest;
 import org.alfresco.repo.content.filestore.FileContentStoreTest;
 import org.alfresco.repo.content.filestore.NoRandomAccessFileContentStoreTest;
 import org.alfresco.repo.content.filestore.ReadOnlyFileContentStoreTest;
@@ -63,6 +64,7 @@ public class ContentTestSuite extends TestSuite
         TestSuite suite = new TestSuite();
         
         suite.addTestSuite(ContentStoreCleanerTest.class);
+        suite.addTestSuite(CharsetFinderTest.class);
         suite.addTestSuite(FileContentStoreTest.class);
         suite.addTestSuite(NoRandomAccessFileContentStoreTest.class);
         suite.addTestSuite(ReadOnlyFileContentStoreTest.class);

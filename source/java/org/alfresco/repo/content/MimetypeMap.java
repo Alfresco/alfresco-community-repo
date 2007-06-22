@@ -27,15 +27,19 @@ package org.alfresco.repo.content;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigLookupContext;
 import org.alfresco.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -48,6 +52,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class MimetypeMap implements MimetypeService
 {
+    public static final String PREFIX_TEXT = "text/";
     public static final String EXTENSION_BINARY = "bin";
     
     public static final String MIMETYPE_TEXT_PLAIN = "text/plain";
@@ -118,35 +123,76 @@ public class MimetypeMap implements MimetypeService
     private static final String ATTR_MIMETYPE = "mimetype";
     private static final String ATTR_DISPLAY = "display";
     private static final String ATTR_DEFAULT = "default";
+    private static final String ATTR_TEXT = "text";
     
     private static final Log logger = LogFactory.getLog(MimetypeMap.class);
     
     private ConfigService configService;
+    private ContentCharsetFinder contentCharsetFinder;
     
     private List<String> mimetypes;
     private Map<String, String> extensionsByMimetype;
     private Map<String, String> mimetypesByExtension;
     private Map<String, String> displaysByMimetype;
     private Map<String, String> displaysByExtension;
+    private Set<String> textMimetypes;
     
     /**
-     * @param configService the config service to use to read mimetypes from
+     * Default constructor
+     * 
+     * @since 2.1
      */
+    public MimetypeMap()
+    {
+    }
+
+    @Deprecated
     public MimetypeMap(ConfigService configService)
     {
+        logger.warn(
+                "MimetypeMap(ConfigService configService) has been deprecated.  " +
+                "Use the default constructor and property 'configService'");
         this.configService = configService;
-    }    
+    }
     
+    /**
+     * @param configService         the config service to use to read mimetypes from
+     */
+    public void setConfigService(ConfigService configService)
+    {
+        this.configService = configService;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public ContentCharsetFinder getContentCharsetFinder()
+    {
+        return contentCharsetFinder;
+    }
+
+    /**
+     * Set the system default content characterset decoder
+     */
+    public void setContentCharsetFinder(ContentCharsetFinder contentCharsetFinder)
+    {
+        this.contentCharsetFinder = contentCharsetFinder;
+    }
+
     /**
      * Initialises the map using the configuration service provided
      */
     public void init()
     {
+        PropertyCheck.mandatory(this, "configService", configService);
+        PropertyCheck.mandatory(this, "contentCharsetFinder", contentCharsetFinder);
+        
         this.mimetypes = new ArrayList<String>(40);
         this.extensionsByMimetype = new HashMap<String, String>(59);
         this.mimetypesByExtension = new HashMap<String, String>(59);
         this.displaysByMimetype = new HashMap<String, String>(59);
         this.displaysByExtension = new HashMap<String, String>(59);
+        this.textMimetypes = new HashSet<String>(23);
 
         Config config = configService.getConfig(CONFIG_CONDITION, new ConfigLookupContext(CONFIG_AREA));
         ConfigElement mimetypesElement = config.getConfigElement(ELEMENT_MIMETYPES);
@@ -174,6 +220,14 @@ public class MimetypeMap implements MimetypeService
             if (mimetypeDisplay != null && mimetypeDisplay.length() > 0)
             {
                 this.displaysByMimetype.put(mimetype, mimetypeDisplay);
+            }
+
+            // Check if it is a text format
+            String isTextStr = mimetypeElement.getAttribute(ATTR_TEXT);
+            boolean isText = Boolean.parseBoolean(isTextStr);
+            if (isText || mimetype.startsWith(PREFIX_TEXT))
+            {
+                this.textMimetypes.add(mimetype);
             }
             
             // get all the extensions
@@ -209,6 +263,7 @@ public class MimetypeMap implements MimetypeService
                 {
                     this.extensionsByMimetype.put(mimetype, extension);
                 }
+                // Loop again
                 isFirst = false;
             }
             // check that there were extensions defined
@@ -272,6 +327,11 @@ public class MimetypeMap implements MimetypeService
     public Map<String, String> getMimetypesByExtension()
     {
         return mimetypesByExtension;
+    }
+
+    public boolean isText(String mimetype)
+    {
+        return textMimetypes.contains(mimetype);
     }
 
     /**

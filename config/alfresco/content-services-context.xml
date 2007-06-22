@@ -94,9 +94,12 @@
     </bean>
 
    <bean id="mimetypeService" class="org.alfresco.repo.content.MimetypeMap" init-method="init" >
-      <constructor-arg>
+      <property name="configService">
          <ref bean="mimetypeConfigService" />
-      </constructor-arg>
+      </property>
+      <property name="contentCharsetFinder">
+         <ref bean="charset.finder"/>
+      </property>
    </bean>
    
    <bean id="contentFilterLanguagesConfigService" class="org.alfresco.config.xml.XMLConfigService" init-method="init">

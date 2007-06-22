@@ -75,4 +75,15 @@ public class MimetypeMapTest extends TestCase
         // Star Office
         assertEquals("sds", extensionsByMimetype.get("application/vnd.stardivision.chart"));
     }
+    
+    public void testIsText() throws Exception
+    {
+        assertTrue(mimetypeService.isText(MimetypeMap.MIMETYPE_HTML));
+    }
+    
+    public void testGetContentCharsetFinder() throws Exception
+    {
+        assertNotNull("No charset finder", mimetypeService.getContentCharsetFinder());
+    }
+
 }

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
 
@@ -82,6 +83,15 @@ public interface MimetypeService
      */
     @NotAuditable
     public Map<String, String> getMimetypesByExtension();
+    
+    /**
+     * Check if a given mimetype represents a text format.
+     * 
+     * @param mimetype      the mimetype to check
+     * @return              Returns <tt>true</tt> if it is text
+     */
+    @NotAuditable
+    public boolean isText(String mimetype);
 
     /**
      * Get all mimetypes
@@ -101,4 +111,15 @@ public interface MimetypeService
      */
     @NotAuditable
     public String guessMimetype(String filename);
+
+    /**
+     * Provides the system default charset finder.
+     * 
+     * @return      Returns a character set finder that can be used to decode
+     *              streams in order to get the encoding.
+     * 
+     * @since 2.1
+     */
+    @NotAuditable
+    public ContentCharsetFinder getContentCharsetFinder();
 }

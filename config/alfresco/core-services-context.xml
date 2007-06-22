@@ -143,6 +143,21 @@
             <value>false</value>
         </property>
     </bean>
+    
+    <!-- Characterset decoder -->
+    <bean id="charset.finder" class="org.alfresco.repo.content.encoding.ContentCharsetFinder">
+      <property name="defaultCharset">
+         <value>UTF-8</value>
+      </property>
+      <property name="mimetypeService">
+         <ref bean="mimetypeService"/>
+      </property>
+      <property name="charactersetFinders">
+         <list>
+            <bean class="org.alfresco.encoding.GuessEncodingCharsetFinder" />
+         </list>
+      </property>
+    </bean>
 
     <!-- transaction service -->
     <alias name="transactionService" alias="transactionComponent"/>

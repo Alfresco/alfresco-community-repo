@@ -24,10 +24,14 @@
  */
 package org.alfresco.filesys.smb.server.repo;
 
+import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.server.filesys.AccessDeniedException;
@@ -38,15 +42,16 @@ import org.alfresco.filesys.server.filesys.NetworkFile;
 import org.alfresco.filesys.smb.SeekType;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -62,9 +67,9 @@ public class ContentNetworkFile extends NodeRefNetworkFile
 {
     private static final Log logger = LogFactory.getLog(ContentNetworkFile.class);
     
-    private TransactionService transactionService;
     private NodeService nodeService;
     private ContentService contentService;
+    private MimetypeService mimetypeService;
     
     // File channel to file content
     
@@ -86,9 +91,9 @@ public class ContentNetworkFile extends NodeRefNetworkFile
      * Helper method to create a {@link NetworkFile network file} given a node reference.
      */
     public static ContentNetworkFile createFile(
-            TransactionService transactionService,
             NodeService nodeService,
             ContentService contentService,
+            MimetypeService mimetypeService,
             CifsHelper cifsHelper,
             NodeRef nodeRef,
             FileOpenParams params)
@@ -100,7 +105,7 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         // Create the file
         
-        ContentNetworkFile netFile = new ContentNetworkFile(transactionService, nodeService, contentService, nodeRef, path);
+        ContentNetworkFile netFile = new ContentNetworkFile(nodeService, contentService, mimetypeService, nodeRef, path);
         
         // Set relevant parameters
         
@@ -176,17 +181,17 @@ public class ContentNetworkFile extends NodeRefNetworkFile
      * @param name String
      */
     private ContentNetworkFile(
-            TransactionService transactionService,
             NodeService nodeService,
             ContentService contentService,
+            MimetypeService mimetypeService,
             NodeRef nodeRef,
             String name)
     {
         super(name, nodeRef);
         setFullName(name);
-        this.transactionService = transactionService;
         this.nodeService = nodeService;
         this.contentService = contentService;
+        this.mimetypeService = mimetypeService;
     }
 
     /**
@@ -362,6 +367,13 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         if (modified)
         {
+            // Take a guess at the mimetype
+            channel.position(0);
+            InputStream is = new BufferedInputStream(Channels.newInputStream(channel));
+            ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
+            Charset charset = charsetFinder.getCharset(is, content.getMimetype());
+            content.setEncoding(charset.name());
+            
             // Close the channel
         	
             channel.close();

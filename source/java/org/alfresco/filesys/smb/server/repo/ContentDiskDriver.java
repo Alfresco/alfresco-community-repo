@@ -68,6 +68,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -111,6 +112,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     private NodeService nodeService;
     private SearchService searchService;
     private ContentService contentService;
+    private MimetypeService mimetypeService;
     private PermissionService permissionService;
     private FileFolderService fileFolderService;
     
@@ -280,6 +282,14 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     	fileFolderService = fileService;
     }
     
+    /**
+     * @param mimetypeService       service for helping with mimetypes and encoding
+     */
+    public void setMimetypeService(MimetypeService mimetypeService)
+    {
+        this.mimetypeService = mimetypeService;
+    }
+
     /**
      * Parse and validate the parameter string and create a device context object for this instance
      * of the shared device. The same DeviceInterface implementation may be used for multiple
@@ -1240,7 +1250,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             {
 	            // Create the network file
 	            
-	            netFile = ContentNetworkFile.createFile(transactionService, nodeService, contentService, cifsHelper, nodeRef, params);
+	            netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, nodeRef, params);
             }
             else
             {
@@ -1406,7 +1416,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Create the network file
             
-            NetworkFile netFile = ContentNetworkFile.createFile(transactionService, nodeService, contentService, cifsHelper, nodeRef, params);
+            NetworkFile netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, nodeRef, params);
             
             // Truncate the file so that the content stream is created
             

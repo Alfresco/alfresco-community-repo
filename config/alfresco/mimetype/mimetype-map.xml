@@ -2,7 +2,7 @@
    
    <config evaluator="string-compare" condition="Mimetype Map">
       <mimetypes>
-         <mimetype mimetype="text/plain" display="Plain Text">
+         <mimetype mimetype="text/plain" text="true" display="Plain Text">
             <extension display="Plain Text" default="true">txt</extension>
             <extension display="Comma Separated Values">csv</extension>
             <extension display="Java Source">java</extension>
@@ -15,14 +15,14 @@
             <extension display="Unix Shell Script">sh</extension>
             <extension display="Log">log</extension>
          </mimetype>
-         <mimetype mimetype="text/html" display="HTML">
+         <mimetype mimetype="text/html" text="true" display="HTML">
             <!-- first extension will be default unless otherwise specified -->
             <extension default="true">html</extension>
             <extension>htm</extension>
             <extension>shtml</extension>
             <extension>body</extension>
          </mimetype>
-         <mimetype mimetype="application/xhtml+xml" display="XHTML">
+         <mimetype mimetype="application/xhtml+xml" text="true" display="XHTML">
             <extension default="true">xhtml</extension>
          </mimetype>
          <mimetype mimetype="application/postscript" display="Postscript">
@@ -77,7 +77,7 @@
          <mimetype mimetype="image/cgm" display="CGM Image">
             <extension>cgm</extension>
          </mimetype>
-         <mimetype mimetype="application/java" display="Java Class">
+         <mimetype mimetype="application/java" text="true" display="Java Class">
             <extension>class</extension>
          </mimetype>
          <mimetype mimetype="application/x-cpio" display="">
@@ -86,7 +86,7 @@
          <mimetype mimetype="application/x-csh" display="">
             <extension>csh</extension>
          </mimetype>
-         <mimetype mimetype="text/css" display="Style Sheet">
+         <mimetype mimetype="text/css" text="true" display="Style Sheet">
             <extension>css</extension>
          </mimetype>
          <mimetype mimetype="application/msword" display="Microsoft Word">
@@ -95,7 +95,7 @@
          <mimetype mimetype="application/wordperfect" display="WordPerfect">
             <extension>wpd</extension>
          </mimetype>
-         <mimetype mimetype="text/xml" display="XML">
+         <mimetype mimetype="text/xml" text="true" display="XML">
             <extension default="true">xml</extension>
             <extension display="DTD">dtd</extension>
             <extension display="XSLT">xslt</extension>
@@ -104,7 +104,7 @@
          <mimetype mimetype="application/x-dvi" display="">
             <extension>dvi</extension>
          </mimetype>
-         <mimetype mimetype="text/x-setext" display="">
+         <mimetype mimetype="text/x-setext" text="true" display="">
             <extension>etx</extension>
          </mimetype>
          <mimetype mimetype="image/gif" display="GIF Image">
@@ -125,7 +125,7 @@
          <mimetype mimetype="application/mac-binhex40" display="">
             <extension>hqx</extension>
          </mimetype>
-         <mimetype mimetype="text/calendar" display="iCalendar File">
+         <mimetype mimetype="text/calendar" text="true" display="iCalendar File">
             <extension>ics</extension>
          </mimetype>
          <mimetype mimetype="image/ief" display="IEF Image">
@@ -142,10 +142,10 @@
          <mimetype mimetype="image/svg" display="Scalable Vector Graphics Image">
             <extension>svg</extension>
          </mimetype>
-         <mimetype mimetype="application/x-javascript" display="Java Script">
+         <mimetype mimetype="application/x-javascript" text="true" display="Java Script">
             <extension>js</extension>
          </mimetype>
-         <mimetype mimetype="application/x-latex" display="Latex">
+         <mimetype mimetype="application/x-latex" text="true" display="Latex">
             <extension>latex</extension>
          </mimetype>
          <mimetype mimetype="application/x-troff-man" display="Man Page">
@@ -229,10 +229,10 @@
             <extension>sgml</extension>
             <extension>sgm</extension>
          </mimetype>
-         <mimetype mimetype="application/x-sh" display="Shell Script">
+         <mimetype mimetype="application/x-sh" text="true" display="Shell Script">
             <extension>sh</extension>
          </mimetype>
-         <mimetype mimetype="application/x-shar" display="">
+         <mimetype mimetype="application/x-shar" text="true" display="">
             <extension>shar</extension>
          </mimetype>
          <mimetype mimetype="application/x-wais-source" display="">
@@ -264,7 +264,7 @@
             <extension>tiff</extension>
             <extension>tif</extension>
          </mimetype>
-         <mimetype mimetype="text/tab-separated-values" display="Tab Separated Values">
+         <mimetype mimetype="text/tab-separated-values" text="true" display="Tab Separated Values">
             <extension>tsv</extension>
          </mimetype>
          <mimetype mimetype="application/x-ustar" display="">

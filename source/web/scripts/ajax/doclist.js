@@ -14,8 +14,9 @@ var MyDocs = {
    {
       if ($('docPanel'))
       {
+         $('docPanelOverlay').setStyle('opacity', 0);
          // show AJAX loading overlay
-         $('docPanelOverlay').setStyle('visibility', 'visible');
+         $('docPanelOverlayAjax').setStyle('visibility', 'visible');
          $('docPanel').setStyle('visibility', 'hidden');
          // fire off the ajax request to populate the doc list - the 'doclistpanel' webscript
          // is responsible for rendering just the contents of the main panel div
@@ -40,7 +41,7 @@ var MyDocs = {
                   $('docPanel').setHTML("Sorry, data currently unavailable.");
                   
                   // hide the ajax wait panel and show the main doc panel
-                  $('docPanelOverlay').setStyle('visibility', 'hidden');
+                  $('docPanelOverlayAjax').setStyle('visibility', 'hidden');
                   $('docPanel').setStyle('visibility', 'visible');
                }
             }
@@ -53,7 +54,7 @@ var MyDocs = {
       MyDocs.parseDocPanels();
       // hide the ajax wait panel and show the main doc panel
       $('docPanel').setStyle('visibility', 'visible');
-      $('docPanelOverlay').setStyle('visibility', 'hidden');
+      $('docPanelOverlayAjax').setStyle('visibility', 'hidden');
    },
 
    parseDocPanels: function()
@@ -452,6 +453,8 @@ var MyDocs = {
     */
    filter: function(filter)
    {
+      if (this.popupPanel != null) return;
+
       $$('.docfilterLink').each(function(filterLink, i)
       {
          if (i == filter)
@@ -558,7 +561,100 @@ var MyDocs = {
          }, 
          "noderef=" + noderef
       );
+   },
+
+   /**
+    * Display the Update File pop-up panel
+    */
+   updateItem: function(actionEl, nodeRef)
+   {
+      if (this.popupPanel != null) return;
+      
+      this.fxOverlay = $("docPanelOverlay").effect('opacity', {duration: MyDocs.ANIM_LENGTH});
+      
+      var panel = $("docUpdatePanel");
+      panel.setStyle("opacity", 0);
+      panel.setStyle("display", "inline");
+      Alfresco.Dom.smartAlignElement(panel, actionEl);
+      // make into a dragable panel
+      new Drag.Move(panel);
+      
+      // Generate a file upload element
+      // To perform the actual upload, the element is moved to a hidden iframe
+      // from which the upload is performed - this is required as javascript cannot
+      // set the important properties on a file upload element for security reasons.
+      // <input size="35" style="width:100%" type="file" value="" id="_upload" name="_upload">
+      if (this.fileInput == null)
+      {
+         var fileInput = $(document.createElement("input"));
+         fileInput.type = "file";
+         fileInput.name = "_upload";
+         fileInput.size = "35";
+         fileInput.setStyle("width", "100%");
+         fileInput.addClass("docFormItem");
+         fileInput.injectTop(panel);
+         this.fileInput = fileInput;
+      }
+      
+      var anim = new Fx.Styles(panel, {duration: MyDocs.ANIM_LENGTH, transition: Fx.Transitions.linear});
+      anim.start({'opacity': 1});
+      this.fxOverlay.start(0.5);
+      
+      this.popupPanel = panel;
+      this.popupPanel.nodeRef = nodeRef;
+   },
+   
+   /**
+    * OK button click handler for the Update Content pop-up panel
+    */
+   updateOK: function(actionEl, nodeRef)
+   {
+      if (this.fileInput.value.length > 0)
+      {
+         // call the upload help to perform the upload
+         handleUploadHelper(this.fileInput,
+                         "1",   // TODO: generate unique ID? (parent space noderef?)
+                         MyDocs.updateCompleteHandler,
+                         getContextPath(),
+                         "/ajax/invoke/ContentUpdateBean.updateFile",
+                         {nodeRef: this.popupPanel.nodeRef});
+         this.fileInput = null;
+      }      
+      this.closePopupPanel();
+   },
+   
+   /**
+    * Callback function executed after the upload of a new file is complete
+    */
+   updateCompleteHandler: function(id, path, fileName, error)
+   {
+      if (error == null)
+      {
+         MyDocs.start();
+      }
+      else
+      {
+         alert("ERROR: " + error);
+      }
+      if (this.fxOverlay)
+      {
+         this.fxOverlay.start(0);
+      }
+   },
+
+   /**
+    * Cancel button click handler for various pop-up panels
+    */
+   closePopupPanel: function()
+   {
+      if (this.popupPanel != null)
+      {
+         this.popupPanel.setStyle("display", "none");
+         this.popupPanel = null;
+      }
+      this.fxOverlay.start(0);
    }
+   
 };
 
 window.addEvent('load', MyDocs.start);

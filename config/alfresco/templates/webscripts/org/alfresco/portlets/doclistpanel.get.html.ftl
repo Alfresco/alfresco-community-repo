@@ -16,7 +16,7 @@
            (filter=3 && d.mimetype="application/pdf") ||
            (filter=4 && (dateCompare(d.properties["cm:modified"],date,weekms) == 1 || dateCompare(d.properties["cm:created"], date, weekms) == 1))>
       <#assign count=count+1>
-      <div class="docRow">
+      <div class="docRow docRow${(count % 2 = 0)?string("Odd", "wEven")}">
          <div class="docIcon">
             <a href="${url.context}${d.url}" target="new"><img class="docIconImage" alt="" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border=0></a>
          </div>

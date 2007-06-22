@@ -42,8 +42,8 @@
 
 <table border=0 cellspacing=0 cellpadding=0 class="docTable">
 <tr>
-   <td height=40>
-      <table border=0 cellspacing=8 cellpadding=0 width=100%>
+   <td height="30" class="docHeader">
+      <table border="0" cellspacing="6" cellpadding="0" width="100%">
          <tr>
             <th><a id="docFilter0" class="docfilterLink <#if filter=0>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(0); return false;">All Items</a></th>
             <th><a id="docFilter1" class="docfilterLink <#if filter=1>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(1); return false;">Word Documents</a></th>
@@ -58,7 +58,13 @@
    </td>
 </tr>
 <tr><td>
+   <div id="docUpdatePanel">
+      <#-- Url encode the path value, and encode any single quotes to generate valid string -->
+      <input class="docFormItem" type="button" value="OK" onclick='MyDocs.updateOK(this, "${path?url?replace("'","_%_")}");'>
+      <input class="docFormItem" type="button" value="Cancel" onclick="MyDocs.closePopupPanel();">
+   </div>
    <div id="docPanelOverlay"></div>
+   <div id="docPanelOverlayAjax"></div>
    <div id="docPanel">
       <#-- populated via an AJAX call to 'doclistpanel' webscript -->
       <#-- resolved path, filter and home.noderef required as arguments -->
@@ -85,7 +91,7 @@ a.docfilterLink:link, a.docfilterLink:visited
 {
    color: #8EA1B3;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
-   font-size: 13px;
+   font-size: 12px;
    font-weight: bold;
    text-decoration: none;
    padding-left: 4px;
@@ -124,6 +130,15 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
 #docPanelOverlay
 {
    background-color: #fff;
+   position: absolute;
+   height: 320px;
+   width: 716px;
+   overflow: hidden;
+}
+
+#docPanelOverlayAjax
+{
+   background-color: #fff;
    background-image: url(${url.context}/images/icons/ajax_anim.gif);
    background-position: center;
    background-repeat: no-repeat;
@@ -139,6 +154,20 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
    border-top: 1px solid #F8FCFD;
    border-bottom: 1px solid #CCD4DB;
 }
+.docRowOdd
+{
+   background-color: #EEF7FB;
+}
+.docRowEven
+{
+   background-color: #F8FCFD;
+}
+
+.docHeader
+{
+   background-image: url(${url.context}/images/parts/doclist_headerbg.png);
+}
+
 
 .docFooter
 {
@@ -259,9 +288,7 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
 
 .docActionLocked
 {
-   background-image: url(${url.context}/images/icons/doclist_action_locked.png);
-   border-bottom: none;
-   border-right: none;
+   background-image: url(${url.context}/images/icons/doclist_action_locked.png) !important;
    cursor: default !important;
 }
 
@@ -312,6 +339,28 @@ a.refreshViewLink:link, a.refreshViewLink:visited, a.refreshViewLink:hover
    font-size: 12px;
    color: #515D6B;
    text-decoration: none;
+}
+
+#docUpdatePanel
+{
+   position: absolute;
+   border: 1px solid #CCD4DB;
+   background-color: #EEF7FB;
+   width: 24em;
+   height: 5em;
+   padding: 8px;
+   margin: 8px;
+   display: none;
+   z-index: 1;
+   -moz-border-radius: 5px;
+}
+
+.docFormItem
+{
+   margin: 4px;
+   padding: 2px;
+   background-color: #F8FCFD;
+   border: 1px solid #CCD4DB;
 }
 
 </STYLE>

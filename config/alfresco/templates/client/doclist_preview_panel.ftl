@@ -18,16 +18,24 @@
          <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
 <#if node.isLocked >
-               <td class="docAction docActionLocked">(Locked)</td>
+               <td class="docAction docActionCheckout docActionLocked">(Locked)</td>
 <#elseif hasAspect(node, "cm:workingcopy") == 1>
                <td class="docAction docActionCheckin" <#if node.hasPermission("CheckIn")>onclick='event.cancelBubble=true;MyDocs.checkinItem("${node.name}", "${node.nodeRef}");'</#if>>Check In</td>
 <#else>
                <td class="docAction docActionCheckout" <#if node.hasPermission("CheckOut")>onclick='event.cancelBubble=true;MyDocs.checkoutItem("${node.name}", "${node.nodeRef}");'</#if>>Check Out</td>
 </#if>
-               <td class="docAction docActionEditDetails">Edit Details</td>
+<#if node.isLocked >
+               <td class="docAction docActionEditDetails docActionLocked">Edit Details</td>
+<#else>
+               <td class="docAction docActionEditDetails" onclick="window.open('${url.context}/command/ui/editcontentprops?container=plain&amp;noderef=${node.nodeRef}', '_blank');">Edit Details</td>
+</#if>
             </tr>
             <tr>
-               <td class="docAction docActionUpdate">Update</td>
+<#if node.isLocked >
+               <td class="docAction docActionUpdate docActionLocked">Update</td>
+<#else>
+               <td class="docAction docActionUpdate" onclick="event.cancelBubble=true;MyDocs.updateItem(this, '${node.nodeRef}');">Update</td>
+</#if>
                <td class="docAction docActionViewContent" onclick="window.open('${url.context}${node.downloadUrl}', '_blank');">View Content</td>
             </tr>
             <tr>

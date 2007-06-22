@@ -3831,6 +3831,15 @@
 
    <managed-bean>
       <description>
+         Bean that accepts Content updates for the repository
+      </description>
+      <managed-bean-name>ContentUpdateBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.ajax.ContentUpdateBean</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+
+   <managed-bean>
+      <description>
          Bean backing ajax calls for the MySpaces portlet
       </description>
       <managed-bean-name>MySpacesBean</managed-bean-name>

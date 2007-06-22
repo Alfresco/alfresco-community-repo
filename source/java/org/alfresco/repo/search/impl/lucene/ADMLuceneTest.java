@@ -39,7 +39,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.RollbackException;
 import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -462,6 +466,114 @@ public class ADMLuceneTest extends TestCase
         super(arg0);
     }
 
+    /**
+     * Test bug fix
+     * @throws Exception
+     */
+    public void testSortIssue_AR_1515__AND__AR_1466() throws Exception
+    {
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        luceneFTS.pause();
+        buildBaseIndex();
+        runBaseTests();
+        testTX.commit();
+        
+        
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+
+        runBaseTests();
+
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("PATH:\"//.\"");
+        sp.excludeDataInTheCurrentTransaction(false);
+        sp.addSort("ID", true);
+        ResultSet results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(15, results.length());
+        
+        String current = null;
+        for (ResultSetRow row : results)
+        {
+            String id = row.getNodeRef().getId();
+
+            if (current != null)
+            {
+                if (current.compareTo(id) > 0)
+                {
+                    fail();
+                }
+            }
+            current = id;
+        }
+        results.close();
+      
+        
+        assertEquals(5, serviceRegistry.getNodeService().getChildAssocs(rootNodeRef).size());
+        serviceRegistry.getNodeService().createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{namespace}texas"), testSuperType).getChildRef();
+        assertEquals(6, serviceRegistry.getNodeService().getChildAssocs(rootNodeRef).size());
+
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("PATH:\"//.\"");
+        sp.excludeDataInTheCurrentTransaction(false);
+        sp.addSort("ID", true);
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(16, results.length());
+        current = null;
+        for (ResultSetRow row : results)
+        {
+            String id = row.getNodeRef().getId();
+
+            if (current != null)
+            {
+                if (current.compareTo(id) > 0)
+                {
+                    fail();
+                }
+            }
+            current = id;
+        }
+        results.close();
+        
+        assertEquals(6, serviceRegistry.getNodeService().getChildAssocs(rootNodeRef).size());
+        serviceRegistry.getNodeService().createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{namespace}texas"), testSuperType).getChildRef();
+        assertEquals(7, serviceRegistry.getNodeService().getChildAssocs(rootNodeRef).size());
+
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("PATH:\"//.\"");
+        sp.excludeDataInTheCurrentTransaction(false);
+        sp.addSort("ID", true);
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(17, results.length());
+        current = null;
+        for (ResultSetRow row : results)
+        {
+            String id = row.getNodeRef().getId();
+
+            if (current != null)
+            {
+                if (current.compareTo(id) > 0)
+                {
+                    fail();
+                }
+            }
+            current = id;
+        }
+        results.close();
+
+        testTX.rollback();
+        
+    }
+    
     /**
      * @throws Exception
      */
@@ -4658,7 +4770,7 @@ public class ADMLuceneTest extends TestCase
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("PATH:\"//.\"");
-        //sp.addSort("ID", true);
+        sp.addSort("ID", true);
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(15, results.length());
@@ -4705,7 +4817,7 @@ public class ADMLuceneTest extends TestCase
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("PATH:\"//.\"");
-        //sp.addSort("ID", true);
+        sp.addSort("ID", true);
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(15, results.length());
@@ -4743,7 +4855,7 @@ public class ADMLuceneTest extends TestCase
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("PATH:\"//.\"");
-        //sp.addSort("ID", true);
+        sp.addSort("ID", true);
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(15, results.length());
@@ -4762,7 +4874,7 @@ public class ADMLuceneTest extends TestCase
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("\\@\\{namespace\\}property\\-1:\"valueone\"");
-        //sp.addSort("ID", true);
+        sp.addSort("ID", true);
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
 
@@ -4775,7 +4887,7 @@ public class ADMLuceneTest extends TestCase
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("\\@\\{namespace\\}property\\-1:\"valueone\"");
-        //sp.addSort("ID", true);
+        sp.addSort("ID", true);
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
 
@@ -4793,7 +4905,7 @@ public class ADMLuceneTest extends TestCase
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("\\@\\{namespace\\}property\\-1:\"valueone\"");
         sp.excludeDataInTheCurrentTransaction(false);
-        //sp.addSort("ID", true);
+        sp.addSort("ID", true);
         results = serviceRegistry.getSearchService().query(sp);
 
         assertEquals(2, results.length());
@@ -4878,7 +4990,7 @@ public class ADMLuceneTest extends TestCase
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("PATH:\"//.\"");
-        //sp.addSort("ID", true);
+        sp.addSort("ID", true);
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(15, results.length());

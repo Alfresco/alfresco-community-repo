@@ -196,28 +196,5 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
         {
             return id;
         }
-
-        @Override
-        public boolean equals(Object o)
-        {
-            if (this == o)
-            {
-                return true;
-            }
-            if (!(o instanceof ReferenceCountingReadOnlyIndexReader))
-            {
-                return false;
-            }
-            ReferenceCountingReadOnlyIndexReader other = (ReferenceCountingReadOnlyIndexReader) o;
-            return EqualsHelper.nullSafeEquals(this.getId(), other.getId());
-
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return getId().hashCode();
-        }
-
     }
 }

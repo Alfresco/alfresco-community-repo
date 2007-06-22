@@ -449,11 +449,11 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                     Serializable value = properties.get(propertyName);
                     if (indexAllProperties)
                     {
-                        indexProperty(nodeRef, propertyName, value, xdoc, false, endVersion, stringNodeRef);
+                        indexProperty(nodeRef, propertyName, value, xdoc, false, properties);
                     }
                     else
                     {
-                        isAtomic &= indexProperty(nodeRef, propertyName, value, xdoc, true, endVersion, stringNodeRef);
+                        isAtomic &= indexProperty(nodeRef, propertyName, value, xdoc, true, properties);
                     }
                 }
 
@@ -706,7 +706,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
     }
 
     protected boolean indexProperty(NodeRef banana, QName propertyName, Serializable value, Document doc,
-            boolean indexAtomicPropertiesOnly, int version, String path)
+            boolean indexAtomicPropertiesOnly,  Map<QName, Serializable> properties)
     {
         String attributeName = "@"
                 + QName.createQName(propertyName.getNamespaceURI(), ISO9075.encode(propertyName.getLocalName()));
@@ -947,7 +947,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                         // TODO: Use the node locale in preferanced to the system locale
                         Locale locale = null;
 
-                        Serializable localeProperty = avmService.getNodeProperties(version, path).get(
+                        Serializable localeProperty = properties.get(
                                 ContentModel.PROP_LOCALE);
                         if (localeProperty != null)
                         {

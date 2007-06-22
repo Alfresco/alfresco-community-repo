@@ -101,7 +101,10 @@ public class WebScriptServletRuntime extends WebScriptRuntime
     @Override
     protected String getScriptUrl()
     {
-        return req.getPathInfo();
+        // NOTE: Don't use req.getPathInfo() - it truncates the path at first semi-colon in Tomcat
+        String requestURI = req.getRequestURI();
+        String pathInfo = requestURI.substring((req.getContextPath() + req.getServletPath()).length());
+        return pathInfo;
     }
     
     /* (non-Javadoc)

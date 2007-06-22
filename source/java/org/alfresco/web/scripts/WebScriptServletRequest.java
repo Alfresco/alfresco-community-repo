@@ -120,8 +120,8 @@ public class WebScriptServletRequest extends WebScriptRequestImpl
      */
     public String getServicePath()
     {
-        String pathInfo = req.getPathInfo();
-        return getServiceContextPath() + ((pathInfo == null) ? "" : req.getPathInfo());
+        String pathInfo = getPathInfo();
+        return getServiceContextPath() + ((pathInfo == null) ? "" : pathInfo);
     }
 
     /* (non-Javadoc)
@@ -137,7 +137,10 @@ public class WebScriptServletRequest extends WebScriptRequestImpl
      */
     public String getPathInfo()
     {
-       return req.getPathInfo(); 
+        // NOTE: Don't use req.getPathInfo() - it truncates the path at first semi-colon in Tomcat
+        String requestURI = req.getRequestURI();
+        String pathInfo = requestURI.substring(getServiceContextPath().length());
+        return pathInfo;
     }
 
     /* (non-Javadoc)

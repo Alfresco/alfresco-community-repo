@@ -37,8 +37,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -114,11 +113,23 @@ public abstract class WebDAVMethod
 
         m_strPath = WebDAV.getRepositoryPath(req);
     }
+    
+    /**
+     * Override and return <tt>true</tt> if the method is a query method only.  The default implementation
+     * returns <tt>false</tt>.
+     * 
+     * @return          Returns <tt>true</tt> if the method transaction may be read-only
+     */
+    protected boolean isReadOnly()
+    {
+        return false;
+    }
 
     /**
-     * Executes the method
+     * Executes the method, wrapping the call to {@link #executeImpl()} in an appropriate transaction
+     * and handling the error conditions.
      */
-    public void execute() throws WebDAVServerException
+    public final void execute() throws WebDAVServerException
     {
         // Parse the HTTP headers
         parseRequestHeaders();
@@ -126,9 +137,9 @@ public abstract class WebDAVMethod
         // Parse the HTTP body
         parseRequestBody();
         
-        TransactionWork<WebDAVServerException> executeWork = new TransactionWork<WebDAVServerException>()
+        RetryingTransactionCallback<Object> executeImplCallback = new RetryingTransactionCallback<Object>()
         {
-            public WebDAVServerException doWork() throws Exception
+            public Object execute() throws Exception
             {
                 executeImpl();
                 return null;
@@ -136,9 +147,9 @@ public abstract class WebDAVMethod
         };
         try
         {
+            boolean isReadOnly = isReadOnly();
             // Execute the method
-            TransactionService transactionService = getTransactionService();
-            TransactionUtil.executeInUserTransaction(transactionService, executeWork);
+            getTransactionService().getRetryingTransactionHelper().doInTransaction(executeImplCallback, isReadOnly);
         }
         catch (AccessDeniedException e)
         {

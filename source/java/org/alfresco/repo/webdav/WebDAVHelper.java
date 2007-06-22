@@ -88,9 +88,6 @@ public class WebDAVHelper
     
     /**
      * Class constructor
-     * 
-     * @param serviceRegistry ServiceRegistry
-     * @param authService AuthenticationService
      */
     protected WebDAVHelper(ServiceRegistry serviceRegistry, AuthenticationService authService)
     {
@@ -108,9 +105,7 @@ public class WebDAVHelper
     }
     
     /**
-     * Return the authentication service
-     * 
-     * @return AuthenticationService
+     * @return          Return the authentication service
      */
     public final AuthenticationService getAuthenticationService()
     {
@@ -118,9 +113,7 @@ public class WebDAVHelper
     }
     
     /**
-     * Return the service registry
-     * 
-     * @return ServiceRegistry
+     * @return          Return the service registry
      */
     public final ServiceRegistry getServiceRegistry()
     {
@@ -128,9 +121,7 @@ public class WebDAVHelper
     }
     
     /**
-     * Return the node service
-     * 
-     * @return NodeService
+     * @return          Return the node service
      */
     public final NodeService getNodeService()
     {
@@ -143,9 +134,7 @@ public class WebDAVHelper
     }
 
     /**
-     * Return the search service
-     * 
-     * @return  SearchService
+     * @return          Return the search service
      */
     public final SearchService getSearchService()
     {
@@ -153,9 +142,7 @@ public class WebDAVHelper
     }
     
     /**
-     * Return the namespace service
-     * 
-     * @return  NamespaceService
+     * @return          Return the namespace service
      */
     public final NamespaceService getNamespaceService()
     {
@@ -163,9 +150,7 @@ public class WebDAVHelper
     }
     
     /**
-     * Return the dictionary service
-     * 
-     * @return  DictionaryService
+     * @return          Return the dictionary service
      */
     public final DictionaryService getDictionaryService()
     {
@@ -173,9 +158,7 @@ public class WebDAVHelper
     }
 
     /**
-     * Return the mimetype service
-     * 
-     * @return MimetypeService
+     * @return          Return the mimetype service
      */
     public final MimetypeService getMimetypeService()
     {
@@ -183,9 +166,7 @@ public class WebDAVHelper
     }
     
     /**
-     * Return the lock service
-     * 
-     * @return LockService
+     * @return          Return the lock service
      */
     public final LockService getLockService()
     {
@@ -193,9 +174,7 @@ public class WebDAVHelper
     }
     
     /**
-     * Return the copy service
-     * 
-     * @return CopyService
+     * @return          Return the copy service
      */
     public final CopyService getCopyService()
     {
@@ -237,8 +216,8 @@ public class WebDAVHelper
     /**
      * Split the path into all the component directories and filename
      * 
-     * @param path String
-     * @return String[]
+     * @param path          the string to split
+     * @return              an array of all the path components
      */
     public final List<String> splitAllPaths(String path)
     {
@@ -260,11 +239,12 @@ public class WebDAVHelper
     /**
      * Get the file info for the given paths
      * 
-     * @param rootNodeRef the acting webdav root
-     * @param path the path to search for
-     * @param servletPath the base servlet path, which may be null or empty
-     * @return Return the file info for the path
-     * @throws FileNotFoundException if the path doesn't refer to a valid node
+     * @param rootNodeRef       the acting webdav root
+     * @param path              the path to search for
+     * @param servletPath       the base servlet path, which may be null or empty
+     * @return                  Return the file info for the path
+     * @throws FileNotFoundException
+     *                          if the path doesn't refer to a valid node
      */
     public final FileInfo getNodeForPath(NodeRef rootNodeRef, String path, String servletPath) throws FileNotFoundException
     {
@@ -366,9 +346,6 @@ public class WebDAVHelper
     
     /**
      * Make an ETag value for a node using the GUID and modify date/time
-     * 
-     * @param node NodeRef
-     * @return String
      */
     public final String makeETag(NodeRef node)
     {
@@ -381,9 +358,6 @@ public class WebDAVHelper
     
     /**
      * Make an ETag value for a node using the GUID and modify date/time
-     * 
-     * @param node NodeRef
-     * @return String
      */
     public final String makeQuotedETag(NodeRef node)
     {
@@ -397,9 +371,6 @@ public class WebDAVHelper
     
     /**
      * Make an ETag value for a node using the GUID and modify date/time
-     * 
-     * @param node NodeRef
-     * @param str StringBuilder
      */
     protected final void makeETagString(NodeRef node, StringBuilder etag)
     {
@@ -417,9 +388,7 @@ public class WebDAVHelper
     }
     
     /**
-     * Return the null XML attribute list
-     * 
-     * @return AttributesImpl
+     * @return              Return the null XML attribute list
      */
     public final AttributesImpl getNullAttributes()
     {
@@ -429,7 +398,7 @@ public class WebDAVHelper
     /**
      * Encodes the given string to valid URL format
      * 
-     * @param s      the String to convert
+     * @param s             the String to convert
      */
     public final static String encodeURL(String s)
     {
@@ -446,11 +415,7 @@ public class WebDAVHelper
     /**
      * Replace one string instance with another within the specified string
      * 
-     * @param str
-     * @param repl
-     * @param with
-     * 
-     * @return replaced string
+     * @return              Returns the replaced string
      */
     public static String replace(String str, String repl, String with)
     {
@@ -478,7 +443,7 @@ public class WebDAVHelper
     /**
      * Encodes the given string to valid HTML format
      * 
-     * @param string     the String to convert
+     * @param string        the String to convert
      */
     public final static String encodeHTML(String string)
     {

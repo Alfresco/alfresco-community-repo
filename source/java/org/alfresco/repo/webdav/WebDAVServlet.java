@@ -37,8 +37,6 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.filesys.server.config.ServerConfiguration;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -127,16 +125,8 @@ public class WebDAVServlet extends HttpServlet
                 return;
             }
 
-            // Execute the WebDAV request, wrapped in a transaction
-            TransactionWork<Object> methodWork = new TransactionWork<Object>()
-            {
-                public Object doWork() throws Exception
-                {
-                    method.execute();
-                    return null;
-                }
-            };
-            TransactionUtil.executeInUserTransaction(m_transactionService, methodWork);
+            // Execute the WebDAV request, which must take care of its own transaction
+            method.execute();
         }
         catch (Throwable e)
         {

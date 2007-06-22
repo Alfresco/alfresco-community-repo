@@ -142,6 +142,15 @@ public class GetMethod extends WebDAVMethod
     }
 
     /**
+     * @return          Returns <tt>true</tt> always
+     */
+    @Override
+    protected boolean isReadOnly()
+    {
+        return true;
+    }
+
+    /**
      * Exceute the WebDAV request
      * 
      * @exception WebDAVServerException

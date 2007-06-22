@@ -70,6 +70,15 @@ public class OptionsMethod extends WebDAVMethod
     }
 
     /**
+     * @return          Returns <tt>true</tt> always
+     */
+    @Override
+    protected boolean isReadOnly()
+    {
+        return true;
+    }
+
+    /**
      * Perform the main request processing
      * 
      * @exception WebDAVServerException

@@ -24,14 +24,17 @@
  */
 package org.alfresco.repo.webdav;
 
+import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -142,23 +145,28 @@ public class PutMethod extends WebDAVMethod
         // Access the content
         ContentWriter writer = fileFolderService.getWriter(contentNodeInfo.getNodeRef());
         // set content properties
+        String mimetype = null;
         if (m_strContentType != null)
         {
-            writer.setMimetype(m_strContentType);
+            mimetype = m_strContentType;
         }
         else
         {
-            String guessedMimetype = getServiceRegistry().getMimetypeService().guessMimetype(contentNodeInfo.getName());
-            writer.setMimetype(guessedMimetype);
+            String guessedMimetype = getMimetypeService().guessMimetype(contentNodeInfo.getName());
+            mimetype = guessedMimetype;
         }
-        // use default encoding
-        writer.setEncoding("UTF-8");
+        writer.setMimetype(mimetype);
 
         // Get the input stream from the request data
-        InputStream input = m_request.getInputStream();
+        InputStream is = m_request.getInputStream();
+        is = is.markSupported() ? is : new BufferedInputStream(is);
+        
+        ContentCharsetFinder charsetFinder = getMimetypeService().getContentCharsetFinder();
+        Charset encoding = charsetFinder.getCharset(is, mimetype);
+        writer.setEncoding(encoding.name());
 
         // Write the new data to the content node
-        writer.putContent(input);
+        writer.putContent(is);
 
         // Set the response status, depending if the node existed or not
         m_response.setStatus(created ? HttpServletResponse.SC_CREATED : HttpServletResponse.SC_NO_CONTENT);

@@ -9,6 +9,8 @@
 <script type="text/javascript" src="/alfresco/scripts/ajax/doclist.js"></script>
 <script type="text/javascript">setContextPath('${url.context}');</script>
 
+<script type="text/javascript" src="/firebug.js"></script>
+
 <script>
    // create manager object for the pop-up summary panels
    var AlfNodeInfoMgr = new Alfresco.PanelManager("NodeInfoBean.sendNodeInfo", "noderef", "portlet_node_summary_panel.ftl");
@@ -80,7 +82,7 @@
 <tr>
 <td>
    <div class="docFooter">
-      Showing <span id="docCount">0</span> items(s)
+      <span class="docFooterText">Showing <span id="docCount">0</span> items(s)</span>
    </div>
 </td>
 </tr>
@@ -106,8 +108,7 @@ a.docfilterLink:hover
 
 a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
 {
-   color: #168ECE;
-   background-color: #EEF7FB;
+   color: #0085CA;
 }
 
 .docTable
@@ -171,8 +172,9 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
 
 .docFooter
 {
-   width: 700px;
-   padding: 8px;
+   height: 34px;
+   width: 716px;
+   padding: 0px;
    border: 1px solid #F8FCFD;
    background-image: url(${url.context}/images/parts/doclist_footerbg.png);
    text-align: center;
@@ -180,6 +182,12 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 13px;
    font-weight: bold;
+}
+
+.docFooterText
+{
+   display: block;
+   margin-top: 8px;
 }
 
 .docItem
@@ -264,11 +272,11 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
    background-repeat: no-repeat;
    background-position: left;
    width: 87px;
-   height: 28px;
+   height: 20px;
    border: 1px solid #fff;
    float: left;
    display: block;
-   padding: 10px 0px 0px 36px;
+   padding: 10px 0px 8px 36px;
    cursor: pointer;
 }
 

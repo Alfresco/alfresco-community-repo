@@ -445,7 +445,8 @@ public class AVMRepository
             if (version < 0)
             {
                 fLookupCache.onSnapshot(pathParts[0]);
-                version = srcRepo.createSnapshot("Branch Snapshot", null, new HashMap<String, Integer>());
+                version = 
+                    srcRepo.createSnapshot("Branch Snapshot", null, new HashMap<String, Integer>()).get(pathParts[0]);
             }
             sPath = srcRepo.lookup(version, pathParts[1], false, false);
             if (sPath == null)
@@ -798,7 +799,7 @@ public class AVMRepository
      * @param description The thick description.
      * @return The version id of the newly snapshotted repository.
      */
-    public int createSnapshot(String storeName, String tag, String description)
+    public Map<String, Integer> createSnapshot(String storeName, String tag, String description)
     {
         AlfrescoTransactionSupport.bindListener(fCreateVersionTxnListener);
         AVMStore store = getAVMStoreByName(storeName);
@@ -807,8 +808,11 @@ public class AVMRepository
             throw new AVMNotFoundException("Store not found.");
         }
         fLookupCache.onSnapshot(storeName);
-        int result = store.createSnapshot(tag, description, new HashMap<String, Integer>());
-        fCreateVersionTxnListener.versionCreated(storeName, result);
+        Map<String, Integer> result = store.createSnapshot(tag, description, new HashMap<String, Integer>());
+        for (Map.Entry<String, Integer> entry : result.entrySet())
+        {
+            fCreateVersionTxnListener.versionCreated(entry.getKey(), entry.getValue());
+        }
         return result;
     }
 

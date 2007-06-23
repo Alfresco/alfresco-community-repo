@@ -630,7 +630,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      * @param store The name of the AVMStore to snapshot.
      * @return The version id of the new snapshot.
      */
-    public int createSnapshot(String ticket, String store, String label, String comment)
+    public Map<String, Integer> createSnapshot(String ticket, String store, String label, String comment)
     {
         fAuthService.validate(ticket);
         return fAVMService.createSnapshot(store, label, comment);

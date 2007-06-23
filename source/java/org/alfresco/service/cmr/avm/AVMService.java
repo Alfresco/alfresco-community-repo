@@ -613,9 +613,11 @@ public interface AVMService
      * @param store The name of the AVMStore to snapshot.
      * @param tag The short description.
      * @param description The thick description.
+     * @return A Map of all implicitly or explicitly snapshotted stores to last 
+     * version id.
      * @throws AVMNotFoundException
      */
-    public int createSnapshot(String store, String tag, String description);
+    public Map<String, Integer> createSnapshot(String store, String tag, String description);
     
 
     /**

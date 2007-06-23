@@ -277,7 +277,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             // Layers are not yet indexed
             setupBasicTree();
-            assertEquals(1, fService.createSnapshot("main", null, null));
+            assertEquals(1, fService.createSnapshot("main", null, null).get("main").intValue());
             runQueriesAgainstBasicTree("main");
             fService.createStore("layer");
             fService.createLayeredDirectory("main:/a", "layer:/", "a");
@@ -2001,9 +2001,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createStore("source");
             fService.createStore("dest");
             loader.recursiveLoad("config/alfresco/bootstrap", "source:/");
-            int version1 = fService.createSnapshot("source", null, null);
+            int version1 = fService.createSnapshot("source", null, null).get("source");
             loader.recursiveLoad("config/alfresco/extension", "source:/");
-            int version2 = fService.createSnapshot("source", null, null);
+            int version2 = fService.createSnapshot("source", null, null).get("source");
             List<AVMDifference> diffs = fSyncService.compare(version1, "source:/", -1, "dest:/", null);
             fService.createSnapshot("dest", null, null);
             assertEquals(1, diffs.size());
@@ -4905,7 +4905,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             loader.setAvmService(fService);
             loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
             times.add(System.currentTimeMillis());
-            assertEquals(1, fService.createSnapshot("main", null, null));
+            assertEquals(1, fService.createSnapshot("main", null, null).get("main").intValue());
             loader.recursiveLoad("source/java/org/alfresco/repo/action", "main:/");
             times.add(System.currentTimeMillis());
             assertEquals(2, fService.createSnapshot("main", null, null));

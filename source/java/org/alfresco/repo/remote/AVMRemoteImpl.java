@@ -110,7 +110,7 @@ public class AVMRemoteImpl implements AVMRemote
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#createSnapshot(java.lang.String)
      */
-    public int createSnapshot(String store, String label, String comment) 
+    public Map<String, Integer> createSnapshot(String store, String label, String comment) 
     {
         return fTransport.createSnapshot(fTicketHolder.getTicket(), store, label, comment);
     }

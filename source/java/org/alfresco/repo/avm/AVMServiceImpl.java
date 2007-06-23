@@ -607,9 +607,9 @@ public class AVMServiceImpl implements AVMService
      * @param store The name of the AVMStore.
      * @param tag The short description.
      * @param description The thick description.
-     * @return The id of the new version.
+     * @return Map of implicitly and explicitly snapshotted stores.
      */
-    public int createSnapshot(String store, String tag, String description)
+    public Map<String, Integer> createSnapshot(String store, String tag, String description)
     {
         if (store == null)
         {

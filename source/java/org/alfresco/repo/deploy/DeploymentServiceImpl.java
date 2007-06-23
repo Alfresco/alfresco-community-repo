@@ -116,7 +116,7 @@ public class DeploymentServiceImpl implements DeploymentService
             if (version < 0)
             {
                 String storeName = srcPath.substring(0, srcPath.indexOf(":"));
-                version = fAVMService.createSnapshot(storeName, null, null);
+                version = fAVMService.createSnapshot(storeName, null, null).get(storeName);
             }
             // Get the root of the deployment from this server.
             AVMNodeDescriptor srcRoot = fAVMService.lookup(version, srcPath);
@@ -148,7 +148,7 @@ public class DeploymentServiceImpl implements DeploymentService
                         throw new AVMNotFoundException("Node Not Found: " + parentBase[0]);
                     }
                 }
-                snapshot = remote.createSnapshot(storePath[0], "PreDeploy", "Pre Deployment Snapshot");
+                snapshot = remote.createSnapshot(storePath[0], "PreDeploy", "Pre Deployment Snapshot").get(storePath[0]);
                 
             }
             // Get the root of the deployment on the destination server.
@@ -639,7 +639,7 @@ public class DeploymentServiceImpl implements DeploymentService
         System.out.println(storeName);
         if (version < 0)
         {
-            version = fAVMService.createSnapshot(storeName, null, null);
+            version = fAVMService.createSnapshot(storeName, null, null).get(storeName);
         }
         String ticket = service.begin(target, userName, password);
         deployDirectoryPush(service, ticket, report, callback, version, srcPath, "/");

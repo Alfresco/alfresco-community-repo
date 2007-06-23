@@ -159,7 +159,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.AVMService#createSnapshot(java.lang.String, java.lang.String, java.lang.String)
      */
-    public int createSnapshot(String store, String tag, String description)
+    public Map<String, Integer> createSnapshot(String store, String tag, String description)
     {
         return fService.createSnapshot(store, tag, description);
     }

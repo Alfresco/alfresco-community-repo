@@ -177,7 +177,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * @return The version id of the new snapshot.
      */
     @SuppressWarnings("unchecked")
-    public int createSnapshot(String tag, String description, Map<String, Integer> snapShotMap)
+    public Map<String, Integer> createSnapshot(String tag, String description, Map<String, Integer> snapShotMap)
     {
         VersionRoot lastVersion = AVMDAOs.Instance().fVersionRootDAO.getMaxVersion(this);
         List<VersionLayeredNodeEntry> layeredEntries =
@@ -192,7 +192,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
                 lastVersion.setDescription(description);
             }
             snapShotMap.put(fName, lastVersion.getVersionID());
-            return lastVersion.getVersionID();
+            return snapShotMap;
         }
         snapShotMap.put(fName, fNextVersionID);
         // Force copies on all the layered nodes from last snapshot.
@@ -299,7 +299,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         // Increment the version id.
         fNextVersionID++;
-        return fNextVersionID - 1;
+        return snapShotMap;
     }
 
     /**

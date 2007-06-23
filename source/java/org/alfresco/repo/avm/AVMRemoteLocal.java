@@ -99,7 +99,7 @@ public class AVMRemoteLocal implements AVMRemote
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#createSnapshot(java.lang.String)
      */
-    public int createSnapshot(String store, String label, String comment) 
+    public Map<String, Integer> createSnapshot(String store, String label, String comment) 
     {
         return fService.createSnapshot(store, label, comment);
     }

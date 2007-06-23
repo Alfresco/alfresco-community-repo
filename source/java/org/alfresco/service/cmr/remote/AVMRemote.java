@@ -196,9 +196,9 @@ public interface AVMRemote
     /**
      * Snapshot an AVMStore.
      * @param store The name of the AVMStore to snapshot.
-     * @return The version id of the new snapshot.
+     * @return The map of implicitely and explicitely snapshotted stores.
      */
-    public int createSnapshot(String store, String label, String comment);
+    public Map<String, Integer> createSnapshot(String store, String label, String comment);
     
     /**
      * Get a List of all versions in a given store.

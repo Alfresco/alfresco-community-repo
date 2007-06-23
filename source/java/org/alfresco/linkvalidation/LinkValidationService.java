@@ -31,9 +31,14 @@ import java.util.List;
 
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.util.NameMatcher;
+import java.net.SocketException;
+import javax.net.ssl.SSLException;
 
 public interface LinkValidationService
 {
+    public void onBootstrap();
+    public void onShutdown();
+
     /**
     * Updates href status and href file dependencies for path.
     * 
@@ -61,7 +66,7 @@ public interface LinkValidationService
     * @param nthreads
     *             Number of threads to use when fetching URLs (e.g.: 5)
     *
-    * @param status
+    * @param progress
     *             While updateHrefInfo() is a synchronous function, 
     *             'status' may be polled in a separate thread to 
     *             observe its progress.
@@ -73,8 +78,10 @@ public interface LinkValidationService
                                 int      nthreads,
                                 HrefValidationProgress progress
                               ) 
-                throws AVMNotFoundException;
-
+                throws AVMNotFoundException,
+                       SocketException,
+                       SSLException,
+                       LinkValidationAbortedException;
 
     /**
     *  Fetches information on broken hrefs within a store name or path 
@@ -186,13 +193,47 @@ public interface LinkValidationService
                                    int                    nthreads,
                                    HrefValidationProgress progress)
                           throws   AVMNotFoundException,
+                                   SocketException,
+                                   SSLException,
                                    LinkValidationAbortedException;
 
+    /**
+    *  Fetches a manifest of all hyperlinks broken by files 
+    *  deleted in a HrefDifference between two webapps.
+    *
+    * @param hdiff The difference between two webapps obtained by calling getHrefDifference().
+    */
     public HrefManifest getHrefManifestBrokenByDelete(HrefDifference hdiff);
+
+    /**
+    *  Fetches a manifest of all hyperlinks broken in new or modified files in
+    *  an HrefDifference.
+    *
+    * @param hdiff The difference between two webapps obtained by calling getHrefDifference().
+    */
     public HrefManifest getHrefManifestBrokenByNewOrMod(HrefDifference hdiff);
 
     /**
     *  Merges an HrefDifference into the master href info table.
     */ 
-    public void mergeHrefDiff( HrefDifference hdiff);
+    public void mergeHrefDiff( HrefDifference hdiff)
+                throws         AVMNotFoundException,
+                               SocketException,
+                               SSLException,
+                               LinkValidationAbortedException;
+    
+    /**
+    *  
+    */
+    public void updateHrefInfo( String                 webappPath,
+                                boolean                incremental,
+                                boolean                validateExternal,
+                                int                    connectTimeout,
+                                int                    readTimeout,
+                                int                    nthreads,
+                                HrefValidationProgress progress)
+                throws          AVMNotFoundException,
+                                SocketException,
+                                SSLException,
+                                LinkValidationAbortedException;
 }

@@ -4908,10 +4908,10 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals(1, fService.createSnapshot("main", null, null).get("main").intValue());
             loader.recursiveLoad("source/java/org/alfresco/repo/action", "main:/");
             times.add(System.currentTimeMillis());
-            assertEquals(2, fService.createSnapshot("main", null, null));
+            assertEquals(2, fService.createSnapshot("main", null, null).get("main").intValue());
             loader.recursiveLoad("source/java/org/alfresco/repo/audit", "main:/");
             times.add(System.currentTimeMillis());
-            assertEquals(3, fService.createSnapshot("main", null, null));
+            assertEquals(3, fService.createSnapshot("main", null, null).get("main").intValue());
             assertEquals(1, fService.getStoreVersions("main", null, new Date(times.get(0))).size());
             assertEquals(3, fService.getStoreVersions("main", new Date(times.get(0)), null).size());
             assertEquals(2, fService.getStoreVersions("main", new Date(times.get(1)),

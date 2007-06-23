@@ -39,6 +39,7 @@ var MyTasks = {
    
    init: function()
    {
+      MyTasks.sortTasks();
       MyTasks.parseTaskPanels();
       
       // hide the ajax wait panel and show the main task panel
@@ -62,7 +63,7 @@ var MyTasks = {
             {
                if (detail.parentNode.isOpen == true)
                {
-                  detail.getElementsByTagName("div")[2].setStyle('overflow', 'auto');
+                  $E('.taskResources', detail).setStyle('overflow', 'auto');
                }
             });
          }
@@ -228,7 +229,7 @@ var MyTasks = {
                         animInfo[j] = {'opacity': [otherOpacity, 0]};
                      }
                      
-                     otherDetail.getElementsByTagName("div")[2].setStyle('overflow', 'hidden');
+                     $E('.taskResources', otherDetail).setStyle('overflow', 'hidden');
                   }
                });
             }
@@ -246,7 +247,7 @@ var MyTasks = {
                   'height': [detailHeight, detail.defHeight],
                   'opacity': [detail.getStyle('opacity'), 0]};
                
-               detail.getElementsByTagName("div")[2].setStyle('overflow', 'hidden');
+               $E('.taskResources', detail).setStyle('overflow', 'hidden');
             }
             fxInfo.start(animInfo);
             fxDetail.start(animDetail);
@@ -315,7 +316,54 @@ var MyTasks = {
       taskPanel.empty();
       taskPanel.removeEvents('mouseleave');
       MyTasks.start();
+   },
+   
+   /**
+    * Update the view filter
+    */
+   filter: function(filter)
+   {
+      $$('.taskfilterLink').each(function(filterLink, i)
+      {
+         if (i == filter)
+         {
+            filterLink.addClass("taskfilterLinkSelected");
+         }
+         else
+         {
+            filterLink.removeClass("taskfilterLinkSelected");
+         }
+      });
+      MyTasks.Filter = filter;
+      MyTasks.refreshList();
+   },
+   
+   sortTasks: function()
+   {
+      var taskArray = new Array();
+      $$('#taskPanel .taskRow').each(function(taskDiv, i)
+      {
+         taskArray[i] = {dueDate: taskDiv.getProperty('rel'), theDiv: taskDiv.clone()};
+      });
+
+      taskArray.sort(MyTasks.sortByDueDate);
+      var taskPanel = $('taskPanel');
+      taskPanel.empty();
+      taskPanel.removeEvents('mouseleave');
+
+      for(var i = 0; i < taskArray.length; i++)
+      {
+         taskArray[i].theDiv.injectInside(taskPanel);
+      }
+   },
+   
+   sortByDueDate: function(a, b)
+   {
+      var x = a.dueDate;
+      var y = b.dueDate;
+      return ((x < y) ? -1 : ((x > y) ? 1 : 0));
    }
+
 };
 
 window.addEvent('load', MyTasks.start);

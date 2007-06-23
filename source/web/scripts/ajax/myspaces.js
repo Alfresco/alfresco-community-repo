@@ -5,6 +5,7 @@ var MySpaces = {
    DETAIL_MARGIN: 56,
    TITLE_FONT_SIZE: 18,
    RESOURCE_PANEL_HEIGHT: 150,
+   OVERLAY_OPACITY: 0.8,
    fileInput: null,
    Path: null,
    Filter: null,
@@ -17,8 +18,9 @@ var MySpaces = {
    {
       if ($('spacePanel'))
       {
+         $('spacePanelOverlay').setStyle('opacity', 0);
          // show AJAX loading overlay
-         $('spacePanelOverlay').setStyle('visibility', 'visible');
+         $('spacePanelOverlayAjax').setStyle('visibility', 'visible');
          $('spacePanel').setStyle('visibility', 'hidden');
          // fire off the ajax request to populate the spaces list - the 'myspacespanel' webscript
          // is responsible for rendering just the contents of the main panel div
@@ -54,7 +56,7 @@ var MySpaces = {
                   $('spacePanel').setHTML("Sorry, data currently unavailable.");
                   
                   // hide the ajax wait panel and show the main spaces panel
-                  $('spacePanelOverlay').setStyle('visibility', 'hidden');
+                  $('spacePanelOverlayAjax').setStyle('visibility', 'hidden');
                   $('spacePanel').setStyle('visibility', 'visible');
                }
             }
@@ -67,7 +69,7 @@ var MySpaces = {
       MySpaces.parseSpacePanels();
       
       // hide the ajax wait panel and show the main spaces panel
-      $('spacePanelOverlay').setStyle('visibility', 'hidden');
+      $('spacePanelOverlayAjax').setStyle('visibility', 'hidden');
       $('spacePanel').setStyle('visibility', 'visible');
    },
 
@@ -473,6 +475,8 @@ var MySpaces = {
    {
       if (this.popupPanel != null) return;
       
+      this.fxOverlay = $("spacePanelOverlay").effect('opacity', {duration: MySpaces.ANIM_LENGTH});
+
       var panel = $E(".spaceCreateSpacePanel", $(actionEl).getParent());
       panel.setStyle("opacity", 0);
       panel.setStyle("display", "inline");
@@ -493,6 +497,7 @@ var MySpaces = {
             }
          });
       anim.start({'opacity': 1});
+      this.fxOverlay.start(MySpaces.OVERLAY_OPACITY);
       
       this.popupPanel = panel;
    },
@@ -548,6 +553,8 @@ var MySpaces = {
    {
       if (this.popupPanel != null) return;
       
+      this.fxOverlay = $("spacePanelOverlay").effect('opacity', {duration: MySpaces.ANIM_LENGTH});
+
       var panel = $E(".spaceUploadPanel", $(actionEl).getParent());
       panel.setStyle("opacity", 0);
       panel.setStyle("display", "inline");
@@ -574,6 +581,7 @@ var MySpaces = {
       
       var anim = new Fx.Styles(panel, {duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
       anim.start({'opacity': 1});
+      this.fxOverlay.start(MySpaces.OVERLAY_OPACITY);
       
       this.popupPanel = panel;
    },
@@ -583,14 +591,17 @@ var MySpaces = {
     */
    uploadOK: function(actionEl, path)
    {
-      // call the upload help to perform the upload
-      handleUploadHelper(this.fileInput,
-                         "1",   // TODO: generate unique ID? (parent space noderef?)
-                         MySpaces.uploadCompleteHandler,
-                         getContextPath(),
-                         "/ajax/invoke/FileUploadBean.uploadFile",
-                         {currentPath: path.replace("_%_", "'")});   // decode path
-      this.fileInput = null;
+      if (this.fileInput.value.length > 0)
+      {
+         // call the upload help to perform the upload
+         handleUploadHelper(this.fileInput,
+                            "1",   // TODO: generate unique ID? (parent space noderef?)
+                            MySpaces.uploadCompleteHandler,
+                            getContextPath(),
+                            "/ajax/invoke/FileUploadBean.uploadFile",
+                            {currentPath: path.replace("_%_", "'")});   // decode path
+         this.fileInput = null;
+      }
       this.closePopupPanel();
    },
    
@@ -606,6 +617,10 @@ var MySpaces = {
       else
       {
          alert("ERROR: " + error);
+      }
+      if (this.fxOverlay)
+      {
+         this.fxOverlay.start(0);
       }
    },
    
@@ -643,17 +658,167 @@ var MySpaces = {
    },
    
    /**
+    * Check Out a document item
+    */
+   checkoutItem: function(name, noderef)
+   {
+      // ajax call to delete item
+      YAHOO.util.Connect.asyncRequest(
+         "POST",
+         getContextPath() + '/ajax/invoke/PortletActionsBean.checkoutItem',
+         {
+            success: function(response)
+            {
+               if (response.responseText.indexOf("OK:") == 0)
+               {
+                  MySpaces.refreshList();
+               }
+               else
+               {
+                  alert("Error during check out of item: " + response.responseText);
+               }
+            },
+            failure: function(response)
+            {
+               alert("Error during check out of item: " + response.responseText);
+            }
+         }, 
+         "noderef=" + noderef
+      );
+   },
+
+   /**
+    * Check In a document item
+    */
+   checkinItem: function(name, noderef)
+   {
+      // ajax call to delete item
+      YAHOO.util.Connect.asyncRequest(
+         "POST",
+         getContextPath() + '/ajax/invoke/PortletActionsBean.checkinItem',
+         {
+            success: function(response)
+            {
+               if (response.responseText.indexOf("OK:") == 0)
+               {
+                  MySpaces.refreshList();
+               }
+               else
+               {
+                  alert("Error during check in of item: " + response.responseText);
+               }
+            },
+            failure: function(response)
+            {
+               alert("Error during check in of item: " + response.responseText);
+            }
+         }, 
+         "noderef=" + noderef
+      );
+   },
+
+   /**
+    * Display the Update File pop-up panel
+    */
+   updateItem: function(actionEl, nodeRef)
+   {
+      if (this.popupPanel != null) return;
+      
+      this.fxOverlay = $("spacePanelOverlay").effect('opacity', {duration: MySpaces.ANIM_LENGTH});
+      
+      var panel = $("docUpdatePanel");
+      panel.setStyle("opacity", 0);
+      panel.setStyle("display", "inline");
+      Alfresco.Dom.smartAlignElement(panel, actionEl);
+      // make into a dragable panel
+      new Drag.Move(panel);
+      
+      // Generate a file upload element
+      // To perform the actual upload, the element is moved to a hidden iframe
+      // from which the upload is performed - this is required as javascript cannot
+      // set the important properties on a file upload element for security reasons.
+      // <input size="35" style="width:100%" type="file" value="" id="_upload" name="_upload">
+      if (this.fileInput == null)
+      {
+         var fileInput = $(document.createElement("input"));
+         fileInput.type = "file";
+         fileInput.name = "_upload";
+         fileInput.size = "35";
+         fileInput.setStyle("width", "100%");
+         fileInput.addClass("spaceFormItem");
+         fileInput.injectTop(panel);
+         this.fileInput = fileInput;
+      }
+      
+      var anim = new Fx.Styles(panel, {duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
+      anim.start({'opacity': 1});
+      this.fxOverlay.start(MySpaces.OVERLAY_OPACITY);
+      
+      this.popupPanel = panel;
+      this.popupPanel.nodeRef = nodeRef;
+   },
+   
+   /**
+    * OK button click handler for the Update Content pop-up panel
+    */
+   updateOK: function(actionEl)
+   {
+      if (this.fileInput.value.length > 0)
+      {
+         // call the upload help to perform the upload
+         handleUploadHelper(this.fileInput,
+                         "1",   // TODO: generate unique ID? (parent space noderef?)
+                         MySpaces.uploadCompleteHandler,
+                         getContextPath(),
+                         "/ajax/invoke/ContentUpdateBean.updateFile",
+                         {nodeRef: this.popupPanel.nodeRef});
+      }      
+      this.closePopupPanel();
+   },
+   
+   /**
     * Cancel button click handler for various pop-up panels
     */
    closePopupPanel: function()
    {
+      if (this.fileInput != null)
+      {
+         this.fileInput.remove();
+         this.fileInput = null;
+      }
       if (this.popupPanel != null)
       {
          this.popupPanel.setStyle("display", "none");
          this.popupPanel = null;
       }
+      if (this.fxOverlay)
+      {
+         this.fxOverlay.start(0);
+      }
    },
    
+   /**
+    * Update the view filter
+    */
+   filter: function(filter)
+   {
+      if (this.popupPanel != null) return;
+
+      $$('.spacefilterLink').each(function(filterLink, i)
+      {
+         if (i == filter)
+         {
+            filterLink.addClass("spacefilterLinkSelected");
+         }
+         else
+         {
+            filterLink.removeClass("spacefilterLinkSelected");
+         }
+      });
+      MySpaces.Filter = filter;
+      MySpaces.refreshList();
+   },
+
    /**
     * Refresh the main data list contents within the spacePanel container
     */
@@ -663,7 +828,7 @@ var MySpaces = {
       var spacePanel = $('spacePanel');
       spacePanel.setStyle('visibility', 'hidden');
       // show the ajax wait panel
-      $('spacePanelOverlay').setStyle('visibility', 'visible');
+      $('spacePanelOverlayAjax').setStyle('visibility', 'visible');
       spacePanel.empty();
       spacePanel.removeEvents('mouseleave');
       MySpaces.start();

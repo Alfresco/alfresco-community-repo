@@ -17,6 +17,7 @@
       <td width="300">
          <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
+<#assign navurl='/navigate/showDocDetails/' + node.nodeRef.storeRef.protocol + '/' + node.nodeRef.storeRef.identifier + '/' + node.nodeRef.id>
 <#if node.isLocked >
                <td class="docAction docActionCheckout docActionLocked">(Locked)</td>
 <#elseif hasAspect(node, "cm:workingcopy") == 1>
@@ -40,7 +41,6 @@
             </tr>
             <tr>
                <td class="docAction docActionDelete" <#if node.hasPermission("Delete")>onclick='event.cancelBubble=true;MyDocs.deleteItem("${node.name}", "${node.nodeRef}");'</#if>>Delete</td>
-<#assign navurl='/navigate/showDocDetails/' + node.nodeRef.storeRef.protocol + '/' + node.nodeRef.storeRef.identifier + '/' + node.nodeRef.id>
                <td class="docAction docActionMoreActions" onclick="window.open('${url.context}${navurl}', '_blank');">More Actions...</td>
             </tr>
          </table>

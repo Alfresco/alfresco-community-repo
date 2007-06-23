@@ -13,7 +13,7 @@
         (args.f="2" && hasDue && (dateCompare(due?date, date?date) == 1 && dateCompare(date?date, due?date, weekms) == 1)) ||
         (args.f="4" && hasDue && (dateCompare(date?date, due?date) == 1))>
    <#assign count=count+1>
-   <div class="taskRow" id="${t.id}">
+   <div class="taskRow" id="${t.id}" rel="<#if hasDue>${due?date?string("yyyyMMddHHmmss")}<#else>99999999999999</#if>">
       <div class="taskTitle">
          <div class="taskIndicator">
          <#if hasDue>
@@ -39,29 +39,40 @@
          </div>
       </div>
       <div class="taskDetail">
-         <div style="float:left">
-            <table cellpadding='2' cellspacing='0' style="margin-left:32px;margin-top:16px">
-               <tr><td class="taskMetaprop">Status:</td><td class="taskMetadata">${t.properties["bpm:status"]}</td>
-               <tr><td class="taskMetaprop">Priority:</td><td class="taskMetadata">${t.properties["bpm:priority"]}</td>
-               <tr><td class="taskMetaprop">Start Date:</td><td class="taskMetadata">${t.startDate?date}</td></tr>
-	            <tr><td class="taskMetaprop">Type:</td><td class="taskMetadata">${t.type?html}</td></tr>
-               <tr><td class="taskMetaprop">Complete:</td><td class="taskMetadata">${t.properties["bpm:percentComplete"]}%</td>
-	         </table>
-         </div>
-         <div class="taskResourceHeader">${t.name?html}:</div>
-         <div class="taskResources"></div>
-         <div style="float:right;margin-right:48px;margin-top:-48px;">
-            <a class="taskAction" style="padding-top:6px" onclick="event.cancelBubble=true;" href="${url.context}/command/ui/managetask?id=${t.id}&type=${t.qnameType}&container=plain" target="new"><img src="${url.context}/images/icons/manage_workflow_task.gif" width="16" height="16" border="0" alt="Manage Task Details" title="Manage Task Details"></a>
-         </div>
-         <div>
-	         <table class="taskActions" style="padding-left:16px">
-	            <tr>
-	               <#list t.transitions as wt>
-	               <td><a class="taskAction" href="#" onclick="event.cancelBubble=true; MyTasks.transitionTask('/command/task/end/${t.id}<#if wt.id?exists>/${wt.id}</#if>', 'Workflow action \'${wt.label?html}\' completed.');">${wt.label?html}</a></td>
-	               </#list>
-	            </tr>
-	         </table>
-	      </div>
+         <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+               <td width="182">
+                  <table cellpadding="2" cellspacing="2" style="margin-left:24px; margin-top:4px">
+                     <tr><td class="taskMetaprop">Status:</td><td class="taskMetadata">${t.properties["bpm:status"]}</td>
+                     <tr><td class="taskMetaprop">Priority:</td><td class="taskMetadata">${t.properties["bpm:priority"]}</td>
+                     <tr><td class="taskMetaprop">Start Date:</td><td class="taskMetadata">${t.startDate?date}</td></tr>
+      	            <tr><td class="taskMetaprop">Type:</td><td class="taskMetadata">${t.type?html}</td></tr>
+                     <tr><td class="taskMetaprop">Complete:</td><td class="taskMetadata">${t.properties["bpm:percentComplete"]}%</td>
+      	         </table>
+      	      </td>
+               <td width="8">&nbsp;</td>
+      	      <td width="360">
+                  <div class="taskResourceHeader">${t.name?html}:</div>
+                  <div class="taskResources"></div>
+      	         <table border="0" width="360" class="taskActions">
+      	            <tr>
+      	               <td width="70">&nbsp;</td>
+      	               <#list t.transitions as wt>
+      	               <td style="text-align: center;"><a class="taskAction" href="#" onclick="event.cancelBubble=true; MyTasks.transitionTask('/command/task/end/${t.id}<#if wt.id?exists>/${wt.id}</#if>', 'Workflow action \'${wt.label?html}\' completed.');">${wt.label?html}</a></td>
+      	               </#list>
+      	               <td width="70">&nbsp;</td>
+      	            </tr>
+      	         </table>
+               </td>
+               <td width="16">&nbsp;</td>
+               <td>
+                  <div class="taskMetaprop" style="padding-bottom: 4px;">Manage Task</div>
+                  <a class="taskAction" style="display: block; width: 18px; padding: 4px; margin-left: 20px;" onclick="event.cancelBubble=true;" href="${url.context}/command/ui/managetask?id=${t.id}&type=${t.qnameType}&container=plain" target="new"><img src="${url.context}/images/icons/manage_workflow_task.gif" width="16" height="16" border="0" alt="Manage Task Details" title="Manage Task Details"></a>
+                  <br />
+                  <br />
+               </td>
+            </tr>
+	      </table>
       </div>
    </div>
    </#if>

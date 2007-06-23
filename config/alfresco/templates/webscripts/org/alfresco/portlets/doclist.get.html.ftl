@@ -9,8 +9,6 @@
 <script type="text/javascript" src="/alfresco/scripts/ajax/doclist.js"></script>
 <script type="text/javascript">setContextPath('${url.context}');</script>
 
-<script type="text/javascript" src="/firebug.js"></script>
-
 <script>
    // create manager object for the pop-up summary panels
    var AlfNodeInfoMgr = new Alfresco.PanelManager("NodeInfoBean.sendNodeInfo", "noderef", "portlet_node_summary_panel.ftl");
@@ -61,8 +59,7 @@
 </tr>
 <tr><td>
    <div id="docUpdatePanel">
-      <#-- Url encode the path value, and encode any single quotes to generate valid string -->
-      <input class="docFormItem" type="button" value="OK" onclick='MyDocs.updateOK(this, "${path?url?replace("'","_%_")}");'>
+      <input class="docFormItem" type="button" value="OK" onclick="MyDocs.updateOK(this);">
       <input class="docFormItem" type="button" value="Cancel" onclick="MyDocs.closePopupPanel();">
    </div>
    <div id="docPanelOverlay"></div>
@@ -88,7 +85,7 @@
 </tr>
 </table>
 
-<STYLE type="text/css">
+<style type="text/css">
 a.docfilterLink:link, a.docfilterLink:visited
 {
    color: #8EA1B3;
@@ -371,4 +368,4 @@ a.refreshViewLink:link, a.refreshViewLink:visited, a.refreshViewLink:hover
    border: 1px solid #CCD4DB;
 }
 
-</STYLE>
+</style>

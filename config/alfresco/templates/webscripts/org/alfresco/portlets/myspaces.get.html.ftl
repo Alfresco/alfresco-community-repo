@@ -48,9 +48,11 @@
          </#if>
       </#list>
    </div>
+<!--
    <div class="spaceTitle">
       <img src="${url.context}${home.icon16}" width="16" height="16" alt="" class="spaceImageIcon">${home.name?html}
    </div>
+-->
    <div class="spaceToolbar">
       <#-- TODO: permission checks on the actions! -->
       <#-- Upload File action -->
@@ -58,6 +60,10 @@
       <div class="spaceUploadPanel">
          <#-- Url encode the path value, and encode any single quotes to generate valid string -->
          <input class="spaceFormItem" type="button" value="OK" onclick='MySpaces.uploadOK(this, "${path?url?replace("'","_%_")}");'>
+         <input class="spaceFormItem" type="button" value="Cancel" onclick="MySpaces.closePopupPanel();">
+      </div>
+      <div id="docUpdatePanel">
+         <input class="spaceFormItem" type="button" value="OK" onclick="MySpaces.updateOK(this);">
          <input class="spaceFormItem" type="button" value="Cancel" onclick="MySpaces.closePopupPanel();">
       </div>
       <#-- Create Space action -->
@@ -72,14 +78,14 @@
          <input class="spaceFormItem" type="button" value="Cancel" onclick="MySpaces.closePopupPanel();">
       </div>
    </div>
-   <div>
-      <table border=0 cellspacing=8 cellpadding=0 width=100%>
+   <div class="spaceHeader">
+      <table border="0" cellspacing="6" cellpadding="0" width="100%">
          <tr>
-            <th><a class="spacefilterLink <#if filter=0>spacefilterLinkSelected</#if>" href="${scripturl("?f=0&p=${path?url}")}">All Items</a></th>
-            <th><a class="spacefilterLink <#if filter=1>spacefilterLinkSelected</#if>" href="${scripturl("?f=1&p=${path?url}")}">Spaces</a></th>
-            <th><a class="spacefilterLink <#if filter=2>spacefilterLinkSelected</#if>" href="${scripturl("?f=2&p=${path?url}")}">Documents</a></th>
-            <th><a class="spacefilterLink <#if filter=3>spacefilterLinkSelected</#if>" href="${scripturl("?f=3&p=${path?url}")}">My Items</a></th>
-            <th><a class="spacefilterLink <#if filter=4>spacefilterLinkSelected</#if>" href="${scripturl("?f=4&p=${path?url}")}">Recently Modified</a></th>
+            <th><a class="spacefilterLink <#if filter=0>spacefilterLinkSelected</#if>" href="#" onclick="MySpaces.filter(0); return false;">All Items</a></th>
+            <th><a class="spacefilterLink <#if filter=1>spacefilterLinkSelected</#if>" href="#" onclick="MySpaces.filter(1); return false;">Spaces</a></th>
+            <th><a class="spacefilterLink <#if filter=2>spacefilterLinkSelected</#if>" href="#" onclick="MySpaces.filter(2); return false;">Documents</a></th>
+            <th><a class="spacefilterLink <#if filter=3>spacefilterLinkSelected</#if>" href="#" onclick="MySpaces.filter(3); return false;">My Items</a></th>
+            <th><a class="spacefilterLink <#if filter=4>spacefilterLinkSelected</#if>" href="#" onclick="MySpaces.filter(4); return false;">Recently Modified</a></th>
             <td align=right>
                <a href="#" onclick="MySpaces.start(); return false;" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" class="spaceImageIcon">Refresh</a>
             </td>
@@ -87,6 +93,7 @@
       </table>
    </div>
    <div id="spacePanelOverlay"></div>
+   <div id="spacePanelOverlayAjax"></div>
    <div id="spacePanel">
       <#-- populated via an AJAX call to 'myspacespanel' webscript -->
       <#-- resolved path, filter and home.noderef required as arguments -->
@@ -100,7 +107,7 @@
    </div>
    <div class="spaceFooter">
       <#-- the count value is retrieved and set dynamically from the AJAX webscript output above -->
-      Showing <span id="spaceCount">0</span> items(s)
+      <span class="spaceFooterText">Showing <span id="spaceCount">0</span> items(s)</span>
    </div>
 </div>
 
@@ -109,7 +116,7 @@ a.spacefilterLink:link, a.spacefilterLink:visited
 {
    color: #8EA1B3;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
-   font-size: 13px;
+   font-size: 12px;
    font-weight: bold;
    text-decoration: none;
    padding-left: 4px;
@@ -124,8 +131,7 @@ a.spacefilterLink:hover
 
 a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited
 {
-   color: #168ECE;
-   background-color: #EEF7FB;
+   color: #0085CA;
 }
 
 .spaceTable
@@ -147,10 +153,16 @@ a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited
    border-bottom: 1px solid #CCD4DB;
 }
 
+.spaceHeader
+{
+   background-image: url(${url.context}/images/parts/doclist_headerbg.png);
+   height: 30px;
+}
+
 #spacePanel
 {
    height: 320px;
-   width: 720px;
+   width: 718px;
    overflow: auto;
    overflow-y: scroll;
    border-top: 1px solid #CCD4DB;
@@ -159,6 +171,15 @@ a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited
 }
 
 #spacePanelOverlay
+{
+   background-color: #fff;
+   position: absolute;
+   height: 320px;
+   width: 720px;
+   overflow: hidden;
+}
+
+#spacePanelOverlayAjax
 {
    background-color: #fff;
    background-image: url(${url.context}/images/icons/ajax_anim.gif);
@@ -176,11 +197,20 @@ a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited
    border-top: 1px solid #F8FCFD;
    border-bottom: 1px solid #CCD4DB;
 }
+.spaceRowOdd
+{
+   background-color: #EEF7FB;
+}
+.spaceRowEven
+{
+   background-color: #F8FCFD;
+}
 
 .spaceFooter
 {
-   width: 700px;
-   padding: 8px;
+   height: 34px;
+   width: 718px;
+   padding: 0px;
    border: 1px solid #F8FCFD;
    background-image: url(${url.context}/images/parts/doclist_footerbg.png);
    text-align: center;
@@ -188,6 +218,12 @@ a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 13px;
    font-weight: bold;
+}
+
+.spaceFooterText
+{
+   display: block;
+   margin-top: 8px;
 }
 
 .spaceItem
@@ -264,9 +300,9 @@ a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited
 
 .spaceBreadcrumb
 {
-   background-color: #DBE1E7;
-   padding: 6px;
+   background-image: url(${url.context}/images/parts/spacelist_breadbg.png);
    border-bottom: 1px solid #CCD4DB;
+   padding: 6px;
 }
 
 a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink:hover
@@ -295,8 +331,8 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
 .spaceToolbar
 {
    background-color: #EEF7FB;
-   height: 4em;
    border-bottom: 1px solid #CCD4DB;
+   height: 44px;
 }
 
 .spaceToolbarAction
@@ -309,9 +345,9 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    font-size: 12px;
    float: left;
    margin: 3px;
-   height: 2em;
+   height: 20px;
    cursor: pointer;
-   padding: 10px 4px 2px 34px;
+   padding: 10px 4px 6px 34px;
    border: 1px dashed #CCD4DB;
 }
 
@@ -335,11 +371,11 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    background-repeat: no-repeat;
    background-position: left;
    width: 87px;
-   height: 28px;
+   height: 20px;
    border: 1px solid #ffffff;
    float: left;
    display: block;
-   padding: 10px 0px 0px 36px;
+   padding: 10px 0px 8px 36px;
    cursor: pointer;
 }
 
@@ -348,6 +384,19 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    background-image: url(${url.context}/images/icons/doclist_action_checkout.png);
    border-bottom: none;
    border-right: none;
+}
+
+.docActionCheckin
+{
+   background-image: url(${url.context}/images/icons/doclist_action_checkin.png);
+   border-bottom: none;
+   border-right: none;
+}
+
+.docActionLocked
+{
+   background-image: url(${url.context}/images/icons/doclist_action_locked.png) !important;
+   cursor: default !important;
 }
 
 .docActionEditDetails
@@ -409,6 +458,7 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    padding: 8px;
    margin: 8px;
    display: none;
+   z-index: 1;
    -moz-border-radius: 5px;
 }
 
@@ -422,6 +472,21 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    padding: 8px;
    margin: 8px;
    display: none;
+   z-index: 1;
+   -moz-border-radius: 5px;
+}
+
+#docUpdatePanel
+{
+   position: absolute;
+   border: 1px solid #CCD4DB;
+   background-color: #EEF7FB;
+   width: 24em;
+   height: 5em;
+   padding: 8px;
+   margin: 8px;
+   display: none;
+   z-index: 1;
    -moz-border-radius: 5px;
 }
 

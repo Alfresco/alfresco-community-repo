@@ -607,7 +607,7 @@ var MyDocs = {
    /**
     * OK button click handler for the Update Content pop-up panel
     */
-   updateOK: function(actionEl, nodeRef)
+   updateOK: function(actionEl)
    {
       if (this.fileInput.value.length > 0)
       {
@@ -652,7 +652,10 @@ var MyDocs = {
          this.popupPanel.setStyle("display", "none");
          this.popupPanel = null;
       }
-      this.fxOverlay.start(0);
+      if (this.fxOverlay)
+      {
+         this.fxOverlay.start(0);
+      }
    }
    
 };

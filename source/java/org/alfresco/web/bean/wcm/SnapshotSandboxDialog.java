@@ -123,7 +123,8 @@ public class SnapshotSandboxDialog extends BaseDialogBean
       // find the previous version - to see if a snapshot was acutally performed
       int oldVersion = this.avmService.getLatestSnapshotID(this.avmBrowseBean.getSandbox());
       int version = this.avmService.createSnapshot(
-            this.avmBrowseBean.getSandbox(), this.label, this.description);
+            this.avmBrowseBean.getSandbox(), this.label, this.description)
+            .get(this.avmBrowseBean.getSandbox());
       if (version > oldVersion)
       {
          // a new snapshot was created

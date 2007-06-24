@@ -95,9 +95,9 @@ public class UILinkValidationSummary extends AbstractLinkValidationReportCompone
             String pattern = bundle.getString("files_links_still_broken");
             String stillBroken = MessageFormat.format(pattern, 
                      new Object[] {linkState.getNumberBrokenLinks(), linkState.getNumberBrokenFiles()});
-            pattern = bundle.getString("broken_links_fixed");
+            pattern = bundle.getString("broken_items_fixed");
             String linksFixed = MessageFormat.format(pattern, 
-                     new Object[] {linkState.getNumberFixedLinks()});
+                     new Object[] {linkState.getNumberFixedItems()});
             
             // get the action to update the current status
             UICommand updateStatusAction = aquireAction(context, "update_status_" + linkState.getStore());
@@ -120,11 +120,11 @@ public class UILinkValidationSummary extends AbstractLinkValidationReportCompone
             out.write(bundle.getString("current_status"));
             out.write(":</td><td><div><img src='");
             out.write(context.getExternalContext().getRequestContextPath());
-            out.write("/images/icons/broken_link.gif' style='vertical-align: -4px; padding-right: 4px;' >");
+            out.write("/images/icons/broken_link.gif' style='vertical-align: -4px;' >&nbsp;");
             out.write(stillBroken);
-            out.write("<img src='");
+            out.write("&nbsp;&nbsp;<img src='");
             out.write(context.getExternalContext().getRequestContextPath());
-            out.write("/images/icons/fixed_link.gif' style='vertical-align: -4px; padding-left: 6px; padding-right: 4px;' >");
+            out.write("/images/icons/fixed_link.gif' style='vertical-align: -4px;' >&nbsp;");
             out.write(linksFixed);
             out.write("&nbsp;&nbsp;");
             Utils.encodeRecursive(context, updateStatusAction);
@@ -180,7 +180,7 @@ public class UILinkValidationSummary extends AbstractLinkValidationReportCompone
       out.write(initialCheckSummary);
       out.write("</div><div style='margin-bottom: 14px;'><img src='");
       out.write(context.getExternalContext().getRequestContextPath());
-      out.write("/images/icons/broken_link.gif'' style='vertical-align: -4px; padding-right: 4px;'/>");
+      out.write("/images/icons/broken_link.gif'' style='vertical-align: -4px;'/>&nbsp;");
       out.write(initialBrokenSummary);
       out.write("</div>");
    }

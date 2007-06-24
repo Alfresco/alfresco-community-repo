@@ -285,10 +285,14 @@
     </bean>
 
 
-    <!-- LinkValidationService -->
+
+    <!-- LinkValidationService  (turned off until it's been tested)  -->
+    <!--
     <bean id="linkValidationServiceBootstrap" 
           class="org.alfresco.linkvalidation.LinkValidationServiceBootstrap">
     </bean>
+    -->
+
     
 
     <!-- This component checks the interconnection between the metadata, indexes and content -->

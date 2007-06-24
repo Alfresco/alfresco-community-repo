@@ -79,6 +79,7 @@ public class LinkValidationReport implements Serializable
       this.completedAt = new Date();
       this.numberFilesChecked = status.getFileUpdateCount();
       this.numberLinksChecked = status.getUrlUpdateCount();
+      this.numberBrokenLinks = 0;
       
       // create list and map
       this.brokenFiles = new ArrayList<String>(manifests.size());
@@ -109,6 +110,7 @@ public class LinkValidationReport implements Serializable
       this.completedAt = new Date();
       this.numberFilesChecked = status.getFileUpdateCount();
       this.numberLinksChecked = status.getUrlUpdateCount();
+      this.numberBrokenLinks = 0;
       
       // get the lists of broken files
       List<HrefManifestEntry> byDelete = brokenByDelete.getManifestEntries();
@@ -233,9 +235,14 @@ public class LinkValidationReport implements Serializable
       for (HrefManifestEntry manifest : manifests)
       {
          String fileName = manifest.getFileName();
-         this.brokenFiles.add(fileName);
-         this.brokenLinksByFile.put(fileName, manifest);
-         this.numberBrokenLinks = this.numberBrokenLinks + manifest.getHrefs().size();
+         
+         // make sure the same file only gets added once
+         if (this.brokenFiles.contains(fileName) == false)
+         {
+            this.brokenFiles.add(fileName);
+            this.brokenLinksByFile.put(fileName, manifest);
+            this.numberBrokenLinks = this.numberBrokenLinks + manifest.getHrefs().size();
+         }
       }
    }
 }

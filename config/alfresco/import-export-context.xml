@@ -12,6 +12,9 @@
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
         </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
     </bean>
 
     <bean id="importerComponent" class="org.alfresco.repo.importer.ImporterComponent">

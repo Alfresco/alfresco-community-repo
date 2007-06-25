@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.namespace.NamespaceService;
@@ -87,6 +88,7 @@ public class ViewParser implements Parser
     
     // Supporting services
     private NamespaceService namespaceService;
+    private NodeService nodeService;
     private DictionaryService dictionaryService;
 
     // Parser Context maintained during each parse
@@ -125,6 +127,14 @@ public class ViewParser implements Parser
         this.namespaceService = namespaceService;
     }
     
+    /**
+     * @param nodeService  the node service
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
     /**
      * @param dictionaryService  the dictionary service
      */
@@ -439,6 +449,7 @@ public class ViewParser implements Parser
         {
             NodeRef nodeRef = new NodeRef(nodeRefAttr);
             node.setUUID(nodeRef.getId());
+            node.setTypeDefinition(dictionaryService.getType(nodeService.getType(nodeRef)));
         }
         else if (idRefAttr != null && idRefAttr.length() > 0)
         {
@@ -449,6 +460,7 @@ public class ViewParser implements Parser
                 throw new ImporterException("Cannot find node referenced by id " + idRefAttr);
             }
             node.setUUID(nodeRef.getId());
+            node.setTypeDefinition(dictionaryService.getType(nodeService.getType(nodeRef)));
         }
         else if (pathRefAttr != null && pathRefAttr.length() > 0)
         {
@@ -458,8 +470,9 @@ public class ViewParser implements Parser
                 throw new ImporterException("Cannot find node referenced by path " + pathRefAttr);
             }
             node.setUUID(referencedRef.getId());
+            node.setTypeDefinition(dictionaryService.getType(nodeService.getType(referencedRef)));
         }
-        
+                
         // Extract child name if explicitly defined
         String childName = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_CHILD_NAME_ATTR);
         if (childName != null && childName.length() > 0)

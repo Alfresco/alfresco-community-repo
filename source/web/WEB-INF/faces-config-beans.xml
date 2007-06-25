@@ -3582,6 +3582,15 @@
       </managed-property>
       -->
    </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Bean that generates a link component
+      </description>
+      <managed-bean-name>LinkGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.LinkGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
 
    <managed-bean>
       <description>

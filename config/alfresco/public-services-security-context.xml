@@ -18,10 +18,6 @@
     <!-- Support for permissions -->
     <!-- ========================-->
 
-    <!-- ================================= -->
-    <!-- The enterprise permission service -->
-    <!-- ================================= -->
-
     <bean id='permissionService' class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.repo.security.permissions.PermissionServiceSPI</value>

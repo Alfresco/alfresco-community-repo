@@ -183,7 +183,8 @@ var OfficeNavigation =
             // Optionally add a status string
             if (textResponse != "")
             {
-               href += "&st=" + encodeURI(textResponse);
+               href += (href.indexOf("?") == -1) ? "?" : "&";
+               href += "st=" + encodeURI(textResponse);
             }
             window.location.href = href;
          }

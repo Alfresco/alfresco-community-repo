@@ -169,7 +169,8 @@ var OfficeMyTasks =
             if (successMessage != "")
             {
                var json = "{\"statusString\":\"" + successMessage + "\",\"statusCode\":true}";
-               href += "&st=" + encodeURI(json);
+               href += (href.indexOf("?") == -1) ? "?" : "&";
+               href += "st=" + encodeURI(json);
             }
             window.location.href = href;
          },
@@ -216,7 +217,8 @@ var OfficeMyTasks =
             // Optionally add a status string
             if (textResponse != "")
             {
-               href += "&st=" + encodeURI(textResponse);
+               href += (href.indexOf("?") == -1) ? "?" : "&";
+               href += "st=" + encodeURI(textResponse);
             }
             window.location.href = href;
          }

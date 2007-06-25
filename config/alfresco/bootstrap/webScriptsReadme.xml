@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0">
+  <view:reference xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:alf="http://www.alfresco.org" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:wf="http://www.alfresco.org/model/workflow/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns:sv="http://www.jcp.org/jcr/sv/1.0" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:wcm="http://www.alfresco.org/model/wcmmodel/1.0" xmlns:wca="http://www.alfresco.org/model/wcmappmodel/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:wcmwf="http://www.alfresco.org/model/wcmworkflow/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:bpm="http://www.alfresco.org/model/bpm/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:custom="custom.model" xmlns:reg="http://www.alfresco.org/system/registry/1.0" xmlns:module="http://www.alfresco.org/system/modules/1.0" xmlns="" view:pathref="/app:company_home/app:dictionary/cm:webscripts">
+    <view:aspects>
+      <cm:templatable></cm:templatable>
+    </view:aspects>
+    <view:properties>
+      <cm:template>/app:company_home/app:dictionary/app:content_templates/cm:readme.ftl</cm:template>
+    </view:properties>
+  </view:reference>
+  <view:reference xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:alf="http://www.alfresco.org" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:wf="http://www.alfresco.org/model/workflow/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns:sv="http://www.jcp.org/jcr/sv/1.0" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:wcm="http://www.alfresco.org/model/wcmmodel/1.0" xmlns:wca="http://www.alfresco.org/model/wcmappmodel/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:wcmwf="http://www.alfresco.org/model/wcmworkflow/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:bpm="http://www.alfresco.org/model/bpm/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:custom="custom.model" xmlns:reg="http://www.alfresco.org/system/registry/1.0" xmlns:module="http://www.alfresco.org/system/modules/1.0" xmlns="" view:pathref="/app:company_home/app:dictionary/cm:extensionwebscripts">
+    <view:aspects>
+      <cm:templatable></cm:templatable>
+    </view:aspects>
+    <view:properties>
+      <cm:template>/app:company_home/app:dictionary/app:content_templates/cm:readme.ftl</cm:template>
+    </view:properties>
+  </view:reference>
+</view:view>

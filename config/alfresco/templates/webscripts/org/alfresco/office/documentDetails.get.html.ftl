@@ -105,7 +105,7 @@
       <#assign versionRow=versionRow+1>
       <tr class="${(versionRow % 2 = 0)?string("odd", "even")}">
          <td valign="top">
-            <a title="Open ${record.versionLabel}" href="$(url.context}${d.url}"><img src="${url.context}/images/office/document.gif" alt="Open ${record.versionLabel}" /></a>
+            <a title="Open ${record.versionLabel}" href="${url.context}${d.url}"><img src="${url.context}/images/office/document.gif" alt="Open ${record.versionLabel}" /></a>
          </td>
          <td>
             <a title="Open ${record.versionLabel}" href="#"><span style="font-weight:bold;">${record.versionLabel}</span></a><br />
@@ -114,7 +114,7 @@
          <#if record.description?exists>
             Notes: ${record.description}<br/>
          </#if>
-<!--                       <a href="#" onclick="window.external.compareDocument('/alfresco${d.url}')" title="Compare with current">Compare with current</a><br/> -->
+            <a class="bold" href="#" onclick="window.external.compareDocument('${d.url}')" title="Compare with current">Compare with current</a><br />
          </td>
       </tr>
    </#list>

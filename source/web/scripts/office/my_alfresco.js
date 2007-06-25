@@ -9,6 +9,7 @@ var OfficeMyAlfresco =
 
    init: function()
    {
+      OfficeAddin.sortTasks($('taskList'));
       OfficeMyAlfresco.setupTasks();
       OfficeMyAlfresco.setupToggles();
    },
@@ -131,7 +132,7 @@ var OfficeMyAlfresco =
             fxPanel.start(animPanel);
          });
       });
-   }   
+   }
 };
 
 window.addEvent('domready', OfficeMyAlfresco.init);

@@ -13,6 +13,17 @@ body {
    overflow: hidden;
 }
 
+#overlayPanel
+{
+   background-color: #ffffff;
+   position: absolute;
+   left: 0px;
+   top: 0px;
+   height: 652px;
+   width: 290px;
+   z-index: 1;
+}
+
 a {
    color: #0073e6;
    text-decoration: none;
@@ -278,9 +289,21 @@ input.button {
 }
 
 .documentItem {
+   float: left;
    border-bottom: 1px solid #eee;
    padding: 2px 0px 6px 0px;
    width: 265px;
+}
+
+.documentItemIcon {
+   float: left;
+   width: 36px;
+   padding: 0px 2px 0px 1px;
+}
+
+.documentItemDetails {
+   float: left;
+   width: 226px;
 }
 
 #documentActions {
@@ -325,6 +348,30 @@ input.button {
    padding: 0px 3px 0px 0px;
 }
 
+#saveDetailsPanel
+{
+   position: absolute;
+   border: 1px solid #CCD4DB;
+   background-color: #EEF7FB;
+   height: 40px;
+   width: 267px;
+   margin: 8px 0px 0px;
+   padding: 8px;
+   display: none;
+   z-index: 1;
+   -moz-border-radius: 5px;
+}
+
+.saveDetailsItem
+{
+   background-color: #ffffff;
+   border: 1px solid #CCD4DB;
+   color: #0073e6;
+   float: left;
+   font-size: 11px;
+   margin: 0px 4px 4px 4px;
+   padding: 2px;
+}
 
 #nonStatusText {
    height: 100%;
@@ -373,6 +420,22 @@ input.button {
 .taskItem {
    cursor: pointer;
    border-bottom: 1px solid #eee;
+   float: left;
+   padding: 4px 0px;
+}
+
+.taskIndicator {
+   display: block;
+   float: left; 
+   height: 12px;
+   padding: 0px 0px 0px 2px;
+   width: 12px;
+}
+
+.taskItemDetails {
+   display: block;
+   float: left;
+   width: 251px;
 }
 
 .taskItemSelected {
@@ -411,7 +474,7 @@ input.button {
    float: left;
    padding: 4px 4px 0px 0px;
    text-align: right;
-   width: 64px;
+   width: 62px;
 }
 
 .taskValue {

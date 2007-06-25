@@ -157,6 +157,31 @@ var OfficeAddin =
          }
       }
       return url;
+   },
+   
+   sortTasks: function(taskContainer)
+   {
+      var taskArray = new Array();
+      taskContainer.getElementsBySelector('.taskItem').each(function(task, i)
+      {
+         taskArray[i] = {dueDate: task.getProperty('rel'), theTask: task.clone()};
+      });
+
+      taskArray.sort(OfficeAddin.sortByDueDate);
+      taskContainer.empty();
+
+      for(var i = 0; i < taskArray.length; i++)
+      {
+         taskArray[i].theTask.addClass((i % 2  == 0) ? "odd" : "even");
+         taskArray[i].theTask.injectInside(taskContainer);
+      }
+   },
+   
+   sortByDueDate: function(a, b)
+   {
+      var x = a.dueDate;
+      var y = b.dueDate;
+      return ((x < y) ? -1 : ((x > y) ? 1 : 0));
    }
 };
 

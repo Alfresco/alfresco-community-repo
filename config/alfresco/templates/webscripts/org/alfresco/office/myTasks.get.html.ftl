@@ -35,7 +35,7 @@
 <div id="tabBar">
    <ul>
       <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path?url}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${d.id}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
+      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
       <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path?url}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
       <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path?url}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
       <li id="current"><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path?url}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
@@ -45,42 +45,42 @@
 <div class="header">My Tasks<span class="headerExtra"><span class="taskKey"><img src="${url.context}/images/office/task_overdue.gif" alt="overdue" />=overdue, <img src="${url.context}/images/office/task_today.gif" alt="due today" />=due today</span></span></div>
 
 <div id="taskList" class="containerMedium">
-   <table width="265">
 <#assign taskNum=0>
 <#list workflow.assignedTasks?sort_by('startDate') as t>
    <#assign taskNum=taskNum+1>
-      <tr id="${t.id?replace("$", ".")}" class="taskItem ${(taskNum % 2 = 0)?string("odd", "even")}">
-         <td>
    <#assign hasDue=t.properties["bpm:dueDate"]?exists>
    <#if hasDue>
       <#assign due=t.properties["bpm:dueDate"]>
+   </#if>
+   <div id="${t.id?replace("$", ".")}" class="taskItem" rel="<#if hasDue>${due?date?string("yyyyMMddHHmmss")}<#else>99999999999999</#if>">
+      <span class="taskIndicator">
+   <#if hasDue>
       <#-- items due today? -->
       <#if (dateCompare(date?date, due?date, 0, "==") == 1)>
-            <img src="${url.context}/images/office/task_today.gif" alt="due today" />
+         <img src="${url.context}/images/office/task_today.gif" alt="due today" />
       <#-- items overdue? -->
       <#elseif (dateCompare(date?date, due?date) == 1)>
-            <img src="${url.context}/images/office/task_overdue.gif" alt="overdue" />
+         <img src="${url.context}/images/office/task_overdue.gif" alt="overdue" />
       </#if>
    <#else>
-            &nbsp;
+         &nbsp;
    </#if>
-         </td>
-         <td>
-            <span style="font-weight: bold;">${t.description?html}</span> (${t.type?html})
+      </span>
+      <span class="taskItemDetails">
+         <span style="font-weight: bold;">${t.description?html}</span> (${t.type?html})
    <#if hasDue>
-               <br />Due date: ${due?date}
+            <br />Due date: ${due?date}
    <#else>
-               <br />(No due date)
+            <br />(No due date)
    </#if>
-         </td>
-      </tr>
+      </span>
+   </div>
 </#list>
 <#if taskNum = 0>
-      <tr>
-         <td class="noItems">(No tasks)</td>
-      </tr>
+   <div>
+      <span class="noItems">(No tasks)</span>
+   </div>
 </#if>
-   </table>
 </div>
 
 <div class="header">Workflow</div>

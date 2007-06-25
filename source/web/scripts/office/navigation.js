@@ -8,9 +8,12 @@ var OfficeNavigation =
    ANIM_LENGTH: 800,
    CREATE_SPACE_HEIGHT: 108,
    CREATE_SPACE_TEMPLATE: 16,
+   OVERLAY_ANIM_LENGTH: 300,
+   OVERLAY_OPACITY: 0.7,
    
    init: function()
    {
+      $('overlayPanel').setStyle('opacity', 0);
       OfficeNavigation.setupToggles();
       OfficeNavigation.setupCreateSpace();
 
@@ -186,6 +189,82 @@ var OfficeNavigation =
          }
       });
       myAjax.request();
+   },
+   
+   saveToAlfresco: function(currentPath)
+   {
+      // Does the current doc have an extension?
+      if (!window.external.docHasExtension())
+      {
+         // No - we need to ask for a filename
+         OfficeNavigation.showSaveFilenamePanel(currentPath);
+      }
+      else
+      {
+         window.external.saveToAlfresco(currentPath);
+      }
+   },
+   
+   showSaveFilenamePanel: function(currentPath)
+   {   
+      this.fxOverlay = $("overlayPanel").effect('opacity',
+      {
+         duration: OfficeNavigation.OVERLAY_ANIM_LENGTH
+      });
+
+      var panel = $("saveDetailsPanel");
+      panel.setStyle("opacity", 0);
+      panel.setStyle("display", "inline");
+            
+      var anim = new Fx.Styles(panel,
+      {
+         duration: OfficeNavigation.ANIM_LENGTH,
+         transition: Fx.Transitions.linear,
+         onComplete: function()
+         {
+            $('saveFilename').addEvent('keydown', function(event)
+            {
+               event = new Event(event);
+               if (event.key == 'enter')
+               {
+                  OfficeNavigation.saveOK();
+               }
+               else if (event.key == 'esc')
+               {
+                  OfficeNavigation.saveCancel();
+               }
+            });
+            $('saveFilename').focus();
+         }
+      }).start({'opacity': 1});
+
+      this.fxOverlay.start(OfficeNavigation.OVERLAY_OPACITY);
+      this.popupPanel = panel;
+      this.popupPanel.currentPath = currentPath;
+   },
+   
+   saveOK: function()
+   {
+      var filename = $('saveFilename').value;
+      var currentPath = this.popupPanel.currentPath;
+      if (filename.length > 0)
+      {
+         window.external.saveToAlfrescoAs(currentPath, filename);
+      }
+      OfficeNavigation.saveCancel();
+   },
+   
+   saveCancel: function()
+   {
+      if (this.popupPanel != null)
+      {
+         this.popupPanel.setStyle("display", "none");
+         this.popupPanel = null;
+      }
+      if (this.fxOverlay)
+      {
+         this.fxOverlay.start(0);
+      }
    }
 };
 

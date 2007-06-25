@@ -30,7 +30,7 @@
 <div id="tabBar">
    <ul>
       <li id="current"><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path?url}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${d.id}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
+      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
       <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path?url}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
       <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path?url}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
       <li><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path?url}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
@@ -40,25 +40,26 @@
 <div class="header">My Checked Out Documents<span class="headerExtra"><span class="toggle">&nbsp;</span></span></div>
 
 <div id="checkedoutList" class="containerMedium togglePanel">
-   <table width="265">
 <#assign rowNum=0>
 <#assign query="@cm\\:workingCopyOwner:${person.properties.userName}">
    <#list companyhome.childrenByLuceneSearch[query] as child>
       <#if child.isDocument>
       <#assign rowNum=rowNum+1>
-      <tr class="checkedoutItem ${(rowNum % 2 = 0)?string("odd", "even")}">
-         <td valign="top">
+      <div class="documentItem ${(rowNum % 2 = 0)?string("odd", "even")}">
+         <span class="documentItemIcon">
             <img src="${url.context}${child.icon32}" alt="${child.name}" />
-         </td>
-         <td style="line-height:16px;">
+         </span>
+         <span class="documentItemDetails">
          <#if child.name?ends_with(".doc")>
             <#assign webdavPath = (child.displayPath?substring(13) + '/' + child.name)?url('ISO-8859-1')?replace('%2F', '/')?replace('\'', '\\\'') />
             <a href="#" onclick="window.external.openDocument('${webdavPath}')" title="Open ${child.name}" style="font-weight: bold;">${child.name}</a><br/>
          <#else>
-            <a href="${url.context}${child.url}?ticket=${session.ticket}" title="Open ${child.name}" style="font-weight: bold;">${child.name}</a><br/>
+            <a href="${url.context}${child.url}?ticket=${session.ticket}" target="_blank" title="Open ${child.name}" style="font-weight: bold;">${child.name}</a><br/>
          </#if>
          <#if child.properties.description?exists>
-            ${child.properties.description}<br/>
+            <#if (child.properties.description?length > 0)>
+               ${child.properties.description}<br />
+            </#if>
          </#if>
             Modified: ${child.properties.modified?datetime} (${(child.size / 1024)?int}Kb)<br/>
             <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','checkin','${child.id}', '');"><img src="${url.context}/images/office/checkin.gif" style="padding:3px 6px 2px 0px;" alt="Check In" title="Check In" /></a>
@@ -66,57 +67,56 @@
          <#if !child.name?ends_with(".pdf")>
             <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="Make PDF..." title="Make PDF" /></a>
          </#if>
-         </td>
-      </tr>
+         </span>
+      </div>
       </#if>
    </#list>
    <#if rowNum = 0>
-      <tr>
-         <td class="noItems">(No documents)</td>
-      </tr>
+      <div>
+         <span class="noItems">(No documents)</span>
+      </div>
    </#if>
-   </table>
 </div>
 
 <div class="header">My Tasks<span class="headerExtra"><span class="taskKey"><img src="${url.context}/images/office/task_overdue.gif" alt="overdue" />=overdue, <img src="${url.context}/images/office/task_today.gif" alt="due today" />=due today</span><span class="toggle">&nbsp;</span></span></div>
 
 <div id="taskList" class="containerMedium togglePanel">
-   <table width="265">
 <#assign taskNum=0>
 <#list workflow.assignedTasks?sort_by('startDate') as t>
    <#assign taskNum=taskNum+1>
-      <tr id="${t.id?replace("$", ".")}" class="taskItem ${(taskNum % 2 = 0)?string("odd", "even")}">
-         <td>
    <#assign hasDue=t.properties["bpm:dueDate"]?exists>
    <#if hasDue>
       <#assign due=t.properties["bpm:dueDate"]>
+   </#if>
+   <div id="${t.id?replace("$", ".")}" class="taskItem" rel="<#if hasDue>${due?date?string("yyyyMMddHHmmss")}<#else>99999999999999</#if>">
+      <span class="taskIndicator">
+   <#if hasDue>
       <#-- items due today? -->
       <#if (dateCompare(date?date, due?date, 0, "==") == 1)>
-            <img src="${url.context}/images/office/task_today.gif" alt="due today" />
+         <img src="${url.context}/images/office/task_today.gif" alt="due today" />
       <#-- items overdue? -->
       <#elseif (dateCompare(date?date, due?date) == 1)>
-            <img src="${url.context}/images/office/task_overdue.gif" alt="overdue" />
+         <img src="${url.context}/images/office/task_overdue.gif" alt="overdue" />
       </#if>
    <#else>
-            &nbsp;
+         &nbsp;
    </#if>
-         </td>
-         <td>
-            <span style="font-weight: bold;">${t.description?html}</span> (${t.type?html})
+      </span>
+      <span class="taskItemDetails">
+         <span style="font-weight: bold;">${t.description?html}</span> (${t.type?html})
    <#if hasDue>
-               <br />Due date: ${due?date}
+            <br />Due date: ${due?date}
    <#else>
-               <br />(No due date)
+            <br />(No due date)
    </#if>
-         </td>
-      </tr>
+      </span>
+   </div>
 </#list>
 <#if taskNum = 0>
-      <tr>
-         <td class="noItems">(No tasks)</td>
-      </tr>
+   <div>
+      <span class="noItems">(No tasks)</span>
+   </div>
 </#if>
-   </table>
 </div>
 
 <div class="header">Actions</div>

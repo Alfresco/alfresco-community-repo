@@ -7,6 +7,7 @@ var OfficeMyTasks =
 {
    init: function()
    {
+      OfficeAddin.sortTasks($('taskList'));
       OfficeMyTasks.setupEventHandlers();      
       
       if (window.queryObject.t)
@@ -144,7 +145,10 @@ var OfficeMyTasks =
 
    openTask: function(taskId)
    {
-      $(taskId).fireEvent("click");
+      if ($(taskId))
+      {
+         $(taskId).fireEvent("click");
+      }
    },
    
    transitionTask: function(taskId, commandURL, successMessage)

@@ -17,10 +17,11 @@
 	<script type="text/javascript" src="${url.context}/scripts/office/navigation.js"></script>
 </head>
 <body>
+<div id="overlayPanel"></div>
 <div id="tabBar">
    <ul>
       <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path?url}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li id="current"><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${node.id}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
+      <li id="current"><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
       <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path?url}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
       <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path?url}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
       <li><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path?url}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
@@ -100,7 +101,7 @@
       </div>
    </div>
 <#assign spacesFound = 0>
-<#list thisSpace.children as child>
+<#list thisSpace.children?sort_by('name') as child>
    <#if child.isContainer>
       <#assign spacesFound = spacesFound + 1>
       <div class="spaceItem ${(spacesFound % 2 = 0)?string("even", "odd")}">
@@ -127,19 +128,19 @@
 
 <div id="documentList" class="containerMedium togglePanel">
 <#assign documentsFound = 0>
-<#list thisSpace.children as child>
+<#list thisSpace.children?sort_by('name') as child>
    <#if child.isDocument>
       <#assign documentsFound = documentsFound + 1>
       <#assign webdavPath = (child.displayPath?substring(13) + '/' + child.name)?url('ISO-8859-1')?replace('%2F', '/')?replace('\'', '\\\'') />
       <div class="documentItem ${(documentsFound % 2 = 0)?string("even", "odd")}">
-         <span style="float: left; width: 36px;">
+         <span class="documentItemIcon">
       <#if child.name?ends_with(".doc")>
             <a href="#" onclick="window.external.openDocument('${webdavPath}')"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
       <#else>
             <a href="${url.context}${child.url}?ticket=${session.ticket}" rel="_blank"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
       </#if>
          </span>
-         <span>
+         <span class="documentItemDetails">
       <#if child.name?ends_with(".doc")>
             <a href="#" onclick="window.external.openDocument('${webdavPath}')"><span class="bold">${child.name}</span></a>
       <#else>
@@ -147,7 +148,9 @@
       </#if>
             <br />
       <#if child.properties.description?exists>
+         <#if (child.properties.description?length > 0)>
 		      ${child.properties.description}<br />
+		   </#if>
       </#if>
             Modified: ${child.properties.modified?datetime}, Size: ${(child.size / 1024)?int}Kb<br/>
       <#if child.isLocked >
@@ -174,13 +177,19 @@
 <div class="header">Actions</div>
 
 <#assign currentPath = thisSpace.displayPath  + '/' + thisSpace.name />
-<#assign webdavPath = currentPath?substring(13)?url('ISO-8859-1')?replace('%2F', '/')?replace('\'', '\\\'') />
+<#assign currentPath = currentPath?substring(13)?url('ISO-8859-1')?replace('%2F', '/')?replace('\'', '\\\'') />
 <div id="documentActionsNavigation">
+   <div id="saveDetailsPanel">
+      Document filename:<br />
+      <input class="saveDetailsItem" type="text" id="saveFilename" style="height: 18px; width: 168px;" />
+      <a class="spaceAction" href="#" onclick="OfficeNavigation.saveOK(this);">OK</a>
+      <a class="spaceAction" href="#" onclick="OfficeNavigation.saveCancel();">Cancel</a>
+   </div>
    <div id="nonStatusText">
       <ul>
 <#if !node.isDocument>
          <li>
-            <a href="#" onclick="window.external.saveToAlfresco('${webdavPath}')">
+            <a href="#" onclick="OfficeNavigation.saveToAlfresco('${currentPath}')">
                <img src="${url.context}/images/office/save_to_alfresco.gif" alt="Save to Alfresco" />
                Save to Alfresco
             </a>

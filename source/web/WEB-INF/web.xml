@@ -16,7 +16,7 @@
 
    <context-param>
       <param-name>javax.faces.CONFIG_FILES</param-name>
-      <param-value>/WEB-INF/faces-config-app.xml,/WEB-INF/faces-config-beans.xml,/WEB-INF/faces-config-navigation.xml,/WEB-INF/faces-config-common.xml,/WEB-INF/faces-config-repo.xml,/WEB-INF/faces-config-wcm.xml,/WEB-INF/faces-config-custom.xml,/WEB-INF/faces-config-enterprise.xml</param-value>
+      <param-value>/WEB-INF/faces-config-app.xml,/WEB-INF/faces-config-beans.xml,/WEB-INF/faces-config-navigation.xml,/WEB-INF/faces-config-common.xml,/WEB-INF/faces-config-repo.xml,/WEB-INF/faces-config-wcm.xml,/WEB-INF/faces-config-custom.xml</param-value>
    </context-param>
 
    <context-param>
@@ -76,13 +76,11 @@
       <filter-class>org.alfresco.web.app.servlet.AuthenticationFilter</filter-class>
       
       <!-- For Novell IChain support use the following filter -->
-      <!-- (Enterprise version only)                          -->
       <!--
         <filter-class>org.alfresco.web.app.servlet.NovellIChainsHTTPRequestAuthenticationFilter</filter-class>
       -->
       
       <!-- For NTLM authentication support use the following filter -->
-      <!-- (Enterprise version only)                                -->
       <!--
         <filter-class>org.alfresco.web.app.servlet.NTLMAuthenticationFilter</filter-class>
       -->
@@ -93,7 +91,6 @@
       <filter-class>org.alfresco.repo.webdav.auth.AuthenticationFilter</filter-class>
       
       <!-- For NTLM authentication support use the following filter -->
-      <!-- (Enterprise version only)                                -->
       <!--
         <filter-class>org.alfresco.repo.webdav.auth.NTLMAuthenticationFilter</filter-class>
       -->
@@ -110,7 +107,6 @@
    </filter-mapping>
    
    <!-- For NTLM authentication support enable the following mapping -->
-   <!-- (Enterprise version only)                                    -->
    <!--
    <filter-mapping>
       <filter-name>Authentication Filter</filter-name>

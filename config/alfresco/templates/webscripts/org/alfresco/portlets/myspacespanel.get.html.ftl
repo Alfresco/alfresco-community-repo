@@ -9,7 +9,7 @@
          (args.f="3" && (d.properties.creator == user || d.properties.modifier == user)) ||
          (args.f="4" && (dateCompare(d.properties["cm:modified"],date,weekms) == 1 || dateCompare(d.properties["cm:created"], date, weekms) == 1)))>
    <#assign count=count+1>
-   <div class="spaceRow">
+   <div class="spaceRow spaceRow${(count % 2 = 0)?string("Odd", "Even")}">
       <div class="spaceIcon">
          <#if d.isDocument>
             <a href="${url.context}${d.url}" target="new" onclick="event.cancelBubble=true"><img class="spaceIconImage" alt="" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border=0></a>

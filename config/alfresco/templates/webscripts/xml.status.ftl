@@ -12,6 +12,8 @@
    <@recursestack status.exception/>
   </#if>
   </callstack>
+  <server>Alfresco ${server.edition} v${server.version} schema ${server.schema}</server>
+  <time>${date?datetime}</time>
 </response>
 
 <#macro recursestack exception>

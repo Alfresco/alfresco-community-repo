@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.web.config.ServerConfigElement;
 import org.apache.commons.logging.Log;
@@ -56,8 +57,7 @@ public class WebScriptServlet extends HttpServlet
 
     // Component Dependencies
     private DeclarativeWebScriptRegistry registry;
-    private RetryingTransactionHelper transactionHelper;
-    private AuthorityService authorityService;
+    private ServiceRegistry serviceRegistry;
     private WebScriptServletAuthenticator authenticator;
     protected ConfigService configService;
 
@@ -71,8 +71,7 @@ public class WebScriptServlet extends HttpServlet
         super.init();
         ApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
         registry = (DeclarativeWebScriptRegistry)context.getBean("webscripts.registry");
-        transactionHelper = (RetryingTransactionHelper)context.getBean("retryingTransactionHelper");
-        authorityService = (AuthorityService)context.getBean("authorityService");
+        serviceRegistry = (ServiceRegistry)context.getBean(ServiceRegistry.SERVICE_REGISTRY);
         configService = (ConfigService)context.getBean("webClientConfigService");
 
         // retrieve authenticator via servlet initialisation parameter
@@ -108,7 +107,7 @@ public class WebScriptServlet extends HttpServlet
         res.setHeader("Cache-Control", "no-cache");
         res.setHeader("Pragma", "no-cache");
         
-        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, transactionHelper, authorityService, authenticator, req, res, serverConfig);
+        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, serviceRegistry, authenticator, req, res, serverConfig);
         runtime.executeScript();
     }
     

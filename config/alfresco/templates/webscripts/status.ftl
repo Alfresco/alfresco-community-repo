@@ -25,6 +25,8 @@
        <tr><td>&nbsp;     
        <@recursestack status.exception/>
      </#if>
+     <tr><td><b>Server</b>:<td>Alfresco ${server.edition} v${server.version} schema ${server.schema}
+     <tr><td><b>Time</b>:<td>${date?datetime}
     </table>
   </body>
 </html>

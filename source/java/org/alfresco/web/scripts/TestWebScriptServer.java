@@ -44,6 +44,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.web.config.ServerConfigElement;
@@ -64,10 +65,10 @@ public class TestWebScriptServer
 {
     // dependencies
     protected AuthenticationService authenticationService;
-    protected RetryingTransactionHelper retryingTransactionHelper;
-    protected AuthorityService authorityService;
     protected DeclarativeWebScriptRegistry registry;
     protected ConfigService configService;
+    protected ServiceRegistry serviceRegistry;
+    protected RetryingTransactionHelper retryingTransactionHelper;
     
     /** Server Configuration */
     private ServerConfigElement serverConfig;
@@ -107,6 +108,16 @@ public class TestWebScriptServer
     }
 
     /**
+     * Sets the Service Registry
+     * 
+     * @param registry
+     */
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    {
+        this.serviceRegistry = serviceRegistry;
+    }
+
+    /**
      * Sets the Config Service
      * 
      * @param configService
@@ -122,14 +133,6 @@ public class TestWebScriptServer
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
-    }
-
-    /**
-     * @param authorityService
-     */
-    public void setAuthorityService(AuthorityService authorityService)
-    {
-        this.authorityService = authorityService;
     }
 
     /**
@@ -213,7 +216,7 @@ public class TestWebScriptServer
         MockHttpServletRequest req = createRequest(method, uri);
         MockHttpServletResponse res = new MockHttpServletResponse();
         
-        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, retryingTransactionHelper, authorityService, null, req, res, serverConfig);
+        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, serviceRegistry, null, req, res, serverConfig);
         runtime.executeScript();
 
         return res;
@@ -238,7 +241,7 @@ public class TestWebScriptServer
         }
         MockHttpServletResponse res = new MockHttpServletResponse();
         
-        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, retryingTransactionHelper, authorityService, null, req, res, serverConfig);
+        WebScriptRuntime runtime = new WebScriptServletRuntime(registry, serviceRegistry, null, req, res, serverConfig);
         runtime.executeScript();
 
         return res;

@@ -25,6 +25,7 @@
 package org.alfresco.web.scripts;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +36,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredTransaction;
@@ -61,6 +63,7 @@ public abstract class WebScriptRuntime
 
     /** Component Dependencies */
     private WebScriptRegistry registry;
+    private ServiceRegistry serviceRegistry;
     private RetryingTransactionHelper retryingTransactionHelper;
     private AuthorityService authorityService;
 
@@ -68,13 +71,14 @@ public abstract class WebScriptRuntime
      * Construct
      * 
      * @param registry  web script registry
-     * @param transactionService  transaction service
+     * @param serviceRegistry  service registry
      */
-    public WebScriptRuntime(WebScriptRegistry registry, RetryingTransactionHelper transactionHelper, AuthorityService authorityService)
+    public WebScriptRuntime(WebScriptRegistry registry, ServiceRegistry serviceRegistry)
     {
         this.registry = registry;
-        this.retryingTransactionHelper = transactionHelper;
-        this.authorityService = authorityService;
+        this.serviceRegistry = serviceRegistry;
+        this.authorityService = serviceRegistry.getAuthorityService();
+        this.retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
     }
     
     /**
@@ -205,6 +209,8 @@ public abstract class WebScriptRuntime
             Map<String, Object> model = new HashMap<String, Object>();
             model.put("status", status);
             model.put("url", new URLModel(req));
+            model.put("server", new ServerModel(serviceRegistry.getDescriptorService().getServerDescriptor()));
+            model.put("date", new Date());
             
             // locate status template
             // NOTE: search order...

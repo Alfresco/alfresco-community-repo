@@ -126,7 +126,7 @@ public class URLModel
      */
     public String getMatch()
     {
-        return getServiceContext() + req.getServiceMatch().getPath();
+        return req.getServiceMatch().getPath();
     }
     
     public String jsGet_match()

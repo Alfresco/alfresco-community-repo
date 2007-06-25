@@ -43,6 +43,7 @@ import javax.portlet.WindowState;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.web.scripts.DeclarativeWebScriptRegistry;
 import org.alfresco.web.scripts.WebScript;
@@ -76,8 +77,7 @@ public class WebScriptPortlet implements Portlet
     
     // Component Dependencies
     protected DeclarativeWebScriptRegistry registry;
-    protected RetryingTransactionHelper transactionHelper;
-    protected AuthorityService authorityService;
+    protected ServiceRegistry serviceRegistry;
     protected WebScriptPortletAuthenticator authenticator;
 
 
@@ -90,8 +90,7 @@ public class WebScriptPortlet implements Portlet
         PortletContext portletCtx = config.getPortletContext();
         WebApplicationContext ctx = (WebApplicationContext)portletCtx.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
         registry = (DeclarativeWebScriptRegistry)ctx.getBean("webscripts.registry");
-        transactionHelper = (RetryingTransactionHelper)ctx.getBean("retryingTransactionHelper");
-        authorityService = (AuthorityService)ctx.getBean("authorityService");
+        serviceRegistry = (ServiceRegistry)ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         
         // retrieve authenticator via portlet initialization parameter
         String authenticatorId = config.getInitParameter("authenticator");
@@ -237,7 +236,7 @@ public class WebScriptPortlet implements Portlet
          */
         public WebScriptPortalRuntime(RenderRequest req, RenderResponse res, String requestUrl)
         {
-            super(registry, transactionHelper, authorityService);
+            super(registry, serviceRegistry);
             this.req = req;
             this.res = res;
             this.requestUrlParts = WebScriptURLRequest.splitURL(requestUrl);

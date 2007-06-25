@@ -38,6 +38,7 @@ import javax.faces.event.FacesEvent;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.web.scripts.DeclarativeWebScriptRegistry;
 import org.alfresco.web.scripts.WebScriptMatch;
@@ -74,8 +75,7 @@ public class UIWebScript extends SelfRenderingComponent
    private boolean scriptUrlModified = false;
    
    private WebScriptRegistry registry;
-   private RetryingTransactionHelper txnHelper;
-   private AuthorityService authorityService;
+   private ServiceRegistry serviceRegistry;;
    
    /**
     * Default constructor
@@ -85,8 +85,7 @@ public class UIWebScript extends SelfRenderingComponent
       WebApplicationContext ctx = FacesContextUtils.getRequiredWebApplicationContext(
             FacesContext.getCurrentInstance());
       this.registry = (DeclarativeWebScriptRegistry)ctx.getBean("webscripts.registry");
-      this.txnHelper = (RetryingTransactionHelper)ctx.getBean("retryingTransactionHelper");
-      this.authorityService = (AuthorityService)ctx.getBean("authorityService");
+      this.serviceRegistry = (ServiceRegistry)ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
    }
    
    /**
@@ -279,7 +278,7 @@ public class UIWebScript extends SelfRenderingComponent
       
       WebScriptJSFRuntime(FacesContext fc, String scriptUrl)
       {
-         super(registry, txnHelper, authorityService);
+         super(registry, serviceRegistry);
          this.fc = fc;
          this.scriptUrl = scriptUrl;
          this.script = WebScriptURLRequest.splitURL(scriptUrl)[2];

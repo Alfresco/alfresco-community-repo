@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="${url.context}/css/main.css" TYPE="text/css">
   </head>
   <body>
-    <form action="${url.match}" method="post">
+    <form action="${url.serviceContext}${url.match}" method="post">
        <input type="hidden" name="reset" value="on">
        <table>
 	     <tr>

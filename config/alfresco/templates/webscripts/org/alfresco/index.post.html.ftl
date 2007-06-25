@@ -21,5 +21,5 @@
 </#list>
     </table>
     <br>
-    <table><tr><td><a href="${url.match}">List Web Scripts</a></td></tr></table>
+    <table><tr><td><a href="${url.serviceContext}${url.match}">List Web Scripts</a></td></tr></table>
 </html>

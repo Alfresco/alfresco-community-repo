@@ -27,6 +27,7 @@ package org.alfresco.service;
 import java.util.Collection;
 
 import org.alfresco.mbeans.VirtServerRegistry;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.audit.AuditService;
@@ -80,6 +81,7 @@ public interface ServiceRegistry
     static final QName REGISTRY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ServiceRegistry");
     static final QName DESCRIPTOR_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "DescriptorService");
     static final QName TRANSACTION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "TransactionService");
+    static final QName RETRYING_TRANSACTION_HELPER = QName.createQName(NamespaceService.ALFRESCO_URI, "retryingTransactionHelper");
     static final QName AUTHENTICATION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AuthenticationService");
     static final QName NAMESPACE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "NamespaceService");
     static final QName DICTIONARY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "DictionaryService");
@@ -151,6 +153,12 @@ public interface ServiceRegistry
      */
     @NotAuditable
     TransactionService getTransactionService();
+
+    /**
+     * @return the transaction service
+     */
+    @NotAuditable
+    RetryingTransactionHelper getRetryingTransactionHelper();
 
     /**
      * @return the namespace service (or null, if one is not provided)

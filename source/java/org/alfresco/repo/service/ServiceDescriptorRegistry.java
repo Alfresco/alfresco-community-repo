@@ -27,6 +27,7 @@ package org.alfresco.repo.service;
 import java.util.Collection;
 
 import org.alfresco.mbeans.VirtServerRegistry;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -192,6 +193,14 @@ public class ServiceDescriptorRegistry
     public TransactionService getTransactionService()
     {
         return (TransactionService)getService(TRANSACTION_SERVICE);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getRetryingTransactionHelper()
+     */
+    public RetryingTransactionHelper getRetryingTransactionHelper()
+    {
+        return (RetryingTransactionHelper)getService(RETRYING_TRANSACTION_HELPER);
     }
 
     /* (non-Javadoc)

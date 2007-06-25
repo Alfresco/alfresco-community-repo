@@ -208,112 +208,134 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
             String[] serviceDescPaths = apiStore.getDescriptionDocumentPaths();
             for (String serviceDescPath : serviceDescPaths)
             {
-                // build service description
-                WebScriptDescription serviceDesc = null;
-                InputStream serviceDescIS = null;
                 try
                 {
-                    serviceDescIS = apiStore.getDescriptionDocument(serviceDescPath);
-                    serviceDesc = createDescription(apiStore, serviceDescPath, serviceDescIS);
-                }
-                catch(IOException e)
-                {
-                    throw new WebScriptException("Failed to read Web Script description document " + apiStore.getBasePath() + serviceDescPath, e);
-                }
-                finally
-                {
+                    // build service description
+                    WebScriptDescription serviceDesc = null;
+                    InputStream serviceDescIS = null;
                     try
                     {
-                        if (serviceDescIS != null) serviceDescIS.close();
+                        serviceDescIS = apiStore.getDescriptionDocument(serviceDescPath);
+                        serviceDesc = createDescription(apiStore, serviceDescPath, serviceDescIS);
                     }
                     catch(IOException e)
                     {
-                        // NOTE: ignore close exception
+                        throw new WebScriptException("Failed to read Web Script description document " + apiStore.getBasePath() + serviceDescPath, e);
                     }
-                }
-                
-                // determine if service description has been registered
-                String id = serviceDesc.getId();
-                if (webscriptsById.containsKey(id))
-                {
-                    // move to next service
-                    if (logger.isDebugEnabled())
+                    finally
                     {
-                        WebScript existingService = webscriptsById.get(id);
-                        WebScriptDescription existingDesc = existingService.getDescription();
-                        String msg = "Web Script description document " + serviceDesc.getStorePath() + "/" + serviceDesc.getDescPath();
-                        msg += " overridden by " + existingDesc.getStorePath() + "/" + existingDesc.getDescPath();
-                        logger.debug(msg);
-                    }
-                    continue;
-                }
-                
-                // construct service implementation
-                ApplicationContext applicationContext = getApplicationContext();
-                String beanName = "webscript." + id.replace('/', '.');
-                String serviceImplName = (applicationContext.containsBean(beanName)) ? beanName : defaultWebScript;
-                AbstractWebScript serviceImpl = (AbstractWebScript)applicationContext.getBean(serviceImplName);
-                serviceImpl.setDescription(serviceDesc);
-                serviceImpl.init(this);
-                
-                if (logger.isDebugEnabled())
-                    logger.debug("Found Web Script " + id +  " (desc: " + serviceDescPath + ", impl: " + serviceImplName + ", auth: " + 
-                                 serviceDesc.getRequiredAuthentication() + ", trx: " + serviceDesc.getRequiredTransaction() + ", format style: " + 
-                                 serviceDesc.getFormatStyle() + ", default format: " + serviceDesc.getDefaultFormat() + ")");
-                
-                // register service and its urls
-                webscriptsById.put(id, serviceImpl);
-                for (String uriTemplate : serviceDesc.getURIs())
-                {
-                    // establish static part of url template
-                    boolean wildcard = false;
-                    boolean extension = true;
-                    int queryArgIdx = uriTemplate.indexOf('?');
-                    if (queryArgIdx != -1)
-                    {
-                        uriTemplate = uriTemplate.substring(0, queryArgIdx);
-                    }
-                    int tokenIdx = uriTemplate.indexOf('{');
-                    if (tokenIdx != -1)
-                    {
-                        uriTemplate = uriTemplate.substring(0, tokenIdx);
-                        wildcard = true;
-                    }
-                    if (serviceDesc.getFormatStyle() != WebScriptDescription.FormatStyle.argument)
-                    {
-                        int extIdx = uriTemplate.lastIndexOf(".");
-                        if (extIdx != -1)
+                        try
                         {
-                            uriTemplate = uriTemplate.substring(0, extIdx);
+                            if (serviceDescIS != null) serviceDescIS.close();
                         }
-                        extension = false;
+                        catch(IOException e)
+                        {
+                            // NOTE: ignore close exception
+                        }
                     }
                     
-                    // index service by static part of url (ensuring no other service has already claimed the url)
-                    String uriIdx = serviceDesc.getMethod().toString() + ":" + uriTemplate;
-                    if (webscriptsByURL.containsKey(uriIdx))
+                    // determine if service description has been registered
+                    String id = serviceDesc.getId();
+                    if (webscriptsById.containsKey(id))
                     {
-                        URLIndex urlIndex = webscriptsByURL.get(uriIdx);
-                        WebScript existingService = urlIndex.script;
-                        if (!existingService.getDescription().getId().equals(serviceDesc.getId()))
+                        // move to next service
+                        if (logger.isDebugEnabled())
                         {
-                            String msg = "Web Script document " + serviceDesc.getDescPath() + " is attempting to define the url '" + uriIdx + "' already defined by " + existingService.getDescription().getDescPath();
-                            throw new WebScriptException(msg);
+                            WebScript existingService = webscriptsById.get(id);
+                            WebScriptDescription existingDesc = existingService.getDescription();
+                            String msg = "Web Script description document " + serviceDesc.getStorePath() + "/" + serviceDesc.getDescPath();
+                            msg += " overridden by " + existingDesc.getStorePath() + "/" + existingDesc.getDescPath();
+                            logger.debug(msg);
                         }
+                        continue;
+                    }
+                    
+                    // construct service implementation
+                    ApplicationContext applicationContext = getApplicationContext();
+                    String beanName = "webscript." + id.replace('/', '.');
+                    String serviceImplName = (applicationContext.containsBean(beanName)) ? beanName : defaultWebScript;
+                    AbstractWebScript serviceImpl = (AbstractWebScript)applicationContext.getBean(serviceImplName);
+                    serviceImpl.setDescription(serviceDesc);
+                    serviceImpl.init(this);
+                    
+                    if (logger.isDebugEnabled())
+                        logger.debug("Found Web Script " + id +  " (desc: " + serviceDescPath + ", impl: " + serviceImplName + ", auth: " + 
+                                     serviceDesc.getRequiredAuthentication() + ", trx: " + serviceDesc.getRequiredTransaction() + ", format style: " + 
+                                     serviceDesc.getFormatStyle() + ", default format: " + serviceDesc.getDefaultFormat() + ")");
+                    
+                    // register service and its urls
+                    webscriptsById.put(id, serviceImpl);
+                    for (String uriTemplate : serviceDesc.getURIs())
+                    {
+                        // establish static part of url template
+                        boolean wildcard = false;
+                        boolean extension = true;
+                        int queryArgIdx = uriTemplate.indexOf('?');
+                        if (queryArgIdx != -1)
+                        {
+                            uriTemplate = uriTemplate.substring(0, queryArgIdx);
+                        }
+                        int tokenIdx = uriTemplate.indexOf('{');
+                        if (tokenIdx != -1)
+                        {
+                            uriTemplate = uriTemplate.substring(0, tokenIdx);
+                            wildcard = true;
+                        }
+                        if (serviceDesc.getFormatStyle() != WebScriptDescription.FormatStyle.argument)
+                        {
+                            int extIdx = uriTemplate.lastIndexOf(".");
+                            if (extIdx != -1)
+                            {
+                                uriTemplate = uriTemplate.substring(0, extIdx);
+                            }
+                            extension = false;
+                        }
+                        
+                        // index service by static part of url (ensuring no other service has already claimed the url)
+                        String uriIdx = serviceDesc.getMethod().toString() + ":" + uriTemplate;
+                        if (webscriptsByURL.containsKey(uriIdx))
+                        {
+                            URLIndex urlIndex = webscriptsByURL.get(uriIdx);
+                            WebScript existingService = urlIndex.script;
+                            if (!existingService.getDescription().getId().equals(serviceDesc.getId()))
+                            {
+                                String msg = "Web Script document " + serviceDesc.getDescPath() + " is attempting to define the url '" + uriIdx + "' already defined by " + existingService.getDescription().getDescPath();
+                                throw new WebScriptException(msg);
+                            }
+                        }
+                        else
+                        {
+                            URLIndex urlIndex = new URLIndex(uriTemplate, wildcard, extension, serviceImpl);
+                            webscriptsByURL.put(uriIdx, urlIndex);
+                            
+                            if (logger.isDebugEnabled())
+                                logger.debug("Registered Web Script URL '" + uriIdx + "'");
+                        }
+                    }
+    
+                    // build path indexes to web script
+                    registerPackage(serviceImpl);
+                    registerURIs(serviceImpl);
+                }
+                catch(WebScriptException e)
+                {
+                    if (logger.isWarnEnabled())
+                    {
+                        Throwable c = e;
+                        String cause = c.getMessage();
+                        while (c.getCause() != null && !c.getCause().equals(c))
+                        {
+                            c = c.getCause();
+                            cause += " ; " + c.getMessage(); 
+                        }
+                        String msg = "Unable to register script " + apiStore.getBasePath() + "/" + serviceDescPath + " due to error: " + cause;
+                        logger.warn(msg);
                     }
                     else
                     {
-                        URLIndex urlIndex = new URLIndex(uriTemplate, wildcard, extension, serviceImpl);
-                        webscriptsByURL.put(uriIdx, urlIndex);
-                        
-                        if (logger.isDebugEnabled())
-                            logger.debug("Registered Web Script URL '" + uriIdx + "'");
+                        throw e;
                     }
                 }
-
-                // build path indexes to web script
-                registerPackage(serviceImpl);
-                registerURIs(serviceImpl);
             }
         }
     }
@@ -385,13 +407,6 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
         SAXReader reader = new SAXReader();
         try
         {
-            Document document = reader.read(serviceDoc);
-            Element rootElement = document.getRootElement();
-            if (!rootElement.getName().equals("webscript"))
-            {
-                throw new WebScriptException("Expected <webscript> root element - found <" + rootElement.getName() + ">");
-            }
-
             // retrieve script path
             int iPathIdx = serviceDescPath.lastIndexOf('/');
             String scriptPath = serviceDescPath.substring(0, iPathIdx == -1 ? 0 : iPathIdx);
@@ -401,12 +416,20 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
             
             // retrieve http method
             int methodIdx = id.lastIndexOf('.');
-            if (methodIdx == id.length() - 1)
+            if (methodIdx == -1 || (methodIdx == id.length() - 1))
             {
                 throw new WebScriptException("Unable to establish HTTP Method from web script description: naming convention must be <name>.<method>.desc.xml");
             }
-            String method = id.substring(id.lastIndexOf('.') + 1).toUpperCase();
-            
+            String method = id.substring(methodIdx + 1).toUpperCase();
+
+            // parse description document
+            Document document = reader.read(serviceDoc);
+            Element rootElement = document.getRootElement();
+            if (!rootElement.getName().equals("webscript"))
+            {
+                throw new WebScriptException("Expected <webscript> root element - found <" + rootElement.getName() + ">");
+            }
+
             // retrieve short name
             Element shortNameElement = rootElement.element("shortname");
             if (shortNameElement == null || shortNameElement.getTextTrim() == null || shortNameElement.getTextTrim().length() == 0)

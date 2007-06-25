@@ -82,7 +82,7 @@
 
 <div id="taskList" class="containerMedium togglePanel">
 <#assign taskNum=0>
-<#list workflow.assignedTasks?sort_by('startDate') as t>
+<#list workflow.assignedTasks as t>
    <#assign taskNum=taskNum+1>
    <#assign hasDue=t.properties["bpm:dueDate"]?exists>
    <#if hasDue>

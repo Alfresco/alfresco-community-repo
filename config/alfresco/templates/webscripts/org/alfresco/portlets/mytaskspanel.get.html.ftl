@@ -1,6 +1,6 @@
 <#assign weekms=1000*60*60*24*7>
 <#assign count=0>
-<#list workflow.assignedTasks?sort_by('startDate') as t>
+<#list workflow.assignedTasks as t>
    <#-- TODO: is it better to use a js script to pre-filter the list? -->
    <#assign hasDue=t.properties["bpm:dueDate"]?exists>
    <#if hasDue>

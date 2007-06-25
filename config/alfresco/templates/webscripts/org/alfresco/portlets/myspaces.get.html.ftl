@@ -1,4 +1,3 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <link rel="stylesheet" href="${url.context}/css/main.css" TYPE="text/css">
 
 <script type="text/javascript" src="/alfresco/scripts/ajax/yahoo/yahoo/yahoo-min.js"></script>
@@ -43,7 +42,7 @@
       <#list crumbs as c>
          <#if c?length != 0>
             <#assign bcpath=bcpath+c+"/">
-            <a class="spaceBreadcrumbLink" href="${scripturl("?f=${filter}&p=${bcpath?url}")}"><img src="${url.context}/images/icons/space-icon-default-16.png" border="0" width="16" height="16" alt="" style="vertical-align:-25%;padding-right:2px">${c}</a>
+            <a class="spaceBreadcrumbLink<#if c_index = (crumbs?size - 1)> spaceCurrentSpace</#if>" href="${scripturl("?f=${filter}&p=${bcpath?url}")}"><img src="${url.context}/images/icons/space-icon-default-16.png" border="0" width="16" height="16" alt="" style="vertical-align:-25%;margin-right:4px">${c}</a>
             <#if c_index < (crumbs?size - 1)>&nbsp;&gt;&nbsp;</#if>
          </#if>
       </#list>
@@ -111,7 +110,7 @@
    </div>
 </div>
 
-<STYLE type="text/css">
+<style type="text/css">
 a.spacefilterLink:link, a.spacefilterLink:visited
 {
    color: #8EA1B3;
@@ -129,9 +128,10 @@ a.spacefilterLink:hover
    background-color: #EEF7FB;
 }
 
-a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited
+a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited, .spaceCurrentSpace
 {
-   color: #0085CA;
+   color: #0085CA !important;
+   font-weight: bold !important;
 }
 
 .spaceTable
@@ -194,16 +194,14 @@ a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited
 .spaceRow
 {
    padding-top: 4px;
-   border-top: 1px solid #F8FCFD;
-   border-bottom: 1px solid #CCD4DB;
 }
 .spaceRowOdd
 {
-   background-color: #EEF7FB;
+   background-color: #F1F7FD;
 }
 .spaceRowEven
 {
-   background-color: #F8FCFD;
+   background-color: #FFFFFF;
 }
 
 .spaceFooter
@@ -330,35 +328,33 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
 
 .spaceToolbar
 {
-   background-color: #EEF7FB;
+   background-color: #D0D8E0;
    border-bottom: 1px solid #CCD4DB;
-   height: 44px;
+   height: 28px;
 }
 
 .spaceToolbarAction
 {
    background-repeat: no-repeat;
    background-position: 2px;
-   background-color: #F8FCFD;
    color: #515D6B;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 12px;
    float: left;
-   margin: 3px;
-   height: 20px;
+   margin: 3px 3px 3px 3px;
+   height: 17px;
    cursor: pointer;
-   padding: 10px 4px 6px 34px;
-   border: 1px dashed #CCD4DB;
+   padding: 2px 4px 1px 22px;
 }
 
 .spaceToolbarActionUpload
 {
-   background-image: url(${url.context}/images/icons/doclist_action_upload.png);
+   background-image: url(${url.context}/images/icons/add.gif);
 }
 
 .spaceToolbarActionCreateSpace
 {
-   background-image: url(${url.context}/images/icons/doclist_action_createspace.png);
+   background-image: url(${url.context}/images/icons/create_space.gif);
 }
 
 .spaceAction
@@ -519,5 +515,4 @@ img.spaceImageIcon
    vertical-align: -25%;
    padding-right:4px;
 }
-
-</STYLE>
+</style>

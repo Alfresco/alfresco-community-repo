@@ -8,8 +8,6 @@
 <script type="text/javascript" src="/alfresco/scripts/ajax/mytasks.js"></script>
 <script type="text/javascript">setContextPath('${url.context}');</script>
 
-<script type="text/javascript" src="/firebug.js"></script>
-
 <script>
    // create manager object for the pop-up summary panels
    var TaskInfoMgr = new Alfresco.PanelManager("TaskInfoBean.sendTaskInfo", "taskId");

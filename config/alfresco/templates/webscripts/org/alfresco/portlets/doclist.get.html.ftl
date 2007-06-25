@@ -1,4 +1,3 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <link rel="stylesheet" href="${url.context}/css/main.css" TYPE="text/css">
 
 <script type="text/javascript" src="/alfresco/scripts/ajax/yahoo/yahoo/yahoo-min.js"></script>
@@ -57,31 +56,32 @@
       </table>
    </td>
 </tr>
-<tr><td>
-   <div id="docUpdatePanel">
-      <input class="docFormItem" type="button" value="OK" onclick="MyDocs.updateOK(this);">
-      <input class="docFormItem" type="button" value="Cancel" onclick="MyDocs.closePopupPanel();">
-   </div>
-   <div id="docPanelOverlay"></div>
-   <div id="docPanelOverlayAjax"></div>
-   <div id="docPanel">
-      <#-- populated via an AJAX call to 'doclistpanel' webscript -->
-      <#-- resolved path, filter and home.noderef required as arguments -->
-      <script>
-         MyDocs.ServiceContext="${url.serviceContext}";
-         MyDocs.Filter="${filter}";
-         MyDocs.Home="${home.nodeRef}";
-         MyDocs.Query="${query?replace("\"","\\\"")}";
-      </script>
-   </div>
-</td>
+<tr>
+   <td>
+      <div id="docUpdatePanel">
+         <input class="docFormItem" type="button" value="OK" onclick="MyDocs.updateOK(this);">
+         <input class="docFormItem" type="button" value="Cancel" onclick="MyDocs.closePopupPanel();">
+      </div>
+      <div id="docPanelOverlay"></div>
+      <div id="docPanelOverlayAjax"></div>
+      <div id="docPanel">
+         <#-- populated via an AJAX call to 'doclistpanel' webscript -->
+         <#-- resolved path, filter and home.noderef required as arguments -->
+         <script>
+            MyDocs.ServiceContext="${url.serviceContext}";
+            MyDocs.Filter="${filter}";
+            MyDocs.Home="${home.nodeRef}";
+            MyDocs.Query="${query?replace("\"","\\\"")}";
+         </script>
+      </div>
+   </td>
 </tr>
 <tr>
-<td>
-   <div class="docFooter">
-      <span class="docFooterText">Showing <span id="docCount">0</span> items(s)</span>
-   </div>
-</td>
+   <td>
+      <div class="docFooter">
+         <span class="docFooterText">Showing <span id="docCount">0</span> items(s)</span>
+      </div>
+   </td>
 </tr>
 </table>
 
@@ -149,16 +149,14 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
 .docRow
 {
    padding-top: 4px;
-   border-top: 1px solid #F8FCFD;
-   border-bottom: 1px solid #CCD4DB;
 }
 .docRowOdd
 {
-   background-color: #EEF7FB;
+   background-color: #F1F7FD;
 }
 .docRowEven
 {
-   background-color: #F8FCFD;
+   background-color: #FFFFFF;
 }
 
 .docHeader
@@ -367,5 +365,4 @@ a.refreshViewLink:link, a.refreshViewLink:visited, a.refreshViewLink:hover
    background-color: #F8FCFD;
    border: 1px solid #CCD4DB;
 }
-
 </style>

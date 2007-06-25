@@ -62,9 +62,6 @@ public class SpaceDetailsBean extends BaseDetailsBean
    private static final String MSG_ERROR_UPDATE_CATEGORY = "error_update_category";
    private static final String MSG_ERROR_ASPECT_CLASSIFY = "error_aspect_classify_space";
 
-   /** PermissionService bean reference */
-   protected PermissionService permissionService;
-   
    /** Category details */
    private NodeRef addedCategory;
    private List categories;
@@ -91,14 +88,6 @@ public class SpaceDetailsBean extends BaseDetailsBean
    
    // ------------------------------------------------------------------------------
    // Bean property getters and setters 
-   
-   /**
-    * @param permissionService      The PermissionService to set.
-    */
-   public void setPermissionService(PermissionService permissionService)
-   {
-      this.permissionService = permissionService;
-   }
    
    /**
     * Returns the Node this bean is currently representing

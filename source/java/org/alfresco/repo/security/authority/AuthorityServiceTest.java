@@ -761,6 +761,43 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "an3dy", false).contains(auth6));
         
     }
+     
+    
+    public void testGroupNameTokenisation()
+    {
+        assertEquals(0, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
+        assertEquals(0, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
+
+        String auth1234 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "1234");
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth1234, false).size());
+        String authC1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth1234, "circle");
+        assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth1234, false).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC1, false).size());
+        String authC2 = pubAuthorityService.createAuthority(AuthorityType.GROUP, authC1, "bigCircle");
+        assertEquals(2, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth1234, false).size());
+        assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC1, false).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC2, false).size());
+        String authStuff = pubAuthorityService.createAuthority(AuthorityType.GROUP, authC2, "|<>?~@:}{+_)(*&^%$£!¬`\\,./#';][=-0987654321 1234556678 '");
+        assertEquals(3, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth1234, false).size());
+        assertEquals(2, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC1, false).size());
+        assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC2, false).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authStuff, false).size());
+        String authSpace = pubAuthorityService.createAuthority(AuthorityType.GROUP, authStuff, "  Circles     ");
+        assertEquals(4, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth1234, false).size());
+        assertEquals(3, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC1, false).size());
+        assertEquals(2, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC2, false).size());
+        assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authStuff, false).size());
+        assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authSpace, false).size());
+        
+        pubAuthorityService.deleteAuthority(authSpace);
+        pubAuthorityService.deleteAuthority(authStuff);
+        pubAuthorityService.deleteAuthority(authC2);
+        pubAuthorityService.deleteAuthority(authC1);
+        pubAuthorityService.deleteAuthority(auth1234);
+        
+        assertEquals(0, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
+        assertEquals(0, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
+    }
     
     private Map<QName, Serializable> createDefaultProperties(String userName, String firstName, String lastName,
             String email, String orgId, NodeRef home)

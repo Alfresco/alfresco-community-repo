@@ -25,8 +25,6 @@
 package org.alfresco.service.cmr.repository;
 
 import java.io.Serializable;
-import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
@@ -250,29 +248,6 @@ public class ContentData implements Serializable
                         "The content mimetype must be set whenever the URL is set: \n" +
                         "   content URL: " + contentUrl + "\n" +
                         "   mimetype: " + mimetype);
-            }
-            
-            // Chekc that the encoding is present if the URL is present
-            if (encoding == null)
-            {
-                throw new IllegalArgumentException("\n" +
-                        "The content encoding must be set whenever the URL is set: \n" +
-                        "   content URL: " + contentUrl + "\n" +
-                        "   encoding: " + encoding);
-            }
-        }
-        // Check the encoding
-        if (encoding != null)
-        {
-            try
-            {
-                Charset.forName(encoding);
-            }
-            catch (IllegalCharsetNameException e)
-            {
-                throw new IllegalArgumentException("\n" +
-                        "The content encoding is not supported by the server: \n" +
-                        "   encoding: " + encoding);
             }
         }
     }

@@ -71,7 +71,10 @@ public class AjaxServlet extends BaseServlet
       throws ServletException, IOException
    {
       request.setCharacterEncoding("utf-8");
-
+      // set default character encoding for the response
+      response.setCharacterEncoding("utf-8");
+      response.setContentType("text/xml;charset=UTF-8");
+      
       long startTime = 0;
       String uri = request.getRequestURI();      
       if (logger.isDebugEnabled())

@@ -208,7 +208,7 @@ public class InvokeCommand extends BaseAjaxCommand
       final RenderKit renderKit = 
          renderFactory.getRenderKit(facesContext, viewRoot.getRenderKitId());
       final ResponseWriter writer = 
-         renderKit.createResponseWriter(new OutputStreamWriter(os), 
+         renderKit.createResponseWriter(new OutputStreamWriter(os, "UTF-8"), 
                                         mimetype, 
                                         "UTF-8");
       facesContext.setResponseWriter(writer);

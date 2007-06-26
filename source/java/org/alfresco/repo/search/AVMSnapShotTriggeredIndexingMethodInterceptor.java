@@ -42,14 +42,9 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
 /**
- * Method interceptor for atomic indexing of AVM entries
- * 
- * The proeprties can defined how stores are indexed based on type (as set by Alfresco the Web site management UI)
- * or based on the name of the store.
- * 
- * Creates and deletes are indexed synchronously.
- * 
- * Updates may be asynchronous, synchronous or ignored by the index.
+ * Method interceptor for atomic indexing of AVM entries The proeprties can defined how stores are indexed based on type
+ * (as set by Alfresco the Web site management UI) or based on the name of the store. Creates and deletes are indexed
+ * synchronously. Updates may be asynchronous, synchronous or ignored by the index.
  * 
  * @author andyh
  */
@@ -69,11 +64,9 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
 
     public final static QName PROP_SANDBOX_WORKFLOW_PREVIEW = QName.createQName(null, ".sandbox.workflow.preview");
 
-    public final static QName PROP_SANDBOX_AUTHOR_WORKFLOW_MAIN = QName.createQName(null,
-            ".sandbox.author.workflow.main");
+    public final static QName PROP_SANDBOX_AUTHOR_WORKFLOW_MAIN = QName.createQName(null, ".sandbox.author.workflow.main");
 
-    public final static QName PROP_SANDBOX_AUTHOR_WORKFLOW_PREVIEW = QName.createQName(null,
-            ".sandbox.author.workflow.preview");
+    public final static QName PROP_SANDBOX_AUTHOR_WORKFLOW_PREVIEW = QName.createQName(null, ".sandbox.author.workflow.preview");
 
     private AVMService avmService;
 
@@ -87,6 +80,7 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
 
     private List<IndexingDefinition> indexingDefinitions = new ArrayList<IndexingDefinition>();
 
+    @SuppressWarnings("unchecked")
     public Object invoke(MethodInvocation mi) throws Throwable
     {
         if (enableIndexing)
@@ -94,29 +88,17 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
             if (mi.getMethod().getName().equals("createSnapshot"))
             {
                 // May cause any number of other stores to do snap shot under the covers via layering or do nothing
-                // So we have to watch what actually changes 
-
-                List<AVMStoreDescriptor> stores = avmService.getStores();
-                Map<String, Integer> initialStates = new HashMap<String, Integer>(stores.size(), 1.0f);
-                for (AVMStoreDescriptor desc : stores)
-                {
-                    String store = desc.getName();
-                    Integer state = Integer.valueOf(avmService.getLatestSnapshotID(store));
-                    initialStates.put(store, state);
-                }
+                // So we have to watch what actually changes
 
                 Object returnValue = mi.proceed();
 
+                Map<String, Integer> snapShots = (Map<String, Integer>) returnValue;
+
                 // Index any stores that have moved on
-                for (AVMStoreDescriptor desc : stores)
+                for (String store : snapShots.keySet())
                 {
-                    String store = desc.getName();
-                    int after = avmService.getLatestSnapshotID(store);
-                    int before = initialStates.get(store).intValue();
-                    if (after > before)
-                    {
-                        indexSnapshot(store, before, after);
-                    }
+                    int after = snapShots.get(store).intValue();
+                    indexSnapshot(store, after);
                 }
                 return returnValue;
             }
@@ -233,9 +215,7 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
         this.defaultMode = defaultMode;
     }
 
-    
     /**
-     * 
      * @param store
      * @param before
      * @param after
@@ -251,11 +231,21 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
         }
     }
     
-    
+    public void indexSnapshot(String store, int after)
+    {
+        StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
+        Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
+        if (indexer instanceof AVMLuceneIndexer)
+        {
+            AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
+            int before = avmIndexer.getLastIndexedSnapshot(store);
+            avmIndexer.index(store, before, after, getIndexMode(store));
+        }
+    }
+
     /**
-     * 
      * @param store
-     * @return
+     * @return - the last indexed snapshot
      */
     public int getLastIndexedSnapshot(String store)
     {
@@ -268,12 +258,11 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
         }
         return -1;
     }
-    
+
     /**
-     * Is the snapshot applied to the index?
-     *      
-     * Is there an entry for any node that was added OR have all the nodes in the transaction been deleted as expected?
-     *      
+     * Is the snapshot applied to the index? Is there an entry for any node that was added OR have all the nodes in the
+     * transaction been deleted as expected?
+     * 
      * @param store
      * @param id
      * @return - true if applied, false if not
@@ -289,7 +278,7 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
         }
         return false;
     }
-    
+
     private synchronized IndexMode getIndexMode(String store)
     {
         IndexMode mode = modeCache.get(store);
@@ -341,8 +330,7 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
             String[] split = definition.split(":", 3);
             if (split.length != 3)
             {
-                throw new AlfrescoRuntimeException(
-                        "Invalid index defintion. Must be of of the form IndexMode:DefinitionType:regular expression");
+                throw new AlfrescoRuntimeException("Invalid index defintion. Must be of of the form IndexMode:DefinitionType:regular expression");
             }
             indexMode = IndexMode.valueOf(split[0].toUpperCase());
             definitionType = DefinitionType.valueOf(split[1].toUpperCase());

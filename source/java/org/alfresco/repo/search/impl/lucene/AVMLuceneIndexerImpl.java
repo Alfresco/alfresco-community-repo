@@ -74,9 +74,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
@@ -100,6 +97,11 @@ import org.apache.lucene.search.Searcher;
  */
 public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> implements AVMLuceneIndexer
 {
+    private enum IndexChannel
+    {
+        MAIN, DELTA;
+    }
+
     private static String SNAP_SHOT_ID = "SnapShot";
 
     static Logger s_logger = Logger.getLogger(AVMLuceneIndexerImpl.class);
@@ -172,8 +174,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
      * @return - the indexer instance
      * @throws LuceneIndexException
      */
-    public static AVMLuceneIndexerImpl getUpdateIndexer(StoreRef storeRef, String deltaId, LuceneConfig config)
-            throws LuceneIndexException
+    public static AVMLuceneIndexerImpl getUpdateIndexer(StoreRef storeRef, String deltaId, LuceneConfig config) throws LuceneIndexException
     {
         if (s_logger.isDebugEnabled())
         {
@@ -249,10 +250,8 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
             case AVMDifference.CONFLICT:
             case AVMDifference.NEWER:
             case AVMDifference.OLDER:
-                AVMNodeDescriptor srcDesc = avmService.lookup(difference.getSourceVersion(),
-                        difference.getSourcePath(), true);
-                AVMNodeDescriptor dstDesc = avmService.lookup(difference.getDestinationVersion(), difference
-                        .getDestinationPath(), true);
+                AVMNodeDescriptor srcDesc = avmService.lookup(difference.getSourceVersion(), difference.getSourcePath(), true);
+                AVMNodeDescriptor dstDesc = avmService.lookup(difference.getDestinationVersion(), difference.getDestinationPath(), true);
                 // New
                 if (srcDesc == null)
                 {
@@ -351,8 +350,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
     }
 
     @Override
-    protected List<Document> createDocuments(String stringNodeRef, boolean isNew, boolean indexAllProperties,
-            boolean includeDirectoryDocuments)
+    protected List<Document> createDocuments(String stringNodeRef, boolean isNew, boolean indexAllProperties, boolean includeDirectoryDocuments)
     {
         List<Document> docs = new ArrayList<Document>();
         if (stringNodeRef.startsWith("\u0000"))
@@ -380,7 +378,10 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
             return docs;
         }
 
-        List<Pair<Integer, String>> allPaths = avmService.getPaths(desc);
+        String[] splitPathForDoc = splitPath(stringNodeRef);
+        String docStore = splitPathForDoc[0];
+
+        List<Pair<Integer, String>> allPaths = avmService.getPathsInStoreHead(desc, docStore);
         List<Pair<Integer, String>> paths = new ArrayList<Pair<Integer, String>>();
         for (Pair<Integer, String> pair : allPaths)
         {
@@ -426,20 +427,17 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                 NodeRef nodeRef = AVMNodeConverter.ToNodeRef(endVersion, stringNodeRef);
 
                 Document xdoc = new Document();
-                xdoc.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.UN_TOKENIZED,
-                        Field.TermVector.NO));
+                xdoc.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                 for (Pair<Integer, String> path : paths)
                 {
 
                     String[] splitPath = splitPath(path.getSecond());
                     @SuppressWarnings("unused")
                     String pathInStore = splitPath[1];
-                    xdoc.add(new Field("ID", path.getSecond(), Field.Store.YES, Field.Index.UN_TOKENIZED,
-                            Field.TermVector.NO));
+                    xdoc.add(new Field("ID", path.getSecond(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                 }
 
-                xdoc.add(new Field("TX", AlfrescoTransactionSupport.getTransactionId(), Field.Store.YES,
-                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                xdoc.add(new Field("TX", AlfrescoTransactionSupport.getTransactionId(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
 
                 boolean isAtomic = true;
 
@@ -507,10 +505,8 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                             ancestors.add(pathBuilder.toString());
                         }
 
-                        qNameBuffer.append(ISO9075.getXPathName(QName.createQName("", simplePath
-                                .get(simplePath.size() - 1))));
-                        xdoc.add(new Field("PARENT", ancestors.get(ancestors.size() - 1), Field.Store.YES,
-                                Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                        qNameBuffer.append(ISO9075.getXPathName(QName.createQName("", simplePath.get(simplePath.size() - 1))));
+                        xdoc.add(new Field("PARENT", ancestors.get(ancestors.size() - 1), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                         // TODO: Categories and LINKASPECT
 
                         if (includeDirectoryDocuments)
@@ -520,24 +516,19 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                                 // TODO: Exclude category paths
 
                                 Document directoryEntry = new Document();
-                                directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES,
-                                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                                directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
 
-                                directoryEntry.add(new Field("ID", path.getSecond(), Field.Store.YES,
-                                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                                directoryEntry.add(new Field("ID", path.getSecond(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
 
-                                directoryEntry.add(new Field("PATH", xpath, Field.Store.YES, Field.Index.TOKENIZED,
-                                        Field.TermVector.NO));
+                                directoryEntry.add(new Field("PATH", xpath, Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
 
                                 // Find all parent nodes.
 
                                 for (String toAdd : ancestors)
                                 {
-                                    directoryEntry.add(new Field("ANCESTOR", toAdd, Field.Store.NO,
-                                            Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                                    directoryEntry.add(new Field("ANCESTOR", toAdd, Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                                 }
-                                directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES,
-                                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                                directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
 
                                 docs.add(directoryEntry);
 
@@ -550,8 +541,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                 if (node.getIsRoot())
                 {
                     // TODO: Does the root element have a QName?
-                    xdoc.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.UN_TOKENIZED,
-                            Field.TermVector.NO));
+                    xdoc.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                     xdoc.add(new Field("PATH", "", Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
                     xdoc.add(new Field("QNAME", "", Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
                     xdoc.add(new Field("ISROOT", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
@@ -562,18 +552,15 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                 else
                 // not a root node
                 {
-                    xdoc.add(new Field("QNAME", qNameBuffer.toString(), Field.Store.YES, Field.Index.TOKENIZED,
-                            Field.TermVector.NO));
+                    xdoc.add(new Field("QNAME", qNameBuffer.toString(), Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
 
                     QName typeQName = getType(desc);
 
-                    xdoc.add(new Field("TYPE", ISO9075.getXPathName(typeQName), Field.Store.YES,
-                            Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                    xdoc.add(new Field("TYPE", ISO9075.getXPathName(typeQName), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
 
                     for (QName classRef : avmService.getAspects(endVersion, stringNodeRef))
                     {
-                        xdoc.add(new Field("ASPECT", ISO9075.getXPathName(classRef), Field.Store.YES,
-                                Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                        xdoc.add(new Field("ASPECT", ISO9075.getXPathName(classRef), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                     }
 
                     xdoc.add(new Field("ISROOT", "F", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
@@ -623,8 +610,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         }
     }
 
-    private Map<QName, Serializable> getIndexableProperties(AVMNodeDescriptor desc, NodeRef nodeRef, Integer version,
-            String path)
+    private Map<QName, Serializable> getIndexableProperties(AVMNodeDescriptor desc, NodeRef nodeRef, Integer version, String path)
     {
         Map<QName, PropertyValue> properties = avmService.getNodeProperties(version, path);
 
@@ -648,14 +634,11 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         result.put(ContentModel.PROP_STORE_IDENTIFIER, nodeRef.getStoreRef().getIdentifier());
         if (desc.isLayeredDirectory())
         {
-            result
-                    .put(WCMModel.PROP_AVM_DIR_INDIRECTION, AVMNodeConverter.ToNodeRef(endVersion, desc
-                            .getIndirection()));
+            result.put(WCMModel.PROP_AVM_DIR_INDIRECTION, AVMNodeConverter.ToNodeRef(endVersion, desc.getIndirection()));
         }
         if (desc.isLayeredFile())
         {
-            result.put(WCMModel.PROP_AVM_FILE_INDIRECTION, AVMNodeConverter
-                    .ToNodeRef(endVersion, desc.getIndirection()));
+            result.put(WCMModel.PROP_AVM_FILE_INDIRECTION, AVMNodeConverter.ToNodeRef(endVersion, desc.getIndirection()));
         }
         if (desc.isFile())
         {
@@ -698,18 +681,14 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         }
         catch (TypeConversionException e)
         {
-            throw new TypeConversionException(
-                    "The property value is not compatible with the type defined for the property: \n"
-                            + "   property: " + (propertyDef == null ? "unknown" : propertyDef) + "\n"
-                            + "   property value: " + propertyValue, e);
+            throw new TypeConversionException("The property value is not compatible with the type defined for the property: \n"
+                    + "   property: " + (propertyDef == null ? "unknown" : propertyDef) + "\n" + "   property value: " + propertyValue, e);
         }
     }
 
-    protected boolean indexProperty(NodeRef banana, QName propertyName, Serializable value, Document doc,
-            boolean indexAtomicPropertiesOnly,  Map<QName, Serializable> properties)
+    protected boolean indexProperty(NodeRef banana, QName propertyName, Serializable value, Document doc, boolean indexAtomicPropertiesOnly, Map<QName, Serializable> properties)
     {
-        String attributeName = "@"
-                + QName.createQName(propertyName.getNamespaceURI(), ISO9075.encode(propertyName.getLocalName()));
+        String attributeName = "@" + QName.createQName(propertyName.getNamespaceURI(), ISO9075.encode(propertyName.getLocalName()));
 
         boolean store = true;
         boolean index = true;
@@ -757,8 +736,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
             }
             catch (TypeConversionException e)
             {
-                doc.add(new Field(attributeName, NOT_INDEXED_NO_TYPE_CONVERSION, Field.Store.NO,
-                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                doc.add(new Field(attributeName, NOT_INDEXED_NO_TYPE_CONVERSION, Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                 continue;
             }
             if (strValue == null)
@@ -777,10 +755,8 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                 }
                 // store mimetype in index - even if content does not index it is useful
                 // Added szie and locale - size needs to be tokenised correctly
-                doc.add(new Field(attributeName + ".mimetype", contentData.getMimetype(), Field.Store.NO,
-                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-                doc.add(new Field(attributeName + ".size", Long.toString(contentData.getSize()), Field.Store.NO,
-                        Field.Index.TOKENIZED, Field.TermVector.NO));
+                doc.add(new Field(attributeName + ".mimetype", contentData.getMimetype(), Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                doc.add(new Field(attributeName + ".size", Long.toString(contentData.getSize()), Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
 
                 // TODO: Use the node locale in preferanced to the system locale
                 Locale locale = contentData.getLocale();
@@ -789,37 +765,31 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                 {
                     locale = I18NUtil.getLocale();
                 }
-                doc.add(new Field(attributeName + ".locale", locale.toString().toLowerCase(), Field.Store.NO,
-                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                doc.add(new Field(attributeName + ".locale", locale.toString().toLowerCase(), Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
 
                 ContentReader reader = contentService.getReader(banana, propertyName);
                 if (reader != null && reader.exists())
                 {
                     boolean readerReady = true;
                     // transform if necessary (it is not a UTF-8 text document)
-                    if (!EqualsHelper.nullSafeEquals(reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN)
-                            || !EqualsHelper.nullSafeEquals(reader.getEncoding(), "UTF-8"))
+                    if (!EqualsHelper.nullSafeEquals(reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN) || !EqualsHelper.nullSafeEquals(reader.getEncoding(), "UTF-8"))
                     {
                         // get the transformer
-                        ContentTransformer transformer = contentService.getTransformer(reader.getMimetype(),
-                                MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                        ContentTransformer transformer = contentService.getTransformer(reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN);
                         // is this transformer good enough?
                         if (transformer == null)
                         {
                             // log it
                             if (s_logger.isDebugEnabled())
                             {
-                                s_logger.debug("Not indexed: No transformation: \n"
-                                        + "   source: " + reader + "\n" + "   target: "
-                                        + MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                                s_logger.debug("Not indexed: No transformation: \n" + "   source: " + reader + "\n" + "   target: " + MimetypeMap.MIMETYPE_TEXT_PLAIN);
                             }
                             // don't index from the reader
                             readerReady = false;
                             // not indexed: no transformation
                             // doc.add(new Field("TEXT", NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO,
                             // Field.Index.TOKENIZED, Field.TermVector.NO));
-                            doc.add(new Field(attributeName, NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO,
-                                    Field.Index.TOKENIZED, Field.TermVector.NO));
+                            doc.add(new Field(attributeName, NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
                         }
                         // else if (indexAtomicPropertiesOnly
                         // && transformer.getTransformationTime() > maxAtomicTransformationTime)
@@ -855,8 +825,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                                 // failed
                                 // doc.add(new Field("TEXT", NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO,
                                 // Field.Index.TOKENIZED, Field.TermVector.NO));
-                                doc.add(new Field(attributeName, NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO,
-                                        Field.Index.TOKENIZED, Field.TermVector.NO));
+                                doc.add(new Field(attributeName, NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
                             }
                         }
                     }
@@ -892,10 +861,8 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                                 + (reader == null ? " --- " : Boolean.toString(reader.exists())));
                     }
                     // not indexed: content missing
-                    doc.add(new Field("TEXT", NOT_INDEXED_CONTENT_MISSING, Field.Store.NO, Field.Index.TOKENIZED,
-                            Field.TermVector.NO));
-                    doc.add(new Field(attributeName, NOT_INDEXED_CONTENT_MISSING, Field.Store.NO,
-                            Field.Index.TOKENIZED, Field.TermVector.NO));
+                    doc.add(new Field("TEXT", NOT_INDEXED_CONTENT_MISSING, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
+                    doc.add(new Field(attributeName, NOT_INDEXED_CONTENT_MISSING, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
                 }
             }
             else
@@ -929,16 +896,14 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                             String localeString = mlText.getValue(locale);
                             StringBuilder builder = new StringBuilder();
                             builder.append("\u0000").append(locale.toString()).append("\u0000").append(localeString);
-                            doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex,
-                                    Field.TermVector.NO));
+                            doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex, Field.TermVector.NO));
                         }
                     }
                     else if (isText)
                     {
                         // Temporary special case for uids and gids
                         if (propertyName.equals(ContentModel.PROP_USER_USERNAME)
-                                || propertyName.equals(ContentModel.PROP_USERNAME)
-                                || propertyName.equals(ContentModel.PROP_AUTHORITY_NAME)
+                                || propertyName.equals(ContentModel.PROP_USERNAME) || propertyName.equals(ContentModel.PROP_AUTHORITY_NAME)
                                 || propertyName.equals(ContentModel.PROP_MEMBERS))
                         {
                             doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
@@ -947,8 +912,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                         // TODO: Use the node locale in preferanced to the system locale
                         Locale locale = null;
 
-                        Serializable localeProperty = properties.get(
-                                ContentModel.PROP_LOCALE);
+                        Serializable localeProperty = properties.get(ContentModel.PROP_LOCALE);
                         if (localeProperty != null)
                         {
                             locale = DefaultTypeConverter.INSTANCE.convert(Locale.class, localeProperty);
@@ -962,8 +926,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                         {
                             StringBuilder builder = new StringBuilder();
                             builder.append("\u0000").append(locale.toString()).append("\u0000").append(strValue);
-                            doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex,
-                                    Field.TermVector.NO));
+                            doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex, Field.TermVector.NO));
                         }
                         else
                         {
@@ -1109,8 +1072,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         }
     }
 
-    public void updateChildRelationship(ChildAssociationRef relationshipBeforeRef,
-            ChildAssociationRef relationshipAfterRef)
+    public void updateChildRelationship(ChildAssociationRef relationshipBeforeRef, ChildAssociationRef relationshipAfterRef)
     {
         if (s_logger.isDebugEnabled())
         {
@@ -1177,6 +1139,11 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         }
     }
 
+    /**
+     * Sync delete of this index
+     * 
+     * @param store
+     */
     public void syncronousDeleteIndex(String store)
     {
 
@@ -1187,6 +1154,11 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         deleteAll();
     }
 
+    /**
+     * Support to delete all entries frmo the idnex in the background
+     * 
+     * @param store
+     */
     public void asyncronousDeleteIndex(String store)
     {
         if (s_logger.isDebugEnabled())
@@ -1222,6 +1194,11 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         }
     }
 
+    /**
+     * Sync create index
+     * 
+     * @param store
+     */
     public void syncronousCreateIndex(String store)
     {
 
@@ -1235,6 +1212,11 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
     }
 
+    /**
+     * Asyn create index
+     * 
+     * @param store
+     */
     public void asyncronousCreateIndex(String store)
     {
         if (s_logger.isDebugEnabled())
@@ -1277,8 +1259,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                 }
                 catch (IOException e)
                 {
-                    throw new LuceneIndexException(
-                            "Failed to execute query to find content which needs updating in the index", e);
+                    throw new LuceneIndexException("Failed to execute query to find content which needs updating in the index", e);
                 }
 
                 if (hits.length() > 0)
@@ -1344,49 +1325,113 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
     public int getLastIndexedSnapshot(String store)
     {
         int last = getLastAsynchronousSnapshot(store);
-        if (last >= 0)
+        if (last > 0)
         {
             return last;
         }
-        return getLastSynchronousSnapshot(store);
+        last = getLastSynchronousSnapshot(store);
+        if (last > 0)
+        {
+            return last;
+        }
+        return hasIndexBeenCreated(store) ? 0 : -1;
     }
 
     public boolean isSnapshotIndexed(String store, int id)
     {
-        return (id <= getLastAsynchronousSnapshot(store)) || (id <= getLastSynchronousSnapshot(store));
+        if (id == 0)
+        {
+            return hasIndexBeenCreated(store);
+        }
+        else
+        {
+            return (id <= getLastAsynchronousSnapshot(store)) || (id <= getLastSynchronousSnapshot(store));
+        }
     }
 
     public boolean isSnapshotSearchable(String store, int id)
     {
-        return (id <= getLastSynchronousSnapshot(store));
+        if (id == 0)
+        {
+            return hasIndexBeenCreated(store);
+        }
+        else
+        {
+            return (id <= getLastSynchronousSnapshot(store));
+        }
     }
 
     private int getLastSynchronousSnapshot(String store)
     {
-        String prefix = SNAP_SHOT_ID + ":" + store;
-        IndexReader mainReader = null;
+        int answer = getLastSynchronousSnapshot(store, IndexChannel.DELTA);
+        if (answer >= 0)
+        {
+            return answer;
+        }
+        answer = getLastSynchronousSnapshot(store, IndexChannel.MAIN);
+        if (answer >= 0)
+        {
+            return answer;
+        }
+        return -1;
+    }
+
+    private int getLastSynchronousSnapshot(String store, IndexChannel channel)
+    {
+        String prefix = SNAP_SHOT_ID + ":" + store + ":";
+        IndexReader reader = null;
         int end = -1;
         try
         {
-            mainReader = getReader();
+            if (channel == IndexChannel.DELTA)
+            {
+                flushPending();
+                reader = getDeltaReader();
+            }
+            else
+            {
+                reader = getReader();
+            }
+
             TermEnum terms = null;
             try
             {
-                terms = mainReader.terms(new Term("ID", prefix));
+                terms = reader.terms();
 
-                while (terms.next())
+                if (terms.skipTo(new Term("ID", prefix)))
                 {
-                    Term term = terms.term();
-                    if (term.text().startsWith(prefix))
+
+                    do
                     {
-                        String[] split = term.text().split(":");
-                        end = Integer.parseInt(split[3]);
+                        Term term = terms.term();
+                        if (term.text().startsWith(prefix))
+                        {
+                            TermDocs docs = null;
+                            try
+                            {
+                                docs = reader.termDocs(term);
+                                if (docs.next())
+                                {
+                                    String[] split = term.text().split(":");
+                                    end = Integer.parseInt(split[3]);
+                                }
+                            }
+                            finally
+                            {
+                                if (docs != null)
+                                {
+                                    docs.close();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
-                    else
-                    {
-                        break;
-                    }
+                    while (terms.next());
                 }
+
             }
             finally
             {
@@ -1405,9 +1450,16 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         {
             try
             {
-                if (mainReader != null)
+                if (reader != null)
                 {
-                    mainReader.close();
+                    if (channel == IndexChannel.DELTA)
+                    {
+                        closeDeltaReader();
+                    }
+                    else
+                    {
+                        reader.close();
+                    }
                 }
             }
             catch (IOException e)
@@ -1419,29 +1471,72 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
     private int getLastAsynchronousSnapshot(String store)
     {
+        int answer = getLastAsynchronousSnapshot(store, IndexChannel.DELTA);
+        if (answer >= 0)
+        {
+            return answer;
+        }
+        answer = getLastAsynchronousSnapshot(store, IndexChannel.MAIN);
+        if (answer >= 0)
+        {
+            return answer;
+        }
+        return -1;
+    }
+
+    private int getLastAsynchronousSnapshot(String store, IndexChannel channel)
+    {
         String prefix = "\u0000BG:STORE:" + store + ":";
-        IndexReader mainReader = null;
+        IndexReader reader = null;
         int end = -1;
         try
         {
-            mainReader = getReader();
+            if (channel == IndexChannel.DELTA)
+            {
+                flushPending();
+                reader = getDeltaReader();
+            }
+            else
+            {
+                reader = getReader();
+            }
             TermEnum terms = null;
             try
             {
-                terms = mainReader.terms(new Term("ID", prefix));
+                terms = reader.terms();
 
-                while (terms.next())
+                if (terms.skipTo(new Term("ID", prefix)))
                 {
-                    Term term = terms.term();
-                    if (term.text().startsWith(prefix))
+                    do
                     {
-                        String[] split = term.text().split(":");
-                        end = Integer.parseInt(split[4]);
+                        Term term = terms.term();
+                        if (term.text().startsWith(prefix))
+                        {
+                            TermDocs docs = null;
+                            try
+                            {
+                                docs = reader.termDocs(term);
+                                if (docs.next())
+                                {
+                                    String[] split = term.text().split(":");
+                                    end = Integer.parseInt(split[4]);
+                                }
+                            }
+                            finally
+                            {
+                                if (docs != null)
+                                {
+                                    docs.close();
+                                }
+                            }
+
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
-                    else
-                    {
-                        break;
-                    }
+                    while (terms.next());
                 }
             }
             finally
@@ -1461,9 +1556,16 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         {
             try
             {
-                if (mainReader != null)
+                if (reader != null)
                 {
-                    mainReader.close();
+                    if (channel == IndexChannel.DELTA)
+                    {
+                        closeDeltaReader();
+                    }
+                    else
+                    {
+                        reader.close();
+                    }
                 }
             }
             catch (IOException e)

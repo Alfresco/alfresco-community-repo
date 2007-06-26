@@ -320,7 +320,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         assertEquals(1, results.length());
         results.close();
         
-        Thread.sleep(120000);
+        Thread.sleep(180000);
         
         results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
         assertEquals(4, results.length());
@@ -346,7 +346,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         fService.createDirectory("avmAsynchronousTest:/a/b", "c");
         fService.createSnapshot("avmAsynchronousTest", null, null);
         
-        Thread.sleep(120000);
+        Thread.sleep(180000);
         
         results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
         assertEquals(4, results.length());

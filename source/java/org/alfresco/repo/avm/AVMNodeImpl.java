@@ -25,8 +25,10 @@ package org.alfresco.repo.avm;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.domain.DbAccessControlList;
@@ -84,10 +86,16 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     private String fGUID;
     
     /**
+     * The Aspects that belong to this node.
+     */
+    private Set<QName> fAspects;
+    
+    /**
      * Default constructor.
      */
     protected AVMNodeImpl()
     {
+        fAspects = new HashSet<QName>();
     }
 
     /**
@@ -98,6 +106,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     protected AVMNodeImpl(long id,
                           AVMStore store)
     {
+        fAspects = new HashSet<QName>();
         fID = id;
         fVersionID = -1;
         fIsRoot = false;
@@ -351,16 +360,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     protected void copyAspects(AVMNode other)
     {
-        List<AVMAspectName> aspects =
-            AVMDAOs.Instance().fAVMAspectNameDAO.get(other);
-        for (AVMAspectName name : aspects)
-        {
-            AVMAspectName newName = 
-                new AVMAspectNameImpl();
-            newName.setName(name.getName());
-            newName.setNode(this);
-            AVMDAOs.Instance().fAVMAspectNameDAO.save(newName);
-        }
+        fAspects = new HashSet<QName>(other.getAspects());
     }
     
     protected void copyACLs(AVMNode other)
@@ -537,5 +537,22 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     public void setGuid(String guid) 
     {
         fGUID = guid;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNode#getAspects()
+     */
+    public Set<QName> getAspects()
+    {
+        return fAspects;
+    }
+    
+    /**
+     * Set the aspects on this node.
+     * @param aspects
+     */
+    public void setAspects(Set<QName> aspects)
+    {
+        fAspects = aspects;
     }
 }

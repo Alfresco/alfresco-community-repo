@@ -742,8 +742,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         try
         {
-            List<QName> aspects = fAVMService.getAspects(version, path);
-            for (QName name : aspects)
+            for (QName name : fAVMService.getAspects(version, path))
             {
                 result.add(name);
             }

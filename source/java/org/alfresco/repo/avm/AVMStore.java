@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 
 import org.alfresco.repo.domain.DbAccessControlList;
@@ -422,7 +423,7 @@ public interface AVMStore
      * @param path The path to the node.
      * @return A List of the QNames of the aspects.
      */
-    public List<QName> getAspects(int version, String path);
+    public Set<QName> getAspects(int version, String path);
     
     /**
      * Remove an aspect and all its properties from a node.

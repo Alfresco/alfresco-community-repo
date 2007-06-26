@@ -109,7 +109,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
                                                         getBasicAttributes(),
                                                         getContentData(lPath),
                                                         indirect.getProperties(),
-                                                        AVMDAOs.Instance().fAVMAspectNameDAO.get(indirect),
+                                                        indirect.getAspects(),
                                                         indirect.getAcl(),
                                                         getVersionID());
         newMe.setAncestor(this);

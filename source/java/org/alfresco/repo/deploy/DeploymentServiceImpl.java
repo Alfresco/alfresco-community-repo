@@ -31,6 +31,7 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 
 import org.alfresco.deployment.DeploymentReceiverService;
@@ -487,7 +488,7 @@ public class DeploymentServiceImpl implements DeploymentService
     {
         Map<QName, PropertyValue> props = fAVMService.getNodeProperties(version, src.getPath());
         remote.setNodeProperties(dst.getPath(), props);
-        List<QName> aspects = fAVMService.getAspects(version, src.getPath());
+        Set<QName> aspects = fAVMService.getAspects(version, src.getPath());
         for (QName aspect : aspects)
         {
             if (remote.hasAspect(-1, dst.getPath(), aspect))

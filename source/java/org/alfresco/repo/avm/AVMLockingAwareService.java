@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 
 import org.alfresco.repo.domain.PropertyValue;
@@ -226,7 +227,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.AVMService#getAspects(int, java.lang.String)
      */
-    public List<QName> getAspects(int version, String path)
+    public Set<QName> getAspects(int version, String path)
     {
         return fService.getAspects(version, path);
     }

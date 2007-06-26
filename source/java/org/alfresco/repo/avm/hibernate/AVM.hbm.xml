@@ -46,6 +46,11 @@
 		<!-- ACL -->
 		<many-to-one name="acl" column="acl_id" foreign-key="fk_avm_n_acl"
 			class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"/>
+		<set name="aspects" fetch="join" lazy="false" table="avm_aspects_new" cascade="all" optimistic-lock="true">
+			<cache usage="read-write"/>
+			<key column="id"/>
+			<element type="QName" not-null="true" column="name" length="200"/>
+		</set>
 		<!-- Deleted nodes -->
 		<subclass name="DeletedNodeImpl"
 			  proxy="DeletedNode"

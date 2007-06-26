@@ -759,7 +759,7 @@
         <property name="description"><value>patch.webscriptsExtension.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>54</value></property>
-        <property name="targetSchema"><value>55</value></property>
+        <property name="targetSchema"><value>55</value></property>        
         <!-- bootstrap view -->
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
@@ -815,10 +815,10 @@
             </list>
         </property>
     </bean>
-    
-	<bean id="patch.AVMLocking" class="org.alfresco.repo.admin.patch.impl.AVMLockingPatch" parent="basePatch">
-        <property name="id"><value>patch.AVMLocking</value></property>
-        <property name="description"><value>patch.AVMLocking.description</value></property>
+
+    <bean id="patch.AVMLocking" class="org.alfresco.repo.admin.patch.impl.AVMLockingPatch" parent="basePatch">
+        <property name="id"><value>patch.AVMLocking</value></property>        
+        <property name="description"><value>patch.AVMLocking.description</value></property>        
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>58</value></property>
         <property name="targetSchema"><value>59</value></property>
@@ -862,5 +862,15 @@
             </props>
         </property>
     </bean>
-    
+
+    <bean id="patch.AVMAspects" class="org.alfresco.repo.admin.patch.impl.AVMAspectsPatch" parent="basePatch">
+        <property name="id"><value>patch.AVMAspects</value></property>
+        <property name="description"><value>patch.AVMAspects.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>60</value></property>
+        <property name="targetSchema"><value>61</value></property>
+        <property name="avmAspectNameDAO">
+            <ref bean="avmAspectNameDAO"/>
+        </property>
+    </bean>
 </beans>

@@ -32,12 +32,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
-import org.alfresco.repo.avm.AVMAspectName;
 import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.domain.DbAccessControlList;
@@ -1289,16 +1289,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        if (AVMDAOs.Instance().fAVMAspectNameDAO.exists(node, aspectName))
-        {
-            throw new AVMExistsException("Aspect exists.");
-        }
-        AVMAspectName newName = 
-            new AVMAspectNameImpl();
-        newName.setNode(node);
-        newName.setName(aspectName);
+        node.getAspects().add(aspectName);
         node.setGuid(GUID.generate());
-        AVMDAOs.Instance().fAVMAspectNameDAO.save(newName);
     }
     
     /**
@@ -1307,7 +1299,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * @param path The path to the node.
      * @return A List of the QNames of the aspects.
      */
-    public List<QName> getAspects(int version, String path)
+    public Set<QName> getAspects(int version, String path)
     {
         Lookup lPath = lookup(version, path, false, true);
         if (lPath == null)
@@ -1315,14 +1307,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        List<AVMAspectName> names = 
-            AVMDAOs.Instance().fAVMAspectNameDAO.get(node);
-        ArrayList<QName> result = new ArrayList<QName>();
-        for (AVMAspectName name : names)
-        {
-            result.add(name.getName());
-        }
-        return result;
+        return node.getAspects();
     }
 
     /**
@@ -1338,7 +1323,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        AVMDAOs.Instance().fAVMAspectNameDAO.delete(node, aspectName);
+        node.getAspects().remove(aspectName);
         AspectDefinition def = RawServices.Instance().getDictionaryService().getAspect(aspectName);
         Map<QName, PropertyDefinition> properties =
             def.getProperties();
@@ -1364,7 +1349,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        return AVMDAOs.Instance().fAVMAspectNameDAO.exists(node, aspectName);
+        return node.getAspects().contains(aspectName);
     }
     
     /**
@@ -1447,14 +1432,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         dir.putChild(name, toLink);
         toLink.changeAncestor(child);
         toLink.setVersionID(child.getVersionID() + 1);
-        if (AVMDAOs.Instance().fAVMAspectNameDAO.exists(toLink, WCMModel.ASPECT_REVERTED))
-        {
-            AVMDAOs.Instance().fAVMAspectNameDAO.delete(toLink, WCMModel.ASPECT_REVERTED);
-        }
-        AVMAspectName aspect = new AVMAspectNameImpl();
-        aspect.setNode(toLink);
-        aspect.setName(WCMModel.ASPECT_REVERTED);
-        AVMDAOs.Instance().fAVMAspectNameDAO.save(aspect);
+        // TODO This really shouldn't be here. Leaking layers.
+        toLink.getAspects().add(WCMModel.ASPECT_REVERTED);
         PropertyValue value = new PropertyValue(null, toRevertTo.getId());
         toLink.setProperty(WCMModel.PROP_REVERTED_ID, value);
     }

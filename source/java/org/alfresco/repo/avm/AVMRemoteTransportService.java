@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 
 import org.alfresco.repo.domain.PropertyValue;
@@ -1013,7 +1014,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.remote.AVMRemoteTransport#getAspects(java.lang.String, int, java.lang.String)
      */
-    public List<QName> getAspects(String ticket, int version, String path) 
+    public Set<QName> getAspects(String ticket, int version, String path) 
     {
         fAuthService.validate(ticket);
         return fAVMService.getAspects(version, path);

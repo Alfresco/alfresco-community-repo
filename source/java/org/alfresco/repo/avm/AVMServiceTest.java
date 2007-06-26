@@ -102,6 +102,105 @@ import org.alfresco.util.Pair;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test properties.
+     */
+    public void testProperties()
+    {
+        try
+        {
+            setupBasicTree();
+            
+            StoreRef storeRef = AVMNodeConverter.ToStoreRef("main");
+            SearchService searchService = fIndexerAndSearcher.getSearcher(storeRef, true);
+            ResultSet   results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}SillyProperty")+":\"Silly\"");
+            assertEquals(0, results.length());
+            results.close();
+            
+            QName name = QName.createQName("silly.uri", "SillyProperty");
+            PropertyValue value = new PropertyValue(name, "Silly Property Value");
+            fService.setNodeProperty("main:/a/b/c/foo", name, value);
+            fService.createSnapshot("main", null, null);
+            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}SillyProperty")+":\"Silly\"");
+            assertEquals(1, results.length());
+            results.close();
+            PropertyValue returned = fService.getNodeProperty(-1, "main:/a/b/c/foo", name);
+            assertEquals(value.toString(), returned.toString());
+            Map<QName, PropertyValue> props = fService.getNodeProperties(-1, "main:/a/b/c/foo");
+            assertEquals(1, props.size());
+            assertEquals(value.toString(), props.get(name).toString());
+            
+            
+            props = new HashMap<QName, PropertyValue>();
+            QName n1 = QName.createQName("silly.uri", "Prop1");
+            PropertyValue p1 = new PropertyValue(null, new Date(System.currentTimeMillis()));
+            props.put(n1, p1);
+            QName n2 = QName.createQName("silly.uri", "Prop2");
+            PropertyValue p2 = new PropertyValue(null, "A String Property.");
+            props.put(n2, p2);
+            QName n3 = QName.createQName("silly.uri", "Prop3");
+            PropertyValue p3 = new PropertyValue(null, 42);
+            props.put(n3, p3);
+            fService.setNodeProperties("main:/a/b/c/bar", props);
+            fService.createSnapshot("main", null, null);
+            props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
+            assertEquals(3, props.size());
+            assertEquals(p1.toString(), props.get(n1).toString());
+            assertEquals(p2.toString(), props.get(n2).toString());
+            assertEquals(p3.toString(), props.get(n3).toString());
+            
+            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop1")+":\"" + props.get(n1).getStringValue() +"\"");
+            assertEquals(1, results.length());
+            results.close();
+            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop2")+":\"" + props.get(n2).getStringValue() +"\"");
+            assertEquals(1, results.length());
+            results.close();
+            
+            fService.deleteNodeProperty("main:/a/b/c/bar", n1);
+            fService.createSnapshot("main", null, null);
+            
+            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop1")+":\"" + props.get(n1).getStringValue() +"\"");
+            assertEquals(0, results.length());
+            results.close();
+            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop2")+":\"" + props.get(n2).getStringValue() +"\"");
+            assertEquals(1, results.length());
+            results.close();
+            
+            props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
+            assertEquals(2, props.size());
+            assertEquals(p2.toString(), props.get(n2).toString());
+            assertEquals(p3.toString(), props.get(n3).toString());
+            fService.deleteNodeProperties("main:/a/b/c/bar");
+            fService.createSnapshot("main", null, null);
+            
+            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop1")+":\"" + p1.getStringValue() +"\"");
+            assertEquals(0, results.length());
+            results.close();
+            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop2")+":\"" + props.get(n2).getStringValue() +"\"");
+            assertEquals(0, results.length());
+            results.close();
+            
+            props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
+            assertEquals(0, props.size());
+            fService.removeNode("main:/a/b/c/foo");
+            fService.setNodeProperty("main:/a/b/c/foo", QName.createQName("silly.uri", "Prop1"), new PropertyValue(
+                    null, 42));
+            assertEquals(1, fService.getNodeProperties(-1, "main:/a/b/c/foo").size());
+            fService.createSnapshot("main", null, null);
+            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop1")+":\"" + p1.getStringValue() +"\"");
+            assertEquals(0, results.length());
+            results.close();
+            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop2")+":\"" + p2.getStringValue() +"\"");
+            assertEquals(0, results.length());
+            results.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+
+    /**
      * Test getStoreVersionRootPaths().
      */
     public void testGetStoreVersionRootPaths()
@@ -5029,103 +5128,6 @@ public class AVMServiceTest extends AVMServiceTestBase
         }
     }
 
-    /**
-     * Test properties.
-     */
-    public void testProperties()
-    {
-        try
-        {
-            setupBasicTree();
-            
-            StoreRef storeRef = AVMNodeConverter.ToStoreRef("main");
-            SearchService searchService = fIndexerAndSearcher.getSearcher(storeRef, true);
-            ResultSet   results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}SillyProperty")+":\"Silly\"");
-            assertEquals(0, results.length());
-            results.close();
-            
-            QName name = QName.createQName("silly.uri", "SillyProperty");
-            PropertyValue value = new PropertyValue(name, "Silly Property Value");
-            fService.setNodeProperty("main:/a/b/c/foo", name, value);
-            fService.createSnapshot("main", null, null);
-            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}SillyProperty")+":\"Silly\"");
-            assertEquals(1, results.length());
-            results.close();
-            PropertyValue returned = fService.getNodeProperty(-1, "main:/a/b/c/foo", name);
-            assertEquals(value.toString(), returned.toString());
-            Map<QName, PropertyValue> props = fService.getNodeProperties(-1, "main:/a/b/c/foo");
-            assertEquals(1, props.size());
-            assertEquals(value.toString(), props.get(name).toString());
-            
-            
-            props = new HashMap<QName, PropertyValue>();
-            QName n1 = QName.createQName("silly.uri", "Prop1");
-            PropertyValue p1 = new PropertyValue(null, new Date(System.currentTimeMillis()));
-            props.put(n1, p1);
-            QName n2 = QName.createQName("silly.uri", "Prop2");
-            PropertyValue p2 = new PropertyValue(null, "A String Property.");
-            props.put(n2, p2);
-            QName n3 = QName.createQName("silly.uri", "Prop3");
-            PropertyValue p3 = new PropertyValue(null, 42);
-            props.put(n3, p3);
-            fService.setNodeProperties("main:/a/b/c/bar", props);
-            fService.createSnapshot("main", null, null);
-            props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
-            assertEquals(3, props.size());
-            assertEquals(p1.toString(), props.get(n1).toString());
-            assertEquals(p2.toString(), props.get(n2).toString());
-            assertEquals(p3.toString(), props.get(n3).toString());
-            
-            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop1")+":\"" + props.get(n1).getStringValue() +"\"");
-            assertEquals(1, results.length());
-            results.close();
-            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop2")+":\"" + props.get(n2).getStringValue() +"\"");
-            assertEquals(1, results.length());
-            results.close();
-            
-            fService.deleteNodeProperty("main:/a/b/c/bar", n1);
-            fService.createSnapshot("main", null, null);
-            
-            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop1")+":\"" + props.get(n1).getStringValue() +"\"");
-            assertEquals(0, results.length());
-            results.close();
-            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop2")+":\"" + props.get(n2).getStringValue() +"\"");
-            assertEquals(1, results.length());
-            results.close();
-            
-            props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
-            assertEquals(2, props.size());
-            assertEquals(p2.toString(), props.get(n2).toString());
-            assertEquals(p3.toString(), props.get(n3).toString());
-            fService.deleteNodeProperties("main:/a/b/c/bar");
-            fService.createSnapshot("main", null, null);
-            
-            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop1")+":\"" + props.get(n1).getStringValue() +"\"");
-            assertEquals(0, results.length());
-            results.close();
-            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop2")+":\"" + props.get(n2).getStringValue() +"\"");
-            assertEquals(0, results.length());
-            results.close();
-            
-            props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
-            assertEquals(0, props.size());
-            fService.removeNode("main:/a/b/c/foo");
-            fService.setNodeProperty("main:/a/b/c/foo", QName.createQName("silly.uri", "Prop1"), new PropertyValue(
-                    null, 42));
-            assertEquals(1, fService.getNodeProperties(-1, "main:/a/b/c/foo").size());
-            fService.createSnapshot("main", null, null);
-            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop1")+":\"" + props.get(n1).getStringValue() +"\"");
-            assertEquals(0, results.length());
-            results.close();
-            results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop2")+":\"" + props.get(n2).getStringValue() +"\"");
-            assertEquals(0, results.length());
-            results.close();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace(System.err);
-        }
-    }
 
     /**
      * Test properties on stores.
@@ -5197,7 +5199,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             
             fService.removeNode("main:/a/b/c/bar");
             fService.addAspect("main:/a/b/c/bar", ContentModel.ASPECT_TITLED);
-            List<QName> names = fService.getAspects(-1, "main:/a/b/c/foo");
+            Set<QName> names = fService.getAspects(-1, "main:/a/b/c/foo");
             assertEquals(2, names.size());
             assertTrue(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_TITLED));
             assertFalse(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_AUTHOR));

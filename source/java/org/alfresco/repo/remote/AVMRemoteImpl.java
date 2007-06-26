@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 
 import org.alfresco.repo.domain.PropertyValue;
@@ -492,7 +493,7 @@ public class AVMRemoteImpl implements AVMRemote
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.remote.AVMRemote#getAspects(int, java.lang.String)
      */
-    public List<QName> getAspects(int version, String path) 
+    public Set<QName> getAspects(int version, String path) 
     {
         return fTransport.getAspects(fTicketHolder.getTicket(), version, path);
     }

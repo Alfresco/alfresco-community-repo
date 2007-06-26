@@ -31,6 +31,7 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 
 import org.alfresco.repo.domain.DbAccessControlList;
@@ -1285,7 +1286,7 @@ public class AVMServiceImpl implements AVMService
      * @param path The path to the node.
      * @return A List of the QNames of the aspects.
      */
-    public List<QName> getAspects(int version, String path)
+    public Set<QName> getAspects(int version, String path)
     {
         if (path == null)
         {
@@ -1424,7 +1425,7 @@ public class AVMServiceImpl implements AVMService
         // In either case copy properties, aspects, and acls.
         Map<QName, PropertyValue> props = getNodeProperties(version, desc.getPath());
         setNodeProperties(newPath, props);
-        List<QName> aspects = getAspects(version, desc.getPath());
+        Set<QName> aspects = getAspects(version, desc.getPath());
         for (QName aspect : aspects)
         {
             addAspect(newPath, aspect);

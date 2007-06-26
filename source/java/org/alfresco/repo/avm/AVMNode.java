@@ -23,6 +23,7 @@
 package org.alfresco.repo.avm;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
@@ -228,4 +229,10 @@ public interface AVMNode
      * @param guid
      */
     public void setGuid(String guid);
+    
+    /**
+     * Get the Aspects that this node has.
+     * @return A Set of Aspects names.
+     */
+    public Set<QName> getAspects();
 }

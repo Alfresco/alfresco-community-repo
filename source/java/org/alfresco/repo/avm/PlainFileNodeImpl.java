@@ -23,8 +23,10 @@
 
 package org.alfresco.repo.avm;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.domain.DbAccessControlList;
@@ -117,7 +119,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                              BasicAttributes attrs,
                              ContentData content,
                              Map<QName, PropertyValue> props,
-                             List<AVMAspectName> aspects,
+                             Set<QName> aspects,
                              DbAccessControlList acl,
                              int versionID)
     {
@@ -128,14 +130,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         setProperties(props);
-        for (AVMAspectName name : aspects)
-        {
-            AVMAspectName newName =
-                new AVMAspectNameImpl();
-            newName.setName(name.getName());
-            newName.setNode(this);
-            AVMDAOs.Instance().fAVMAspectNameDAO.save(newName);
-        }
+        setAspects(new HashSet<QName>(aspects));
         if (acl != null)
         {
             setAcl(acl.getCopy());

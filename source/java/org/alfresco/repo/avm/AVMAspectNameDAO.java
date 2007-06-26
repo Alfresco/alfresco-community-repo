@@ -23,6 +23,7 @@
 
 package org.alfresco.repo.avm;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.alfresco.service.namespace.QName;
@@ -72,4 +73,10 @@ public interface AVMAspectNameDAO
      * @return Whether the aspect is there.
      */
     public boolean exists(AVMNode node, QName name);
+    
+    /**
+     * Get an iterator over all aspect instances.
+     * @return
+     */
+    public Iterator<AVMAspectName> iterator();
 }

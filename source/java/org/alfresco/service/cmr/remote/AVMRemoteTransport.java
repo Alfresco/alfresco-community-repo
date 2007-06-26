@@ -6,6 +6,7 @@ package org.alfresco.service.cmr.remote;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 
 import org.alfresco.repo.domain.PropertyValue;
@@ -471,7 +472,7 @@ public interface AVMRemoteTransport
      * @return A List of the QNames of the aspects.
      * @throws AVMNotFoundException   
      */
-    public List<QName> getAspects(String ticket, int version, String path);
+    public Set<QName> getAspects(String ticket, int version, String path);
     
     /**
      * Remove an aspect and its properties from a node.

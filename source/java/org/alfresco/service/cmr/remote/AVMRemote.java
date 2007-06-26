@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 
 import org.alfresco.repo.domain.PropertyValue;
@@ -457,7 +458,7 @@ public interface AVMRemote
      * @return A List of the QNames of the aspects.
      * @throws AVMNotFoundException   
      */
-    public List<QName> getAspects(int version, String path);
+    public Set<QName> getAspects(int version, String path);
     
     /**
      * Remove an aspect and its properties from a node.

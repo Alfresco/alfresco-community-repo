@@ -23,6 +23,7 @@
 
 package org.alfresco.repo.avm.hibernate;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.alfresco.repo.avm.AVMAspectName;
@@ -112,5 +113,16 @@ public class AVMAspectNameDAOHibernate extends HibernateDaoSupport
         query.setEntity("node", node);
         query.setParameter("name", name);
         return query.uniqueResult() != null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMAspectNameDAO#iterator()
+     */
+    @SuppressWarnings("unchecked")
+    public Iterator<AVMAspectName> iterator()
+    {
+        Query query =
+            getSession().createQuery("from AVMAspectNameImpl aa");
+        return (Iterator<AVMAspectName>)query.iterate();
     }
 }

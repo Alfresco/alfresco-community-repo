@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 
 import org.alfresco.repo.content.ContentStore;
@@ -2260,7 +2261,7 @@ public class AVMRepository
      * @param path The path to the node.
      * @return A List of the QNames of the Aspects.
      */
-    public List<QName> getAspects(int version, String path)
+    public Set<QName> getAspects(int version, String path)
     {
         fLookupCount.set(1);
         try

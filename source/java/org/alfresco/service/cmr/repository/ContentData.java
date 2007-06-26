@@ -25,6 +25,8 @@
 package org.alfresco.service.cmr.repository;
 
 import java.io.Serializable;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
@@ -154,13 +156,13 @@ public class ContentData implements Serializable
      *      <b>mimetype</b> must be supplied.
      * @param mimetype the content mimetype.  This is mandatory if the <b>contentUrl</b> is specified.
      * @param size the content size.
-     * @param encoding the content encoding (may be <tt>null</tt>).
+     * @param encoding the content encoding.  This is mandatory if the <b>contentUrl</b> is specified.
      * @param locale the locale of the content (may be <tt>null</tt>).  If <tt>null</tt>, the
      *      {@link I18NUtil#getLocale() default locale} will be used.
      */
     public ContentData(String contentUrl, String mimetype, long size, String encoding, Locale locale)
     {
-        checkContentUrl(contentUrl, mimetype);
+        checkContentUrl(contentUrl, mimetype, encoding);
         this.contentUrl = contentUrl;
         this.mimetype = mimetype;
         this.size = size;
@@ -217,10 +219,11 @@ public class ContentData implements Serializable
      * Checks that the content URL is correct, and also that the mimetype is
      * non-null if the URL is present.
      * 
-     * @param contentUrl the content URL to check
-     * @param mimetype
+     * @param contentUrl    the content URL to check
+     * @param mimetype      the encoding must be present if the content URL is present
+     * @param encoding      the encoding must be valid and present if the content URL is present
      */
-    private void checkContentUrl(String contentUrl, String mimetype)
+    private void checkContentUrl(String contentUrl, String mimetype, String encoding)
     {
         // check the URL
         if (contentUrl != null && contentUrl.length() > 0)
@@ -243,10 +246,33 @@ public class ContentData implements Serializable
             // check that mimetype is present if URL is present
             if (mimetype == null)
             {
-                throw new IllegalArgumentException(
+                throw new IllegalArgumentException("\n" +
                         "The content mimetype must be set whenever the URL is set: \n" +
                         "   content URL: " + contentUrl + "\n" +
                         "   mimetype: " + mimetype);
+            }
+            
+            // Chekc that the encoding is present if the URL is present
+            if (encoding == null)
+            {
+                throw new IllegalArgumentException("\n" +
+                        "The content encoding must be set whenever the URL is set: \n" +
+                        "   content URL: " + contentUrl + "\n" +
+                        "   encoding: " + encoding);
+            }
+        }
+        // Check the encoding
+        if (encoding != null)
+        {
+            try
+            {
+                Charset.forName(encoding);
+            }
+            catch (IllegalCharsetNameException e)
+            {
+                throw new IllegalArgumentException("\n" +
+                        "The content encoding is not supported by the server: \n" +
+                        "   encoding: " + encoding);
             }
         }
     }

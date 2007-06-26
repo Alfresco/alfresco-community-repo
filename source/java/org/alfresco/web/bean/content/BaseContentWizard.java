@@ -26,6 +26,7 @@ package org.alfresco.web.bean.content;
 
 import java.io.File;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,6 +69,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
    protected String title;
    protected String description;
    protected String mimeType;
+   protected String encoding;
    protected String objectType;
    protected boolean inlineEdit;
    protected boolean otherPropertiesChoiceVisible = true;
@@ -159,7 +161,23 @@ public abstract class BaseContentWizard extends BaseWizardBean
    {
       this.mimeType = mimeType;
    }
-   
+
+   /**
+    * @return  Returns the encoding currently selected
+    */
+   public String getEncoding()
+   {
+      return encoding;
+   }
+
+   /**
+    * @param encoding   the document's encoding
+    */
+   public void setEncoding(String encoding)
+   {
+      this.encoding = encoding;
+   }
+
    /**
     * @return Returns the object type currenty selected
     */
@@ -248,6 +266,18 @@ public abstract class BaseContentWizard extends BaseWizardBean
    public void setShowOtherProperties(boolean showOthers)
    {
       this.showOtherProperties = showOthers;
+   }
+   
+   public List<SelectItem> getEncodings()
+   {
+      Map<String, Charset> availableCharsets = Charset.availableCharsets();
+      List<SelectItem> items = new ArrayList<SelectItem>(availableCharsets.size());
+      for (Charset charset : availableCharsets.values())
+      {
+         SelectItem item = new SelectItem(charset.name(), charset.displayName());
+         items.add(item);
+      }
+      return items;
    }
    
    /**
@@ -407,7 +437,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
       ContentWriter writer = contentService.getWriter(fileNodeRef, ContentModel.PROP_CONTENT, true);
       // set the mimetype and encoding
       writer.setMimetype(this.mimeType);
-      writer.setEncoding("UTF-8");
+      writer.setEncoding(this.encoding);
       if (fileContent != null)
       {
          writer.putContent(fileContent);

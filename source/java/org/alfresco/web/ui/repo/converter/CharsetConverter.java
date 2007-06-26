@@ -24,27 +24,29 @@
  */
 package org.alfresco.web.ui.repo.converter;
 
+import java.nio.charset.Charset;
+
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.i18n.I18NUtil;
 
 /**
- * Converter class to convert a MIME type to an appropriate display name
+ * Converter class to convert a Charset to a String
  * 
- * @author gavinc
+ * @since 2.1
+ * @author Derek Hulley
  */
-public class MimeTypeConverter implements Converter
+public class CharsetConverter implements Converter
 {
    /**
     * <p>The standard converter id for this converter.</p>
     */
-   public static final String CONVERTER_ID = "org.alfresco.faces.MimeTypeConverter";
+   public static final String CONVERTER_ID = "org.alfresco.faces.CharsetConverter";
 
    /**
-    * @see javax.faces.convert.Converter#getAsObject(javax.faces.context.FacesContext, javax.faces.component.UIComponent, java.lang.String)
+    * {@inheritDoc}
     */
    public Object getAsObject(FacesContext context, UIComponent component, String value)
    {
@@ -52,16 +54,20 @@ public class MimeTypeConverter implements Converter
    }
 
    /**
-    * @see javax.faces.convert.Converter#getAsString(javax.faces.context.FacesContext, javax.faces.component.UIComponent, java.lang.Object)
+    * {@inheritDoc}
     */
    public String getAsString(FacesContext context, UIComponent component, Object value)
    {
+      if (value == null)
+      {
+         throw new IllegalArgumentException(I18NUtil.getMessage("error_charset_null"));
+      }
+      
       String result = null;
       
-      if (value instanceof String)
+      if (value instanceof Charset)
       {
-         MimetypeService mimetypeService = Repository.getServiceRegistry(context).getMimetypeService();
-         result = mimetypeService.getDisplaysByMimetype().get(value.toString());
+         result = ((Charset)value).name();
       }
       else if (value != null)
       {

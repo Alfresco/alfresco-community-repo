@@ -25,6 +25,8 @@
 package org.alfresco.web.bean.ajax;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URLDecoder;
 import java.util.HashMap;
@@ -125,8 +127,31 @@ public class FileUploadBean
             NodeRef containerRef = pathToNodeRef(fc, currentPath);
             if (containerRef != null)
             {
-               // Try and extract metadata from the file
+               // Guess the mimetype
                String mimetype = Repository.getMimeTypeForFileName(fc, filename);
+               
+               // Now guess the encoding
+               String encoding = "UTF-8";
+               InputStream is = null;
+               try
+               {
+                  is = new FileInputStream(file);
+                  encoding = Repository.guessEncoding(fc, is, mimetype);
+               }
+               catch (Throwable e)
+               {
+                  // Bad as it is, it's not terminal
+                  logger.error("Failed to guess character encoding of file: " + file, e);
+               }
+               finally
+               {
+                  if (is != null)
+                  {
+                     try { is.close(); } catch (Throwable e) {}
+                  }
+               }
+               
+               // Try and extract metadata from the file
                ContentReader cr = new FileContentReader(file);
                cr.setMimetype(mimetype);
                
@@ -170,7 +195,7 @@ public class FileUploadBean
                // get a writer for the content and put the file
                ContentWriter writer = services.getContentService().getWriter(fileNodeRef, ContentModel.PROP_CONTENT, true);
                writer.setMimetype(mimetype);
-               writer.setEncoding("UTF-8");
+               writer.setEncoding(encoding);
                writer.putContent(file);
             }
          }

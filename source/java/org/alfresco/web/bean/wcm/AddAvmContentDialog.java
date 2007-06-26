@@ -37,7 +37,6 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.bean.content.AddContentDialog;
 
 /**
@@ -101,7 +100,7 @@ public class AddAvmContentDialog extends AddContentDialog
       // get a writer for the content and put the file
       ContentWriter writer = contentService.getWriter(fileNodeRef, ContentModel.PROP_CONTENT, true);
       writer.setMimetype(this.mimeType);
-      writer.setEncoding("UTF-8");
+      writer.setEncoding(this.encoding);
       if (fileContent != null)
       {
          writer.putContent(fileContent);

@@ -24,7 +24,10 @@
  */
 package org.alfresco.web.bean.content;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -68,6 +71,7 @@ public class AddContentDialog extends BaseContentWizard
       // Try and extract metadata from the file
       ContentReader cr = new FileContentReader(this.file);
       cr.setMimetype(this.mimeType);
+      cr.setEncoding(this.encoding);
       // create properties for content type
       Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>(5, 1.0f);
       
@@ -148,9 +152,29 @@ public class AddContentDialog extends BaseContentWizard
       // NOTE: This is a far from ideal solution but will do until we have 
       //       a pure JSF upload solution working. This method is only called
       //       after a file is uploaded, so we can calculate the mime type and
-      //       determine whether to enable inline editing in here. 
-      this.mimeType = Repository.getMimeTypeForFileName(
-            FacesContext.getCurrentInstance(), this.fileName);
+      //       determine whether to enable inline editing in here.
+      FacesContext fc = FacesContext.getCurrentInstance();
+      this.mimeType = Repository.getMimeTypeForFileName(fc, this.fileName);
+      this.encoding = "UTF-8";
+      InputStream is = null;
+      try
+      {
+         if (this.file != null)
+         {
+            is = new BufferedInputStream(new FileInputStream(this.file));
+            this.encoding = Repository.guessEncoding(fc, is, this.mimeType);
+         }
+      }
+      catch (Throwable e)
+      {
+         // Not terminal
+         logger.error("Failed to get encoding from file: " + this.fileName, e);
+      }
+      finally
+      {
+         try { is.close(); } catch (Throwable e) {}         // Includes NPE
+      }
+      
       this.inlineEdit = (this.mimeType.equals(MimetypeMap.MIMETYPE_HTML));
       
       // get the file upload message

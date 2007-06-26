@@ -25,6 +25,8 @@
 package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
@@ -32,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -155,17 +158,13 @@ public class UploadContentServlet extends BaseServlet
             return;
         }
 
-        // Get the encoding
-        String encoding = req.getParameter(ARG_ENCODING);
-        if (encoding == null || encoding.length() == 0)
-        {
-            encoding = "UTF-8";
-        }
-
         // get the services we need to retrieve the content
         ServiceRegistry serviceRegistry = getServiceRegistry(getServletContext());
         ContentService contentService = serviceRegistry.getContentService();
         PermissionService permissionService = serviceRegistry.getPermissionService();
+        MimetypeService mimetypeService = serviceRegistry.getMimetypeService();
+        
+        InputStream inputStream = req.getInputStream();
 
         // Sort out the mimetype
         String mimetype = req.getParameter(ARG_MIMETYPE);
@@ -186,6 +185,16 @@ public class UploadContentServlet extends BaseServlet
                     }
                 }
             }
+        }
+
+        // Get the encoding
+        String encoding = req.getParameter(ARG_ENCODING);
+        if (encoding == null || encoding.length() == 0)
+        {
+           // Get the encoding
+           ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
+           Charset charset = charsetFinder.getCharset(inputStream, mimetype);
+           encoding = charset.name();
         }
 
         if (logger.isDebugEnabled())

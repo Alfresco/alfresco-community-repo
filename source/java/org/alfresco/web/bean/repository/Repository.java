@@ -22,7 +22,9 @@
  * http://www.alfresco.com/legal/licensing" */
 package org.alfresco.web.bean.repository;
 
+import java.io.InputStream;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,6 +39,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.configuration.ConfigurableService;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.metadata.MetadataExtracter;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -506,6 +509,21 @@ public final class Repository
                   "   extracter: " + extracter);
           return false;
       }
+   }
+   
+   /**
+    * Extract the characterset from the stream
+    * 
+    * @param context       the Faces Context
+    * @param is            the stream of characters or data
+    * @param mimetype      the stream's mimetype, or <tt>null</tt> if unknown
+    * @return              Returns the guessed characterset and never <tt>null</tt>
+    */
+   public static String guessEncoding(FacesContext context, InputStream is, String mimetype)
+   {
+      ContentCharsetFinder charsetFinder = getServiceRegistry(context).getMimetypeService().getContentCharsetFinder();
+      Charset charset = charsetFinder.getCharset(is, mimetype);
+      return charset.name();
    }
 
    /**

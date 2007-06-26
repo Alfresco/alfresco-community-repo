@@ -227,6 +227,17 @@ if (dialog != null && dialog.getFileName() != null)
                                  <tr>
                                     <td></td>
                                     <td>
+                                       <h:outputText id="text12" value="#{msg.encoding}:" />
+                                    </td>
+                                    <td>
+                                       <h:selectOneMenu id="encoding" value="#{AddContentDialog.encoding}">
+                                          <f:selectItems value="#{AddContentDialog.encodings}" />
+                                       </h:selectOneMenu>
+                                    </td>
+                                 </tr>
+                                 <tr>
+                                    <td></td>
+                                    <td>
                                        <h:outputText id="text7" value="#{msg.content_type}:" />
                                     </td>
                                     <td>

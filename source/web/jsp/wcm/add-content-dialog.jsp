@@ -222,6 +222,15 @@ if (dialog != null && dialog.getFileName() != null)
                                        <r:mimeTypeSelector id="mime-type" value="#{AddAvmContentDialog.mimeType}" />
                                     </td>
                                  </tr>
+                                 <tr>
+                                    <td></td>
+                                    <td>
+                                       <h:outputText id="text8" value="#{msg.encoding}:" />
+                                    </td>
+                                    <td>
+                                       <r:charsetSelector id="charset" value="#{AddAvmContentDialog.encoding}" />
+                                    </td>
+                                 </tr>
                                  <% } %>
                                  
                               </table>

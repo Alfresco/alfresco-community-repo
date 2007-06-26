@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleServiceException;
@@ -540,8 +541,10 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     	Rule rule = new Rule(ruleNodeRef);
         
         // Set the title and description
-        rule.setTitle((String)props.get(ContentModel.PROP_TITLE));
-        rule.setDescription((String)props.get(ContentModel.PROP_DESCRIPTION));
+        String title = DefaultTypeConverter.INSTANCE.convert(String.class, props.get(ContentModel.PROP_TITLE));
+        String description = DefaultTypeConverter.INSTANCE.convert(String.class, props.get(ContentModel.PROP_DESCRIPTION));
+        rule.setTitle(title);
+        rule.setDescription(description);
         
         // Set the rule types
         rule.setRuleTypes((List<String>)props.get(RuleModel.PROP_RULE_TYPE));

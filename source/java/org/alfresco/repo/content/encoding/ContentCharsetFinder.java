@@ -79,11 +79,15 @@ public class ContentCharsetFinder
      * 
      * @param is                a stream that will not be affected by the call, but must
      *                          support marking
-     * @param mimetype          the mimetype of the stream data
+     * @param mimetype          the mimetype of the stream data - <tt>null</tt> if not known
      * @return                  returns a characterset and never <tt>null</tt>
      */
     public Charset getCharset(InputStream is, String mimetype)
     {
+        if (mimetype == null)
+        {
+            return defaultCharset;
+        }
         // Is it text?
         if (!mimetypeService.isText(mimetype))
         {

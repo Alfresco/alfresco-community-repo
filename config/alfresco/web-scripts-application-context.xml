@@ -12,6 +12,7 @@
       <property name="nodeService" ref="nodeService" />
       <property name="namespaceService" ref="namespaceService" />
       <property name="contentService" ref="contentService" />
+      <property name="fileFolderService" ref="fileFolderService" />
       <property name="searchService" ref="SearchService" />
    </bean>
    
@@ -198,6 +199,16 @@
 
    <!--  Retrieve Web Script Description Document -->
    <bean id="webscript.org.alfresco.scriptdescription.get" class="org.alfresco.web.scripts.bean.ServiceDescription" parent="webscript" />
+
+   <!--  Web Script Dump -->
+   <bean id="webscript.org.alfresco.scriptdump.get" class="org.alfresco.web.scripts.bean.ServiceDump" parent="webscript" >
+      <property name="storage" ref="webscripts.storage"/>
+   </bean>
+
+   <!--  Web Script Install -->
+   <bean id="webscript.org.alfresco.scriptinstall.post" class="org.alfresco.web.scripts.bean.ServiceInstall" parent="webscript" >
+      <property name="storage" ref="webscripts.storage"/>
+   </bean>
 
    <!--  Javascript APIs -->
    <bean id="webscript.org.alfresco.jsdebugger.get" class="org.alfresco.web.scripts.bean.JavascriptDebugger" parent="webscript">

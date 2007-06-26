@@ -59,16 +59,43 @@ public interface WebScriptStore
     public String[] getDescriptionDocumentPaths();
 
     /**
-     * Gets a description document
+     * Gets the paths of all implementation files for a given Web Script
      * 
-     * @param documentPath  description document path
-     * @return  input stream onto description document
+     * @param script  web script
+     * @return  array of implementation document paths
+     */
+    public String[] getScriptDocumentPaths(WebScript script);
+
+    /**
+     * Determines if the document exists
+     * 
+     * @param documentPath  document path
+     * @return  true => exists, false => does not exist
+     */
+    public boolean hasDocument(String documentPath);
+
+    /**
+     * Gets a document
+     * 
+     * @param documentPath  document path
+     * @return  input stream onto document
      * 
      * @throws IOException
      */
-    public InputStream getDescriptionDocument(String documentPath)
+    public InputStream getDocument(String documentPath)
         throws IOException;
-
+    
+    /**
+     * Creates a document
+     * 
+     * @param documentPath
+     * @param content
+     * 
+     * @throws IOException
+     */
+    public void createDocument(String documentPath, String content)
+        throws IOException;
+    
     /**
      * Gets the template loader for this store
      * 

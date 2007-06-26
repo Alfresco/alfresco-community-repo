@@ -215,7 +215,7 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                     InputStream serviceDescIS = null;
                     try
                     {
-                        serviceDescIS = apiStore.getDescriptionDocument(serviceDescPath);
+                        serviceDescIS = apiStore.getDocument(serviceDescPath);
                         serviceDesc = createDescription(apiStore, serviceDescPath, serviceDescIS);
                     }
                     catch(IOException e)

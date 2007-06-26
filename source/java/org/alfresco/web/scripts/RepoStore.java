@@ -24,11 +24,15 @@
  */
 package org.alfresco.web.scripts;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -36,8 +40,11 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptLocation;
@@ -74,6 +81,7 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
     protected SearchService searchService;
     protected NodeService nodeService;
     protected ContentService contentService;
+    protected FileFolderService fileService;
     protected NamespaceService namespaceService;
 
     
@@ -107,6 +115,14 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
+    }
+
+    /**
+     * Sets the file service
+     */
+    public void setFileFolderService(FileFolderService fileService)
+    {
+        this.fileService = fileService;
     }
 
     /**
@@ -259,6 +275,49 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptStore#getScriptDocumentPaths(org.alfresco.web.scripts.WebScript)
+     */
+    public String[] getScriptDocumentPaths(final WebScript script)
+    {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String[]>()
+        {
+            public String[] doWork() throws Exception
+            {
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<String[]>()
+                {
+                    public String[] execute() throws Exception
+                    {
+                        int baseDirLength = baseDir.length() +1;
+                        List<String> documentPaths = new ArrayList<String>();
+                        String scriptPath = script.getDescription().getScriptPath();
+                        NodeRef scriptNodeRef = findNodeRef(scriptPath);
+                        if (scriptNodeRef != null)
+                        {
+                            org.alfresco.service.cmr.repository.Path repoScriptPath = nodeService.getPath(scriptNodeRef);
+                            String id = script.getDescription().getId().substring(script.getDescription().getScriptPath().length() +1);
+                            String query = "+PATH:\"" + repoScriptPath.toPrefixString(namespaceService) + "/*" + "\" +@cm\\:name:\"" + id + "\"";
+                            ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
+                            List<NodeRef> nodes = resultSet.getNodeRefs();
+                            for (NodeRef nodeRef : nodes)
+                            {
+                                String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                                if (name.startsWith(id))
+                                {
+                                    String nodeDir = getPath(nodeRef);
+                                    String documentPath = nodeDir.substring(baseDirLength);
+                                    documentPaths.add(documentPath);
+                                }
+                            }
+                        }
+                        
+                        return documentPaths.toArray(new String[documentPaths.size()]);
+                    }
+                });
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+    
+    /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptStore#getDescriptionDocumentPaths()
      */
     public String[] getDescriptionDocumentPaths()
@@ -274,7 +333,7 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
                         int baseDirLength = baseDir.length() +1;
                         List<String> documentPaths = new ArrayList<String>();
                         
-                        String query = "PATH:\"" + repoPath + "//*\" AND @cm\\:name:\"*desc.xml\"";
+                        String query = "+PATH:\"" + repoPath + "//*\" AND +@cm\\:name:\"desc.xml\"";
                         ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
                         List<NodeRef> nodes = resultSet.getNodeRefs();
                         for (NodeRef nodeRef : nodes)
@@ -295,9 +354,30 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptStore#hasDocument(java.lang.String)
+     */
+    public boolean hasDocument(final String documentPath)
+    {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
+        {
+            public Boolean doWork() throws Exception
+            {
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Boolean>()
+                {
+                    public Boolean execute() throws Exception
+                    {
+                        NodeRef nodeRef = findNodeRef(documentPath);
+                        return (nodeRef != null);
+                    }
+                });
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+
+    /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptStore#getDescriptionDocument(java.lang.String)
      */
-    public InputStream getDescriptionDocument(final String documentPath)      
+    public InputStream getDocument(final String documentPath)      
         throws IOException
     {
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<InputStream>()
@@ -311,7 +391,7 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
                         NodeRef nodeRef = findNodeRef(documentPath);
                         if (nodeRef == null)
                         {
-                            throw new IOException("Description document " + documentPath + " does not exist.");
+                            throw new IOException("Document " + documentPath + " does not exist.");
                         }
                         ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
                         return reader.getContentInputStream();
@@ -319,6 +399,30 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
                 });
             }
         }, AuthenticationUtil.getSystemUserName());
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptStore#createDocument(java.lang.String, java.lang.String)
+     */
+    public void createDocument(String documentPath, String content) throws IOException
+    {
+        String[] pathElements = documentPath.split("/");
+        String[] folderElements = new String[pathElements.length -1];
+        System.arraycopy(pathElements, 0, folderElements, 0, pathElements.length -1);
+        List<String> folderElementsList = Arrays.asList(folderElements);
+        
+        // create folder
+        FileInfo pathInfo = fileService.makeFolders(baseNodeRef, folderElementsList, ContentModel.TYPE_FOLDER);
+
+        // create file
+        String fileName = pathElements[pathElements.length -1];
+        if (fileService.searchSimple(pathInfo.getNodeRef(), fileName) != null)
+        {
+            throw new IOException("Document " + documentPath + " already exists");
+        }
+        FileInfo fileInfo = fileService.create(pathInfo.getNodeRef(), fileName, ContentModel.TYPE_CONTENT);
+        ContentWriter writer = fileService.getWriter(fileInfo.getNodeRef());
+        writer.putContent(content);
     }
 
     /* (non-Javadoc)

@@ -52,7 +52,7 @@
       <tr><td>Format Style:<td>${desc.formatStyle}
       <tr><td>Default Format:<td>${desc.defaultFormat!"<i>Determined at run-time</i>"}
       <tr><td>
-      <tr><td>Id:<td>${desc.id}
+      <tr><td>Id:<td><a href="${url.serviceContext}/script/${desc.id}">${desc.id}</a>
       <tr><td>Description:<td><a href="${url.serviceContext}/description/${desc.id}">${desc.storePath}/${desc.descPath}</a>
     </table>
     <br>

@@ -109,7 +109,7 @@ public class WebScriptDescriptionImpl implements WebScriptDescription
     public InputStream getDescDocument()
         throws IOException
     {
-        return store.getDescriptionDocument(descPath);
+        return store.getDocument(descPath);
     }
 
     /**

@@ -27,9 +27,12 @@ package org.alfresco.web.scripts;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
@@ -147,17 +150,89 @@ public class ClassPathStore implements WebScriptStore, InitializingBean
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptStore#getScriptDocumentPaths(org.alfresco.web.scripts.WebScript)
+     */
+    public String[] getScriptDocumentPaths(WebScript script)
+    {
+        String[] paths;
+
+        try
+        {
+            int filePathLength = fileDir.getAbsolutePath().length() +1;
+            List<String> documentPaths = new ArrayList<String>();
+            String scriptPaths = script.getDescription().getId() + ".*";
+            Resource[] resources = resolver.getResources("classpath*:" + classPath + "/" + scriptPaths);
+            for (Resource resource : resources)
+            {
+                if (resource instanceof FileSystemResource)
+                {
+                    String documentPath = resource.getFile().getAbsolutePath().substring(filePathLength);
+                    documentPath = documentPath.replace('\\', '/');
+                    documentPaths.add(documentPath);
+                }
+            }
+            paths = documentPaths.toArray(new String[documentPaths.size()]);
+        }
+        catch(IOException e)
+        {
+            // Note: Ignore: no service description documents found
+            paths = new String[0];
+        }
+        
+        return paths;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptStore#hasDocument(java.lang.String)
+     */
+    public boolean hasDocument(String documentPath)
+    {
+        File document = new File(fileDir, documentPath);
+        return document.exists();
+    }
+
+    /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptStore#getDescriptionDocument(java.lang.String)
      */
-    public InputStream getDescriptionDocument(String documentPath)      
+    public InputStream getDocument(String documentPath)      
         throws IOException
     {
         File document = new File(fileDir, documentPath);
         if (!document.exists())
         {
-            throw new IOException("Description document " + documentPath + " does not exist.");
+            throw new IOException("Document " + documentPath + " does not exist within store " + getBasePath());
         }
         return new FileInputStream(document);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptStore#createDocument(java.lang.String, java.lang.String)
+     */
+    public void createDocument(String documentPath, String content) throws IOException
+    {
+        File document = new File(fileDir, documentPath);
+        
+        // create directory
+        File path = document.getParentFile();
+        path.mkdirs();
+        
+        // create file
+        if (!document.createNewFile())
+        {
+            throw new IOException("Document " + documentPath + " already exists");
+        }
+        OutputStream output = new FileOutputStream(document);
+        try
+        {
+            PrintWriter writer = new PrintWriter(output);
+            writer.write(content);
+            writer.flush();
+        }
+        finally
+        {
+            output.flush();
+            output.close();
+        }
     }
 
     /* (non-Javadoc)

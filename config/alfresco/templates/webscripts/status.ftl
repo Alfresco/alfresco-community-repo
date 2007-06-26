@@ -27,6 +27,10 @@
      </#if>
      <tr><td><b>Server</b>:<td>Alfresco ${server.edition} v${server.version} schema ${server.schema}
      <tr><td><b>Time</b>:<td>${date?datetime}
+     <tr><td>&nbsp;
+     <#if webscript?exists>
+       <tr><td><b>Diagnostics</b>:<td><a href="${url.serviceContext}/script/${webscript.id}">Inspect Web Script (${webscript.id})</a>
+     </#if>
     </table>
   </body>
 </html>

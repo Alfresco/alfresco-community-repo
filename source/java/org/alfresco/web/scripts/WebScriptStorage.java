@@ -110,6 +110,25 @@ public class WebScriptStorage implements ApplicationContextAware, ApplicationLis
     }
 
     /**
+     * Gets the Web Script Store for the given Store path
+     * 
+     * @param storePath
+     * @return  store (or null, if not found)
+     */
+    public WebScriptStore getStore(String storePath)
+    {
+        Collection<WebScriptStore> stores = getStores();
+        for (WebScriptStore store : stores)
+        {
+            if (store.getBasePath().equals(storePath))
+            {
+                return store;
+            }
+        }
+        return null;
+    }
+    
+    /**
      * Gets the Template Processor
      * 
      * @return  template processor

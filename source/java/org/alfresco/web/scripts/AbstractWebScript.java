@@ -131,7 +131,6 @@ public abstract class AbstractWebScript implements WebScript
         }
     }
     
-
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScript#getDescription()
      */
@@ -185,7 +184,6 @@ public abstract class AbstractWebScript implements WebScript
         return this.descriptorService;
     }
     
-
     //
     // Scripting Support
     //
@@ -299,6 +297,7 @@ public abstract class AbstractWebScript implements WebScript
         model.put("args", createArgModel(req));
         model.put("guest", req.isGuest());
         model.put("url", new URLModel(req));
+        model.put("webscript", getDescription());
         model.put("server", new ServerModel(descriptorService.getServerDescriptor()));
         
         // add template support

@@ -107,13 +107,7 @@ public class AVMSubmitLinkChecker extends JBPMSpringActionHandler
            HrefValidationProgress monitor = new HrefValidationProgress();
            Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
            args.put(LinkValidationAction.PARAM_MONITOR, monitor);
-           
-           // TODO: determine what should happen here, comparing against staging
-           //       does not work as the webapp is not virtualised yet so workflow
-           //       always goes straight to 'review'. Temporarily removed the flag
-           //       so just the workflow store gets checked.
-           
-//           args.put(LinkValidationAction.PARAM_COMPARE_TO_STAGING, Boolean.TRUE);
+           args.put(LinkValidationAction.PARAM_COMPARE_TO_STAGING, Boolean.TRUE);
            Action action = this.fActionService.createAction(LinkValidationAction.NAME, args);
            this.fActionService.executeAction(action, webappPathRef, false, false);
            

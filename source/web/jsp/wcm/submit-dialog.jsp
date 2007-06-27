@@ -79,7 +79,8 @@
         onkeyup="javascript:checkButtonState();" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellspacing="0" cellpadding="2" style="margin-left: 20px; margin-top: 6px;">
+<h:panelGrid columns="2" cellspacing="0" cellpadding="2" style="margin-left: 20px; margin-top: 6px;"
+             rendered="#{DialogManager.bean.workflowListSize != 0}">
    <h:selectBooleanCheckbox id="links-chkbox" value="#{DialogManager.bean.validateLinks}" />
    <h:outputText value="#{msg.check_links}" escape="false" />
    <h:outputText value="&nbsp;" escape="false" />

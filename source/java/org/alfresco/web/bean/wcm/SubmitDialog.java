@@ -47,6 +47,8 @@ import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.wf.AVMSubmittedAspect;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -107,6 +109,9 @@ public class SubmitDialog extends BaseDialogBean
    private Map<String, FormWorkflowWrapper> formWorkflowMap;
    private Map<String, Date> expirationDates;
    private List<UIListItem> workflowItems;
+   private Map<QName, Serializable> workflowParams;
+   private SandboxInfo sandboxInfo;
+   private List<String> srcPaths;
 
    // The virtualization server might need to be notified 
    // because one or more of the files submitted could alter 
@@ -206,6 +211,9 @@ public class SubmitDialog extends BaseDialogBean
       this.workflowSelectedValue = null;
       this.launchDate = null;
       this.validateLinks = true;
+      this.workflowParams = null;
+      this.sandboxInfo = null;
+      this.virtUpdatePath = null;
       
       // determine if the dialog has been started from a workflow
       Boolean bool = new Boolean(this.parameters.get(PARAM_STARTED_FROM_WORKFLOW));
@@ -233,220 +241,433 @@ public class SubmitDialog extends BaseDialogBean
       }
    }
    
-   /**
-    * @see org.alfresco.web.bean.dialog.BaseDialogBean#finishImpl(javax.faces.context.FacesContext, java.lang.String)
-    */
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
+      // NOTE: This does not get called in this dialog as we have overridden finish()
+      
+      return null;
+   }
+
+   @Override
+   public String finish()
+   {
+      // NOTE: We need to handle the transaction ourselves in this dialog as the store needs 
+      //       to be committed and the virtualisation server informed of the workflow
+      //       sandbox BEFORE the workflow gets started. This is so that the link validation
+      //       service can use the virtualisation server to produce the link report.
+      //       The best solution would be for the link check node of the workflow to be
+      //       asynchronous and to wait until the initiating transaction had committed
+      //       before running but there's no support for this.
+      //       We therefore need to use 2 transactions, one to create the workflow store
+      //       (if necessary) and one to start the workflow
+      
       if (getSubmitItemsSize() == 0)
       {
          return null;
       }
       
-      // get the defaults from the workflow configuration attached to the selected workflow
-      if (this.workflowSelectedValue != null)
+      FacesContext context = FacesContext.getCurrentInstance();
+      String outcome = null;
+      
+      // check the isFinished flag to stop the finish button
+      // being pressed multiple times
+      if (this.isFinished == false)
       {
-         Map<QName, Serializable> params = null;
-         String workflowName = this.workflowSelectedValue[0];
-         for (FormWorkflowWrapper wrapper : this.workflows)
+         this.isFinished = true;
+
+         try
          {
-            if (wrapper.name.equals(workflowName))
+            if (this.workflowSelectedValue != null)
             {
-               params = wrapper.params;
+               // if there is a workflow set submit via that
+               outcome = submitViaWorkflow(context);
             }
-         }
-         
-         if (params != null)
-         {
-            // start the workflow to get access to the start task
-            WorkflowDefinition wfDef = workflowService.getDefinitionByName(workflowName);
-            WorkflowPath path = this.workflowService.startWorkflow(wfDef.id, null);
-            if (path != null)
+            else
             {
-               // extract the start task
-               List<WorkflowTask> tasks = this.workflowService.getTasksForWorkflowPath(path.id);
-               if (tasks.size() == 1)
+               // if there's no workflow submit changes directly to staging
+               outcome = submitDirectToStaging(context);
+               
+               // force an update of the virt server if necessary
+               if (this.virtUpdatePath != null)
                {
-                  WorkflowTask startTask = tasks.get(0);
-                  
-                  if (startTask.state == WorkflowTaskState.IN_PROGRESS)
-                  {
-                     // Create workflow sandbox for workflow package
-                     SandboxInfo sandboxInfo = 
-                        SandboxFactory.createWorkflowSandbox( this.avmBrowseBean.getStagingStore() );
-
-                     // create container for our avm workflow package
-                     final List<ItemWrapper> items = this.getSubmitItems();
-                     final List<String> srcPaths = new ArrayList<String>(items.size());
-
-                     for (ItemWrapper wrapper : items)
-                     {
-                        // Example srcPath:
-                        //     mysite--alice:/www/avm_webapps/ROOT/foo.txt
-                        String srcPath = wrapper.getDescriptor().getPath();
-                        
-                        // We *always* want to update virtualization server
-                        // when a workflow sandbox is given data in the 
-                        // context of a submit workflow.  Without this,
-                        // it would be impossible to see workflow data
-                        // in context.  The raw operation to create a
-                        // workflow sandbox does not notify the virtualization
-                        // server that it exists because it's useful to 
-                        // defer this operation until everything is already
-                        // in place; this allows pointlessly fine-grained
-                        //  notifications to be suppressed (they're expensive).
-                        //
-                        // Therefore, just derive the name of the webapp
-                        // in the workflow sandbox from the 1st item in 
-                        // the submiot list (even if it's not in WEB-INF), 
-                        // and force the virt server notification after the
-                        // transaction has completed via doPostCommitProcessing.
-                        if (this.virtUpdatePath  == null)
-                        {
-                           // Example workflow main store name:
-                           //     mysite--workflow-9161f640-b020-11db-8015-130bf9b5b652
-                           String workflowMainStoreName = sandboxInfo.getMainStoreName();
-                           
-                           // The virtUpdatePath looks just like the srcPath 
-                           // except that it belongs to a the main store of
-                           // the workflow sandbox instead of the sandbox
-                           // that originated the submit.
-                           this.virtUpdatePath =
-                              workflowMainStoreName + 
-                              srcPath.substring(srcPath.indexOf(':'),srcPath.length());
-                        }
-                        
-                        // process the expiration date (if any)
-                        processExpirationDate(srcPath);
-                        
-                        srcPaths.add(srcPath);
-                     }
-                     
-                     final NodeRef workflowPackage =
-                        AVMWorkflowUtil.createWorkflowPackage(srcPaths,
-                              sandboxInfo,
-                              path,
-                              this.avmSubmittedAspect,
-                              this.avmSyncService,
-                              this.avmService,
-                              this.workflowService,
-                              this.nodeService);
-                     
-                     params.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
-                     
-                     // add submission parameters
-                     params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, getComment());
-                     params.put(WCMWorkflowModel.PROP_LABEL, getLabel());
-                     params.put(WCMWorkflowModel.PROP_FROM_PATH, 
-                              AVMUtil.buildStoreRootPath(this.avmBrowseBean.getSandbox()));
-                     params.put(WCMWorkflowModel.PROP_LAUNCH_DATE, this.launchDate);
-                     params.put(WCMWorkflowModel.PROP_VALIDATE_LINKS, 
-                              new Boolean(this.validateLinks));
-                     params.put(WCMWorkflowModel.PROP_WEBAPP, 
-                              this.avmBrowseBean.getWebapp());
-                     params.put(WCMWorkflowModel.ASSOC_WEBPROJECT, 
-                              this.avmBrowseBean.getWebsite().getNodeRef());
-                     
-                     // update start task with submit parameters
-                     this.workflowService.updateTask(startTask.id, params, null, null);
-                      
-                     // end the start task to trigger the first 'proper' task in the workflow
-                     this.workflowService.endTask(startTask.id, null);
-                  }
+                  AVMUtil.updateVServerWebapp(this.virtUpdatePath, true);
                }
             }
          }
-         else
+         finally
          {
-            // create error msg for display in dialog - the user must configure the workflow params
-            Utils.addErrorMessage(Application.getMessage(context, MSG_ERR_WORKFLOW_CONFIG));
-            outcome = null;
-            // set the isFinished flag to allow the dialog to be finished again after the error
-            isFinished = true;
+            // reset the flag so we can re-attempt the operation
+            isFinished = false;
          }
-      }
-      else
-      {
-         // direct submit to the staging area without workflow
-         List<ItemWrapper> items = getSubmitItems();
-         
-         // construct diffs for selected items for submission
-         String sandboxPath = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getSandbox());
-         String stagingPath = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getStagingStore());
-         List<AVMDifference> diffs = new ArrayList<AVMDifference>(items.size());
-
-         for (ItemWrapper wrapper : items)
-         {
-            String srcPath = sandboxPath + wrapper.getPath();
-            String destPath = stagingPath + wrapper.getPath();
-            AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
-            diffs.add(diff);
-            
-            // recursively remove locks from this item
-            recursivelyRemoveLocks(this.avmBrowseBean.getWebProject().getStoreId(), -1, srcPath);
-            
-            // If nothing has required notifying the virtualization server
-            // so far, check to see if destPath forces a notification
-            // (e.g.:  it might be a path to a jar file within WEB-INF/lib).
-            if ( (this.virtUpdatePath == null) &&
-                  VirtServerUtils.requiresUpdateNotification( destPath ) )
-            {
-               this.virtUpdatePath = destPath;
-            }
-            
-            // process the expiration date (if any)
-            processExpirationDate(srcPath);
-         }
-         
-         // write changes to layer so files are marked as modified
-         this.avmSyncService.update(diffs, null, true, true, false, false, this.label, this.comment);
-         AVMDAOs.Instance().fAVMNodeDAO.flush();
-         avmSyncService.flatten(sandboxPath, stagingPath);
       }
       
       return outcome;
    }
    
-    /**
-     * Recursively remove locks from a path. Walking child folders looking for files
-     * to remove locks from.
-     */
-    private void recursivelyRemoveLocks(String webProject, int version, String path)
-    {
-        AVMNodeDescriptor desc = this.avmService.lookup(version, path, true);
-        if (desc.isFile() || desc.isDeletedFile())
-        {
-            this.avmLockingService.removeLock(webProject, path.substring(path.indexOf(":") + 1));
-        }
-        else
-        {
-            Map<String, AVMNodeDescriptor> list = avmService.getDirectoryListing(version, path, true);
-            for (AVMNodeDescriptor child : list.values())
+   /**
+    * Submits the selected items straight to the staging area i.e. when
+    * there is no workflow configured for the web project.
+    * 
+    * @param context Faces context
+    * @return The outcome to use
+    */
+   protected String submitDirectToStaging(final FacesContext context)
+   {
+      String outcome = null;
+      
+      RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(context);
+      RetryingTransactionCallback<String> callback = new RetryingTransactionCallback<String>()
+      {
+         public String execute() throws Throwable
+         {
+            // call the actual implementation
+            return submitDirectToStagingImpl();
+         }
+      };
+      
+      try
+      {
+         // Execute
+         outcome = txnHelper.doInTransaction(callback);
+      }
+      catch (Throwable e)
+      {
+         Utils.addErrorMessage(formatErrorMessage(e), e);
+         outcome = getErrorOutcome(e);
+      }
+      
+      return outcome;
+   }
+   
+   /**
+    * Submits the selected items via the configured workflow.
+    * <p>
+    * This method uses 2 separate transactions to perform the submit.
+    * The first one creates the workflow sandbox. The virtualisation
+    * server is then informed of the new stores. The second 
+    * transaction then starts the appropriate workflow. This approach
+    * is needed to allow link validation to be performed on the
+    * workflow sandbox.
+    * </p>
+    * 
+    * @param context Faces context
+    * @return The outcome to use
+    */
+   protected String submitViaWorkflow(final FacesContext context)
+   {
+      String outcome = null;
+
+      RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(context);
+      RetryingTransactionCallback<String> sandboxCallback = new RetryingTransactionCallback<String>()
+      {
+         public String execute() throws Throwable
+         {
+            // call the actual implementation
+            createWorkflowSandbox(context);
+            return null;
+         }
+      };
+      
+      RetryingTransactionCallback<String> workflowCallback = new RetryingTransactionCallback<String>()
+      {
+         public String execute() throws Throwable
+         {
+            // call the actual implementation
+            startWorkflow();
+            return null;
+         }
+      };
+      
+      try
+      {
+         // create the workflow sandbox firstly
+         txnHelper.doInTransaction(sandboxCallback);
+         
+         if (this.sandboxInfo != null)
+         {
+            // inform the virtualisation server if the workflow sandbox was created
+            if (this.virtUpdatePath != null)
             {
-                recursivelyRemoveLocks(webProject, version, child.getPath());
+               AVMUtil.updateVServerWebapp(this.virtUpdatePath, true);
             }
-        }
-    }
+            
+            try
+            {
+               // start the workflow
+               txnHelper.doInTransaction(workflowCallback);
+            }
+            catch (Throwable err)
+            {
+               cleanupWorkflowSandbox(context);
+               throw err;
+            }
+            
+            // if we get this far return the default outcome
+            outcome = this.getDefaultFinishOutcome();
+         }
+      }
+      catch (Throwable e)
+      {
+         Utils.addErrorMessage(formatErrorMessage(e), e);
+         outcome = getErrorOutcome(e);
+      }
+      
+      return outcome;
+   }
 
    /**
-    * Handle notification to the virtualization server 
-    * (this needs to occur after the sandbox is updated).
+    * Performs the actual submisson to staging
+    * 
+    * @return The outcome to use
     */
-   @Override
-   protected String doPostCommitProcessing(FacesContext context, String outcome)
-   {     
-      // Force the update because we've already determined
-      // that update_path requires virt server notification.
-      if (this.virtUpdatePath != null)
+   protected String submitDirectToStagingImpl()
+   {
+      // direct submit to the staging area without workflow
+      List<ItemWrapper> items = getSubmitItems();
+      
+      // construct diffs for selected items for submission
+      String sandboxPath = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getSandbox());
+      String stagingPath = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getStagingStore());
+      List<AVMDifference> diffs = new ArrayList<AVMDifference>(items.size());
+
+      for (ItemWrapper wrapper : items)
       {
-         // Examples of destPath that require virt server notification:
-         //
-         //     mysite:/www/avm_webapps/ROOT/WEB-INF/web.xml
-         //     mysite:/www/avm_webapps/ROOT/WEB-INF/lib/moo.jar
-         AVMUtil.updateVServerWebapp(this.virtUpdatePath, true);
+         String srcPath = sandboxPath + wrapper.getPath();
+         String destPath = stagingPath + wrapper.getPath();
+         AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
+         diffs.add(diff);
+         
+         // recursively remove locks from this item
+         recursivelyRemoveLocks(this.avmBrowseBean.getWebProject().getStoreId(), -1, srcPath);
+         
+         // If nothing has required notifying the virtualization server
+         // so far, check to see if destPath forces a notification
+         // (e.g.:  it might be a path to a jar file within WEB-INF/lib).
+         if ( (this.virtUpdatePath == null) &&
+               VirtServerUtils.requiresUpdateNotification( destPath ) )
+         {
+            this.virtUpdatePath = destPath;
+         }
+         
+         // process the expiration date (if any)
+         processExpirationDate(srcPath);
       }
-      return outcome;
+      
+      // write changes to layer so files are marked as modified
+      this.avmSyncService.update(diffs, null, true, true, false, false, this.label, this.comment);
+      AVMDAOs.Instance().fAVMNodeDAO.flush();
+      avmSyncService.flatten(sandboxPath, stagingPath);
+      
+      // if we get this far return the default outcome
+      return this.getDefaultFinishOutcome();
+   }
+   
+   /**
+    * Creates a workflow sandbox for all the submitted items
+    * 
+    * @param context Faces context
+    */
+   protected void createWorkflowSandbox(FacesContext context)
+   {
+      // get the defaults from the workflow configuration attached to the selected workflow
+      String workflowName = this.workflowSelectedValue[0];
+      for (FormWorkflowWrapper wrapper : this.workflows)
+      {
+         if (wrapper.name.equals(workflowName))
+         {
+            this.workflowParams = wrapper.params;
+         }
+      }
+      
+      if (this.workflowParams != null)
+      {
+         // Create workflow sandbox for workflow package
+         this.sandboxInfo = SandboxFactory.createWorkflowSandbox(
+                  this.avmBrowseBean.getStagingStore());
+
+         // create container for our avm workflow package
+         final List<ItemWrapper> items = this.getSubmitItems();
+         this.srcPaths = new ArrayList<String>(items.size());
+
+         for (ItemWrapper wrapper : items)
+         {
+            // Example srcPath:
+            //     mysite--alice:/www/avm_webapps/ROOT/foo.txt
+            String srcPath = wrapper.getDescriptor().getPath();
+            
+            // We *always* want to update virtualization server
+            // when a workflow sandbox is given data in the 
+            // context of a submit workflow.  Without this,
+            // it would be impossible to see workflow data
+            // in context.  The raw operation to create a
+            // workflow sandbox does not notify the virtualization
+            // server that it exists because it's useful to 
+            // defer this operation until everything is already
+            // in place; this allows pointlessly fine-grained
+            //  notifications to be suppressed (they're expensive).
+            //
+            // Therefore, just derive the name of the webapp
+            // in the workflow sandbox from the 1st item in 
+            // the submiot list (even if it's not in WEB-INF), 
+            // and force the virt server notification after the
+            // transaction has completed via doPostCommitProcessing.
+            if (this.virtUpdatePath  == null)
+            {
+               // Example workflow main store name:
+               //     mysite--workflow-9161f640-b020-11db-8015-130bf9b5b652
+               String workflowMainStoreName = sandboxInfo.getMainStoreName();
+               
+               // The virtUpdatePath looks just like the srcPath 
+               // except that it belongs to a the main store of
+               // the workflow sandbox instead of the sandbox
+               // that originated the submit.
+               this.virtUpdatePath =
+                  workflowMainStoreName + 
+                  srcPath.substring(srcPath.indexOf(':'),srcPath.length());
+            }
+            
+            // process the expiration date (if any)
+            processExpirationDate(srcPath);
+            
+            this.srcPaths.add(srcPath);
+         }
+      }        
+      else
+      {
+         // create error msg for display in dialog - the user must configure the workflow params
+         Utils.addErrorMessage(Application.getMessage(context, MSG_ERR_WORKFLOW_CONFIG));
+      }
+   }
+   
+   /**
+    * Starts the configured workflow to allow the submitted items to be link
+    * checked and reviewed.
+    */
+   protected void startWorkflow()
+   {
+      if (this.workflowParams != null)
+      {
+         // start the workflow to get access to the start task
+         String workflowName = this.workflowSelectedValue[0];
+         WorkflowDefinition wfDef = workflowService.getDefinitionByName(workflowName);
+         WorkflowPath path = this.workflowService.startWorkflow(wfDef.id, null);
+         if (path != null)
+         {
+            // extract the start task
+            List<WorkflowTask> tasks = this.workflowService.getTasksForWorkflowPath(path.id);
+            if (tasks.size() == 1)
+            {
+               WorkflowTask startTask = tasks.get(0);
+               
+               if (startTask.state == WorkflowTaskState.IN_PROGRESS)
+               {                
+                  final NodeRef workflowPackage =
+                     AVMWorkflowUtil.createWorkflowPackage(this.srcPaths,
+                           sandboxInfo,
+                           path,
+                           this.avmSubmittedAspect,
+                           this.avmSyncService,
+                           this.avmService,
+                           this.workflowService,
+                           this.nodeService);
+                  
+                  this.workflowParams.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
+                  
+                  // add submission parameters
+                  this.workflowParams.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, getComment());
+                  this.workflowParams.put(WCMWorkflowModel.PROP_LABEL, getLabel());
+                  this.workflowParams.put(WCMWorkflowModel.PROP_FROM_PATH, 
+                           AVMUtil.buildStoreRootPath(this.avmBrowseBean.getSandbox()));
+                  this.workflowParams.put(WCMWorkflowModel.PROP_LAUNCH_DATE, this.launchDate);
+                  this.workflowParams.put(WCMWorkflowModel.PROP_VALIDATE_LINKS, 
+                           new Boolean(this.validateLinks));
+                  this.workflowParams.put(WCMWorkflowModel.PROP_WEBAPP, 
+                           this.avmBrowseBean.getWebapp());
+                  this.workflowParams.put(WCMWorkflowModel.ASSOC_WEBPROJECT, 
+                           this.avmBrowseBean.getWebsite().getNodeRef());
+                  
+                  // update start task with submit parameters
+                  this.workflowService.updateTask(startTask.id, this.workflowParams, null, null);
+                   
+                  // end the start task to trigger the first 'proper' task in the workflow
+                  this.workflowService.endTask(startTask.id, null);
+               }
+            }
+         }
+      }
+   }
+   
+   /**
+    * Cleans up the workflow sandbox created by the first transaction. This
+    * action is itself preformed in a separate transaction.
+    * 
+    * @param context Faces context
+    */
+   protected void cleanupWorkflowSandbox(FacesContext context)
+   {
+      RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(context);
+      RetryingTransactionCallback<String> callback = new RetryingTransactionCallback<String>()
+      {
+         public String execute() throws Throwable
+         {
+            // call the actual implementation
+            cleanupWorkflowSandboxImpl();
+            return null;
+         }
+      };
+
+      try
+      {
+         // Execute the cleanup handler
+         txnHelper.doInTransaction(callback);
+      }
+      catch (Throwable e)
+      {
+         // not much we can do now, just log the error to inform admins
+         logger.error("Failed to cleanup workflow sandbox after workflow failure", e);
+      }
+   }
+   
+   /**
+    * Performs the actual deletion of stores in the workflow sandbox.
+    */
+   protected void cleanupWorkflowSandboxImpl()
+   {
+      if (this.sandboxInfo != null)
+      {
+         String mainWorkflowStore = this.sandboxInfo.getMainStoreName();
+         Map<QName, PropertyValue> matches = this.avmService.queryStorePropertyKey(mainWorkflowStore, 
+                  QName.createQName(null, ".sandbox-id%"));
+         QName sandboxID = matches.keySet().iterator().next();
+         // Get all the stores in the sandbox.
+         Map<String, Map<QName, PropertyValue>> stores = this.avmService.queryStoresPropertyKeys(sandboxID);
+         for (String storeName : stores.keySet())
+         {
+            this.avmService.purgeStore(storeName);
+         }
+      }
+   }
+   
+   /**
+    * Recursively remove locks from a path. Walking child folders looking for files
+    * to remove locks from.
+    */
+   private void recursivelyRemoveLocks(String webProject, int version, String path)
+   {
+      AVMNodeDescriptor desc = this.avmService.lookup(version, path, true);
+      if (desc.isFile() || desc.isDeletedFile())
+      {
+         this.avmLockingService.removeLock(webProject, path.substring(path.indexOf(":") + 1));
+      }
+      else
+      {
+         Map<String, AVMNodeDescriptor> list = avmService.getDirectoryListing(version, path, true);
+         for (AVMNodeDescriptor child : list.values())
+         {
+            recursivelyRemoveLocks(webProject, version, child.getPath());
+         }
+      }
    }
 
    /**

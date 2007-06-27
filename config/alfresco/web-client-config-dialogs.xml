@@ -33,16 +33,6 @@
                  icon="/images/icons/create_space_large.gif" title-id="create_space" 
                  description-id="create_space_description" error-message-id="error_create_space_dialog" />
          
-         <!-- Definition of the create multilingual space dialog -->
-         <dialog name="createMultilingualSpace" page="/jsp/spaces/ml/create-multilingual-space-dialog.jsp" managed-bean="CreateMultilingualSpaceDialog"
-                 icon="/images/icons/create_space_large.gif" title-id="create_multilingual_space" 
-                 description-id="create_multilingual_space_description" error-message-id="error_create_space_dialog" />
-                 
-         <!-- Definition of the create multilingual properties dialog -->
-         <dialog name="createMultilingualProperties" page="/jsp/spaces/ml/create-multilingual-properties-dialog.jsp"  managed-bean="CreateMultilingualPropertiesDialog"
-                 icon="/images/icons/create_space_large.gif"  title-id="create_multilingual_space" 
-                 description-id="create_multilingual_space_description" error-message-id="error_create_multilingual_space_dialog" />
-
          <!-- Definition of the edit space dialog -->      
          <dialog name="editSpace" page="/jsp/spaces/edit-space-dialog.jsp" managed-bean="EditSpaceDialog"
                  icon="/images/icons/details_large.gif" title-id="modify_space_properties" 

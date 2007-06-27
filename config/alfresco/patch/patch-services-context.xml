@@ -873,4 +873,15 @@
             <ref bean="avmAspectNameDAO"/>
         </property>
     </bean>
+
+    <bean id="patch.AVMProperties" class="org.alfresco.repo.admin.patch.impl.AVMPropertiesPatch" parent="basePatch">
+        <property name="id"><value>patch.AVMProperties</value></property>
+        <property name="description"><value>patch.AVMProperties.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>61</value></property>
+        <property name="targetSchema"><value>62</value></property>
+        <property name="avmNodePropertyDAO">
+            <ref bean="avmNodePropertyDAO"/>
+        </property>
+    </bean>
 </beans>

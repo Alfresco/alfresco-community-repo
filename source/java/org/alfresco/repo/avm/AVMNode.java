@@ -235,4 +235,10 @@ public interface AVMNode
      * @return A Set of Aspects names.
      */
     public Set<QName> getAspects();
+
+    /**
+     * Add properties to those that already exist.
+     * @param properties The properties to add.
+     */
+    public void addProperties(Map<QName, PropertyValue> properties);
 }

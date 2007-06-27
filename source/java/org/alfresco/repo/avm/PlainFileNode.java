@@ -1,5 +1,7 @@
 package org.alfresco.repo.avm;
 
+import org.alfresco.service.cmr.repository.ContentData;
+
 /**
  * Interface for Plain file nodes.
  * @author britt
@@ -17,4 +19,10 @@ interface PlainFileNode extends FileNode
      * @param mimeType
      */
     public void setMimeType(String mimeType);
+
+    /**
+     * Special case.
+     * @return
+     */
+    public ContentData getContentData();
 }

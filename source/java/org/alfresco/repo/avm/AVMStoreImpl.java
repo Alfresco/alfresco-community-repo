@@ -1058,7 +1058,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        node.setProperties(properties);
+        node.addProperties(properties);
         node.setGuid(GUID.generate());
     }
     

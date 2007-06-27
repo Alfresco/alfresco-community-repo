@@ -51,6 +51,22 @@
 			<key column="id"/>
 			<element type="QName" not-null="true" column="name" length="200"/>
 		</set>
+		<map name="properties" fetch="join" lazy="false" table="avm_node_properties_new" cascade="all" optimistic-lock="true">
+		    <cache usage="read-write"/>
+		    <key column="node_id" not-null="true"/>
+		    <map-key type="QName" length="200" column="qname"/>
+		    <composite-element class="org.alfresco.repo.domain.PropertyValue">
+	            <property name="actualType" column="actual_type" type="string" length="15" not-null="true" />
+    	        <property name="multiValued" column="multi_valued" type="boolean" not-null="true" />
+        	    <property name="persistedType" column="persisted_type" type="string" length="15" not-null="true" />
+            	<property name="booleanValue" column="boolean_value" type="boolean" />
+            	<property name="longValue" column="long_value" type="long" />
+            	<property name="floatValue" column="float_value" type="float" />
+            	<property name="doubleValue" column="double_value" type="double" />
+            	<property name="stringValue" column="string_value" type="string" length="1024"/>
+            	<property name="serializableValue" column="serializable_value" type="serializable" length="16384"/>
+		    </composite-element>
+		</map>
 		<!-- Deleted nodes -->
 		<subclass name="DeletedNodeImpl"
 			  proxy="DeletedNode"

@@ -102,6 +102,37 @@ import org.alfresco.util.Pair;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test version by date lookup.
+     */
+    public void testVersionByDate()
+    {
+        try
+        {
+            ArrayList<Long> times = new ArrayList<Long>();
+            BulkLoader loader = new BulkLoader();
+            loader.setAvmService(fService);
+            loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
+            times.add(System.currentTimeMillis());
+            assertEquals(1, fService.createSnapshot("main", null, null).get("main").intValue());
+            loader.recursiveLoad("source/java/org/alfresco/repo/action", "main:/");
+            times.add(System.currentTimeMillis());
+            assertEquals(2, fService.createSnapshot("main", null, null).get("main").intValue());
+            loader.recursiveLoad("source/java/org/alfresco/repo/audit", "main:/");
+            times.add(System.currentTimeMillis());
+            assertEquals(3, fService.createSnapshot("main", null, null).get("main").intValue());
+            assertEquals(1, fService.getStoreVersions("main", null, new Date(times.get(0))).size());
+            assertEquals(3, fService.getStoreVersions("main", new Date(times.get(0)), null).size());
+            assertEquals(2, fService.getStoreVersions("main", new Date(times.get(1)),
+                    new Date(System.currentTimeMillis())).size());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+
+    /**
      * Test properties.
      */
     public void testProperties()
@@ -4992,36 +5023,6 @@ public class AVMServiceTest extends AVMServiceTestBase
         }
     }
 
-    /**
-     * Test version by date lookup.
-     */
-    public void testVersionByDate()
-    {
-        try
-        {
-            ArrayList<Long> times = new ArrayList<Long>();
-            BulkLoader loader = new BulkLoader();
-            loader.setAvmService(fService);
-            loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
-            times.add(System.currentTimeMillis());
-            assertEquals(1, fService.createSnapshot("main", null, null).get("main").intValue());
-            loader.recursiveLoad("source/java/org/alfresco/repo/action", "main:/");
-            times.add(System.currentTimeMillis());
-            assertEquals(2, fService.createSnapshot("main", null, null).get("main").intValue());
-            loader.recursiveLoad("source/java/org/alfresco/repo/audit", "main:/");
-            times.add(System.currentTimeMillis());
-            assertEquals(3, fService.createSnapshot("main", null, null).get("main").intValue());
-            assertEquals(1, fService.getStoreVersions("main", null, new Date(times.get(0))).size());
-            assertEquals(3, fService.getStoreVersions("main", new Date(times.get(0)), null).size());
-            assertEquals(2, fService.getStoreVersions("main", new Date(times.get(1)),
-                    new Date(System.currentTimeMillis())).size());
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace(System.err);
-            fail();
-        }
-    }
 
     /**
      * Test AVMStore functions.

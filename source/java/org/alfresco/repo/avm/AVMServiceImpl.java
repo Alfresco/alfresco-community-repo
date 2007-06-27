@@ -1068,6 +1068,18 @@ public class AVMServiceImpl implements AVMService
         return fAVMRepository.getNodeProperties(version, path);
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#getNodeProperties(org.alfresco.service.cmr.avm.AVMNodeDescriptor)
+     */
+    public Map<QName, PropertyValue> getNodeProperties(AVMNodeDescriptor desc)
+    {
+        if (desc == null)
+        {
+            throw new AVMBadArgumentException("Null descriptor.");
+        }
+        return fAVMRepository.getNodeProperties(desc);
+    }
+
     /**
      * Delete a property.
      * @param path The path to the node.
@@ -1215,6 +1227,18 @@ public class AVMServiceImpl implements AVMService
         return fAVMRepository.getContentDataForRead(version, path);
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#getContentDataForRead(org.alfresco.service.cmr.avm.AVMNodeDescriptor)
+     */
+    public ContentData getContentDataForRead(AVMNodeDescriptor desc)
+    {
+        if (desc == null)
+        {
+            throw new AVMBadArgumentException("Null descriptor.");
+        }
+        return fAVMRepository.getContentDataForRead(desc);
+    }
+
     /**
      * Get the Content data for writing.
      * @param path The path to the node.
@@ -1293,6 +1317,18 @@ public class AVMServiceImpl implements AVMService
             throw new AVMBadArgumentException("Null path.");
         }
         return fAVMRepository.getAspects(version, path);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#getAspects(org.alfresco.service.cmr.avm.AVMNodeDescriptor)
+     */
+    public Set<QName> getAspects(AVMNodeDescriptor desc)
+    {
+        if (desc == null)
+        {
+            throw new AVMBadArgumentException("Null descriptor: " + desc);
+        }
+        return fAVMRepository.getAspects(desc);
     }
 
     /**

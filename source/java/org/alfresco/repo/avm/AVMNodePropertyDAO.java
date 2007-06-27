@@ -23,6 +23,7 @@
 
 package org.alfresco.repo.avm;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.alfresco.service.namespace.QName;
@@ -72,4 +73,10 @@ public interface AVMNodePropertyDAO
      * @param name The name of the property to delete.
      */
     public void delete(AVMNode node, QName name);
+    
+    /**
+     * Get an iterator over all properties.
+     * @return
+     */
+    public Iterator<AVMNodeProperty> iterate();
 }

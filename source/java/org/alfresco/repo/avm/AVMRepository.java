@@ -106,7 +106,7 @@ public class AVMRepository
     private AVMStorePropertyDAO fAVMStorePropertyDAO;
     
     private ChildEntryDAO fChildEntryDAO;
-    
+
     // A bunch of TransactionListeners that do work for this.
     
     /**
@@ -2676,5 +2676,40 @@ public class AVMRepository
             recursiveGetStoreVersionPaths(storeName, parent, version, components, paths);
             components.remove(components.size() - 1);
         }
+    }
+
+    public Map<QName, PropertyValue> getNodeProperties(AVMNodeDescriptor desc)
+    {
+        AVMNode node = fAVMNodeDAO.getByID(desc.getId());
+        if (node == null)
+        {
+            throw new AVMNotFoundException("Node not found: " + desc);
+        }
+        return node.getProperties();
+    }
+
+    public ContentData getContentDataForRead(AVMNodeDescriptor desc)
+    {
+        AVMNode node = fAVMNodeDAO.getByID(desc.getId());
+        if (node == null)
+        {
+            throw new AVMNotFoundException("Node not found: " + desc);
+        }
+        if (node.getType() == AVMNodeType.PLAIN_FILE)
+        {
+            PlainFileNode file = (PlainFileNode)node;
+            return file.getContentData();
+        }
+        throw new AVMWrongTypeException("Not a Plain File: " + desc);
+    }
+
+    public Set<QName> getAspects(AVMNodeDescriptor desc)
+    {
+        AVMNode node = fAVMNodeDAO.getByID(desc.getId());
+        if (node == null)
+        {
+            throw new AVMNotFoundException("Node not found: " + desc);
+        }
+        return node.getAspects();
     }
 }

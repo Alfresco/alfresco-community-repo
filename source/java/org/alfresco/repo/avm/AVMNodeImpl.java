@@ -90,12 +90,15 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     private Set<QName> fAspects;
     
+    private Map<QName, PropertyValue> fProperties;
+    
     /**
      * Default constructor.
      */
     protected AVMNodeImpl()
     {
         fAspects = new HashSet<QName>();
+        fProperties = new HashMap<QName, PropertyValue>();
     }
 
     /**
@@ -107,6 +110,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
                           AVMStore store)
     {
         fAspects = new HashSet<QName>();
+        fProperties = new HashMap<QName, PropertyValue>();
         fID = id;
         fVersionID = -1;
         fIsRoot = false;
@@ -343,14 +347,10 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     protected void copyProperties(AVMNode other)
     {
-        Map<QName, PropertyValue> properties = other.getProperties();
-        for (QName name : properties.keySet())
+        fProperties = new HashMap<QName, PropertyValue>();
+        for (Map.Entry<QName, PropertyValue> entry : other.getProperties().entrySet())
         {
-            AVMNodeProperty newProp = new AVMNodePropertyImpl();
-            newProp.setNode(this);
-            newProp.setName(name);
-            newProp.setValue(properties.get(name));
-            AVMDAOs.Instance().fAVMNodePropertyDAO.save(newProp);
+            fProperties.put(entry.getKey(), entry.getValue());
         }
     }
     
@@ -394,18 +394,15 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
         {
             checkReadOnly();
         }
-        AVMNodeProperty prop = AVMDAOs.Instance().fAVMNodePropertyDAO.get(this, name);
-        if (prop != null)
+        fProperties.put(name, value);
+    }
+    
+    public void addProperties(Map<QName, PropertyValue> properties)
+    {
+        for (Map.Entry<QName, PropertyValue> entry : properties.entrySet())
         {
-            prop.setValue(value);
-            AVMDAOs.Instance().fAVMNodePropertyDAO.update(prop);
-            return;
+            fProperties.put(entry.getKey(), entry.getValue());
         }
-        prop = new AVMNodePropertyImpl();
-        prop.setNode(this);
-        prop.setName(name);
-        prop.setValue(value);
-        AVMDAOs.Instance().fAVMNodePropertyDAO.save(prop);
     }
     
     /**
@@ -414,14 +411,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public void setProperties(Map<QName, PropertyValue> properties)
     {
-        if (DEBUG)
-        {
-            checkReadOnly();
-        }
-        for (QName name : properties.keySet())
-        {
-            setProperty(name, properties.get(name));
-        }
+        fProperties = properties;
     }
     
     /**
@@ -431,12 +421,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public PropertyValue getProperty(QName name)
     {
-        AVMNodeProperty prop = AVMDAOs.Instance().fAVMNodePropertyDAO.get(this, name);
-        if (prop == null)
-        {
-            return null;
-        }
-        return prop.getValue();
+        return fProperties.get(name);
     }
     
     /**
@@ -445,13 +430,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public Map<QName, PropertyValue> getProperties()
     {
-        Map<QName, PropertyValue> retVal = new HashMap<QName, PropertyValue>();
-        List<AVMNodeProperty> props = AVMDAOs.Instance().fAVMNodePropertyDAO.get(this);
-        for (AVMNodeProperty prop : props)
-        {
-            retVal.put(prop.getName(), prop.getValue());
-        }
-        return retVal;
+        return fProperties;
     }
 
     /**
@@ -464,7 +443,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
         {
             checkReadOnly();
         }
-        AVMDAOs.Instance().fAVMNodePropertyDAO.delete(this, name);
+        fProperties.remove(name);
     }
     
     /**
@@ -472,11 +451,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public void deleteProperties()
     {
-        if (DEBUG)
-        {
-            checkReadOnly();
-        }
-        AVMDAOs.Instance().fAVMNodePropertyDAO.deleteAll(this);
+        fProperties.clear();
     }
     
     /**

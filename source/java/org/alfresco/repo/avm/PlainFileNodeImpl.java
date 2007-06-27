@@ -129,7 +129,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         setVersionID(versionID + 1);
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
-        setProperties(props);
+        addProperties(props);
         setAspects(new HashSet<QName>(aspects));
         if (acl != null)
         {
@@ -376,6 +376,14 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
      * @return The ContentData object for this file.
      */
     public ContentData getContentData(Lookup lPath)
+    {
+        return getContentData();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.PlainFileNode#getContentData()
+     */
+    public ContentData getContentData()
     {
         return new ContentData(fContentURL, fMimeType, fLength, fEncoding);
     }

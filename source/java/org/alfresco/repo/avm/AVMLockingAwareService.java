@@ -233,6 +233,14 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#getAspects(org.alfresco.service.cmr.avm.AVMNodeDescriptor)
+     */
+    public Set<QName> getAspects(AVMNodeDescriptor desc)
+    {
+        return fService.getAspects(desc);
+    }
+
+    /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.AVMService#getCommonAncestor(org.alfresco.service.cmr.avm.AVMNodeDescriptor, org.alfresco.service.cmr.avm.AVMNodeDescriptor)
      */
     public AVMNodeDescriptor getCommonAncestor(AVMNodeDescriptor left,
@@ -247,6 +255,14 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     public ContentData getContentDataForRead(int version, String path)
     {
         return fService.getContentDataForRead(version, path);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#getContentDataForRead(org.alfresco.service.cmr.avm.AVMNodeDescriptor)
+     */
+    public ContentData getContentDataForRead(AVMNodeDescriptor desc)
+    {
+        return fService.getContentDataForRead(desc);
     }
 
     /* (non-Javadoc)
@@ -443,6 +459,14 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     public Map<QName, PropertyValue> getNodeProperties(int version, String path)
     {
         return fService.getNodeProperties(version, path);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#getNodeProperties(org.alfresco.service.cmr.avm.AVMNodeDescriptor)
+     */
+    public Map<QName, PropertyValue> getNodeProperties(AVMNodeDescriptor desc)
+    {
+        return fService.getNodeProperties(desc);
     }
 
     /* (non-Javadoc)

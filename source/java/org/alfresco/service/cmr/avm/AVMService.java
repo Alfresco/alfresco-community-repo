@@ -988,6 +988,14 @@ public interface AVMService
     public Map<QName, PropertyValue> getNodeProperties(int version, String path);
     
     /**
+     * Get all the properties associated with a node identified by a descriptor.
+     * @param desc The node descriptor
+     * @return A Map of the properties.
+     * @throws AVMNotFoundException
+     */
+    public Map<QName, PropertyValue> getNodeProperties(AVMNodeDescriptor desc);
+    
+    /**
      * Delete a property.
      *
      * @param path The path to the node.
@@ -1083,6 +1091,14 @@ public interface AVMService
      */
     public ContentData getContentDataForRead(int version, String path);
     
+    /**
+     * Get ContentData using only a node descriptor.
+     * @param desc The node descriptor.
+     * @return The ContentData
+     * @throws AVMNotFoundException
+     */
+    public ContentData getContentDataForRead(AVMNodeDescriptor desc);
+    
 
     /**
      * <em>Low-level internal function</em>:&nbsp;&nbsp; Get the ContentData for 
@@ -1136,6 +1152,13 @@ public interface AVMService
      * @throws        AVMNotFoundException   
      */
     public Set<QName> getAspects(int version, String path);
+    
+    /**
+     * Get all the aspects from a node descriptor.
+     * @param desc The node descriptor.
+     * @return The Set of Aspects.
+     */
+    public Set<QName> getAspects(AVMNodeDescriptor desc);
     
     /**
      * Remove an aspect and its properties from a node.

@@ -1,5 +1,6 @@
 package org.alfresco.repo.avm.hibernate;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.alfresco.repo.avm.AVMNode;
@@ -90,5 +91,16 @@ class AVMNodePropertyDAOHibernate extends HibernateDaoSupport
         delete.setEntity("node", node);
         delete.setParameter("name", name);
         delete.executeUpdate();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNodePropertyDAO#iterate()
+     */
+    @SuppressWarnings("unchecked")
+    public Iterator<AVMNodeProperty> iterate()
+    {
+        Query query =
+            getSession().createQuery("from AVMNodePropertyImpl anp");
+        return (Iterator<AVMNodeProperty>)query.iterate();
     }
 }

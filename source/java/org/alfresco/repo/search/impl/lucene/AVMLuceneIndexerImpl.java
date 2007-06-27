@@ -34,11 +34,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
@@ -114,8 +112,6 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
     private ContentStore contentStore;
 
     private ContentService contentService;
-
-    private Set<String> indexedPaths = new HashSet<String>();
 
     private FTSIndexerAware callBack;
 
@@ -378,196 +374,141 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
             return docs;
         }
 
-        String[] splitPathForDoc = splitPath(stringNodeRef);
-        String docStore = splitPathForDoc[0];
-
-        List<Pair<Integer, String>> allPaths = avmService.getPathsInStoreHead(desc, docStore);
-        List<Pair<Integer, String>> paths = new ArrayList<Pair<Integer, String>>();
-        for (Pair<Integer, String> pair : allPaths)
-        {
-            if (pair.getFirst().intValue() == endVersion)
-            {
-                paths.add(pair);
-            }
-        }
-        if (paths.size() == 0)
-        {
-            for (Pair<Integer, String> pair : allPaths)
-            {
-                if (pair.getFirst().intValue() == -1)
-                {
-                    paths.add(pair);
-                }
-            }
-        }
-
-        if (paths.size() == 0)
-        {
-            return docs;
-        }
-        for (Pair<Integer, String> path : paths)
-        {
-            if (indexedPaths.contains(path.getSecond()))
-            {
-                return docs;
-            }
-        }
-        for (Pair<Integer, String> path : paths)
-        {
-            indexedPaths.add(path.getSecond());
-        }
-
+        // Naughty, Britt should come up with a fix that doesn't require this.
         AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(desc.getId());
 
-        if (paths.size() > 0)
+        if (desc != null)
         {
-            if (desc != null)
+    
+            NodeRef nodeRef = AVMNodeConverter.ToNodeRef(endVersion, stringNodeRef);
+    
+            Document xdoc = new Document();
+            xdoc.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("ID", stringNodeRef, Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("TX", AlfrescoTransactionSupport.getTransactionId(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+    
+            boolean isAtomic = true;
+    
+            Map<QName, Serializable> properties = getIndexableProperties(desc, nodeRef, endVersion, stringNodeRef);
+            for (QName propertyName : properties.keySet())
             {
-
-                NodeRef nodeRef = AVMNodeConverter.ToNodeRef(endVersion, stringNodeRef);
-
-                Document xdoc = new Document();
-                xdoc.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-                for (Pair<Integer, String> path : paths)
+                Serializable value = properties.get(propertyName);
+                if (indexAllProperties)
                 {
-
-                    String[] splitPath = splitPath(path.getSecond());
-                    @SuppressWarnings("unused")
-                    String pathInStore = splitPath[1];
-                    xdoc.add(new Field("ID", path.getSecond(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-                }
-
-                xdoc.add(new Field("TX", AlfrescoTransactionSupport.getTransactionId(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-
-                boolean isAtomic = true;
-
-                Map<QName, Serializable> properties = getIndexableProperties(desc, nodeRef, endVersion, stringNodeRef);
-                for (QName propertyName : properties.keySet())
-                {
-                    Serializable value = properties.get(propertyName);
-                    if (indexAllProperties)
-                    {
-                        indexProperty(nodeRef, propertyName, value, xdoc, false, properties);
-                    }
-                    else
-                    {
-                        isAtomic &= indexProperty(nodeRef, propertyName, value, xdoc, true, properties);
-                    }
-                }
-
-                StringBuilder qNameBuffer = new StringBuilder(64);
-
-                for (Pair<Integer, String> path : paths)
-                {
-
-                    if (node.getIsRoot())
-                    {
-
-                    }
-                    // pseudo roots?
-                    else
-                    {
-                        String[] splitPath = splitPath(path.getSecond());
-                        String store = splitPath[0];
-                        String pathInStore = splitPath[1];
-                        SimplePath simplePath = new SimplePath(pathInStore);
-
-                        StringBuilder xpathBuilder = new StringBuilder();
-                        for (int i = 0; i < simplePath.size(); i++)
-                        {
-                            xpathBuilder.append("/{}").append(simplePath.get(i));
-                        }
-                        String xpath = xpathBuilder.toString();
-
-                        if (qNameBuffer.length() > 0)
-                        {
-                            qNameBuffer.append(";/");
-                        }
-                        // Get the parent
-
-                        ArrayList<String> ancestors = new ArrayList<String>();
-
-                        StringBuilder pathBuilder = new StringBuilder();
-                        pathBuilder.append(store).append(":/");
-                        ancestors.add(pathBuilder.toString());
-                        boolean requiresSep = false;
-                        for (int i = 0; i < simplePath.size() - 1; i++)
-                        {
-                            if (requiresSep)
-                            {
-                                pathBuilder.append("/");
-                            }
-                            else
-                            {
-                                requiresSep = true;
-                            }
-                            pathBuilder.append(simplePath.get(i));
-                            ancestors.add(pathBuilder.toString());
-                        }
-
-                        qNameBuffer.append(ISO9075.getXPathName(QName.createQName("", simplePath.get(simplePath.size() - 1))));
-                        xdoc.add(new Field("PARENT", ancestors.get(ancestors.size() - 1), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-                        // TODO: Categories and LINKASPECT
-
-                        if (includeDirectoryDocuments)
-                        {
-                            if (desc.isDirectory())
-                            {
-                                // TODO: Exclude category paths
-
-                                Document directoryEntry = new Document();
-                                directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-
-                                directoryEntry.add(new Field("ID", path.getSecond(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-
-                                directoryEntry.add(new Field("PATH", xpath, Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
-
-                                // Find all parent nodes.
-
-                                for (String toAdd : ancestors)
-                                {
-                                    directoryEntry.add(new Field("ANCESTOR", toAdd, Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-                                }
-                                directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-
-                                docs.add(directoryEntry);
-
-                            }
-                        }
-                    }
-
-                }
-
-                if (node.getIsRoot())
-                {
-                    // TODO: Does the root element have a QName?
-                    xdoc.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-                    xdoc.add(new Field("PATH", "", Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
-                    xdoc.add(new Field("QNAME", "", Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
-                    xdoc.add(new Field("ISROOT", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-                    xdoc.add(new Field("ISNODE", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-                    docs.add(xdoc);
-
+                    indexProperty(nodeRef, propertyName, value, xdoc, false, properties);
                 }
                 else
-                // not a root node
                 {
-                    xdoc.add(new Field("QNAME", qNameBuffer.toString(), Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
-
-                    QName typeQName = getType(desc);
-
-                    xdoc.add(new Field("TYPE", ISO9075.getXPathName(typeQName), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-
-                    for (QName classRef : avmService.getAspects(endVersion, stringNodeRef))
-                    {
-                        xdoc.add(new Field("ASPECT", ISO9075.getXPathName(classRef), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-                    }
-
-                    xdoc.add(new Field("ISROOT", "F", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-                    xdoc.add(new Field("ISNODE", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-
-                    docs.add(xdoc);
+                    isAtomic &= indexProperty(nodeRef, propertyName, value, xdoc, true, properties);
                 }
+            }
+    
+            StringBuilder qNameBuffer = new StringBuilder(64);
+            if (node.getIsRoot())
+            {
+    
+            }
+            // pseudo roots?
+            else
+            {
+                String[] splitPath = splitPath(stringNodeRef);
+                String store = splitPath[0];
+                String pathInStore = splitPath[1];
+                SimplePath simplePath = new SimplePath(pathInStore);
+
+                StringBuilder xpathBuilder = new StringBuilder();
+                for (int i = 0; i < simplePath.size(); i++)
+                {
+                    xpathBuilder.append("/{}").append(simplePath.get(i));
+                }
+                String xpath = xpathBuilder.toString();
+
+                if (qNameBuffer.length() > 0)
+                {
+                    qNameBuffer.append(";/");
+                }
+                // Get the parent
+
+                ArrayList<String> ancestors = new ArrayList<String>();
+
+                StringBuilder pathBuilder = new StringBuilder();
+                pathBuilder.append(store).append(":/");
+                ancestors.add(pathBuilder.toString());
+                boolean requiresSep = false;
+                for (int i = 0; i < simplePath.size() - 1; i++)
+                {
+                    if (requiresSep)
+                    {
+                        pathBuilder.append("/");
+                    }
+                    else
+                    {
+                        requiresSep = true;
+                    }
+                    pathBuilder.append(simplePath.get(i));
+                    ancestors.add(pathBuilder.toString());
+                }
+
+                qNameBuffer.append(ISO9075.getXPathName(QName.createQName("", simplePath.get(simplePath.size() - 1))));
+                xdoc.add(new Field("PARENT", ancestors.get(ancestors.size() - 1), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                // TODO: Categories and LINKASPECT
+
+                if (includeDirectoryDocuments)
+                {
+                    if (desc.isDirectory())
+                    {
+                        // TODO: Exclude category paths
+
+                        Document directoryEntry = new Document();
+                        directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+
+                        directoryEntry.add(new Field("ID", stringNodeRef, Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+
+                        directoryEntry.add(new Field("PATH", xpath, Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
+
+                        // Find all parent nodes.
+
+                        for (String toAdd : ancestors)
+                        {
+                            directoryEntry.add(new Field("ANCESTOR", toAdd, Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                        }
+                        directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+
+                        docs.add(directoryEntry);
+
+                    }
+                }
+            }
+
+            if (node.getIsRoot())
+            {
+                // TODO: Does the root element have a QName?
+                xdoc.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                xdoc.add(new Field("PATH", "", Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
+                xdoc.add(new Field("QNAME", "", Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
+                xdoc.add(new Field("ISROOT", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                xdoc.add(new Field("ISNODE", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                docs.add(xdoc);
+
+            }
+            else
+                // not a root node
+            {
+                xdoc.add(new Field("QNAME", qNameBuffer.toString(), Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
+
+                QName typeQName = getType(desc);
+
+                xdoc.add(new Field("TYPE", ISO9075.getXPathName(typeQName), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+
+                for (QName classRef : avmService.getAspects(desc))
+                {
+                    xdoc.add(new Field("ASPECT", ISO9075.getXPathName(classRef), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                }
+
+                xdoc.add(new Field("ISROOT", "F", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                xdoc.add(new Field("ISNODE", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+
+                docs.add(xdoc);
             }
         }
         else
@@ -612,7 +553,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
     private Map<QName, Serializable> getIndexableProperties(AVMNodeDescriptor desc, NodeRef nodeRef, Integer version, String path)
     {
-        Map<QName, PropertyValue> properties = avmService.getNodeProperties(version, path);
+        Map<QName, PropertyValue> properties = avmService.getNodeProperties(desc);
 
         Map<QName, Serializable> result = new HashMap<QName, Serializable>();
         for (QName qName : properties.keySet())
@@ -644,7 +585,15 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         {
             try
             {
-                ContentData contentData = avmService.getContentDataForRead(version, path);
+                ContentData contentData = null;
+                if (desc.isPlainFile())
+                {
+                    contentData = avmService.getContentDataForRead(desc);
+                }
+                else
+                {
+                    contentData = avmService.getContentDataForRead(endVersion, path);
+                }
                 result.put(ContentModel.PROP_CONTENT, contentData);
             }
             catch (AVMException e)

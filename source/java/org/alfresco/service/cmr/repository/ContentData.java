@@ -135,6 +135,26 @@ public class ContentData implements Serializable
     }
     
     /**
+     * Constructs a new instance using the existing one as a template, but replacing the
+     * encoding.
+     * 
+     * @param existing      an existing set of content data, null to use default values
+     * @param encoding      the encoding to set
+     * @return              Returns a new, immutable instance of the data
+     */
+    public static ContentData setEncoding(ContentData existing, String encoding)
+    {
+        ContentData ret = new ContentData(
+                existing == null ? null : existing.contentUrl,
+                existing == null ? null : existing.mimetype,
+                existing == null ? 0L : existing.size,
+                encoding,
+                existing == null ? null : existing.locale);
+        // done
+        return ret;
+    }
+    
+    /**
      * Create a content data using the {@link I18NUtil#getLocale() default locale}.
      * 
      * @see #ContentData(String, String, long, String, Locale)

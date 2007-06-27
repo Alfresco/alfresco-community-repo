@@ -5,6 +5,9 @@
          <show-property name="name" />
          <show-property name="mimetype" display-label-id="content_type"
                         component-generator="MimeTypeSelectorGenerator" />
+         <show-property name="encoding" display-label-id="encoding"
+                        ignore-if-missing="false"
+                        component-generator="CharsetSelectorGenerator" />
          <!-- NOTE: The following 3 properties are defined here to cover -->
          <!--       the scenario where content is added via CIFS or FTP -->
          <!--       and so the properties are missing -->
@@ -41,6 +44,8 @@
          <show-property name="name" />
          <show-property name="mimetype" display-label-id="content_type"
                         component-generator="MimeTypeSelectorGenerator" />
+         <show-property name="encoding" display-label-id="encoding"
+                        component-generator="CharsetSelectorGenerator" />
          <show-property name="title" />
          <show-property name="description" />
          <show-property name="size" display-label-id="size"

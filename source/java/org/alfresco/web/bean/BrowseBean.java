@@ -1044,6 +1044,13 @@ public class BrowseBean implements IContextListener
       }
    };
    
+   public NodePropertyResolver resolverEncoding = new NodePropertyResolver() {
+      public Object get(Node node) {
+         ContentData content = (ContentData)node.getProperties().get(ContentModel.PROP_CONTENT);
+         return (content != null ? content.getEncoding() : null);
+      }
+   };
+   
    public NodePropertyResolver resolverSize = new NodePropertyResolver() {
       public Object get(Node node) {
          ContentData content = (ContentData)node.getProperties().get(ContentModel.PROP_CONTENT);
@@ -1397,6 +1404,7 @@ public class BrowseBean implements IContextListener
             }
             node.addPropertyResolver("fileType32", this.resolverFileType32);
             node.addPropertyResolver("mimetype", this.resolverMimetype);
+            node.addPropertyResolver("encoding", this.resolverEncoding);
             node.addPropertyResolver("size", this.resolverSize);
             node.addPropertyResolver("lang", this.resolverLang);
             

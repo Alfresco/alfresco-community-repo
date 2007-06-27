@@ -42,6 +42,7 @@ import org.alfresco.web.bean.repository.Node;
 public class ViewContentPropertiesDialog extends BaseDialogBean
 {
    protected static final String TEMP_PROP_MIMETYPE = "mimetype";
+   protected static final String TEMP_PROP_ENCODING = "encoding";
    
    protected Node viewingNode;
    
@@ -63,6 +64,7 @@ public class ViewContentPropertiesDialog extends BaseDialogBean
       if (content != null)
       {
          this.viewingNode.getProperties().put(TEMP_PROP_MIMETYPE, content.getMimetype());
+         this.viewingNode.getProperties().put(TEMP_PROP_ENCODING, content.getEncoding());
       }
       
       // add the specially handled 'size' property

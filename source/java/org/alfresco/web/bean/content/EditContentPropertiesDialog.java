@@ -54,6 +54,7 @@ import org.alfresco.web.bean.repository.Repository;
 public class EditContentPropertiesDialog extends BaseDialogBean
 {
    protected static final String TEMP_PROP_MIMETYPE = "mimetype";
+   protected static final String TEMP_PROP_ENCODING = "encoding";
    
    protected Node editableNode;
    
@@ -75,6 +76,7 @@ public class EditContentPropertiesDialog extends BaseDialogBean
       if (content != null)
       {
          this.editableNode.getProperties().put(TEMP_PROP_MIMETYPE, content.getMimetype());
+         this.editableNode.getProperties().put(TEMP_PROP_ENCODING, content.getEncoding());
       }
    }
    
@@ -104,8 +106,8 @@ public class EditContentPropertiesDialog extends BaseDialogBean
       // the format expected by the repository
       Map<QName, Serializable> repoProps = this.nodeService.getProperties(nodeRef);
       
-      // but first extract and deal with the special mimetype property for ContentData
-      String mimetype = (String)editedProps.get(TEMP_PROP_MIMETYPE);
+      // Extract and deal with the special mimetype property for ContentData
+      String mimetype = (String) editedProps.get(TEMP_PROP_MIMETYPE);
       if (mimetype != null)
       {
          // remove temporary prop from list so it isn't saved with the others
@@ -114,6 +116,19 @@ public class EditContentPropertiesDialog extends BaseDialogBean
          if (contentData != null)
          {
             contentData = ContentData.setMimetype(contentData, mimetype);
+            editedProps.put(ContentModel.PROP_CONTENT.toString(), contentData);
+         }
+      }
+      // Extract and deal with the special encoding property for ContentData
+      String encoding = (String) editedProps.get(TEMP_PROP_ENCODING);
+      if (encoding != null)
+      {
+         // remove temporary prop from list so it isn't saved with the others
+         editedProps.remove(TEMP_PROP_ENCODING);
+         ContentData contentData = (ContentData) editedProps.get(ContentModel.PROP_CONTENT);
+         if (contentData != null)
+         {
+            contentData = ContentData.setEncoding(contentData, encoding);
             editedProps.put(ContentModel.PROP_CONTENT.toString(), contentData);
          }
       }

@@ -3686,6 +3686,15 @@
 
    <managed-bean>
       <description>
+         Bean that generates a charset selector component
+      </description>
+      <managed-bean-name>CharsetSelectorGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.CharsetSelectorGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+
+   <managed-bean>
+      <description>
          Bean that generates a languages selector component
       </description>
       <managed-bean-name>LanguageSelectorGenerator</managed-bean-name>

@@ -216,6 +216,11 @@
    </converter>
    
    <converter>
+      <converter-id>org.alfresco.faces.CharsetConverter</converter-id>
+      <converter-class>org.alfresco.web.ui.repo.converter.CharsetConverter</converter-class>
+   </converter>
+   
+   <converter>
       <converter-id>org.alfresco.faces.LanguageConverter</converter-id>
       <converter-class>org.alfresco.web.ui.repo.converter.LanguageConverter</converter-class>
    </converter>

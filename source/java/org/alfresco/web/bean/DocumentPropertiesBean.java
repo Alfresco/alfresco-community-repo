@@ -70,6 +70,7 @@ import org.alfresco.web.ui.common.Utils;
 public class DocumentPropertiesBean
 {
    private static final String TEMP_PROP_MIMETYPE = "mimetype";
+   private static final String TEMP_PROP_ENCODING = "encoding";
    
    protected NodeService nodeService;
    protected FileFolderService fileFolderService;
@@ -105,6 +106,7 @@ public class DocumentPropertiesBean
       if (content != null)
       {
          this.editableNode.getProperties().put(TEMP_PROP_MIMETYPE, content.getMimetype());
+         this.editableNode.getProperties().put(TEMP_PROP_ENCODING, content.getEncoding());
       }
       
       this.hasOtherProperties = null;
@@ -140,7 +142,7 @@ public class DocumentPropertiesBean
          // we need to put all the properties from the editable bag back into 
          // the format expected by the repository
          
-         // but first extract and deal with the special mimetype property for ContentData
+         // Deal with the special mimetype property for ContentData
          String mimetype = (String)props.get(TEMP_PROP_MIMETYPE);
          if (mimetype != null)
          {
@@ -150,6 +152,20 @@ public class DocumentPropertiesBean
             if (contentData != null)
             {
                contentData = ContentData.setMimetype(contentData, mimetype);
+               props.put(ContentModel.PROP_CONTENT.toString(), contentData);
+            }
+         }
+         
+         // Deal with the special encoding property for ContentData
+         String encoding = (String) props.get(TEMP_PROP_ENCODING);
+         if (encoding != null)
+         {
+            // remove temporary prop from list so it isn't saved with the others
+            props.remove(TEMP_PROP_ENCODING);
+            ContentData contentData = (ContentData)props.get(ContentModel.PROP_CONTENT);
+            if (contentData != null)
+            {
+               contentData = ContentData.setEncoding(contentData, encoding);
                props.put(ContentModel.PROP_CONTENT.toString(), contentData);
             }
          }

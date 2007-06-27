@@ -179,18 +179,8 @@ public class EditSpaceDialog extends CreateSpaceDialog
          }
       }
 
-
-     // do nothing by default, subclasses can override if necessary
-      if(isEdit())
-      {
-       this.browseBean.setDocument(this.getEditableNode()); // (this.editableNode.getNodeRef());
-
-       return "dialog:createMultilingualProperties";
-      }
-      else
-      {
-       return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
-      }
+      // do nothing by default, subclasses can override if necessary
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
    }
 
    @Override
@@ -214,18 +204,5 @@ public class EditSpaceDialog extends CreateSpaceDialog
    {
       return this.editableNode;
    }
-
-   public boolean isEdit()
-   {
-    return this.edit;
-   }
-
-   public void setEdit(boolean x)
-   {
-    this.edit=x;
-   }
-
-
-   private boolean edit;
 
 }

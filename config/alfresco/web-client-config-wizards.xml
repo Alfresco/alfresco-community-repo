@@ -489,7 +489,7 @@
             </step>
          </wizard>
 
-         <!-- Definition of the Start Workflow wizard -->
+         <!-- Definition of the New Edition wizard -->
          <wizard name="newEdition" managed-bean="NewEditionWizard"
                title-id="new_edition_wizard_title"
                description-id="new_edition_wizard_desc"

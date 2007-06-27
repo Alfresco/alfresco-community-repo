@@ -394,17 +394,6 @@
             <action>dialog:createSpace</action>
          </action>
 
-         <!-- Create multilingual space -->
-         <action id="create_multilingual_space">
-            <permissions>
-               <permission allow="true">CreateChildren</permission>
-            </permissions>
-            <label-id>create_multilingual_space</label-id>
-            <image>/images/icons/create_space.gif</image>
-            <action>dialog:createMultilingualSpace</action>
-         </action>
-
-
          <!-- Create Advanced Space Wizard -->
          <action id="create_space_wizard">
             <permissions>
@@ -723,7 +712,6 @@
             <action idref="create_form" />
             <action idref="create_website_wizard" />
             <action idref="create_space" />
-            <action idref="create_multilingual_space" />
             <action idref="create_space_wizard" />
          </action-group>
 

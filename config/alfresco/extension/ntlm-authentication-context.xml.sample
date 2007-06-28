@@ -27,6 +27,9 @@
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
+        <property name="transactionService">
+            <ref bean="transactionComponent" />
+        </property>
         <property name="guestAccess">
             <value>false</value>
         </property>

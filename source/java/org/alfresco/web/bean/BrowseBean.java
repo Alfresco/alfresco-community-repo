@@ -140,7 +140,6 @@ public class BrowseBean implements IContextListener
       this.userPreferencesBean = userPreferencesBean; 
    }
 
-   
    /**
     * @param lockService The Lock Service to set.
     */

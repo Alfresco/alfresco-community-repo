@@ -58,11 +58,6 @@ public class CharsetConverter implements Converter
     */
    public String getAsString(FacesContext context, UIComponent component, Object value)
    {
-      if (value == null)
-      {
-         throw new IllegalArgumentException(I18NUtil.getMessage("error_charset_null"));
-      }
-      
       String result = null;
       
       if (value instanceof Charset)

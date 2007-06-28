@@ -562,6 +562,13 @@ public class TrashcanBean implements IContextListener
       }
    };
    
+   private NodePropertyResolver resolverEncoding = new NodePropertyResolver() {
+      public Object get(Node node) {
+         ContentData content = (ContentData)node.getProperties().get(ContentModel.PROP_CONTENT);
+         return (content != null ? content.getEncoding() : null);
+      }
+   };
+   
    private NodePropertyResolver resolverDeletedDate = new NodePropertyResolver() {
       public Object get(Node node) {
          return node.getProperties().get(ContentModel.PROP_ARCHIVED_DATE);
@@ -640,6 +647,7 @@ public class TrashcanBean implements IContextListener
             node.addPropertyResolver("isFolder", resolverIsFolder);
             node.addPropertyResolver("mimetype", resolverMimetype);
             node.addPropertyResolver("size", resolverSize);
+            node.addPropertyResolver("encoding", resolverEncoding);
             
             if (this.dictionaryService.isSubClass(node.getType(), ContentModel.TYPE_FOLDER) == true && 
                 this.dictionaryService.isSubClass(node.getType(), ContentModel.TYPE_SYSTEM_FOLDER) == false)

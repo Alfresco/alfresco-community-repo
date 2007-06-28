@@ -716,7 +716,19 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                 }
                 doc.add(new Field(attributeName + ".locale", locale.toString().toLowerCase(), Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
 
-                ContentReader reader = contentService.getReader(banana, propertyName);
+                ContentReader reader = null;
+                try
+                {
+                    reader = contentService.getRawReader(contentData.getContentUrl());
+                    reader.setEncoding(contentData.getEncoding());
+                    reader.setLocale(contentData.getLocale());
+                    reader.setMimetype(contentData.getMimetype());
+                }
+                catch (Exception e)
+                {
+                    reader = null;
+                }
+                // ContentReader reader = contentService.getReader(banana, propertyName);
                 if (reader != null && reader.exists())
                 {
                     boolean readerReady = true;

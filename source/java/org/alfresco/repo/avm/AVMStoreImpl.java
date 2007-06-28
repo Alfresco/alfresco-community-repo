@@ -1329,7 +1329,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             def.getProperties();
         for (QName name : properties.keySet())
         {
-            AVMDAOs.Instance().fAVMNodePropertyDAO.delete(node, name);
+            node.getProperties().remove(name);
         }
         node.setGuid(GUID.generate());
     }

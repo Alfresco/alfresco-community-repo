@@ -306,7 +306,7 @@ public class OrphanReaper
                         AVMDAOs.Instance().fMergeLinkDAO.delete(link);
                     }
                     // Get rid of all properties belonging to this node.
-                    AVMDAOs.Instance().fAVMNodePropertyDAO.deleteAll(node);
+                    // AVMDAOs.Instance().fAVMNodePropertyDAO.deleteAll(node);
                     // Get rid of all aspects belonging to this node.
 //                    AVMDAOs.Instance().fAVMAspectNameDAO.delete(node);
                     // Get rid of ACL.

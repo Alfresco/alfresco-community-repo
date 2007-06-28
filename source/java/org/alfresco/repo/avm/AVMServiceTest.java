@@ -5189,6 +5189,13 @@ public class AVMServiceTest extends AVMServiceTestBase
             
             fService.addAspect("main:/a/b/c/foo", ContentModel.ASPECT_TITLED);
             fService.addAspect("main:/a/b/c/foo", ContentModel.ASPECT_AUDITABLE);
+            Map<QName, PropertyValue> properties = new HashMap<QName, PropertyValue>();
+            properties.put(ContentModel.PROP_ACCESSED, new PropertyValue(null, new Date(System.currentTimeMillis())));
+            properties.put(ContentModel.PROP_CREATED, new PropertyValue(null, new Date(System.currentTimeMillis())));
+            properties.put(ContentModel.PROP_MODIFIED, new PropertyValue(null, new Date(System.currentTimeMillis())));
+            properties.put(ContentModel.PROP_CREATOR, new PropertyValue(null, "Giles"));
+            properties.put(ContentModel.PROP_MODIFIER, new PropertyValue(null, "Quentin"));
+            fService.setNodeProperties("main:/a/b/c/foo", properties);
             fService.createSnapshot("main", null, null);
             
             results = searchService.query(storeRef, "lucene", "ASPECT:\"" + ContentModel.ASPECT_TITLED.toString()  +"\"");
@@ -5219,6 +5226,11 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.getFileOutputStream("main:/a/b/c/foo").close();
             assertFalse(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_TITLED));
             assertTrue(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_AUDITABLE));
+            Map<QName, PropertyValue> props = fService.getNodeProperties(-1, "main:/a/b/c/foo");
+            assertEquals(5, props.size());
+            fService.removeAspect("main:/a/b/c/foo", ContentModel.ASPECT_AUDITABLE);
+            props = fService.getNodeProperties(-1, "main:/a/b/c/foo");
+            assertEquals(0, props.size());
         }
         catch (Exception e)
         {

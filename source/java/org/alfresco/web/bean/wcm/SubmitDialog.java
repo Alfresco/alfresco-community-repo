@@ -99,7 +99,7 @@ public class SubmitDialog extends BaseDialogBean
    private String[] workflowSelectedValue;
    private boolean enteringExpireDate = false;
    private boolean startedFromWorkflow = false;
-   private boolean validateLinks = true;
+   private boolean validateLinks = false;
    private Date defaultExpireDate;
    private Date launchDate;
    
@@ -210,7 +210,7 @@ public class SubmitDialog extends BaseDialogBean
       this.defaultExpireDate = new Date();
       this.workflowSelectedValue = null;
       this.launchDate = null;
-      this.validateLinks = true;
+      this.validateLinks = false;
       this.workflowParams = null;
       this.sandboxInfo = null;
       this.virtUpdatePath = null;

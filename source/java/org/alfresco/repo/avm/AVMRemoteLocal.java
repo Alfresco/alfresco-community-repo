@@ -259,7 +259,7 @@ public class AVMRemoteLocal implements AVMRemote
      */
     public int getLatestSnapshotID(String storeName) 
     {
-        return 0;
+        return fService.getLatestSnapshotID(storeName);
     }
 
     /* (non-Javadoc)

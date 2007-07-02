@@ -1377,14 +1377,12 @@
         </property>
         <property name="mappedNames">
             <list>
-                <value>getBrokenHrefConcordance</value>
-                <value>getHrefConcordance</value>
-
-                <value>getBrokenHrefManifests</value>
-                <value>getHrefManifests</value>
-
-                <value>getBrokenHrefManifest</value>
-                <value>getHrefManifest</value>
+                    <value>getHrefManifestEntries</value>
+                    <value>getHrefDifference</value>
+                    <value>getHrefManifestBrokenByDelete</value>
+                    <value>getHrefManifestBrokenByNewOrMod</value>
+                    <value>getHrefConcordanceEntries</value>
+                    <value>getHrefsDependentUponFile</value>
             </list>
         </property>
     </bean>
@@ -1397,7 +1395,7 @@
         </property>
         <property name="mappedNames">
             <list>
-                <value>updateHrefInfo</value>
+                    <value>updateHrefInfo</value>
             </list>
         </property>
     </bean>

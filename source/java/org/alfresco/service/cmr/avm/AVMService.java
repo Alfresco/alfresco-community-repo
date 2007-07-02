@@ -602,6 +602,10 @@ public interface AVMService
 
     /**
      * Get the latest snapshot ID of a store. 
+     * Note:  All stores have at least one snapshot ID:  0;
+     *        this is the "empty" snapshot taken when 
+     *        the store is first created.
+     *
      * @param storeName The store name.
      * @return          The ID of the latest extant version of the store.
      * @throws          AVMNotFoundException
@@ -611,6 +615,17 @@ public interface AVMService
     
     /**
      * Snapshot the given AVMStore.
+     * When files have been modified since the previous snapshot,
+     * a new snapshot version is created;  otherwise, no extra
+     * snapshot is actually taken.
+     * <p>
+     * When no snapshot is actually taken, but either 'tag'
+     * or 'store' are non-null, they will override the value for 
+     * the last snapshot (i.e.:  the old values will be discarded);
+     * however, if both 'tag' and 'description' are null then
+     * invoking createSnapshot when no files have been modified
+     * becomes a true no-op.
+     *
      * @param store The name of the AVMStore to snapshot.
      * @param tag The short description.
      * @param description The thick description.

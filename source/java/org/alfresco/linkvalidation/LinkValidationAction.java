@@ -195,11 +195,11 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
             }
             else
             {
-                // firstly call updateHrefInfo to scan the whole store for broken links
-                // NOTE: currently this is NOT done incrementally
-                this.linkValidationService.updateHrefInfo(webappPath, false, this.connectionTimeout, 
-                         this.readTimeout, this.noThreads, monitor);
-            
+                // Not calling linkValidationService.updateHrefInfo explicitly anymore
+                // so tell the system we're done.  Note that the monitor won't have
+                // valid update counts
+                monitor.setDone( true );
+
                 // retrieve the manifest of all the broken links and files for the webapp
                 List<HrefManifestEntry> manifests = this.linkValidationService.getBrokenHrefManifestEntries(webappPath);
                 

@@ -39,12 +39,119 @@ public interface LinkValidationService
     public void onBootstrap();
     public void onShutdown();
 
+    //-------------------------------------------------------------------------
     /**
-    * Updates href status and href file dependencies for path.
-    * 
+    *  This function is just a convenience wrapper for calling  
+    *  getHrefManifestEntries with statusGTE=400 and statusLTE=599.
+    *  <p>
+    *  Note: Files and urls within this list of manifests pertain to
+    *        the latest validated snapshot of staging (which may be
+    *        somewhat older than the very latest snapshot).   The
+    *        validation service attempts to keep the latest validated
+    *        snapshot as new as possible, automatically.
+    */
+    //-------------------------------------------------------------------------
+    public List<HrefManifestEntry> getBrokenHrefManifestEntries( 
+                                      String storeNameOrWebappPath
+                                   )  throws AVMNotFoundException;
+
+    //-------------------------------------------------------------------------
+    /**
+    *  Returns a manifest consisting of just the broken hrefs 
+    *  within each file containing one or more broken href. 
+    *  The HrefManifestEntry list is sorted in increasing lexicographic 
+    *  order by file name.  The hrefs within each HrefManifestEntry
+    *  are also sorted in increasing lexicographic order.
+    */
+    //-------------------------------------------------------------------------
+    public List<HrefManifestEntry> getHrefManifestEntries( 
+                                  String storeNameOrWebappPath,
+                                  int    statusGTE,
+                                  int    statusLTE) throws 
+                                  AVMNotFoundException;
+
+
+    //-------------------------------------------------------------------------
+    /**
+    *  Fetch the difference between two areas.
+    *  Version -1 is assumed for src; dst relies on the state of the
+    *  link validation service updating link validity tables.
+    *  Typically, this will be for some version close to the latest
+    *  snapshot, but it's async, so it might be older.
+    */
+    //-------------------------------------------------------------------------
+    public HrefDifference getHrefDifference( 
+                                   String                 srcWebappPath, 
+                                   String                 dstWebappPath, 
+                                   int                    connectTimeout,
+                                   int                    readTimeout,
+                                   int                    nthreads,
+                                   HrefValidationProgress progress)
+                          throws   AVMNotFoundException,
+                                   SocketException,
+                                   SSLException,
+                                   LinkValidationAbortedException;
+
+
+
+    //-------------------------------------------------------------------------
+    /**
+    *  Fetches a manifest of all hyperlinks broken by files 
+    *  deleted in a HrefDifference.   Files and hrefs in this
+    *  manifest will be in the namespace of the src in the
+    *  HrefDifference.  For example, suppose the "test"
+    *  web project had a ROOT webapp with a link within 
+    *  "moo.html" that pointed to: "hamlet.html".
+    *  Now suppose that user 'alice' proposes to delete "hamlet.html".
+    *  Because 'alice' is the 'src' and staging is the 'dst'
+    *  in the HrefDifference, all files and hyperlinks appear from
+    *  the perspective of the main working store within 
+    *  alice's sandbox.  Thus, the broken link info is as follows:
     *
-    * @param storeNameOrWebappPath 
-    *            The store name or path to webapp
+    * <pre>
+    *  File containing broken link:
+    *     test--alice:/www/avm_webapps/ROOT/moo.html
+    *
+    *  Broken link:
+    *   http://alice.test.www--sandbox.version--v-1.127-0-0-1.ip.alfrescodemo.net:8180/hamlet.html
+    * </pre>
+    *
+    * @param hdiff The difference between two webapps obtained 
+    *              by calling getHrefDifference().
+    */
+    //-------------------------------------------------------------------------
+    public HrefManifest getHrefManifestBrokenByDelete(HrefDifference hdiff);
+
+
+
+
+    //-------------------------------------------------------------------------
+    /**
+    *  Fetches a manifest of all hyperlinks broken in new or modified files in
+    *  an HrefDifference.  Similar to getHrefManifestBrokenByDelete(), 
+    *  the entries in this manifest are in the 'src' namespace of the
+    *  HrefDifference operation (i.e.:  files & urls from alice, not staging).
+    *
+    * @param hdiff The difference between two webapps obtained 
+    *              by calling getHrefDifference().
+    */
+    //-------------------------------------------------------------------------
+    public HrefManifest getHrefManifestBrokenByNewOrMod(HrefDifference hdiff);
+
+
+
+
+    //-------------------------------------------------------------------------
+    /**
+    * WARNING: this function won't be part of the public interface for long.   
+    * Updates href status and href file dependencies for path.
+    *
+    * @param path 
+    *            <ul>
+    *              <li>  If null, do all stores & all webapps in them.
+    *              <li>  If store, do all webapps in store
+    *              <li>  If webapp, do webapp.
+    *            </ul>
     *                        
     * @param incremental     
     *            If true, updates information incrementally, based on the 
@@ -53,6 +160,10 @@ public interface LinkValidationService
     *            info associated with the store/webapp (if any), then does 
     *            a full rescan to update info.
     * 
+    * @validateExternal
+    *            Currently does nothing.  Perhaps one day you'll be able to
+    *            turn off validation of external links.
+    *
     * @param connectTimeout  
     *            Amount of time in milliseconds that this function will wait
     *            before declaring that the connection has failed 
@@ -71,28 +182,51 @@ public interface LinkValidationService
     *             'status' may be polled in a separate thread to 
     *             observe its progress.
     */
-    public void updateHrefInfo( String   storeNameOrWebappPath,
-                                boolean  incremental,
-                                int      connectTimeout,
-                                int      readTimeout,
-                                int      nthreads,
-                                HrefValidationProgress progress
-                              ) 
-                throws AVMNotFoundException,
-                       SocketException,
-                       SSLException,
-                       LinkValidationAbortedException;
+    //-------------------------------------------------------------------------
+    public void updateHrefInfo( String                 path,              
+                                boolean                incremental,             
+                                boolean                validateExternal,        
+                                int                    connectTimeout,          
+                                int                    readTimeout,             
+                                int                    nthreads,                
+                                HrefValidationProgress progress)                
+                throws          AVMNotFoundException,                           
+                                SocketException,                                
+                                SSLException,                                   
+                                LinkValidationAbortedException;                 
 
+
+
+
+
+
+    //-------------------------------------------------------------------------
+    /**
+    *  Merges an HrefDifference into the master href info table.
+    *  WARNING: This function won't be part of the public interface for long.
+    */ 
+    //-------------------------------------------------------------------------
+    public void mergeHrefDiff( HrefDifference hdiff)
+                throws         AVMNotFoundException,
+                               SocketException,
+                               SSLException,
+                               LinkValidationAbortedException;
+    
+
+
+    //-------------------------------------------------------------------------
     /**
     *  Fetches information on broken hrefs within a store name or path 
     *  to a webapp.  This function is just a convenience wrapper for calling  
     *  getHrefConcordance with statusGTE=400 and statusLTE=599.
     */
+    //-------------------------------------------------------------------------
     public List<HrefConcordanceEntry> getBrokenHrefConcordanceEntries( 
                                           String  storeNameOrWebappPath 
                                       ) throws AVMNotFoundException;
 
 
+    //-------------------------------------------------------------------------
     /**
     *  Returns information regarding the hrefs within storeNameOrWebappPath
     *  whose return status is greater than or equal to 'statusGTE', and 
@@ -135,6 +269,7 @@ public interface LinkValidationService
     *  http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
     *
     */
+    //-------------------------------------------------------------------------
     public List<HrefConcordanceEntry> getHrefConcordanceEntries( 
                                          String  storeNameOrWebappPath,
                                          int     statusGTE,
@@ -142,28 +277,8 @@ public interface LinkValidationService
                                       )  throws AVMNotFoundException;
 
 
-    /**
-    *  This function is just a convenience wrapper for calling  
-    *  getHrefManifestEntries with statusGTE=400 and statusLTE=599.
-    */
-    public List<HrefManifestEntry> getBrokenHrefManifestEntries( 
-                                      String storeNameOrWebappPath
-                                   )  throws AVMNotFoundException;
 
-    /**
-    *  Returns a manifest consisting of just the broken hrefs 
-    *  within each file containing one or more broken href. 
-    *  The HrefManifestEntry list is sorted in increasing lexicographic 
-    *  order by file name.  The hrefs within each HrefManifestEntry
-    *  are also sorted in increasing lexicographic order.
-    */
-    public List<HrefManifestEntry> getHrefManifestEntries( 
-                                  String storeNameOrWebappPath,
-                                  int    statusGTE,
-                                  int    statusLTE) throws 
-                                  AVMNotFoundException;
-
-
+    //-------------------------------------------------------------------------
     /**
     *  Fetch all hyperlinks that rely upon the existence of the file specified
     *  by 'path', directly or indirectly.  The list of hrefs returnd is 
@@ -183,57 +298,28 @@ public interface LinkValidationService
     * 
     *
     */
+    //-------------------------------------------------------------------------
     public List<String> getHrefsDependentUponFile(String path);
 
-    public HrefDifference getHrefDifference( 
-                                   String                 srcWebappPath, 
-                                   String                 dstWebappPath, 
-                                   int                    connectTimeout,
-                                   int                    readTimeout,
-                                   int                    nthreads,
-                                   HrefValidationProgress progress)
-                          throws   AVMNotFoundException,
-                                   SocketException,
-                                   SSLException,
-                                   LinkValidationAbortedException;
 
-    /**
-    *  Fetches a manifest of all hyperlinks broken by files 
-    *  deleted in a HrefDifference between two webapps.
-    *
-    * @param hdiff The difference between two webapps obtained by calling getHrefDifference().
-    */
-    public HrefManifest getHrefManifestBrokenByDelete(HrefDifference hdiff);
 
-    /**
-    *  Fetches a manifest of all hyperlinks broken in new or modified files in
-    *  an HrefDifference.
-    *
-    * @param hdiff The difference between two webapps obtained by calling getHrefDifference().
-    */
-    public HrefManifest getHrefManifestBrokenByNewOrMod(HrefDifference hdiff);
 
-    /**
-    *  Merges an HrefDifference into the master href info table.
-    */ 
-    public void mergeHrefDiff( HrefDifference hdiff)
-                throws         AVMNotFoundException,
-                               SocketException,
-                               SSLException,
-                               LinkValidationAbortedException;
-    
-    /**
-    *  
-    */
-    public void updateHrefInfo( String                 webappPath,
-                                boolean                incremental,
-                                boolean                validateExternal,
-                                int                    connectTimeout,
-                                int                    readTimeout,
-                                int                    nthreads,
-                                HrefValidationProgress progress)
-                throws          AVMNotFoundException,
-                                SocketException,
-                                SSLException,
-                                LinkValidationAbortedException;
+
+    //-------------------------------------------------------------------------
+    // NEARLY OBSOLETE!
+    // NEARLY OBSOLETE!
+    // NEARLY OBSOLETE!
+    // NEARLY OBSOLETE!
+    //-------------------------------------------------------------------------
+    public void updateHrefInfo( 
+                       String   storeNameOrWebappPath,     // NEARLY OBSOLETE!
+                       boolean  incremental,               // NEARLY OBSOLETE!
+                       int      connectTimeout,            // NEARLY OBSOLETE!
+                       int      readTimeout,               // NEARLY OBSOLETE!
+                       int      nthreads,                  // NEARLY OBSOLETE!
+                       HrefValidationProgress progress)    // NEARLY OBSOLETE!
+                throws AVMNotFoundException,               // NEARLY OBSOLETE!
+                       SocketException,                    // NEARLY OBSOLETE!
+                       SSLException,                       // NEARLY OBSOLETE!
+                       LinkValidationAbortedException;     // NEARLY OBSOLETE!
 }

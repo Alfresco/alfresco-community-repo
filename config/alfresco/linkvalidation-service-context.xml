@@ -17,11 +17,111 @@
         </property>
     </bean>
 
+    <bean id="hrefBearingRequestPathNameMatcher" 
+          class="org.alfresco.repo.avm.util.HrefBearingRequestPathNameMatcher">
+        <property name="extensions">
+            <list>
+                <!--   
+                  See also: http://filext.com/alphalist.php
+                      and:  HrefBearingRequestPathNameMatcher
+
+                 Note:  HrefBearingRequestPathNameMatcher does not require
+                        a leading '.'  (unlike FileExtensionNameMatcher),
+                        nor does it suffer from performance problems when 
+                        the number of extensions is large.  However, it 
+                        will not tolerate extensions with internal "." chars; 
+                        everything up to and including the final "." will
+                        simply be ignored.  Matching is not case sensitive.
+                 -->
+
+                <value></value>         <!-- null extension for dirs -->
+                <value>ahtml</value>
+                <value>ahtm</value>
+                <value>asphtml</value>
+                <value>asp</value>
+                <value>axs</value>
+                <value>bhtml</value>
+                <value>dci</value>
+                <value>dht</value>
+                <value>dochtml</value>
+                <value>docmhtml</value>
+                <value>ehtml</value>
+                <value>ephtml</value>
+                <value>fhtml</value>
+                <value>fphtml</value>
+                <value>hhtml</value>
+                <value>ht3</value>
+                <value>htc</value>
+                <value>htmls</value>
+                <value>html</value>
+                <value>htm</value>
+                <value>ihtml</value>
+                <value>jcs</value>
+                <value>jhtml</value>
+                <value>jhtm</value>
+                <value>jsp</value>
+                <value>log</value>
+                <value>mdhtml</value>
+                <value>mhtml</value>
+                <value>mhtm</value>
+                <value>mht</value>
+                <value>mml</value>
+                <value>php2</value>
+                <value>php3</value>
+                <value>php4</value>
+                <value>php5</value>
+                <value>php6</value>
+                <value>php7</value>
+                <value>php8</value>
+                <value>php9</value>
+                <value>php</value>
+                <value>phtml</value>
+                <value>phtml</value>
+                <value>phtm</value>
+                <value>pht</value>
+                <value>pl</value>
+                <value>ppthtml</value>
+                <value>pptm</value>
+                <value>pt</value>
+                <value>pubhtml</value>
+                <value>pubmhtml</value>
+                <value>rbx</value>
+                <value>rhtml</value>
+                <value>rmh</value>
+                <value>s1h</value>
+                <value>shtml3</value>
+                <value>shtml</value>
+                <value>shtm</value>
+                <value>sht</value>
+                <value>ssi</value>
+                <value>stml</value>
+                <value>stm</value>
+                <value>thtml</value>
+                <value>txt</value>
+                <value>whtek</value>
+                <value>xhtml</value>
+                <value>xhtml</value>
+                <value>xhtm</value>
+                <value>xhtm</value>
+                <value>xht</value>
+                <value>xlshtml</value>
+                <value>xlshtm</value>
+                <value>xlsmhtml</value>
+                <value>xml</value>
+                <value>xtml</value>
+                <value>ybhtm</value>
+
+                <!-- Add others here, if you'd like! -->
+
+            </list>
+        </property>
+    </bean>
+
     <bean id="linkValidationService" 
           class="org.alfresco.linkvalidation.LinkValidationServiceImpl"
           lazy-init="true">
         <property name="attributeService">
-            <ref bean="attributeService"/>
+            <ref bean="AttributeService"/>
         </property>
         <property name="avmRemote">
             <ref bean="avmRemote"/>
@@ -30,10 +130,16 @@
             <ref bean="VirtServerRegistry"/>
         </property>
         <property name="AVMSyncService">
-            <ref bean="avmSyncService"/>
+            <ref bean="AVMSyncService"/>
         </property>
         <property name="excludeMatcher">
             <ref bean="linkValidationServiceExcludeExtensionMatcher"/>
+        </property>
+        <property name="hrefBearingRequestPathMatcher">
+            <ref bean="hrefBearingRequestPathNameMatcher"/>
+        </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="retryingTransactionHelper"/>
         </property>
     </bean>
 </beans>

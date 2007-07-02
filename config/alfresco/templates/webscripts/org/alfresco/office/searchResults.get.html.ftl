@@ -26,13 +26,13 @@
       <#list results as child>
          <#assign resCount=resCount + 1>
          <#if child.isDocument>
-            <#if child.name?ends_with(".pdf")>
-               <#assign openURL = "${url.context}${child.url}">
-               <#assign hrefExtra = " target=\"_blank\"">
-            <#else>
+            <#if child.name?ends_with(".doc")>
                <#assign webdavPath = (child.displayPath?substring(13) + '/' + child.name)?url('ISO-8859-1')?replace('%2F', '/')?replace('\'', '\\\'') />
                <#assign openURL = "#">
                <#assign hrefExtra = " onClick=\"window.external.openDocument('${webdavPath}')\"">
+            <#else>
+               <#assign openURL = "${url.context}${child.url}">
+               <#assign hrefExtra = " target=\"_blank\"">
             </#if>
          <#else>
             <#assign openURL = "${url.serviceContext}/office/navigation?p=${args.p?url}&amp;n=${child.id}&amp;search=${searchString?url}&amp;maxresults=${maxresults}">

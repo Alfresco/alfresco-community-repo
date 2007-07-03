@@ -55,10 +55,11 @@ import org.springframework.util.StringUtils;
  */
 public abstract class BaseContentNode implements TemplateContent
 {
-    protected final static String CONTENT_DEFAULT_URL = "/d/d/{0}/{1}/{2}/{3}";
+    protected final static String CONTENT_GET_URL      = "/d/d/{0}/{1}/{2}/{3}";
     protected final static String CONTENT_DOWNLOAD_URL = "/d/a/{0}/{1}/{2}/{3}";
-    protected final static String CONTENT_PROP_URL    = "/d/d/{0}/{1}/{2}/{3}?property={4}";
-    protected final static String FOLDER_BROWSE_URL   = "/n/browse/{0}/{1}/{2}";
+    protected final static String CONTENT_GET_PROP_URL = "/d/d/{0}/{1}/{2}/{3}?property={4}";
+    protected final static String CONTENT_DOWNLOAD_PROP_URL = "/d/a/{0}/{1}/{2}/{3}?property={4}";
+    protected final static String FOLDER_BROWSE_URL    = "/n/browse/{0}/{1}/{2}";
     
     protected final static String NAMESPACE_BEGIN = "" + QName.NAMESPACE_BEGIN;
     
@@ -334,7 +335,7 @@ public abstract class BaseContentNode implements TemplateContent
         {
             try
             {
-                return MessageFormat.format(CONTENT_DEFAULT_URL, new Object[] {
+                return MessageFormat.format(CONTENT_GET_URL, new Object[] {
                         getNodeRef().getStoreRef().getProtocol(),
                         getNodeRef().getStoreRef().getIdentifier(),
                         getNodeRef().getId(),
@@ -493,14 +494,11 @@ public abstract class BaseContentNode implements TemplateContent
             return result;
         }
         
-        /**
-         * @return 
-         */
         public String getUrl()
         {
             try
             {
-                return MessageFormat.format(CONTENT_PROP_URL, new Object[] {
+                return MessageFormat.format(CONTENT_GET_PROP_URL, new Object[] {
                        getNodeRef().getStoreRef().getProtocol(),
                        getNodeRef().getStoreRef().getIdentifier(),
                        getNodeRef().getId(),
@@ -510,6 +508,23 @@ public abstract class BaseContentNode implements TemplateContent
             catch (UnsupportedEncodingException err)
             {
                 throw new TemplateException("Failed to encode content URL for node: " + getNodeRef(), err);
+            }
+        }
+        
+        public String getDownloadUrl()
+        {
+            try
+            {
+               return MessageFormat.format(CONTENT_DOWNLOAD_PROP_URL, new Object[] {
+                        getNodeRef().getStoreRef().getProtocol(),
+                        getNodeRef().getStoreRef().getIdentifier(),
+                        getNodeRef().getId(),
+                        StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20"),
+                        StringUtils.replace(URLEncoder.encode(property.toString(), "UTF-8"), "+", "%20") });
+            }
+            catch (UnsupportedEncodingException err)
+            {
+                throw new TemplateException("Failed to encode content download URL for node: " + getNodeRef(), err);
             }
         }
         

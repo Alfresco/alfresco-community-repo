@@ -277,7 +277,7 @@ public class VersionHistoryNode extends BaseContentNode
         NodeRef nodeRef = this.version.getFrozenStateNodeRef();
         try
         {
-            return MessageFormat.format(parent.CONTENT_DEFAULT_URL, new Object[] {
+            return MessageFormat.format(parent.CONTENT_GET_URL, new Object[] {
                     nodeRef.getStoreRef().getProtocol(),
                     nodeRef.getStoreRef().getIdentifier(),
                     nodeRef.getId(),

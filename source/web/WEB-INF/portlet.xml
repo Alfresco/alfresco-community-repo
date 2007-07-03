@@ -33,7 +33,7 @@
         </init-param>
         <init-param>
            <name>scriptUrl</name>
-           <value>/alfresco/168s/mytasks</value>
+           <value>/alfresco/168s/ui/mytasks</value>
         </init-param>
 
         <supports>
@@ -58,7 +58,7 @@
         </init-param>
         <init-param>
            <name>scriptUrl</name>
-           <value>/alfresco/168s/doclist</value>
+           <value>/alfresco/168s/ui/doclist</value>
         </init-param>
 
         <supports>
@@ -83,7 +83,7 @@
         </init-param>
         <init-param>
            <name>scriptUrl</name>
-           <value>/alfresco/168s/myspaces</value>
+           <value>/alfresco/168s/ui/myspaces</value>
         </init-param>
 
         <supports>
@@ -108,7 +108,7 @@
         </init-param>
         <init-param>
            <name>scriptUrl</name>
-           <value>/alfresco/168s/mywebforms</value>
+           <value>/alfresco/168s/ui/mywebforms</value>
         </init-param>
 
         <supports>
@@ -122,4 +122,8 @@
         </portlet-info>
     </portlet>
     
+    <user-attribute>
+        <name>user.home-info.online.email</name>
+    </user-attribute>
+
 </portlet-app>

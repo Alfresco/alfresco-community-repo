@@ -1,7 +1,7 @@
 <webscript>
   <shortname>My Tasks</shortname>
   <description>Generate the My Tasks portlet page</description>
-  <url>/mytasks?f={filter?}</url>
+  <url>/ui/mytasks?f={filter?}</url>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

@@ -24,4 +24,4 @@
 --%>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<r:webScript scriptUrl="/wcs/mywebforms" />
+<r:webScript scriptUrl="/wcs/ui/mywebforms" />

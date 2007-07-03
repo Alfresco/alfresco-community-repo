@@ -1,7 +1,7 @@
 <webscript>
   <shortname>My Spaces</shortname>
   <description>Generate the My Spaces portlet page</description>
-  <url>/myspaces?f={filter?}&amp;p={path?}</url>
+  <url>/ui/myspaces?f={filter?}&amp;p={path?}</url>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

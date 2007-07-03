@@ -12,7 +12,7 @@ var MyTasks = {
          // is responsible for rendering just the contents of the main panel div
          YAHOO.util.Connect.asyncRequest(
             "GET",
-            MyTasks.ServiceContext + '/mytaskspanel?f='+MyTasks.Filter,
+            MyTasks.ServiceContext + '/ui/mytaskspanel?f='+MyTasks.Filter,
             {
                success: function(response)
                {

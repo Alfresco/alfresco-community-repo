@@ -16,23 +16,14 @@
         </property>
     </bean>
 
-		<bean id="alfDaoImpl" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-  			<property name="proxyInterfaces">
-   					<value>
-    						org.alfresco.repo.security.authentication.MutableAuthenticationDao
-   					</value>
-  			</property>
-  			<property name="transactionManager">
-   					<ref bean="transactionManager" />
-  			</property>
-  			<property name="target">
-   					<bean class="org.alfresco.repo.security.authentication.ntlm.NullMutableAuthenticationDao" />
-  			</property>
-  			<property name="transactionAttributes">
-    				<props>
-      					<prop key="*">${server.transaction.mode.default}</prop>
-    				</props>
-  			</property>
- 		</bean>
+    <!-- DAO that rejects changes - JAAS is read only at the moment.      -->
+    <!-- It does allow users to be deleted with out warnings from the UI. -->
+    <!-- The user is still present in JAAS, only the personal information is removed from alfresco. --> 
+    
+    <bean name="authenticationDao" class="org.alfresco.repo.security.authentication.DefaultMutableAuthenticationDao" >
+        <property name="allowDeleteUser">
+            <value>true</value>
+        </property>
+    </bean>    
 
 </beans>

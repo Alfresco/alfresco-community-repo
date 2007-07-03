@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.scripts.portlet;
 
+import java.util.Map;
+
 import javax.portlet.PortletRequest;
 
 import org.alfresco.web.scripts.WebScriptMatch;
@@ -37,6 +39,8 @@ import org.alfresco.web.scripts.WebScriptURLRequest;
  */
 public class WebScriptPortletRequest extends WebScriptURLRequest
 {
+    public static final String ALFPORTLETUSERNAME = "alfportletusername";
+    
     /** Portlet Request */
     private PortletRequest req;
     
@@ -64,6 +68,23 @@ public class WebScriptPortletRequest extends WebScriptURLRequest
     {
         super(scriptUrlParts, serviceMatch);
         this.req = req;
+        // look for the user info map in the portlet request - populated by the portlet container
+        Map userInfo = (Map)req.getAttribute(PortletRequest.USER_INFO);
+        if (userInfo != null)
+        {
+            // look for the special Liferay email (username) key
+            String liferayUsername = (String)userInfo.get("user.home-info.online.email");
+            if (liferayUsername != null)
+            {
+                // strip suffix from email address - we only need username part
+                if (liferayUsername.indexOf('@') != -1)
+                {
+                    liferayUsername = liferayUsername.substring(0, liferayUsername.indexOf('@'));
+                }
+                // save in session for use by alfresco portlet authenticator
+                this.req.getPortletSession().setAttribute(ALFPORTLETUSERNAME, liferayUsername);
+            }
+        }
     }
 
     /**
@@ -92,5 +113,4 @@ public class WebScriptPortletRequest extends WebScriptURLRequest
         // NOTE: rely on default agent mappings
         return null;
     }
-    
 }

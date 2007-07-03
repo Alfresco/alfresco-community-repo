@@ -63,7 +63,13 @@ public class JSR168PortletAuthenticator implements WebScriptPortletAuthenticator
      */
     public boolean authenticate(RequiredAuthentication required, boolean isGuest, RenderRequest req, RenderResponse res)
     {
-        String portalUser = req.getRemoteUser();
+        // first look for the username key in the session - we add this by hand for some portals
+        // when the WebScriptPortletRequest is created
+        String portalUser = (String)req.getPortletSession().getAttribute(WebScriptPortletRequest.ALFPORTLETUSERNAME);
+        if (portalUser == null)
+        {
+            portalUser = req.getRemoteUser();
+        }
         
         if (logger.isDebugEnabled())
         {

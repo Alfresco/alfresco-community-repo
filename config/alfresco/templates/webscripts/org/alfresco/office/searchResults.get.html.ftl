@@ -31,7 +31,7 @@
                <#assign openURL = "#">
                <#assign hrefExtra = " onClick=\"window.external.openDocument('${webdavPath}')\"">
             <#else>
-               <#assign openURL = "${url.context}${child.url}">
+               <#assign openURL = "${url.context}${child.url}?ticket=${session.ticket}">
                <#assign hrefExtra = " target=\"_blank\"">
             </#if>
          <#else>

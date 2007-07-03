@@ -19,12 +19,12 @@ else if ((args.p) && (args.p != ""))
       }
       else
       {
-         model.node = companyhome;
+         model.node = userhome;
       }
    }
 }
 else
 {
-   model.node = companyhome;
+   model.node = userhome;
 }
 model.path = args.p;

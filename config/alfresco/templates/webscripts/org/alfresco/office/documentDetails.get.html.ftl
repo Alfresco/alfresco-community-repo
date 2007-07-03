@@ -20,7 +20,7 @@
 <!--[if IE 6]>
    <link rel="stylesheet" type="text/css" href="${url.context}/css/office_ie6.css" />
 <![endif]-->
-   <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.1.js"></script>
+   <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.11.js"></script>
    <script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
 </head>
 <body>
@@ -105,7 +105,7 @@
       <#assign versionRow=versionRow+1>
       <tr class="${(versionRow % 2 = 0)?string("odd", "even")}">
          <td valign="top">
-            <a title="Open ${record.versionLabel}" href="${url.context}${d.url}"><img src="${url.context}/images/office/document.gif" alt="Open ${record.versionLabel}" /></a>
+            <a title="Open ${record.versionLabel}" href="${url.context}${d.url}?ticket=${session.ticket}"><img src="${url.context}/images/office/document.gif" alt="Open ${record.versionLabel}" /></a>
          </td>
          <td>
             <a title="Open ${record.versionLabel}" href="#"><span style="font-weight:bold;">${record.versionLabel}</span></a><br />
@@ -182,7 +182,7 @@
          </li>
     </#if>
          <li>
-            <a href="${url.context}/navigate/showOfficeAddin/workspace/SpacesStore/${d.id}?ticket=${session.ticket}" rel="_blank">
+            <a href="${url.context}/navigate/showDocDetails/workspace/SpacesStore/${d.id}?ticket=${session.ticket}" rel="_blank">
                <img src="${url.context}/images/office/document_details.gif" alt="Open Full Details" />
                Open Full Details
             </a>

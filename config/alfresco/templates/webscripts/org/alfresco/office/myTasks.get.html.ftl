@@ -24,7 +24,7 @@
 <!--[if IE 6]>
    <link rel="stylesheet" type="text/css" href="${url.context}/css/office_ie6.css" />
 <![endif]-->
-   <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.1.js"></script>
+   <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.11.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/ajax/autocompleter.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/ajax/date_picker.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>

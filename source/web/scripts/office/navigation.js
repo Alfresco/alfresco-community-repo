@@ -1,5 +1,5 @@
 /*
- * Prerequisites: mootools.v1.1.js
+ * Prerequisites: mootools.v1.11.js
  *                office_addin.js
  */
 var OfficeNavigation =

@@ -1,5 +1,5 @@
 /*
- * Prerequisites: mootools.v1.1.js
+ * Prerequisites: mootools.v1.11.js
  */
 var OfficeAddin = 
 {
@@ -11,7 +11,7 @@ var OfficeAddin =
    {
       window.queryObject = OfficeAddin.toQueryObject(document.location.search);
       window.contextPath = OfficeAddin.getContextPath();
-      window.serviceContextPath = window.contextPath + "/wcservice";
+      window.serviceContextPath = OfficeAddin.getServiceContextPath();;
 
       /* Update needed after page load? */      
       if(this.queryObject.st)
@@ -137,6 +137,27 @@ var OfficeAddin =
       }
    
       return contextPath;
+   },
+
+   /* Calculates and returns the service context path for the current page */
+   getServiceContextPath: function()
+   {
+      var path = window.location.pathname;
+      var idx = path.indexOf("/", 1);
+      var serviceContextPath = "";
+      if (idx != -1)
+      {
+         serviceContextPath = path.substring(0, idx);
+         path = path.substring(idx);
+         idx = path.indexOf("/", 1);
+
+         if (idx != -1)
+         {
+            serviceContextPath += path.substring(0, idx);
+         }
+      }
+   
+      return serviceContextPath;
    },
    
    /* Removes params "param1|param2...|paramN" from a URL */

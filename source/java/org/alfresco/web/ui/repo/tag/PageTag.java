@@ -183,7 +183,7 @@ public class PageTag extends TagSupport
          // mootools
          out.write("<script type=\"text/javascript\" src=\"");
          out.write(reqPath);
-         out.write("/scripts/ajax/mootools.v1.1.js\"></script>");
+         out.write("/scripts/ajax/mootools.v1.11.js\"></script>");
          
          // common Alfresco util methods
          out.write("<script type=\"text/javascript\" src=\"");

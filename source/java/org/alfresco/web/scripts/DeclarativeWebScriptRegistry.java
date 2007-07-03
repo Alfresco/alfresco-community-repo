@@ -140,7 +140,7 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
         {
             public String resolveImagePathForName(String filename, FileTypeImageSize size)
             {
-                return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
+                return Utils.getFileTypeImage(servletContext, filename, size);
             }  
         };        
     }

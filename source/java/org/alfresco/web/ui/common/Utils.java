@@ -1285,6 +1285,11 @@ public final class Utils
                   // found the image for this extension - save it for later
                   s_fileExtensionMap.put(key, image);
                }
+               else if ((fc == null) && (sc == null))
+               {
+                  // we have neither FacesContext nor ServerContext so return the default image but don't cache it
+                  image = defaultImage;
+               }
                else
                {
                   // not found, save the default image for this extension instead

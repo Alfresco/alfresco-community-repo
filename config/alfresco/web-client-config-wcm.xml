@@ -19,8 +19,10 @@
          	<remote-username>admin</remote-username>
          	<!-- password to use on remote machine -->
          	<remote-password>admin</remote-password>
-         	<!-- default RMI port to connect to on remote machine -->
+         	<!-- default RMI port to connect to Alfresco server on remote machine -->
          	<remote-rmi-port>50500</remote-rmi-port>
+            <!-- default RMI port to connect to Deployment Receiver on remote machine -->
+            <receiver-rmi-port>44100</receiver-rmi-port>
          	<!-- frequency (in seconds) of polling checks to get latest status of a deployment -->
          	<progress-polling-frequency>2</progress-polling-frequency>
          	<!-- the delay (in seconds) to apply to a deployment (for testing and demo purposes) -->

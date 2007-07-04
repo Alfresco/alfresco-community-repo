@@ -508,8 +508,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
    {
       String pattern = Application.getMessage(FacesContext.getCurrentInstance(), 
                "deploy_to_help");
-      String defaultPort = Integer.toString(AVMUtil.getRemoteRMIRegistryPort());
-      return MessageFormat.format(pattern, new Object[] {defaultPort});
+      String defaultAlfPort = Integer.toString(AVMUtil.getRemoteRMIRegistryPort());
+      String defaultReceiverPort = Integer.toString(AVMUtil.getRemoteReceiverRMIPort());
+      return MessageFormat.format(pattern, new Object[] {defaultReceiverPort, defaultAlfPort});
    }
    
    /**

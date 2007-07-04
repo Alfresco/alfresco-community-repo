@@ -367,7 +367,7 @@ public final class AVMUtil
    
    /**
     * Returns the default RMI registry port to use when one is not supplied
-    * for target deployment servers.
+    * for target Alfresco deployment servers.
     * <p>
     * This value is read from the &lt;wcm&gt; config section in
     * web-client-config-wcm.xml
@@ -384,6 +384,45 @@ public final class AVMUtil
       if (deploymentConfig != null)
       {
          ConfigElement elem = deploymentConfig.getChild("remote-rmi-port");
+         if (elem != null)
+         {
+            try
+            {
+               int value = Integer.parseInt(elem.getValue());
+               if (value > 0)
+               {
+                  rmiPort = value;
+               }
+            }
+            catch (NumberFormatException nfe)
+            {
+               // do nothing, just use the default
+            }
+         }
+      }
+      
+      return rmiPort;
+   }
+   
+   /**
+    * Returns the default RMI port to use when one is not supplied
+    * for target deployment receivers.
+    * <p>
+    * This value is read from the &lt;wcm&gt; config section in
+    * web-client-config-wcm.xml
+    * </p>
+    * 
+    * @return The deployment receiver RMI port to use for deployments.
+    *         The default is 44100.
+    */
+   public static int getRemoteReceiverRMIPort()
+   {
+      int rmiPort = 44100;
+      
+      ConfigElement deploymentConfig = getDeploymentConfig();
+      if (deploymentConfig != null)
+      {
+         ConfigElement elem = deploymentConfig.getChild("receiver-rmi-port");
          if (elem != null)
          {
             try

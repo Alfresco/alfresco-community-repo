@@ -291,12 +291,12 @@ public class UIDeploymentReports extends SelfRenderingComponent
          out.write("<div style='margin-top: 6px;'><img src='");
          out.write(context.getExternalContext().getRequestContextPath());
          out.write("/images/icons/collapsed.gif' style='vertical-align: -1px; cursor: pointer;' class='collapsed' onclick=\"toggleDeploymentDetails(this, '");
-         out.write(server.replace(':', '_'));
+         out.write(server.replace(':', '_').replace('\\', '_'));
          out.write("');\" />&nbsp;");
          out.write(Application.getMessage(context, "details"));
          out.write("</div>\n");
          out.write("<div id='");
-         out.write(server.replace(':', '_'));
+         out.write(server.replace(':', '_').replace('\\', '_'));
          out.write("-deployment-details' style='display: none; border: 1px dotted #eee; margin-left: 14px; margin-top: 4px; padding:3px;'>");
          out.write(content);
          out.write("</div>");

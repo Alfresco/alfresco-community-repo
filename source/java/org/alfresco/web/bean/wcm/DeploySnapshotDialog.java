@@ -153,6 +153,8 @@ public class DeploySnapshotDialog extends BaseDialogBean
                args.put(AVMDeploySnapshotAction.PARAM_TARGET_SERVER, targetServer);
                args.put(AVMDeploySnapshotAction.PARAM_DEFAULT_RMI_PORT, 
                         AVMUtil.getRemoteRMIRegistryPort());
+               args.put(AVMDeploySnapshotAction.PARAM_DEFAULT_RECEIVER_RMI_PORT, 
+                        AVMUtil.getRemoteReceiverRMIPort());
                args.put(AVMDeploySnapshotAction.PARAM_REMOTE_USERNAME, 
                         AVMUtil.getRemoteDeploymentUsername());
                args.put(AVMDeploySnapshotAction.PARAM_REMOTE_PASSWORD, 

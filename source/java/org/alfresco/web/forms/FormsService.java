@@ -215,8 +215,7 @@ public final class FormsService
       sp.addStore(Repository.getStoreRef());
       sp.setLanguage(SearchService.LANGUAGE_LUCENE);
       sp.setQuery("ASPECT:\"" + WCMAppModel.ASPECT_FORM + 
-                  "\" AND @" + Repository.escapeQName(ContentModel.PROP_NAME) + 
-                  ":\"" + name + "\"");
+                  "\" AND QNAME:\"cm:" + name + "\"");
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("running query [" + sp.getQuery() + "]");
       final ResultSet rs = this.searchService.query(sp);

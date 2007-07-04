@@ -75,6 +75,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -554,6 +555,7 @@ public class JBPMEngine extends BPMEngine
                     GraphSession graphSession = context.getGraphSession();
                     ProcessDefinition processDefinition = getProcessDefinition(graphSession, workflowDefinitionId);
                     ProcessInstance processInstance = new ProcessInstance(processDefinition);
+                    processInstance.setKey(GUID.generate());
                  
                     // assign initial process context
                     ContextInstance processContext = processInstance.getContextInstance();

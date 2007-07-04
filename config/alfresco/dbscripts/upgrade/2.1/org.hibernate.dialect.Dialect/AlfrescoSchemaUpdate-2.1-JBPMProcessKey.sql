@@ -7,7 +7,7 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 -- 
 
-UPDATE JBPM_PROCESSINSTANCE SET KEY_ = '' || ID_ WHERE KEY_ IS NULL;
+UPDATE JBPM_PROCESSINSTANCE SET KEY_ = ID_ WHERE KEY_ IS NULL;
 
 --
 -- Record script finish

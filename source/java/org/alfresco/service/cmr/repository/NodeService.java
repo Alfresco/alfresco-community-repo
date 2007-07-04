@@ -287,19 +287,12 @@ public interface NodeService
      * All associations (both children and regular node associations)
      * will be deleted, and where the given node is the primary parent,
      * the children will also be cascade deleted.
-     * <p>
-     * Depending on the node's type, the presence of certain aspects, the
-     * node's store or the any other factors determined by the implementation,
-     * the node may not actually disappear immediately.  It may be lined up for
-     * archival or later deletion.
      * 
      * @param nodeRef reference to a node within a store
-     * @return Returns <tt>true</tt> if the node was completely removed, otherwise
-     *         <tt>false</tt> if the node will still exist after the call.
      * @throws InvalidNodeRefException if the reference given is invalid
      */
     @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef"})
-    public boolean deleteNode(NodeRef nodeRef) throws InvalidNodeRefException;
+    public void deleteNode(NodeRef nodeRef) throws InvalidNodeRefException;
     
     /**
      * Makes a parent-child association between the given nodes.  Both nodes must belong to the same store.

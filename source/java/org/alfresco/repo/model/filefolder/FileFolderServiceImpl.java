@@ -76,7 +76,6 @@ public class FileFolderServiceImpl implements FileFolderService
         "./*" +
         "[like(@cm:name, $cm:name, false)" +
         " and not (subtypeOf('" + ContentModel.TYPE_SYSTEM_FOLDER + "'))" +
-        " and not (hasAspect('" + ContentModel.ASPECT_DELETED_NODE + "'))" +
         " and (subtypeOf('" + ContentModel.TYPE_FOLDER + "') or subtypeOf('" + ContentModel.TYPE_CONTENT + "')" +
         " or subtypeOf('" + ContentModel.TYPE_LINK + "'))]";
     
@@ -84,7 +83,6 @@ public class FileFolderServiceImpl implements FileFolderService
     private static final String LUCENE_QUERY_SHALLOW_ALL =
         "+PARENT:\"${cm:parent}\"" +
         "-TYPE:\"" + ContentModel.TYPE_SYSTEM_FOLDER + "\" " +
-        "-ASPECT:\"" + ContentModel.ASPECT_DELETED_NODE + "\" " +
         "+(" +
         "TYPE:\"" + ContentModel.TYPE_CONTENT + "\" " +
         "TYPE:\"" + ContentModel.TYPE_FOLDER + "\" " +
@@ -95,14 +93,12 @@ public class FileFolderServiceImpl implements FileFolderService
     private static final String LUCENE_QUERY_SHALLOW_FOLDERS =
         "+PARENT:\"${cm:parent}\"" +
         "-TYPE:\"" + ContentModel.TYPE_SYSTEM_FOLDER + "\" " +
-        "-ASPECT:\"" + ContentModel.ASPECT_DELETED_NODE + "\" " +
         "+TYPE:\"" + ContentModel.TYPE_FOLDER + "\" ";
     
     /** Shallow search for all files and folders */
     private static final String LUCENE_QUERY_SHALLOW_FILES =
         "+PARENT:\"${cm:parent}\"" +
         "-TYPE:\"" + ContentModel.TYPE_SYSTEM_FOLDER + "\" " +
-        "-ASPECT:\"" + ContentModel.ASPECT_DELETED_NODE + "\" " +
         "+TYPE:\"" + ContentModel.TYPE_CONTENT + "\" ";
     
     /** Deep search for files and folders with a name pattern */
@@ -110,7 +106,6 @@ public class FileFolderServiceImpl implements FileFolderService
         ".//*" +
         "[like(@cm:name, $cm:name, false)" +
         " and not (subtypeOf('" + ContentModel.TYPE_SYSTEM_FOLDER + "'))" +
-        " and not (hasAspect('" + ContentModel.ASPECT_DELETED_NODE + "'))" +
         " and (subtypeOf('" + ContentModel.TYPE_FOLDER + "') or subtypeOf('" + ContentModel.TYPE_CONTENT + "')" +
         " or subtypeOf('" + ContentModel.TYPE_LINK + "'))]";
     
@@ -203,14 +198,11 @@ public class FileFolderServiceImpl implements FileFolderService
         List<FileInfo> results = new ArrayList<FileInfo>(nodeRefs.size());
         for (NodeRef nodeRef : nodeRefs)
         {
-            // Ignore missing nodes
-            if (!nodeService.exists(nodeRef))
+            if (nodeService.exists(nodeRef))
             {
-                continue;
+                FileInfo fileInfo = toFileInfo(nodeRef, true);
+                results.add(fileInfo);
             }
-            // It's good
-            FileInfo fileInfo = toFileInfo(nodeRef, true);
-            results.add(fileInfo);
         }
         return results;
     }
@@ -332,10 +324,6 @@ public class FileFolderServiceImpl implements FileFolderService
     public NodeRef searchSimple(NodeRef contextNodeRef, String name)
     {
         NodeRef childNodeRef = nodeService.getChildByName(contextNodeRef, ContentModel.ASSOC_CONTAINS, name);
-        if (childNodeRef != null && nodeService.hasAspect(childNodeRef, ContentModel.ASPECT_DELETED_NODE))
-        {
-            childNodeRef = null;
-        }
         if (logger.isDebugEnabled())
         {
             logger.debug(

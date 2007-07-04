@@ -29,8 +29,7 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.EditionService;
@@ -87,9 +86,9 @@ public abstract class AbstractMultilingualTestCases extends TestCase
         authenticationComponent.setCurrentUser("admin");
 
         // Create a folder to work in
-        TransactionWork<NodeRef> createFolderWork = new TransactionWork<NodeRef>()
+        RetryingTransactionCallback<NodeRef> createFolderCallback = new RetryingTransactionCallback<NodeRef>()
         {
-            public NodeRef doWork() throws Exception
+            public NodeRef execute() throws Exception
             {
                 StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
                 NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
@@ -103,7 +102,7 @@ public abstract class AbstractMultilingualTestCases extends TestCase
                 return folderNodeRef;
             }
         };
-        folderNodeRef = TransactionUtil.executeInUserTransaction(transactionService, createFolderWork);
+        folderNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(createFolderCallback);
     }
 
     @Override

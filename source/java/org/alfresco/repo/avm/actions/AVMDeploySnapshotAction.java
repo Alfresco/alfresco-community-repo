@@ -69,6 +69,7 @@ public class AVMDeploySnapshotAction extends ActionExecuterAbstractBase
    public static final String PARAM_WEBSITE = "website";
    public static final String PARAM_TARGET_SERVER = "target-server";
    public static final String PARAM_DEFAULT_RMI_PORT = "default-rmi-port";
+   public static final String PARAM_DEFAULT_RECEIVER_RMI_PORT = "default-receiver-rmi-port";
    public static final String PARAM_REMOTE_USERNAME = "remote-username";
    public static final String PARAM_REMOTE_PASSWORD = "remote-password";
    public static final String PARAM_CALLBACK = "deploy-callback";
@@ -80,6 +81,7 @@ public class AVMDeploySnapshotAction extends ActionExecuterAbstractBase
 
    private static Log logger = LogFactory.getLog(AVMDeploySnapshotAction.class);
    private static Log delayDeploymentLogger = LogFactory.getLog("alfresco.deployment.delay");
+   private static final String FILE_SERVER_PREFIX = "\\\\";
    
    /**
     * @param service The NodeService instance
@@ -114,6 +116,8 @@ public class AVMDeploySnapshotAction extends ActionExecuterAbstractBase
                getParamDisplayLabel(PARAM_TARGET_SERVER)));
       paramList.add(new ParameterDefinitionImpl(PARAM_DEFAULT_RMI_PORT, DataTypeDefinition.INT, true,
                getParamDisplayLabel(PARAM_DEFAULT_RMI_PORT)));
+      paramList.add(new ParameterDefinitionImpl(PARAM_DEFAULT_RECEIVER_RMI_PORT, DataTypeDefinition.INT, true,
+               getParamDisplayLabel(PARAM_DEFAULT_RECEIVER_RMI_PORT)));
       paramList.add(new ParameterDefinitionImpl(PARAM_REMOTE_USERNAME, DataTypeDefinition.TEXT, true,
                getParamDisplayLabel(PARAM_REMOTE_USERNAME)));
       paramList.add(new ParameterDefinitionImpl(PARAM_REMOTE_PASSWORD, DataTypeDefinition.TEXT, true,
@@ -154,11 +158,19 @@ public class AVMDeploySnapshotAction extends ActionExecuterAbstractBase
       String targetServer = (String)action.getParameterValue(PARAM_TARGET_SERVER);
       String remoteUsername = (String)action.getParameterValue(PARAM_REMOTE_USERNAME);
       String remotePassword = (String)action.getParameterValue(PARAM_REMOTE_PASSWORD);
-      int defaultRmiPort = (Integer)action.getParameterValue(PARAM_DEFAULT_RMI_PORT);
+      int defaultAlfRmiPort = (Integer)action.getParameterValue(PARAM_DEFAULT_RMI_PORT);
+      int defaultReceiverRmiPort = (Integer)action.getParameterValue(PARAM_DEFAULT_RECEIVER_RMI_PORT);
       int delay = -1;
       if (action.getParameterValue(PARAM_DELAY) != null)
       {
          delay = (Integer)action.getParameterValue(PARAM_DELAY);
+      }
+      
+      // determine whether this is a file server or Alfresco server deployment
+      boolean fileServerDeployment = false;
+      if (targetServer.startsWith(FILE_SERVER_PREFIX))
+      {
+         fileServerDeployment = true;
       }
       
       // if "localhost" is passed as the target server add "live" to the end of the 
@@ -196,7 +208,11 @@ public class AVMDeploySnapshotAction extends ActionExecuterAbstractBase
       try
       {
          String host = targetServer;
-         int port = defaultRmiPort;
+         int port = defaultAlfRmiPort;
+         if (fileServerDeployment)
+         {
+            port = defaultReceiverRmiPort;
+         }
          
          // check whether there is a port number present, if so, use it
          int idx = targetServer.indexOf(":");
@@ -209,8 +225,27 @@ public class AVMDeploySnapshotAction extends ActionExecuterAbstractBase
          
          // TODO: we need to capture username/password for the remote server at some
          //       point, for now we use the configured username/password for all servers
-         report = this.deployService.deployDifference(version, path, host, port, 
-                  remoteUsername, remotePassword, targetPath, true, false, false, callback);
+         
+         // call the appropriate method to deploy
+         if (fileServerDeployment)
+         {
+            // remove the prefixed \\
+            host = targetServer.substring(FILE_SERVER_PREFIX.length());
+            
+            if (logger.isDebugEnabled())
+               logger.debug("Performing file server deployment to " + host + ":" + port);
+            
+            report = this.deployService.deployDifferenceFS(version, path, host, port, 
+                     remoteUsername, remotePassword, "/", true, false, false, callback);
+         }
+         else
+         {
+            if (logger.isDebugEnabled())
+               logger.debug("Performing Alfresco deployment to " + host + ":" + port);
+            
+            report = this.deployService.deployDifference(version, path, host, port, 
+                     remoteUsername, remotePassword, targetPath, true, false, false, callback);
+         }
       }
       catch (Throwable err)
       {
@@ -270,8 +305,12 @@ public class AVMDeploySnapshotAction extends ActionExecuterAbstractBase
    {
       NodeRef reportRef = null;
       
+      // remove illegal chars from the target server name to create the report name
+      String reportName = targetServer.replace(':', '_').replace('\\', '_') + 
+            " deployment report.txt";
+      
       Map<QName, Serializable> props = new HashMap<QName, Serializable>(4, 1.0f);
-      props.put(ContentModel.PROP_NAME, targetServer.replace(':', '_') + " deployment report.txt");
+      props.put(ContentModel.PROP_NAME, reportName);
       props.put(WCMAppModel.PROP_DEPLOYSERVER, targetServer);
       props.put(WCMAppModel.PROP_DEPLOYVERSION, version);
       props.put(WCMAppModel.PROP_DEPLOYSTARTTIME, startDate);

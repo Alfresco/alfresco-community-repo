@@ -29,10 +29,15 @@ import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
+ * Action executer interface
+ * 
  * @author Roy Wetherall
  */
 public interface ActionExecuter
 {
+	/** Standard action result parameter name */
+	public static String PARAM_RESULT = "result";
+	
 	/**
 	 * Get the action definition for the action
 	 * 

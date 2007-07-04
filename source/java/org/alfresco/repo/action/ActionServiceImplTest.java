@@ -34,11 +34,13 @@ import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.evaluator.InCategoryEvaluator;
 import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
 import org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation;
+import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.action.executer.CheckInActionExecuter;
 import org.alfresco.repo.action.executer.CheckOutActionExecuter;
 import org.alfresco.repo.action.executer.CompositeActionExecuter;
 import org.alfresco.repo.action.executer.MoveActionExecuter;
+import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.action.Action;
@@ -47,8 +49,10 @@ import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseAlfrescoSpringTest;
@@ -649,6 +653,36 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(action3, savedAction2.getAction(1));
         assertEquals(action4, savedAction2.getAction(2));
     }
+    
+    /**
+     * Test the action result parameter
+     */
+    public void testActionResult()
+	{
+    	// Create the script node reference
+    	NodeRef script = this.nodeService.createNode(
+                this.folder,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testScript.js"),
+                ContentModel.TYPE_CONTENT).getChildRef();
+    	this.nodeService.setProperty(script, ContentModel.PROP_NAME, "testScript.js");
+    	ContentWriter contentWriter = this.contentService.getWriter(script, ContentModel.PROP_CONTENT, true);
+    	contentWriter.setMimetype("text/plain");
+    	contentWriter.setEncoding("UTF-8");
+    	contentWriter.putContent("\"VALUE\";");
+    	
+    	// Create the action
+		Action action1 = this.actionService.createAction(ScriptActionExecuter.NAME);
+		action1.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, script);
+		
+		// Execute the action
+		this.actionService.executeAction(action1, this.nodeRef);
+		
+		// Get the result
+		String result = (String)action1.getParameterValue(ActionExecuter.PARAM_RESULT);
+		assertNotNull(result);
+		assertEquals("VALUE", result);				
+	}
 	
 	/** ===================================================================================
 	 *  Test asynchronous actions

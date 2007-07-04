@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.action.executer;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -149,10 +150,11 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
                 ScriptAction scriptAction = new ScriptAction(this.serviceRegistry, action, this.actionDefinition);
                 model.put("action", scriptAction);
                 
+                Object result = null;
                 if (this.scriptLocation == null)
                 {
                     // execute the script against the default model
-                    this.serviceRegistry.getScriptService().executeScript(
+                    result = this.serviceRegistry.getScriptService().executeScript(
                         scriptRef,
                         ContentModel.PROP_CONTENT,
                         model);
@@ -160,7 +162,13 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
                 else
                 {
                     // execute the script at the specified script location
-                    this.serviceRegistry.getScriptService().executeScript(this.scriptLocation, model);
+                    result = this.serviceRegistry.getScriptService().executeScript(this.scriptLocation, model);
+                }
+                
+                // Set the result
+                if (result != null)
+                {
+                	action.setParameterValue(PARAM_RESULT, (Serializable)result);
                 }
             }
         }

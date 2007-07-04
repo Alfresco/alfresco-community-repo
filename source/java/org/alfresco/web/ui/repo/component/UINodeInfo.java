@@ -85,18 +85,7 @@ public class UINodeInfo extends SelfRenderingComponent
       {
          ResponseWriter out = context.getResponseWriter();
          
-         // write out the JavaScript specific to the NodeInfo component,
-         // make sure it's only done once
-         Object present = context.getExternalContext().getRequestMap().
-            get(NODE_INFO_SCRIPTS_WRITTEN);
-         if (present == null)
-         {
-            out.write("<script>var AlfNodeInfoMgr = new Alfresco.PanelManager(" +
-                      "\"NodeInfoBean.sendNodeInfo\", \"noderef\");</script>");
-            
-            context.getExternalContext().getRequestMap().put(
-                  NODE_INFO_SCRIPTS_WRITTEN, Boolean.TRUE);
-         }
+         outputNodeInfoScripts(context, out);
          
          // wrap the child components in a <span> that has the onmouseover
          // event which kicks off the request for node information
@@ -105,6 +94,20 @@ public class UINodeInfo extends SelfRenderingComponent
          out.write("<span onclick=\"AlfNodeInfoMgr.toggle('");
          out.write(noderef);
          out.write("',this);\">");
+      }
+   }
+
+   protected static void outputNodeInfoScripts(FacesContext context, ResponseWriter out) throws IOException
+   {
+      // write out the JavaScript specific to the NodeInfo component, ensure it's only done once
+      Object present = context.getExternalContext().getRequestMap().get(NODE_INFO_SCRIPTS_WRITTEN);
+      if (present == null)
+      {
+         out.write("<script>var AlfNodeInfoMgr = new Alfresco.PanelManager(" +
+                   "\"NodeInfoBean.sendNodeInfo\", \"noderef\");</script>");
+         
+         context.getExternalContext().getRequestMap().put(
+               NODE_INFO_SCRIPTS_WRITTEN, Boolean.TRUE);
       }
    }
 

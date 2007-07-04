@@ -96,6 +96,9 @@ public class UIOpenSearch extends SelfRenderingComponent
          context.getExternalContext().getRequestMap().put(SCRIPTS_WRITTEN, Boolean.TRUE);
       }
       
+      // we use summary info panel pop-ups so need scripts for that object
+      UINodeInfo.outputNodeInfoScripts(context, out);
+      
       // write out the javascript initialisation required
       out.write("<script type='text/javascript'>\n");
       out.write("var ");

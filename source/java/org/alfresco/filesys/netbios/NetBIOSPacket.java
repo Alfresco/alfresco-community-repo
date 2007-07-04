@@ -114,14 +114,23 @@ public class NetBIOSPacket
     public static final int ACT_ERR = 0x06;
     public static final int CFT_ERR = 0x07;
 
-    // Name flags
-
-    public static final int NAME_PERM = 0x02;
-    public static final int NAME_ACTIVE = 0x04;
-    public static final int NAME_CONFLICT = 0x08;
-    public static final int NAME_DEREG = 0x10;
-    public static final int NAME_GROUP = 0x80;
-
+    //  Name flags
+    
+    public static final int NAME_PERM       = 0x0200;
+    public static final int NAME_ACTIVE     = 0x0400;
+    public static final int NAME_CONFLICT   = 0x0800;
+    public static final int NAME_DEREG      = 0x1000;
+    public static final int NAME_GROUP      = 0x8000;
+    
+    public static final int NAME_TYPE_BNODE = 0x0000;
+    public static final int NAME_TYPE_PNODE = 0x2000;
+    public static final int NAME_TYPE_MNODE = 0x4000;
+    public static final int NAME_TYPE_RESVD = 0x6000;
+    
+    //  Adapter status name in encoded format
+    
+    private static final String AdapterStatusNBName = "CKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    
     // NetBIOS packet buffer
 
     private byte[] m_nbbuf;
@@ -1251,5 +1260,76 @@ public class NetBIOSPacket
         // Return the packet length
 
         return pos;
+    }
+
+    /**
+     * Build an adapter status response
+     * 
+     * @param nameList NetBIOSNameList
+     * @param int nodeType
+     * @return int
+     */
+    public final int buildAdapterStatusResponse(NetBIOSNameList nameList, int nodeType) {
+
+      //  Fill in the header
+      
+      setOpcode(NetBIOSPacket.RESP_QUERY);
+      setFlags(NetBIOSPacket.FLG_RECURSDES + NetBIOSPacket.FLG_AUTHANSWER);
+
+      setQuestionCount(0);
+      setAnswerCount(1);
+      setAdditionalCount(0);
+      setNameServiceCount(0);
+
+      //  Pack the encoded adapter status name into the NetBIOS packet
+
+      int pos = NB_DATA;
+      m_nbbuf [ pos++] = ( byte) NAME_LEN;
+
+      pos = DataPacker.putString( AdapterStatusNBName, m_nbbuf, pos, true);
+
+      //  Set the name type and class
+
+      DataPacker.putShort (( short) 0x21, m_nbbuf, pos);
+      pos += 2;
+
+      DataPacker.putShort (( short) 0x01, m_nbbuf, pos);
+      pos += 2;
+
+      pos = setTTL(pos, 10000);
+      pos = setResourceDataLength(pos, (nameList.numberOfNames() * 18) + 42);
+      
+      //  Pack the names
+      
+      m_nbbuf[pos++] = (byte) nameList.numberOfNames();
+      
+      for ( int i = 0; i < nameList.numberOfNames(); i++) {
+        
+        //  Get the current name
+        
+        NetBIOSName nbName = nameList.getName( i);
+        
+        //  Pack the NetBIOS name and flags
+        
+        System.arraycopy( nbName.getNetBIOSName(), 0, m_nbbuf, pos, NetBIOSName.NameLength);
+        pos += NetBIOSName.NameLength;
+        
+        int flags = nodeType + NAME_ACTIVE;
+        if ( nbName.isGroupName())
+          flags += NAME_GROUP;
+        
+        DataPacker.putShort(( short) flags, m_nbbuf, pos); 
+        pos += 2;
+      }
+
+      //  Zero out the statistics, MAC address area
+      
+      for ( int i = 0; i < 42; i++)
+        m_nbbuf[pos++] = (byte) 0;
+      
+      //  Set the packet length, and return the length
+      
+      setLength(pos);
+      return getLength();
     }
 }

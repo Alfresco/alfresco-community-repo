@@ -42,14 +42,17 @@ public class VersionHistoryPerformancePatch  extends AbstractPatch
                 // Get the id
                 String versionedNodeId = (String)this.nodeService.getProperty(nodeRef, VersionModel.PROP_QNAME_VERSIONED_NODE_ID);
                 
-                // Set the cm:name
-                this.nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, versionedNodeId);
+                if (versionedNodeId != null)
+                {
+                	// Set the cm:name
+                	this.nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, versionedNodeId);
                 
-                // Move the node
-                this.nodeService.moveNode(  nodeRef, 
-                                            rootNodeRef, 
-                                            VersionModel.CHILD_QNAME_VERSION_HISTORIES, 
-                                            QName.createQName(VersionModel.NAMESPACE_URI, versionedNodeId));
+                	// Move the node
+                	this.nodeService.moveNode(  nodeRef, 
+                								rootNodeRef, 
+                								VersionModel.CHILD_QNAME_VERSION_HISTORIES, 
+                								QName.createQName(VersionModel.NAMESPACE_URI, versionedNodeId));
+                }
                 
                 updateCount++;
             }

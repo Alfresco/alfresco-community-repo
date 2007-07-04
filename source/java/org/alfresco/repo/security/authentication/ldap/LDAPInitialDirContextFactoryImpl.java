@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 
+import javax.naming.AuthenticationNotSupportedException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -229,6 +230,10 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         {
 
         }
+        catch(AuthenticationNotSupportedException e)
+        {
+            
+        }
         catch (NamingException nx)
         {
             throw new AuthenticationException("Unable to connect to LDAP Server; check LDAP configuration", nx);
@@ -254,6 +259,10 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         {
             logger.info("LDAP server does not fall back to anonymous bind for a string uid and password at " + env.get(Context.PROVIDER_URL));
         }
+        catch(AuthenticationNotSupportedException e)
+        {
+            logger.info("LDAP server does not fall back to anonymous bind for a string uid and password at " + env.get(Context.PROVIDER_URL)); 
+        }
         catch (NamingException nx)
         {
             logger.info("LDAP server does not support simple string user ids and invalid credentials at "+ env.get(Context.PROVIDER_URL));
@@ -276,6 +285,10 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
                             + " falls back to use anonymous bind if invalid security credentials are presented. This is not supported.");
         }
         catch (javax.naming.AuthenticationException ax)
+        {
+            logger.info("LDAP server does not fall back to anonymous bind for a simple dn and password at " + env.get(Context.PROVIDER_URL));
+        }
+        catch(AuthenticationNotSupportedException e)
         {
             logger.info("LDAP server does not fall back to anonymous bind for a simple dn and password at " + env.get(Context.PROVIDER_URL));
         }
@@ -309,9 +322,13 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
             {
                 logger.info("LDAP server does not fall back to anonymous bind for known principal and invalid credentials at " + env.get(Context.PROVIDER_URL));
             }
+            catch(AuthenticationNotSupportedException e)
+            {
+                logger.info("LDAP server does not support the required authentication mechanism");
+            }
             catch (NamingException nx)
             {
-                // already donw
+                // already done
             }
         }
     }

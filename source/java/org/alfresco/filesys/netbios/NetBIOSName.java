@@ -85,6 +85,10 @@ public class NetBIOSName
     public static final String SMBServer = "*SMBSERVER";
     public static final String SMBServer2 = "*SMBSERV";
 
+    //  Adapter status request name
+    
+    public static final String AdapterStatusName = "*";
+    
     // Default time to live for name registrations
 
     public static final int DefaultTTL = 28800; // 8 hours

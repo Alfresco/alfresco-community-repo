@@ -35,6 +35,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import org.alfresco.filesys.netbios.NetBIOSName;
+import org.alfresco.filesys.netbios.NetBIOSNameList;
 import org.alfresco.filesys.netbios.NetBIOSPacket;
 import org.alfresco.filesys.netbios.NetworkSettings;
 import org.alfresco.filesys.netbios.RFCNetBIOSProtocol;
@@ -1105,9 +1106,19 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
         char nameType = searchName.charAt(15);
 
         int len = 0;
-        while (len <= 14 && searchName.charAt(len) != ' ')
-            len++;
+        while (len <= 14 && searchName.charAt(len) != ' ' && searchName.charAt(len) != 0)
+          len++;
         searchName = searchName.substring(0, len);
+
+        //  Check if this is an adapter status request
+        
+        if ( searchName.equals( NetBIOSName.AdapterStatusName)) {
+          
+          // Process the adapter status request
+          
+          processAdapterStatus( pkt, fromAddr, fromPort);
+          return;
+        }
 
         // Debug
 
@@ -1399,6 +1410,50 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
     }
 
     /**
+     * Process an adapter status request
+     * @param pkt NetBIOSPacket
+     * @param fromAddr InetAddress
+     * @param fromPort int
+     */
+    protected final void processAdapterStatus(NetBIOSPacket pkt, InetAddress fromAddr, int fromPort) {
+
+      //  Debug
+
+      if (logger.isDebugEnabled())
+        logger.debug("%% Adapter status request");
+
+      //  Build the local name list
+      
+      NetBIOSNameList nameList = new NetBIOSNameList();
+      for ( int i = 0; i < m_localNames.size(); i++)
+        nameList.addName( m_localNames.get( i));
+      
+      //  Build the name query response
+      
+      int pktLen = pkt.buildAdapterStatusResponse( nameList, hasPrimaryWINSServer() ? NetBIOSPacket.NAME_TYPE_PNODE : NetBIOSPacket.NAME_TYPE_BNODE);
+      
+      //  Debug
+
+      if (logger.isDebugEnabled()) {
+        logger.debug("%% NetBIOS Reply to " + fromAddr.getHostAddress() + " :-");
+        pkt.DumpPacket(false);
+      }
+
+      //  Send the reply packet
+
+      try {
+
+        //  Send the name query reply
+
+        sendPacket(pkt, pktLen, fromAddr, fromPort);
+      }
+      catch (java.io.IOException ex) {
+    	  if ( logger.isErrorEnabled())
+    		  logger.error(ex);
+      }
+    }
+
+   /**
      * Remove a local add name listener from the NetBIOS name server.
      * 
      * @param l AddNameListener

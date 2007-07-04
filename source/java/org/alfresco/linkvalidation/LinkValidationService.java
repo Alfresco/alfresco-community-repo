@@ -83,9 +83,6 @@ public interface LinkValidationService
     public HrefDifference getHrefDifference( 
                                    String                 srcWebappPath, 
                                    String                 dstWebappPath, 
-                                   int                    connectTimeout,
-                                   int                    readTimeout,
-                                   int                    nthreads,
                                    HrefValidationProgress progress)
                           throws   AVMNotFoundException,
                                    SocketException,
@@ -164,19 +161,6 @@ public interface LinkValidationService
     *            Currently does nothing.  Perhaps one day you'll be able to
     *            turn off validation of external links.
     *
-    * @param connectTimeout  
-    *            Amount of time in milliseconds that this function will wait
-    *            before declaring that the connection has failed 
-    *            (e.g.: 10000 ms).
-    *
-    * @param readTimeout     
-    *            time in milliseconds that this function will wait before
-    *            declaring that a read on the connection has failed
-    *            (e.g.:  30000 ms).
-    * 
-    * @param nthreads
-    *             Number of threads to use when fetching URLs (e.g.: 5)
-    *
     * @param progress
     *             While updateHrefInfo() is a synchronous function, 
     *             'status' may be polled in a separate thread to 
@@ -186,96 +170,11 @@ public interface LinkValidationService
     public void updateHrefInfo( String                 path,              
                                 boolean                incremental,             
                                 boolean                validateExternal,        
-                                int                    connectTimeout,          
-                                int                    readTimeout,             
-                                int                    nthreads,                
                                 HrefValidationProgress progress)                
                 throws          AVMNotFoundException,                           
                                 SocketException,                                
                                 SSLException,                                   
                                 LinkValidationAbortedException;                 
-
-
-
-
-
-
-    //-------------------------------------------------------------------------
-    /**
-    *  Merges an HrefDifference into the master href info table.
-    *  WARNING: This function won't be part of the public interface for long.
-    */ 
-    //-------------------------------------------------------------------------
-    public void mergeHrefDiff( HrefDifference hdiff)
-                throws         AVMNotFoundException,
-                               SocketException,
-                               SSLException,
-                               LinkValidationAbortedException;
-    
-
-
-    //-------------------------------------------------------------------------
-    /**
-    *  Fetches information on broken hrefs within a store name or path 
-    *  to a webapp.  This function is just a convenience wrapper for calling  
-    *  getHrefConcordance with statusGTE=400 and statusLTE=599.
-    */
-    //-------------------------------------------------------------------------
-    public List<HrefConcordanceEntry> getBrokenHrefConcordanceEntries( 
-                                          String  storeNameOrWebappPath 
-                                      ) throws AVMNotFoundException;
-
-
-    //-------------------------------------------------------------------------
-    /**
-    *  Returns information regarding the hrefs within storeNameOrWebappPath
-    *  whose return status is greater than or equal to 'statusGTE', and 
-    *  less than or equal to 'statusLTE'.  The List<HrefConcordanceEntry>
-    *  is sorted in increasing lexicographic order by href.  Within each
-    *  HrefConcordanceEntry, the files retrieved via getLocations()
-    *  are also sorted in increasing lexicographic order.
-    * 
-    *  <p>
-    *  Example 1:<br>
-    *  The following parameters will fetch all the broken links
-    *  within the ROOT webapp in the staging area of the 'mysite' web project:
-    *  <ul>
-    *    <li> storeNameOrWebappPath="mysite:/www/avm_webapps/ROOT"
-    *    <li> statusGTE=400
-    *    <li> statusLTE=599
-    *  </ul>
-    *  <p>
-    *  Example 2:<br>
-    *  The following parameters will fetch all the links whose return status
-    *  is "successful" (2xx) for all webapps contained by the staging area of
-    *  the 'mysite' web project:
-    *  <ul>
-    *    <li> storeNameOrWebappPath="mysite"
-    *    <li> statusGTE=200
-    *    <li> statusLTE=299
-    *  </ul>
-    *  <p>
-    *  Example 3:<br>
-    *  The following parameters will fetch all the links whose return status
-    *  is 200 (OK) within the ROOT webapp in the staging area of the 'mysite' 
-    *  web project:
-    *  <ul>
-    *    <li> storeNameOrWebappPath="mysite:/www/avm_webapps/ROOT"
-    *    <li> statusGTE=200
-    *    <li> statusLTE=200
-    *  </ul>
-    *  <p>
-    *  For details regarding HTTP status codes, see:
-    *  http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
-    *
-    */
-    //-------------------------------------------------------------------------
-    public List<HrefConcordanceEntry> getHrefConcordanceEntries( 
-                                         String  storeNameOrWebappPath,
-                                         int     statusGTE,
-                                         int     statusLTE
-                                      )  throws AVMNotFoundException;
-
 
 
     //-------------------------------------------------------------------------
@@ -301,25 +200,4 @@ public interface LinkValidationService
     //-------------------------------------------------------------------------
     public List<String> getHrefsDependentUponFile(String path);
 
-
-
-
-
-    //-------------------------------------------------------------------------
-    // NEARLY OBSOLETE!
-    // NEARLY OBSOLETE!
-    // NEARLY OBSOLETE!
-    // NEARLY OBSOLETE!
-    //-------------------------------------------------------------------------
-    public void updateHrefInfo( 
-                       String   storeNameOrWebappPath,     // NEARLY OBSOLETE!
-                       boolean  incremental,               // NEARLY OBSOLETE!
-                       int      connectTimeout,            // NEARLY OBSOLETE!
-                       int      readTimeout,               // NEARLY OBSOLETE!
-                       int      nthreads,                  // NEARLY OBSOLETE!
-                       HrefValidationProgress progress)    // NEARLY OBSOLETE!
-                throws AVMNotFoundException,               // NEARLY OBSOLETE!
-                       SocketException,                    // NEARLY OBSOLETE!
-                       SSLException,                       // NEARLY OBSOLETE!
-                       LinkValidationAbortedException;     // NEARLY OBSOLETE!
 }

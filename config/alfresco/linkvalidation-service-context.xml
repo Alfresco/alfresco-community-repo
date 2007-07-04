@@ -142,5 +142,14 @@
         <property name="retryingTransactionHelper">
             <ref bean="retryingTransactionHelper"/>
         </property>
+
+        <!-- Poll interval to check getLatestSnapshotID (in milliseconds) -->
+        <property name="pollInterval"         value="5000"/>
+
+        <!-- Timeouts  (in milliseconds) -->
+        <property name="localConnectTimeout"  value="10000"/>
+        <property name="remoteConnectTimeout" value="10000"/>
+        <property name="localReadTimeout"     value="30000"/>
+        <property name="remoteReadTimeout"    value="30000"/>
     </bean>
 </beans>

@@ -66,47 +66,35 @@ public class HrefDifference
     String dst_store_;
     String src_webapp_url_base_;
     String dst_webapp_url_base_;
-    int    connect_timeout_;
-    int    read_timeout_;
-    int    nthreads_;
     
     HrefDifference(String href_attr,
                    String src_store,
                    String dst_store,
                    String src_webapp_url_base,
-                   String dst_webapp_url_base,
-                   int    connect_timeout,
-                   int    read_timeout,
-                   int    nthreads)
+                   String dst_webapp_url_base)
     {
-        href_attr_           = href_attr;
-        src_store_           = src_store;
-        dst_store_           = dst_store;
-        src_webapp_url_base_ = src_webapp_url_base;
-        dst_webapp_url_base_ = dst_webapp_url_base;
-        connect_timeout_     = connect_timeout;
-        read_timeout_        = read_timeout_;
-        nthreads_            = nthreads;
+        href_attr_               = href_attr;
+        src_store_               = src_store;
+        dst_store_               = dst_store;
+        src_webapp_url_base_     = src_webapp_url_base;
+        dst_webapp_url_base_     = dst_webapp_url_base;
 
-        href_manifest_       = new HrefManifest();
-        href_status_map_     = new HrefStatusMap();
-
-        broken_manifest_map_ = new HashMap<String, List<String>>();
-        deleted_file_md5_    = new HashMap<String,String>();
+        href_manifest_           = new HrefManifest();
+        href_status_map_         = new HrefStatusMap();
+                                 
+        broken_manifest_map_     = new HashMap<String, List<String>>();
+        deleted_file_md5_        = new HashMap<String,String>();
     }
 
 
     public HrefManifest getHrefManifest()   { return href_manifest_;   }
     public HrefStatusMap getHrefStatusMap() { return href_status_map_; }
 
-    String getHrefAttr()         { return href_attr_;}
-    String getSrcStore()         { return src_store_;}
-    String getDstStore()         { return dst_store_;}
-    String getSrcWebappUrlBase() { return src_webapp_url_base_; }
-    String getDstWebappUrlBase() { return dst_webapp_url_base_; }
-    int    getConnectTimeout()   { return connect_timeout_; }
-    int    getReadTimeout()      { return read_timeout_; }
-    int    getNthreads()         { return nthreads_; }
+    String getHrefAttr()               { return href_attr_;}
+    String getSrcStore()               { return src_store_;}
+    String getDstStore()               { return dst_store_;}
+    String getSrcWebappUrlBase()       { return src_webapp_url_base_; }
+    String getDstWebappUrlBase()       { return dst_webapp_url_base_; }
 
 
     Map<String,String> getDeletedFileMd5() { return deleted_file_md5_; }

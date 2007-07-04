@@ -55,9 +55,6 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
     public static final String PARAM_COMPARE_TO_STAGING = "compare-to-staging";
     public static final String PARAM_MONITOR = "monitor";
 
-    private int noThreads = 5;
-    private int readTimeout = 30000;
-    private int connectionTimeout = 10000;
     private LinkValidationService linkValidationService;
     private AVMService avmService;
 
@@ -83,35 +80,7 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
         this.avmService = service;
     }
     
-    /**
-     * Sets the number of millseconds to wait for a connection
-     * 
-     * @param connectionTimeout Number of milliseconds to wait for connection
-     */
-    public void setConnectionTimeout(int connectionTimeout)
-    {
-        this.connectionTimeout = connectionTimeout;
-    }
-
-    /**
-     * Sets the number of milliseconds to wait for a response
-     * 
-     * @param readTimeout Number of milliseconds to wait for a response
-     */
-    public void setReadTimeout(int readTimeout)
-    {
-        this.readTimeout = readTimeout;
-    }
     
-    /**
-     * Sets the number of threads to use to gather broken links
-     * 
-     * @param threads Number of threads to use to gather broken links
-     */
-    public void setNoThreads(int threads)
-    {
-        this.noThreads = threads;
-    }
 
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
@@ -183,8 +152,9 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
             if (destWebappPath != null)
             {
                 // get the object to represent the broken files
-                HrefDifference hdiff = this.linkValidationService.getHrefDifference(webappPath, destWebappPath, 
-                         this.connectionTimeout, this.readTimeout, this.noThreads, monitor);
+                HrefDifference hdiff = 
+                        this.linkValidationService.getHrefDifference(
+                                webappPath, destWebappPath, monitor);
                 
                 // get the broken files created due to deletions and new/modified files
                 HrefManifest brokenByDelete = this.linkValidationService.getHrefManifestBrokenByDelete(hdiff);

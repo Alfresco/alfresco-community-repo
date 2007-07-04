@@ -7,14 +7,14 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
-UPDATE jbpm_task SET priority_ = 2;
-UPDATE jbpm_node SET isasyncexcl_ = 0;
-UPDATE jbpm_moduleinstance SET version_ = 0;
-UPDATE jbpm_pooledactor SET version_ = 0;
-UPDATE jbpm_swimlaneinstance SET version_ = 0;
-UPDATE jbpm_taskinstance SET version_ = 0;
-UPDATE jbpm_tokenvariablemap SET version_ = 0;
-UPDATE jbpm_variableinstance SET version_ = 0;
+UPDATE JBPM_TASK SET PRIORITY_ = 2;
+UPDATE JBPM_NODE SET ISASYNCEXCL__ = 0;
+UPDATE JBPM_MODULEINSTANCE SET VERSION_ = 0;
+UPDATE JBPM_POOLEDACTOR SET VERSION_ = 0;
+UPDATE JBPM_SWIMLANEINSTANCE SET VERSION_ = 0;
+UPDATE JBPM_TASKINSTANCE SET VERSION_ = 0;
+UPDATE JBPM_TOKENVARIABLEMAP SET VERSION_ = 0;
+UPDATE JBPM_VARIABLEINSTANCE SET VERSION_ = 0;
 
 --
 -- Record script finish

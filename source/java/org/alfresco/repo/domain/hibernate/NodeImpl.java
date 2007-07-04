@@ -153,19 +153,6 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
         return getUuid().hashCode();
     }
 
-//    @Override
-//    public boolean onDelete(Session session) throws CallbackException
-//    {
-//        // check if there is an access control list
-//        DbAccessControlList acl = getAccessControlList();
-//        if (acl != null)
-//        {
-//            session.delete(acl);
-//        }
-//        return NO_VETO;
-//    }
-//
-
     public Long getId()
     {
         return id;

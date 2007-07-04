@@ -2117,7 +2117,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      * @param sess Server session
      * @param tree Tree connection
      * @param file Network file details
-     * @param siz New file length
+     * @param size New file length
      * @exception java.io.IOException The exception description.
      */
     public void truncateFile(SrvSession sess, TreeConnection tree, NetworkFile file, long size) throws IOException

@@ -811,15 +811,9 @@
     <!-- Thread Pool    -->
     <!--                -->
     
-    <bean id="threadPoolExecutor" class="org.alfresco.util.ThreadPoolExecutorFactoryBean" singleton="true" >
+    <bean id="threadPoolExecutor" class="org.alfresco.util.ThreadPoolExecutorFactoryBean" singleton="true">
         <property name="corePoolSize">
-            <value>5</value>
-        </property>
-        <property name="maximumPoolSize">
-            <value>20</value>
-        </property>
-        <property name="keepAliveTime">
-            <value>60</value>
+            <value>2</value>
         </property>
     </bean>
 

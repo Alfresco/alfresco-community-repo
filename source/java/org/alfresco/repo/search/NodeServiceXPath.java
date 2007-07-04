@@ -225,8 +225,7 @@ public class NodeServiceXPath extends BaseXPath
     }
 
     /**
-     * A boolean function to determine if a node type is a subtype of another
-     * type
+     * A boolean function to determine if a node type is a subtype of another type
      */
     static class SubTypeOf implements Function
     {
@@ -274,6 +273,59 @@ public class NodeServiceXPath extends BaseXPath
 
             DocumentNavigator dNav = (DocumentNavigator) nav;
             boolean result = dNav.isSubtypeOf(nodeRef, typeQName);
+            return result;
+        }
+    }
+
+    /**
+     * A boolean function to determine if a node has a given aspect
+     */
+    static class HasAspect implements Function
+    {
+        public Object call(Context context, List args) throws FunctionCallException
+        {
+            if (args.size() != 1)
+            {
+                throw new FunctionCallException("hasAspect() requires one argument: hasAspect(QName typeQName)");
+            }
+            return evaluate(context.getNodeSet(), args.get(0), context.getNavigator());
+        }
+
+        public Object evaluate(List nodes, Object qnameObj, Navigator nav)
+        {
+            if (nodes.size() != 1)
+            {
+                return false;
+            }
+            // resolve the qname of the type we are checking for
+            String qnameStr = StringFunction.evaluate(qnameObj, nav);
+            if (qnameStr.equals("*"))
+            {
+                return true;
+            }
+            QName typeQName;
+
+            if (qnameStr.startsWith("{"))
+            {
+                typeQName = QName.createQName(qnameStr);
+            }
+            else
+            {
+                typeQName = QName.createQName(qnameStr, ((DocumentNavigator) nav).getNamespacePrefixResolver());
+            }
+            // resolve the noderef
+            NodeRef nodeRef = null;
+            if (nav.isElement(nodes.get(0)))
+            {
+                nodeRef = ((ChildAssociationRef) nodes.get(0)).getChildRef();
+            }
+            else if (nav.isAttribute(nodes.get(0)))
+            {
+                nodeRef = ((DocumentNavigator.Property) nodes.get(0)).parent;
+            }
+
+            DocumentNavigator dNav = (DocumentNavigator) nav;
+            boolean result = dNav.hasAspect(nodeRef, typeQName);
             return result;
         }
     }
@@ -643,6 +695,7 @@ public class NodeServiceXPath extends BaseXPath
                     "ends-with", new EndsWithFunction());
 
             registerFunction("", "subtypeOf", new SubTypeOf());
+            registerFunction("", "hasAspect", new HasAspect());
             registerFunction("", "deref", new Deref());
             registerFunction("", "like", new Like());
             registerFunction("", "contains", new Contains());

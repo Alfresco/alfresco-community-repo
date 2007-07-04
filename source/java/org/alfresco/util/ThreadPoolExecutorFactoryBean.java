@@ -24,8 +24,9 @@
  */
 package org.alfresco.util;
 
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -35,34 +36,64 @@ import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Factory for {@link java.util.concurrent.ThreadPoolExecutor} instances,
- * which cannot easily be constructed using constructor injection.
+ * which cannot easily be constructed using constructor injection.  This instance
+ * also allows the setting of the thread-specific properties that would otherwise
+ * require setting a <code>ThreadFactory</code>.
  * <p>
  * This factory provides the a singleton instance of the pool.
+ * <p>
+ * Defaults are:
+ * <ul>
+ *   <li><b>{@link #setCorePoolSize(int) corePoolSize}: </b>
+ *          20</li>
+ *   <li><b>{@link #setMaximumPoolSize(int) maximumPoolSize}: </b>
+ *          Equal to the {@link #setCorePoolSize(int)} at the time of instance creation</li>
+ *   <li><b>{@link #setKeepAliveTime(int) keepAliveTime}: </b>
+ *          90 seconds</li>
+ *   <li><b>{@link #setThreadPriority(int) threadPriority}: </b>
+ *          1 (LOWEST)</li>
+ *   <li><b>{@link #setThreadDaemon(boolean) threadDaemon}: </b>
+ *          true</li>
+ *   <li><b>{@link #setWorkQueue(BlockingQueue) workQueue}: </b>
+ *          An unbounded <code>LinkedBlockingQueue</code></li>
+ *   <li><b>{@link #setRejectedExecutionHandler(RejectedExecutionHandler) rejectedExecutionHandler: </b>
+ *          <code>ThreadPoolExecutor.CallerRunsPolicy</code></li>
+ * </ul>
  * 
  * @author Derek Hulley
  */
 public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingBean
 {
+    private static final int DEFAULT_CORE_POOL_SIZE = 20;
+    private static final int DEFAULT_MAXIMUM_POOL_SIZE = -1;        // -1 is a sign that it must match the core pool size
+    private static final int DEFAULT_KEEP_ALIVE_TIME = 90;          // seconds
+    private static final int DEFAULT_THREAD_PRIORITY = Thread.MIN_PRIORITY;
+    private static final boolean DEFAULT_THREAD_DAEMON = Boolean.TRUE;
+    private static final BlockingQueue<Runnable> DEFAULT_WORK_QUEUE = new LinkedBlockingQueue<Runnable>();
+    private static final RejectedExecutionHandler DEFAULT_REJECTED_EXECUTION_HANDLER = new ThreadPoolExecutor.CallerRunsPolicy();
+    
     private int corePoolSize;
     private int maximumPoolSize;
     private int keepAliveTime;
+    private int threadPriority;
+    private boolean threadDaemon;
     private BlockingQueue<Runnable> workQueue;
+    private RejectedExecutionHandler rejectedExecutionHandler;
+    /** the instance that will be given out by the factory */
     private ThreadPoolExecutor instance;
     
     /**
      * Constructor setting default properties:
-     * <ul>
-     *   <li>corePoolSize: 5</li>
-     *   <li>maximumPoolSize: 20</li>
-     *   <li>keepAliveTime: 60s</li>
-     *   <li>workQueue: {@link ArrayBlockingQueue}</li>
-     * </ul>
      */
     public ThreadPoolExecutorFactoryBean()
     {
-        corePoolSize = 5;
-        maximumPoolSize = 20;
-        keepAliveTime = 30;
+        corePoolSize = DEFAULT_CORE_POOL_SIZE;
+        maximumPoolSize = DEFAULT_MAXIMUM_POOL_SIZE;
+        keepAliveTime = DEFAULT_KEEP_ALIVE_TIME;
+        threadPriority = DEFAULT_THREAD_PRIORITY;
+        threadDaemon = DEFAULT_THREAD_DAEMON;
+        workQueue = DEFAULT_WORK_QUEUE;
+        rejectedExecutionHandler = DEFAULT_REJECTED_EXECUTION_HANDLER;
     }
     
     /**
@@ -96,6 +127,27 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
     }
 
     /**
+     * The priority that all threads must have on the scale of 1 to 10,
+     * where 1 has the lowest priority and 10 has the highest priority.
+     * 
+     * @param threadPriority    the thread priority
+     */
+    public void setThreadPriority(int threadPriority)
+    {
+        this.threadPriority = threadPriority;
+    }
+
+    /**
+     * Set whether the threads run as daemon threads or not.
+     * 
+     * @param threadDaemon      <tt>true</tt> to run as daemon
+     */
+    public void setThreadDaemon(boolean threadDaemon)
+    {
+        this.threadDaemon = threadDaemon;
+    }
+
+    /**
      * The optional queue instance to use
      * 
      * @param workQueue optional queue implementation
@@ -104,15 +156,40 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
     {
         this.workQueue = workQueue;
     }
+    
+    /**
+     * The optional handler for when tasks cannot be submitted to the queue.
+     * The default is the <code>CallerRunsPolicy</code>.
+     * 
+     * @param rejectedExecutionHandler      the handler to use
+     */
+    public void setRejectedExecutionHandler(RejectedExecutionHandler rejectedExecutionHandler)
+    {
+        this.rejectedExecutionHandler = rejectedExecutionHandler;
+    }
 
     public void afterPropertiesSet() throws Exception
     {
-        if (workQueue == null)
+        // if the maximum pool size has not been set, change it to match the core pool size
+        if (maximumPoolSize == DEFAULT_MAXIMUM_POOL_SIZE)
         {
-            workQueue = new ArrayBlockingQueue<Runnable>(corePoolSize);
+            maximumPoolSize = corePoolSize;
         }
+        
+        // We need a thread factory
+        TraceableThreadFactory threadFactory = new TraceableThreadFactory();
+        threadFactory.setThreadDaemon(threadDaemon);
+        threadFactory.setThreadPriority(threadPriority);
+        
         // construct the instance
-        instance = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS, workQueue);
+        instance = new ThreadPoolExecutor(
+                corePoolSize,
+                maximumPoolSize,
+                keepAliveTime,
+                TimeUnit.SECONDS,
+                workQueue,
+                threadFactory,
+                rejectedExecutionHandler);
     }
 
     /**

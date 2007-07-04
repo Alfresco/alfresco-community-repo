@@ -50,7 +50,7 @@ public abstract class AuthenticationUtil
         Result doWork() throws Exception;
     }
 
-    private static final String SYSTEM_USER_NAME = "System";
+    public static final String SYSTEM_USER_NAME = "System";
 
     private AuthenticationUtil()
     {

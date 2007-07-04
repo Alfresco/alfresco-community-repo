@@ -559,4 +559,9 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
         QName nodeTypeQName = nodeService.getType(nodeRef);
         return dictionaryService.isSubClass(nodeTypeQName, typeQName);
     }
+
+    public Boolean hasAspect(NodeRef nodeRef, QName typeQName)
+    {
+        return nodeService.hasAspect(nodeRef, typeQName);
+    }
 }

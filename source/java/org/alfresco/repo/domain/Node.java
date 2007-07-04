@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.domain;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -71,8 +70,6 @@ public interface Node
 
     public Set<QName> getAspects();
     
-//    public Collection<ChildAssoc> getParentAssocs();
-
     public Map<QName, PropertyValue> getProperties();
 
     public DbAccessControlList getAccessControlList();

@@ -55,7 +55,7 @@ public class PageTag extends TagSupport
  */
 
    private final static String ALF_URL   = "http://www.alfresco.com";
-   private final static String ALF_LOGO  = "http://www.alfresco.com/images/alfresco_community_horiz20.gif";
+   private final static String ALF_LOGO  = "http://www.alfresco.com/images/alfresco_community_horiz21.gif";
    private final static String SF_LOGO  = "/images/logo/sflogo.php.png";
    private final static String ALF_TEXT  = "Alfresco Community";
    private final static String ALF_COPY  = "Supplied free of charge with " +

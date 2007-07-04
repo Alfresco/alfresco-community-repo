@@ -44,15 +44,23 @@ public class StorePseudoFile extends PseudoFile {
 	 * Class constructor
 	 * 
 	 * @param storeDesc AVMStoreDescriptor
+	 * @param relPath String
 	 */
-	public StorePseudoFile( AVMStoreDescriptor storeDesc)
+	public StorePseudoFile( AVMStoreDescriptor storeDesc, String relPath)
 	{
 		super( storeDesc.getName(), FileAttribute.Directory + FileAttribute.ReadOnly);
 		
 		// Create static file information from the store details
 		
 		FileInfo fInfo = new FileInfo( storeDesc.getName(), 0L, FileAttribute.Directory + FileAttribute.ReadOnly);
+
 		fInfo.setCreationDateTime( storeDesc.getCreateDate());
+		fInfo.setModifyDateTime( storeDesc.getCreateDate());
+		fInfo.setAccessDateTime( storeDesc.getCreateDate());
+		fInfo.setChangeDateTime( storeDesc.getCreateDate());
+		
+		fInfo.setPath( relPath);
+		fInfo.setFileId( relPath.hashCode());
 		
 		setFileInfo( fInfo);
 	}
@@ -61,15 +69,24 @@ public class StorePseudoFile extends PseudoFile {
 	 * Class constructor
 	 * 
 	 * @param storeName String
+	 * @param relPath String
 	 */
-	public StorePseudoFile( String storeName)
+	public StorePseudoFile( String storeName, String relPath)
 	{
 		super( storeName, FileAttribute.Directory + FileAttribute.ReadOnly);
 		
 		// Create static file information from the store details
 		
 		FileInfo fInfo = new FileInfo( storeName, 0L, FileAttribute.Directory + FileAttribute.ReadOnly);
-		fInfo.setCreationDateTime( System.currentTimeMillis());
+
+		long timeNow = System.currentTimeMillis();
+		fInfo.setCreationDateTime( timeNow);
+		fInfo.setModifyDateTime( timeNow);
+		fInfo.setAccessDateTime( timeNow);
+		fInfo.setChangeDateTime( timeNow);
+		
+		fInfo.setPath( relPath);
+		fInfo.setFileId( relPath.hashCode());
 		
 		setFileInfo( fInfo);
 	}

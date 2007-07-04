@@ -717,12 +717,17 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     public void closeFile(SrvSession sess, TreeConnection tree, NetworkFile file) throws java.io.IOException
     {
         // DEBUG
-
-        if (logger.isDebugEnabled())
+        
+        if ( logger.isDebugEnabled())
             logger.debug("Close file " + file.getFullName());
-
-        // Close the file
-
+        
+        //  Start a transaction if the file has been updated
+        
+        if ( file.getWriteCount() > 0)
+            sess.beginWriteTransaction( m_transactionService);
+        
+        //  Close the file
+        
         file.closeFile();
 
         // Check if the file/directory is marked for delete
@@ -1157,120 +1162,121 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     public FileInfo getFileInformation(SrvSession sess, TreeConnection tree, String name) throws java.io.IOException
     {
         // Convert the relative path to a store path
-
+        
         AVMContext ctx = (AVMContext) tree.getContext();
-        AVMPath storePath = buildStorePath(ctx, name);
-
+        AVMPath storePath = buildStorePath( ctx, name);
+        
         // DEBUG
-
-        if (logger.isDebugEnabled())
+        
+        if ( logger.isDebugEnabled())
             logger.debug("Get file information, path=" + name + ", storePath=" + storePath);
 
         // Check if hte path is valid
-
-        if (storePath.isValid() == false)
-            throw new FileNotFoundException(name);
-
+        
+        if ( storePath.isValid() == false)
+            throw new FileNotFoundException( name);
+        
         // Check if the filesystem is the virtualization view
-
-        if (ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
+        
+        if ( ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
         {
             // Check if the search path is for the root, a store or version folder
-
-            if (storePath.isRootPath())
+            
+            if ( storePath.isRootPath())
             {
                 // Return dummy file informatiom for the root folder
-
-                return new FileInfo(name, 0L, FileAttribute.Directory);
+                
+                return new FileInfo( name, 0L, FileAttribute.Directory);
             }
             else
             {
                 // Find the pseudo file for the store/version folder
-
-                PseudoFile psFile = findPseudoFolder(storePath, ctx);
-                if (psFile != null)
+                
+                PseudoFile psFile = findPseudoFolder( storePath, ctx);
+                if ( psFile != null)
                 {
                     // DEBUG
-
-                    if (logger.isDebugEnabled())
-                        logger.debug("  Found pseudo file " + psFile);
+                    
+                    if ( logger.isDebugEnabled())
+                        logger.debug( "  Found pseudo file " + psFile);
                     return psFile.getFileInfo();
                 }
                 else
-                    throw new FileNotFoundException(name);
+                    throw new FileNotFoundException( name);
             }
         }
-
+        
         // Search for the file/folder
-
-        sess.beginReadTransaction(m_transactionService);
-
+        
+        sess.beginReadTransaction( m_transactionService);
+        
         FileInfo info = null;
-
+        
         try
         {
-            AVMNodeDescriptor nodeDesc = m_avmService.lookup(storePath.getVersion(), storePath.getAVMPath());
-
-            if (nodeDesc != null)
+            AVMNodeDescriptor nodeDesc = m_avmService.lookup( storePath.getVersion(), storePath.getAVMPath());
+            
+            if ( nodeDesc != null)
             {
                 // Create, and fill in, the file information
-
+                
                 info = new FileInfo();
-
-                info.setFileName(nodeDesc.getName());
-
-                if (nodeDesc.isFile())
+                
+                info.setFileName( nodeDesc.getName());
+                
+                if ( nodeDesc.isFile())
                 {
-                    info.setFileSize(nodeDesc.getLength());
+                    info.setFileSize( nodeDesc.getLength());
                     info.setAllocationSize((nodeDesc.getLength() + 512L) & 0xFFFFFFFFFFFFFE00L);
                 }
                 else
-                    info.setFileSize(0L);
-
-                info.setAccessDateTime(nodeDesc.getAccessDate());
-                info.setCreationDateTime(nodeDesc.getCreateDate());
-                info.setModifyDateTime(nodeDesc.getModDate());
-
+                    info.setFileSize( 0L);
+    
+                info.setAccessDateTime( nodeDesc.getAccessDate());
+                info.setCreationDateTime( nodeDesc.getCreateDate());
+                info.setModifyDateTime( nodeDesc.getModDate());
+                info.setChangeDateTime( nodeDesc.getModDate());
+    
                 // Build the file attributes
-
+                
                 int attr = 0;
-
-                if (nodeDesc.isDirectory())
+                
+                if ( nodeDesc.isDirectory())
                     attr += FileAttribute.Directory;
-
-                if (nodeDesc.getName().startsWith(".")
-                        || nodeDesc.getName().equalsIgnoreCase("Desktop.ini")
-                        || nodeDesc.getName().equalsIgnoreCase("Thumbs.db"))
+                
+                if ( nodeDesc.getName().startsWith( ".") ||
+                        nodeDesc.getName().equalsIgnoreCase( "Desktop.ini") ||
+                        nodeDesc.getName().equalsIgnoreCase( "Thumbs.db"))
                     attr += FileAttribute.Hidden;
-
+                
                 // Mark the file/folder as read-only if not the head version
-
-                if (ctx.isVersion() != AVMContext.VERSION_HEAD)
+                
+                if ( ctx.isVersion() != AVMContext.VERSION_HEAD)
                     attr += FileAttribute.ReadOnly;
-
-                info.setFileAttributes(attr);
+                
+                info.setFileAttributes( attr);
 
                 // Set the file id
-
-                info.setFileId(storePath.generateFileId());
-
+                
+                info.setFileId( storePath.generateFileId());
+                
                 // DEBUG
-
-                if (logger.isDebugEnabled())
+                
+                if ( logger.isDebugEnabled())
                     logger.debug("  File info=" + info);
             }
         }
-        catch (AVMNotFoundException ex)
+        catch ( AVMNotFoundException ex)
         {
-            throw new FileNotFoundException(name);
+            throw new FileNotFoundException( name);
         }
-        catch (AVMWrongTypeException ex)
+        catch ( AVMWrongTypeException ex)
         {
-            throw new PathNotFoundException(name);
+            throw new PathNotFoundException( name);
         }
-
+        
         // Return the file information
-
+        
         return info;
     }
 
@@ -2062,237 +2068,266 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     private final FileState findPseudoState(AVMPath avmPath, AVMContext avmCtx)
     {
         // Make sure the is to a pseudo file/folder
-
-        if (avmPath.isPseudoPath() == false)
+        
+        if ( avmPath.isPseudoPath() == false)
             return null;
-
+        
         // Check if the path is to a store pseudo folder
-
+        
         FileState fstate = null;
         StringBuilder str = null;
-
-        switch (avmPath.isLevel())
+        String relPath = null;
+        
+        switch ( avmPath.isLevel())
         {
-        // Root of the hieararchy
+            // Root of the hieararchy
+            
+            case Root:
 
-        case Root:
-
-            // Get the root path file state
-
-            fstate = avmCtx.getStateTable().findFileState(FileName.DOS_SEPERATOR_STR);
-
-            // Check if the root file state is valid
-
-            if (fstate == null)
-            {
-                // Create a file state for the root folder
-
-                fstate = avmCtx.getStateTable().findFileState(FileName.DOS_SEPERATOR_STR, true, true);
-                fstate.setExpiryTime(FileState.NoTimeout);
-
-                // Get a list of the available AVM stores
-
-                List<AVMStoreDescriptor> storeList = m_avmService.getStores();
-
-                if (storeList != null && storeList.size() > 0)
+                // Get the root path file state
+                
+                fstate = avmCtx.getStateTable().findFileState( FileName.DOS_SEPERATOR_STR);
+                
+                // Check if the root file state is valid
+                
+                if ( fstate == null)
                 {
-                    // Add pseudo files for the stores
-
-                    boolean sandbox = false;
-
-                    for (AVMStoreDescriptor storeDesc : storeList)
+                    // Create a file state for the root folder
+                    
+                    fstate = avmCtx.getStateTable().findFileState( FileName.DOS_SEPERATOR_STR, true, true);
+                    fstate.setExpiryTime( FileState.NoTimeout);
+                    
+                    // Get a list of the available AVM stores
+                    
+                    List<AVMStoreDescriptor> storeList = m_avmService.getStores();
+                    
+                    if ( storeList != null && storeList.size() > 0)
                     {
-                        // Get the properties for the current store
-
-                        Map<QName, PropertyValue> props = m_avmService.getStoreProperties(storeDesc.getName());
-
-                        if (props.containsKey(AVMContext.PROP_WORKFLOWPREVIEW)
-                                || props.containsKey(AVMContext.PROP_AUTHORPREVIEW))
-                            sandbox = true;
-                        else
-                            sandbox = false;
-
-                        // DEBUG
-
-                        if (logger.isDebugEnabled())
-                            logger.debug("Store " + storeDesc.getName() + ", sandbox=" + sandbox);
-
-                        // Add a pseudo file for the current store
-
-                        if (sandbox == false || avmCtx.showSandboxes() == true)
-                            fstate.addPseudoFile(new StorePseudoFile(storeDesc));
-                    }
-                }
-            }
-            break;
-
-        // Store folder
-
-        case StoreRoot:
-
-            // Build the path to the parent store folder
-
-            str = new StringBuilder();
-
-            str.append(FileName.DOS_SEPERATOR);
-            str.append(avmPath.getStoreName());
-
-            // Search for the file state for the store pseudo folder
-
-            fstate = avmCtx.getStateTable().findFileState(str.toString());
-
-            if (fstate == null)
-            {
-                // Create a file state for the store path
-
-                fstate = avmCtx.getStateTable().findFileState(str.toString(), true, true);
-
-                // Add a pseudo file for the head version
-
-                fstate.addPseudoFile(new VersionPseudoFile(AVMPath.VersionNameHead));
-
-                // Add a pseudo file for the version root folder
-
-                fstate.addPseudoFile(new DummyFolderPseudoFile(AVMPath.VersionsFolder));
-            }
-            break;
-
-        // Head folder
-
-        case Head:
-
-            // Build the path to the store head version folder
-
-            str = new StringBuilder();
-
-            str.append(FileName.DOS_SEPERATOR);
-            str.append(avmPath.getStoreName());
-            str.append(FileName.DOS_SEPERATOR);
-            str.append(AVMPath.VersionNameHead);
-
-            // Search for the file state for the store head version pseudo folder
-
-            fstate = avmCtx.getStateTable().findFileState(str.toString());
-
-            if (fstate == null)
-            {
-                // Create a file state for the store head folder path
-
-                fstate = avmCtx.getStateTable().findFileState(str.toString(), true, true);
-
-                // Add a pseudo file for the data pseudo folder
-
-                fstate.addPseudoFile(new DummyFolderPseudoFile(AVMPath.DataFolder));
-
-                // Add a pseudo file for the metadata pseudo folder
-
-                fstate.addPseudoFile(new DummyFolderPseudoFile(AVMPath.MetaDataFolder));
-            }
-            break;
-
-        // Version root folder
-
-        case VersionRoot:
-
-            // Get the list of AVM store versions
-
-            try
-            {
-                // Build the path to the parent store folder
-
-                str = new StringBuilder();
-
-                str.append(FileName.DOS_SEPERATOR);
-                str.append(avmPath.getStoreName());
-                str.append(FileName.DOS_SEPERATOR);
-                str.append(AVMPath.VersionsFolder);
-
-                // Create a file state for the store path
-
-                fstate = avmCtx.getStateTable().findFileState(str.toString(), true, true);
-
-                // Add pseudo folders if the list is empty
-
-                if (fstate.hasPseudoFiles() == false)
-                {
-                    // Build the version folder name for the head version
-
-                    StringBuilder verStr = new StringBuilder(AVMPath.VersionFolderPrefix);
-                    verStr.append("-1");
-
-                    // Add a pseudo file for the head version
-
-                    fstate.addPseudoFile(new VersionPseudoFile(verStr.toString()));
-
-                    // Get the list of versions for the store
-
-                    List<VersionDescriptor> verList = m_avmService.getStoreVersions(avmPath.getStoreName());
-
-                    // Add pseudo files for the versions to the store state
-
-                    if (verList.size() > 0)
-                    {
-                        for (VersionDescriptor verDesc : verList)
+                        // Add pseudo files for the stores
+                        
+                        boolean sandbox = false;
+                        
+                        for ( AVMStoreDescriptor storeDesc : storeList)
                         {
-                            // Generate the version string
+                            // Get the properties for the current store
+                            
+                            Map<QName, PropertyValue> props = m_avmService.getStoreProperties( storeDesc.getName());
+                            
+                            if ( props.containsKey( AVMContext.PROP_WORKFLOWPREVIEW) || props.containsKey( AVMContext.PROP_AUTHORPREVIEW))
+                                sandbox = true;
+                            else
+                                sandbox = false;
 
-                            String verName = null;
+                            // DEBUG
+                            
+                            if ( logger.isDebugEnabled())
+                                logger.debug( "Store " + storeDesc.getName() + ", sandbox=" + sandbox);
+                            
+                            // Add a pseudo file for the current store
 
-                            verStr.setLength(AVMPath.VersionFolderPrefix.length());
-                            verStr.append(verDesc.getVersionID());
-
-                            verName = verStr.toString();
-
-                            // Add the version pseudo folder
-
-                            fstate.addPseudoFile(new VersionPseudoFile(verName, verDesc));
+                            if ( sandbox == false || avmCtx.showSandboxes() == true)
+                                fstate.addPseudoFile( new StorePseudoFile( storeDesc, FileName.DOS_SEPERATOR_STR + storeDesc.getName()));
                         }
                     }
                 }
-            }
-            catch (AVMNotFoundException ex)
-            {
-                // Invalid store name
-            }
-            break;
+                break;
+                
+            // Store folder
+                
+            case StoreRoot:
+                
+                // Build the path to the parent store folder
+                
+                str = new StringBuilder();
+                
+                str.append( FileName.DOS_SEPERATOR);
+                str.append( avmPath.getStoreName());
+                
+                // Search for the file state for the store pseudo folder
+                
+                relPath = str.toString();
+                fstate = avmCtx.getStateTable().findFileState( relPath);
+                
+                if ( fstate == null)
+                {
+                    // Create a file state for the store path
+                    
+                    fstate = avmCtx.getStateTable().findFileState( str.toString(), true, true);
+                    
+                    // Add a pseudo file for the head version
+                    
+                    str.append( FileName.DOS_SEPERATOR);
+                    str.append( AVMPath.VersionNameHead);
+                    
+                    fstate.addPseudoFile( new VersionPseudoFile( AVMPath.VersionNameHead, str.toString()));
+                    
+                    // Add a pseudo file for the version root folder
 
-        // Version folder
+                    str.setLength( relPath.length() + 1);
+                    str.append( AVMPath.VersionsFolder);
+                    
+                    fstate.addPseudoFile( new DummyFolderPseudoFile( AVMPath.VersionsFolder, str.toString()));
+                }
+                break;
 
-        case Version:
+            // Head folder
+                
+            case Head:
 
-            // Build the path to the store version folder
+                // Build the path to the store head version folder
+                
+                str = new StringBuilder();
+                
+                str.append( FileName.DOS_SEPERATOR);
+                str.append( avmPath.getStoreName());
+                str.append( FileName.DOS_SEPERATOR);
+                str.append( AVMPath.VersionNameHead);
+                
+                // Search for the file state for the store head version pseudo folder
+                
+                relPath = str.toString();
+                
+                fstate = avmCtx.getStateTable().findFileState( relPath);
+                
+                if ( fstate == null)
+                {
+                    // Create a file state for the store head folder path
+                    
+                    fstate = avmCtx.getStateTable().findFileState( str.toString(), true, true);
+                    
+                    // Add a pseudo file for the data pseudo folder
+                    
+                    str.append( FileName.DOS_SEPERATOR);
+                    str.append( AVMPath.DataFolder);
+                    
+                    fstate.addPseudoFile( new DummyFolderPseudoFile( AVMPath.DataFolder, str.toString()));
+                    
+                    // Add a pseudo file for the metadata pseudo folder
+                    
+                    str.setLength( relPath.length() + 1);
+                    str.append( AVMPath.MetaDataFolder);
+                    
+                    fstate.addPseudoFile( new DummyFolderPseudoFile( AVMPath.MetaDataFolder, str.toString()));
+                }
+                break;
+                
+            // Version root folder
+                
+            case VersionRoot:
 
-            str = new StringBuilder();
+                // Get the list of AVM store versions
 
-            str.append(FileName.DOS_SEPERATOR);
-            str.append(avmPath.getStoreName());
-            str.append(FileName.DOS_SEPERATOR);
-            str.append(AVMPath.VersionFolderPrefix);
-            str.append(avmPath.getVersion());
+                try
+                {
+                    // Build the path to the parent store folder
+                    
+                    str = new StringBuilder();
+                    
+                    str.append( FileName.DOS_SEPERATOR);
+                    str.append( avmPath.getStoreName());
+                    str.append( FileName.DOS_SEPERATOR);
+                    str.append( AVMPath.VersionsFolder);
+                    
+                    // Create a file state for the store path
+                    
+                    relPath = str.toString();
+                    fstate = avmCtx.getStateTable().findFileState( relPath, true, true);
+                    
+                    // Add pseudo folders if the list is empty
+                    
+                    if ( fstate.hasPseudoFiles() == false)
+                    {
+                        // Build the version folder name for the head version
+                        
+                        StringBuilder verStr = new StringBuilder( AVMPath.VersionFolderPrefix);
+                        verStr.append( "-1");
+                        
+                        // Add a pseudo file for the head version
 
-            // Search for the file state for the version pseudo folder
+                        str.append( FileName.DOS_SEPERATOR);
+                        str.append( verStr.toString());
+                        
+                        fstate.addPseudoFile( new VersionPseudoFile( verStr.toString(), str.toString()));
+                        
+                        // Get the list of versions for the store
+                        
+                        List<VersionDescriptor> verList = m_avmService.getStoreVersions( avmPath.getStoreName());
+                        
+                        // Add pseudo files for the versions to the store state
+    
+                        if ( verList.size() > 0)
+                        {
+                            for ( VersionDescriptor verDesc : verList)
+                            {
+                                // Generate the version string
+                                
+                                String verName = null;
+                                
+                                verStr.setLength( AVMPath.VersionFolderPrefix.length());
+                                verStr.append( verDesc.getVersionID());
+                                
+                                verName = verStr.toString();
 
-            fstate = avmCtx.getStateTable().findFileState(str.toString());
+                                str.setLength( relPath.length() + 1);
+                                str.append( verName);
+                                
+                                // Add the version pseudo folder
+                                
+                                fstate.addPseudoFile( new VersionPseudoFile ( verName, verDesc, str.toString()));
+                            }
+                        }
+                    }
+                }
+                catch ( AVMNotFoundException ex)
+                {
+                    // Invalid store name
+                }
+                break;
 
-            if (fstate == null)
-            {
-                // Create a file state for the version folder path
+            // Version folder
+                
+            case Version:
 
-                fstate = avmCtx.getStateTable().findFileState(str.toString(), true, true);
-
-                // Add a pseudo file for the data pseudo folder
-
-                fstate.addPseudoFile(new DummyFolderPseudoFile(AVMPath.DataFolder));
-
-                // Add a pseudo file for the metadata pseudo folder
-
-                fstate.addPseudoFile(new DummyFolderPseudoFile(AVMPath.MetaDataFolder));
-            }
-            break;
+                // Build the path to the store version folder
+                
+                str = new StringBuilder();
+                
+                str.append( FileName.DOS_SEPERATOR);
+                str.append( avmPath.getStoreName());
+                str.append( FileName.DOS_SEPERATOR);
+                str.append( AVMPath.VersionFolderPrefix);
+                str.append( avmPath.getVersion());
+                
+                // Search for the file state for the version pseudo folder
+                
+                relPath = str.toString();
+                fstate = avmCtx.getStateTable().findFileState( relPath);
+                
+                if ( fstate == null)
+                {
+                    // Create a file state for the version folder path
+                    
+                    fstate = avmCtx.getStateTable().findFileState( str.toString(), true, true);
+                    
+                    // Add a pseudo file for the data pseudo folder
+                    
+                    str.append( FileName.DOS_SEPERATOR);
+                    str.append( AVMPath.DataFolder);
+                    
+                    fstate.addPseudoFile( new DummyFolderPseudoFile( AVMPath.DataFolder, str.toString()));
+                    
+                    // Add a pseudo file for the metadata pseudo folder
+                    
+                    str.setLength( relPath.length() + 1);
+                    str.append( AVMPath.MetaDataFolder);
+                    
+                    fstate.addPseudoFile( new DummyFolderPseudoFile( AVMPath.MetaDataFolder, str.toString()));
+                }
+                break;
         }
 
         // Return the file state
-
+        
         return fstate;
     }
 

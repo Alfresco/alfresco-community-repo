@@ -178,6 +178,7 @@ public class PseudoFileListSearchContext extends SearchContext {
         		attr += FileAttribute.Hidden;
         	
         	info.setFileAttributes( attr);
+        	info.setFileId( pfInfo.getFileId());
         }
         
         // Indicate if the file information is valid

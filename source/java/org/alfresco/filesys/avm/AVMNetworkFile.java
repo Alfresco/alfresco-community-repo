@@ -223,7 +223,8 @@ public class AVMNetworkFile extends NetworkFile {
         // Set modification flag
         
         m_modified = true;
-
+        incrementWriteCount();
+        
         // Update the current file size
         
         setFileSize( m_channel.size());
@@ -329,6 +330,7 @@ public class AVMNetworkFile extends NetworkFile {
         // Set modification flag
         
         m_modified = true;
+        incrementWriteCount();
     }
 
     /**

@@ -240,7 +240,7 @@ public class AVMContext extends AlfrescoContext
     		{
 				// Add a pseudo folder for the new store
 				
-				rootState.addPseudoFile( new StorePseudoFile( storeName));
+				rootState.addPseudoFile( new StorePseudoFile( storeName, FileName.DOS_SEPERATOR_STR + storeName));
 				
 				// DEBUG
 				
@@ -356,8 +356,11 @@ public class AVMContext extends AlfrescoContext
 			String verName = verStr.toString();
 			
 			// Add a pseudo folder for the new version
+
+			pathStr.append( FileName.DOS_SEPERATOR);
+			pathStr.append( verName);
 			
-			verState.addPseudoFile( new VersionPseudoFile( verName));
+			verState.addPseudoFile( new VersionPseudoFile( verName, pathStr.toString()));
 			
 			// DEBUG
 			

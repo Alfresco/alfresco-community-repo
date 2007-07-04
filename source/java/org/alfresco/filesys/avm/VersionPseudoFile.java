@@ -44,14 +44,24 @@ public class VersionPseudoFile extends PseudoFile {
 	 * Class constructor
 	 * 
 	 * @param name String
+	 * @param relPath String
 	 */
-	public VersionPseudoFile( String name)
+	public VersionPseudoFile( String name, String relPath)
 	{
 		super( name, FileAttribute.Directory + FileAttribute.ReadOnly);
 		
 		// Create static file information from the store details
 		
 		FileInfo fInfo = new FileInfo( name, 0L, FileAttribute.Directory + FileAttribute.ReadOnly);
+		
+		fInfo.setPath( relPath);
+		fInfo.setFileId( relPath.hashCode());
+		
+		long timeNow = System.currentTimeMillis();
+		fInfo.setCreationDateTime( timeNow);
+		fInfo.setModifyDateTime( timeNow);
+		fInfo.setAccessDateTime( timeNow);
+		fInfo.setChangeDateTime( timeNow);
 		
 		setFileInfo( fInfo);
 	}
@@ -61,8 +71,9 @@ public class VersionPseudoFile extends PseudoFile {
 	 * 
 	 * @param name String
 	 * @param verDesc VersionDescriptor
+	 * @param relPath String
 	 */
-	public VersionPseudoFile( String name, VersionDescriptor verDesc)
+	public VersionPseudoFile( String name, VersionDescriptor verDesc, String relPath)
 	{
 		super( name, FileAttribute.Directory + FileAttribute.ReadOnly);
 		
@@ -70,6 +81,15 @@ public class VersionPseudoFile extends PseudoFile {
 		
 		FileInfo fInfo = new FileInfo( name, 0L, FileAttribute.Directory + FileAttribute.ReadOnly);
 		fInfo.setCreationDateTime( verDesc.getCreateDate());
+		
+		fInfo.setPath( relPath);
+		fInfo.setFileId( relPath.hashCode());
+		
+		long timeNow = System.currentTimeMillis();
+		fInfo.setCreationDateTime( timeNow);
+		fInfo.setModifyDateTime( timeNow);
+		fInfo.setAccessDateTime( timeNow);
+		fInfo.setChangeDateTime( timeNow);
 		
 		setFileInfo( fInfo);
 	}

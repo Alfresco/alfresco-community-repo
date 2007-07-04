@@ -42,8 +42,9 @@ public class DummyFolderPseudoFile extends PseudoFile {
 	 * Class constructor
 	 * 
 	 * @param fname String
+	 * @param relPath String
 	 */
-	public DummyFolderPseudoFile( String fname)
+	public DummyFolderPseudoFile( String fname, String relPath)
 	{
 		super( fname, FileAttribute.Directory + FileAttribute.ReadOnly);
 		
@@ -51,6 +52,15 @@ public class DummyFolderPseudoFile extends PseudoFile {
 		
 		FileInfo fInfo = new FileInfo( fname, 0L, FileAttribute.Directory + FileAttribute.ReadOnly);
 		fInfo.setCreationDateTime( System.currentTimeMillis());
+		
+		fInfo.setPath( relPath);
+		fInfo.setFileId( relPath.hashCode());
+		
+		long timeNow = System.currentTimeMillis();
+		fInfo.setCreationDateTime( timeNow);
+		fInfo.setModifyDateTime( timeNow);
+		fInfo.setAccessDateTime( timeNow);
+		fInfo.setChangeDateTime( timeNow);
 		
 		setFileInfo( fInfo);
 	}

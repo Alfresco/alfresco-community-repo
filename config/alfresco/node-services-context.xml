@@ -4,6 +4,27 @@
 <!-- Beans pertinent to node persistence and services --> 
 <beans>
    
+   <bean id="nodeArchiveInterceptor" class="org.alfresco.repo.node.archive.NodeArchiveInterceptor">
+      <property name="transactionService">
+         <ref bean="transactionService" />
+      </property>
+      <property name="nodeService">
+         <ref bean="mlAwareNodeService" />
+      </property>
+      <property name="dictionaryService">
+         <ref bean="dictionaryService" />
+      </property>
+      <property name="storeArchiveMap">
+         <ref bean="storeArchiveMap"/>
+      </property>
+      <property name="threadPoolExecutor">
+         <ref bean="threadPoolExecutor"/>
+      </property>
+      <property name="archiveMode">
+         <value>${system.deleted-items.mode}</value>
+      </property>
+   </bean>
+   
    <bean id="mlPropertyInterceptor" class="org.alfresco.repo.node.MLPropertyInterceptor">
       <property name="nodeService">
          <ref bean="mlAwareNodeService" />
@@ -25,6 +46,7 @@
       <property name="interceptorNames">
          <list>
             <value>mlPropertyInterceptor</value>
+            <value>nodeArchiveInterceptor</value>
          </list>
       </property>
    </bean>

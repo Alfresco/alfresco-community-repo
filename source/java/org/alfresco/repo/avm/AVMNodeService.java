@@ -764,7 +764,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      * @param nodeRef reference to a node within a store
      * @throws InvalidNodeRefException if the reference given is invalid
      */
-    public void deleteNode(NodeRef nodeRef) throws InvalidNodeRefException
+    public boolean deleteNode(NodeRef nodeRef) throws InvalidNodeRefException
     {
         // Invoke policy behaviors.
 //        invokeBeforeDeleteNode(nodeRef);
@@ -795,6 +795,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         {
             throw new InvalidNodeRefException(avmVersionPath.getSecond() +" not found.", nodeRef);
         }
+        return true;
     }
     
     /**

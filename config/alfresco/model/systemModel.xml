@@ -141,6 +141,21 @@
          <title>Temporary</title>
       </aspect>
       
+      <!-- aspect to tag deleted nodes -->
+      <aspect name="sys:deletedNode">
+         <title>Deleted Node</title>
+         <properties>
+            <property name="sys:deletedNodeOriginalName">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="sys:deletedNodeUser">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+      
       <!-- details stored on archived nodes -->
       <aspect name="sys:archived">
          <title>Archived</title>

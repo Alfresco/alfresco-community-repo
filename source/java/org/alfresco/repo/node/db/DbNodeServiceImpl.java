@@ -285,6 +285,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Assert.notNull(assocTypeQName);
         Assert.notNull(assocQName);
         
+        // Get the parent node
+        Node parentNode = getNodeNotNull(parentRef);
+
         // null property map is allowed
         if (properties == null)
         {      
@@ -324,8 +327,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // We now have enough to declare the child association creation
         invokeBeforeCreateChildAssociation(parentRef, childNodeRef, assocTypeQName, assocQName, true);
         
-        // Get the parent node
-        Node parentNode = getNodeNotNull(parentRef);
         // Create the association
         ChildAssoc childAssoc = nodeDaoService.newChildAssoc(
                 parentNode,
@@ -520,12 +521,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             throw new InvalidTypeException(typeQName);
         }
+        Node node = getNodeNotNull(nodeRef);
         
         // Invoke policies
         invokeBeforeUpdateNode(nodeRef);
         
         // Get the node and set the new type
-        Node node = getNodeNotNull(nodeRef);
         node.setTypeQName(typeQName);
         
         // Add the default aspects to the node (update the properties with any new default values)
@@ -553,11 +554,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             throw new InvalidAspectException("The aspect is invalid: " + aspectTypeQName, aspectTypeQName);
         }
         
+        Node node = getNodeNotNull(nodeRef);
+        
         // Invoke policy behaviours
         invokeBeforeUpdateNode(nodeRef);
         invokeBeforeAddAspect(nodeRef, aspectTypeQName);
-        
-        Node node = getNodeNotNull(nodeRef);
         
         // attach the properties to the current node properties
         Map<QName, Serializable> nodeProperties = getPropertiesImpl(node);
@@ -687,11 +688,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return ret;
     }
 
-    public void deleteNode(NodeRef nodeRef)
+    /**
+     * {@inheritDoc}
+     */
+    public boolean deleteNode(NodeRef nodeRef)
     {
         // First get the node to ensure that it exists
         Node node = getNodeNotNull(nodeRef);
-
+        
         boolean requiresDelete = false;
         
         // Invoke policy behaviours
@@ -736,17 +740,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             archiveNode(nodeRef, archiveStoreRef);
             // The archive performs a move, which will fire the appropriate OnDeleteNode
         }
+        // Done
+        return true;
     }
     
     public ChildAssociationRef addChild(NodeRef parentRef, NodeRef childRef, QName assocTypeQName, QName assocQName)
     {
-        // Invoke policy behaviours
-        invokeBeforeCreateChildAssociation(parentRef, childRef, assocTypeQName, assocQName, false);
-        
         // get the parent node and ensure that it is a container node
         Node parentNode = getNodeNotNull(parentRef);
         // get the child node
         Node childNode = getNodeNotNull(childRef);
+
+        // Invoke policy behaviours
+        invokeBeforeCreateChildAssociation(parentRef, childRef, assocTypeQName, assocQName, false);
+        
         // make the association
         ChildAssoc assoc = nodeDaoService.newChildAssoc(
                 parentNode,
@@ -924,6 +931,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     
     public Serializable getProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
     {
+        // get the property from the node
+        Node node = getNodeNotNull(nodeRef);
+        
         // spoof referencable properties
         if (qname.equals(ContentModel.PROP_STORE_PROTOCOL))
         {
@@ -938,9 +948,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             return nodeRef.getId();
         }
 
-        // get the property from the node
-        Node node = getNodeNotNull(nodeRef);
-        
         if (qname.equals(ContentModel.PROP_NODE_DBID))
         {
             return node.getId();
@@ -1041,11 +1048,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         Assert.notNull(qname);
         
-        // Invoke policy behaviours
-        invokeBeforeUpdateNode(nodeRef);
-        
         // get the node
         Node node = getNodeNotNull(nodeRef);
+        
+        // Invoke policy behaviours
+        invokeBeforeUpdateNode(nodeRef);
         
         // Do the set operation
         Map<QName, Serializable> propertiesBefore = getPropertiesImpl(node);
@@ -1094,11 +1101,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             throw new UnsupportedOperationException("The property " + qname + " may not be removed individually");
         }
         
-        // Invoke policy behaviours
-        invokeBeforeUpdateNode(nodeRef);
-        
         // Get the node
         Node node = getNodeNotNull(nodeRef);
+        
+        // Invoke policy behaviours
+        invokeBeforeUpdateNode(nodeRef);
         
         // Get the values before
         Map<QName, Serializable> propertiesBefore = getPropertiesImpl(node);
@@ -1610,6 +1617,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         for (NodeStatus oldNodeStatus : nodeStatusesById.values())
         {
             Node nodeToMove = oldNodeStatus.getNode();
+            NodeRef oldNodeRef = nodeToMove.getNodeRef();
             nodeToMove.setStore(store);
             NodeRef newNodeRef = nodeToMove.getNodeRef();
             
@@ -1618,6 +1626,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             // create the new status
             NodeStatus newNodeStatus = nodeDaoService.getNodeStatus(newNodeRef, true);
             newNodeStatus.setNode(nodeToMove);
+            
+            // Record change IDs
+            nodeDaoService.recordChangeId(oldNodeRef);
+            nodeDaoService.recordChangeId(newNodeRef);
             
             invokeOnUpdateNode(newNodeRef);
         }

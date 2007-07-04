@@ -199,7 +199,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
-    public void deleteNode(NodeRef nodeRef) throws InvalidNodeRefException
+    public boolean deleteNode(NodeRef nodeRef) throws InvalidNodeRefException
     {
         // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);

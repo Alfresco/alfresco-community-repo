@@ -344,6 +344,16 @@
         </property>
     </bean>
 
+    <!-- Remove sys:deleted tags from interrupted archivals -->
+
+    <bean id="deletedTagRemover" class="org.alfresco.repo.node.archive.DeletedTagBootstrap">
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="searchService">
+            <ref bean="SearchService" />
+        </property>
+    </bean>
 
     <!-- Start module components -->
 

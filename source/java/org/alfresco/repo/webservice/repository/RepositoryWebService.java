@@ -26,6 +26,7 @@ package org.alfresco.repo.webservice.repository;
 
 import java.io.Serializable;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -164,7 +165,7 @@ public class RepositoryWebService extends AbstractWebService implements
                 logger.error("Unexpected error occurred", e);
             }
 
-            throw new RepositoryFault(0, e.getMessage());
+            throw new RepositoryFault(0, e.toString());
         }
     }
 
@@ -230,7 +231,7 @@ public class RepositoryWebService extends AbstractWebService implements
 
             e.printStackTrace();
 
-            throw new RepositoryFault(0, e.getMessage());
+            throw new RepositoryFault(0, e.toString());
         }
     }
 
@@ -291,7 +292,7 @@ public class RepositoryWebService extends AbstractWebService implements
                 logger.error("Unexpected error occurred", e);
             }
 
-            throw new RepositoryFault(0, e.getMessage());
+            throw new RepositoryFault(0, e.toString());
         }
     }
 
@@ -345,7 +346,7 @@ public class RepositoryWebService extends AbstractWebService implements
                 logger.error("Unexpected error occurred", e);
             }
 
-            throw new RepositoryFault(0, e.getMessage());
+            throw new RepositoryFault(0, e.toString());
         }
     }
 
@@ -400,7 +401,7 @@ public class RepositoryWebService extends AbstractWebService implements
                 logger.error("Unexpected error occurred", e);
             }
 
-            throw new RepositoryFault(0, e.getMessage());
+            throw new RepositoryFault(0, e.toString());
         }
     }
 
@@ -470,7 +471,7 @@ public class RepositoryWebService extends AbstractWebService implements
                     logger.error("Unexpected error occurred", e);
                 }
 
-                throw new RepositoryFault(0, e.getMessage());
+                throw new RepositoryFault(0, e.toString());
             }
         }
     }
@@ -514,7 +515,7 @@ public class RepositoryWebService extends AbstractWebService implements
                 logger.error("Unexpected error occurred", e);
             }
 
-            throw new RepositoryFault(0, e.getMessage());
+            throw new RepositoryFault(0, e.toString());
         }
     }
 
@@ -564,7 +565,7 @@ public class RepositoryWebService extends AbstractWebService implements
                 logger.error("Unexpected error occurred", e);
             }
 
-            throw new RepositoryFault(0, e.getMessage());
+            throw new RepositoryFault(0, e.toString());
         }
     }
 
@@ -617,10 +618,18 @@ public class RepositoryWebService extends AbstractWebService implements
             
             // Resolve the predicate to a list of node references
             List<NodeRef> nodeRefs = Utils.resolvePredicate(where, this.nodeService, this.searchService, this.namespaceService);
-            nodes = new Node[nodeRefs.size()];
-            int index = 0;
+            List<Node> nodeList = new ArrayList<Node>();
             for (NodeRef nodeRef : nodeRefs)
             {
+            	// search can return nodes that no longer exist, so we need to  ignore these
+            	if(nodeService.exists(nodeRef) == false) 
+            	{
+            		if(logger.isDebugEnabled())
+            		{
+            			logger.warn("Search returned node that doesn't exist: " + nodeRef);
+            		}
+            	}
+            	
                 // Get the nodes reference
                 Reference reference = Utils.convertToReference(this.nodeService, this.namespaceService, nodeRef);
                 
@@ -649,10 +658,10 @@ public class RepositoryWebService extends AbstractWebService implements
                 
                 // Create the node and add to the array
                 Node node = new Node(reference, type, aspects, properties);
-                nodes[index] = node;
-                
-                index++;
+                nodeList.add(node);
             }
+            
+            nodes = nodeList.toArray(new Node[nodeList.size()]);
             
             // commit the transaction
             tx.commit();
@@ -677,7 +686,7 @@ public class RepositoryWebService extends AbstractWebService implements
                 logger.error("Unexpected error occurred", e);
             }
 
-            throw new RepositoryFault(0, e.getMessage());
+            throw new RepositoryFault(0, e.toString());
         }
         
         return nodes;

@@ -481,7 +481,14 @@ public class AdministrationWebService extends AbstractWebService implements
     private void changePasswordImpl(String userName, String oldPassword, String newPassword)
     {
         // Update the authentication details
-        this.authenticationService.updateAuthentication(userName, oldPassword.toCharArray(), newPassword.toCharArray());        
+    	if (this.authenticationService.getCurrentUserName().equals("admin") == true)
+    	{
+    		this.authenticationService.setAuthentication(userName, newPassword.toCharArray());
+    	}
+    	else
+    	{
+    		this.authenticationService.updateAuthentication(userName, oldPassword.toCharArray(), newPassword.toCharArray());
+    	}
     }
 
     /**
@@ -624,8 +631,36 @@ public class AdministrationWebService extends AbstractWebService implements
                
                Set<NodeRef> nodeRefs = AdministrationWebService.this.personService.getAllPeople();
                
-               // TODO do the filter of the resulting list here ....
-               List<NodeRef> filteredNodeRefs = new ArrayList<NodeRef>(nodeRefs);
+               // Filter the results
+               List<NodeRef> filteredNodeRefs = null;
+               if (filter != null && filter.getUserName() != null && filter.getUserName().length() != 0)
+               {
+                   String userNameFilter = filter.getUserName();
+                   
+                   if (logger.isDebugEnabled() == true)
+                   {
+                       logger.debug("Applying user query filter (" + userNameFilter + ")");
+                   }
+                                      
+                   filteredNodeRefs = new ArrayList<NodeRef>(nodeRefs.size());
+                   for (NodeRef nodeRef : nodeRefs)
+                   {
+                       String userName = (String)AdministrationWebService.this.nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
+                       if (userName.matches(userNameFilter) == true)
+                       {
+                           filteredNodeRefs.add(nodeRef);
+                       }
+                   }
+               }
+               else
+               {
+                   if (logger.isDebugEnabled() == true)
+                   {
+                       logger.debug("No user filter specified");
+                   }
+                   
+                   filteredNodeRefs = new ArrayList<NodeRef>(nodeRefs);
+               }
                
                int totalRows = filteredNodeRefs.size();
                int lastRow = calculateLastRowIndex(totalRows);

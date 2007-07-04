@@ -145,7 +145,7 @@
             <complexType>
                <sequence>
                   <element name="userName" type="xsd:string"/>
-                  <element name="oldPassword" type="xsd:string"/>
+                  <element name="oldPassword" type="xsd:string" nillable="true"/>
                   <element name="newPassword" type="xsd:string"/>
                </sequence>
             </complexType>

@@ -25,6 +25,8 @@
 package org.alfresco.repo.webservice.repository;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.webservice.Utils;
@@ -109,13 +111,24 @@ public class ResultSetQuerySession extends AbstractQuerySession
                logger.debug("Total rows = " + totalRows + ", current batch size = " + currentBatchSize);
          
             org.alfresco.repo.webservice.types.ResultSet batchResults = new org.alfresco.repo.webservice.types.ResultSet();      
-            org.alfresco.repo.webservice.types.ResultSetRow[] rows = new org.alfresco.repo.webservice.types.ResultSetRow[currentBatchSize];
-         
-            int arrPos = 0;
+            List<org.alfresco.repo.webservice.types.ResultSetRow> rowList =
+            	new ArrayList<org.alfresco.repo.webservice.types.ResultSetRow>();
+            
             for (int x = this.position; x < lastRow; x++)
             {
                ResultSetRow origRow = searchResults.getRow(x);
                NodeRef nodeRef = origRow.getNodeRef();
+               
+               // search can return nodes that no longer exist, so we need to  ignore these
+               if(nodeService.exists(nodeRef) == false) 
+               {
+            	   if(logger.isDebugEnabled())
+            	   {
+            		   logger.warn("Search returned node that doesn't exist: " + nodeRef);
+            	   }
+            	   continue;
+               }
+               
                ResultSetRowNode rowNode = createResultSetRowNode(nodeRef, nodeService);
             
                // get the data for the row and build up the columns structure
@@ -143,15 +156,16 @@ public class ResultSetQuerySession extends AbstractQuerySession
                row.setScore(origRow.getScore());
                row.setRowIndex(x);
                row.setNode(rowNode);
-            
-               // add the row to the overall results
-               rows[arrPos] = row;
-               arrPos++;
+               
+               // add the row to the overall results list
+               rowList.add(row);
             }
          
             // TODO: build up the meta data data structure if we've been asked to
          
             // add the rows to the result set and set the total row count
+            org.alfresco.repo.webservice.types.ResultSetRow[] rows = 
+            	rowList.toArray(new org.alfresco.repo.webservice.types.ResultSetRow[rowList.size()]);;
             batchResults.setRows(rows);
             batchResults.setTotalRowCount(totalRows);
          

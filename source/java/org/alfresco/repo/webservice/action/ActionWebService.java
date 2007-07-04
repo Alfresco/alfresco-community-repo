@@ -33,6 +33,7 @@ import java.util.Map;
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
+import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.action.executer.CompositeActionExecuter;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.TransactionUtil;
@@ -881,7 +882,33 @@ public class ActionWebService extends AbstractWebService implements ActionServic
                 if (this.actionService.evaluateAction(action, nodeRef) == true)
                 {
                     // Execute the action (now that we know the conditions have been met)
-                    this.actionService.executeAction(action, nodeRef, false);                    
+                    this.actionService.executeAction(action, nodeRef, false);   
+                    
+                    // Add the result value to the executed action for return to the client
+                    Serializable result = action.getParameterValue(ActionExecuter.PARAM_RESULT);
+                    if (result != null)
+                    {
+                    	// Convert the result to a string value
+                    	String convertedValue = DefaultTypeConverter.INSTANCE.convert(String.class, result);
+                    	NamedValue convertedNameValue = new NamedValue(ActionExecuter.PARAM_RESULT, false, convertedValue, null);
+                    	
+                    	// Append the new value to the current parameter array
+                    	NamedValue[] currentValues = webServiceAction.getParameters();
+                    	NamedValue[] updatedValues = new NamedValue[currentValues.length+1];                    	
+                    	int index = 0;
+                    	for (NamedValue value : currentValues) 
+                    	{
+                    		updatedValues[index] = value;
+							index ++;
+						}
+                    	updatedValues[index] = convertedNameValue;
+                    	
+                    	// Set the updated parameter values
+                    	webServiceAction.setParameters(updatedValues);
+                    	
+                    }
+                    
+                    // Add the executed action to the result list
                     executedActions.add(webServiceAction);
                 }
             }

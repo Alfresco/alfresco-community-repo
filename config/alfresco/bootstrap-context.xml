@@ -293,14 +293,6 @@
        </property>
     </bean>
 
-
-
-    <!-- LinkValidationService -->
-    <bean id="linkValidationServiceBootstrap" 
-          class="org.alfresco.linkvalidation.LinkValidationServiceBootstrap">
-    </bean>
-    
-
     <!-- This component checks the interconnection between the metadata, indexes and content -->
     <bean id="configurationChecker" class="org.alfresco.repo.admin.ConfigurationChecker">
        <property name="strict">
@@ -344,6 +336,9 @@
             <ref bean="PatchService" />
         </property>
     </bean>
+
+    <!-- Import other Alfresco bootstrap components -->
+    <import resource="classpath*:alfresco/alfresco-*-bootstrap-context.xml" />
 
     <!-- Start module components -->
 

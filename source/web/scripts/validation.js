@@ -126,8 +126,7 @@ function validateRegex(control, expression, requiresMatch, matchMessage, noMatch
 function validateName(control, message, showMessage)
 {
    var result = true;
-   var pattern = /([\"\*\\\>\<\?\/\:\|\xA3\xAC\%\&\+\;]+)|([ ]+$)|([\.]+$)/;
-   
+   var pattern = /([\"\*\\\>\<\?\/\:\|]+)|([ ]+$)|([\.]?[\.]+$)/;
    var idx = control.value.search(pattern);
    if (idx != -1)
    {
@@ -137,4 +136,3 @@ function validateName(control, message, showMessage)
    
    return result;
 }
-

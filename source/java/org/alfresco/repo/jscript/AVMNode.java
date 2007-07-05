@@ -124,6 +124,19 @@ public class AVMNode extends ScriptNode
     }
     
     /**
+     * @return AVM path to the parent node
+     */
+    public String getParentPath()
+    {
+        return AVMNodeConverter.SplitBase(this.path)[0];
+    }
+    
+    public String jsGet_parentPath()
+    {
+        return getParentPath();
+    }
+    
+    /**
      * @return QName type of this node
      */
     public QName getType()

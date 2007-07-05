@@ -142,6 +142,15 @@
         <property name="retryingTransactionHelper">
             <ref bean="retryingTransactionHelper"/>
         </property>
+        <property name="createVersionTxnListener">
+            <ref bean="createVersionTxnListener"/>
+        </property>
+        <property name="purgeVersionTxnListener">
+            <ref bean="purgeVersionTxnListener"/>
+        </property>
+        <property name="purgeStoreTxnListener">
+            <ref bean="purgeStoreTxnListener"/>
+        </property>
 
         <!-- Poll interval to check getLatestSnapshotID (in milliseconds) -->
         <property name="pollInterval"         value="5000"/>

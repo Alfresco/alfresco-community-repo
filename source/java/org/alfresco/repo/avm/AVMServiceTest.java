@@ -102,6 +102,54 @@ import org.alfresco.util.Pair;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Minimal testing of Locking Aware service.
+     */
+    public void testLockingAwareService()
+    {
+        AVMService oldService = fService;
+        fService = (AVMService)fContext.getBean("AVMLockingAwareService");
+        AuthenticationService authService = (AuthenticationService)fContext.getBean("AuthenticationService");
+        try
+        {
+            fService.setStoreProperty("main", QName.createQName(null, ".dns.main"), 
+                    new PropertyValue(QName.createQName(null, "silly"), "Nothing."));
+            fService.createStore("test");
+            fService.setStoreProperty("test", QName.createQName(null, ".dns.test.main"), 
+                    new PropertyValue(QName.createQName(null, "silly"), "Nothing."));
+            setupBasicTree0();
+            authService.authenticateAsGuest();
+            // assertEquals(0, fLockingService.getUsersLocks("admin").size());
+            List<AVMDifference> diffs = fSyncService.compare(-1, "main:/", -1, "test:/", null);
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            RetryingTransactionHelper.RetryingTransactionCallback<Object> cb = 
+            new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+            {
+                public Object execute()
+                    throws Exception
+                {
+                    BulkLoader loader = new BulkLoader();
+                    loader.setAvmService(fService);
+                    loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");      
+                    return null;
+                }
+            };
+            RetryingTransactionHelper helper = (RetryingTransactionHelper)fContext.getBean("retryingTransactionHelper");
+            helper.doInTransaction(cb);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+        finally
+        {
+            fService = oldService;
+            fLockingService.removeWebProject("main");
+            authService.authenticate("admin", "admin".toCharArray());
+        }
+    }
+
+    /**
      * Test version by date lookup.
      */
     public void testVersionByDate()
@@ -270,39 +318,6 @@ public class AVMServiceTest extends AVMServiceTestBase
         }
     }
     
-    /**
-     * Minimal testing of Locking Aware service.
-     */
-    public void testLockingAwareService()
-    {
-        AVMService oldService = fService;
-        fService = (AVMService)fContext.getBean("AVMLockingAwareService");
-        AuthenticationService authService = (AuthenticationService)fContext.getBean("AuthenticationService");
-        try
-        {
-            fService.setStoreProperty("main", QName.createQName(null, ".dns.main"), 
-                    new PropertyValue(QName.createQName(null, "silly"), "Nothing."));
-            fService.createStore("test");
-            fService.setStoreProperty("test", QName.createQName(null, ".dns.test.main"), 
-                    new PropertyValue(QName.createQName(null, "silly"), "Nothing."));
-            setupBasicTree0();
-            authService.authenticateAsGuest();
-            assertEquals(0, fLockingService.getUsersLocks("admin").size());
-            List<AVMDifference> diffs = fSyncService.compare(-1, "main:/", -1, "test:/", null);
-            fSyncService.update(diffs, null, false, false, false, false, null, null);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            fail();
-        }
-        finally
-        {
-            fService = oldService;
-            fLockingService.removeWebProject("main");
-            authService.authenticate("admin", "admin".toCharArray());
-        }
-    }
     
     /**
      * Test async indexing.

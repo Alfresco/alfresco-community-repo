@@ -78,6 +78,11 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     private static Logger fgLogger = Logger.getLogger(AVMNodeService.class);
     
     /**
+     * Flag for whether policy callbacks are made.
+     */
+    private boolean fInvokePolicies = false;
+    
+    /**
      * Reference to AVMService.
      */
     private AVMService fAVMService;
@@ -96,6 +101,11 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      */
     public AVMNodeService()
     {
+    }
+    
+    public void setInvokePolicies(boolean invoke)
+    {
+        fInvokePolicies = invoke;
     }
     
     /**
@@ -1265,13 +1275,14 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             {
                 try
                 {
-                    Map<QName, Serializable> propsBefore = new HashMap<QName, Serializable>();
-//                    ContentData oldContentData = fAVMService.getContentDataForRead(-1, avmVersionPath.getSecond());
-//                    propsBefore.put(ContentModel.PROP_CONTENT, oldContentData);
                     fAVMService.setContentData(avmVersionPath.getSecond(), (ContentData)value);
-                    Map<QName, Serializable> propsAfter = new HashMap<QName, Serializable>();
-                    propsAfter.put(ContentModel.PROP_CONTENT, value);
-                    invokeOnUpdateProperties(nodeRef, propsBefore, propsAfter);
+                    if (fInvokePolicies)
+                    {
+                        Map<QName, Serializable> propsBefore = new HashMap<QName, Serializable>();
+                        Map<QName, Serializable> propsAfter = new HashMap<QName, Serializable>();
+                        propsAfter.put(ContentModel.PROP_CONTENT, value);
+                        invokeOnUpdateProperties(nodeRef, propsBefore, propsAfter);
+                    }
                 }
                 catch (ClassCastException e)
                 {

@@ -873,7 +873,6 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
             {
                 throw new AVMLockingException("avmlockservice.locked", new Object[]{path});
             }
-            fLockingService.addWebProject(webProject);
             if (fLockingService.getLock(webProject, storePath[1]) == null)
             {
                 List<String> owners = new ArrayList<String>(1);

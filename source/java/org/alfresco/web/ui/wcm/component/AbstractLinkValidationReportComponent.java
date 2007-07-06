@@ -127,7 +127,7 @@ public abstract class AbstractLinkValidationReportComponent extends SelfRenderin
     * @param linkState The current link valiation state
     * @return Comma separated list of broken links
     */
-   protected String getBrokenLinks(String avmPath, LinkValidationState linkState)
+   protected String getBrokenLinks(FacesContext context, String avmPath, LinkValidationState linkState)
    {
       List<String> brokenLinks = linkState.getBrokenLinksForFile(avmPath);
       StringBuilder builder = new StringBuilder();
@@ -136,13 +136,16 @@ public abstract class AbstractLinkValidationReportComponent extends SelfRenderin
       {
          if (first == false)
          {
-            builder.append(", ");
+            builder.append("<br/>");
          }
          else
          {
             first = false;
          }
          
+         builder.append("<img src='");
+         builder.append(context.getExternalContext().getRequestContextPath());
+         builder.append("/images/icons/broken_link.gif' style='vertical-align: -4px;' />");
          builder.append(parseBrokenLink(link));
       }
       
@@ -150,7 +153,7 @@ public abstract class AbstractLinkValidationReportComponent extends SelfRenderin
    }
    
    /**
-    * Removes the virtulisation server host name from the link if appropriate
+    * Removes the virtaulisation server host name from the link if appropriate
     * 
     * @param linkUrl The URL that is broken
     * @return Parsed URL
@@ -169,7 +172,14 @@ public abstract class AbstractLinkValidationReportComponent extends SelfRenderin
          }
       }
       
-      return link;
+      // truncate the link if it is longer than 100 chars
+      String title = link;
+      if (link.length() > 60)
+      {
+         link = link.substring(0, 60) + "...";
+      }
+      
+      return "<span title='" + title + "'>&nbsp;" + link + "</span>";
    }
    
    /**
@@ -188,7 +198,7 @@ public abstract class AbstractLinkValidationReportComponent extends SelfRenderin
       out.write("<table cellpadding='0' cellspacing='0'><tr><td valign='top'><img src='");
       out.write(context.getExternalContext().getRequestContextPath());
       out.write(getIcon(fileName));
-      out.write("' style='padding: 5px;' /></td>");
+      out.write("' style='margin: 5px;' /></td>");
       out.write("<td width='100%'><div style='padding: 5px;'><div style='font-weight: bold;'>");
       out.write(fileName);
       out.write("</div><div style='padding-top: 2px;'>");

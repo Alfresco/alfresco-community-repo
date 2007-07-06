@@ -35,7 +35,6 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMNode;
-import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.LinkValidationState;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.repo.component.UIActions;
@@ -166,7 +165,7 @@ public class UILinkValidationBrokenForms extends AbstractLinkValidationReportCom
          String filePath = nameAndPath[1];
    
          // build the list of broken links for the file
-         String brokenLinks = getBrokenLinks(brokenFile, linkState);
+         String brokenLinks = getBrokenLinks(context, brokenFile, linkState);
          renderFile(out, context, fileName, filePath, brokenLinks);
       }
       

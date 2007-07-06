@@ -126,7 +126,7 @@ public class UILinkValidationBrokenFiles extends AbstractLinkValidationReportCom
       String filePath = nameAndPath[1];
 
       // build the list of broken links for the file
-      String brokenLinks = getBrokenLinks(file, linkState);
+      String brokenLinks = getBrokenLinks(context, file, linkState);
       
       // render the row with the appropriate background style
       out.write("<tr class='");

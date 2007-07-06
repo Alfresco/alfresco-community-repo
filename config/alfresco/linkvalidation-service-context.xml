@@ -160,5 +160,45 @@
         <property name="remoteConnectTimeout" value="10000"/>
         <property name="localReadTimeout"     value="30000"/>
         <property name="remoteReadTimeout"    value="30000"/>
+
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <!--  Advanced Option:                                              -->
+        <!--                                                                -->
+        <!--    JSSE Security parameters (for validating HTTPS links)       -->
+        <!--                                                                -->
+        <!--    NOTE:                                                       -->
+        <!--                                                                -->
+        <!--    When the following jsse properties below are commented      -->
+        <!--    out the LinkValidationService uses the system's default     -->
+        <!--    cacert file and password.  Typically, there's no need to    -->
+        <!--    change these values, but if you'd like to do so, you can.   -->
+        <!--                                                                -->
+        <!--    The most common case where you'd use a custom trust store   -->
+        <!--    and password is when you want to validate https links for   -->
+        <!--    which the name on the site's cert does not match the host   -->
+        <!--    you're contacting, is invalid, and/or is not trusted.       -->
+        <!--    If you do nothing, such links will appear "broken".         -->
+        <!--    One option would be to modify your default cert at:         -->
+        <!--                                                                -->
+        <!--         Unix:     ${JAVA_HOME}/lib/security/cacerts            -->
+        <!--         Windows:  ${JAVA_HOME}\lib\security\cacerts            -->
+        <!--                                                                -->
+        <!--    However, this is often not particularly desirable.          -->
+        <!--    By allowing you to point at a custom cacert/password,       -->
+        <!--    the configuration options below allow you to validate       -->
+        <!--    what would be otherwise untrusted "broken" https links      -->
+        <!--    without disturbing the system's default cacert file.        -->
+        <!--                                                                -->
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <!--  <property name="jsseTrustStoreFile"      value="...???..."/>  -->
+        <!--  <property name="jsseTrustStorePassword"  value="...???..."/>  -->
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <!--  Low-level parameters that typical users should never modify!  -->
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <property name="purgeAllValidationDataOnBootstrap"  value="false"/>
+
     </bean>
+
 </beans>

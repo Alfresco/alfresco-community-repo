@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO9075;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
@@ -215,7 +216,7 @@ public final class FormsService
       sp.addStore(Repository.getStoreRef());
       sp.setLanguage(SearchService.LANGUAGE_LUCENE);
       sp.setQuery("ASPECT:\"" + WCMAppModel.ASPECT_FORM + 
-                  "\" AND QNAME:\"cm:" + name + "\"");
+                  "\" AND QNAME:\"cm:" + ISO9075.encode(QName.createValidLocalName(name)) + "\"");
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("running query [" + sp.getQuery() + "]");
       final ResultSet rs = this.searchService.query(sp);

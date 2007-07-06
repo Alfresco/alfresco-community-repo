@@ -233,7 +233,7 @@ public class ClassPathRepoTemplateLoader implements TemplateLoader
         public Reader getReader() throws IOException
         {
             inputStream = conn.getContentInputStream();
-            return new InputStreamReader(inputStream);
+            return new InputStreamReader(inputStream, conn.getEncoding());
         }
         
         public void close() throws IOException

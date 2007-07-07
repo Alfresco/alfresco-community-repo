@@ -118,6 +118,103 @@
         </property>
     </bean>
 
+
+    <!--   
+        The following URI schema types will not be validated,
+        and will not show up as "broken" during link checking.
+        If you want to exclude some URI schema (aka "protocol")
+        from link checking, add it to this list.
+
+        The reason that link checking doesn't simply just skip 
+        anything that isn't http/https is that sometimes people
+        make typos such as "httpss://...", which is clearly a
+        nonsense protocol.  Thus, the set of protocols that
+        are not checked is made explicit.
+
+        See also:  http://tools.ietf.org/html/rfc3986 
+    -->
+    <bean id="linkValidationServiceExcludeUriSchemeNameMatcher" 
+          class="org.alfresco.repo.avm.util.UriSchemeNameMatcher">
+        <property name="extensions">
+            <list>
+                <value>aaa</value>
+                <value>aaas</value>
+                <value>acap</value>
+                <value>afs</value>
+                <value>cap</value>
+                <value>cid</value>
+                <value>crid</value>
+                <value>data</value>
+                <value>dav</value>
+                <value>dict</value>
+                <value>dns</value>
+                <value>dtn</value>
+                <value>fax</value>
+                <value>file</value>
+                <value>ftp</value>
+                <value>go</value>
+                <value>gopher</value>
+                <value>h323</value>
+        <!--    <value>http</value>     NOT EXCLUDED   -->
+        <!--    <value>https</value>    NOT EXCLUDED   -->
+                <value>iax2</value>
+                <value>icap</value>
+                <value>im</value>
+                <value>imap</value>
+                <value>info</value>
+                <value>ipp</value>
+                <value>iris</value>
+                <value>iris.beep</value>
+                <value>iris.lwz</value>
+                <value>iris.xpc</value>
+                <value>iris.xpcs</value>
+                <value>ldap</value>
+                <value>mailserver</value>
+                <value>mailto</value>
+                <value>mid</value>
+                <value>modem</value>
+                <value>msrp</value>
+                <value>msrps</value>
+                <value>mtqp</value>
+                <value>mupdate</value>
+                <value>news</value>
+                <value>nfs</value>
+                <value>nntp</value>
+                <value>opaquelocktoken</value>
+                <value>pop</value>
+                <value>pres</value>
+                <value>prospero</value>
+                <value>rtsp</value>
+                <value>service</value>
+                <value>shttp</value>
+                <value>sip</value>
+                <value>sips</value>
+                <value>snmp</value>
+                <value>soap.beep</value>
+                <value>soap.beeps</value>
+                <value>tag</value>
+                <value>tel</value>
+                <value>telnet</value>
+                <value>tftp</value>
+                <value>thismessage</value>
+                <value>tip</value>
+                <value>tn3270</value>
+                <value>tv</value>
+                <value>urn</value>
+                <value>vemmi</value>
+                <value>wais</value>
+                <value>xmlrpc.beep</value>
+                <value>xmlrpc.beeps</value>
+                <value>xmpp</value>
+                <value>z39.50r</value>
+                <value>z39.50s</value>
+
+                <!-- Add others here, if you'd like! -->
+
+            </list>
+        </property>
+    </bean>
+
     <bean id="linkValidationService" 
           class="org.alfresco.linkvalidation.LinkValidationServiceImpl"
           lazy-init="true">
@@ -133,11 +230,14 @@
         <property name="AVMSyncService">
             <ref bean="AVMSyncService"/>
         </property>
-        <property name="excludeMatcher">
+        <property name="excludePathMatcher">
             <ref bean="linkValidationServiceExcludeExtensionMatcher"/>
         </property>
         <property name="hrefBearingRequestPathMatcher">
             <ref bean="hrefBearingRequestPathNameMatcher"/>
+        </property>
+        <property name="excludeUriMatcher">
+            <ref bean="linkValidationServiceExcludeUriSchemeNameMatcher"/>
         </property>
         <property name="retryingTransactionHelper">
             <ref bean="retryingTransactionHelper"/>

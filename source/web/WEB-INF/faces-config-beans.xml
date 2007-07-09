@@ -3481,6 +3481,21 @@
    
    <managed-bean>
       <description>
+         Bean that generates a mutlilingual text field component
+      </description>
+      <managed-bean-name>MultilingualTextFieldGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.MultilingualTextFieldGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+      <!--
+      <managed-property>
+         <property-name>size</property-name>
+         <value>35</value>
+      </managed-property>
+      -->
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
          Bean that generates a link component
       </description>
       <managed-bean-name>LinkGenerator</managed-bean-name>
@@ -3494,6 +3509,25 @@
       </description>
       <managed-bean-name>TextAreaGenerator</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.generator.TextAreaGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+      <!--
+      <managed-property>
+         <property-name>rows</property-name>
+         <value>3</value>
+      </managed-property>
+      <managed-property>
+         <property-name>columns</property-name>
+         <value>32</value>
+      </managed-property>
+      -->
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Bean that generates a multilingual text area component
+      </description>
+      <managed-bean-name>MultilingualTextAreaGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.MultilingualTextAreaGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
       <!--
       <managed-property>

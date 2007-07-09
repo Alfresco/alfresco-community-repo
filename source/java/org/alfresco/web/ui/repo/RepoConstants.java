@@ -49,9 +49,12 @@ public final class RepoConstants
    public static final String ALFRESCO_FACES_XMLDATE_CONVERTER    = "org.alfresco.faces.XMLDateConverter";
    public static final String ALFRESCO_FACES_MULTIVALUE_CONVERTER = "org.alfresco.faces.MultiValueConverter";
    public static final String ALFRESCO_FACES_BOOLEAN_CONVERTER    = "org.alfresco.faces.BooleanLabelConverter";
+   public static final String ALFRESCO_FACES_MLTEXT_RENDERER      = "org.alfresco.faces.MultilingualText";
+   public static final String ALFRESCO_FACES_MLTEXTAREA_RENDERER  = "org.alfresco.faces.MultilingualTextArea";
    
    public static final String GENERATOR_LABEL = "LabelGenerator";
    public static final String GENERATOR_TEXT_FIELD = "TextFieldGenerator";
+   public static final String GENERATOR_MLTEXT_FIELD = "MultilingualTextFieldGenerator";
    public static final String GENERATOR_TEXT_AREA = "TextAreaGenerator";
    public static final String GENERATOR_CHECKBOX = "CheckboxGenerator";
    public static final String GENERATOR_DATE_PICKER = "DatePickerGenerator";

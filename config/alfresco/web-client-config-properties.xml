@@ -14,7 +14,7 @@
          <show-property name="title" display-label-id="title"
                         ignore-if-missing="false" />
          <show-property name="description" display-label-id="description"
-                        ignore-if-missing="false" component-generator="TextAreaGenerator" />
+                        ignore-if-missing="false" component-generator="MultilingualTextAreaGenerator" />
          <show-property name="author" display-label-id="author"
                         ignore-if-missing="false" />
          <show-property name="size" display-label-id="size"
@@ -32,7 +32,7 @@
          <show-property name="title" display-label-id="title"
                         ignore-if-missing="false" />
          <show-property name="description" display-label-id="description"
-                        ignore-if-missing="false" component-generator="TextAreaGenerator" />
+                        ignore-if-missing="false" component-generator="MultilingualTextAreaGenerator" />
          <show-property name="app:icon" show-in-view-mode="false" display-label-id="icon"
                         component-generator="SpaceIconPickerGenerator"
                         ignore-if-missing="false" />
@@ -55,23 +55,6 @@
       </property-sheet>
    </config>
 
-   <config evaluator="node-type" condition="app:filelink">
-      <property-sheet>
-         <show-property name="name" />
-         <show-property name="title" />
-         <show-property name="description" component-generator="TextAreaGenerator" />
-         <show-property name="destination" converter="org.alfresco.faces.DisplayPathConverter"/>
-      </property-sheet>
-   </config>
-
-   <config evaluator="node-type" condition="app:folderlink">
-      <property-sheet>
-         <show-property name="name" />
-         <show-property name="description" component-generator="TextAreaGenerator" />
-         <show-property name="destination" converter="org.alfresco.faces.DisplayPathConverter"/>
-      </property-sheet>
-   </config>
-
    <config evaluator="aspect-name" condition="titled">
       <property-sheet>
          <!-- The 'name' property isn't part of the titled aspect -->
@@ -80,7 +63,7 @@
          <!-- web-client-config-custom.xml -->
          <show-property name="name" />
          <show-property name="title" />
-         <show-property name="description" component-generator="TextAreaGenerator" />
+         <show-property name="description" component-generator="MultilingualTextAreaGenerator" />
       </property-sheet>
    </config>
 
@@ -92,12 +75,30 @@
          <!-- web-client-config-custom.xml -->
          <show-property name="name" />
          <show-property name="title" />
-         <show-property name="description" component-generator="TextAreaGenerator" />
+         <show-property name="description" component-generator="MultilingualTextAreaGenerator" />
          <show-property name="app:icon" show-in-view-mode="false" display-label-id="icon"
                         component-generator="SpaceIconPickerGenerator" />
       </property-sheet>
    </config>
 
+   <config evaluator="node-type" condition="app:filelink">
+      <property-sheet>
+         <show-property name="name" />
+         <show-property name="title" component-generator="TextFieldGenerator" />
+         <show-property name="description" component-generator="TextAreaGenerator" />
+         <show-property name="destination" converter="org.alfresco.faces.DisplayPathConverter"/>
+      </property-sheet>
+   </config>
+
+   <config evaluator="node-type" condition="app:folderlink">
+      <property-sheet>
+         <show-property name="name" />
+         <show-property name="title" component-generator="TextFieldGenerator" />
+         <show-property name="description" component-generator="TextAreaGenerator" />
+         <show-property name="destination" converter="org.alfresco.faces.DisplayPathConverter"/>
+      </property-sheet>
+   </config>
+   
    <config evaluator="aspect-name" condition="author">
       <property-sheet>
          <show-property name="author" />
@@ -199,7 +200,7 @@
          <show-property name="author" display-label-id="translator"/>
          <show-property name="sys:locale"
                component-generator="LanguageSelectorGenerator" display-label-id="language"/>
-         <show-property name="description" component-generator="TextAreaGenerator" />
+         <show-property name="description" component-generator="MultilingualTextAreaGenerator" />
          <!-- Bug issue, icon displays with other properties if visible -->
        <show-property name="app:icon" show-in-view-mode="false" show-in-edit-mode="false" />
        <!-- Don't allow mofification of the Auto Version property -->

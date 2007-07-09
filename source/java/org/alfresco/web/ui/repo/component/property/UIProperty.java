@@ -154,6 +154,10 @@ public class UIProperty extends PropertySheetItem
          {
             componentGeneratorName = RepoConstants.GENERATOR_TEXT_FIELD;
          }
+         else if (typeName.equals(DataTypeDefinition.MLTEXT))
+         {
+            componentGeneratorName = RepoConstants.GENERATOR_MLTEXT_FIELD;
+         }
          else if (typeName.equals(DataTypeDefinition.BOOLEAN))
          {
             componentGeneratorName = RepoConstants.GENERATOR_CHECKBOX;

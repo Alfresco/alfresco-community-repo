@@ -154,4 +154,22 @@ public class SMBSrvException extends Exception
             return SMBErrorText.ErrorString(SMBStatus.NTErr, getNTErrorCode());
         return SMBErrorText.ErrorString(m_errorclass, m_errorcode);
     }
+
+	/**
+	 * Return the error message
+	 * 
+	 * @return String
+	 */
+	public String getMessage() {
+		return getErrorText();
+	}
+
+	/**
+	 * Return the exception as a string
+	 * 
+	 * @return String
+	 */
+	public String toString() {
+		return getErrorText();
+	}
 }

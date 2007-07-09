@@ -493,7 +493,7 @@ public class PasswordEncryptor
         StringBuilder str = new StringBuilder();
         
         str.append(userName.toUpperCase());
-        str.append(domain.toUpperCase());
+        str.append(domain);
         
         String dataStr = str.toString();
         byte[] dataByts = null;

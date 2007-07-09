@@ -34,9 +34,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.ClassPathResource;
@@ -322,7 +324,14 @@ public class ClassPathStore implements WebScriptStore, InitializingBean
          */
         public Reader getReader()
         {
-            return new InputStreamReader(getInputStream());
+            try
+            {
+                return new InputStreamReader(getInputStream(), "UTF-8");
+            }
+            catch (UnsupportedEncodingException e)
+            {
+                throw new AlfrescoRuntimeException("Unsupported Encoding", e);
+            }
         }
 
         @Override

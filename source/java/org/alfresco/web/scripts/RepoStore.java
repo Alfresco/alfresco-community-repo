@@ -28,10 +28,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -587,7 +589,7 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
                         public Reader execute() throws Exception
                         {
                             ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-                            return new InputStreamReader(reader.getContentInputStream());
+                            return new InputStreamReader(reader.getContentInputStream(), reader.getEncoding());
                         }
                     });
                 }
@@ -676,7 +678,15 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
          */
         public Reader getReader()
         {
-            return new InputStreamReader(getInputStream());
+            ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+            try
+            {
+                return new InputStreamReader(getInputStream(), reader.getEncoding());
+            }
+            catch (UnsupportedEncodingException e)
+            {
+                throw new AlfrescoRuntimeException("Unsupported Encoding", e);
+            }
         }
 
         @Override

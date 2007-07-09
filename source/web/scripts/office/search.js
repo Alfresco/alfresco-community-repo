@@ -20,14 +20,20 @@ var OfficeSearch =
    
    itemsFound: function(shownResults, totalResults)
    {
-      if (shownResults < totalResults)
+      var strFound;
+      if (totalResults == 0)
       {
-         $('itemsFound').innerHTML = "Showing first " + shownResults + " of " + totalResults + " total items found";
+         strFound = "No items found";
+      }
+      else if (shownResults < totalResults)
+      {
+         strFound = "Showing first " + shownResults + " of " + totalResults + " total items found";
       }
       else
       {
-         $('itemsFound').innerHTML = "Showing all " + shownResults + " items found";
+         strFound = "Showing all " + shownResults + " items found";
       }
+      $('itemsFound').innerHTML = strFound;
    },
 
    /* AJAX call to perform server-side search */

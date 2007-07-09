@@ -16,10 +16,11 @@
       <#assign maxresults=10>
    </#if>
    <#assign resCount=0>
+   <#assign totalResults=0>
    <#assign results = companyhome.childrenByLuceneSearch[queryString] >
    <#if results?size = 0>
-   <div>
-      <span class="noItems">(No results found)</span>
+   <div class="noItems">
+      <span>(No results found)</span>
    </div>
    <#else>
       <#assign totalResults = results?size>

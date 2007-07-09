@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="test_scriptimport">
+   <swimlane name="initiator"></swimlane>
+
+   <start-state name="start">
+     <task name="submit" swimlane="initiator"/>
+      <transition name="" to="review">
+         <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+            <script>
+              <expression>
+                 <![CDATA[                 
+                    <import resource="/Company Home/Data Dictionary/Scripts/test return value.js">
+                 ]]>
+              </expression>
+              <variable name="theresult" access="write" />
+            </script>
+         </action>
+      </transition>
+      <transition name="end" to="end"/>
+   </start-state>
+
+   <node name="review">
+      <script>
+         System.out.println(theresult);
+      </script>
+   </node>
+   
+   <end-state name="end"></end-state>
+   
+</process-definition>

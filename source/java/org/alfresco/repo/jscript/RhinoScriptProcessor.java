@@ -163,7 +163,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             FileCopyUtils.copy(stream, os);  // both streams are closed
             byte[] bytes = os.toByteArray();
             
-            return executeScriptImpl(resolveScriptImports(new String(bytes)), model);
+            return executeScriptImpl(resolveScriptImports(new String(bytes, "UTF-8")), model);
         }
         catch (Throwable err)
         {
@@ -379,7 +379,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                 FileCopyUtils.copy(stream, os);  // both streams are closed
                 byte[] bytes = os.toByteArray();
                 // create the string from the byte[] using encoding if necessary
-                result = new String(bytes);
+                result = new String(bytes, "UTF-8");
             }
             catch (IOException err)
             {

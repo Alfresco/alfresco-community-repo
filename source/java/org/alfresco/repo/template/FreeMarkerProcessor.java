@@ -100,7 +100,8 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
         config.setCacheStorage(new MruCacheStorage(2, 0));
         
         // use our custom loader to find templates on the ClassPath
-        config.setTemplateLoader(new ClassPathRepoTemplateLoader(this.services.getNodeService(), this.services.getContentService()));
+        config.setTemplateLoader(new ClassPathRepoTemplateLoader(
+                this.services.getNodeService(), this.services.getContentService(), defaultEncoding));
         
         // use our custom object wrapper that can deal with QNameMap objects directly
         config.setObjectWrapper(new QNameAwareObjectWrapper());

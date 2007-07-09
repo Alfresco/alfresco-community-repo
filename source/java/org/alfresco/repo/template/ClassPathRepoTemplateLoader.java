@@ -54,8 +54,9 @@ public class ClassPathRepoTemplateLoader implements TemplateLoader
 {
     private NodeService nodeService;
     private ContentService contentService;
+    private String encoding;
     
-    public ClassPathRepoTemplateLoader(NodeService nodeService, ContentService contentService)
+    public ClassPathRepoTemplateLoader(NodeService nodeService, ContentService contentService, String encoding)
     {
         if (nodeService == null)
         {
@@ -67,6 +68,7 @@ public class ClassPathRepoTemplateLoader implements TemplateLoader
         }
         this.nodeService = nodeService;
         this.contentService = contentService;
+        this.encoding = encoding;
     }
     
     /**
@@ -90,7 +92,7 @@ public class ClassPathRepoTemplateLoader implements TemplateLoader
         else
         {
             URL url = this.getClass().getClassLoader().getResource(name);
-            return url == null ? null : new ClassPathTemplateSource(url);
+            return url == null ? null : new ClassPathTemplateSource(url, encoding);
         }
     }
     
@@ -101,7 +103,14 @@ public class ClassPathRepoTemplateLoader implements TemplateLoader
     
     public Reader getReader(Object templateSource, String encoding) throws IOException
     {
-        return ((BaseTemplateSource)templateSource).getReader();
+        if (encoding != null)
+        {
+            return ((BaseTemplateSource)templateSource).getReader(encoding);
+        }
+        else
+        {
+            return ((BaseTemplateSource)templateSource).getReader(this.encoding);
+        }
     }
     
     public void closeTemplateSource(Object templateSource) throws IOException
@@ -115,7 +124,7 @@ public class ClassPathRepoTemplateLoader implements TemplateLoader
      */
     abstract class BaseTemplateSource
     {
-        public abstract Reader getReader() throws IOException;
+        public abstract Reader getReader(String encoding) throws IOException;
         
         public abstract void close() throws IOException;
         
@@ -131,11 +140,13 @@ public class ClassPathRepoTemplateLoader implements TemplateLoader
         private final URL url;
         private URLConnection conn;
         private InputStream inputStream;
+        private String encoding;
         
-        ClassPathTemplateSource(URL url) throws IOException
+        ClassPathTemplateSource(URL url, String encoding) throws IOException
         {
             this.url = url;
             this.conn = url.openConnection();
+            this.encoding = encoding;
         }
         
         public boolean equals(Object o)
@@ -165,10 +176,17 @@ public class ClassPathRepoTemplateLoader implements TemplateLoader
             return conn.getLastModified();
         }
         
-        public Reader getReader() throws IOException
+        public Reader getReader(String encoding) throws IOException
         {
             inputStream = conn.getInputStream();
-            return new InputStreamReader(inputStream);
+            if (encoding != null)
+            {
+                return new InputStreamReader(inputStream, encoding);
+            }
+            else
+            {
+                return new InputStreamReader(inputStream);
+            }
         }
         
         public void close() throws IOException
@@ -230,7 +248,7 @@ public class ClassPathRepoTemplateLoader implements TemplateLoader
             return conn.getLastModified();
         }
         
-        public Reader getReader() throws IOException
+        public Reader getReader(String encoding) throws IOException
         {
             inputStream = conn.getContentInputStream();
             return new InputStreamReader(inputStream, conn.getEncoding());

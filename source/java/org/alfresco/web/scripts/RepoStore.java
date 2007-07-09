@@ -24,17 +24,13 @@
  */
 package org.alfresco.web.scripts;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -42,6 +38,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -260,18 +257,19 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
      */
     protected NodeRef findNodeRef(String documentPath)
     {
-        StringBuilder xpath = new StringBuilder(documentPath.length() << 1);
-        for (StringTokenizer t = new StringTokenizer(documentPath, "/"); t.hasMoreTokens(); /**/)
+        NodeRef node = null;
+        try
         {
-            if (xpath.length() != 0)
-            {
-                xpath.append('/');
-            }
-            xpath.append("*[@cm:name='").append(t.nextToken()).append("']");
+            String[] pathElements = documentPath.split("/");
+            List<String> pathElementsList = Arrays.asList(pathElements);
+            FileInfo file = fileService.resolveNamePath(baseNodeRef, pathElementsList);
+            node = file.getNodeRef();
         }
-        
-        List<NodeRef> nodes = searchService.selectNodes(baseNodeRef, xpath.toString(), null, namespaceService, false);
-        return (nodes.size() == 1) ? nodes.get(0) : null; 
+        catch (FileNotFoundException e)
+        {
+            // NOTE: return null
+        }
+        return node;
     }
 
     /* (non-Javadoc)
@@ -295,7 +293,7 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
                         {
                             org.alfresco.service.cmr.repository.Path repoScriptPath = nodeService.getPath(scriptNodeRef);
                             String id = script.getDescription().getId().substring(script.getDescription().getScriptPath().length() +1);
-                            String query = "+PATH:\"" + repoScriptPath.toPrefixString(namespaceService) + "/*" + "\" +@cm\\:name:\"" + id + "\"";
+                            String query = "+PATH:\"" + repoScriptPath.toPrefixString(namespaceService) + "//*\" +QNAME:" + id + "*";
                             ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
                             List<NodeRef> nodes = resultSet.getNodeRefs();
                             for (NodeRef nodeRef : nodes)
@@ -333,7 +331,7 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
                         int baseDirLength = baseDir.length() +1;
                         List<String> documentPaths = new ArrayList<String>();
                         
-                        String query = "+PATH:\"" + repoPath + "//*\" AND +@cm\\:name:\"desc.xml\"";
+                        String query = "+PATH:\"" + repoPath + "//*\" +QNAME:*.desc.xml";
                         ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
                         List<NodeRef> nodes = resultSet.getNodeRefs();
                         for (NodeRef nodeRef : nodes)

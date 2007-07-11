@@ -68,21 +68,24 @@ public class WebScriptPortletRequest extends WebScriptURLRequest
     {
         super(scriptUrlParts, serviceMatch);
         this.req = req;
-        // look for the user info map in the portlet request - populated by the portlet container
-        Map userInfo = (Map)req.getAttribute(PortletRequest.USER_INFO);
-        if (userInfo != null)
+        if (req != null)
         {
-            // look for the special Liferay email (username) key
-            String liferayUsername = (String)userInfo.get("user.home-info.online.email");
-            if (liferayUsername != null)
+            // look for the user info map in the portlet request - populated by the portlet container
+            Map userInfo = (Map)req.getAttribute(PortletRequest.USER_INFO);
+            if (userInfo != null)
             {
-                // strip suffix from email address - we only need username part
-                if (liferayUsername.indexOf('@') != -1)
+                // look for the special Liferay email (username) key
+                String liferayUsername = (String)userInfo.get("user.home-info.online.email");
+                if (liferayUsername != null)
                 {
-                    liferayUsername = liferayUsername.substring(0, liferayUsername.indexOf('@'));
+                    // strip suffix from email address - we only need username part
+                    if (liferayUsername.indexOf('@') != -1)
+                    {
+                        liferayUsername = liferayUsername.substring(0, liferayUsername.indexOf('@'));
+                    }
+                    // save in session for use by alfresco portlet authenticator
+                    this.req.getPortletSession().setAttribute(ALFPORTLETUSERNAME, liferayUsername);
                 }
-                // save in session for use by alfresco portlet authenticator
-                this.req.getPortletSession().setAttribute(ALFPORTLETUSERNAME, liferayUsername);
             }
         }
     }

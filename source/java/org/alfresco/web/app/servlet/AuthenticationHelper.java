@@ -434,12 +434,11 @@ public final class AuthenticationHelper
          // Portal vendor has decided to encode the objects in the session
          if (portalUserKeyName.get() == null)
          {
-            String userKeyPostfix = "?" + AUTHENTICATION_USER; 
             Enumeration enumNames = session.getAttributeNames();
             while (enumNames.hasMoreElements())
             {
                String name = (String)enumNames.nextElement();
-               if (name.endsWith(userKeyPostfix))
+               if (name.endsWith(AUTHENTICATION_USER))
                {
                   // cache the key value once found!
                   portalUserKeyName.set(name);

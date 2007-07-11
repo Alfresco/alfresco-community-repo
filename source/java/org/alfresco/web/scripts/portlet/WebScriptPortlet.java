@@ -45,6 +45,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.scripts.DeclarativeWebScriptRegistry;
 import org.alfresco.web.scripts.WebScript;
 import org.alfresco.web.scripts.WebScriptDescription;
@@ -111,6 +112,7 @@ public class WebScriptPortlet implements Portlet
      */
     public void processAction(ActionRequest req, ActionResponse res) throws PortletException, PortletSecurityException, IOException
     {
+        Application.setInPortalServer(true);
         Map<String, String[]> params = req.getParameterMap();
         for (Map.Entry<String, String[]> param : params.entrySet())
         {
@@ -127,6 +129,7 @@ public class WebScriptPortlet implements Portlet
      */
     public void render(RenderRequest req, RenderResponse res) throws PortletException, PortletSecurityException, IOException
     {
+        Application.setInPortalServer(true);
         PortletMode portletMode = req.getPortletMode();
         if (PortletMode.VIEW.equals(portletMode))
         {

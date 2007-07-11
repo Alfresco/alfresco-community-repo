@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.ajax;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -135,7 +136,7 @@ public class FileUploadBean
                InputStream is = null;
                try
                {
-                  is = new FileInputStream(file);
+                  is = new BufferedInputStream(new FileInputStream(file));
                   encoding = Repository.guessEncoding(fc, is, mimetype);
                }
                catch (Throwable e)

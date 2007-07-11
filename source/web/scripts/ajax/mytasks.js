@@ -58,7 +58,7 @@ var MyTasks = {
       var fxDetail = new Fx.Elements(details, {wait: false, duration: MyTasks.ANIM_LENGTH, transition: Fx.Transitions.sineInOut,
          onComplete: function()
          {
-            // event handler to ensure 
+            // event handler to ensure scrollable area style is set
             this.elements.each(function(detail, i)
             {
                if (detail.parentNode.isOpen == true)
@@ -202,8 +202,7 @@ var MyTasks = {
                // close other open tasks and toggle this one if it's already open
                tasks.each(function(otherTask, j)
                {
-                  var otherItem = items[j],
-                      otherInfo = infos[j],
+                  var otherInfo = infos[j],
                       otherDetail = details[j];
                   
                   if (otherTask != task)

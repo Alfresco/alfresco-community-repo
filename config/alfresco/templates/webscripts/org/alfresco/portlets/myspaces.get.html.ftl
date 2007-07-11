@@ -168,6 +168,13 @@ a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited, .spaceCurrent
    border-top: 1px solid #CCD4DB;
    border-bottom: 1px solid #CCD4DB;
    visibility: hidden;
+   scrollbar-face-color: #fafdfd; 
+   scrollbar-3dlight-color: #d2dde0;
+   scrollbar-highlight-color: #d2dde0;
+   scrollbar-shadow-color: #c3cdd0;
+   scrollbar-darkshadow-color: #c3cdd0;
+   scrollbar-arrow-color: #239ad7;
+   scrollbar-track-color: #ecf1f2;
 }
 
 #spacePanelOverlay

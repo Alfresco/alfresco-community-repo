@@ -68,6 +68,48 @@
 </div>
 
 <style type="text/css">
+.taskTable
+{
+   background-color: #FEF8BC;
+   border-top: 1px solid #EBE398;
+   border-left: 1px solid #EBE398;
+   background-image: url(${url.context}/images/logo/alf_task_bg.png);
+   background-repeat: no-repeat;
+   background-position: 72 64;
+   width: 716px;
+}
+
+#taskPanel
+{
+   height: 300px;
+   width: 672px;
+   overflow: auto;
+   overflow-y: scroll;
+   border-top: 1px solid #EBE398;
+   border-left: 1px solid #F6DEA0;
+   visibility: hidden;
+   scrollbar-face-color: #fcf49a; 
+   scrollbar-3dlight-color: #ede591;
+   scrollbar-highlight-color: #fcf49a;
+   scrollbar-shadow-color: #d5cc75;
+   scrollbar-darkshadow-color: #d5cc75;
+   scrollbar-arrow-color: #c2bb70;
+   scrollbar-track-color: #f3e985;
+}
+
+#taskPanelOverlay
+{
+   background-image: url(${url.context}/images/icons/ajax_anim.gif);
+   background-position: center;
+   background-repeat: no-repeat;
+   position: absolute;
+   border-top: 1px solid #EBE398;
+   border-left: 1px solid #F6DEA0;
+   height: 300px;
+   width: 672px;
+   overflow: hidden;
+}
+
 a.taskfilterLink:link, a.taskfilterLink:visited
 {
    color: #5A5741;
@@ -89,41 +131,6 @@ a.taskfilterLinkSelected:link, a.taskfilterLinkSelected:visited
 {
    color: #FFFFFF !important;
    background-color: #FDB64F;
-}
-
-.taskTable
-{
-   background-color: #FEF8BC;
-   border-top: 1px solid #EBE398;
-   border-left: 1px solid #EBE398;
-   background-image: url(${url.context}/images/logo/alf_task_bg.png);
-   background-repeat: no-repeat;
-   background-position: 72 64;
-   width: 716px;
-}
-
-#taskPanel
-{
-   height: 300px;
-   width: 672px;
-   overflow: auto;
-   overflow-y: scroll;
-   border-top: 1px solid #EBE398;
-   border-left: 1px solid #F6DEA0;
-   visibility: hidden;
-}
-
-#taskPanelOverlay
-{
-   background-image: url(${url.context}/images/icons/ajax_anim.gif);
-   background-position: center;
-   background-repeat: no-repeat;
-   position: absolute;
-   border-top: 1px solid #EBE398;
-   border-left: 1px solid #F6DEA0;
-   height: 300px;
-   width: 672px;
-   overflow: hidden;
 }
 
 .taskRow
@@ -213,13 +220,14 @@ a.taskfilterLinkSelected:link, a.taskfilterLinkSelected:visited
    display: block;
    overflow: hidden;
 }
+
+.taskResourceEven
+{
+}
+
 .taskResourceOdd
 {
    background-color: #F8FCFD;
-}
-.taskResourceEven
-{
-   background-color: #EEF7FB;
 }
 
 .taskResourceHeader

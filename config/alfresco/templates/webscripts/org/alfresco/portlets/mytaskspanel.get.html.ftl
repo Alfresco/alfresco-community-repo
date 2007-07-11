@@ -54,11 +54,10 @@
       	      <td width="360">
                   <div class="taskResourceHeader">${t.name?html}:</div>
                   <div class="taskResources"></div>
-      	         <table border="0" width="360" class="taskActions">
+      	         <table border="0" class="taskActions">
       	            <tr>
-      	               <td width="70">&nbsp;</td>
       	               <#list t.transitions as wt>
-      	               <td style="text-align: center;"><a class="taskAction" href="#" onclick="event.cancelBubble=true; MyTasks.transitionTask('/command/task/end/${t.id}<#if wt.id?exists>/${wt.id}</#if>', 'Workflow action \'${wt.label?html}\' completed.');">${wt.label?html}</a></td>
+      	               <td style="text-align: left"><a class="taskAction" href="#" onclick="event.cancelBubble=true; MyTasks.transitionTask('/command/task/end/${t.id}<#if wt.id?exists>/${wt.id}</#if>', 'Workflow action \'${wt.label?html}\' completed.');">${wt.label?html}</a></td>
       	               </#list>
       	               <td width="70">&nbsp;</td>
       	            </tr>
@@ -68,8 +67,8 @@
                <td>
                   <div class="taskMetaprop" style="padding-bottom: 4px;">Manage Task</div>
                   <a class="taskAction" style="display: block; width: 18px; padding: 4px; margin-left: 20px;" onclick="event.cancelBubble=true;" href="${url.context}/command/ui/managetask?id=${t.id}&type=${t.qnameType}&container=plain" target="new"><img src="${url.context}/images/icons/manage_workflow_task.gif" width="16" height="16" border="0" alt="Manage Task Details" title="Manage Task Details"></a>
-                  <br />
-                  <br />
+                  <br>
+                  <br>
                </td>
             </tr>
 	      </table>

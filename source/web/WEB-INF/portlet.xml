@@ -122,6 +122,31 @@
         </portlet-info>
     </portlet>
     
+    <portlet>
+        <description>My Web Files</description>
+        <portlet-name>AlfrescoMyWebFiles</portlet-name>
+        <portlet-class>org.alfresco.web.scripts.portlet.WebScriptPortlet</portlet-class>
+        
+        <init-param>
+           <name>authenticator</name>
+           <value>webscripts.authenticator.jsr168.webclient</value>
+        </init-param>
+        <init-param>
+           <name>scriptUrl</name>
+           <value>/alfresco/168s/ui/mywebfiles</value>
+        </init-param>
+
+        <supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>VIEW</portlet-mode>
+        </supports>
+        
+        <portlet-info>
+            <title>My Web Files</title>
+            <short-title>My Web Files</short-title>
+        </portlet-info>
+    </portlet>
+    
     <user-attribute>
         <name>user.home-info.online.email</name>
     </user-attribute>

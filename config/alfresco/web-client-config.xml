@@ -235,7 +235,9 @@
             <dashlet id="mytasks-webscript" label="My Tasks" description="My Tasks WebScript"
                   jsp="/jsp/dashboards/dashlets/mytasks-webscript.jsp" />
             <dashlet id="mywebforms-webscript" label="My Web Forms" description="My Web Forms WebScript"
-                  jsp="/jsp/dashboards/dashlets/mywebforms-webscript.jsp" /> 
+                  jsp="/jsp/dashboards/dashlets/mywebforms-webscript.jsp" />
+            <dashlet id="mywebfiles-webscript" label="My Web Files" description="My Web Files WebScript"
+                  jsp="/jsp/dashboards/dashlets/mywebfiles-webscript.jsp" />
          </dashlets>
          
          <!-- configuration of the default dashlets to display when users login for the first time -->

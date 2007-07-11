@@ -5,7 +5,7 @@
 <script type="text/javascript" src="/alfresco/scripts/ajax/mootools.v1.11.js"></script>
 <script type="text/javascript" src="/alfresco/scripts/ajax/common.js"></script>
 <script type="text/javascript" src="/alfresco/scripts/ajax/summary-info.js"></script>
-<script type="text/javascript" src="/alfresco/scripts/ajax/mywebforms.js"></script>
+<script type="text/javascript" src="/alfresco/scripts/ajax/mywebfiles.js"></script>
 <script type="text/javascript">setContextPath('${url.context}');</script>
 
 <script>
@@ -13,11 +13,11 @@
    var AlfNodeInfoMgr = new Alfresco.PanelManager("NodeInfoBean.sendNodeInfo", "noderef", "portlet_node_summary_panel.ftl");
 </script>
 
-<#-- List the available web form objects in all web projects the user is assigned to -->
-<table cellspacing=0 cellpadding=0 border=0 class="formsTable">
+<#-- List the user modified files in all web projects the user is assigned to -->
+<table cellspacing=0 cellpadding=0 border=0 class="webFilesTable">
 <tr><td>
-<div id="formsPanel">
-   <#assign formcount=0>
+<div id="webFilesPanel">
+   <#assign filecount=0>
    <#assign projectcount=0>
    <#assign search="TYPE:\"{http://www.alfresco.org/model/wcmappmodel/1.0}webfolder\"">
    <#list companyhome.childrenByLuceneSearch[search]?sort_by('name') as wp>
@@ -40,20 +40,36 @@
                   <span class="webprojectDesc">${wp.properties.description}</span>
                   </#if>
                </div>
-               <div class="webProjectForms"> <#-- marker class for rollover script -->
-               <#if wp.childAssocs["wca:webform"]?exists>
-                  <div class="formsRowSeparator"></div>
-                  <#list wp.childAssocs["wca:webform"] as form>
-                     <#assign formcount=formcount+1>
-                     <div class="formsRow">
-                        <img src="${url.context}/images/icons/webform_large.gif" width=32 height=32 border=0>
-                        <a class="webformLink" href="${url.context}/c/ui/createwebcontent?sandbox=${sandbox}&webproject=${wp.id}&form=${form.properties["wca:formname"]}&container=plain" target="new">${form.properties.title}</a>
-                        <#if form.properties.description?length!=0>
-                        <span style="vertical-align:50%">(${form.properties.description})</span>
-                        </#if>
-                     </div>
-                  </#list>
-               </#if>
+               <div class="webProjectFiles"> <#-- marker class for dynamic click script -->
+                  <#assign moditems = avm.getModifiedItems(storeId, username, "ROOT")>
+                  <div class="fileTitleRow">My Modified Items</div>
+                  <div class="fileResources">
+                  <#if moditems?size != 0>
+                     <#assign lcount=0>
+                     <#list moditems as t>
+                        <#assign filecount=filecount+1>
+                        <div class="fileItemRow${(lcount%2=0)?string("", "Alt")}">
+                           <#if t.isDocument>
+                              <a class="fileItemLink" href="${url.context}${t.url}" target="new" title="${t.path?html}"><img class="itemImageIcon" src="${url.context}${t.icon16}" border="0">${t.name?html}</a>
+                           <#else>
+                           <span title="${t.path?html}"><img class="itemImageIcon" src="${url.context}${t.icon16}"><span class="fileItemLink">${t.name?html}</span></span>
+                           </#if>
+                           </a>
+                           <#if t.isDocument>
+                              <#if t.isLocked>
+                                 <img class="itemImageIcon" src="${url.context}/images/icons/locked${(t.isLockOwner)?string("_owner", "")}.gif" border="0">
+                              </#if>
+                              <#if t.hasAspect("wca:forminstancedata") && !t.hasAspect("wcmwf:submitted") && t.hasLockAccess>
+                                 <a class="fileActionLink" href="${url.context}/c/ui/editwebcontent?sandbox=${sandbox}&webproject=${wp.id}&path=${t.path?url}&container=plain" target="new"><img class="itemImageIcon" src="${url.context}/images/icons/edit_icon.gif" border="0">Edit</a>
+                              </#if>
+                           </#if>
+                           <#assign lcount=lcount+1>
+                        </div>
+                     </#list>
+                  <#else>
+                     <div class="fileItemRow">No items modified</div>
+                  </#if>
+                  </div>
                </div>
             </div>
          </#if>
@@ -64,21 +80,21 @@
 </tr>
 <tr>
 <td>
-   <div class="formsFooter">
-      Showing ${formcount} form(s) in ${projectcount} web project(s)
+   <div class="filesFooter">
+      Showing ${filecount} files(s) in ${projectcount} web project(s)
    </div>
 </td>
 </tr>
 </table>
 
 <STYLE type="text/css">
-.formsTable
+.webFilesTable
 {
    background-color: #F8FCFD;
    border: 1px solid #CCD4DB;
 }
 
-#formsPanel
+#webFilesPanel
 {
    height: 320px;
    width: 716px;
@@ -110,6 +126,14 @@ a.webProjectLink:link, a.webProjectLink:visited, a.webProjectLink:hover
    vertical-align: 60%;
 }
 
+a.fileActionLink:link, a.fileActionLink:visited, a.fileActionLink:hover
+{
+   color: #5A5741;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   padding-left: 8px;
+}
+
 span.webProjectInfo
 {
    vertical-align: 60%;
@@ -118,11 +142,20 @@ span.webProjectInfo
 .webProjectRow
 {
    background-color: #EEF7FB;
+   border-top: 1px solid #EEF7FB;
    border-bottom: 1px solid #CCD4DB;
 }
 
-.webProjectForms
+.webProjectRowSelected
 {
+   background-color: #CCE7F3;
+   border-bottom: 1px solid #0092DD;
+   border-top: 1px solid #0092DD;
+}
+
+.webProjectFiles
+{
+   background-color: #BAD7E4;
    overflow: hidden;
 }
 
@@ -138,12 +171,62 @@ span.webProjectInfo
    padding: 8px;
 }
 
-.formsRowSeparator
+.fileResources
 {
-   border-bottom: 1px dotted #CCD4DB;
+   border: 1px solid #AFBDC3;
+   background-color: #F8FCFD;
+   margin: 0px 0px 0px 48px;
+   width: 360px;
+   height: 92px;
+   display: block;
+   overflow: hidden;
 }
 
-.formsRow, a.formsRow:link, a.formsRow:visited, a.formsRow:hover
+.fileTitleRow
+{
+   border-top: 1px solid #CCD4DB;
+   border-bottom: 1px dotted #CCD4DB;
+   color: #5A5741;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 13px;
+   font-weight: bold;
+   padding: 4px 0px 4px 48px;
+}
+
+.fileItemRow
+{
+   background-color: #F8FCFD;
+   color: #5A5741;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 13px;
+   padding: 3px 0px 2px 3px;
+}
+
+.fileItemRowAlt
+{
+   background-color: #EEF7FB;
+   color: #5A5741;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 13px;
+   padding: 3px 0px 2px 3px;
+}
+
+a.fileItemLink:link, a.fileItemLink:visited, a.fileItemLink:hover
+{
+   color: #5A5741;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   font-weight: bold;
+}
+
+span.fileItemLink
+{
+   color: #5A5741;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+}
+
+.filesRow, a.filesRow:link, a.filesRow:visited, a.filesRow:hover
 {
    background-color: #F8FCFD;
    color: #5A5741;
@@ -154,8 +237,14 @@ span.webProjectInfo
    border-bottom: 1px solid #F8FCFD;
 }
 
-.formsRowAlt
+.filesRowAlt
 {
+}
+
+img.itemImageIcon
+{
+   vertical-align: -25%;
+   padding-right:4px;
 }
 
 span.websiteLink
@@ -164,15 +253,7 @@ span.websiteLink
    vertical-align:60%;
 }
 
-a.webformLink:link, a.webformLink:visited, a.webformLink:hover
-{
-   color: #5A5741;
-   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
-   font-size: 13px;
-   vertical-align:50%;
-}
-
-.formsFooter
+.filesFooter
 {
    width: 700px;
    padding: 8px;

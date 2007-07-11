@@ -33,9 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigService;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.web.config.ServerConfigElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.scripts;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -140,7 +142,14 @@ public class WebScriptServletRequest extends WebScriptRequestImpl
         // NOTE: Don't use req.getPathInfo() - it truncates the path at first semi-colon in Tomcat
         String requestURI = req.getRequestURI();
         String pathInfo = requestURI.substring(getServiceContextPath().length());
-        return pathInfo;
+        try
+        {
+            return URLDecoder.decode(pathInfo, "UTF-8");
+        }
+        catch(UnsupportedEncodingException e)
+        {
+            throw new WebScriptException("Failed to retrieve path info", e);
+        }
     }
 
     /* (non-Javadoc)

@@ -40,6 +40,7 @@
    {
       document.getElementById("dialog:dialog-body:comment").focus();
       noItems = document.getElementById("dialog:finish-button").disabled;
+      document.getElementById("dialog:finish-button").onclick = showProgress;
       checkButtonState();
    }
    
@@ -59,7 +60,15 @@
       }
    }
    
+   function showProgress()
+   {
+      document.getElementById('progress').style.display = 'block';
+   }
 </script>
+
+<div id="progress" style="margin-left: 90px; margin-top: 4px; margin-bottom: 4px; display: none">
+   <img src="<%=request.getContextPath()%>/images/icons/process_animation.gif" width=174 height=14>
+</div>
 </f:verbatim>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top:4px;padding-bottom:4px;"
@@ -277,7 +286,7 @@
                <h:outputText id="col15-txt" value="#{msg.actions}"/>
             </f:facet>
             <a:actionLink value="#{msg.file_preview}" image="/images/icons/preview_website.gif" showLink="false"
-                          href="#{r.previewUrl}" target="new" />
+                          href="#{r.previewUrl}" target="new" rendered="#{!r.deleted}" />
             <a:actionLink value="#{msg.change_expiration_date_title}" image="/images/icons/change_expire_date.gif" 
                           showLink="false" style="padding-left: 4px;" rendered="#{r.expirable}"
                           action="dialog:changeExpirationDate" actionListener="#{DialogManager.setupParameters}">

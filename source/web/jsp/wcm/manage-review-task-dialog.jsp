@@ -66,10 +66,15 @@
             <a:sortLink id="col1-sort" label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
          </f:facet>
          <f:facet name="small-icon">
-               <a:actionLink id="col1-act1" value="#{r.name}" href="#{r.url}" target="new" image="#{r.fileType16}" 
-                             showLink="false" styleClass="inlineAction" />
+            <h:panelGroup>
+               <a:actionLink id="col1-icon1" value="#{r.name}" href="#{r.url}" target="new" image="#{r.fileType16}" 
+                             showLink="false" styleClass="inlineAction" rendered="#{!r.deleted}" />
+               <h:graphicImage id="col1-icon2" title="#{r.name}" url="#{r.fileType16}" styleClass="inlineAction" 
+                               rendered="#{r.deleted}" />
+            </h:panelGroup>
          </f:facet>
-         <a:actionLink id="col1-act2" value="#{r.name}" href="#{r.url}" target="new" />
+         <a:actionLink id="col1-name1" value="#{r.name}" href="#{r.url}" target="new" rendered="#{!r.deleted}" />
+         <h:outputText id="col1-name2" value="#{r.name} [#{msg.avm_node_deleted}]" rendered="#{r.deleted}" />
          <r:lockIcon id="col1-lock" value="#{r.nodeRef}" align="absmiddle" />
       </a:column>
       

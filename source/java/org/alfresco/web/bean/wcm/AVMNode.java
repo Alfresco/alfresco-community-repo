@@ -218,6 +218,7 @@ public class AVMNode extends Node implements Map<String, Object>
          this.properties.put("modified", this.avmRef.getModDate());
          this.properties.put("creator", this.avmRef.getCreator());
          this.properties.put("modifier", this.avmRef.getLastModifier());
+         this.properties.put("deleted", this.deleted);
          
          this.propsRetrieved = true;
       }

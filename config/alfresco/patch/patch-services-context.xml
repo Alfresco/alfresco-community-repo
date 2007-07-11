@@ -527,22 +527,6 @@
             <ref bean="VersionService" />
         </property>
     </bean>
-    <bean id="patch.db-V1.4-PostgresFKIndexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V1.4-PostgresFKIndexes</value></property>
-        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
-        <property name="fixesFromSchema"><value>21</value></property>
-        <property name="fixesToSchema"><value>51</value></property>
-        <property name="targetSchema"><value>52</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/1.4/${db.script.dialect}/AlfrescoSchemaUpdate-1.4-PostgresFKIndexes.sql</value>
-        </property>
-        <!-- dependent on upgrade script 1.4-2 having being run -->
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.schemaUpdateScript-V1.4-2" />
-            </list>
-        </property>
-    </bean>
     <bean id="patch.multilingualBootstrap" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.multilingualBootstrap</value></property>
         <property name="description"><value>patch.multilingualBootstrap.description</value></property>
@@ -648,28 +632,6 @@
         </property>
     </bean>
 
-    <bean id="patch.db-V2.0-ExplicitIndexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V2.0-ExplicitIndexes</value></property>
-        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>37</value></property>
-        <property name="targetSchema"><value>38</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.0/${db.script.dialect}/AlfrescoSchemaUpdate-2.0-ExplicitIndexes.sql</value>
-        </property>
-    </bean>
-
-    <bean id="patch.db-V2.0-AVMFKIndexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V2.0-AVMFKIndexes</value></property>
-        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>37</value></property>
-        <property name="targetSchema"><value>38</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.0/${db.script.dialect}/AlfrescoSchemaUpdate-2.0-AVMFKIndexes.sql</value>
-        </property>
-    </bean>
-
     <bean id="patch.db-V2.1-JBPMData" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.1-JBPMUpdate</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
@@ -678,6 +640,17 @@
         <property name="targetSchema"><value>52</value></property>
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/upgrade/2.1/${db.script.dialect}/AlfrescoSchemaUpdate-2.1-JBPMData.sql</value>
+        </property>
+    </bean>
+
+    <bean id="patch.db-V2.1-NotNullColumns" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.1-NotNullColumns</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>51</value></property>
+        <property name="targetSchema"><value>52</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.1/${db.script.dialect}/AlfrescoSchemaUpdate-2.1-NotNullColumns.sql</value>
         </property>
     </bean>
 	
@@ -740,17 +713,6 @@
                 <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
                 <prop key="location">alfresco/bootstrap/webScripts.xml</prop>
             </props>
-        </property>
-    </bean>
-
-    <bean id="patch.db-V2.1-VersionColumns" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V2.1-VersionColumns</value></property>
-        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>53</value></property>
-        <property name="targetSchema"><value>54</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.1/${db.script.dialect}/AlfrescoSchemaUpdate-2.1-VersionColumns.sql</value>
         </property>
     </bean>
 
@@ -896,4 +858,37 @@
         </property>
     </bean>
     
+    <bean id="patch.db-V2.1-FKIndexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.1-FKIndexes</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>63</value></property>
+        <property name="targetSchema"><value>64</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.1/${db.script.dialect}/AlfrescoSchemaUpdate-2.1-FKIndexes.sql</value>
+        </property>
+    </bean>
+    
+    <bean id="patch.db-V2.1-ExplicitIndexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.1-ExplicitIndexes</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>63</value></property>
+        <property name="targetSchema"><value>64</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.1/${db.script.dialect}/AlfrescoSchemaUpdate-2.1-ExplicitIndexes.sql</value>
+        </property>
+    </bean>
+    
+    <bean id="patch.db-V2.1-VersionColumns2" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.1-VersionColumns2</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>63</value></property>
+        <property name="targetSchema"><value>64</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.1/${db.script.dialect}/AlfrescoSchemaUpdate-2.1-VersionColumns.sql</value>
+        </property>
+    </bean>
+
 </beans>

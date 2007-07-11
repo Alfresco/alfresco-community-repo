@@ -35,7 +35,7 @@
        </property>
        <property name="postCreateScriptUrls">
           <list>
-             <value>classpath:alfresco/dbscripts/create/2.0/${db.script.dialect}/AlfrescoPostCreate-2.0-FKIndexes.sql</value>
+             <value>classpath:alfresco/dbscripts/create/2.1/${db.script.dialect}/AlfrescoPostCreate-2.1-FKIndexes.sql</value>
           </list>
        </property>
        <property name="validateUpdateScriptPatches">
@@ -46,15 +46,15 @@
           <list>
              <ref bean="patch.schemaUpdateScript-V1.4-1" />
              <ref bean="patch.schemaUpdateScript-V1.4-2" />
-             <ref bean="patch.db-V1.4-PostgresFKIndexes" />
+             <ref bean="patch.db-V2.1-NotNullColumns" />
           </list>
        </property>
        <property name="postUpdateScriptPatches">
           <list>
-             <ref bean="patch.db-V2.0-ExplicitIndexes" />
-             <ref bean="patch.db-V2.0-AVMFKIndexes" />
+             <ref bean="patch.db-V2.1-FKIndexes" />
+             <ref bean="patch.db-V2.1-ExplicitIndexes" />
              <ref bean="patch.db-V2.1-JBPMData" />
-             <ref bean="patch.db-V2.1-VersionColumns" />
+             <ref bean="patch.db-V2.1-VersionColumns2" />
              <ref bean="patch.db-V2.1-JBPMProcessKey" />
           </list>
        </property>

@@ -39,8 +39,7 @@ public class VersionCountImpl implements VersionCount, Serializable
     private static final long serialVersionUID = 6420375860928877809L;
 
     private StoreKey key;
-    @SuppressWarnings("unused")
-    private long version;    // used by Hibernate for concurrency
+    private long version;
     private int versionCount;
 
     public VersionCountImpl()
@@ -89,11 +88,25 @@ public class VersionCountImpl implements VersionCount, Serializable
 		return key;
 	}
 
-	public synchronized void setKey(StoreKey key)
+	public void setKey(StoreKey key)
     {
 		this.key = key;
 	}
     
+    public Long getVersion()
+    {
+        return version;
+    }
+
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setVersion(Long version)
+    {
+        this.version = version;
+    }
+
     /**
      * For Hibernate use
      */

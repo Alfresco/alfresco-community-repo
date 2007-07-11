@@ -1,6 +1,6 @@
 --
 -- Title:      Fill 'version' columns with data
--- Database:   Generic
+-- Database:   PostgreSQL
 -- Since:      V2.1 Schema 54
 -- Author:     Derek Hulley
 --
@@ -29,5 +29,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V2.1-VersionColumns2', 'Manually executed script upgrade V2.1: Created initial version number for ADM entities',
-    0, 63, -1, 64, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 63, -1, 64, null, 'UNKOWN', TRUE, TRUE, 'Script completed'
   );

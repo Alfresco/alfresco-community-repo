@@ -14,12 +14,18 @@
          dynamic-insert="false"
          select-before-update="false"
          optimistic-lock="version" >
+
       <!-- composite PK -->
       <composite-id name="key" class="org.alfresco.repo.domain.StoreKey">
          <key-property name="protocol" length="100" />
          <key-property name="identifier" length="100" />
       </composite-id>
+
+      <!-- Optimistic locking -->
+      <version column="version" name="version" type="long" />
+
       <property name="versionCount" column="version_count" type="int" not-null="true" />
+
    </class>
    
 </hibernate-mapping>

@@ -24,10 +24,15 @@
  */
 package org.alfresco.repo.jscript;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -189,6 +194,60 @@ public class AVMNode extends ScriptNode
     {
         return this.avmRef.getName();
     }
+    
+    /**
+     * @return true if the node is currently locked
+     */
+    public boolean isLocked()
+    {
+        AVMLock lock = this.services.getAVMLockingService().getLock(
+                getWebProject(), path.substring(path.indexOf("/")));
+        return (lock != null);
+    }
+    
+    public boolean jsGet_isLocked()
+    {
+        return isLocked();
+    }
+    
+    /**
+     * @return true if this node is locked and the current user is the lock owner
+     */
+    public boolean isLockOwner()
+    {
+        boolean lockOwner = false;
+        
+        AVMLock lock = this.services.getAVMLockingService().getLock(
+                getWebProject(), path.substring(path.indexOf("/")));
+        if (lock != null)
+        {
+            List<String> lockUsers = lock.getOwners();
+            lockOwner = (lockUsers.contains(this.services.getAuthenticationService().getCurrentUserName()));
+        }
+        
+        return lockOwner;
+    }
+
+    public boolean jsGet_isLockOwner()
+    {
+        return isLockOwner();
+    }
+    
+    /**
+     * @return true if this user can perform operations on the node when locked.
+     *         This is true if the item is either unlocked, or locked and the current user is the lock owner,
+     *         or locked and the current user has Content Manager role in the associated web project.
+     */
+    public boolean hasLockAccess()
+    {
+        return this.services.getAVMLockingService().hasAccess(
+                getWebProject(), path, this.services.getAuthenticationService().getCurrentUserName());
+    }
+    
+    public boolean jsGet_hasLockAccess()
+    {
+        return hasLockAccess();
+    }
 
     /**
      * Copy this Node into a new parent destination.
@@ -299,6 +358,20 @@ public class AVMNode extends ScriptNode
     }
     
     /**
+     * @return The list of aspects applied to this node
+     */
+    @Override
+    public Set<QName> getAspects()
+    {
+        if (this.aspects == null)
+        {
+            this.aspects = this.services.getAVMService().getAspects(this.version, this.path);
+        }
+        
+        return this.aspects;
+    }
+    
+    /**
      * Reset the Node cached state
      */
     private void reset(String path)
@@ -314,6 +387,20 @@ public class AVMNode extends ScriptNode
         }
         this.avmRef = descriptor;
         this.deleted = descriptor.isDeleted();
+    }
+    
+    /**
+     * @return the WebProject identifier for the current path
+     */
+    private String getWebProject()
+    {
+        String webProject = this.path.substring(0, this.path.indexOf(':'));
+        int index = webProject.indexOf("--");
+        if (index != -1)
+        {
+            webProject = webProject.substring(0, index);
+        }
+        return webProject;
     }
 
     @Override

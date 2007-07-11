@@ -74,6 +74,9 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
     /** Pseudo path to String based template */
     private static final String PATH = "string://fixed";
     
+    /** FreeMarker configuration object */
+    private Configuration config;
+    
     /** Template encoding */
     private String defaultEncoding;
     
@@ -92,31 +95,34 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
      * 
      * @return FreeMarker configuration
      */
-    protected Configuration getConfig()
+    protected synchronized Configuration getConfig()
     {
-        Configuration config = new Configuration();
-        
-        // setup template cache
-        config.setCacheStorage(new MruCacheStorage(2, 0));
-        
-        // use our custom loader to find templates on the ClassPath
-        config.setTemplateLoader(new ClassPathRepoTemplateLoader(
-                this.services.getNodeService(), this.services.getContentService(), defaultEncoding));
-        
-        // use our custom object wrapper that can deal with QNameMap objects directly
-        config.setObjectWrapper(new QNameAwareObjectWrapper());
-        
-        // rethrow any exception so we can deal with them
-        config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-        
-        // localized template lookups off by default - as they create strange noderef lookups
-        // such as workspace://SpacesStore/01234_en_GB - causes problems for ns.exists() on DB2
-        config.setLocalizedLookup(false);
-        
-        // set default template encoding
-        if (defaultEncoding != null)
+        if (config == null)
         {
-            config.setDefaultEncoding(defaultEncoding);
+            config = new Configuration();
+            
+            // setup template cache
+            config.setCacheStorage(new MruCacheStorage(32, 32));
+            
+            // use our custom loader to find templates on the ClassPath
+            config.setTemplateLoader(new ClassPathRepoTemplateLoader(
+                    this.services.getNodeService(), this.services.getContentService(), defaultEncoding));
+            
+            // use our custom object wrapper that can deal with QNameMap objects directly
+            config.setObjectWrapper(new QNameAwareObjectWrapper());
+            
+            // rethrow any exception so we can deal with them
+            config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+            
+            // localized template lookups off by default - as they create strange noderef lookups
+            // such as workspace://SpacesStore/01234_en_GB - causes problems for ns.exists() on DB2
+            config.setLocalizedLookup(false);
+            
+            // set default template encoding
+            if (defaultEncoding != null)
+            {
+                config.setDefaultEncoding(defaultEncoding);
+            }
         }
         
         return config;

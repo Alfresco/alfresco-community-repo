@@ -39,6 +39,7 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -267,6 +268,45 @@ public class AVMTemplateNode extends BasePermissionsNode
     {
         return this.avmRef.isDeleted();
     }
+    
+    /**
+     * @return true if the node is currently locked
+     */
+    public boolean getIsLocked()
+    {
+        AVMLock lock = this.services.getAVMLockingService().getLock(
+                getWebProject(), path.substring(path.indexOf("/")));
+        return (lock != null);
+    }
+    
+    /**
+     * @return true if this node is locked and the current user is the lock owner
+     */
+    public boolean getIsLockOwner()
+    {
+        boolean lockOwner = false;
+        
+        AVMLock lock = this.services.getAVMLockingService().getLock(
+                getWebProject(), path.substring(path.indexOf("/")));
+        if (lock != null)
+        {
+            List<String> lockUsers = lock.getOwners();
+            lockOwner = (lockUsers.contains(this.services.getAuthenticationService().getCurrentUserName()));
+        }
+        
+        return lockOwner;
+    }
+    
+    /**
+     * @return true if this user can perform operations on the node when locked.
+     *         This is true if the item is either unlocked, or locked and the current user is the lock owner,
+     *         or locked and the current user has Content Manager role in the associated web project.
+     */
+    public boolean getHasLockAccess()
+    {
+        return this.services.getAVMLockingService().hasAccess(
+                getWebProject(), path, this.services.getAuthenticationService().getCurrentUserName());
+    }
 
     
     // ------------------------------------------------------------------------------
@@ -381,8 +421,7 @@ public class AVMTemplateNode extends BasePermissionsNode
     {
         if (this.aspects == null)
         {
-            this.aspects = new HashSet<QName>();
-            this.aspects.addAll(this.services.getAVMService().getAspects(this.version, this.path));
+            this.aspects = this.services.getAVMService().getAspects(this.version, this.path);
         }
         
         return this.aspects;
@@ -429,5 +468,23 @@ public class AVMTemplateNode extends BasePermissionsNode
     public String getDisplayPath()
     {
         return this.path;
+    }
+    
+    
+    // ------------------------------------------------------------------------------
+    // Private helpers
+    
+    /**
+     * @return the WebProject identifier for the current path
+     */
+    private String getWebProject()
+    {
+        String webProject = this.path.substring(0, this.path.indexOf(':'));
+        int index = webProject.indexOf("--");
+        if (index != -1)
+        {
+            webProject = webProject.substring(0, index);
+        }
+        return webProject;
     }
 }

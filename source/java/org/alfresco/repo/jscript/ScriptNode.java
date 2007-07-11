@@ -116,7 +116,7 @@ public class ScriptNode implements Serializable, Scopeable
     protected String id;
     
     /** The aspects applied to this node */
-    private Set<QName> aspects = null;
+    protected Set<QName> aspects = null;
     
     /** The target associations for this node */
     private ScriptableQNameMap<String, Object> assocs = null;

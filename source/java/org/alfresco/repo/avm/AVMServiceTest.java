@@ -487,7 +487,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             // TestDeploymentCallback callback = new TestDeploymentCallback();
             fService.createStore("target");
             DeploymentReport report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin",
-                    "target:/a", false, false, false, null);
+                    "target:/a", null, false, false, false, null);
             runQueriesAgainstBasicTreeWithAOnly("target");
             System.out.println(report);
             assertEquals(fService.lookup(-1, "main:/a/b/c/foo").getGuid(), fService.lookup(-1, "target:/a/b/c/foo")
@@ -498,39 +498,39 @@ public class AVMServiceTest extends AVMServiceTestBase
             ContentData dstCD = fService.getContentDataForRead(-1, "target:/a/b/c/foo");
             assertEquals(srcCD.getMimetype(), dstCD.getMimetype());
             fService.createFile("main:/a/b", "biz").close();
-            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a",
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", null,
                     false, false, true, null);
             // Nothing was done
             runQueriesAgainstBasicTreeWithAOnly("target");
             System.out.println(report);
             System.out.println(recursiveList("target", -1, true));
             assertNull(fService.lookup(-1, "target:/a/b/biz"));
-            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a",
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", null,
                     false, false, false, null);
             System.out.println(report);
             runQueriesForCreateAndDeploy("target");
             assertEquals(fService.lookup(-1, "main:/a/b/biz").getGuid(), fService.lookup(-1, "target:/a/b/biz")
                     .getGuid());
             fService.removeNode("main:/a/b/c/foo");
-            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a",
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", null,
                     false, true, false, null);
             runQueriesForCreateAndDeploy("target");
             System.out.println(report);
             assertNotNull(fService.lookup(-1, "target:/a/b/c/foo"));
-            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a",
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", null,
                     false, false, false, null);
             System.out.println(report);
             runQueriesForRemoveAndDelpoy("target");
             assertNull(fService.lookup(-1, "target:/a/b/c/foo"));
             fService.removeNode("main:/a/b/c/bar");
             fService.createDirectory("main:/a/b/c", "bar");
-            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a",
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", null,
                     false, false, false, null);
             System.out.println(report);
             runQueriesForRemoveFileAndCreateDirectoryAndDeploy("target");
-            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a",
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", null,
                     false, false, false, null);
-            depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target2:/wiggly/diggly",
+            depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target2:/wiggly/diggly", null,
                     true, false, false, null);
             System.out.println(report);
         }

@@ -235,16 +235,20 @@ public class AVMDeploySnapshotAction extends ActionExecuterAbstractBase
             if (logger.isDebugEnabled())
                logger.debug("Performing file server deployment to " + host + ":" + port);
             
+            // TODO Added new NameMatcher parameter to deploy methods. It acts as a filter.
+            // Any matching path names are ignored for deployment purposes.
             report = this.deployService.deployDifferenceFS(version, path, host, port, 
-                     remoteUsername, remotePassword, "/", true, false, false, callback);
+                     remoteUsername, remotePassword, "/", null, true, false, false, callback);
          }
          else
          {
             if (logger.isDebugEnabled())
                logger.debug("Performing Alfresco deployment to " + host + ":" + port);
             
+            // TODO Added new NameMatcher parameter to deploy methods. It acts as a filter.
+            // Any matching path names are ignored for deployment purposes.
             report = this.deployService.deployDifference(version, path, host, port, 
-                     remoteUsername, remotePassword, targetPath, true, false, false, callback);
+                     remoteUsername, remotePassword, targetPath, null, true, false, false, callback);
          }
       }
       catch (Throwable err)

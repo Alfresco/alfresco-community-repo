@@ -62,6 +62,7 @@ import org.alfresco.service.cmr.remote.AVMRemoteTransport;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 import org.springframework.remoting.rmi.RmiProxyFactoryBean;
 
@@ -101,7 +102,7 @@ public class DeploymentServiceImpl implements DeploymentService
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.deploy.DeploymentService#deployDifference(int, java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, java.lang.String, boolean, boolean)
      */
-    public DeploymentReport deployDifference(int version, String srcPath, String hostName, int port, String userName, String password, String dstPath, boolean createDst, boolean dontDelete, boolean dontDo, DeploymentCallback callback)
+    public DeploymentReport deployDifference(int version, String srcPath, String hostName, int port, String userName, String password, String dstPath, NameMatcher matcher, boolean createDst, boolean dontDelete, boolean dontDo, DeploymentCallback callback)
     {
         try
         {
@@ -624,7 +625,7 @@ public class DeploymentServiceImpl implements DeploymentService
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.deploy.DeploymentService#deployDifferenceFS(int, java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, java.lang.String, boolean, boolean)
      */
-    public DeploymentReport deployDifferenceFS(int version, String srcPath, String hostName, int port, String userName, String password, String target, boolean createDst, boolean dontDelete, boolean dontDo, DeploymentCallback callback)
+    public DeploymentReport deployDifferenceFS(int version, String srcPath, String hostName, int port, String userName, String password, String target, NameMatcher matcher, boolean createDst, boolean dontDelete, boolean dontDo, DeploymentCallback callback)
     {
         DeploymentReport report = new DeploymentReport();
         DeploymentReceiverService service = getReceiver(hostName, port);
@@ -643,7 +644,7 @@ public class DeploymentServiceImpl implements DeploymentService
             version = fAVMService.createSnapshot(storeName, null, null).get(storeName);
         }
         String ticket = service.begin(target, userName, password);
-        deployDirectoryPush(service, ticket, report, callback, version, srcPath, "/");
+        deployDirectoryPush(service, ticket, report, callback, version, srcPath, "/", matcher);
         service.commit(ticket);
         event = new DeploymentEvent(DeploymentEvent.Type.END,
                                     new Pair<Integer, String>(version, srcPath),
@@ -659,7 +660,7 @@ public class DeploymentServiceImpl implements DeploymentService
     private void deployDirectoryPush(DeploymentReceiverService service, String ticket,
                                      DeploymentReport report, DeploymentCallback callback,
                                      int version,
-                                     String srcPath, String dstPath)
+                                     String srcPath, String dstPath, NameMatcher matcher)
     {
         Map<String, AVMNodeDescriptor> srcListing = fAVMService.getDirectoryListing(version, srcPath);
         List<FileDescriptor> dstListing = service.getListing(ticket, dstPath);
@@ -687,30 +688,38 @@ public class DeploymentServiceImpl implements DeploymentService
             if (src == null)
             {
                 String newDstPath = extendPath(dstPath, dst.getName());
-                service.delete(ticket, newDstPath);
-                DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.DELETED, 
-                                                            new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())),
-                                                            newDstPath);
-                if (callback != null)
+                if (!excluded(matcher, null, newDstPath))
                 {
-                    callback.eventOccurred(event);
+                    service.delete(ticket, newDstPath);
+                    DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.DELETED, 
+                                                                new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())),
+                                                                newDstPath);
+                    if (callback != null)
+                    {
+                        callback.eventOccurred(event);
+                    }
+                    report.add(event);
                 }
-                report.add(event);
                 dst = null;
                 continue;
             }
             // Nothing on the destination so copy over.
             if (dst == null)
             {
-                copy(service, ticket, report, callback, version, src, dstPath);
+                if (!excluded(matcher, src.getPath(), null))
+                {
+                    copy(service, ticket, report, callback, version, src, dstPath, matcher);
+                }
                 src = null;
                 continue;
             }
             int diff = src.getName().compareTo(dst.getName());
             if (diff < 0)
             {
-                // No corresponding destination.
-                copy(service, ticket, report, callback, version, src, dstPath);
+                if (!excluded(matcher, src.getPath(), null))
+                {
+                    copy(service, ticket, report, callback, version, src, dstPath, matcher);
+                }
                 src = null;
                 continue;
             }
@@ -724,8 +733,12 @@ public class DeploymentServiceImpl implements DeploymentService
                 }
                 if (src.isFile())
                 {
-                    copyFile(service, ticket, report, callback, version, src,
-                             extendPath(dstPath, dst.getName()));
+                    String extendedPath = extendPath(dstPath, dst.getName());
+                    if (!excluded(matcher, src.getPath(), extendedPath))
+                    {
+                        copyFile(service, ticket, report, callback, version, src,
+                                 extendedPath);
+                    }
                     src = null;
                     dst = null;
                     continue;
@@ -737,12 +750,19 @@ public class DeploymentServiceImpl implements DeploymentService
                     {
                         service.setGuid(ticket, dstPath, src.getGuid());
                     }
-                    deployDirectoryPush(service, ticket, report, callback, version, src.getPath(), extendPath(dstPath, dst.getName()));
+                    String extendedPath = extendPath(dstPath, dst.getName());
+                    if (!excluded(matcher, src.getPath(), extendedPath))
+                    {
+                        deployDirectoryPush(service, ticket, report, callback, version, src.getPath(), extendPath(dstPath, dst.getName()), matcher);
+                    }
                     src = null;
                     dst = null;
                     continue;
                 }
-                copy(service, ticket, report, callback, version, src, dstPath);
+                if (!excluded(matcher, src.getPath(), null))
+                {
+                    copy(service, ticket, report, callback, version, src, dstPath, matcher);
+                }
                 src = null;
                 dst = null;
                 continue;
@@ -811,7 +831,7 @@ public class DeploymentServiceImpl implements DeploymentService
      */
     private void copy(DeploymentReceiverService service, String ticket,
                       DeploymentReport report, DeploymentCallback callback, 
-                      int version, AVMNodeDescriptor src, String parentPath)
+                      int version, AVMNodeDescriptor src, String parentPath, NameMatcher matcher)
     {
         String dstPath = extendPath(parentPath, src.getName());
         if (src.isFile())
@@ -832,7 +852,10 @@ public class DeploymentServiceImpl implements DeploymentService
         Map<String, AVMNodeDescriptor> listing = fAVMService.getDirectoryListing(src);
         for (AVMNodeDescriptor child : listing.values())
         {
-            copy(service, ticket, report, callback, version, child, dstPath);
+            if (!excluded(matcher, child.getPath(), null))
+            {
+                copy(service, ticket, report, callback, version, child, dstPath, matcher);
+            }
         }
     }
     
@@ -849,5 +872,17 @@ public class DeploymentServiceImpl implements DeploymentService
             return path + name;
         }
         return path + '/' + name;
+    }
+    
+    /**
+     * Returns true if either srcPath or dstPath are matched by matcher.
+     * @param matcher
+     * @param srcPath
+     * @param dstPath
+     * @return
+     */
+    private boolean excluded(NameMatcher matcher, String srcPath, String dstPath)
+    {
+        return matcher != null && ((srcPath != null && matcher.matches(srcPath)) || (dstPath != null && matcher.matches(dstPath)));
     }
 }

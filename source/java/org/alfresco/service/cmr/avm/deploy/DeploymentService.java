@@ -3,6 +3,8 @@
  */
 package org.alfresco.service.cmr.avm.deploy;
 
+import org.alfresco.util.NameMatcher;
+
 /**
  * A service to handle AVM repository to remote AVM repository deployment.
  * @author britt
@@ -28,6 +30,7 @@ public interface DeploymentService
                                              String hostName, int port,
                                              String userName, String password,
                                              String dstPath,
+                                             NameMatcher matcher,
                                              boolean createDst,
                                              boolean dontDelete,
                                              boolean dontDo,
@@ -51,6 +54,7 @@ public interface DeploymentService
                                                String hostName, int port,
                                                String userName, String password,
                                                String dstTarget,
+                                               NameMatcher matcher,
                                                boolean createDst,
                                                boolean dontDelete, 
                                                boolean dontDo,

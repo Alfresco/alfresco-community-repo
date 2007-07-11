@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.avm.deploy.DeploymentEvent;
 import org.alfresco.service.cmr.avm.deploy.DeploymentReport;
 import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.util.Deleter;
+import org.alfresco.util.NameMatcher;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 /**
@@ -56,8 +57,10 @@ public class FSDeploymentTest extends AVMServiceTestBase
             FileSystemXmlApplicationContext receiverContext =
                 new FileSystemXmlApplicationContext("../deployment/config/application-context.xml");
             DeploymentService service = (DeploymentService)fContext.getBean("DeploymentService");
+            NameMatcher matcher = (NameMatcher)fContext.getBean("globalPathExcluder");
             setupBasicTree();
-            DeploymentReport report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", false, false, false, null);
+            fService.createFile("main:/a/b", "fudge.bak").close();
+            DeploymentReport report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, null);
             int count = 0;
             for (DeploymentEvent event : report)
             {
@@ -65,7 +68,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
                 count++;
             }
             assertEquals(10, count);
-            report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", false, false, false, null);
+            report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, null);
             count = 0;
             for (DeploymentEvent event : report)
             {
@@ -75,7 +78,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
             assertEquals(2, count);
             fService.createFile("main:/d", "jonathan").close();
             fService.removeNode("main:/a/b");
-            report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", false, false, false, null);
+            report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, null);
             count = 0;
             for (DeploymentEvent event : report)
             {
@@ -85,7 +88,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
             assertEquals(4, count);
             fService.removeNode("main:/d/e");
             fService.createFile("main:/d", "e").close();
-            report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", false, false, false, null);
+            report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, null);
             count = 0;
             for (DeploymentEvent event : report)
             {
@@ -96,7 +99,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
             fService.removeNode("main:/d/e");
             fService.createDirectory("main:/d", "e");
             fService.createFile("main:/d/e", "Warren.txt").close();
-            report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", false, false, false, null);
+            report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, null);
             count = 0;
             for (DeploymentEvent event : report)
             {
@@ -116,6 +119,16 @@ public class FSDeploymentTest extends AVMServiceTestBase
             Deleter.Delete(data);
             Deleter.Delete(metadata);
             Deleter.Delete(target);
+            File dot = new File(".");
+            String[] listing = dot.list();
+            for (String name : listing)
+            {
+                if (name.startsWith("dep-record-"))
+                {
+                    File file = new File(name);
+                    file.delete();
+                }
+            }
         }
     }
 }

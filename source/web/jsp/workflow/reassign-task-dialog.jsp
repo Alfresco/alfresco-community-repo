@@ -36,6 +36,7 @@
 <a:genericPicker id="user-picker" showAddButton="false" filters="#{DialogManager.bean.filters}" 
                  queryCallback="#{DialogManager.bean.pickerCallback}" multiSelect="false" />
 
+<f:verbatim>
 <script type="text/javascript">
    document.getElementById("dialog:dialog-body:user-picker_results").onchange = checkButtonState;
    
@@ -46,3 +47,4 @@
       button.disabled = (list.selectedIndex == -1);
    }
 </script>
+</f:verbatim>

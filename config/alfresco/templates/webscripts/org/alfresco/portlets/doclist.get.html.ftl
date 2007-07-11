@@ -70,7 +70,9 @@
          <script>
             MyDocs.ServiceContext="${url.serviceContext}";
             MyDocs.Filter="${filter}";
+            <#if home?exists>
             MyDocs.Home="${home.nodeRef}";
+            </#if>
             MyDocs.Query="${query?replace("\"","\\\"")}";
          </script>
       </div>

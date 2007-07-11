@@ -631,6 +631,8 @@ var MySpaces = {
    {
       if (confirm("Are you sure you want to delete: " + name))
       {
+         $("spacePanelOverlay").setStyle('opacity', MySpaces.OVERLAY_OPACITY);
+
          // ajax call to delete item
          YAHOO.util.Connect.asyncRequest(
             "POST",
@@ -645,11 +647,13 @@ var MySpaces = {
                   else
                   {
                      alert("Error during delete of item: " + response.responseText);
+                     $("spacePanelOverlay").setStyle('opacity', 0);
                   }
                },
                failure: function(response)
                {
                   alert("Error during delete of item: " + response.responseText);
+                  $("spacePanelOverlay").setStyle('opacity', 0);
                }
             }, 
             "noderef=" + noderef
@@ -662,7 +666,9 @@ var MySpaces = {
     */
    checkoutItem: function(name, noderef)
    {
-      // ajax call to delete item
+      $("spacePanelOverlay").setStyle('opacity', MySpaces.OVERLAY_OPACITY);
+
+      // ajax call to check out item
       YAHOO.util.Connect.asyncRequest(
          "POST",
          getContextPath() + '/ajax/invoke/PortletActionsBean.checkoutItem',
@@ -676,11 +682,13 @@ var MySpaces = {
                else
                {
                   alert("Error during check out of item: " + response.responseText);
+                  $("spacePanelOverlay").setStyle('opacity', 0);
                }
             },
             failure: function(response)
             {
                alert("Error during check out of item: " + response.responseText);
+               $("spacePanelOverlay").setStyle('opacity', 0);
             }
          }, 
          "noderef=" + noderef
@@ -692,7 +700,9 @@ var MySpaces = {
     */
    checkinItem: function(name, noderef)
    {
-      // ajax call to delete item
+      $("spacePanelOverlay").setStyle('opacity', MySpaces.OVERLAY_OPACITY);
+
+      // ajax call to check in item
       YAHOO.util.Connect.asyncRequest(
          "POST",
          getContextPath() + '/ajax/invoke/PortletActionsBean.checkinItem',
@@ -706,11 +716,13 @@ var MySpaces = {
                else
                {
                   alert("Error during check in of item: " + response.responseText);
+                  $("spacePanelOverlay").setStyle('opacity', 0);
                }
             },
             failure: function(response)
             {
                alert("Error during check in of item: " + response.responseText);
+               $("spacePanelOverlay").setStyle('opacity', 0);
             }
          }, 
          "noderef=" + noderef

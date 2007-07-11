@@ -5,6 +5,7 @@ var MyDocs = {
    DETAIL_MARGIN: 56,
    TITLE_FONT_SIZE: 18,
    RESOURCE_PANEL_HEIGHT: 150,
+   OVERLAY_OPACITY: 0.8,
    ServiceContext: null,
    Filter: null,
    Home: null,
@@ -477,6 +478,8 @@ var MyDocs = {
    {
       if (confirm("Are you sure you want to delete: " + name))
       {
+         $("docPanelOverlay").setStyle('opacity', MyDocs.OVERLAY_OPACITY);
+         
          // ajax call to delete item
          YAHOO.util.Connect.asyncRequest(
             "POST",
@@ -491,11 +494,13 @@ var MyDocs = {
                   else
                   {
                      alert("Error during delete of item: " + response.responseText);
+                     $("docPanelOverlay").setStyle('opacity', 0);
                   }
                },
                failure: function(response)
                {
                   alert("Error during delete of item: " + response.responseText);
+                  $("docPanelOverlay").setStyle('opacity', 0);
                }
             }, 
             "noderef=" + noderef
@@ -508,6 +513,8 @@ var MyDocs = {
     */
    checkoutItem: function(name, noderef)
    {
+      $("docPanelOverlay").setStyle('opacity', MyDocs.OVERLAY_OPACITY);
+
       // ajax call to delete item
       YAHOO.util.Connect.asyncRequest(
          "POST",
@@ -522,11 +529,13 @@ var MyDocs = {
                else
                {
                   alert("Error during check out of item: " + response.responseText);
+                  $("docPanelOverlay").setStyle('opacity', 0);
                }
             },
             failure: function(response)
             {
                alert("Error during check out of item: " + response.responseText);
+               $("docPanelOverlay").setStyle('opacity', 0);
             }
          }, 
          "noderef=" + noderef
@@ -538,6 +547,8 @@ var MyDocs = {
     */
    checkinItem: function(name, noderef)
    {
+      $("docPanelOverlay").setStyle('opacity', MyDocs.OVERLAY_OPACITY);
+
       // ajax call to delete item
       YAHOO.util.Connect.asyncRequest(
          "POST",
@@ -552,11 +563,13 @@ var MyDocs = {
                else
                {
                   alert("Error during check in of item: " + response.responseText);
+                  $("docPanelOverlay").setStyle('opacity', 0);
                }
             },
             failure: function(response)
             {
                alert("Error during check in of item: " + response.responseText);
+               $("docPanelOverlay").setStyle('opacity', 0);
             }
          }, 
          "noderef=" + noderef
@@ -598,7 +611,7 @@ var MyDocs = {
       
       var anim = new Fx.Styles(panel, {duration: MyDocs.ANIM_LENGTH, transition: Fx.Transitions.linear});
       anim.start({'opacity': 1});
-      this.fxOverlay.start(0.5);
+      this.fxOverlay.start(OVERLAY_OPACITY);
       
       this.popupPanel = panel;
       this.popupPanel.nodeRef = nodeRef;

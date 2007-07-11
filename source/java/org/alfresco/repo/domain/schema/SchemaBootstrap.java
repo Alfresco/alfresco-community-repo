@@ -57,11 +57,12 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.connection.UserSuppliedConnectionProvider;
 import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.MySQL5Dialect;
+import org.hibernate.dialect.MySQLDialect;
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.springframework.context.ApplicationContext;
@@ -82,6 +83,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     /** The placeholder for the configured <code>Dialect</code> class name: <b>${db.script.dialect}</b> */
     private static final String PLACEHOLDER_SCRIPT_DIALECT = "\\$\\{db\\.script\\.dialect\\}";
 
+    private static final String MSG_DIALECT_USED = "schema.update.msg.dialect_used";
     private static final String MSG_BYPASSING_SCHEMA_UPDATE = "schema.update.msg.bypassing";
     private static final String MSG_NO_CHANGES = "schema.update.msg.no_changes";
     private static final String MSG_ALL_STATEMENTS = "schema.update.msg.all_statements";
@@ -89,6 +91,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String MSG_EXECUTING_COPIED_SCRIPT = "schema.update.msg.executing_copied_script";
     private static final String MSG_EXECUTING_STATEMENT = "schema.update.msg.executing_statement";
     private static final String MSG_OPTIONAL_STATEMENT_FAILED = "schema.update.msg.optional_statement_failed";
+    private static final String WARN_DIALECT_UNSUPPORTED = "schema.update.warn.dialect_unsupported";
+    private static final String ERR_PREVIOUS_FAILED_BOOTSTRAP = "schema.update.err.previous_failed";
     private static final String ERR_STATEMENT_FAILED = "schema.update.err.statement_failed";
     private static final String ERR_UPDATE_FAILED = "schema.update.err.update_failed";
     private static final String ERR_VALIDATION_FAILED = "schema.update.err.validation_failed";
@@ -293,20 +297,15 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
     
     /**
-     * @return Returns the number of applied patches
+     * @return  Returns the name of the applied patch table, or <tt>null</tt> if the table doesn't exist
      */
-    private boolean didPatchSucceed(Connection connection, String patchId) throws Exception
+    private String getAppliedPatchTableName(Connection connection) throws Exception
     {
         Statement stmt = connection.createStatement();
         try
         {
-            ResultSet rs = stmt.executeQuery("select succeeded from alf_applied_patch where id = '" + patchId + "'");
-            if (!rs.next())
-            {
-                return false;
-            }
-            boolean succeeded = rs.getBoolean(1);
-            return succeeded;
+            stmt.executeQuery("select * from alf_applied_patch");
+            return "alf_applied_patch";
         }
         catch (Throwable e)
         {
@@ -320,13 +319,93 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         stmt = connection.createStatement();
         try
         {
-            ResultSet rs = stmt.executeQuery("select succeeded from applied_patch where id = '" + patchId + "'");
+            stmt.executeQuery("select * from applied_patch");
+            return "applied_patch";
+        }
+        catch (Throwable e)
+        {
+            // It is not there
+            return null;
+        }
+        finally
+        {
+            try { stmt.close(); } catch (Throwable e) {}
+        }
+    }
+    
+    /**
+     * @return Returns the number of applied patches
+     */
+    private boolean didPatchSucceed(Connection connection, String patchId) throws Exception
+    {
+        String patchTableName = getAppliedPatchTableName(connection);
+        if (patchTableName == null)
+        {
+            // Table doesn't exist, yet
+            return false;
+        }
+        Statement stmt = connection.createStatement();
+        try
+        {
+            ResultSet rs = stmt.executeQuery("select succeeded from " + patchTableName + " where id = '" + patchId + "'");
             if (!rs.next())
             {
                 return false;
             }
             boolean succeeded = rs.getBoolean(1);
             return succeeded;
+        }
+        finally
+        {
+            try { stmt.close(); } catch (Throwable e) {}
+        }
+    }
+    
+    /**
+     * Records that the bootstrap process has started
+     */
+    private synchronized void setBootstrapStarted(Connection connection) throws Exception
+    {
+        // We wait a for a minute to give other instances starting against the same database a
+        // chance to get through this process
+        for (int i = 0; i < 12; i++)
+        {
+            // Create the marker table
+            Statement stmt = connection.createStatement();
+            try
+            {
+                stmt.executeUpdate("create table alf_bootstrap_lock (charval CHAR(1) NOT NULL)");
+                // Success
+                return;
+            }
+            catch (Throwable e)
+            {
+                // Table exists - wait a bit
+                try { this.wait(5000L); } catch (InterruptedException ee) {}
+            }
+            finally
+            {
+                try { stmt.close(); } catch (Throwable e) {}
+            }
+        }
+        throw AlfrescoRuntimeException.create(ERR_PREVIOUS_FAILED_BOOTSTRAP);
+    }
+    
+    /**
+     * Records that the bootstrap process has finished
+     */
+    private void setBootstrapCompleted(Connection connection) throws Exception
+    {
+        // Create the marker table
+        Statement stmt = connection.createStatement();
+        try
+        {
+            stmt.executeUpdate("drop table alf_bootstrap_lock");
+        }
+        catch (Throwable e)
+        {
+            // Table exists
+            throw AlfrescoRuntimeException.create(ERR_PREVIOUS_FAILED_BOOTSTRAP);
         }
         finally
         {
@@ -647,14 +726,23 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     {
         // do everything in a transaction
         Session session = getSessionFactory().openSession();
-        Transaction transaction = session.beginTransaction();
         try
         {
-            // make sure that we don't autocommit
+            // make sure that we AUTO-COMMIT
             Connection connection = session.connection();
-            connection.setAutoCommit(false);
+            connection.setAutoCommit(true);
             
             Configuration cfg = localSessionFactory.getConfiguration();
+            
+            // Check and dump the dialect being used
+            Dialect dialect = Dialect.getDialect(cfg.getProperties());
+            Class dialectClazz = dialect.getClass();
+            LogUtil.info(logger, MSG_DIALECT_USED, dialectClazz.getName());
+            if (dialectClazz.equals(MySQLDialect.class) || dialectClazz.equals(MySQL5Dialect.class))
+            {
+                LogUtil.warn(logger, WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
+            }
+            
             // Ensure that our static connection provider is used
             String defaultConnectionProviderFactoryClass = cfg.getProperty(Environment.CONNECTION_PROVIDER);
             cfg.setProperty(Environment.CONNECTION_PROVIDER, SchemaBootstrapConnectionProvider.class.getName());
@@ -663,6 +751,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // update the schema, if required
             if (updateSchema)
             {
+                // Check and record that the bootstrap has started
+                setBootstrapStarted(connection);
+                
                 // Allocate buffer for executed statements
                 executedStatementsThreadLocal.set(new StringBuilder(1024));
                 
@@ -695,6 +786,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 checkSchemaPatchScripts(cfg, session, connection, validateUpdateScriptPatches, false);  // check scripts
                 checkSchemaPatchScripts(cfg, session, connection, preUpdateScriptPatches, false);       // check scripts
                 checkSchemaPatchScripts(cfg, session, connection, postUpdateScriptPatches, false);      // check scripts
+                
+                // Remove the flag indicating a running bootstrap
+                setBootstrapCompleted(connection);
             }
             else
             {
@@ -705,12 +799,10 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             cfg.setProperty(Environment.CONNECTION_PROVIDER, defaultConnectionProviderFactoryClass);
             
             // all done successfully
-            transaction.commit();
         }
         catch (Throwable e)
         {
             LogUtil.error(logger, e, ERR_UPDATE_FAILED);
-            try { transaction.rollback(); } catch (Throwable ee) {}
             if (updateSchema)
             {
                 throw new AlfrescoRuntimeException(ERR_UPDATE_FAILED, e);

@@ -66,7 +66,8 @@ public class HrefDifference
     int    src_version_;
     String src_store_;
 
-    int    dst_version_;
+    int    dst_base_version_;
+    int    dst_latest_version_;
     String dst_store_;
 
     String src_webapp_url_base_;
@@ -75,8 +76,9 @@ public class HrefDifference
     HrefDifference(String href_attr,
                    int    src_version,
                    String src_store,
-                   int    dst_version,
+                   int    dst_base_version,
                    String dst_store,
+                   int    dst_latest_version,
                    String src_webapp_url_base,
                    String dst_webapp_url_base)
     {
@@ -85,8 +87,10 @@ public class HrefDifference
         src_version_             = src_version;
         src_store_               = src_store;
 
-        dst_version_             = dst_version;
+        dst_base_version_        = dst_base_version;
         dst_store_               = dst_store;
+
+        dst_latest_version_      = dst_latest_version;
 
         src_webapp_url_base_     = src_webapp_url_base;
         dst_webapp_url_base_     = dst_webapp_url_base;
@@ -102,7 +106,8 @@ public class HrefDifference
     public HrefManifest getHrefManifest()   { return href_manifest_;   }
     public HrefStatusMap getHrefStatusMap() { return href_status_map_; }
     public int getSrcVersion()              { return src_version_;}
-    public int getDstVersion()              { return dst_version_;}
+    public int getDstBaseVersion()          { return dst_base_version_;}
+    public int getDstLatestVersion()        { return dst_latest_version_;}
 
     String getHrefAttr()                    { return href_attr_;}
     String getSrcStore()                    { return src_store_;}

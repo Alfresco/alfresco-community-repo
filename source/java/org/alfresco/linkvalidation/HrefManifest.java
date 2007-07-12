@@ -38,12 +38,35 @@ import java.util.ArrayList;
 */
 public class HrefManifest 
 {
-    protected List<HrefManifestEntry> manifest_entries_;
+    List<HrefManifestEntry> manifest_entries_;
+    int base_snapshot_version_;
+    int latest_snapshot_version_;
+    int base_file_count_;
+    int base_link_count_;
 
     public  HrefManifest()
     {
         manifest_entries_ = new ArrayList<HrefManifestEntry>();
     }
+
+    public  HrefManifest(List<HrefManifestEntry> entries, 
+                         int                     base_snapshot_version,
+                         int                     latest_snapshot_version,
+                         int                     base_file_count,
+                         int                     base_link_count)
+    {
+        manifest_entries_         = entries;
+        base_snapshot_version_    = base_snapshot_version;
+        latest_snapshot_version_  = latest_snapshot_version;
+        base_file_count_          = base_file_count;
+        base_link_count_          = base_link_count;
+    }
+
+    public int getLatestSnapshotVersion() { return latest_snapshot_version_; }
+    public int getBaseSnapshotVersion()   { return base_snapshot_version_; }
+
+    public int getBaseFileCount() { return base_file_count_;}
+    public int getBaseLinkCount() { return base_link_count_;}
 
     public List<HrefManifestEntry>  getManifestEntries() { return manifest_entries_;}
 

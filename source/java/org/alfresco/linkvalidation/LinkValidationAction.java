@@ -157,24 +157,114 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
                                 webappPath, destWebappPath, monitor);
                 
                 // get the broken files created due to deletions and new/modified files
-                HrefManifest brokenByDelete = this.linkValidationService.getHrefManifestBrokenByDelete(hdiff);
-                HrefManifest brokenByNewOrMod = this.linkValidationService.getHrefManifestBrokenByNewOrMod(hdiff);
-                
+
+                // Gav TODO:
+                //    Instead of calling 
+                //          getHrefManifestBrokenByDelete(hdiff)
+                //    and   getHrefManifestBrokenByNewOrMod(hdiff)
+                //
+                //    You can now call:
+                //     HrefManifest manifest = 
+                //          this.linkValidationService.getBrokenHrefManifest(hdiff);
+                //
+                //    This will give you a pre-merged manifest of all the broken items
+                //
+                //    This means you can also clean up the broken link report calling
+                //    signature,  and remove your merge logic from the implementation.
+                //
+                //
+                // HrefManifest brokenByDelete = this.linkValidationService.getHrefManifestBrokenByDelete(hdiff);
+                // HrefManifest brokenByNewOrMod = this.linkValidationService.getHrefManifestBrokenByNewOrMod(hdiff);
+                //
+                //
+                HrefManifest manifest = this.linkValidationService.getBrokenHrefManifest( hdiff );
+
+                int baseVersion   = manifest.getBaseSnapshotVersion();                  // Gav TODO:  make use of this 
+                int latestVersion = manifest.getLatestSnapshotVersion();                // Gav TODO:  make use of this 
+                int fileCount     = manifest.getBaseFileCount();                        // Gav TODO:  make use of this 
+                int linkCount     = manifest.getBaseLinkCount();                        // Gav TODO:  make use of this 
+
+                HrefManifest bogus  = new HrefManifest();                               // Gav TODO: make this go away
+
+
                 // create the report object using the 2 sets of results
-                report = new LinkValidationReport(storeName, webappName, monitor, brokenByDelete, brokenByNewOrMod);
+                report = new LinkValidationReport(
+                                storeName, 
+                                webappName, 
+                                monitor, 
+
+                                // Gav TODO:
+                                //     Here's where you can enhance the report:
+                                //
+                                //     Pass the following extra parameters
+                                //     to the report generator so it can 
+                                //     put up some sort of indication when
+                                //     we're "behind"  (and by how much):
+                                //    
+                                //  baseVersion,
+                                //  latestVersion,
+
+
+                                // Gav TODO:  You can replace brokenByDelete 
+                                //            and brokenByNewOrMod with the 
+                                //            new pre-merged manifest.
+                                //
+                                // brokenByDelete,     
+                                // brokenByNewOrMod
+
+                                manifest,
+                                bogus);             // Gav TODO: 
+                                                    //      Remove this last 'bogus' arg when you re-work the report 
+                                                    //      It's just here to satisfy your merge logic  
+                                                    //      (which should also probably go away)
             }
             else
             {
-                // Not calling linkValidationService.updateHrefInfo explicitly anymore
-                // so tell the system we're done.  Note that the monitor won't have
-                // valid update counts
+                // Not updating href info explicitly anymore, 
+                // so tell the system that's already done.
+                // Note that the monitor won't have valid update counts
+
                 monitor.setDone( true );
 
                 // retrieve the manifest of all the broken links and files for the webapp
-                List<HrefManifestEntry> manifests = this.linkValidationService.getBrokenHrefManifestEntries(webappPath);
-                
-                // create the report object using the link check results
-                report = new LinkValidationReport(storeName, webappName, monitor, manifests);
+                //
+                //   Note that latestVersion >= baseVersion
+                //   Whenever  latestVersion >  baseVersion, 
+                //   link validation  is "behind".
+
+                HrefManifest manifest =  
+                        this.linkValidationService.getBrokenHrefManifest(webappPath);
+
+                List<HrefManifestEntry>  manifests = 
+                                         manifest.getManifestEntries();
+                int baseVersion        = manifest.getBaseSnapshotVersion();       // Gav TODO:  make use of this 
+                int latestVersion      = manifest.getLatestSnapshotVersion();     // Gav TODO:  make use of this 
+
+                int fileCount = manifest.getBaseFileCount();                      // Gav TODO:  make use of this 
+                int linkCount = manifest.getBaseLinkCount();                      // Gav TODO:  make use of this 
+
+
+                // Create the report object using the link check results
+
+                report = new LinkValidationReport(
+                                 storeName, 
+                                 webappName, 
+                                 monitor, 
+
+                                 // 
+                                 // Gav TODO:
+                                 //     Here's where you can enhance the report:
+                                 //
+                                 //     Pass the following extra parameters
+                                 //     to the report generator so it can 
+                                 //     put up some sort of indication when
+                                 //     we're "behind"  (and by how much):
+                                 //    
+                                 //  baseVersion,
+                                 //  latestVersion,
+
+                                 manifests
+                                 );
             }
         }
         catch (Throwable err)

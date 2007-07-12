@@ -41,8 +41,9 @@ public interface LinkValidationService
 
     //-------------------------------------------------------------------------
     /**
-    *  This function is just a convenience wrapper for calling
-    *  getHrefManifestEntries with statusGTE=400 and statusLTE=599.
+    *  This function is applied to a webapp in staging, and is just a 
+    *  convenience wrapper for calling getHrefManifestEntries 
+    *  with statusGTE=400 and statusLTE=599.
     *  <p>
     *  Note: Files and urls within this list of manifests pertain to
     *        the latest validated snapshot of staging (which may be
@@ -51,26 +52,27 @@ public interface LinkValidationService
     *        snapshot as new as possible, automatically.
     */
     //-------------------------------------------------------------------------
-    public List<HrefManifestEntry> getBrokenHrefManifestEntries(
-                                           String      storeNameOrWebappPath)
-                                   throws  AVMNotFoundException,
-                                           SocketException;
+    public HrefManifest  getBrokenHrefManifest( String  webappPath)
+                                        throws  AVMNotFoundException,
+                                                SocketException,
+                                                IllegalArgumentException;
+
 
     //-------------------------------------------------------------------------
     /**
-    *  Returns a manifest consisting of just the broken hrefs
-    *  within each file containing one or more broken href.
-    *  The HrefManifestEntry list is sorted in increasing lexicographic
-    *  order by file name.  The hrefs within each HrefManifestEntry
-    *  are also sorted in increasing lexicographic order.
+    *  This function is applied to webapps in staging and returns a manifest 
+    *  consisting of just the broken hrefs within each file containing 
+    *  one or more broken href.  The HrefManifestEntry list is sorted in 
+    *  increasing lexicographic order by file name.  The hrefs within each 
+    *  HrefManifestEntry are also sorted in increasing lexicographic order.
     */
     //-------------------------------------------------------------------------
-    public List<HrefManifestEntry> getHrefManifestEntries(
-                                            String storeNameOrWebappPath,
-                                            int    statusGTE,
-                                            int    statusLTE)
-                                   throws   AVMNotFoundException,
-                                            SocketException;
+    public HrefManifest  getHrefManifest( String webappPath,
+                                          int    statusGTE,
+                                          int    statusLTE)
+                                  throws  AVMNotFoundException,
+                                          SocketException,
+                                          IllegalArgumentException;
 
 
     //-------------------------------------------------------------------------
@@ -92,6 +94,16 @@ public interface LinkValidationService
                                    LinkValidationAbortedException;
 
 
+    //-------------------------------------------------------------------------
+    /**
+    *   This function is applied to difference objects created by comparing
+    *   webapps in an author or workflow store to the staging area they 
+    *   overlay.
+    */
+    //-------------------------------------------------------------------------
+    public HrefManifest  getBrokenHrefManifest( HrefDifference hdiff ) 
+                                        throws  AVMNotFoundException,
+                                                SocketException;
 
     //-------------------------------------------------------------------------
     /**

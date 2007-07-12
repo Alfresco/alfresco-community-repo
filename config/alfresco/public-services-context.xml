@@ -1377,11 +1377,11 @@
         </property>
         <property name="mappedNames">
             <list>
-                    <value>getHrefManifestEntries</value>
+                    <value>getHrefManifest</value>
+                    <value>getBrokenHrefManifest</value>
                     <value>getHrefDifference</value>
                     <value>getHrefManifestBrokenByDelete</value>
                     <value>getHrefManifestBrokenByNewOrMod</value>
-                    <value>getHrefConcordanceEntries</value>
                     <value>getHrefsDependentUponFile</value>
             </list>
         </property>

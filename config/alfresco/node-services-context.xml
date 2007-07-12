@@ -73,7 +73,7 @@
 			<ref bean="dictionaryService"/>
 		</property>
 		<property name="avmService">
-			<ref bean="avmLockingAwareService"/>
+			<ref bean="avmService"/>
 		</property>
 		<property name="policyComponent">
 			<ref bean="policyComponent"/>

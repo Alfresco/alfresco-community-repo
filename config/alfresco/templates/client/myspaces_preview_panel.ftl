@@ -13,12 +13,17 @@
             <#elseif isImage>
 	            <center><a href="${url.context}${node.url}" target="new"><img src="${url.context}${node.url}?${node.size}" height=140 border=0></a></center>
 	         <#elseif node.isContainer>
-	            <#list node.children?sort_by('name') as c>
-	               <#--if (c_index >= 25)><div>...</div><#break></#if>-->
-	               <#if c.isDocument || c.isContainer>
-	               <div style="padding:2px"><a class="childSpaceLink" href="${url.context}${c.url}" target="new"><img class="spaceImageIcon" src="${url.context}${c.icon16}" border="0">${c.name}</a></div>
-	               </#if>
-	            </#list>
+	            <#assign childs=node.children?sort_by('name')>
+	            <#if childs?size != 0>
+   	            <#list childs as c>
+   	               <#--if (c_index >= 25)><div>...</div><#break></#if>-->
+   	               <#if c.isDocument || c.isContainer>
+   	               <div style="padding:2px"><a class="childSpaceLink" href="${url.context}${c.url}" target="new"><img class="spaceImageIcon" src="${url.context}${c.icon16}" border="0">${c.name}</a></div>
+   	               </#if>
+   	            </#list>
+   	         <#else>
+                  <div style="padding:2px" class="spacesNoItems">No items to display</div>
+               </#if>
       	   </#if>
          </div>
       </td>
@@ -28,7 +33,7 @@
 <#assign navurl='/navigate/showDocDetails/' + node.nodeRef.storeRef.protocol + '/' + node.nodeRef.storeRef.identifier + '/' + node.nodeRef.id>
 <#if node.isDocument>
             <tr>
-<#if node.isLocked >
+<#if node.isLocked>
                <td class="spaceAction docActionCheckout docActionLocked">(Locked)</td>
 <#elseif hasAspect(node, "cm:workingcopy") == 1>
                <td class="spaceAction docActionCheckin" <#if node.hasPermission("CheckIn")>onclick='event.cancelBubble=true;MySpaces.checkinItem("${node.name}", "${node.nodeRef}");'</#if>>Check In</td>

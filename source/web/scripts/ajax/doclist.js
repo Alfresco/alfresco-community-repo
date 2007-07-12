@@ -23,7 +23,7 @@ var MyDocs = {
          // is responsible for rendering just the contents of the main panel div
          YAHOO.util.Connect.asyncRequest(
             "GET",
-            MyDocs.ServiceContext + '/ui/doclistpanel?f='+MyDocs.Filter+'&h='+MyDocs.Home+'&q='+MyDocs.Query,
+            MyDocs.ServiceContext + '/ui/doclistpanel?f=' + MyDocs.Filter + '&q=' + MyDocs.Query + (MyDocs.Home != null ? '&h=' + MyDocs.Home : ''),
             {
                success: function(response)
                {

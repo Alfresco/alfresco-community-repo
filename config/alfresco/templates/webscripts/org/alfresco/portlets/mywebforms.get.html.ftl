@@ -31,10 +31,10 @@
             <div class="webProjectRow">
                <div class="webProjectTitle">
                   <a class="webPreviewLink" href="${avm.websiteUserSandboxUrl(storeId, username)}" target="new"><img src="${url.context}/images/icons/website_large.gif" width=32 height=32 border=0><span class="websiteLink">${wp.name}</span></a>
-                  <a class="webProjectLink" href="${url.context}${wp.url}" target="new">View Web Project</a>
                   <span class="webProjectInfo" onclick="event.cancelBubble=true; AlfNodeInfoMgr.toggle('${wp.nodeRef}',this);">
                      <img src="${url.context}/images/icons/popup.gif" class="popupImage" width="16" height="16" />
                   </span>
+                  <a class="webProjectLink" href="${url.context}${wp.url}" target="new"><img class="itemImageIcon" src="${url.context}/images/icons/view_web_project.gif" width="16" height="16" border="0">View Web Project</a>
                   <#if wp.properties.description?exists && wp.properties.description?length!=0>
                   <br>
                   <span class="webprojectDesc">${wp.properties.description}</span>
@@ -136,6 +136,12 @@ span.webProjectInfo
 .webProjectTitle
 {
    padding: 8px;
+}
+
+img.itemImageIcon
+{
+   vertical-align: -25%;
+   padding-right:4px;
 }
 
 .formsRowSeparator

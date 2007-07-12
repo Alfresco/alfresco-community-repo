@@ -517,6 +517,12 @@ a.childSpaceLink:link, a.childSpaceLink:visited, a.childSpaceLink:hover
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
 }
 
+div.spacesNoItems
+{
+   color: #5A5741;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+}
+
 img.spaceImageIcon
 {
    vertical-align: -25%;

@@ -1374,7 +1374,11 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                                 if (docs.next())
                                 {
                                     String[] split = term.text().split(":");
-                                    end = Integer.parseInt(split[3]);
+                                    int test = Integer.parseInt(split[3]);
+                                    if(test > end)
+                                    {
+                                        end = test;
+                                    }
                                 }
                             }
                             finally
@@ -1480,7 +1484,11 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                                 if (docs.next())
                                 {
                                     String[] split = term.text().split(":");
-                                    end = Integer.parseInt(split[4]);
+                                    int test = Integer.parseInt(split[4]);
+                                    if(test > end)
+                                    {
+                                        end = test;
+                                    }
                                 }
                             }
                             finally

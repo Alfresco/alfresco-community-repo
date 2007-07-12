@@ -31,8 +31,7 @@ import java.util.Properties;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -72,9 +71,9 @@ public class TestData
     {
         final ServiceRegistry serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
         TransactionService transactionService = serviceRegistry.getTransactionService();
-        TransactionWork<Object> createUserWork = new TransactionWork<Object>()
+        RetryingTransactionCallback<Object> createUserWork = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 // Bootstrap Users
                 MutableAuthenticationDao authDAO = (MutableAuthenticationDao) applicationContext.getBean("alfDaoImpl");
@@ -93,7 +92,7 @@ public class TestData
                 return null;
             }
         };
-        TransactionUtil.executeInUserTransaction(transactionService, createUserWork);
+        transactionService.getRetryingTransactionHelper().doInTransaction(createUserWork);
 
         try
         {

@@ -33,8 +33,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
@@ -340,9 +339,9 @@ public abstract class AbstractPatch implements Patch
             {
                 public String doWork() throws Exception
                 {
-                    TransactionWork<String> patchWork = new TransactionWork<String>()
+                    RetryingTransactionCallback<String> patchWork = new RetryingTransactionCallback<String>()
                     {
-                        public String doWork() throws Exception
+                        public String execute() throws Exception
                         {
 
                             // downgrade integrity checking
@@ -353,8 +352,7 @@ public abstract class AbstractPatch implements Patch
                             return report;
                         }
                     };
-
-                    return TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, patchWork);
+                    return transactionService.getRetryingTransactionHelper().doInTransaction(patchWork);
                 }
             };
             String report = AuthenticationUtil.runAs(authorisedPathWork, AuthenticationUtil.getSystemUserName());

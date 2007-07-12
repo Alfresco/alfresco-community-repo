@@ -37,8 +37,7 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -109,9 +108,9 @@ public class PerformanceNodeServiceTest extends TestCase
         contentService = (ContentService) applicationContext.getBean("contentService");
         
         // create a first store directly
-        TransactionWork<NodeRef> createStoreWork = new TransactionWork<NodeRef>()
+        RetryingTransactionCallback<NodeRef> createStoreWork = new RetryingTransactionCallback<NodeRef>()
         {
-            public NodeRef doWork()
+            public NodeRef execute()
             {
                 StoreRef storeRef = nodeService.createStore(
                         StoreRef.PROTOCOL_WORKSPACE,
@@ -119,7 +118,7 @@ public class PerformanceNodeServiceTest extends TestCase
                 return nodeService.getRootNode(storeRef);
             }
         };
-        rootNodeRef = TransactionUtil.executeInUserTransaction(txnService, createStoreWork);
+        rootNodeRef = txnService.getRetryingTransactionHelper().doInTransaction(createStoreWork);
     }
     
     @Override
@@ -165,16 +164,16 @@ public class PerformanceNodeServiceTest extends TestCase
         startTime = System.currentTimeMillis();
         
         // ensure that we execute the node tree building in a transaction
-        TransactionWork<Object> buildChildrenWork = new TransactionWork<Object>()
+        RetryingTransactionCallback<Object> buildChildrenWork = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork()
+            public Object execute()
             {
                 IntegrityChecker.setWarnInTransaction();
                 buildNodeChildren(rootNodeRef, 1, testDepth, testChildCount);
                 return null;
             }
         };
-        TransactionUtil.executeInUserTransaction(txnService, buildChildrenWork);
+        txnService.getRetryingTransactionHelper().doInTransaction(buildChildrenWork);
         
         long endTime = System.currentTimeMillis();
         

@@ -43,7 +43,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authority.AuthorityDAO;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
@@ -281,13 +281,14 @@ public class WorkflowInterpreter extends AbstractLifecycleBean
         {
             public String doWork() throws Exception
             {
-                return TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<String>()
+                RetryingTransactionCallback<String> txnWork = new RetryingTransactionCallback<String>()
                 {
-                    public String doWork() throws Exception
+                    public String execute() throws Exception
                     {
                         return executeCommand(line);
                     }
-                });
+                };
+                return transactionService.getRetryingTransactionHelper().doInTransaction(txnWork);
             }
         }, username);
     }

@@ -46,8 +46,7 @@ import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
 import org.alfresco.repo.search.transaction.SimpleTransaction;
 import org.alfresco.repo.search.transaction.SimpleTransactionManager;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.transaction.TransactionService;
@@ -965,15 +964,15 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
          */
         public void backup()
         {
-            TransactionWork<Object> backupWork = new TransactionWork<Object>()
+            RetryingTransactionCallback<Object> backupWork = new RetryingTransactionCallback<Object>()
             {
-                public Object doWork() throws Exception
+                public Object execute() throws Exception
                 {
                     backupImpl();
                     return null;
                 }
             };
-            TransactionUtil.executeInUserTransaction(transactionService, backupWork);
+            transactionService.getRetryingTransactionHelper().doInTransaction(backupWork);
         }
 
         private void backupImpl()

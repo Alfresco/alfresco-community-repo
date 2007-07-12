@@ -29,8 +29,7 @@ import java.util.List;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.Transaction;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
@@ -243,9 +242,9 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
             logger.debug("Reindexing transaction: " + txnId);
         }
         
-        TransactionWork<Object> reindexWork = new TransactionWork<Object>()
+        RetryingTransactionCallback<Object> reindexWork = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 // get the node references pertinent to the transaction
                 List<NodeRef> nodeRefs = nodeDaoService.getTxnChanges(txnId);
@@ -278,7 +277,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                 return null;
             }
         };
-        TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, reindexWork, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork, true);
         // done
     }
 }

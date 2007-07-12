@@ -30,7 +30,7 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
@@ -212,22 +212,15 @@ public class TransactionAwareSingletonTest extends TestCase
     
     private void check(final Integer expected, boolean inTransaction)
     {
-        TransactionWork<Object> checkWork = new TransactionWork<Object>()
+        RetryingTransactionCallback<Object> checkWork = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 Integer actual = singleton.get();
                 assertTrue("Values don't match: " + expected + " != " + actual, actual == expected);
                 return null;
             }
         };
-        if (inTransaction)
-        {
-            TransactionUtil.executeInUserTransaction(transactionService, checkWork);
-        }
-        else
-        {
-            TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, checkWork);
-        }
+        transactionService.getRetryingTransactionHelper().doInTransaction(checkWork, false, !inTransaction);
     }
 }

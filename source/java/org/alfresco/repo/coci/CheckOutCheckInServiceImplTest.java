@@ -26,17 +26,15 @@ package org.alfresco.repo.coci;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
-import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -419,11 +417,10 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         
         final NodeRef finalNodeRef = origNodeRef;        
         
-        TransactionUtil.executeInUserTransaction(
-                this.transactionService,
-                new TransactionUtil.TransactionWork<Object>()
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<Object>()
                 {
-                    public Object doWork()
+                    public Object execute()
                     {
                         NodeRef wk2 = CheckOutCheckInServiceImplTest.this.cociService.getWorkingCopy(finalNodeRef);
                         assertNotNull(wk2);
@@ -432,7 +429,6 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
                         CheckOutCheckInServiceImplTest.this.cociService.cancelCheckout(workingCopy);                        
                         return null;
                     }
-                    
                 });
         
         NodeRef wk3 = this.cociService.getWorkingCopy(this.nodeRef);

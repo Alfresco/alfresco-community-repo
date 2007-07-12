@@ -23,7 +23,7 @@
 
 package org.alfresco.repo.avm;
 
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
 
 /**
@@ -73,16 +73,14 @@ public class Issuer
      */
     public void initialize()
     {
-        class TxnWork implements TransactionUtil.TransactionWork<Long>
+        class TxnWork implements RetryingTransactionCallback<Long>
         {
-            public Long doWork() throws Exception
+            public Long execute() throws Exception
             {
                 return AVMDAOs.Instance().fIssuerDAO.getIssuerValue(fName);
             }
         }
-        Long result = TransactionUtil.executeInUserTransaction(fTransactionService,
-                                                               new TxnWork(),
-                                                               true);
+        Long result = fTransactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork(), true);
         if (result == null)
         {
             fNext = 0L;

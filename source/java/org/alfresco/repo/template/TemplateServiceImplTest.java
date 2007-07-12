@@ -34,11 +34,9 @@ import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.BaseNodeServiceTest;
-import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -54,7 +52,6 @@ public class TemplateServiceImplTest extends TestCase
 {
     private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
-    private ContentService contentService;
     private TemplateService templateService;
     private NodeService nodeService;
     private TransactionService transactionService;
@@ -68,11 +65,10 @@ public class TemplateServiceImplTest extends TestCase
     {
         super.setUp();
         
-        transactionService = (TransactionService)this.ctx.getBean("transactionComponent");
-        contentService = (ContentService)this.ctx.getBean("contentService");
-        nodeService = (NodeService)this.ctx.getBean("nodeService");
-        templateService = (TemplateService)this.ctx.getBean("templateService");
-        serviceRegistry = (ServiceRegistry)this.ctx.getBean("ServiceRegistry");
+        transactionService = (TransactionService)ctx.getBean("transactionComponent");
+        nodeService = (NodeService)ctx.getBean("nodeService");
+        templateService = (TemplateService)ctx.getBean("templateService");
+        serviceRegistry = (ServiceRegistry)ctx.getBean("ServiceRegistry");
         
         this.authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
         this.authenticationComponent.setSystemUserAsCurrentUser();
@@ -106,12 +102,11 @@ public class TemplateServiceImplTest extends TestCase
     
     public void testTemplates()
     {
-        TransactionUtil.executeInUserTransaction(
-            transactionService,
-            new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(
+            new RetryingTransactionCallback<Object>()
             {
                 @SuppressWarnings("unchecked")
-                public Object doWork() throws Exception
+                public Object execute() throws Exception
                 {
                     StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "template_" + System.currentTimeMillis());
                     NodeRef root = nodeService.getRootNode(store);

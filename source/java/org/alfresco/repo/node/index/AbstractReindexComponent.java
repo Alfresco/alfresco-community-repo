@@ -39,8 +39,7 @@ import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -210,15 +209,15 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                 auth = AuthenticationUtil.getCurrentAuthentication();
                 // authenticate as the system user
                 authenticationComponent.setSystemUserAsCurrentUser();
-                TransactionWork<Object> reindexWork = new TransactionWork<Object>()
+                RetryingTransactionCallback<Object> reindexWork = new RetryingTransactionCallback<Object>()
                 {
-                    public Object doWork() throws Exception
+                    public Object execute() throws Exception
                     {
                         reindexImpl();
                         return null;
                     }
                 };
-                TransactionUtil.executeInUserTransaction(transactionService, reindexWork);
+                transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork);
             }
             finally
             {
@@ -426,9 +425,9 @@ public abstract class AbstractReindexComponent implements IndexRecovery
             logger.debug("Reindexing transaction: " + txnId);
         }
         
-        TransactionWork<Object> reindexWork = new TransactionWork<Object>()
+        RetryingTransactionCallback<Object> reindexWork = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 // get the node references pertinent to the transaction
                 List<NodeRef> nodeRefs = nodeDaoService.getTxnChanges(txnId);
@@ -461,7 +460,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                 return null;
             }
         };
-        TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, reindexWork, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork, true);
         // done
     }
 }

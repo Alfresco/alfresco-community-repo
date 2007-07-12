@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.jbpm.JbpmConfiguration;
 import org.jbpm.job.Job;
 import org.jbpm.job.executor.JobExecutorThread;
@@ -41,14 +41,6 @@ public class AlfrescoJobExecutorThread extends JobExecutorThread
     
     /**
      * Constructor
-     * 
-     * @param name
-     * @param jobExecutor
-     * @param jbpmConfiguration
-     * @param idleInterval
-     * @param maxIdleInterval
-     * @param maxLockTime
-     * @param maxHistory
      */
     public AlfrescoJobExecutorThread(String name, AlfrescoJobExecutor jobExecutor, JbpmConfiguration jbpmConfiguration, int idleInterval, int maxIdleInterval, long maxLockTime, int maxHistory)
     {
@@ -56,13 +48,13 @@ public class AlfrescoJobExecutorThread extends JobExecutorThread
         this.alfrescoJobExecutor = jobExecutor;
     }
 
-    /* (non-Javadoc)
-     * @see org.jbpm.job.executor.JobExecutorThread#executeJob(org.jbpm.job.Job)
+    /**
+     * {@inheritDoc}
      */
     @Override
     protected void executeJob(Job job)
     {
-        TransactionUtil.executeInUserTransaction(alfrescoJobExecutor.getTransactionService(), new TransactionJob(job));
+        alfrescoJobExecutor.getTransactionService().getRetryingTransactionHelper().doInTransaction(new TransactionJob(job));
     }
     
     /**
@@ -70,24 +62,24 @@ public class AlfrescoJobExecutorThread extends JobExecutorThread
      * 
      * @author davidc
      */
-    private class TransactionJob implements TransactionUtil.TransactionWork<Object>
+    private class TransactionJob implements RetryingTransactionCallback<Object>
     {
         private Job job;
 
         /**
          * Constructor
          * 
-         * @param job
+         * @param job       the job to execute
          */
         public TransactionJob(Job job)
         {
             this.job = job;
         }
 
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.transaction.TransactionUtil.TransactionWork#doWork()
+        /**
+         * {@inheritDoc}
          */
-        public Object doWork() throws Throwable
+        public Object execute() throws Throwable
         {
             AlfrescoJobExecutorThread.super.executeJob(job);
             return null;

@@ -42,8 +42,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -170,16 +169,15 @@ public class AVMExpiredContentProcessor
         {
             public String doWork() throws Exception
             {
-                TransactionWork<String> expiredContentWork = new TransactionWork<String>()
+                RetryingTransactionCallback<String> expiredContentWork = new RetryingTransactionCallback<String>()
                 {
-                    public String doWork() throws Exception
+                    public String execute() throws Exception
                     {
                          processExpiredContent();
                          return null;
                      }
                  };
-
-                 return TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, expiredContentWork);
+                 return transactionService.getRetryingTransactionHelper().doInTransaction(expiredContentWork);
              }
          };
          

@@ -42,7 +42,7 @@ import org.alfresco.repo.action.executer.CompositeActionExecuter;
 import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
@@ -810,11 +810,10 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 					// Sleep for a bit
 					Thread.sleep(sleepTime);
 					
-					done = (TransactionUtil.executeInUserTransaction(
-								transactionService,
-								new TransactionUtil.TransactionWork<Boolean>()
+					done = (transactionService.getRetryingTransactionHelper().doInTransaction(
+								new RetryingTransactionCallback<Boolean>()
 								{
-									public Boolean doWork()
+									public Boolean execute()
 									{	
 										// See if the action has been performed
                                         boolean done = test.executeTest();
@@ -947,11 +946,10 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 		// Modify the compensating action so that it will also fail
 		compensatingAction.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, QName.createQName("{test}badAspect"));
 		
-		TransactionUtil.executeInUserTransaction(
-				this.transactionService,
-				new TransactionUtil.TransactionWork<Object>()
+		this.transactionService.getRetryingTransactionHelper().doInTransaction(
+				new RetryingTransactionCallback<Object>()
 				{
-					public Object doWork()
+					public Object execute()
 					{						
 						try
 						{

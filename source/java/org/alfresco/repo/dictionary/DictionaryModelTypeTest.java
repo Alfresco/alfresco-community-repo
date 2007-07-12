@@ -26,7 +26,7 @@ package org.alfresco.repo.dictionary;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -180,9 +180,9 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         setComplete();
         endTransaction();
         
-        final NodeRef workingCopy = TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<NodeRef>()
+        final NodeRef workingCopy = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
         {
-            public NodeRef doWork() throws Exception
+            public NodeRef execute() throws Exception
             {
                 // Check that the meta data has been extracted from the model
                 assertEquals(QName.createQName("{http://www.alfresco.org/test/testmodel1/1.0}testModelOne"), 
@@ -210,9 +210,9 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
             }
         });
         
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 // Check that the policy has not been fired since we have updated a working copy
                 assertEquals("1.0", DictionaryModelTypeTest.this.nodeService.getProperty(workingCopy, ContentModel.PROP_MODEL_VERSION));
@@ -223,9 +223,9 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
             }
         });
    
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {                        
                 // Now check that the model has been updated
                 assertEquals("1.1", DictionaryModelTypeTest.this.nodeService.getProperty(modelNode, ContentModel.PROP_MODEL_VERSION));
@@ -270,9 +270,9 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         setComplete();
         endTransaction();
         
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {      
                 // The model should not yet be loaded
                 try
@@ -293,9 +293,9 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
             }
         });
         
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {      
                 // The model should now be loaded
                 assertNotNull(DictionaryModelTypeTest.this.dictionaryService.getModel(TEST_MODEL_ONE));
@@ -307,9 +307,9 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
             }
         });
         
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {      
                 // The model should not be loaded
                 try
@@ -330,9 +330,9 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
             }
         });
         
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {      
                 // The model should now be loaded
                 assertNotNull(DictionaryModelTypeTest.this.dictionaryService.getModel(TEST_MODEL_ONE));

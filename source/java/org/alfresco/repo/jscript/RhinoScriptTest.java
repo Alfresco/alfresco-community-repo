@@ -37,7 +37,7 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -113,11 +113,10 @@ public class RhinoScriptTest extends TestCase
     
     public void testRhinoIntegration()
     {
-        TransactionUtil.executeInUserTransaction(
-            transactionService,
-            new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(
+            new RetryingTransactionCallback<Object>()
             {
-                public Object doWork() throws Exception
+                public Object execute() throws Exception
                 {
                     // check that rhino script engine is available
                     Context cx = Context.enter();
@@ -161,11 +160,10 @@ public class RhinoScriptTest extends TestCase
     
     public void testJSObjectWrapping()
     {
-        TransactionUtil.executeInUserTransaction(
-            transactionService,
-            new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(
+            new RetryingTransactionCallback<Object>()
             {
-                public Object doWork() throws Exception
+                public Object execute() throws Exception
                 {
                     StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
                     NodeRef root = nodeService.getRootNode(store);
@@ -215,11 +213,10 @@ public class RhinoScriptTest extends TestCase
     
     public void testScriptService()
     {
-        TransactionUtil.executeInUserTransaction(
-            transactionService,
-            new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(
+            new RetryingTransactionCallback<Object>()
             {
-                public Object doWork() throws Exception
+                public Object execute() throws Exception
                 {
                     StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
                     NodeRef root = nodeService.getRootNode(store);
@@ -274,11 +271,10 @@ public class RhinoScriptTest extends TestCase
     
     public void testScriptActions()
     {
-        TransactionUtil.executeInUserTransaction(
-            transactionService,
-            new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(
+            new RetryingTransactionCallback<Object>()
             {
-                public Object doWork() throws Exception
+                public Object execute() throws Exception
                 {
                     StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
                     NodeRef root = nodeService.getRootNode(store);
@@ -329,11 +325,10 @@ public class RhinoScriptTest extends TestCase
     
     public void xtestScriptActionsMail()
     {
-        TransactionUtil.executeInUserTransaction(
-            transactionService,
-            new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(
+            new RetryingTransactionCallback<Object>()
             {
-                public Object doWork() throws Exception
+                public Object execute() throws Exception
                 {
                     StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
                     NodeRef root = nodeService.getRootNode(store);

@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -461,10 +461,10 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
 
                     try
                     {
-                        TransactionUtil.executeInUserTransaction(abstractScheduledAction.getTransactionService(),
-                                new TransactionUtil.TransactionWork<Object>()
+                        abstractScheduledAction.getTransactionService().getRetryingTransactionHelper().doInTransaction(
+                                new RetryingTransactionCallback<Object>()
                                 {
-                                    public Object doWork() throws Exception
+                                    public Object execute() throws Exception
                                     {
                                         // Build the full list of compensating actions
                                         // If anything goes wrong we need to do all these instead
@@ -561,10 +561,10 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
 
                     try
                     {
-                        TransactionUtil.executeInUserTransaction(abstractScheduledAction.getTransactionService(),
-                                new TransactionUtil.TransactionWork<Object>()
+                        abstractScheduledAction.getTransactionService().getRetryingTransactionHelper().doInTransaction(
+                                new RetryingTransactionCallback<Object>()
                                 {
-                                    public Object doWork() throws Exception
+                                    public Object execute() throws Exception
                                     {
                                         // try action - failure triggers compensation
                                         Action action = abstractScheduledAction.getAction(nodeRef);
@@ -611,10 +611,10 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
 
                     try
                     {
-                        TransactionUtil.executeInUserTransaction(abstractScheduledAction.getTransactionService(),
-                                new TransactionUtil.TransactionWork<Object>()
+                        abstractScheduledAction.getTransactionService().getRetryingTransactionHelper().doInTransaction(
+                                new RetryingTransactionCallback<Object>()
                                 {
-                                    public Object doWork() throws Exception
+                                    public Object execute() throws Exception
                                     {
                                         try
                                         {

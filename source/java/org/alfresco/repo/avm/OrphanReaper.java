@@ -27,7 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.alfresco.repo.domain.DbAccessControlList;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.log4j.Logger;
 import org.hibernate.SessionFactory;
@@ -242,9 +242,9 @@ public class OrphanReaper
      */
     public void doBatch()
     {
-        class TxnWork implements TransactionUtil.TransactionWork<Object>
+        class TxnWork implements RetryingTransactionCallback<Object>
         {
-            public Object doWork()
+            public Object execute()
                 throws Exception
             {
                 if (fPurgeQueue == null)
@@ -341,8 +341,7 @@ public class OrphanReaper
         }
         try
         {
-            TransactionUtil.executeInUserTransaction(fTransactionService, 
-                                                     new TxnWork());
+            fTransactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
         }
         catch (Exception e)
         {

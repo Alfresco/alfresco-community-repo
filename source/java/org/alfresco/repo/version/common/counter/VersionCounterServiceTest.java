@@ -32,8 +32,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -157,9 +156,9 @@ public class VersionCounterServiceTest extends TestCase
         @Override
         public void run()
         {
-            TransactionWork<Object> versionWork = new TransactionWork<Object>()
+            RetryingTransactionCallback<Object> versionWork = new RetryingTransactionCallback<Object>()
             {
-                public Object doWork() throws Exception
+                public Object execute() throws Exception
                 {
                     // wait for all other threads to enter into their transactions
                     startSignal.countDown();
@@ -174,7 +173,7 @@ public class VersionCounterServiceTest extends TestCase
             };
             try
             {
-                TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, versionWork, false);
+                transactionService.getRetryingTransactionHelper().doInTransaction(versionWork, false);
                 error = null;
             }
             catch (Throwable e)

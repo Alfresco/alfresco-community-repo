@@ -40,8 +40,7 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.registry.RegistryKey;
 import org.alfresco.repo.admin.registry.RegistryService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleDependency;
 import org.alfresco.service.cmr.module.ModuleDetails;
@@ -215,15 +214,15 @@ public class ModuleComponentHelper
             final Set<String> startedModules = new HashSet<String>(2);
             for (final ModuleDetails module : modules)
             {
-                TransactionWork<Object> startModuleWork = new TransactionWork<Object>()
+                RetryingTransactionCallback<Object> startModuleWork = new RetryingTransactionCallback<Object>()
                 {
-                    public Object doWork() throws Exception
+                    public Object execute() throws Exception
                     {
                         startModule(module, startedModules, executedComponents);
                         return null;
                     }
                 };
-                TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, startModuleWork);
+                transactionService.getRetryingTransactionHelper().doInTransaction(startModuleWork);
             }
             
             // Check for missing modules.

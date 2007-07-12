@@ -35,8 +35,8 @@ import java.util.Map;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -170,25 +170,26 @@ public class FileImporterImpl implements FileImporter
             boolean recurse,
             final String containerName) throws Throwable
     {
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
         if (containerName != null)
         {
-            TransactionWork<NodeRef> createDirectoryWork = new TransactionWork<NodeRef>()
+            RetryingTransactionCallback<NodeRef> createDirectoryWork = new RetryingTransactionCallback<NodeRef>()
             {
-                public NodeRef doWork() throws Exception
+                public NodeRef execute() throws Exception
                 {
                     return createDirectory(container, containerName, containerName);
                 }
             };
-            NodeRef newContainer = TransactionUtil.executeInUserTransaction(transactionService, createDirectoryWork);
+            NodeRef newContainer = txnHelper.doInTransaction(createDirectoryWork);
             return create(counter, newContainer, file, filter, recurse, null);
           
         }
         if (file.isDirectory())
         {
             counter.increment();
-            TransactionWork<NodeRef> createDirectoryWork = new TransactionWork<NodeRef>()
+            RetryingTransactionCallback<NodeRef> createDirectoryWork = new RetryingTransactionCallback<NodeRef>()
             {
-                public NodeRef doWork() throws Exception
+                public NodeRef execute() throws Exception
                 {
                     return createDirectory(container, file);
                 }
@@ -196,13 +197,11 @@ public class FileImporterImpl implements FileImporter
             NodeRef directoryNodeRef = null;
             if (txnPerFile)
             {
-                directoryNodeRef = TransactionUtil.executeInUserTransaction(
-                        transactionService,
-                        createDirectoryWork);
+                directoryNodeRef = txnHelper.doInTransaction(createDirectoryWork);
             }
             else
             {
-                directoryNodeRef = createDirectoryWork.doWork();
+                directoryNodeRef = createDirectoryWork.execute();
             }
             
             if (recurse)
@@ -219,9 +218,9 @@ public class FileImporterImpl implements FileImporter
         else
         {
             counter.increment();
-            TransactionWork<NodeRef> createFileWork = new TransactionWork<NodeRef>()
+            RetryingTransactionCallback<NodeRef> createFileWork = new RetryingTransactionCallback<NodeRef>()
             {
-                public NodeRef doWork() throws Exception
+                public NodeRef execute() throws Exception
                 {
                     return createFile(container, file);
                 }
@@ -229,13 +228,11 @@ public class FileImporterImpl implements FileImporter
             NodeRef fileNodeRef = null;
             if (txnPerFile)
             {
-                fileNodeRef = TransactionUtil.executeInUserTransaction(
-                        transactionService,
-                        createFileWork);
+                fileNodeRef = txnHelper.doInTransaction(createFileWork);
             }
             else
             {
-                fileNodeRef = createFileWork.doWork();
+                fileNodeRef = createFileWork.execute();
             }
             return fileNodeRef;
         }

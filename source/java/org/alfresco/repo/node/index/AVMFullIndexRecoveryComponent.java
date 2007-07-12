@@ -4,8 +4,7 @@ import java.util.List;
 
 import org.alfresco.repo.node.index.FullIndexRecoveryComponent.RecoveryMode;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.apache.commons.logging.Log;
@@ -199,9 +198,9 @@ public class AVMFullIndexRecoveryComponent extends AbstractReindexComponent
             logger.debug("Reindexing avm store: " + store + " snapshot id " + id);
         }
 
-        TransactionWork<Object> reindexWork = new TransactionWork<Object>()
+        RetryingTransactionCallback<Object> reindexWork = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 if (!avmSnapShotTriggeredIndexingMethodInterceptor.isSnapshotIndexed(store, id))
                 {
@@ -211,7 +210,7 @@ public class AVMFullIndexRecoveryComponent extends AbstractReindexComponent
                 return null;
             }
         };
-        TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, reindexWork, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork, true);
         // done
     }
 

@@ -19,7 +19,7 @@ package org.alfresco.repo.security.person;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -78,11 +78,10 @@ public class SplitPersonCleanupBootstrapBean extends AbstractLifecycleBean
      */
     private int removePeopleWithGUIDBasedIds()
     {
-        Integer count = TransactionUtil.executeInUserTransaction(transactionService,
-                new TransactionUtil.TransactionWork<Integer>()
+        Integer count = transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<Integer>()
                 {
-
-                    public Integer doWork() throws Exception
+                    public Integer execute() throws Exception
                     {
                         int count = 0;
                         // A GUID should be 36 chars
@@ -121,6 +120,7 @@ public class SplitPersonCleanupBootstrapBean extends AbstractLifecycleBean
             String guidString = uid.substring(uid.length() - 36);
             try
             {
+                @SuppressWarnings("unused")
                 UUID id = new UUID(guidString);
                 // We have a valid guid.
                 return true;
@@ -140,6 +140,7 @@ public class SplitPersonCleanupBootstrapBean extends AbstractLifecycleBean
                 guidString = guidString.substring(1, 37);
                 try
                 {
+                    @SuppressWarnings("unused")
                     UUID id = new UUID(guidString);
                     // We have a valid guid.
                     return true;

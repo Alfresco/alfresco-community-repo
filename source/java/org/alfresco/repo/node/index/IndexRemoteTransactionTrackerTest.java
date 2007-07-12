@@ -33,8 +33,7 @@ import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -95,9 +94,9 @@ public class IndexRemoteTransactionTrackerTest extends TestCase
         authenticationComponent.setSystemUserAsCurrentUser();
         
         // disable indexing
-        TransactionWork<ChildAssociationRef> createNodeWork = new TransactionWork<ChildAssociationRef>()
+        RetryingTransactionCallback<ChildAssociationRef> createNodeWork = new RetryingTransactionCallback<ChildAssociationRef>()
         {
-            public ChildAssociationRef doWork() throws Exception
+            public ChildAssociationRef execute() throws Exception
             {
                 StoreRef storeRef = new StoreRef("test", getName() + "-" + System.currentTimeMillis());
                 NodeRef rootNodeRef = null;
@@ -117,7 +116,7 @@ public class IndexRemoteTransactionTrackerTest extends TestCase
                 return childAssocRef;
             }
         };
-        ChildAssociationRef childAssocRef = TransactionUtil.executeInUserTransaction(transactionService, createNodeWork);
+        ChildAssociationRef childAssocRef = transactionService.getRetryingTransactionHelper().doInTransaction(createNodeWork);
     }
     
     public void testSetup() throws Exception

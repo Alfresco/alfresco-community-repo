@@ -27,8 +27,7 @@ package org.alfresco.repo.node.index;
 import java.util.List;
 
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneIndexerImpl;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -113,15 +112,15 @@ public class MissingContentReindexComponent extends AbstractReindexComponent
             {
                 final NodeRef childNodeRef = row.getNodeRef();
                 // prompt for a reindex - it might fail again, but we just keep plugging away
-                TransactionWork<Object> reindexWork = new TransactionWork<Object>()
+                RetryingTransactionCallback<Object> reindexWork = new RetryingTransactionCallback<Object>()
                 {
-                    public Object doWork()
+                    public Object execute()
                     {
                         indexer.updateNode(childNodeRef);
                         return null;
                     }
                 };
-                TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, reindexWork);
+                transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork);
                 // check if we have to break out
                 if (isShuttingDown())
                 {

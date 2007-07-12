@@ -35,8 +35,7 @@ import java.util.Properties;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.ImporterBootstrap;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -163,9 +162,9 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
     {
         // initialise the repository descriptor
         // note: this requires that the repository schema has already been initialised
-        TransactionWork<Descriptor> createDescriptorWork = new TransactionUtil.TransactionWork<Descriptor>()
+        RetryingTransactionCallback<Descriptor> createDescriptorWork = new RetryingTransactionCallback<Descriptor>()
         {
-            public Descriptor doWork()
+            public Descriptor execute()
             {
                 // initialise license service (if installed)
                 initialiseLicenseService();
@@ -180,7 +179,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
                 return createInstalledRepositoryDescriptor();
             }
         };
-        installedRepoDescriptor = TransactionUtil.executeInUserTransaction(transactionService, createDescriptorWork);
+        installedRepoDescriptor = transactionService.getRetryingTransactionHelper().doInTransaction(createDescriptorWork);
     }
 
     @Override

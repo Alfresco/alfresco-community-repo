@@ -31,7 +31,7 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -224,9 +224,9 @@ public class AlfrescoTransactionSupportTest extends TestCase
             }
         };
         // start a transaction
-        TransactionWork<Object> bindWork = new TransactionWork<Object>()
+        RetryingTransactionCallback<Object> bindWork = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 // just bind the listener to the transaction
                 AlfrescoTransactionSupport.bindListener(dummyListener);
@@ -235,7 +235,7 @@ public class AlfrescoTransactionSupportTest extends TestCase
             }
         };
         // kick it all off
-        TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, bindWork);
+        transactionService.getRetryingTransactionHelper().doInTransaction(bindWork);
         
         // make sure that the binding all worked
         assertTrue("Expected callbacks not all processed: " + testList, testList.size() == 0);

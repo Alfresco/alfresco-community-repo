@@ -34,9 +34,7 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.node.index.FullIndexRecoveryComponent.RecoveryMode;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
@@ -173,15 +171,15 @@ public class ConfigurationChecker extends AbstractLifecycleBean
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        TransactionWork<Object> checkWork = new TransactionWork<Object>()
+        RetryingTransactionCallback<Object> checkWork = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 check();
                 return null;
             }
         };
-        TransactionUtil.executeInUserTransaction(transactionService, checkWork);
+        transactionService.getRetryingTransactionHelper().doInTransaction(checkWork);
     }
     
     /**
@@ -216,6 +214,7 @@ public class ConfigurationChecker extends AbstractLifecycleBean
             //    continue;
             //}
             
+            @SuppressWarnings("unused")
             NodeRef rootNodeRef = null;
             try
             {

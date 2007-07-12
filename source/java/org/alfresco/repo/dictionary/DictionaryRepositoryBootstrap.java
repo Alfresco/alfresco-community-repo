@@ -31,7 +31,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -131,9 +131,9 @@ public class DictionaryRepositoryBootstrap
     @SuppressWarnings("unchecked")
     public void bootstrap()
     {
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 DictionaryRepositoryBootstrap.this.authenticationComponent.setCurrentUser(
                         DictionaryRepositoryBootstrap.this.authenticationComponent.getSystemUserName());

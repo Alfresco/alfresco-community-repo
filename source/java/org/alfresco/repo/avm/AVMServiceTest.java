@@ -56,7 +56,7 @@ import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.impl.lucene.AVMLuceneIndexer;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMCycleException;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -68,11 +68,8 @@ import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.avm.deploy.DeploymentReport;
 import org.alfresco.service.cmr.avm.deploy.DeploymentService;
-import org.alfresco.service.cmr.avm.locking.AVMLockingException;
-import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncException;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.remote.RepoRemote;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -1081,17 +1078,17 @@ public class AVMServiceTest extends AVMServiceTestBase
             action.setParameterValue(AVMRevertToVersionAction.TOREVERT, toRevert);
             final AVMRevertToVersionAction revert = (AVMRevertToVersionAction) fContext
                     .getBean("avm-revert-to-version");
-            class TxnWork implements TransactionUtil.TransactionWork<Object>
+            class TxnWork implements RetryingTransactionCallback<Object>
             {
-                public Object doWork() throws Exception
+                public Object execute() throws Exception
                 {
                     revert.execute(action, AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c/foo"));
                     return null;
                 }
-            }
-            ;
-            TransactionUtil.executeInUserTransaction((TransactionService) fContext.getBean("transactionComponent"),
-                    new TxnWork());
+            };
+            TransactionService transactionService = (TransactionService) fContext.getBean("transactionService");
+            transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
+            
             results = searchService.query(storeRef, "lucene", "TEXT:\"HEAD\"");
             assertEquals(0, results.length());
             results.close();
@@ -1774,17 +1771,17 @@ public class AVMServiceTest extends AVMServiceTestBase
             action.setParameterValue(AVMRevertListAction.PARAM_VERSION, fService.getLatestSnapshotID("area"));
             action.setParameterValue(AVMRevertListAction.PARAM_NODE_LIST, (Serializable) paths);
             final AVMRevertListAction revert = (AVMRevertListAction) fContext.getBean("avm-revert-list");
-            class TxnWork implements TransactionUtil.TransactionWork<Object>
+            class TxnWork implements RetryingTransactionCallback<Object>
             {
-                public Object doWork() throws Exception
+                public Object execute() throws Exception
                 {
                     revert.execute(action, null);
                     return null;
                 }
-            }
-            ;
-            TransactionUtil.executeInUserTransaction((TransactionService) fContext.getBean("transactionComponent"),
-                    new TxnWork());
+            };
+            TransactionService transactionService = (TransactionService) fContext.getBean("transactionService");
+            transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
+            
             diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a", null);
             assertEquals(0, diffs.size());
             System.out.println(recursiveList("area", -1, true));
@@ -1819,17 +1816,17 @@ public class AVMServiceTest extends AVMServiceTestBase
             versionPaths.add(new Pair<Integer, String>(-1, "area:/a/b/c/bar"));
             action.setParameterValue(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable) versionPaths);
             final AVMUndoSandboxListAction revert = (AVMUndoSandboxListAction) fContext.getBean("avm-undo-list");
-            class TxnWork implements TransactionUtil.TransactionWork<Object>
+            class TxnWork implements RetryingTransactionCallback<Object>
             {
-                public Object doWork() throws Exception
+                public Object execute() throws Exception
                 {
                     revert.execute(action, null);
                     return null;
                 }
-            }
-            ;
-            TransactionUtil.executeInUserTransaction((TransactionService) fContext.getBean("transactionComponent"),
-                    new TxnWork());
+            };
+            TransactionService transactionService = (TransactionService) fContext.getBean("transactionService");
+            transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
+            
             diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a", null);
             assertEquals(0, diffs.size());
             System.out.println(recursiveList("area", -1, true));
@@ -1862,18 +1859,18 @@ public class AVMServiceTest extends AVMServiceTestBase
                     + JNDIConstants.DIR_DEFAULT_WWW + "/a"), GUID.generate(), SimpleAVMPromoteAction.NAME);
             action.setParameterValue(SimpleAVMPromoteAction.PARAM_TARGET_STORE, "main");
             final SimpleAVMPromoteAction promote = (SimpleAVMPromoteAction) fContext.getBean("simple-avm-promote");
-            class TxnWork implements TransactionUtil.TransactionWork<Object>
+            class TxnWork implements RetryingTransactionCallback<Object>
             {
-                public Object doWork() throws Exception
+                public Object execute() throws Exception
                 {
                     promote.execute(action, AVMNodeConverter.ToNodeRef(-1, "source:/"
                             + JNDIConstants.DIR_DEFAULT_WWW + "/a"));
                     return null;
                 }
-            }
-            ;
-            TransactionUtil.executeInUserTransaction((TransactionService) fContext.getBean("transactionComponent"),
-                    new TxnWork());
+            };
+            TransactionService transactionService = (TransactionService) fContext.getBean("transactionService");
+            transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
+
             assertEquals(0, fSyncService.compare(-1, "source:/" + JNDIConstants.DIR_DEFAULT_WWW, -1,
                     "main:/" + JNDIConstants.DIR_DEFAULT_WWW, null).size());
         }
@@ -1935,18 +1932,17 @@ public class AVMServiceTest extends AVMServiceTestBase
                     "foo-staging:/" + JNDIConstants.DIR_DEFAULT_WWW, null);
             assertEquals(3, diffs.size());
             final SimpleAVMSubmitAction action = (SimpleAVMSubmitAction) fContext.getBean("simple-avm-submit");
-            class TxnWork implements TransactionUtil.TransactionWork<Object>
+            class TxnWork implements RetryingTransactionCallback<Object>
             {
-                public Object doWork() throws Exception
+                public Object execute() throws Exception
                 {
                     action.execute(null, AVMNodeConverter.ToNodeRef(-1, "area:/" + JNDIConstants.DIR_DEFAULT_WWW));
                     return null;
                 }
-            }
-            ;
-            TxnWork worker = new TxnWork();
-            TransactionUtil.executeInUserTransaction((TransactionService) fContext.getBean("transactionComponent"),
-                    worker);
+            };
+            TransactionService transactionService = (TransactionService) fContext.getBean("transactionService");
+            transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
+
             diffs = fSyncService.compare(-1, "area:/" + JNDIConstants.DIR_DEFAULT_WWW, -1, "foo-staging:/"
                     + JNDIConstants.DIR_DEFAULT_WWW, null);
 
@@ -5355,7 +5351,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            class TxnCallback implements RetryingTransactionHelper.RetryingTransactionCallback
+            class TxnCallback implements RetryingTransactionHelper.RetryingTransactionCallback<Object>
             {
                 public Object execute()
                 {
@@ -5412,8 +5408,8 @@ public class AVMServiceTest extends AVMServiceTestBase
                     }
                 }
             }
-            RetryingTransactionHelper helper = (RetryingTransactionHelper) fContext
-                    .getBean("retryingTransactionHelper");
+            TransactionService transactionService = (TransactionService) fContext.getBean("transactionService");
+            RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
             helper.doInTransaction(new TxnCallback(), false);
             assertNotNull(fService.lookup(-1, "main:/layer/b/c/groo"));
         }

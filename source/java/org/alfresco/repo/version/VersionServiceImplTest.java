@@ -34,7 +34,6 @@ import java.util.Set;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -472,9 +471,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         setComplete();
         endTransaction();
 
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 // Check that the initial version has not been created
                 VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(versionableNode);
@@ -491,9 +490,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         });
         
         // Now lets have a look and make sure we have the correct number of entries in the version history
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(versionableNode);
                 assertNotNull(versionHistory);
@@ -516,9 +515,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
 
         // The initial version should have been created now
         
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 // Add some content 
                 ContentWriter contentWriter = VersionServiceImplTest.this.contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, true);
@@ -530,9 +529,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         });
         
         // Now lets have a look and make sure we have the correct number of entries in the version history
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(versionableNode);
                 assertNotNull(versionHistory);
@@ -564,9 +563,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
 
         // The initial version should NOT have been created
         
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
                 VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
                 assertNull(versionHistory);
@@ -592,9 +591,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         setComplete();
         endTransaction();
         
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
             	// Check that the version history has been created
                 VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
@@ -608,9 +607,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             }
         });
         
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
             	// Check that the version history has been removed
                 VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
@@ -623,9 +622,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             }
         });
         
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
             	// Check that the version history has been created 
                 VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
@@ -655,9 +654,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         setComplete();
         endTransaction();
         
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
             	VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
                 assertNotNull(versionHistory);
@@ -670,9 +669,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             }
         });
         
-        TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionUtil.TransactionWork<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Exception
             {
             	// Get the archived noderef
             	NodeRef archivedNodeRef = VersionServiceImplTest.this.nodeArchiveService.getArchivedNode(nodeRef);

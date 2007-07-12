@@ -36,8 +36,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.webservice.AbstractWebService;
 import org.alfresco.repo.webservice.Utils;
 import org.alfresco.repo.webservice.action.ActionFault;
@@ -138,13 +137,14 @@ public class AdministrationWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<UserQueryResults>()
+            RetryingTransactionCallback<UserQueryResults> callback = new RetryingTransactionCallback<UserQueryResults>()
             {
-                public UserQueryResults doWork() throws Exception
+                public UserQueryResults execute() throws Exception
                 {
                     return queryUsersImpl(filter);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -189,13 +189,14 @@ public class AdministrationWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<UserQueryResults>()
+            RetryingTransactionCallback<UserQueryResults> callback = new RetryingTransactionCallback<UserQueryResults>()
             {
-                public UserQueryResults doWork() throws Exception
+                public UserQueryResults execute() throws Exception
                 {
                     return fetchMoreUsersImpl(querySession);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -237,13 +238,14 @@ public class AdministrationWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<UserDetails>()
+            RetryingTransactionCallback<UserDetails> callback = new RetryingTransactionCallback<UserDetails>()
             {
-                public UserDetails doWork() throws Exception
+                public UserDetails execute() throws Exception
                 {
                     return getUserImpl(userName);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -331,13 +333,14 @@ public class AdministrationWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<UserDetails[]>()
+            RetryingTransactionCallback<UserDetails[]> callback = new RetryingTransactionCallback<UserDetails[]>()
             {
-                public UserDetails[] doWork() throws Exception
+                public UserDetails[] execute() throws Exception
                 {
                     return createUsersImpl(newUsers);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -392,13 +395,14 @@ public class AdministrationWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<UserDetails[]>()
+            RetryingTransactionCallback<UserDetails[]> callback = new RetryingTransactionCallback<UserDetails[]>()
             {
-                public UserDetails[] doWork() throws Exception
+                public UserDetails[] execute() throws Exception
                 {
                     return updateUsersImpl(users);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -451,14 +455,15 @@ public class AdministrationWebService extends AbstractWebService implements
     {
         try
         {
-            TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<Object>()
+            RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
             {
-                public Object doWork() throws Exception
+                public Object execute() throws Exception
                 {
                     changePasswordImpl(userName, oldPassword, newPassword);
                     return null;
                 }
-            });
+            };
+            transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -499,14 +504,15 @@ public class AdministrationWebService extends AbstractWebService implements
     {
         try
         {
-            TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<Object>()
+            RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
             {
-                public Object doWork() throws Exception
+                public Object execute() throws Exception
                 {
                     deleteUsersImpl(userNames);
                     return null;
                 }
-            });
+            };
+            transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {

@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.webservice.AbstractWebService;
 import org.alfresco.repo.webservice.Utils;
 import org.alfresco.repo.webservice.types.ContentFormat;
@@ -142,11 +142,10 @@ public class AuthoringWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(
-                    this.transactionService,
-                    new TransactionUtil.TransactionWork<CheckoutResult>()
+            return transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<CheckoutResult>()
                     {
-                        public CheckoutResult doWork()
+                        public CheckoutResult execute()
                         {
                             List<NodeRef> nodes = Utils.resolvePredicate(items,
                                     AuthoringWebService.this.nodeService,
@@ -224,11 +223,10 @@ public class AuthoringWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(
-                    this.transactionService,
-                    new TransactionUtil.TransactionWork<CheckinResult>()
+            return transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<CheckinResult>()
                     {
-                        public CheckinResult doWork()
+                        public CheckinResult execute()
                         {
                             // Get the passed nodes
                             List<NodeRef> nodes = Utils.resolvePredicate(
@@ -301,11 +299,10 @@ public class AuthoringWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(
-                    this.transactionService,
-                    new TransactionUtil.TransactionWork<Reference>()
+            return transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<Reference>()
                     {
-                        public Reference doWork()
+                        public Reference execute()
                         {
                             // Get the passed nodes
                             NodeRef nodeRef = Utils.convertToNodeRef(
@@ -364,11 +361,10 @@ public class AuthoringWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(
-                    this.transactionService,
-                    new TransactionUtil.TransactionWork<CancelCheckoutResult>()
+            return transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<CancelCheckoutResult>()
                     {
-                        public CancelCheckoutResult doWork()
+                        public CancelCheckoutResult execute()
                         {
                             // Get the passed nodes
                             List<NodeRef> nodes = Utils.resolvePredicate(
@@ -421,11 +417,10 @@ public class AuthoringWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(
-                    this.transactionService,
-                    new TransactionUtil.TransactionWork<Reference[]>()
+            return transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<Reference[]>()
                     {
-                        public Reference[] doWork()
+                        public Reference[] execute()
                         {
                             // Get the passed nodes
                             List<NodeRef> nodes = Utils.resolvePredicate(
@@ -489,11 +484,10 @@ public class AuthoringWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(
-                    this.transactionService,
-                    new TransactionUtil.TransactionWork<Reference[]>()
+            return transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<Reference[]>()
                     {
-                        public Reference[] doWork()
+                        public Reference[] execute()
                         {
                             // Get the passed nodes
                             List<NodeRef> nodes = Utils.resolvePredicate(
@@ -536,11 +530,10 @@ public class AuthoringWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(
-                    this.transactionService,
-                    new TransactionUtil.TransactionWork<LockStatus[]>()
+            return transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<LockStatus[]>()
                     {
-                        public LockStatus[] doWork()
+                        public LockStatus[] execute()
                         {
                             // Get the passed nodes
                             List<NodeRef> nodes = Utils.resolvePredicate(
@@ -613,11 +606,10 @@ public class AuthoringWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(
-                    this.transactionService,
-                    new TransactionUtil.TransactionWork<VersionResult>()
+            return transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<VersionResult>()
                     {
-                        public VersionResult doWork()
+                        public VersionResult execute()
                         {
                             // Get the passed nodes
                             List<NodeRef> nodes = Utils.resolvePredicate(
@@ -675,11 +667,10 @@ public class AuthoringWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(
-                    this.transactionService,
-                    new TransactionUtil.TransactionWork<VersionHistory>()
+            return transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<VersionHistory>()
                     {
-                        public VersionHistory doWork()
+                        public VersionHistory execute()
                         {
                             org.alfresco.service.cmr.version.VersionHistory versionHistory = 
                                 AuthoringWebService.this.versionService.getVersionHistory(
@@ -728,11 +719,10 @@ public class AuthoringWebService extends AbstractWebService implements
     {
         try
         {
-             TransactionUtil.executeInUserTransaction(
-                    this.transactionService,
-                    new TransactionUtil.TransactionWork()
+            transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<Object>()
                     {
-                        public Object doWork()
+                        public Object execute()
                         {
                             NodeRef nodeRef = Utils.convertToNodeRef(
                                                         node,
@@ -781,11 +771,10 @@ public class AuthoringWebService extends AbstractWebService implements
     {
         try
         {
-             return TransactionUtil.executeInUserTransaction(
-                    this.transactionService,
-                    new TransactionUtil.TransactionWork<VersionHistory>()
+            return transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<VersionHistory>()
                     {
-                        public VersionHistory doWork()
+                        public VersionHistory execute()
                         {
                             NodeRef nodeRef = Utils.convertToNodeRef(
                                                         node,

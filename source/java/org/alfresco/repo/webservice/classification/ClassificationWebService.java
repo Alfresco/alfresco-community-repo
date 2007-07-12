@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.webservice.AbstractWebService;
 import org.alfresco.repo.webservice.Utils;
 import org.alfresco.repo.webservice.types.Category;
@@ -117,11 +117,10 @@ public class ClassificationWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(
-                    this.transactionService,
-                    new TransactionUtil.TransactionWork<Classification[]>()
+            return transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<Classification[]>()
                     {
-                        public Classification[] doWork()
+                        public Classification[] execute()
                         {
                             List<Classification> classifications = new ArrayList<Classification>();
                             
@@ -198,11 +197,10 @@ public class ClassificationWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(
-                    this.transactionService,
-                    new TransactionUtil.TransactionWork<Category[]>()
+            return transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<Category[]>()
                     {
-                        public Category[] doWork()
+                        public Category[] execute()
                         {
                             NodeRef parentNodeRef = Utils.convertToNodeRef(
                                     parentCategory, 
@@ -246,11 +244,10 @@ public class ClassificationWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(
-                    this.transactionService,
-                    new TransactionUtil.TransactionWork<CategoriesResult[]>()
+            return transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<CategoriesResult[]>()
                     {
-                        public CategoriesResult[] doWork()
+                        public CategoriesResult[] execute()
                         {
                             List<CategoriesResult> result = new ArrayList<CategoriesResult>();
                             
@@ -354,11 +351,10 @@ public class ClassificationWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(
-                    this.transactionService,
-                    new TransactionUtil.TransactionWork<CategoriesResult[]>()
+            return transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<CategoriesResult[]>()
                     {
-                        public CategoriesResult[] doWork()
+                        public CategoriesResult[] execute()
                         {
                             List<CategoriesResult> result = new ArrayList<CategoriesResult>();
                             
@@ -437,11 +433,10 @@ public class ClassificationWebService extends AbstractWebService implements
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(
-                    this.transactionService,
-                    new TransactionUtil.TransactionWork<ClassDefinition>()
+            return transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<ClassDefinition>()
                     {
-                        public ClassDefinition doWork()
+                        public ClassDefinition execute()
                         {
                             org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition = ClassificationWebService.this.dictionaryService.getClass(QName.createQName(classification));
                             return Utils.setupClassDefObject(classDefinition);

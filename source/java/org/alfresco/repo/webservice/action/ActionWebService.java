@@ -36,8 +36,7 @@ import org.alfresco.repo.action.CompositeActionImpl;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.action.executer.CompositeActionExecuter;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.webservice.AbstractWebService;
 import org.alfresco.repo.webservice.Utils;
 import org.alfresco.repo.webservice.types.NamedValue;
@@ -133,13 +132,14 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ActionItemDefinition[]>()
+            RetryingTransactionCallback<ActionItemDefinition[]> callback = new RetryingTransactionCallback<ActionItemDefinition[]>()
             {
-                public ActionItemDefinition[] doWork() throws Exception
+                public ActionItemDefinition[] execute() throws Exception
                 {
                     return getConditionDefintionsImpl();
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -182,13 +182,14 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ActionItemDefinition[]>()
+            RetryingTransactionCallback<ActionItemDefinition[]> callback = new RetryingTransactionCallback<ActionItemDefinition[]>()
             {
-                public ActionItemDefinition[] doWork() throws Exception
+                public ActionItemDefinition[] execute() throws Exception
                 {
                     return getActionDefinitionsImpl();
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -230,13 +231,14 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ActionItemDefinition>()
+            RetryingTransactionCallback<ActionItemDefinition> callback = new RetryingTransactionCallback<ActionItemDefinition>()
             {
-                public ActionItemDefinition doWork() throws Exception
+                public ActionItemDefinition execute() throws Exception
                 {
                     return getActionItemDefinitionImpl(name, definitionType);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -324,13 +326,14 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.RuleType[]>()
+            RetryingTransactionCallback<org.alfresco.repo.webservice.action.RuleType[]> callback = new RetryingTransactionCallback<org.alfresco.repo.webservice.action.RuleType[]>()
             {
-                public org.alfresco.repo.webservice.action.RuleType[] doWork() throws Exception
+                public org.alfresco.repo.webservice.action.RuleType[] execute() throws Exception
                 {
                     return getRuleTypesImpl();
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -370,13 +373,14 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.RuleType>()
+            RetryingTransactionCallback<org.alfresco.repo.webservice.action.RuleType> callback = new RetryingTransactionCallback<org.alfresco.repo.webservice.action.RuleType>()
             {
-                public org.alfresco.repo.webservice.action.RuleType doWork() throws Exception
+                public org.alfresco.repo.webservice.action.RuleType execute() throws Exception
                 {
                     return getRuleTypeImpl(name);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -409,13 +413,14 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.Action[]>()
+            RetryingTransactionCallback<org.alfresco.repo.webservice.action.Action[]> callback = new RetryingTransactionCallback<org.alfresco.repo.webservice.action.Action[]>()
             {
-                public org.alfresco.repo.webservice.action.Action[] doWork() throws Exception
+                public org.alfresco.repo.webservice.action.Action[] execute() throws Exception
                 {
                     return getActionsImpl(reference, filter);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -568,13 +573,14 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.Action[]>()
+            RetryingTransactionCallback<org.alfresco.repo.webservice.action.Action[]> callback = new RetryingTransactionCallback<org.alfresco.repo.webservice.action.Action[]>()
             {
-                public org.alfresco.repo.webservice.action.Action[] doWork() throws Exception
+                public org.alfresco.repo.webservice.action.Action[] execute() throws Exception
                 {
                     return saveActionsImpl(reference, webServiceActions);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -783,14 +789,15 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     {
         try
         {
-            TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<Object>()
+            RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
             {
-                public Object doWork() throws Exception
+                public Object execute() throws Exception
                 {
                     removeActionsImpl(reference, webServiceActions);
                     return null;
                 }
-            });
+            };
+            transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -831,13 +838,14 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ActionExecutionResult[]>()
+            RetryingTransactionCallback<ActionExecutionResult[]> callback = new RetryingTransactionCallback<ActionExecutionResult[]>()
             {
-                public ActionExecutionResult[] doWork() throws Exception
+                public ActionExecutionResult[] execute() throws Exception
                 {
                     return executeActionsImpl(predicate, webServiceActions);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -931,13 +939,14 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.Rule[]>()
+            RetryingTransactionCallback<org.alfresco.repo.webservice.action.Rule[]> callback = new RetryingTransactionCallback<org.alfresco.repo.webservice.action.Rule[]>()
             {
-                public org.alfresco.repo.webservice.action.Rule[] doWork() throws Exception
+                public org.alfresco.repo.webservice.action.Rule[] execute() throws Exception
                 {
                     return getRulesImpl(reference, ruleFilter);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -1005,13 +1014,14 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<org.alfresco.repo.webservice.action.Rule[]>()
+            RetryingTransactionCallback<org.alfresco.repo.webservice.action.Rule[]> callback = new RetryingTransactionCallback<org.alfresco.repo.webservice.action.Rule[]>()
             {
-                public org.alfresco.repo.webservice.action.Rule[] doWork() throws Exception
+                public org.alfresco.repo.webservice.action.Rule[] execute() throws Exception
                 {
                     return saveRulesImpl(reference, webServiceRules);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -1058,14 +1068,15 @@ public class ActionWebService extends AbstractWebService implements ActionServic
     {
         try
         {
-            TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<Object>()
+            RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
             {
-                public Object doWork() throws Exception
+                public Object execute() throws Exception
                 {
                     removeRulesImpl(reference, webServiceRules);
                     return null;
                 }
-            });
+            };
+            transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {

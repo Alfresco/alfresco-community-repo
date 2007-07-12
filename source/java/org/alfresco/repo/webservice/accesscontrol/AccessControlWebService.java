@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.repo.transaction.TransactionServiceImpl;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.webservice.AbstractWebService;
 import org.alfresco.repo.webservice.Utils;
 import org.alfresco.repo.webservice.action.ActionFault;
@@ -72,13 +71,14 @@ public class AccessControlWebService extends AbstractWebService implements Acces
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ACL[]>()
+            RetryingTransactionCallback<ACL[]> callback = new RetryingTransactionCallback<ACL[]>()
             {
-                public ACL[] doWork() throws Exception
+                public ACL[] execute() throws Exception
                 {
                     return getACLsImpl(predicate, filter);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -167,13 +167,14 @@ public class AccessControlWebService extends AbstractWebService implements Acces
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ACL[]>()
+            RetryingTransactionCallback<ACL[]> callback = new RetryingTransactionCallback<ACL[]>()
             {
-                public ACL[] doWork() throws Exception
+                public ACL[] execute() throws Exception
                 {
                     return addACEsImpl(predicate, aces);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -229,13 +230,14 @@ public class AccessControlWebService extends AbstractWebService implements Acces
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ACL[]>()
+            RetryingTransactionCallback<ACL[]> callback = new RetryingTransactionCallback<ACL[]>()
             {
-                public ACL[] doWork() throws Exception
+                public ACL[] execute() throws Exception
                 {
                     return removeACEsImpl(predicate, aces);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -293,13 +295,14 @@ public class AccessControlWebService extends AbstractWebService implements Acces
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<GetPermissionsResult[]>()
+            RetryingTransactionCallback<GetPermissionsResult[]> callback = new RetryingTransactionCallback<GetPermissionsResult[]>()
             {
-                public GetPermissionsResult[] doWork() throws Exception
+                public GetPermissionsResult[] execute() throws Exception
                 {
                     return getPermissionsImpl(predicate);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -350,13 +353,14 @@ public class AccessControlWebService extends AbstractWebService implements Acces
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<GetClassPermissionsResult[]>()
+            RetryingTransactionCallback<GetClassPermissionsResult[]> callback = new RetryingTransactionCallback<GetClassPermissionsResult[]>()
             {
-                public GetClassPermissionsResult[] doWork() throws Exception
+                public GetClassPermissionsResult[] execute() throws Exception
                 {
                     return getClassPermissionsImpl(classNames);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -406,13 +410,14 @@ public class AccessControlWebService extends AbstractWebService implements Acces
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<HasPermissionsResult[]>()
+            RetryingTransactionCallback<HasPermissionsResult[]> callback = new RetryingTransactionCallback<HasPermissionsResult[]>()
             {
-                public HasPermissionsResult[] doWork() throws Exception
+                public HasPermissionsResult[] execute() throws Exception
                 {
                     return hasPermissionsImpl(predicate, permissions);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -465,13 +470,14 @@ public class AccessControlWebService extends AbstractWebService implements Acces
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<ACL[]>()
+            RetryingTransactionCallback<ACL[]> callback = new RetryingTransactionCallback<ACL[]>()
             {
-                public ACL[] doWork() throws Exception
+                public ACL[] execute() throws Exception
                 {
                     return setInheritPermissionImpl(predicate, inheritPermission);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -518,13 +524,14 @@ public class AccessControlWebService extends AbstractWebService implements Acces
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<OwnerResult[]>()
+            RetryingTransactionCallback<OwnerResult[]> callback = new RetryingTransactionCallback<OwnerResult[]>()
             {
-                public OwnerResult[] doWork() throws Exception
+                public OwnerResult[] execute() throws Exception
                 {
                     return getOwnersImpl(predicate);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {
@@ -570,13 +577,14 @@ public class AccessControlWebService extends AbstractWebService implements Acces
     {
         try
         {
-            return TransactionUtil.executeInUserTransaction(this.transactionService, new TransactionWork<OwnerResult[]>()
+            RetryingTransactionCallback<OwnerResult[]> callback = new RetryingTransactionCallback<OwnerResult[]>()
             {
-                public OwnerResult[] doWork() throws Exception
+                public OwnerResult[] execute() throws Exception
                 {
                     return setOwnersImpl(predicate, owner);
                 }
-            });
+            };
+            return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
         }
         catch (Throwable exception)
         {

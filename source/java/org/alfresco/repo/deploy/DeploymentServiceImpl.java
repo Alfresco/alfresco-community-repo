@@ -150,8 +150,7 @@ public class DeploymentServiceImpl implements DeploymentService
                         throw new AVMNotFoundException("Node Not Found: " + parentBase[0]);
                     }
                 }
-                snapshot = remote.createSnapshot(storePath[0], "PreDeploy", "Pre Deployment Snapshot").get(storePath[0]);
-                
+                snapshot = remote.createSnapshot(storePath[0], "PreDeploy", "Pre Deployment Snapshot").get(storePath[0]);   
             }
             // Get the root of the deployment on the destination server.
             AVMNodeDescriptor dstRoot = remote.lookup(-1, dstPath);
@@ -171,7 +170,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 {
                     return report;
                 }
-                copyDirectory(version, srcRoot, dstParent, remote);
+                copyDirectory(version, srcRoot, dstParent, remote, matcher);
                 remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
                 if (callback != null)
                 {
@@ -189,7 +188,7 @@ public class DeploymentServiceImpl implements DeploymentService
             // The corresponding directory exists so recursively deploy.
             try
             {
-                deployDirectoryPush(version, srcRoot, dstRoot, remote, dontDelete, dontDo, report, callback);
+                deployDirectoryPush(version, srcRoot, dstRoot, remote, matcher, dontDelete, dontDo, report, callback);
                 remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
                 if (callback != null)
                 {
@@ -234,7 +233,9 @@ public class DeploymentServiceImpl implements DeploymentService
      */
     private void deployDirectoryPush(int version, 
                                      AVMNodeDescriptor src, AVMNodeDescriptor dst,
-                                     AVMRemote remote, boolean dontDelete, boolean dontDo,
+                                     AVMRemote remote, 
+                                     NameMatcher matcher,
+                                     boolean dontDelete, boolean dontDo,
                                      DeploymentReport report,
                                      DeploymentCallback callback)
     {
@@ -255,7 +256,10 @@ public class DeploymentServiceImpl implements DeploymentService
             String name = entry.getKey();
             AVMNodeDescriptor srcNode = entry.getValue();
             AVMNodeDescriptor dstNode = dstList.get(name);
-            deploySinglePush(version, srcNode, dst, dstNode, remote, dontDelete, dontDo, report, callback);
+            if (!excluded(matcher, srcNode.getPath(), dstNode != null ? dstNode.getPath() : null))
+            {
+                deploySinglePush(version, srcNode, dst, dstNode, remote, matcher, dontDelete, dontDo, report, callback);
+            }
         }
         // Delete nodes that are missing in the source.
         if (dontDelete)
@@ -269,20 +273,23 @@ public class DeploymentServiceImpl implements DeploymentService
                 Pair<Integer, String> source =
                     new Pair<Integer, String>(version, AVMNodeConverter.ExtendAVMPath(src.getPath(), name));
                 String destination = AVMNodeConverter.ExtendAVMPath(dst.getPath(), name);
-                DeploymentEvent event = 
-                    new DeploymentEvent(DeploymentEvent.Type.DELETED,
-                                        source,
-                                        destination);
-                report.add(event);
-                if (callback != null)
+                if (!excluded(matcher, null, destination))
                 {
-                    callback.eventOccurred(event);
+                    DeploymentEvent event = 
+                        new DeploymentEvent(DeploymentEvent.Type.DELETED,
+                                            source,
+                                            destination);
+                    report.add(event);
+                    if (callback != null)
+                    {
+                        callback.eventOccurred(event);
+                    }
+                    if (dontDo)
+                    {
+                        continue;
+                    }
+                    remote.removeNode(dst.getPath(), name);
                 }
-                if (dontDo)
-                {
-                    continue;
-                }
-                remote.removeNode(dst.getPath(), name);
             }
         }
     }
@@ -299,6 +306,7 @@ public class DeploymentServiceImpl implements DeploymentService
     private void deploySinglePush(int version,
                                   AVMNodeDescriptor src, AVMNodeDescriptor dstParent,
                                   AVMNodeDescriptor dst, AVMRemote remote, 
+                                  NameMatcher matcher,
                                   boolean dontDelete, boolean dontDo,
                                   DeploymentReport report,
                                   DeploymentCallback callback)
@@ -324,7 +332,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 {
                     return;
                 }
-                copyDirectory(version, src, dstParent, remote);
+                copyDirectory(version, src, dstParent, remote, matcher);
                 return;
             }
             Pair<Integer, String> source = 
@@ -355,7 +363,7 @@ public class DeploymentServiceImpl implements DeploymentService
             // If the destination is also a directory, recursively deploy.
             if (dst.isDirectory())
             {
-                deployDirectoryPush(version, src, dst, remote, dontDelete, dontDo, report, callback);
+                deployDirectoryPush(version, src, dst, remote, matcher, dontDelete, dontDo, report, callback);
                 return;
             }
             Pair<Integer, String> source = 
@@ -373,7 +381,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 return;
             }
             remote.removeNode(dstParent.getPath(), src.getName());
-            copyDirectory(version, src, dstParent, remote);
+            copyDirectory(version, src, dstParent, remote, matcher);
             return;
         }
         // Source is a file.
@@ -436,7 +444,7 @@ public class DeploymentServiceImpl implements DeploymentService
      * @param remote
      */
     private void copyDirectory(int version, AVMNodeDescriptor src, AVMNodeDescriptor parent,
-                               AVMRemote remote)
+                               AVMRemote remote, NameMatcher matcher)
     {
         // Create the destination directory.
         remote.createDirectory(parent.getPath(), src.getName());
@@ -447,17 +455,20 @@ public class DeploymentServiceImpl implements DeploymentService
         // For each child in the source directory.
         for (AVMNodeDescriptor child : list.values())
         {
-            // If it's a file, copy it over and move on.
-            if (child.isFile())
+            if (!excluded(matcher, child.getPath(), null))
             {
-                InputStream in = fAVMService.getFileInputStream(child);
-                OutputStream out = remote.createFile(newParent.getPath(), child.getName());
-                copyStream(in, out);
-                copyMetadata(version, child, remote.lookup(-1, newParent.getPath() + '/' + child.getName()), remote);
-                continue;
+                // If it's a file, copy it over and move on.
+                if (child.isFile())
+                {
+                    InputStream in = fAVMService.getFileInputStream(child);
+                    OutputStream out = remote.createFile(newParent.getPath(), child.getName());
+                    copyStream(in, out);
+                    copyMetadata(version, child, remote.lookup(-1, newParent.getPath() + '/' + child.getName()), remote);
+                    continue;
+                }
+                // Otherwise copy the child directory recursively.
+                copyDirectory(version, child, newParent, remote, matcher);
             }
-            // Otherwise copy the child directory recursively.
-            copyDirectory(version, child, newParent, remote);
         }
     }
     

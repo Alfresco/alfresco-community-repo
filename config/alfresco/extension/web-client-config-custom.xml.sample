@@ -14,17 +14,22 @@
    <config evaluator="string-compare" condition="Languages">
       <languages>
          <language locale="ca_ES">Catalan</language>
+         <language locale="hr_HR">Croatian</language>
+         <language locale="cs_CZ">Czech</language>
          <language locale="da_DK">Danish</language>
          <language locale="de_DE">German</language>
          <language locale="es_ES">Spanish</language>
          <language locale="el_GR">Greek</language>
+         <language locale="fi_FI">Finnish</language>
          <language locale="fr_FR">French</language>
          <language locale="it_IT">Italian</language>
          <language locale="ja_JP">Japanese</language>
          <language locale="du_NL">Dutch</language>
+         <language locale="pl_PL">Polish</language>
+         <language locale="pt_PT">Portuguese</language>
          <language locale="pt_BR">Portuguese (Brazilian)</language>
          <language locale="ru_RU">Russian</language>
-         <language locale="fi_FI">Finnish</language>
+         <language locale="sv_SV">Swedish</language>
          <language locale="tr_TR">Turkish</language>
          <language locale="zh_CN">Simplified Chinese</language>
       </languages>

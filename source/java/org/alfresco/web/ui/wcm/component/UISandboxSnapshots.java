@@ -564,7 +564,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
    
    private AVMService getAVMService(FacesContext fc)
    {
-      return (AVMService)FacesContextUtils.getRequiredWebApplicationContext(fc).getBean("AVMService");
+      return (AVMService)FacesContextUtils.getRequiredWebApplicationContext(fc).getBean("AVMLockingAwareService");
    }
    
    

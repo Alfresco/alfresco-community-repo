@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -141,9 +143,16 @@ public class EditFolderPropertiesDialog extends EditSpaceDialog
          
          repoProps.put(qname, propValue);
       }
-      
+
+      // Translate to what AVMService wants to take.
+      Map<QName, PropertyValue> avmProps = new HashMap<QName, PropertyValue>();
+      for (Map.Entry<QName, Serializable> entry : repoProps.entrySet())
+      {
+         avmProps.put(entry.getKey(), new PropertyValue(entry.getKey(), entry.getValue()));
+      }
+
       // send the properties back to the repository
-      this.nodeService.setProperties(nodeRef, repoProps);
+      this.avmService.setNodeProperties(AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond(), avmProps);
       
       // perform the rename last as for an AVM it changes the NodeRef
       if (name != null)

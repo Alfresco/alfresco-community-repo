@@ -1968,7 +1968,7 @@
       </managed-property>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmSyncService</property-name>
@@ -2017,7 +2017,7 @@
       </managed-property>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmSyncService</property-name>
@@ -2074,7 +2074,7 @@
       </managed-property>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmSyncService</property-name>
@@ -2538,7 +2538,7 @@
       </managed-property>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmSyncService</property-name>
@@ -2632,7 +2632,7 @@
       </managed-property>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>workflowService</property-name>
@@ -2677,7 +2677,7 @@
       </managed-property>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>workflowService</property-name>
@@ -2710,7 +2710,7 @@
       </managed-property>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmBrowseBean</property-name>
@@ -2776,7 +2776,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmSyncService</property-name>
@@ -2838,7 +2838,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmSyncService</property-name>
@@ -2863,7 +2863,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmBrowseBean</property-name>
@@ -2880,7 +2880,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmBrowseBean</property-name>
@@ -2897,7 +2897,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmBrowseBean</property-name>
@@ -2914,7 +2914,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmBrowseBean</property-name>
@@ -2931,7 +2931,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmBrowseBean</property-name>
@@ -2948,7 +2948,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmLockingService</property-name>
@@ -2973,7 +2973,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmBrowseBean</property-name>
@@ -2994,7 +2994,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmBrowseBean</property-name>
@@ -3027,7 +3027,7 @@
       </managed-property>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmBrowseBean</property-name>
@@ -3048,7 +3048,7 @@
       </managed-property>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmBrowseBean</property-name>
@@ -3073,7 +3073,7 @@
       </managed-property>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmBrowseBean</property-name>
@@ -3094,7 +3094,7 @@
       </managed-property>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>fileFolderService</property-name>
@@ -3123,7 +3123,7 @@
       </managed-property>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>fileFolderService</property-name>
@@ -3148,7 +3148,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>navigator</property-name>
@@ -3177,7 +3177,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>createWebsiteWizard</property-name>
@@ -3198,7 +3198,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>createWebsiteWizard</property-name>
@@ -3232,7 +3232,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>createWebsiteWizard</property-name>
@@ -3253,7 +3253,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>createWebsiteWizard</property-name>
@@ -3287,7 +3287,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmSyncService</property-name>
@@ -3459,7 +3459,7 @@
       </managed-property>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
    </managed-bean>
 
@@ -3834,7 +3834,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmBrowseBean</property-name>
@@ -3855,7 +3855,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>
-         <value>#{AVMService}</value>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmBrowseBean</property-name>

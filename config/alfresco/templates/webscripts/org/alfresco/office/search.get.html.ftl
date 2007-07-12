@@ -1,6 +1,8 @@
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
 <#if args.n?exists><#assign node=args.n><#else><#assign node=companyhome></#if>
-<#assign searchCommand="OfficeSearch.runSearch('${url.serviceContext}/office/searchResults', '${path}')" >
+<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
+<#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
+<#assign searchCommand="OfficeSearch.runSearch('${url.serviceContext}/office/searchResults', '${path}&amp;e=${extn}')" >
 <#if (args.searchagain?exists)><#assign searchText=args.searchagain><#else><#assign searchText=""></#if>
 <#if (args.maxresults?exists)><#assign maxResults=args.maxresults><#else><#assign maxResults="5"></#if>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -19,11 +21,11 @@
 <!-- ${maxResults} -->
 <div id="tabBar">
    <ul>
-      <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path?url}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
-      <li id="current"><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path?url}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
-      <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path?url}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
-      <li><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path?url}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
+      <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
+      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
+      <li id="current"><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
+      <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
+      <li><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
    </ul>
 </div>
 

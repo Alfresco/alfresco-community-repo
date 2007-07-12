@@ -1,5 +1,7 @@
 <#assign doc_actions="${url.serviceContext}/office/docActions">
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
+<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
+<#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
 <#-- resolve the path (from Company Home) into a node -->
 <#if path?starts_with("/Company Home")>
    <#if path?length=13>
@@ -27,11 +29,11 @@
 
 <div id="tabBar">
    <ul>
-      <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path?url}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
-      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path?url}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
-      <li id="current"><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path?url}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
-      <li><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path?url}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
+      <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
+      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
+      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
+      <li id="current"><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
+      <li><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
    </ul>
 </div>
 
@@ -90,11 +92,7 @@
    </table>
 </div>
 
-<div class="header">Version History
-<#if d.isDocument>
-                                    for ${d.name}
-</#if>
-</div>
+<div class="header">Version History<#if d.isDocument> for ${d.name}</#if></div>
 
 <div id="versionList" class="containerMedium">
    <table width="265">
@@ -102,22 +100,22 @@
    <#if hasAspect(d, "cm:versionable") == 1>
       <#assign versionRow=0>
       <#list d.versionHistory?sort_by("versionLabel")?reverse as record>
-      <#assign versionRow=versionRow+1>
+         <#assign versionRow=versionRow+1>
       <tr class="${(versionRow % 2 = 0)?string("odd", "even")}">
          <td valign="top">
-            <a title="Open ${record.versionLabel}" href="${url.context}${d.url}?ticket=${session.ticket}"><img src="${url.context}/images/office/document.gif" alt="Open ${record.versionLabel}" /></a>
+            <a title="Open ${record.versionLabel}" href="${url.context}${record.url}?ticket=${session.ticket}"><img src="${url.context}/images/office/document.gif" alt="Open ${record.versionLabel}" /></a>
          </td>
          <td>
-            <a title="Open ${record.versionLabel}" href="#"><span style="font-weight:bold;">${record.versionLabel}</span></a><br />
-            Author: ${record.creator}<br/>
-            Date: ${record.createdDate?datetime}<br/>
+            <a title="Open ${record.versionLabel}" href="${url.context}${record.url}?ticket=${session.ticket}"><span style="font-weight:bold;">${record.versionLabel}</span></a><br />
+            Author: ${record.creator}<br />
+            Date: ${record.createdDate?datetime}<br />
          <#if record.description?exists>
-            Notes: ${record.description}<br/>
+            Notes: ${record.description}<br />
          </#if>
-            <a class="bold" href="#" onclick="window.external.compareDocument('${d.url}')" title="Compare with current">Compare with current</a><br />
+            <a class="bold" href="#" onclick="window.external.compareDocument('${record.url}')" title="Compare with current">Compare with current</a><br />
          </td>
       </tr>
-   </#list>
+      </#list>
    <#else>
       <tr>
          <td valign="top">
@@ -172,7 +170,7 @@
             </a>
             <br />Start Advanced Workflow for the current document.
          </li>
-   <#if d.name?ends_with(".doc")>
+   <#if d.name?ends_with(extn)>
          <li>
             <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','makepdf','${d.id}', '');">
                <img src="${url.context}/images/office/makepdf.gif" alt="Transform to PDF" />

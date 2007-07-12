@@ -1,6 +1,8 @@
 <#assign doc_actions="${url.serviceContext}/office/docActions">
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
 <#if args.n?exists><#assign node=args.n><#else><#assign node=companyhome></#if>
+<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
+<#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
 <#-- resolve the path (from Company Home) into a node -->
 <#if path?starts_with("/Company Home")>
    <#if path?length=13>
@@ -29,11 +31,11 @@
 
 <div id="tabBar">
    <ul>
-      <li id="current"><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path?url}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
-      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path?url}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
-      <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path?url}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
-      <li><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path?url}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
+      <li id="current"><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
+      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
+      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
+      <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
+      <li><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
    </ul>
 </div>
 
@@ -44,26 +46,27 @@
 <#assign query="@cm\\:workingCopyOwner:${person.properties.userName}">
    <#list companyhome.childrenByLuceneSearch[query] as child>
       <#if child.isDocument>
-      <#assign rowNum=rowNum+1>
-      <div class="documentItem ${(rowNum % 2 = 0)?string("odd", "even")}">
+         <#assign rowNum=rowNum+1>
+         <#assign relativePath = (child.displayPath?substring(13) + '/' + child.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
+   <div class="documentItem ${(rowNum % 2 = 0)?string("odd", "even")}">
          <span class="documentItemIcon">
             <img src="${url.context}${child.icon32}" alt="${child.name}" />
          </span>
          <span class="documentItemDetails">
-         <#if child.name?ends_with(".doc")>
-            <#assign webdavPath = (child.displayPath?substring(13) + '/' + child.name)?url('ISO-8859-1')?replace('%2F', '/')?replace('\'', '\\\'') />
-            <a href="#" onclick="window.external.openDocument('${webdavPath}')" title="Open ${child.name}" style="font-weight: bold;">${child.name}</a><br/>
+         <#if child.name?ends_with(extn)>
+            <a href="#" onclick="window.external.openDocument('${relativePath}')" title="Open ${child.name}" style="font-weight: bold;">${child.name}</a><br />
          <#else>
-            <a href="${url.context}${child.url}?ticket=${session.ticket}" target="_blank" title="Open ${child.name}" style="font-weight: bold;">${child.name}</a><br/>
+            <a href="${url.context}${child.url}?ticket=${session.ticket}" target="_blank" title="Open ${child.name}" style="font-weight: bold;">${child.name}</a><br />
          </#if>
          <#if child.properties.description?exists>
             <#if (child.properties.description?length > 0)>
                ${child.properties.description}<br />
             </#if>
          </#if>
-            Modified: ${child.properties.modified?datetime} (${(child.size / 1024)?int}Kb)<br/>
+            Modified: ${child.properties.modified?datetime} (${(child.size / 1024)?int}Kb)<br />
             <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','checkin','${child.id}', '');"><img src="${url.context}/images/office/checkin.gif" style="padding:3px 6px 2px 0px;" alt="Check In" title="Check In" /></a>
             <a href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;w=new&amp;wd=${child.id}"><img src="${url.context}/images/office/new_workflow.gif" style="padding:3px 6px 2px 0px;" alt="Create Workflow..." title="Create Workflow..." /></a>
+            <a href="#" onclick="window.external.insertDocument('${relativePath}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="Insert File into Current Document" title="Insert File into Current Document" /></a>
          <#if !child.name?ends_with(".pdf")>
             <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="Make PDF..." title="Make PDF" /></a>
          </#if>

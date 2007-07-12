@@ -1,3 +1,4 @@
+<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
 <#if args.t?exists>
    <#assign taskid = args.t>
    <#if taskid != "">
@@ -44,11 +45,11 @@
    <#list task.packageResources as res>
          <tr>
       <#if res.isDocument>
-         <#if res.name?ends_with(".doc")>
-            <#assign webdavPath = (res.displayPath?substring(13) + '/' + res.name)?url('ISO-8859-1')?replace('%2F', '/')?replace('\'', '\\\'') />
+         <#if res.name?ends_with(extn)>
+            <#assign relativePath = (res.displayPath?substring(13) + '/' + res.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
             <td width="16"><a href="${url.context}${res.url}" target="new"><img src="${url.context}${res.icon16}" alt="${res.name}"></a></td>
             <td>
-               <a href="#" onclick="window.external.openDocument('${webdavPath}')" title="Open ${res.name}">${res.name}</a>
+               <a href="#" onclick="window.external.openDocument('${relativePath}')" title="Open ${res.name}">${res.name}</a>
             </td>
          <#else>
             <td width="16"><a href="${url.context}${res.url}?ticket=${session.ticket}" target="_blank" title="Open ${res.name}"><img src="${url.context}${res.icon16}" alt="${res.name}"></a></td>

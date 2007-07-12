@@ -1,5 +1,7 @@
 <#assign doc_actions="${url.serviceContext}/office/docActions">
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
+<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
+<#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
 <#if docWorkflow?exists>
    <#assign d=docWorkflow>
 <#else>
@@ -25,20 +27,23 @@
    <link rel="stylesheet" type="text/css" href="${url.context}/css/office_ie6.css" />
 <![endif]-->
    <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.11.js"></script>
-	<script type="text/javascript" src="${url.context}/scripts/ajax/autocompleter.js"></script>
-	<script type="text/javascript" src="${url.context}/scripts/ajax/date_picker.js"></script>
-	<script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
-	<script type="text/javascript" src="${url.context}/scripts/office/my_tasks.js"></script>
+   <script type="text/javascript" src="${url.context}/scripts/ajax/autocompleter.js"></script>
+   <script type="text/javascript" src="${url.context}/scripts/ajax/date_picker.js"></script>
+   <script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
+   <script type="text/javascript" src="${url.context}/scripts/office/my_tasks.js"></script>
+   <script type="text/javascript">//<![CDATA[
+      OfficeMyTasks.fileExtn = '${extn}';
+   //]]></script>
 </head>
 <body>
 
 <div id="tabBar">
    <ul>
-      <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path?url}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
-      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path?url}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
-      <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path?url}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
-      <li id="current"><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path?url}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
+      <li><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
+      <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
+      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
+      <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
+      <li id="current"><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
    </ul>
 </div>
 

@@ -1,3 +1,4 @@
+<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
 <#if args.search?exists>
    <#assign searchString = args.search>
    <#if searchString != "">
@@ -27,16 +28,16 @@
       <#list results as child>
          <#assign resCount=resCount + 1>
          <#if child.isDocument>
-            <#if child.name?ends_with(".doc")>
-               <#assign webdavPath = (child.displayPath?substring(13) + '/' + child.name)?url('ISO-8859-1')?replace('%2F', '/')?replace('\'', '\\\'') />
+            <#if child.name?ends_with(extn)>
+               <#assign relativePath = (child.displayPath?substring(13) + '/' + child.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
                <#assign openURL = "#">
-               <#assign hrefExtra = " onClick=\"window.external.openDocument('${webdavPath}')\"">
+               <#assign hrefExtra = " onClick=\"window.external.openDocument('${relativePath}')\"">
             <#else>
                <#assign openURL = "${url.context}${child.url}?ticket=${session.ticket}">
                <#assign hrefExtra = " target=\"_blank\"">
             </#if>
          <#else>
-            <#assign openURL = "${url.serviceContext}/office/navigation?p=${args.p?url}&amp;n=${child.id}&amp;search=${searchString?url}&amp;maxresults=${maxresults}">
+            <#assign openURL = "${url.serviceContext}/office/navigation?p=${args.p?url}&amp;e=$(extn}&amp;n=${child.id}&amp;search=${searchString?url}&amp;maxresults=${maxresults}">
             <#assign hrefExtra = "">
          </#if>
    <div class="documentItem ${(resCount % 2 = 0)?string("odd", "even")}"">
@@ -51,7 +52,7 @@
             </#if>
          </#if>
          <#if child.isDocument>
-            Modified: ${child.properties.modified?datetime} (${(child.size / 1024)?int}Kb)<br/>
+            Modified: ${child.properties.modified?datetime} (${(child.size / 1024)?int}Kb)<br />
          </#if>
       </span>
    </div>

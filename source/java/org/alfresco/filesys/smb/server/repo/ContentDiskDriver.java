@@ -99,7 +99,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     private static final String KEY_STORE = "store";
     private static final String KEY_ROOT_PATH = "rootPath";
     private static final String KEY_RELATIVE_PATH = "relativePath";
-
+    
     // Token name to substitute current servers DNS name or TCP/IP address into the webapp URL
 
     private static final String TokenLocalName = "${localname}";
@@ -273,7 +273,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     }
 
     /**
-     * Set the file folder server
+     * Set the file folder service
      * 
      * @param fileService FileFolderService
      */
@@ -361,13 +361,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             }
             else if (nodeRefs.size() == 0)
             {
-                // nothing found
+                // Nothing found
+            	
                 throw new DeviceContextException("No root found for device: \n" +
                         "   root path: " + rootPath);
             }
             else
             {
-                // we found a node
+                // We found a node
+            	
                 rootNodeRef = nodeRefs.get(0);
             }
 
@@ -1416,12 +1418,16 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Create the network file
             
-            NetworkFile netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, nodeRef, params);
+            ContentNetworkFile netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, nodeRef, params);
+            
+            // Always allow write access to a newly created file
+            
+            netFile.setGrantedAccess(NetworkFile.READWRITE);
             
             // Truncate the file so that the content stream is created
             
             netFile.truncateFile( 0L);
-            
+
             // Generate a file id for the file
             
             if ( netFile != null)

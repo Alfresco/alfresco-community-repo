@@ -265,9 +265,9 @@ public class ExternalAccessServlet extends BaseServlet
                navigator.setCurrentNodeId(args[1]);
             }
             
-            // set the external container request flag so that a plain container gets used
-            fc.getExternalContext().getRequestMap().put(
-                     AlfrescoNavigationHandler.EXTERNAL_CONTAINER_REQUEST, Boolean.TRUE);
+            // set the external container session flag so that a plain container gets used
+            fc.getExternalContext().getSessionMap().put(
+                     AlfrescoNavigationHandler.EXTERNAL_CONTAINER_SESSION, Boolean.TRUE);
             
             NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
             navigationHandler.handleNavigation(fc, null, outcome + ':' + args[0]);

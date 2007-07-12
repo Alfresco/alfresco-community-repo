@@ -60,7 +60,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
    public final static String WIZARD_PREFIX = "wizard" + OUTCOME_SEPARATOR;
    public final static String CLOSE_DIALOG_OUTCOME = DIALOG_PREFIX + "close";
    public final static String CLOSE_WIZARD_OUTCOME = WIZARD_PREFIX + "close";
-   public final static String EXTERNAL_CONTAINER_REQUEST = "externalContainerRequest";
+   public final static String EXTERNAL_CONTAINER_SESSION = "externalDialogContainer";
    
    protected String dialogContainer = null;
    protected String wizardContainer = null;
@@ -371,8 +371,8 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       String container;
       
       // determine which kind of container we need to return, if the
-      // external request flag is set then use the plain container
-      Object obj = context.getExternalContext().getRequestMap().get(EXTERNAL_CONTAINER_REQUEST);
+      // external session flag is set then use the plain container
+      Object obj = context.getExternalContext().getSessionMap().get(EXTERNAL_CONTAINER_SESSION);
       
       if (obj != null && obj instanceof Boolean && ((Boolean)obj).booleanValue())
       {
@@ -422,8 +422,8 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       String container;
       
       // determine which kind of container we need to return, if the
-      // external request flag is set then use the plain container
-      Object obj = context.getExternalContext().getRequestMap().get(EXTERNAL_CONTAINER_REQUEST);
+      // external session flag is set then use the plain container
+      Object obj = context.getExternalContext().getSessionMap().get(EXTERNAL_CONTAINER_SESSION);
       
       if (obj != null && obj instanceof Boolean && ((Boolean)obj).booleanValue())
       {

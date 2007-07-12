@@ -168,6 +168,8 @@ public class EditXmlInlineDialog extends BaseDialogBean
    @Override
    public String cancel()
    {
+      super.cancel();
+      
       // reset the state
       this.avmEditBean.resetState();
       

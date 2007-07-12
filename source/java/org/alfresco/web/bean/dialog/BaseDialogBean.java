@@ -90,6 +90,10 @@ public abstract class BaseDialogBean implements IDialogBean
    
    public String cancel()
    {
+      // remove container variable
+      FacesContext.getCurrentInstance().getExternalContext().getSessionMap().remove(
+                AlfrescoNavigationHandler.EXTERNAL_CONTAINER_SESSION);
+      
       return getDefaultCancelOutcome();
    }
    
@@ -122,6 +126,10 @@ public abstract class BaseDialogBean implements IDialogBean
             // allow any subclasses to perform post commit processing 
             // i.e. resetting state or setting status messages
             outcome = doPostCommitProcessing(context, outcome);
+            
+            // remove container variable
+            context.getExternalContext().getSessionMap().remove(
+                    AlfrescoNavigationHandler.EXTERNAL_CONTAINER_SESSION);
          }
          catch (Throwable e)
          {

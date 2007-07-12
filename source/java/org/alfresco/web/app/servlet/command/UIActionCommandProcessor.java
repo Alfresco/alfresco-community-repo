@@ -99,12 +99,12 @@ public class UIActionCommandProcessor implements ExtCommandProcessor
       properties.put(BaseUIActionCommand.PROP_RESPONSE, response);
       
       // if the container parameter is present and equal to "plain" add the 
-      // external container object to the request
+      // external container object to the session
       String container = request.getParameter(PARAM_CONTAINER);
       if (container != null && container.equalsIgnoreCase("plain"))
       {
-         request.setAttribute(
-                  AlfrescoNavigationHandler.EXTERNAL_CONTAINER_REQUEST, Boolean.TRUE);
+         request.getSession().setAttribute(
+                  AlfrescoNavigationHandler.EXTERNAL_CONTAINER_SESSION, Boolean.TRUE);
       }
       
       Command cmd = CommandFactory.getInstance().createCommand(command);

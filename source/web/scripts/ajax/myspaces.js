@@ -18,10 +18,12 @@ var MySpaces = {
    {
       if ($('spacePanel'))
       {
-         $('spacePanelOverlay').setStyle('opacity', 0);
+         MySpaces.removeModal();
+         
          // show AJAX loading overlay
          $('spacePanelOverlayAjax').setStyle('visibility', 'visible');
          $('spacePanel').setStyle('visibility', 'hidden');
+         
          // fire off the ajax request to populate the spaces list - the 'myspacespanel' webscript
          // is responsible for rendering just the contents of the main panel div
          YAHOO.util.Connect.asyncRequest(
@@ -631,7 +633,7 @@ var MySpaces = {
    {
       if (confirm("Are you sure you want to delete: " + name))
       {
-         $("spacePanelOverlay").setStyle('opacity', MySpaces.OVERLAY_OPACITY);
+         MySpaces.applyModal();
 
          // ajax call to delete item
          YAHOO.util.Connect.asyncRequest(
@@ -647,13 +649,13 @@ var MySpaces = {
                   else
                   {
                      alert("Error during delete of item: " + response.responseText);
-                     $("spacePanelOverlay").setStyle('opacity', 0);
+                     MySpaces.removeModal();
                   }
                },
                failure: function(response)
                {
                   alert("Error during delete of item: " + response.responseText);
-                  $("spacePanelOverlay").setStyle('opacity', 0);
+                  MySpaces.removeModal();
                }
             }, 
             "noderef=" + noderef
@@ -666,7 +668,7 @@ var MySpaces = {
     */
    checkoutItem: function(name, noderef)
    {
-      $("spacePanelOverlay").setStyle('opacity', MySpaces.OVERLAY_OPACITY);
+      MySpaces.applyModal();
 
       // ajax call to check out item
       YAHOO.util.Connect.asyncRequest(
@@ -682,13 +684,13 @@ var MySpaces = {
                else
                {
                   alert("Error during check out of item: " + response.responseText);
-                  $("spacePanelOverlay").setStyle('opacity', 0);
+                  MySpaces.removeModal();
                }
             },
             failure: function(response)
             {
                alert("Error during check out of item: " + response.responseText);
-               $("spacePanelOverlay").setStyle('opacity', 0);
+               MySpaces.removeModal();
             }
          }, 
          "noderef=" + noderef
@@ -700,7 +702,7 @@ var MySpaces = {
     */
    checkinItem: function(name, noderef)
    {
-      $("spacePanelOverlay").setStyle('opacity', MySpaces.OVERLAY_OPACITY);
+      MySpaces.applyModal();
 
       // ajax call to check in item
       YAHOO.util.Connect.asyncRequest(
@@ -716,13 +718,13 @@ var MySpaces = {
                else
                {
                   alert("Error during check in of item: " + response.responseText);
-                  $("spacePanelOverlay").setStyle('opacity', 0);
+                  MySpaces.removeModal();
                }
             },
             failure: function(response)
             {
                alert("Error during check in of item: " + response.responseText);
-               $("spacePanelOverlay").setStyle('opacity', 0);
+               MySpaces.removeModal();
             }
          }, 
          "noderef=" + noderef
@@ -844,6 +846,16 @@ var MySpaces = {
       spacePanel.empty();
       spacePanel.removeEvents('mouseleave');
       MySpaces.start();
+   },
+   
+   applyModal: function()
+   {
+      $("spacePanelOverlay").setStyle('opacity', MySpaces.OVERLAY_OPACITY);
+   },
+   
+   removeModal: function()
+   {
+      $("spacePanelOverlay").setStyle('opacity', 0);
    }
 };
 

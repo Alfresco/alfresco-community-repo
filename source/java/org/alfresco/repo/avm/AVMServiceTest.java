@@ -57,6 +57,8 @@ import org.alfresco.repo.search.impl.lucene.AVMLuceneIndexer;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMCycleException;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -490,12 +492,20 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertNull(fService.lookup(-1, "target:/a/b/snarl.bak"));
             runQueriesAgainstBasicTreeWithAOnly("target");
             System.out.println(report);
+            ActionService actionService = depService.getRemoteActionService("localhost", 50500, "admin", "admin");
+            Map<String, Serializable> params = new HashMap<String, Serializable>();
+            params.put("property", ContentModel.PROP_ADDRESSEE);
+            params.put("value", "Santa Claus");
             assertEquals(fService.lookup(-1, "main:/a/b/c/foo").getGuid(), fService.lookup(-1, "target:/a/b/c/foo")
                     .getGuid());
             assertEquals(fService.lookup(-1, "main:/a/b/c/bar").getGuid(), fService.lookup(-1, "target:/a/b/c/bar")
                     .getGuid());
-            ContentData srcCD = fService.getContentDataForRead(-1, "main:/a/b/c/foo");
-            ContentData dstCD = fService.getContentDataForRead(-1, "target:/a/b/c/foo");
+            NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, "target:/a/b/c/foo");
+            Action action = new ActionImpl(nodeRef, "set-property-value", "set-property-value", params);
+            actionService.executeAction(action, nodeRef, false, false);
+            assertEquals("Santa Claus", fService.getNodeProperty(-1, "target:/a/b/c/foo", ContentModel.PROP_ADDRESSEE).getStringValue());
+            ContentData srcCD = fService.getContentDataForRead(-1, "main:/a/b/c/bar");
+            ContentData dstCD = fService.getContentDataForRead(-1, "target:/a/b/c/bar");
             assertEquals(srcCD.getMimetype(), dstCD.getMimetype());
             fService.createFile("main:/a/b", "biz").close();
             report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", matcher,

@@ -3,6 +3,7 @@
  */
 package org.alfresco.service.cmr.avm.deploy;
 
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.util.NameMatcher;
 
 /**
@@ -35,6 +36,17 @@ public interface DeploymentService
                                              boolean dontDelete,
                                              boolean dontDo,
                                              DeploymentCallback callback);
+    
+    /**
+     * Get A reference to an ActionService instance on a remote Alfresco Server.
+     * @param hostName
+     * @param port
+     * @param userName
+     * @param password
+     * @return
+     */
+    public ActionService getRemoteActionService(String hostName, int port,
+                                                String userName, String password);
 
     /**
      * Deploy to a filesystem on another machine.

@@ -26,7 +26,6 @@ package org.alfresco.repo.avm;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,6 +35,7 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMReadOnlyException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.apache.log4j.Logger;
 
 /**
  * Base class for all repository file system like objects.
@@ -43,6 +43,8 @@ import org.alfresco.util.GUID;
  */
 public abstract class AVMNodeImpl implements AVMNode, Serializable
 {
+    private static Logger fgLogger = Logger.getLogger(AVMNodeImpl.class);
+    
     protected static final boolean DEBUG = true;
     
     /**

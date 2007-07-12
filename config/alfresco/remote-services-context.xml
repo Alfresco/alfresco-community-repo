@@ -164,4 +164,30 @@
             <value>${avm.remote.port}</value>
         </property>
     </bean>	
+    
+    <!-- Remoting the ActionService -->
+    <bean id="actionServiceTransport" class="org.alfresco.repo.action.ActionServiceTransportImpl">
+    	<property name="actionService">
+    		<ref bean="ActionService"/>
+    	</property>
+    	<property name="authenticationService">
+    		<ref bean="AuthenticationService"/>
+    	</property>
+    </bean>
+    
+    <!-- The RMI export of the ActionService Transport -->
+    <bean id="actionServiceTransportRMI" class="org.springframework.remoting.rmi.RmiServiceExporter">
+        <property name="service">
+            <ref bean="actionServiceTransport"/>
+        </property>
+        <property name="serviceInterface">
+            <value>org.alfresco.service.cmr.action.ActionServiceTransport</value>
+        </property>
+        <property name="serviceName">
+            <value>action</value>
+        </property>
+        <property name="registryPort">
+            <value>${avm.remote.port}</value>
+        </property>
+    </bean>
 </beans>

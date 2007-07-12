@@ -39,12 +39,15 @@ import org.alfresco.deployment.DeploymentReceiverTransport;
 import org.alfresco.deployment.FileDescriptor;
 import org.alfresco.deployment.FileType;
 import org.alfresco.deployment.impl.client.DeploymentReceiverServiceClient;
+import org.alfresco.repo.action.ActionServiceRemote;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.remote.AVMRemoteImpl;
 import org.alfresco.repo.remote.ClientTicketHolder;
 import org.alfresco.repo.remote.ClientTicketHolderThread;
+import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.ActionServiceTransport;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
@@ -556,6 +559,39 @@ public class DeploymentServiceImpl implements DeploymentService
         }
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.deploy.DeploymentService#getRemoteActionService(java.lang.String, int, java.lang.String, java.lang.String)
+     */
+    public ActionService getRemoteActionService(String hostName, int port, String userName, String password)
+    {
+        try
+        {
+            RmiProxyFactoryBean authFactory = new RmiProxyFactoryBean();
+            authFactory.setRefreshStubOnConnectFailure(true);
+            authFactory.setServiceInterface(AuthenticationService.class);
+            authFactory.setServiceUrl("rmi://" + hostName + ":" + port + "/authentication");
+            authFactory.afterPropertiesSet();
+            AuthenticationService authService = (AuthenticationService)authFactory.getObject();
+            authService.authenticate(userName, password.toCharArray());
+            String ticket = authService.getCurrentTicket();
+            fTicketHolder.setTicket(ticket);
+            RmiProxyFactoryBean remoteFactory = new RmiProxyFactoryBean();
+            remoteFactory.setRefreshStubOnConnectFailure(true);
+            remoteFactory.setServiceInterface(ActionServiceTransport.class);
+            remoteFactory.setServiceUrl("rmi://" + hostName + ":" + port + "/action");
+            remoteFactory.afterPropertiesSet();
+            ActionServiceTransport transport = (ActionServiceTransport)remoteFactory.getObject();
+            ActionServiceRemote remote = new ActionServiceRemote();
+            remote.setActionServiceTransport(transport);
+            remote.setClientTicketHolder(fTicketHolder);
+            return remote;
+        }
+        catch (Exception e)
+        {
+            throw new AVMException("Could not Initialize Remote Connection to " + hostName, e);
+        }
+    }
+
     private DeploymentReceiverService getReceiver(String hostName, int port)
     {
         try

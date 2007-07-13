@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <!-- Bean definition to support synchronous indexing of the staging area -->
+    <!-- By default, indexing of the staging area is asynchronous            --> 
+
+    <bean id="avmSnapShotTriggeredIndexingMethodInterceptor" class="org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor">
+        <property name="avmService">
+            <ref bean="avmService" />
+        </property>
+        <property name="indexerAndSearcher">
+            <ref bean="avmLuceneIndexerAndSearcherFactory" />
+        </property>
+        <!-- Disable or enable indexing -->
+        <property name="enableIndexing">
+            <value>true</value>
+        </property>
+        <!-- the defaukt index mode if none of the patterns below match --> 
+        <property name="defaultMode">
+            <value>SYNCHRONOUS</value>
+        </property>
+        <!-- Indexing patterns: evaluated in order; if none match, the defaultMode is used -->
+        <!-- Entries are of the form  [SYNCHRONOUS | ASYNCHRONOUS |UNINDEXED]:[TYPE | NAME]:regexp -->
+        <property name="indexingDefinitions">
+            <list>
+                <value>SYNCHRONOUS:TYPE:STAGING</value>
+                <value>UNINDEXED:TYPE:STAGING_PREVIEW</value>
+                <value>UNINDEXED:TYPE:AUTHOR</value>
+                <value>UNINDEXED:TYPE:AUTHOR_PREVIEW</value>
+                <value>UNINDEXED:TYPE:WORKFLOW</value>
+                <value>UNINDEXED:TYPE:WORKFLOW_PREVIEW</value>
+                <value>UNINDEXED:TYPE:AUTHOR_WORKFLOW</value>
+                <value>UNINDEXED:TYPE:AUTHOR_WORKFLOW_PREVIEW</value>
+                <value>ASYNCHRONOUS:NAME:avmAsynchronousTest</value>
+                <value>SYNCHRONOUS:NAME:.*</value>
+            </list>
+        </property>
+    </bean>
+</beans>

@@ -2,17 +2,66 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
  
 <!--
-   Sample configuration of a XmlMetadataExtracters.
+   Sample configuration of a XmlMetadataExtracter in use within the WCM environment.
    
    This show how XML metadata extraction can be set up to extract metadata from different
-   formats of XML.
+   formats of XML.  It also shows how metadata can be extracted in WCM projects.
    
    Since: 2.1
    Author: Derek Hulley
 -->
 <beans>
    
-   <!-- An extractor that operates on Alfresco Model XML -->
+   <!--
+      In order to limit the number of extractors active for Web Content Management, a separate registry
+      must be created for the extractors.
+   -->
+   <bean id="avmMetadataExtracterRegistry" class="org.alfresco.repo.content.metadata.MetadataExtracterRegistry" />
+   
+   <!--
+      Configure the AVM services to broadcast the content update notifications.
+   -->
+   <bean id="avmNodeService" class="org.alfresco.repo.avm.AVMNodeService" init-method="init">
+		<property name="dictionaryService">
+			<ref bean="dictionaryService"/>
+		</property>
+		<property name="avmService">
+			<ref bean="avmLockingAwareService"/>
+		</property>
+		<property name="policyComponent">
+			<ref bean="policyComponent"/>
+		</property>
+		<property name="invokePolicies">
+			<value>true</value>
+		</property>
+	</bean>
+   <bean id="avmMetadataExtracter" class="org.alfresco.repo.avm.AvmMetadataExtracter" init-method="init">
+      <property name="policyComponent">
+         <ref bean="policyComponent"/>
+      </property>
+      <property name="extracterAction">
+         <bean class="org.alfresco.repo.action.executer.ContentMetadataExtracter" >
+            <property name="dictionaryService">
+               <ref bean="dictionaryService"/>
+            </property>
+            <property name="nodeService">
+               <ref bean="avmNodeService" />
+            </property>
+            <property name="contentService">
+               <ref bean="contentService" />
+            </property>
+            <property name="metadataExtracterRegistry">
+               <ref bean="avmMetadataExtracterRegistry" />
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!--
+      Configure an extractor that targets Alfresco Model XML files.
+      Although this inherits from the base extracter bean, the use of the 'init' method
+      means that it isn't automatically registered.
+   -->
    <bean id="extracter.xml.sample.AlfrescoModelMetadataExtracter"
          class="org.alfresco.repo.content.metadata.xml.XPathMetadataExtracter"
          parent="baseMetadataExtracter"
@@ -54,7 +103,7 @@
    
    <!--
       This selector examines the XML documents, executing the given XPath statements until a
-      result is found.
+      match is made.
    -->
    <bean
          id="extracter.xml.sample.selector.XPathSelector"
@@ -74,14 +123,19 @@
    
    <!--
       This is the face of the XML metadata extraction.  If passes the XML document to each of
-      the selectors, until one of them gives back a MetadataExtracter, which is then used as
-      normal to extract the values.  The overwrite policy of the embedded extracters has no
-      effect.  It is only this extracter's policy that is used.
+      the selectors, until one of them gives back a MetadataExtracter (via the selectors),
+      which is then used as normal to extract the values.
+      Note the use of the AVM-specific registry.
+      The overwrite policy of the embedded extracters has no effect.  It is only this extractor's
+      policy that is used.
    -->
    <bean
          id="extracter.xml.sample.XMLMetadataExtracter"
          class="org.alfresco.repo.content.metadata.xml.XmlMetadataExtracter"
          parent="baseMetadataExtracter">
+      <property name="registry">
+         <ref bean="avmMetadataExtracterRegistry" />
+      </property>
       <property name="overwritePolicy">
          <value>EAGER</value>
       </property>

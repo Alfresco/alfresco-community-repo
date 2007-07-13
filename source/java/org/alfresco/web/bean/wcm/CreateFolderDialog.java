@@ -31,6 +31,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -131,7 +132,8 @@ public class CreateFolderDialog extends BaseDialogBean
       this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, null);
       if (this.description != null && this.description.length() != 0)
       {
-         this.nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, this.description);
+         this.avmService.setNodeProperty(path, ContentModel.PROP_DESCRIPTION, new PropertyValue(null, this.description));
+         // this.nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, this.description);
       }
       
       return outcome;

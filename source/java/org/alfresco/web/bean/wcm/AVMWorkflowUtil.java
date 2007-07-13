@@ -43,6 +43,7 @@ import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.wf.AVMSubmittedAspect;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.ServiceRegistry;
@@ -109,7 +110,8 @@ public class AVMWorkflowUtil extends WorkflowUtil
       // convert package to workflow package
       final AVMNodeDescriptor packageDesc = avmService.lookup(-1, packagesPath);
       final NodeRef packageNodeRef = workflowService.createPackage(AVMNodeConverter.ToNodeRef(-1, packageDesc.getPath()));
-      nodeService.setProperty(packageNodeRef, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, true);
+      avmService.setNodeProperty(packagesPath, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, new PropertyValue(null, true));
+      // nodeService.setProperty(packageNodeRef, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, true);
 
       // apply global permission to workflow package
       // TODO: Determine appropriate permissions

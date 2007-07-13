@@ -88,7 +88,7 @@
                            
                            <td align=right>
                               <%-- Current object actions --%>
-                              <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="ChangePermissions">
+                              <r:permissionEvaluator value="#{BrowseBean.actionSpace}" allow="ChangePermissions">
                                  <a:actionLink value="#{msg.invite}" image="/images/icons/invite.gif" padding="4" action="wizard:inviteSpaceUsers" />
                               </r:permissionEvaluator>
                            </td>

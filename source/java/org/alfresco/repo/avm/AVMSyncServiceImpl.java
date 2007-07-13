@@ -382,6 +382,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 else
                 {
                     version = fAVMService.createSnapshot(storeName, "Snapshotted for submit.", null).get(storeName);
+                    storeVersions.put(storeName, version);
                 }
             }
             AVMNodeDescriptor srcDesc = fAVMService.lookup(version,

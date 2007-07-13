@@ -382,7 +382,7 @@ public class SubmitDialog extends BaseDialogBean
       try
       {
          // create the workflow sandbox firstly
-         txnHelper.doInTransaction(sandboxCallback);
+         txnHelper.doInTransaction(sandboxCallback, false, true);
          
          if (this.sandboxInfo != null)
          {
@@ -395,7 +395,7 @@ public class SubmitDialog extends BaseDialogBean
             try
             {
                // start the workflow
-               txnHelper.doInTransaction(workflowCallback);
+               txnHelper.doInTransaction(workflowCallback, false, true);
             }
             catch (Throwable err)
             {
@@ -532,6 +532,18 @@ public class SubmitDialog extends BaseDialogBean
             
             this.srcPaths.add(srcPath);
          }
+         
+         String workflowMainStoreName = sandboxInfo.getMainStoreName();
+         List<AVMDifference> diffs = new ArrayList<AVMDifference>(srcPaths.size());
+         for (final String srcPath : srcPaths)
+         {
+            diffs.add(new AVMDifference(-1, srcPath, -1, 
+                     AVMUtil.getCorrespondingPath(srcPath, workflowMainStoreName),
+                     AVMDifference.NEWER));
+         }
+                  
+         // write changes to layer so files are marked as modified
+         avmSyncService.update(diffs, null, true, true, false, false, null, null);
       }        
       else
       {

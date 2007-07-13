@@ -30,29 +30,39 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.namespace.QName;
 import org.apache.poi.poifs.eventfilesystem.POIFSReader;
 import org.apache.poi.poifs.eventfilesystem.POIFSReaderEvent;
 import org.apache.poi.poifs.eventfilesystem.POIFSReaderListener;
 import org.apache.poi.poifs.filesystem.DocumentInputStream;
 
 /**
- * Outlook format email meta-data extractor
+ * Outlook format email meta-data extractor extracting the following values:
+ * <pre>
+ *   <b>sentDate:</b>               --      cm:sentdate
+ *   <b>originator:</b>             --      cm:originator,    cm:author
+ *   <b>addressee:</b>              --      cm:addressee
+ *   <b>addressees:</b>             --      cm:addressees
+ *   <b>subjectLine:</b>            --      cm:subjectline,   cm:description
+ * </pre>
  * 
+ * @since 2.1
  * @author Kevin Roast
  */
-public class MailMetadataExtracter extends AbstractMetadataExtracter
+public class MailMetadataExtracter extends AbstractMappingMetadataExtracter
 {
-    public static String[] SUPPORTED_MIMETYPES = new String[] {
-        "message/rfc822"};
+    private static final String KEY_SENT_DATE = "sentDate";
+    private static final String KEY_ORIGINATOR = "originator";
+    private static final String KEY_ADDRESSEE = "addressee";
+    private static final String KEY_ADDRESSEES = "addressees";
+    private static final String KEY_SUBJECT = "subjectLine";
+
+    public static String[] SUPPORTED_MIMETYPES = new String[] {"message/rfc822"};
     
     private static final String STREAM_PREFIX = "__substg1.0_";
     private static final int STREAM_PREFIX_LENGTH = STREAM_PREFIX.length();
@@ -62,11 +72,14 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
     
     public MailMetadataExtracter()
     {
-        super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)), 1.0, 1000);
+        super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)));
     }
 
-    public void extractInternal(ContentReader reader, final Map<QName, Serializable> destination) throws Throwable
+    @Override
+    public Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
     {
+        final Map<String, Serializable> rawProperties = newRawMap();
+        
         POIFSReaderListener readerListener = new POIFSReaderListener()
         {
             public void processPOIFSReaderEvent(final POIFSReaderEvent event)
@@ -76,7 +89,7 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
                     if (event.getName().startsWith(STREAM_PREFIX))
                     {
                         StreamHandler handler = new StreamHandler(event.getName(), event.getStream());
-                        handler.process(destination);
+                        handler.process(rawProperties);
                     }
                 }
                 catch (Exception ex)
@@ -109,7 +122,7 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
             // store multi-value extracted property
             if (this.receipientEmails.get().size() != 0)
             {
-                destination.put(ContentModel.PROP_ADDRESSEES, (Serializable)receipientEmails.get());
+                putRawValue(KEY_ADDRESSEES, (Serializable)receipientEmails.get(), rawProperties);
             }
         }
         finally
@@ -119,6 +132,8 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
                 try { is.close(); } catch (IOException e) {}
             }
         }
+        // Done
+        return rawProperties;
     }
     
     private static String convertExchangeAddress(String email)
@@ -138,6 +153,7 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
     private static final String ENCODING_BINARY = "0102";
     private static final String ENCODING_UNICODE = "001F";
     
+    @SuppressWarnings("unused")
     private static final String SUBSTG_MESSAGEBODY = "1000";
     private static final String SUBSTG_RECIPIENTEMAIL = "39FE";      // 7bit email address
     private static final String SUBSTG_RECIPIENTSEARCH = "300B";     // address 'search' variant
@@ -158,12 +174,12 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
             this.stream = stream;
         }
         
-        void process(final Map<QName, Serializable> destination)
+        void process(final Map<String, Serializable> destination)
             throws IOException
         {
             if (type.equals(SUBSTG_SENDEREMAIL))
             {
-                destination.put(ContentModel.PROP_ORIGINATOR, convertExchangeAddress(extractText()));
+                putRawValue(KEY_ORIGINATOR, convertExchangeAddress(extractText()), destination);
             }
             else if (type.equals(SUBSTG_RECIPIENTEMAIL))
             {
@@ -192,11 +208,11 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
             }
             else if (type.equals(SUBSTG_RECEIVEDEMAIL))
             {
-                destination.put(ContentModel.PROP_ADDRESSEE, convertExchangeAddress(extractText()));
+                putRawValue(KEY_ADDRESSEE, convertExchangeAddress(extractText()), destination);
             }
             else if (type.equals(SUBSTG_SUBJECT))
             {
-                destination.put(ContentModel.PROP_SUBJECT, extractText());
+                putRawValue(KEY_SUBJECT, extractText(), destination);
             }
             else if (type.equals(SUBSTG_DATE))
             {
@@ -221,7 +237,7 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
                         String strMinute = date.substring(dateIndex + 10, dateIndex + 12);
                         c.set(Calendar.MINUTE, Integer.parseInt(strMinute));
                         c.set(Calendar.SECOND, 0);
-                        destination.put(ContentModel.PROP_SENTDATE, c.getTime());
+                        putRawValue(KEY_SENT_DATE, c.getTime(), destination);
                     }
                 }
             }

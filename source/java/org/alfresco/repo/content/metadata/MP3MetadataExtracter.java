@@ -26,13 +26,12 @@ package org.alfresco.repo.content.metadata;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 import org.farng.mp3.AbstractMP3FragmentBody;
 import org.farng.mp3.MP3File;
@@ -44,30 +43,46 @@ import org.farng.mp3.lyrics3.Lyrics3v2;
 import org.farng.mp3.lyrics3.Lyrics3v2Field;
 
 /**
+ * Extracts the following values from MP3 files:
+ * <pre>
+ *   <b>songTitle:</b>              --      {music}songTitle, cm:title
+ *   <b>albumTitle:</b>             --      {music}albumTitle
+ *   <b>artist:</b>                 --      {music}artist, cm:author
+ *   <b>description:</b>            --      cm:description
+ *   <b>comment:</b>                --      {music}comment
+ *   <b>yearReleased:</b>           --      {music}yearReleased
+ *   <b>trackNumber:</b>            --      {music}trackNumber
+ *   <b>genre:</b>                  --      {music}genre
+ *   <b>composer:</b>               --      {music}composer
+ *   <b>lyrics:</b>                 --      {music}lyrics
+ * </pre>
+ * 
  * @author Roy Wetherall
  */
-public class MP3MetadataExtracter extends AbstractMetadataExtracter
+public class MP3MetadataExtracter extends AbstractMappingMetadataExtracter
 {
-    private static final QName PROP_ALBUM_TITLE = QName.createQName("{music}albumTitle");
-    private static final QName PROP_SONG_TITLE = QName.createQName("{music}songTitle");;
-    private static final QName PROP_ARTIST = QName.createQName("{music}artist");;
-    private static final QName PROP_COMMENT = QName.createQName("{music}comment");;
-    private static final QName PROP_YEAR_RELEASED = QName.createQName("{music}yearReleased");;
-    private static final QName PROP_TRACK_NUMBER = QName.createQName("{music}trackNumber");;
-    private static final QName PROP_GENRE = QName.createQName("{music}genre");;
-    private static final QName PROP_COMPOSER = QName.createQName("{music}composer");;
-    private static final QName PROP_LYRICS = QName.createQName("{music}lyrics");;
+    private static final String KEY_SONG_TITLE = "songTitle";
+    private static final String KEY_ALBUM_TITLE = "albumTitle";
+    private static final String KEY_ARTIST = "artist";
+    private static final String KEY_DESCRIPTION = "description";
+    private static final String KEY_COMMENT = "comment";
+    private static final String KEY_YEAR_RELEASED = "yearReleased";
+    private static final String KEY_TRACK_NUMBER = "trackNumber";
+    private static final String KEY_GENRE = "genre";
+    private static final String KEY_COMPOSER = "composer";
+    private static final String KEY_LYRICS = "lyrics";
 
+    public static String[] SUPPORTED_MIMETYPES = new String[] {MimetypeMap.MIMETYPE_MP3 };
+    
     public MP3MetadataExtracter()
     {
-        super(MimetypeMap.MIMETYPE_MP3, 1.0, 1000);
+        super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)));
     }
 
-    public void extractInternal(
-            ContentReader reader,
-            Map<QName, Serializable> destination) throws Throwable
+    @Override
+    public Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
     {
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>();            
+        Map<String, Serializable> rawProperties = newRawMap();
         
         // Create a temp file
         File tempFile = TempFileProvider.createTempFile("MP3MetadataExtracter_", ".tmp");
@@ -81,30 +96,30 @@ public class MP3MetadataExtracter extends AbstractMetadataExtracter
             ID3v1 id3v1 = mp3File.getID3v1Tag();
             if (id3v1 != null)
             {
-                setTagValue(props, PROP_ALBUM_TITLE, id3v1.getAlbum());
-                setTagValue(props, PROP_SONG_TITLE, id3v1.getTitle());
-                setTagValue(props, PROP_ARTIST, id3v1.getArtist());
-                setTagValue(props, PROP_COMMENT, id3v1.getComment());
-                setTagValue(props, PROP_YEAR_RELEASED, id3v1.getYear());
+                putRawValue(KEY_ALBUM_TITLE, id3v1.getAlbum(), rawProperties);
+                putRawValue(KEY_SONG_TITLE, id3v1.getTitle(), rawProperties);
+                putRawValue(KEY_ARTIST, id3v1.getArtist(), rawProperties);
+                putRawValue(KEY_COMMENT, id3v1.getComment(), rawProperties);
+                putRawValue(KEY_YEAR_RELEASED, id3v1.getYear(), rawProperties);
                 
                 // TODO sort out the genre
-                //setTagValue(props, MusicModel.PROP_GENRE, id3v1.getGenre());
+                //putRawValue(MusicModel.KEY_GENRE, id3v1.getGenre());
                 
                 // TODO sort out the size
-                //setTagValue(props, MusicModel.PROP_SIZE, id3v1.getSize());            
+                //putRawValue(MusicModel.KEY_SIZE, id3v1.getSize());            
             }
             
             AbstractID3v2 id3v2 = mp3File.getID3v2Tag();
             if (id3v2 != null)
             {
-                setTagValue(props, PROP_SONG_TITLE, getID3V2Value(id3v2, "TIT2"));
-                setTagValue(props, PROP_ARTIST, getID3V2Value(id3v2, "TPE1"));
-                setTagValue(props, PROP_ALBUM_TITLE, getID3V2Value(id3v2, "TALB"));
-                setTagValue(props, PROP_YEAR_RELEASED, getID3V2Value(id3v2, "TDRC"));
-                setTagValue(props, PROP_COMMENT, getID3V2Value(id3v2, "COMM"));
-                setTagValue(props, PROP_TRACK_NUMBER, getID3V2Value(id3v2, "TRCK"));
-                setTagValue(props, PROP_GENRE, getID3V2Value(id3v2, "TCON"));
-                setTagValue(props, PROP_COMPOSER, getID3V2Value(id3v2, "TCOM"));
+                putRawValue(KEY_SONG_TITLE, getID3V2Value(id3v2, "TIT2"), rawProperties);
+                putRawValue(KEY_ARTIST, getID3V2Value(id3v2, "TPE1"), rawProperties);
+                putRawValue(KEY_ALBUM_TITLE, getID3V2Value(id3v2, "TALB"), rawProperties);
+                putRawValue(KEY_YEAR_RELEASED, getID3V2Value(id3v2, "TDRC"), rawProperties);
+                putRawValue(KEY_COMMENT, getID3V2Value(id3v2, "COMM"), rawProperties);
+                putRawValue(KEY_TRACK_NUMBER, getID3V2Value(id3v2, "TRCK"), rawProperties);
+                putRawValue(KEY_GENRE, getID3V2Value(id3v2, "TCON"), rawProperties);
+                putRawValue(KEY_COMPOSER, getID3V2Value(id3v2, "TCOM"), rawProperties);
                 
                 // TODO sort out the lyrics
                 //System.out.println("Lyrics: " + getID3V2Value(id3v2, "SYLT"));
@@ -117,12 +132,12 @@ public class MP3MetadataExtracter extends AbstractMetadataExtracter
                 System.out.println("Lyrics3 tag found.");
                 if (lyrics3Tag instanceof Lyrics3v2)
                 {
-                    setTagValue(props, PROP_SONG_TITLE, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "TIT2"));
-                    setTagValue(props, PROP_ARTIST, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "TPE1"));
-                    setTagValue(props, PROP_ALBUM_TITLE, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "TALB"));
-                    setTagValue(props, PROP_COMMENT, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "COMM"));
-                    setTagValue(props, PROP_LYRICS, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "SYLT"));
-                    setTagValue(props, PROP_COMPOSER, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "TCOM"));
+                    putRawValue(KEY_SONG_TITLE, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "TIT2"), rawProperties);
+                    putRawValue(KEY_ARTIST, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "TPE1"), rawProperties);
+                    putRawValue(KEY_ALBUM_TITLE, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "TALB"), rawProperties);
+                    putRawValue(KEY_COMMENT, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "COMM"), rawProperties);
+                    putRawValue(KEY_LYRICS, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "SYLT"), rawProperties);
+                    putRawValue(KEY_COMPOSER, getLyrics3v2Value((Lyrics3v2)lyrics3Tag, "TCOM"), rawProperties);
                 }
             }
             
@@ -132,20 +147,14 @@ public class MP3MetadataExtracter extends AbstractMetadataExtracter
             tempFile.delete();
         }
         
-        // Set the destination values
-        if (props.get(PROP_SONG_TITLE) != null)
-        {
-            destination.put(ContentModel.PROP_TITLE, props.get(PROP_SONG_TITLE));
-        }
-        if (props.get(PROP_ARTIST) != null)
-        {
-            destination.put(ContentModel.PROP_AUTHOR, props.get(PROP_ARTIST));
-        }
-        String description = getDescription(props);
+        String description = getDescription(rawProperties);
         if (description != null)
         {
-            destination.put(ContentModel.PROP_DESCRIPTION, description);
+            putRawValue(KEY_DESCRIPTION, description, rawProperties);
         }
+        
+        // Done
+        return rawProperties;
     }
     
 
@@ -155,17 +164,17 @@ public class MP3MetadataExtracter extends AbstractMetadataExtracter
      * @param props     the properties extracted from the file
      * @return          the description
      */
-    private String getDescription(Map<QName, Serializable> props)
+    private String getDescription(Map<String, Serializable> props)
     {
         StringBuilder result = new StringBuilder();
-        if (props.get(PROP_SONG_TITLE) != null && props.get(PROP_ARTIST) != null && props.get(PROP_ALBUM_TITLE) != null)
+        if (props.get(KEY_SONG_TITLE) != null && props.get(KEY_ARTIST) != null && props.get(KEY_ALBUM_TITLE) != null)
         {
             result
-                .append(props.get(PROP_SONG_TITLE))
+                .append(props.get(KEY_SONG_TITLE))
                 .append(" - ")
-                .append(props.get(PROP_ALBUM_TITLE))
+                .append(props.get(KEY_ALBUM_TITLE))
                 .append(" (")
-                .append(props.get(PROP_ARTIST))
+                .append(props.get(KEY_ARTIST))
                 .append(")");
                 
         }
@@ -173,26 +182,6 @@ public class MP3MetadataExtracter extends AbstractMetadataExtracter
         return result.toString();
     }
 
-    /**
-     * 
-     * @param props
-     * @param propQName
-     * @param propvalue
-     */
-    private void setTagValue(Map<QName, Serializable> props, QName propQName, String propvalue)
-    {
-        if (propvalue != null && propvalue.length() != 0)
-        {
-            trimPut(propQName, propvalue, props);
-        }       
-    }
-
-    /**
-     * 
-     * @param lyrics3Tag
-     * @param name
-     * @return
-     */
     private String getLyrics3v2Value(Lyrics3v2 lyrics3Tag, String name) 
     {
         String result = "";
@@ -210,10 +199,6 @@ public class MP3MetadataExtracter extends AbstractMetadataExtracter
 
     /**
      * Get the ID3V2 tag value in a safe way
-     * 
-     * @param id3v2
-     * @param name
-     * @return
      */
     private String getID3V2Value(AbstractID3v2 id3v2, String name)
     {
@@ -231,5 +216,4 @@ public class MP3MetadataExtracter extends AbstractMetadataExtracter
         
         return result;
     }
-
 }

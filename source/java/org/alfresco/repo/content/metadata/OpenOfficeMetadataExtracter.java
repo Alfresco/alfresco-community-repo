@@ -32,10 +32,8 @@ import java.util.Map;
 
 import net.sf.jooreports.openoffice.connection.OpenOfficeConnection;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
 
@@ -48,25 +46,33 @@ import com.sun.star.ucb.XFileIdentifierConverter;
 import com.sun.star.uno.UnoRuntime;
 
 /**
+ * Extracts values from Star Office documents into the following:
+ * <pre>
+ *   <b>author:</b>                 --      cm:author
+ *   <b>title:</b>                  --      cm:title
+ *   <b>description:</b>            --      cm:description
+ * </pre>
+ * 
  * @author Jesper Steen Møller
  */
-public class OpenOfficeMetadataExtracter extends AbstractMetadataExtracter
+public class OpenOfficeMetadataExtracter extends AbstractMappingMetadataExtracter
 {
+    private static final String KEY_AUTHOR = "author";
+    private static final String KEY_TITLE = "title";
+    private static final String KEY_DESCRIPTION = "description";
+
     public static String[] SUPPORTED_MIMETYPES = new String[] {
         MimetypeMap.MIMETYPE_STAROFFICE5_WRITER,
         MimetypeMap.MIMETYPE_STAROFFICE5_IMPRESS,
         MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER,
         MimetypeMap.MIMETYPE_OPENOFFICE1_IMPRESS
-    // Add the other OpenOffice.org stuff here
-    // In fact, other types may apply as well, but should be counted as lower
-    // quality since they involve conversion.
     };
 
     private OpenOfficeConnection connection;
 
     public OpenOfficeMetadataExtracter()
     {
-        super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)), 1.00, 10000);
+        super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)));
     }
 
     public void setConnection(OpenOfficeConnection connection)
@@ -119,8 +125,11 @@ public class OpenOfficeMetadataExtracter extends AbstractMetadataExtracter
         return connection.isConnected();
     }
 
-    public void extractInternal(ContentReader reader, final Map<QName, Serializable> destination) throws Throwable
+    @Override
+    public Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
     {
+        Map<String, Serializable> rawProperties = newRawMap();
+
         String sourceMimetype = reader.getMimetype();
 
         // create temporary files to convert from and to
@@ -154,24 +163,17 @@ public class OpenOfficeMetadataExtracter extends AbstractMetadataExtracter
                         infoSupplier
                         .getDocumentInfo());
 
-                // Titled aspect
-                trimPut(ContentModel.PROP_TITLE, propSet.getPropertyValue("Title"), destination);
-                trimPut(ContentModel.PROP_DESCRIPTION, propSet.getPropertyValue("Subject"), destination);
-
-                // Auditable aspect
-                // trimPut(ContentModel.PROP_CREATED,
-                // si.getCreateDateTime(), destination);
-                trimPut(ContentModel.PROP_AUTHOR, propSet.getPropertyValue("Author"), destination);
-                // trimPut(ContentModel.PROP_MODIFIED,
-                // si.getLastSaveDateTime(), destination);
-                // trimPut(ContentModel.PROP_MODIFIER, si.getLastAuthor(),
-                // destination);
+                putRawValue(KEY_TITLE, propSet.getPropertyValue("Title").toString(), rawProperties);
+                putRawValue(KEY_DESCRIPTION, propSet.getPropertyValue("Subject").toString(), rawProperties);
+                putRawValue(KEY_AUTHOR, propSet.getPropertyValue("Author").toString(), rawProperties);
             }
             finally
             {
                 document.dispose();
             }
         }
+        // Done
+        return rawProperties;
     }
 
     public String toUrl(File file, OpenOfficeConnection connection) throws ConnectException

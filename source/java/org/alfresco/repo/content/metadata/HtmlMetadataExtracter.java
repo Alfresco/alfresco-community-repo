@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -39,17 +38,26 @@ import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.namespace.QName;
 
 /**
+ * Extracts the following values from HTML documents:
+ * <pre>
+ *   <b>author:</b>                 --      cm:author
+ *   <b>title:</b>                  --      cm:title
+ *   <b>description:</b>            --      cm:description
+ * </pre>
  * 
  * @author Jesper Steen Møller
+ * @author Derek Hulley
  */
-public class HtmlMetadataExtracter extends AbstractMetadataExtracter
+public class HtmlMetadataExtracter extends AbstractMappingMetadataExtracter
 {
+    private static final String KEY_AUTHOR = "author";
+    private static final String KEY_TITLE = "title";
+    private static final String KEY_DESCRIPTION= "description";
+
     private static final Set<String> MIMETYPES = new HashSet<String>(5);
     static
     {
@@ -59,12 +67,13 @@ public class HtmlMetadataExtracter extends AbstractMetadataExtracter
 
     public HtmlMetadataExtracter()
     {
-        super(MIMETYPES, 1.0, 1000);
+        super(MIMETYPES);
     }
 
-    public void extractInternal(ContentReader reader, Map<QName, Serializable> destination) throws Throwable
+    @Override
+    protected Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
     {
-        final Map<QName, Serializable> tempDestination = new HashMap<QName, Serializable>();
+        final Map<String, Serializable> rawProperties = newRawMap();
         
         HTMLEditorKit.ParserCallback callback = new HTMLEditorKit.ParserCallback()
         {
@@ -106,7 +115,7 @@ public class HtmlMetadataExtracter extends AbstractMetadataExtracter
                 }
                 else if (HTML.Tag.TITLE.equals(t) && title != null)
                 {
-                    trimPut(ContentModel.PROP_TITLE, title.toString(), tempDestination);
+                    putRawValue(KEY_TITLE, title.toString(), rawProperties);
                     title = null;
                 }
             }
@@ -125,11 +134,11 @@ public class HtmlMetadataExtracter extends AbstractMetadataExtracter
                     if (name.equalsIgnoreCase("creator") || name.equalsIgnoreCase("author")
                             || name.equalsIgnoreCase("dc.creator"))
                     {
-                        trimPut(ContentModel.PROP_AUTHOR, valueO, tempDestination);
+                        putRawValue(KEY_AUTHOR, valueO.toString(), rawProperties);
                     }
-                    if (name.equalsIgnoreCase("description") || name.equalsIgnoreCase("dc.description"))
+                    else if (name.equalsIgnoreCase("description") || name.equalsIgnoreCase("dc.description"))
                     {
-                        trimPut(ContentModel.PROP_DESCRIPTION, valueO, tempDestination);
+                        putRawValue(KEY_DESCRIPTION, valueO.toString(), rawProperties);
                     }
                 }
             }
@@ -143,7 +152,7 @@ public class HtmlMetadataExtracter extends AbstractMetadataExtracter
         int tries = 0;
         while (tries < 3)
         {
-            tempDestination.clear();
+            rawProperties.clear();
             Reader r = null;
             InputStream cis = null;
             try
@@ -153,7 +162,6 @@ public class HtmlMetadataExtracter extends AbstractMetadataExtracter
                 r = new InputStreamReader(cis);
                 HTMLEditorKit.Parser parser = new ParserDelegator();
                 parser.parse(r, callback, tries > 0);
-                destination.putAll(tempDestination);
                 break;
             }
             catch (ChangedCharSetException ccse)
@@ -173,5 +181,7 @@ public class HtmlMetadataExtracter extends AbstractMetadataExtracter
                     cis.close();
             }
         }
+        // Done
+        return rawProperties;
     }
 }

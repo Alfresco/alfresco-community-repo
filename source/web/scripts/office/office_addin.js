@@ -204,6 +204,37 @@ var OfficeAddin =
       var x = a.dueDate;
       var y = b.dueDate;
       return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+   },
+   
+   openWindowCallback: function(url, callback)
+   {
+      // Store the callback function for later
+      OfficeAddin.callbackFunction = callback;
+      // Register our "well known" callback function
+      window.alfrescoCallback = OfficeAddin.openWindowOnCallback;
+      // Use a named window so that only one dialog is active at a time
+      window.open(url, 'alfrescoDialog', 'width=1024,height=768');
+   },
+   
+   openWindowOnCallback: function(fromTimeout)
+   {
+      if (typeof(fromTimeout)=='undefined')
+      {
+         window.setTimeout("OfficeAddin.openWindowOnCallback(true)", 10);
+      }
+      else
+      {
+         // Clear out the global callback function
+         window.alfrescoCallback = null;
+         try
+         {
+            OfficeAddin.callbackFunction();
+         }
+         catch (e)
+         {
+         }
+         OfficeAddin.callbackFunction = null;
+      }
    }
 };
 

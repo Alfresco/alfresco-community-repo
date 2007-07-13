@@ -68,15 +68,14 @@
       </table>
    </div>
 
-   <div>   
-      <table class="taskActions" style="padding-left:16px">
-         <tr>
+   <div class="taskActionContainer">   
+      <span class="taskActions">
    <#list task.transitions as wt>
-            <td>
-               <a class="taskAction" href="#" onclick="OfficeMyTasks.transitionTask('${task.id}', '${url.context}/command/task/end/${task.id}<#if wt.id?exists>/${wt.id}</#if>', 'Workflow action \'${wt.label?html}\' completed.');">${wt.label?html}</a>
-            </td>
+         <span class="taskAction" onclick="OfficeMyTasks.transitionTask('${task.id}', '${url.context}/command/task/end/${task.id}<#if wt.id?exists>/${wt.id}</#if>', 'Workflow action \'${wt.label?html}\' completed.');">${wt.label?html}</span>
    </#list>
-         </tr>
-      </table>
+      </span>
+      <span class="taskManage">
+         <span class="taskAction" onclick="OfficeAddin.openWindowCallback('${url.context}/command/ui/managetask?id=${task.id}&amp;type=${task.qnameType}&amp;container=plain&amp;ticket=${session.ticket}', OfficeMyTasks.refreshPage);">Manage...</span>
+      </span>
    </div>
 </#if>

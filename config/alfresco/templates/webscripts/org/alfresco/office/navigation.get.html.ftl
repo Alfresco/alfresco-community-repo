@@ -163,7 +163,7 @@
             <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','checkout','${child.id}', '');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="Check Out" title="Check Out" /></a>
       </#if>
             <a href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;w=new&amp;wd=${child.id}"><img src="${url.context}/images/office/new_workflow.gif" style="padding:3px 6px 2px 0px;" alt="Create Workflow..." title="Create Workflow..." /></a>
-            <a href="#" onclick="window.external.insertDocument('${relativePath}')"><img src="${url.context}/images/office/attach_document.gif" style="padding:3px 6px 2px 0px;" alt="Attach File to Current Document" title="Attach File to Current Document" /></a>
+            <a href="#" onclick="window.external.insertDocument('${relativePath}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="Insert File into Current Document" title="Insert File into Current Document" /></a>
       <#if !child.name?ends_with(".pdf")>
             <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="Make PDF..." title="Make PDF" /></a>
       </#if>

@@ -226,6 +226,23 @@ var OfficeMyTasks =
          }
       });
       myAjax.request();
+   },
+   
+   refreshPage: function()
+   {
+      // Remove any trailing hash
+      var href = window.location.href.replace("#", "")
+      // Remove any previous "st", "w", "wd" or "t" parameters
+      href = OfficeAddin.removeParameters(href, "st|w|wd|t");
+      // Re-select a selected task after reload
+      var taskSel = $E('#taskList .taskItemSelected');
+      if (taskSel != null)
+      {
+         var taskId = taskSel.id;
+         href += (href.indexOf("?") == -1) ? "?" : "&";
+         href += "t=" + encodeURI(taskId);
+      }
+      window.location.href = href;
    }
 };
 

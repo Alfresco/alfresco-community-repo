@@ -33,7 +33,7 @@ a img {
    border: 0px;
 }
 
-TABLE, TR, TD {
+TABLE, TD {
    border: 0px;
    border-collapse: collapse;
    padding: 2px;
@@ -449,6 +449,20 @@ input.button {
    overflow: auto;
 }
 
+.taskActionContainer {
+   float: left;
+   width: 272px;
+}
+
+.taskActions {
+   float: left;
+   padding-right: 2px;
+}
+
+.taskManage {
+   float: right;
+}
+
 .taskAction {
    background-color: #cce6ff;
    border: 1px solid #0073e6;
@@ -457,7 +471,7 @@ input.button {
    font-size: 11px;
    font-weight: bold;
    cursor: pointer;
-   margin: 0px 0px 0px 2px;
+   margin: 0px 0px 0px 4px;
    padding: 4px;
    filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#cce6ff');
 }

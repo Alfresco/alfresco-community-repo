@@ -104,6 +104,10 @@
          MySpaces.Home="${home.nodeRef}";
       </script>
    </div>
+   <div id="spaceMessagePanel" class="spaceMessagePanel">
+      <div style="margin:2px;float:right"><img src="${url.context}/images/icons/close_portlet_panel.gif" style="cursor:pointer;" width="16" height="16" onclick="MySpaces.closeMessage();"></div>
+      <div class="spaceMessagePanelLabel"></div>
+   </div>
    <div class="spaceFooter">
       <#-- the count value is retrieved and set dynamically from the AJAX webscript output above -->
       <span class="spaceFooterText">Showing <span id="spaceCount">0</span> items(s)</span>
@@ -477,6 +481,28 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    display: none;
    z-index: 1;
    -moz-border-radius: 5px;
+}
+
+.spaceMessagePanel
+{
+   position: absolute;
+   border: 1px solid #65696C;
+   background-color: #7E8387;
+   width: 250px;
+   *width: 260px;
+   height: 72px;
+   padding: 8px;
+   margin-left: 440px;
+   display: none;
+   z-index: 1;
+   -moz-border-radius: 7px;
+}
+
+.spaceMessagePanelLabel
+{
+   color: white;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 12px;
 }
 
 #docUpdatePanel

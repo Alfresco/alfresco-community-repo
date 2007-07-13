@@ -20,6 +20,10 @@ var MySpaces = {
       {
          MySpaces.removeModal();
          
+         var messagePanel = $('spaceMessagePanel');
+         messagePanel.setStyle('opacity', 0);
+         messagePanel.setStyle('display', 'block');
+         
          // show AJAX loading overlay
          $('spacePanelOverlayAjax').setStyle('visibility', 'visible');
          $('spacePanel').setStyle('visibility', 'hidden');
@@ -669,7 +673,7 @@ var MySpaces = {
    checkoutItem: function(name, noderef)
    {
       MySpaces.applyModal();
-
+      
       // ajax call to check out item
       YAHOO.util.Connect.asyncRequest(
          "POST",
@@ -680,6 +684,7 @@ var MySpaces = {
                if (response.responseText.indexOf("OK:") == 0)
                {
                   MySpaces.refreshList();
+                  MySpaces.displayMessage("A working copy for the checked out item 'Working Copy of " + name + "' has been created.");
                }
                else
                {
@@ -714,6 +719,7 @@ var MySpaces = {
                if (response.responseText.indexOf("OK:") == 0)
                {
                   MySpaces.refreshList();
+                  MySpaces.displayMessage("Item 'Working Copy of " + name + "' has been checked in.");
                }
                else
                {
@@ -848,14 +854,83 @@ var MySpaces = {
       MySpaces.start();
    },
    
+   /**
+    * Apply a semi-transparent modal overlay skin to the main panel area
+    */
    applyModal: function()
    {
       $("spacePanelOverlay").setStyle('opacity', MySpaces.OVERLAY_OPACITY);
    },
    
+   /**
+    * Remove the modal overlay skin from the main panel area
+    */
    removeModal: function()
    {
       $("spacePanelOverlay").setStyle('opacity', 0);
+   },
+   
+   /**
+    * Display a message bubble of helpful info to the user. Calling this function in quick 
+    * succession will cause previous message to be lost as the new ones are displayed.
+    * 
+    * @param message    Message text to display
+    */
+   displayMessage: function(message)
+   {
+      var panel = $("spaceMessagePanel");
+      if ($defined(panel.timeout))
+      {
+         clearTimeout(panel.timeout);
+         panel.timeout = null;
+      }
+      
+      panel.setStyle("opacity", 0);
+      panel.setStyle("margin-top", -90);
+      
+      panel.getChildren()[1].setHTML(message);
+      
+      panel.fxMessage = new Fx.Styles(
+         panel, 
+         {
+            duration: 2000,
+            transition: Fx.Transitions.sineInOut
+         });
+      panel.fxMessage.start({'margin-top': -70, 'opacity': [0, 0.75]});
+      
+      panel.timeout = window.setTimeout(this.fadeOutMessage, 8000);
+   },
+   
+   /**
+    * Timer callback function to fade out the message panel
+    */
+   fadeOutMessage: function()
+   {
+      var panel = $("spaceMessagePanel");
+      panel.timeout = null;
+      
+      var fxMessage = new Fx.Styles(
+         panel, 
+         {
+            duration: 1000,
+            transition: Fx.Transitions.sineInOut
+         });
+      fxMessage.start({'margin-top': -90, 'opacity': [0]});
+   },
+   
+   /**
+    * Close the message panel immediately when the user clicks the close icon
+    */
+   closeMessage: function()
+   {
+      var panel = $("spaceMessagePanel");
+      if ($defined(panel.timeout))
+      {
+         clearTimeout(panel.timeout);
+         panel.timeout = null;
+      }
+      panel.fxMessage.stop();
+      panel.setStyle("opacity", 0);
    }
 };
 

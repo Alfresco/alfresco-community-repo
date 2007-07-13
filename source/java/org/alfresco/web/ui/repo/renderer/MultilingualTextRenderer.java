@@ -30,6 +30,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
+import org.alfresco.web.app.Application;
 import org.apache.myfaces.renderkit.html.HtmlTextRenderer;
 
 /**
@@ -48,9 +49,12 @@ public class MultilingualTextRenderer extends HtmlTextRenderer
    {
       super.encodeEnd(facesContext, component);
       
+      String tooltip = Application.getMessage(facesContext, "marker_tooltip");
       ResponseWriter out = facesContext.getResponseWriter();
       out.write("<img src='");
       out.write(facesContext.getExternalContext().getRequestContextPath());
-      out.write("/images/icons/multilingual_marker.gif' style='margin-left: 6px; vertical-align: -4px; _vertical-align: -2px;' />");
+      out.write("/images/icons/multilingual_marker.gif' title='");
+      out.write(tooltip);
+      out.write("' style='margin-left: 6px; vertical-align: -4px; _vertical-align: -2px;' />");
    }
 }

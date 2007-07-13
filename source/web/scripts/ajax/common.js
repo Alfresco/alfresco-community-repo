@@ -506,3 +506,39 @@ function uploadCompleteHelper(id, args)
                    upload.path.replace(/.*[\/\\]([^\/\\]+)/, "$1"),
                    args.error != "${UPLOAD_ERROR}" ? args.error : null);
 }
+
+var openWindowCallbackFn = null;
+
+function openWindowCallback(url, callback)
+{
+   // Store the callback function for later
+   openWindowCallbackFn = callback;
+   // Register our "well known" callback function
+   window.alfrescoCallback = openWindowOnCallback;
+   // Use a named window so that only one dialog is active at a time
+   window.open(url, 'alfrescoDialog', 'width=1024,height=768');
+}
+   
+function openWindowOnCallback(fromTimeout)
+{
+   if (typeof(fromTimeout)=='undefined')
+   {
+      window.setTimeout("openWindowOnCallback(true)", 10);
+   }
+   else
+   {
+      // Clear out the global callback function
+      window.alfrescoCallback = null;
+      // Try the callback function
+      try
+      {
+         openWindowCallbackFn();
+      }
+      catch (e)
+      {
+      }
+      openWindowCallbackFn = null;
+   }
+}
+
+

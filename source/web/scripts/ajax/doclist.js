@@ -10,6 +10,7 @@ var MyDocs = {
    Filter: null,
    Home: null,
    Query: null,
+   FxAll: null,
 
    start: function()
    {
@@ -56,10 +57,18 @@ var MyDocs = {
       // hide the ajax wait panel and show the main doc panel
       $('docPanel').setStyle('visibility', 'visible');
       $('docPanelOverlayAjax').setStyle('visibility', 'hidden');
+
+      if (MyDocs.postInit)
+      {
+         MyDocs.postInit();
+         MyDocs.postInit = null;
+      }
    },
 
    parseDocPanels: function()
    {
+      MyDocs.FxAll = [];
+
       var docs = $$('#docPanel .docRow');
       var items = $$('#docPanel .docItem');
       var infos = $$('#docPanel .docInfo');
@@ -114,6 +123,14 @@ var MyDocs = {
             });
          }
       });
+
+      // Store all the effects so we can globally stop them later
+      MyDocs.FxAll.push(fxItem);
+      MyDocs.FxAll.push(fxDetail);
+      MyDocs.FxAll.push(fxInfo);
+      MyDocs.FxAll.push(fxIcon);
+      MyDocs.FxAll.push(fxResource);
+      MyDocs.FxAll.push(fxImage);
 
       docs.each(function(doc, i)
       {
@@ -230,6 +247,9 @@ var MyDocs = {
                animResource = {},
                resourceHeight = resource.getStyle('height').toInt();
             
+            // make sure item title is highlighted
+            doc.addClass('docItemSelected');
+
             if (!doc.isOpen)
             {
                if (!resource.isLoaded)
@@ -450,35 +470,13 @@ var MyDocs = {
    },
 
    /**
-    * Update the view filter
-    */
-   filter: function(filter)
-   {
-      if (this.popupPanel != null) return;
-
-      $$('.docfilterLink').each(function(filterLink, i)
-      {
-         if (i == filter)
-         {
-            filterLink.addClass("docfilterLinkSelected");
-         }
-         else
-         {
-            filterLink.removeClass("docfilterLinkSelected");
-         }
-      });
-      MyDocs.Filter = filter;
-      MyDocs.start();
-   },
-
-   /**
     * Delete a document item
     */
    deleteItem: function(name, noderef)
    {
       if (confirm("Are you sure you want to delete: " + name))
       {
-         $("docPanelOverlay").setStyle('opacity', MyDocs.OVERLAY_OPACITY);
+         MyDocs.applyModal();
          
          // ajax call to delete item
          YAHOO.util.Connect.asyncRequest(
@@ -489,18 +487,18 @@ var MyDocs = {
                {
                   if (response.responseText.indexOf("OK:") == 0)
                   {
-                     MyDocs.start();
+                     MyDocs.refreshList();
                   }
                   else
                   {
                      alert("Error during delete of item: " + response.responseText);
-                     $("docPanelOverlay").setStyle('opacity', 0);
+                     MyDocs.removeModal();
                   }
                },
                failure: function(response)
                {
                   alert("Error during delete of item: " + response.responseText);
-                  $("docPanelOverlay").setStyle('opacity', 0);
+                  MyDocs.removeModal();
                }
             }, 
             "noderef=" + noderef
@@ -513,7 +511,7 @@ var MyDocs = {
     */
    checkoutItem: function(name, noderef)
    {
-      $("docPanelOverlay").setStyle('opacity', MyDocs.OVERLAY_OPACITY);
+      MyDocs.applyModal();
 
       // ajax call to delete item
       YAHOO.util.Connect.asyncRequest(
@@ -524,18 +522,18 @@ var MyDocs = {
             {
                if (response.responseText.indexOf("OK:") == 0)
                {
-                  MyDocs.start();
+                  MyDocs.refreshList();
                }
                else
                {
                   alert("Error during check out of item: " + response.responseText);
-                  $("docPanelOverlay").setStyle('opacity', 0);
+                  MyDocs.removeModal();
                }
             },
             failure: function(response)
             {
                alert("Error during check out of item: " + response.responseText);
-               $("docPanelOverlay").setStyle('opacity', 0);
+               MyDocs.removeModal();
             }
          }, 
          "noderef=" + noderef
@@ -547,7 +545,7 @@ var MyDocs = {
     */
    checkinItem: function(name, noderef)
    {
-      $("docPanelOverlay").setStyle('opacity', MyDocs.OVERLAY_OPACITY);
+      MyDocs.applyModal();
 
       // ajax call to delete item
       YAHOO.util.Connect.asyncRequest(
@@ -558,18 +556,18 @@ var MyDocs = {
             {
                if (response.responseText.indexOf("OK:") == 0)
                {
-                  MyDocs.start();
+                  MyDocs.refreshList();
                }
                else
                {
                   alert("Error during check in of item: " + response.responseText);
-                  $("docPanelOverlay").setStyle('opacity', 0);
+                  MyDocs.removeModal();
                }
             },
             failure: function(response)
             {
                alert("Error during check in of item: " + response.responseText);
-               $("docPanelOverlay").setStyle('opacity', 0);
+               MyDocs.removeModal();
             }
          }, 
          "noderef=" + noderef
@@ -643,7 +641,7 @@ var MyDocs = {
    {
       if (error == null)
       {
-         MyDocs.start();
+         MyDocs.refreshList();
       }
       else
       {
@@ -669,8 +667,104 @@ var MyDocs = {
       {
          this.fxOverlay.start(0);
       }
-   }
+   },
    
+   /**
+    * Update the view filter
+    */
+   filter: function(filter)
+   {
+      if (this.popupPanel != null) return;
+
+      $$('.docfilterLink').each(function(filterLink, i)
+      {
+         if (i == filter)
+         {
+            filterLink.addClass("docfilterLinkSelected");
+         }
+         else
+         {
+            filterLink.removeClass("docfilterLinkSelected");
+         }
+      });
+      MyDocs.Filter = filter;
+      MyDocs.refreshList(true);
+   },
+
+   /**
+    * Refresh the main data list contents within the docPanel container
+    */
+   refreshList: function(reopenActive)
+   {
+      // do we want to remember which panel was open?
+      if (reopenActive)
+      {
+         // do we have an open panel?
+         var openPanel = $E('#docPanel .docItemSelected');
+         var openPanelId = null;
+         if (openPanel != null)
+         {
+            openPanelId = openPanel.id;
+            // Re-open the panel if the id still exists
+            MyDocs.postInit = function()
+            {
+               if ($(openPanelId))
+               {
+                  $(openPanelId).fireEvent("click");
+   
+                  // scroll the open panel into view               
+                  var fxScroll = new Fx.Scroll($('docPanel'),
+                  {
+                     duration: MyDocs.ANIM_LENGTH,
+                     transition: Fx.Transitions.linear
+                  });
+                  fxScroll.toElement($(openPanelId));
+               }
+            }
+         }
+      }
+
+      // empty the main panel div and restart by reloading the panel contents
+      var docPanel = $('docPanel');
+      docPanel.setStyle('visibility', 'hidden');
+      // show the ajax wait panel
+      $('docPanelOverlayAjax').setStyle('visibility', 'visible');
+      
+      // Stop all the animation effects
+      MyDocs.FxAll.each(function(fx, i)
+      {
+         fx.stop();
+      });
+      
+      docPanel.empty();
+      docPanel.removeEvents('mouseleave');
+      MyDocs.start();
+   },
+   
+   /**
+    * Apply a semi-transparent modal overlay skin to the main panel area
+    */
+   applyModal: function()
+   {
+      $("docPanelOverlay").setStyle('opacity', MyDocs.OVERLAY_OPACITY);
+   },
+   
+   /**
+    * Remove the modal overlay skin from the main panel area
+    */
+   removeModal: function()
+   {
+      $("docPanelOverlay").setStyle('opacity', 0);
+   },
+   
+   /**
+    * Called when the Edit Details dialog returns
+    */
+   editDetailsCallback: function()
+   {
+      // Refresh the inner panel
+      MyDocs.refreshList(true);
+   }
 };
 
 window.addEvent('load', MyDocs.start);

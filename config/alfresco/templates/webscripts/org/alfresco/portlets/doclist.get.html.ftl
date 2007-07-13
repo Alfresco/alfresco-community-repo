@@ -50,7 +50,7 @@
             <th><a id="docFilter3" class="docfilterLink <#if filter=3>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(3); return false;">PDF Documents</a></th>
             <th><a id="docFilter4" class="docfilterLink <#if filter=4>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(4); return false;">Recently Modified</a></th>
             <td align=right>
-               <a href="#" onclick="MyDocs.start(); return false;" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px">Refresh</a>
+               <a href="#" onclick="MyDocs.refreshList(); return false;" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px">Refresh</a>
             </td>
          </tr>
       </table>

@@ -43,7 +43,7 @@
 <#if node.isLocked >
                <td class="spaceAction docActionEditDetails docActionLocked">Edit Details</td>
 <#else>
-               <td class="spaceAction docActionEditDetails" onclick="window.open('${url.context}/command/ui/editcontentprops?container=plain&amp;noderef=${node.nodeRef}', '_blank');">Edit Details</td>
+               <td class="spaceAction docActionEditDetails" onclick="openWindowCallback('${url.context}/command/ui/editcontentprops?container=plain&amp;noderef=${node.nodeRef}', MySpaces.editDetailsCallback);">Edit Details</td>
 </#if>
             </tr>
             <tr>

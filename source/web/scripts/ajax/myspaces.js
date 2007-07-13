@@ -13,6 +13,7 @@ var MySpaces = {
    ServiceContext: null,
    popupPanel: null,
    ScriptUrlEncoder: null,
+   FxAll: null,
    
    start: function()
    {
@@ -77,6 +78,12 @@ var MySpaces = {
       // hide the ajax wait panel and show the main spaces panel
       $('spacePanelOverlayAjax').setStyle('visibility', 'hidden');
       $('spacePanel').setStyle('visibility', 'visible');
+
+      if (MySpaces.postInit)
+      {
+         MySpaces.postInit();
+         MySpaces.postInit = null;
+      }
    },
 
    /**
@@ -85,6 +92,8 @@ var MySpaces = {
     */
    parseSpacePanels: function()
    {
+      MySpaces.FxAll = [];
+      
       var spaces = $$('#spacePanel .spaceRow');
       var items = $$('#spacePanel .spaceItem');
       var infos = $$('#spacePanel .spaceInfo');
@@ -94,9 +103,13 @@ var MySpaces = {
       var imgs64 = $$('#spacePanel .spaceIconImage64');
       var resources = $$('#spacePanel .spaceResource');
       var fxItem = new Fx.Elements(items, {wait: false, duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
+      MySpaces.FxAll.push(fxItem);
       var fxDetail = new Fx.Elements(details, {wait: false, duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
+      MySpaces.FxAll.push(fxDetail);
       var fxInfo = new Fx.Elements(infos, {wait: false, duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
+      MySpaces.FxAll.push(fxInfo);
       var fxIcon = new Fx.Elements(icons, {wait: false, duration: MySpaces.ANIM_LENGTH, transition: Fx.Transitions.linear});
+      MySpaces.FxAll.push(fxIcon);
       var fxResource = new Fx.Elements(resources,
       {
          wait: false,
@@ -126,6 +139,7 @@ var MySpaces = {
             });
          }
       });
+      MySpaces.FxAll.push(fxResource);
       var fxImage = new Fx.Elements(imgs,
       {
          wait: false,
@@ -139,7 +153,8 @@ var MySpaces = {
             });
          }
       });
-
+      MySpaces.FxAll.push(fxImage);
+      
       spaces.each(function(space, i)
       {
          var item = items[i],
@@ -255,6 +270,9 @@ var MySpaces = {
                animResource = {},
                resourceHeight = resource.getStyle('height').toInt();
             
+            // make sure item title is highlighted
+            space.addClass('spaceItemSelected');
+
             if (!space.isOpen)
             {
                if (!resource.isLoaded)
@@ -295,12 +313,12 @@ var MySpaces = {
                // open up this space's resources
                // flag this space as open
                space.isOpen = true;
-               
+
                // slide and fade in the resources panel
                animResource[i] = {
                   'height': [resourceHeight, resource.defHeight + MySpaces.RESOURCE_PANEL_HEIGHT],
                   'opacity': [resource.getStyle('opacity'), 1]};
-   
+               
                // close other open space and toggle this one if it's already open
                spaces.each(function(otherSpace, j)
                {
@@ -836,19 +854,54 @@ var MySpaces = {
          }
       });
       MySpaces.Filter = filter;
-      MySpaces.refreshList();
+      MySpaces.refreshList(true);
    },
 
    /**
     * Refresh the main data list contents within the spacePanel container
     */
-   refreshList: function()
+   refreshList: function(reopenActive)
    {
+      // do we want to remember which panel was open?
+      if (reopenActive)
+      {
+         // do we have an open panel?
+         var openPanel = $E('#spacePanel .spaceItemSelected');
+         var openPanelId = null;
+         if (openPanel != null)
+         {
+            openPanelId = openPanel.id;
+            // Re-open the panel if the id still exists
+            MySpaces.postInit = function()
+            {
+               if ($(openPanelId))
+               {
+                  $(openPanelId).fireEvent("click");
+   
+                  // scroll the open panel into view               
+                  var fxScroll = new Fx.Scroll($('spacePanel'),
+                  {
+                     duration: MySpaces.ANIM_LENGTH,
+                     transition: Fx.Transitions.linear
+                  });
+                  fxScroll.toElement($(openPanelId));
+               }
+            }
+         }
+      }
+
       // empty the main panel div and restart by reloading the panel contents
       var spacePanel = $('spacePanel');
       spacePanel.setStyle('visibility', 'hidden');
       // show the ajax wait panel
       $('spacePanelOverlayAjax').setStyle('visibility', 'visible');
+      
+      // Stop all the animation effects
+      MySpaces.FxAll.each(function(fx, i)
+      {
+         fx.stop();
+      });
+      
       spacePanel.empty();
       spacePanel.removeEvents('mouseleave');
       MySpaces.start();
@@ -868,6 +921,15 @@ var MySpaces = {
    removeModal: function()
    {
       $("spacePanelOverlay").setStyle('opacity', 0);
+   },
+   
+   /**
+    * Called when the Edit Details dialog returns
+    */
+   editDetailsCallback: function()
+   {
+      // The edit details dialog window has closed
+      MySpaces.refreshList(true);
    },
    
    /**

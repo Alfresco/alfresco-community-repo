@@ -28,7 +28,7 @@
 <#if node.isLocked >
                <td class="docAction docActionEditDetails docActionLocked">Edit Details</td>
 <#else>
-               <td class="docAction docActionEditDetails" onclick="window.open('${url.context}/command/ui/editcontentprops?container=plain&amp;noderef=${node.nodeRef}', '_blank');">Edit Details</td>
+               <td class="docAction docActionEditDetails" onclick="openWindowCallback('${url.context}/command/ui/editcontentprops?container=plain&amp;noderef=${node.nodeRef}', MyDocs.editDetailsCallback);">Edit Details</td>
 </#if>
             </tr>
             <tr>

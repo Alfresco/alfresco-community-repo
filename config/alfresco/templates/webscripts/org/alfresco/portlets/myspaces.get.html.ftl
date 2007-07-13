@@ -2,7 +2,7 @@
 
 <script type="text/javascript" src="/alfresco/scripts/ajax/yahoo/yahoo/yahoo-min.js"></script>
 <script type="text/javascript" src="/alfresco/scripts/ajax/yahoo/connection/connection-min.js"></script>
-<script type="text/javascript" src="/alfresco/scripts/ajax/mootools.v1.11.js"></script>
+<script type="text/javascript" src="/alfresco/scripts/ajax/mootools.v1.11-mjh.js"></script>
 <script type="text/javascript" src="/alfresco/scripts/ajax/common.js"></script>
 <script type="text/javascript" src="/alfresco/scripts/ajax/summary-info.js"></script>
 <script type="text/javascript" src="/alfresco/scripts/ajax/myspaces.js"></script>
@@ -86,7 +86,7 @@
             <th><a class="spacefilterLink <#if filter=3>spacefilterLinkSelected</#if>" href="#" onclick="MySpaces.filter(3); return false;">My Items</a></th>
             <th><a class="spacefilterLink <#if filter=4>spacefilterLinkSelected</#if>" href="#" onclick="MySpaces.filter(4); return false;">Recently Modified</a></th>
             <td align=right>
-               <a href="#" onclick="MySpaces.start(); return false;" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" class="spaceImageIcon">Refresh</a>
+               <a href="#" onclick="MySpaces.refreshList(); return false;" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" class="spaceImageIcon">Refresh</a>
             </td>
          </tr>
       </table>

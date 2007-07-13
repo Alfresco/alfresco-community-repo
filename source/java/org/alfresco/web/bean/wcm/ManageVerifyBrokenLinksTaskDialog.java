@@ -126,6 +126,7 @@ public class ManageVerifyBrokenLinksTaskDialog extends ManageTaskDialog
       Map<String, String> params = new HashMap<String, String>(1);
       params.put("store", this.store);
       params.put("webapp", this.webapp);
+      params.put("compareToStaging", "true");
       Application.getDialogManager().setupParameters(params);
       
       return "dialog:linkValidation";

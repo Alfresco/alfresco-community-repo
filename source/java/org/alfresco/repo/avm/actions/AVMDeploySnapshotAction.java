@@ -238,7 +238,7 @@ public class AVMDeploySnapshotAction extends ActionExecuterAbstractBase
             // TODO Added new NameMatcher parameter to deploy methods. It acts as a filter.
             // Any matching path names are ignored for deployment purposes.
             report = this.deployService.deployDifferenceFS(version, path, host, port, 
-                     remoteUsername, remotePassword, "/", null, true, false, false, callback);
+                     remoteUsername, remotePassword, "default", null, true, false, false, callback);
          }
          else
          {

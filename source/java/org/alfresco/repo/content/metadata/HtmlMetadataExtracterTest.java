@@ -31,13 +31,14 @@ import org.alfresco.repo.content.MimetypeMap;
  */
 public class HtmlMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
-    private MetadataExtracter extracter;
+    private HtmlMetadataExtracter extracter;
 
     @Override
     public void setUp() throws Exception
     {
         super.setUp();
         extracter = new HtmlMetadataExtracter();
+        extracter.register();
     }
 
     /**
@@ -48,14 +49,13 @@ public class HtmlMetadataExtracterTest extends AbstractMetadataExtracterTest
         return extracter;
     }
 
-    public void testReliability() throws Exception
+    public void testSupports() throws Exception
     {
-        double reliability = 0.0;
-        reliability = extracter.getReliability(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        assertEquals("Mimetype text should not be supported", 0.0, reliability);
-
-        reliability = extracter.getReliability(MimetypeMap.MIMETYPE_HTML);
-        assertEquals("HTML should be supported", 1.0, reliability);
+        for (String mimetype : HtmlMetadataExtracter.MIMETYPES)
+        {
+            boolean supports = extracter.isSupported(mimetype);
+            assertTrue("Mimetype should be supported: " + mimetype, supports);
+        }
     }
 
     public void testHtmlExtraction() throws Exception

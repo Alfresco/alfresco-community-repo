@@ -58,7 +58,7 @@ public class HtmlMetadataExtracter extends AbstractMappingMetadataExtracter
     private static final String KEY_TITLE = "title";
     private static final String KEY_DESCRIPTION= "description";
 
-    private static final Set<String> MIMETYPES = new HashSet<String>(5);
+    public static final Set<String> MIMETYPES = new HashSet<String>(5);
     static
     {
         MIMETYPES.add(MimetypeMap.MIMETYPE_HTML);

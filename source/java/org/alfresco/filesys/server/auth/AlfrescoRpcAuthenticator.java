@@ -55,7 +55,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator {
 
 	// Authentication types aupported by this implementation
 
-	private int[] _authTypes = { AuthType.Null, AuthType.Unix };
+	private int[] _authTypes = { AuthType.Unix };
 
 	// UID/GID to username conversions
 	

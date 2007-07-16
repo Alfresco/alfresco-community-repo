@@ -424,10 +424,13 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 		}
 		catch (RpcAuthenticationException ex) {
 
-			// Failed to authenticate the RPC client
-
-			rpc.buildAuthFailResponse(ex.getAuthenticationErrorCode());
-			return rpc;
+			// Failed to authenticate the RPC client, return an error unless the request is the 'null' request
+			
+			if ( rpc.getProcedureId() != NFS.ProcNull)
+			{
+				rpc.buildAuthFailResponse(ex.getAuthenticationErrorCode());
+				return rpc;
+			}
 		}
 
 		// Position the RPC buffer pointer at the start of the call parameters
@@ -582,25 +585,28 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 	
 	        // Commit, or rollback, any active user transaction
 	        
-	        try
-	        {
-	            // Commit or rollback the transaction
-	
-	            nfsSess.endTransaction();
-	        }
-	        catch ( Exception ex)
-	        {
-	            // Debug
-	            
-	            if ( logger.isDebugEnabled())
-	                logger.debug("Error committing transaction", ex);
-	        }
+			if ( nfsSess != null)
+			{
+		        try
+		        {
+		            // Commit or rollback the transaction
+		
+		            nfsSess.endTransaction();
+		        }
+		        catch ( Exception ex)
+		        {
+		            // Debug
+		            
+		            if ( logger.isDebugEnabled())
+		                logger.debug("Error committing transaction", ex);
+		        }
+			}
 		}
 		finally
 		{
             // If there is an active transaction then roll it back
             
-            if ( nfsSess.hasUserTransaction())
+            if ( nfsSess != null && nfsSess.hasUserTransaction())
             {
                 try
                 {
@@ -4126,7 +4132,24 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 
 		// Setup the authentication context for the request
 		
-		getRpcAuthenticator().setCurrentUser( sess, sess.getClientInformation());
+		try
+		{
+			getRpcAuthenticator().setCurrentUser( sess, sess.getClientInformation());
+		}
+		catch ( Throwable ex)
+		{
+			sess = null;
+
+			// DEBUG
+
+			if (logger.isDebugEnabled() && hasDebugFlag(DBG_ERROR))
+				logger.debug("RPC Authencation Exception: " + ex.toString());
+		}
+
+		// Check if the session is valid
+
+		if ( sess == null)
+			throw new RpcAuthenticationException(Rpc.AuthBadCred);
 		
 		// Return the server session
 

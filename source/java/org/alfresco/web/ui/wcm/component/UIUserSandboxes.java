@@ -722,7 +722,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write(name);
                   UIAVMLockIcon lockIcon = (UIAVMLockIcon)fc.getApplication().createComponent(
                         UIAVMLockIcon.ALFRESCO_FACES_AVMLOCKICON);
-                  lockIcon.setId("lock_" + FacesHelper.makeLegalId(name));
+                  lockIcon.setId("avmlock_" + Integer.toString(rowIndex));
                   lockIcon.setValue(sourcePath);
                   Utils.encodeRecursive(fc, lockIcon);
                   out.write("</a>");

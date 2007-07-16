@@ -171,6 +171,7 @@ public final class FacesHelper
          id = id.replace(':', '_');
          id = id.replace(' ', '_');
          id = id.replace('.', '_');
+         id = id.replace('+', '_');
          
          // TODO: check all other illegal characters - only allowed dash and underscore
          // TODO: use regular expression to do check and replacment of characters

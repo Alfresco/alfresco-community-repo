@@ -848,6 +848,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 }
             }
             
+            // Convert the all files wildcard
+            
+            if ( searchFileSpec.equals( "*.*"))
+            	searchFileSpec = "*";
+            
             // Perform the search
             
             List<NodeRef> results = cifsHelper.getNodeRefs(searchRootNodeRef, searchFileSpec);

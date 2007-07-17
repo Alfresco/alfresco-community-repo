@@ -885,7 +885,6 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     public void setIndexerMaxFieldLength(int indexerMaxFieldLength)
     {
         this.indexerMaxFieldLength = indexerMaxFieldLength;
-        System.setProperty("org.apache.lucene.maxFieldLength", "" + indexerMaxFieldLength);
     }
 
     /**

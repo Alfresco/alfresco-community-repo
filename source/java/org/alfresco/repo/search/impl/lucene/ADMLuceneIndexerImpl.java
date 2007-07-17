@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -170,8 +171,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         {
             NodeRef childRef = relationshipRef.getChildRef();
             // If we have the root node we delete all other root nodes first
-            if ((relationshipRef.getParentRef() == null)
-                    && childRef.equals(nodeService.getRootNode(childRef.getStoreRef())))
+            if ((relationshipRef.getParentRef() == null) && childRef.equals(nodeService.getRootNode(childRef.getStoreRef())))
             {
                 addRootNodesToDeletionList();
                 s_logger.warn("Detected root node addition: deleting all nodes from the index");
@@ -283,8 +283,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         }
     }
 
-    public void updateChildRelationship(ChildAssociationRef relationshipBeforeRef,
-            ChildAssociationRef relationshipAfterRef) throws LuceneIndexException
+    public void updateChildRelationship(ChildAssociationRef relationshipBeforeRef, ChildAssociationRef relationshipAfterRef) throws LuceneIndexException
     {
         if (s_logger.isDebugEnabled())
         {
@@ -339,8 +338,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
      * @return - the indexer instance
      * @throws LuceneIndexException
      */
-    public static ADMLuceneIndexerImpl getUpdateIndexer(StoreRef storeRef, String deltaId, LuceneConfig config)
-            throws LuceneIndexException
+    public static ADMLuceneIndexerImpl getUpdateIndexer(StoreRef storeRef, String deltaId, LuceneConfig config) throws LuceneIndexException
     {
         if (s_logger.isDebugEnabled())
         {
@@ -513,8 +511,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         }
     }
 
-    public List<Document> createDocuments(String stringNodeRef, boolean isNew, boolean indexAllProperties,
-            boolean includeDirectoryDocuments)
+    public List<Document> createDocuments(String stringNodeRef, boolean isNew, boolean indexAllProperties, boolean includeDirectoryDocuments)
     {
         NodeRef nodeRef = new NodeRef(stringNodeRef);
 
@@ -526,8 +523,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
         Collection<Path> directPaths = nodeService.getPaths(nodeRef, false);
         Collection<Pair<Path, QName>> categoryPaths = getCategoryPaths(nodeRef, properties);
-        Collection<Pair<Path, QName>> paths = new ArrayList<Pair<Path, QName>>(directPaths.size()
-                + categoryPaths.size());
+        Collection<Pair<Path, QName>> paths = new ArrayList<Pair<Path, QName>>(directPaths.size() + categoryPaths.size());
         for (Path path : directPaths)
         {
             paths.add(new Pair<Path, QName>(path, null));
@@ -536,8 +532,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
         Document xdoc = new Document();
         xdoc.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-        xdoc.add(new Field("TX", nodeStatus.getChangeTxnId(), Field.Store.YES, Field.Index.UN_TOKENIZED,
-                Field.TermVector.NO));
+        xdoc.add(new Field("TX", nodeStatus.getChangeTxnId(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
         boolean isAtomic = true;
         for (QName propertyName : properties.keySet())
         {
@@ -593,12 +588,10 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             qNameBuffer.append(";/");
                         }
                         qNameBuffer.append(ISO9075.getXPathName(qNameRef.getQName()));
-                        xdoc.add(new Field("PARENT", qNameRef.getParentRef().toString(), Field.Store.YES,
-                                Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-                        xdoc.add(new Field("ASSOCTYPEQNAME", ISO9075.getXPathName(qNameRef.getTypeQName()),
-                                Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
-                        xdoc.add(new Field("LINKASPECT", (pair.getSecond() == null) ? "" : ISO9075.getXPathName(pair
-                                .getSecond()), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                        xdoc.add(new Field("PARENT", qNameRef.getParentRef().toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                        xdoc.add(new Field("ASSOCTYPEQNAME", ISO9075.getXPathName(qNameRef.getTypeQName()), Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
+                        xdoc.add(new Field("LINKASPECT", (pair.getSecond() == null) ? "" : ISO9075.getXPathName(pair.getSecond()), Field.Store.YES, Field.Index.UN_TOKENIZED,
+                                Field.TermVector.NO));
                     }
                 }
 
@@ -616,22 +609,17 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         if (directPaths.contains(pair.getFirst()))
                         {
                             Document directoryEntry = new Document();
-                            directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES,
-                                    Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-                            directoryEntry.add(new Field("PATH", pathString, Field.Store.YES, Field.Index.TOKENIZED,
-                                    Field.TermVector.NO));
+                            directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                            directoryEntry.add(new Field("PATH", pathString, Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
                             for (NodeRef parent : getParents(pair.getFirst()))
                             {
-                                directoryEntry.add(new Field("ANCESTOR", parent.toString(), Field.Store.NO,
-                                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                                directoryEntry.add(new Field("ANCESTOR", parent.toString(), Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                             }
-                            directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.UN_TOKENIZED,
-                                    Field.TermVector.NO));
+                            directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
 
                             if (isCategory(getDictionaryService().getType(nodeService.getType(nodeRef))))
                             {
-                                directoryEntry.add(new Field("ISCATEGORY", "T", Field.Store.YES,
-                                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                                directoryEntry.add(new Field("ISCATEGORY", "T", Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                             }
 
                             docs.add(directoryEntry);
@@ -649,8 +637,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             xdoc.add(new Field("PATH", "", Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
             xdoc.add(new Field("QNAME", "", Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
             xdoc.add(new Field("ISROOT", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-            xdoc.add(new Field("PRIMARYASSOCTYPEQNAME", ISO9075.getXPathName(ContentModel.ASSOC_CHILDREN),
-                    Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
+            xdoc.add(new Field("PRIMARYASSOCTYPEQNAME", ISO9075.getXPathName(ContentModel.ASSOC_CHILDREN), Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
             xdoc.add(new Field("ISNODE", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             docs.add(xdoc);
 
@@ -658,45 +645,36 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         else
         // not a root node
         {
-            xdoc.add(new Field("QNAME", qNameBuffer.toString(), Field.Store.YES, Field.Index.TOKENIZED,
-                    Field.TermVector.NO));
+            xdoc.add(new Field("QNAME", qNameBuffer.toString(), Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
             // xdoc.add(new Field("PARENT", parentBuffer.toString(), true, true,
             // true));
 
             ChildAssociationRef primary = nodeService.getPrimaryParent(nodeRef);
-            xdoc.add(new Field("PRIMARYPARENT", primary.getParentRef().toString(), Field.Store.YES,
-                    Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-            xdoc.add(new Field("PRIMARYASSOCTYPEQNAME", ISO9075.getXPathName(primary.getTypeQName()), Field.Store.YES,
-                    Field.Index.NO, Field.TermVector.NO));
+            xdoc.add(new Field("PRIMARYPARENT", primary.getParentRef().toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("PRIMARYASSOCTYPEQNAME", ISO9075.getXPathName(primary.getTypeQName()), Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
             QName typeQName = nodeService.getType(nodeRef);
 
-            xdoc.add(new Field("TYPE", ISO9075.getXPathName(typeQName), Field.Store.YES, Field.Index.UN_TOKENIZED,
-                    Field.TermVector.NO));
+            xdoc.add(new Field("TYPE", ISO9075.getXPathName(typeQName), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             for (QName classRef : nodeService.getAspects(nodeRef))
             {
-                xdoc.add(new Field("ASPECT", ISO9075.getXPathName(classRef), Field.Store.YES, Field.Index.UN_TOKENIZED,
-                        Field.TermVector.NO));
+                xdoc.add(new Field("ASPECT", ISO9075.getXPathName(classRef), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             }
 
             xdoc.add(new Field("ISROOT", "F", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             xdoc.add(new Field("ISNODE", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             if (isAtomic || indexAllProperties)
             {
-                xdoc
-                        .add(new Field("FTSSTATUS", "Clean", Field.Store.NO, Field.Index.UN_TOKENIZED,
-                                Field.TermVector.NO));
+                xdoc.add(new Field("FTSSTATUS", "Clean", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             }
             else
             {
                 if (isNew)
                 {
-                    xdoc.add(new Field("FTSSTATUS", "New", Field.Store.NO, Field.Index.UN_TOKENIZED,
-                            Field.TermVector.NO));
+                    xdoc.add(new Field("FTSSTATUS", "New", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                 }
                 else
                 {
-                    xdoc.add(new Field("FTSSTATUS", "Dirty", Field.Store.NO, Field.Index.UN_TOKENIZED,
-                            Field.TermVector.NO));
+                    xdoc.add(new Field("FTSSTATUS", "Dirty", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                 }
             }
 
@@ -713,11 +691,9 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
      *            true to ignore all properties that must be indexed non-atomically
      * @return Returns true if the property was indexed atomically, or false if it should be done asynchronously
      */
-    protected boolean indexProperty(NodeRef nodeRef, QName propertyName, Serializable value, Document doc,
-            boolean indexAtomicPropertiesOnly)
+    protected boolean indexProperty(NodeRef nodeRef, QName propertyName, Serializable value, Document doc, boolean indexAtomicPropertiesOnly)
     {
-        String attributeName = "@"
-                + QName.createQName(propertyName.getNamespaceURI(), ISO9075.encode(propertyName.getLocalName()));
+        String attributeName = "@" + QName.createQName(propertyName.getNamespaceURI(), ISO9075.encode(propertyName.getLocalName()));
 
         boolean store = true;
         boolean index = true;
@@ -764,8 +740,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             }
             catch (TypeConversionException e)
             {
-                doc.add(new Field(attributeName, NOT_INDEXED_NO_TYPE_CONVERSION, Field.Store.NO,
-                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                doc.add(new Field(attributeName, NOT_INDEXED_NO_TYPE_CONVERSION, Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                 continue;
             }
             if (strValue == null)
@@ -784,10 +759,8 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 }
                 // store mimetype in index - even if content does not index it is useful
                 // Added szie and locale - size needs to be tokenised correctly
-                doc.add(new Field(attributeName + ".mimetype", contentData.getMimetype(), Field.Store.NO,
-                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-                doc.add(new Field(attributeName + ".size", Long.toString(contentData.getSize()), Field.Store.NO,
-                        Field.Index.TOKENIZED, Field.TermVector.NO));
+                doc.add(new Field(attributeName + ".mimetype", contentData.getMimetype(), Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                doc.add(new Field(attributeName + ".size", Long.toString(contentData.getSize()), Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
 
                 // TODO: Use the node locale in preferanced to the system locale
                 Locale locale = contentData.getLocale();
@@ -803,40 +776,33 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 {
                     locale = I18NUtil.getLocale();
                 }
-                doc.add(new Field(attributeName + ".locale", locale.toString().toLowerCase(), Field.Store.NO,
-                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                doc.add(new Field(attributeName + ".locale", locale.toString().toLowerCase(), Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
 
                 ContentReader reader = contentService.getReader(nodeRef, propertyName);
                 if (reader != null && reader.exists())
                 {
                     boolean readerReady = true;
                     // transform if necessary (it is not a UTF-8 text document)
-                    if (!EqualsHelper.nullSafeEquals(reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN)
-                            || !EqualsHelper.nullSafeEquals(reader.getEncoding(), "UTF-8"))
+                    if (!EqualsHelper.nullSafeEquals(reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN) || !EqualsHelper.nullSafeEquals(reader.getEncoding(), "UTF-8"))
                     {
                         // get the transformer
-                        ContentTransformer transformer = contentService.getTransformer(reader.getMimetype(),
-                                MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                        ContentTransformer transformer = contentService.getTransformer(reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN);
                         // is this transformer good enough?
                         if (transformer == null)
                         {
                             // log it
                             if (s_logger.isDebugEnabled())
                             {
-                                s_logger.debug("Not indexed: No transformation: \n"
-                                        + "   source: " + reader + "\n" + "   target: "
-                                        + MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                                s_logger.debug("Not indexed: No transformation: \n" + "   source: " + reader + "\n" + "   target: " + MimetypeMap.MIMETYPE_TEXT_PLAIN);
                             }
                             // don't index from the reader
                             readerReady = false;
                             // not indexed: no transformation
                             // doc.add(new Field("TEXT", NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO,
                             // Field.Index.TOKENIZED, Field.TermVector.NO));
-                            doc.add(new Field(attributeName, NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO,
-                                    Field.Index.TOKENIZED, Field.TermVector.NO));
+                            doc.add(new Field(attributeName, NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
                         }
-                        else if (indexAtomicPropertiesOnly
-                                && transformer.getTransformationTime() > maxAtomicTransformationTime)
+                        else if (indexAtomicPropertiesOnly && transformer.getTransformationTime() > maxAtomicTransformationTime)
                         {
                             // only indexing atomic properties
                             // indexing will take too long, so push it to the background
@@ -869,8 +835,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                                 // failed
                                 // doc.add(new Field("TEXT", NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO,
                                 // Field.Index.TOKENIZED, Field.TermVector.NO));
-                                doc.add(new Field(attributeName, NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO,
-                                        Field.Index.TOKENIZED, Field.TermVector.NO));
+                                doc.add(new Field(attributeName, NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
                             }
                         }
                     }
@@ -917,10 +882,8 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                                 + (reader == null ? " --- " : Boolean.toString(reader.exists())));
                     }
                     // not indexed: content missing
-                    doc.add(new Field("TEXT", NOT_INDEXED_CONTENT_MISSING, Field.Store.NO, Field.Index.TOKENIZED,
-                            Field.TermVector.NO));
-                    doc.add(new Field(attributeName, NOT_INDEXED_CONTENT_MISSING, Field.Store.NO,
-                            Field.Index.TOKENIZED, Field.TermVector.NO));
+                    doc.add(new Field("TEXT", NOT_INDEXED_CONTENT_MISSING, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
+                    doc.add(new Field(attributeName, NOT_INDEXED_CONTENT_MISSING, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
                 }
             }
             else
@@ -954,16 +917,14 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             String localeString = mlText.getValue(locale);
                             StringBuilder builder = new StringBuilder();
                             builder.append("\u0000").append(locale.toString()).append("\u0000").append(localeString);
-                            doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex,
-                                    Field.TermVector.NO));
+                            doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex, Field.TermVector.NO));
                         }
                     }
                     else if (isText)
                     {
                         // Temporary special case for uids and gids
                         if (propertyName.equals(ContentModel.PROP_USER_USERNAME)
-                                || propertyName.equals(ContentModel.PROP_USERNAME)
-                                || propertyName.equals(ContentModel.PROP_AUTHORITY_NAME)
+                                || propertyName.equals(ContentModel.PROP_USERNAME) || propertyName.equals(ContentModel.PROP_AUTHORITY_NAME)
                                 || propertyName.equals(ContentModel.PROP_MEMBERS))
                         {
                             doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
@@ -986,8 +947,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         {
                             StringBuilder builder = new StringBuilder();
                             builder.append("\u0000").append(locale.toString()).append("\u0000").append(strValue);
-                            doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex,
-                                    Field.TermVector.NO));
+                            doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex, Field.TermVector.NO));
                         }
                         else
                         {
@@ -1097,34 +1057,39 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 {
                     if (propDef.getDataType().getName().equals(DataTypeDefinition.CATEGORY))
                     {
-                        for (NodeRef catRef : DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, properties
-                                .get(propDef.getName())))
+                        for (NodeRef catRef : DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, properties.get(propDef.getName())))
                         {
                             if (catRef != null)
                             {
-                                for (Path path : nodeService.getPaths(catRef, false))
+                                try
                                 {
-                                    if ((path.size() > 1) && (path.get(1) instanceof Path.ChildAssocElement))
+                                    for (Path path : nodeService.getPaths(catRef, false))
                                     {
-                                        Path.ChildAssocElement cae = (Path.ChildAssocElement) path.get(1);
-                                        boolean isFakeRoot = true;
-                                        for (ChildAssociationRef car : nodeService.getParentAssocs(cae.getRef()
-                                                .getChildRef()))
+                                        if ((path.size() > 1) && (path.get(1) instanceof Path.ChildAssocElement))
                                         {
-                                            if (cae.getRef().equals(car))
+                                            Path.ChildAssocElement cae = (Path.ChildAssocElement) path.get(1);
+                                            boolean isFakeRoot = true;
+                                            for (ChildAssociationRef car : nodeService.getParentAssocs(cae.getRef().getChildRef()))
                                             {
-                                                isFakeRoot = false;
-                                                break;
+                                                if (cae.getRef().equals(car))
+                                                {
+                                                    isFakeRoot = false;
+                                                    break;
+                                                }
                                             }
-                                        }
-                                        if (isFakeRoot)
-                                        {
-                                            if (path.toString().indexOf(aspDef.getName().toString()) != -1)
+                                            if (isFakeRoot)
                                             {
-                                                aspectPaths.add(new Pair<Path, QName>(path, aspDef.getName()));
+                                                if (path.toString().indexOf(aspDef.getName().toString()) != -1)
+                                                {
+                                                    aspectPaths.add(new Pair<Path, QName>(path, aspDef.getName()));
+                                                }
                                             }
                                         }
                                     }
+                                }
+                                catch (InvalidNodeRefException e)
+                                {
+                                    // If the category does not exists we move on the next
                                 }
 
                             }
@@ -1141,9 +1106,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             {
                 Path.ChildAssocElement cae = (Path.ChildAssocElement) pair.getFirst().last();
                 ChildAssociationRef assocRef = cae.getRef();
-                pair.getFirst().append(
-                        new Path.ChildAssocElement(new ChildAssociationRef(assocRef.getTypeQName(), assocRef
-                                .getChildRef(), QName.createQName("member"), nodeRef)));
+                pair.getFirst().append(new Path.ChildAssocElement(new ChildAssociationRef(assocRef.getTypeQName(), assocRef.getChildRef(), QName.createQName("member"), nodeRef)));
             }
         }
 
@@ -1233,8 +1196,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 }
                 catch (IOException e)
                 {
-                    throw new LuceneIndexException(
-                            "Failed to execute query to find content which needs updating in the index", e);
+                    throw new LuceneIndexException("Failed to execute query to find content which needs updating in the index", e);
                 }
 
                 for (int i = 0; i < hits.length(); i++)

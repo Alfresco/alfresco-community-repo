@@ -67,5 +67,11 @@ public interface LuceneConfig
      * @return
      */
     public MLAnalysisMode getDefaultMLSearchAnalysisMode();
+    
+    /**
+     * Get the max field length that determine how many tokens are put into the index
+     * @return
+     */
+    public int getIndexerMaxFieldLength();
    
 }

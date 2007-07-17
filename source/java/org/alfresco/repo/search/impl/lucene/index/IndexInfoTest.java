@@ -93,7 +93,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
         File tempLocation = TempFileProvider.getTempDir();
         File testArea = new File(tempLocation, "IndexInfoTest");
         File testDir = new File(testArea, "" + System.currentTimeMillis());
-        final IndexInfo ii = IndexInfo.getIndexInfo(testDir);
+        final IndexInfo ii = IndexInfo.getIndexInfo(testDir, null);
 
         for (int i = 0; i < WORD_LIST.length; i++)
         {
@@ -191,7 +191,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
         File tempLocation = TempFileProvider.getTempDir();
         File testArea = new File(tempLocation, "IndexInfoTest");
         File testDir = new File(testArea, "" + System.currentTimeMillis());
-        final IndexInfo ii =  IndexInfo.getIndexInfo(testDir);
+        final IndexInfo ii =  IndexInfo.getIndexInfo(testDir, null);
 
         for (int i = 0; i < CREATE_LIST.length; i++)
         {
@@ -381,7 +381,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
         File tempLocation = TempFileProvider.getTempDir();
         File testArea = new File(tempLocation, "IndexInfoTest");
         File testDir = new File(testArea, "" + System.currentTimeMillis());
-        final IndexInfo ii =  IndexInfo.getIndexInfo(testDir);
+        final IndexInfo ii =  IndexInfo.getIndexInfo(testDir, null);
 
         for (int i = 0; i < CREATE_LIST.length; i++)
         {
@@ -608,7 +608,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
         File tempLocation = TempFileProvider.getTempDir();
         File testArea = new File(tempLocation, "IndexInfoTest");
         File testDir = new File(testArea, "" + System.currentTimeMillis());
-        final IndexInfo ii =  IndexInfo.getIndexInfo(testDir);
+        final IndexInfo ii =  IndexInfo.getIndexInfo(testDir, null);
         
         Thread thread1 = new Thread(new Test(ii, CREATE_LIST, UPDATE_LIST));
         Thread thread2 = new Thread(new Test(ii, CREATE_LIST_2, UPDATE_LIST_2));

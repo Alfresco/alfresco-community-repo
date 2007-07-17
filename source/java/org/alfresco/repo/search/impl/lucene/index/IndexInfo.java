@@ -56,6 +56,7 @@ import java.util.zip.CRC32;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.impl.lucene.FilterIndexReaderByStringId;
+import org.alfresco.repo.search.impl.lucene.LuceneConfig;
 import org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
@@ -318,7 +319,7 @@ public class IndexInfo
      * @return
      * @throws IndexerException
      */
-    public static synchronized IndexInfo getIndexInfo(File file) throws IndexerException
+    public static synchronized IndexInfo getIndexInfo(File file, LuceneConfig config) throws IndexerException
     {
         File canonicalFile;
         try
@@ -327,7 +328,7 @@ public class IndexInfo
             IndexInfo indexInfo = indexInfos.get(canonicalFile);
             if (indexInfo == null)
             {
-                indexInfo = new IndexInfo(canonicalFile);
+                indexInfo = new IndexInfo(canonicalFile, config);
                 indexInfos.put(canonicalFile, indexInfo);
                 if (s_logger.isDebugEnabled())
                 {
@@ -353,10 +354,15 @@ public class IndexInfo
      * 
      * @param indexDirectory
      */
-    private IndexInfo(File indexDirectory)
+    private IndexInfo(File indexDirectory, LuceneConfig config)
     {
         super();
         initialiseTransitions();
+        
+        if(config != null)
+        {
+            this.maxFieldLength = config.getIndexerMaxFieldLength();
+        }
 
         
         // Create an empty in memory index
@@ -2113,7 +2119,7 @@ public class IndexInfo
     {
 
         String indexLocation = args[0];
-        IndexInfo ii = new IndexInfo(new File(indexLocation));
+        IndexInfo ii = new IndexInfo(new File(indexLocation), null);
         while (true)
         {
             ii.readWriteLock.writeLock().lock();

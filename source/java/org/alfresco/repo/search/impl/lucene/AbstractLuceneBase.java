@@ -102,7 +102,7 @@ public abstract class AbstractLuceneBase
 
         String basePath = getBasePath();
         File baseDir = new File(basePath);
-        indexInfo = IndexInfo.getIndexInfo(baseDir);
+        indexInfo = IndexInfo.getIndexInfo(baseDir, config);
         try
         {
             if (deltaId != null)

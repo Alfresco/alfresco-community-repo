@@ -27,6 +27,7 @@ package org.alfresco.web.ui.repo.tag;
 import java.io.IOException;
 import java.io.Writer;
 
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
@@ -54,9 +55,10 @@ public class PageTag extends TagSupport
  * Please ensure you understand the terms of the license before changing the contents of this file.
  */
 
+   private final static String ALF_LOGO_HTTP  = "http://www.alfresco.com/images/alfresco_community_horiz21.gif";
+   private final static String ALF_LOGO_HTTPS = "https://www.alfresco.com/images/alfresco_community_horiz21.gif";
    private final static String ALF_URL   = "http://www.alfresco.com";
-   private final static String ALF_LOGO  = "http://www.alfresco.com/images/alfresco_community_horiz21.gif";
-   private final static String SF_LOGO  = "/images/logo/sflogo.php.png";
+   private final static String SF_LOGO   = "/images/logo/sflogo.php.png";
    private final static String ALF_TEXT  = "Alfresco Community";
    private final static String ALF_COPY  = "Supplied free of charge with " +
         "<a class=footer href='http://www.alfresco.com/services/support/communityterms/#support'>no support</a>, " +
@@ -259,14 +261,15 @@ public class PageTag extends TagSupport
    {
       if (alfresco == null)
       {
-         String reqPath = ((HttpServletRequest)pageContext.getRequest()).getContextPath();
+         HttpServletRequest req = (HttpServletRequest)pageContext.getRequest();
          alfresco = "<center><table><tr><td>" +
                     "<a href='" + ALF_URL + "'>" +
-                    "<img border=0 alt='' title='" + ALF_TEXT + "' align=absmiddle src='" + ALF_LOGO + "'>" +
-                    "</a></td><td align=center>" +
+                    "<img border=0 alt='' title='" + ALF_TEXT + "' align=absmiddle src='" +
+                    ("http".equals(req.getScheme()) ? ALF_LOGO_HTTP : ALF_LOGO_HTTPS) + 
+                    "'>" +"</a></td><td align=center>" +
                     "<span class=footer>" + ALF_COPY +
                     "</span></td><td><a href='http://sourceforge.net/projects/alfresco'><img border=0 alt='' title='SourceForge' align=absmiddle src='" +
-                    reqPath + SF_LOGO + "'></a>" +
+                    req.getContextPath() + SF_LOGO + "'></a>" +
                     "</td></tr></table></center>";
       }
       

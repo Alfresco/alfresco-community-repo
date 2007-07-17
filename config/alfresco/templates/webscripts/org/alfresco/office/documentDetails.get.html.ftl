@@ -112,7 +112,10 @@
          <#if record.description?exists>
             Notes: ${record.description}<br />
          </#if>
+         <#-- Only Word supports document compare -->
+         <#if extn = "doc">
             <a class="bold" href="#" onclick="window.external.compareDocument('${record.url}')" title="Compare with current">Compare with current</a><br />
+         </#if>
          </td>
       </tr>
       </#list>

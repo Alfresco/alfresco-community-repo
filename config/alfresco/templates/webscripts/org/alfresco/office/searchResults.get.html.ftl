@@ -45,7 +45,7 @@
          <a href="${openURL}" ${hrefExtra}><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
       </span>
       <span class="documentItemDetails">
-         <a href="${openURL}" ${hrefExtra} title="Open ${child.name}">${child.name}</a><br />
+         <a class="bold" href="${openURL}" ${hrefExtra} title="Open ${child.name}">${child.name}</a><br />
          <#if child.properties.description?exists>
             <#if (child.properties.description?length > 0)>
                ${child.properties.description}<br />

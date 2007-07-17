@@ -153,7 +153,7 @@
    <bean id="extracter.Html" class="org.alfresco.repo.content.metadata.HtmlMetadataExtracter" parent="baseMetadataExtracter" />
    <bean id="extracter.MP3" class="org.alfresco.repo.content.metadata.MP3MetadataExtracter" parent="baseMetadataExtracter" />
    <bean id="extracter.OpenDocument" class="org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracter" parent="baseMetadataExtracter" />
-   <bean id="extracter.OpenOffice" class="org.alfresco.repo.content.metadata.OpenOfficeMetadataExtracter" parent="baseMetadataExtracter" init-method="init" >
+   <bean id="extracter.OpenOffice" class="org.alfresco.repo.content.metadata.OpenOfficeMetadataExtracter" parent="baseMetadataExtracter" >
       <property name="connection">
          <ref bean="openOfficeConnection" />
       </property>

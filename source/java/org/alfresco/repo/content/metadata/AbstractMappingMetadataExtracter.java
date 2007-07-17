@@ -474,8 +474,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             }
         }
         
-        // Were there any mappings
-        if (mapping.size() == 0)
+        // The configured mappings are empty, but there were default mappings
+        if (mapping.size() == 0 && defaultMapping.size() > 0)
         {
             logger.warn(
                     "There are no property mappings for the metadata extracter.\n" +

@@ -102,17 +102,21 @@ public class OpenOfficeMetadataExtracter extends AbstractMappingMetadataExtracte
     /**
      * Initialises the bean by establishing an UNO connection
      */
+    @Override
     public synchronized void init()
     {
         PropertyCheck.mandatory("OpenOfficeMetadataExtracter", "connection", connection);
+        
+        // Base initialization
+        super.init();
 
         // attempt a connection
         connect();
-        if (isConnected())
+        // Only allow registration if the connection is good
+        if (!isConnected())
         {
-            // Only register if the connection is available initially.  Reconnections are only supported
-            // if the server is able to connection initially.
-            super.register();
+            // Reconnections are only supported if the server is able to connection initially.
+            super.setRegistry(null);
         }
     }
 

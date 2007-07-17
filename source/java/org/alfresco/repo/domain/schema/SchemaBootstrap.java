@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.ServiceRegistry;
@@ -61,6 +62,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.connection.UserSuppliedConnectionProvider;
 import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.HSQLDialect;
 import org.hibernate.dialect.MySQL5Dialect;
 import org.hibernate.dialect.MySQLDialect;
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata;
@@ -92,6 +94,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String MSG_EXECUTING_STATEMENT = "schema.update.msg.executing_statement";
     private static final String MSG_OPTIONAL_STATEMENT_FAILED = "schema.update.msg.optional_statement_failed";
     private static final String WARN_DIALECT_UNSUPPORTED = "schema.update.warn.dialect_unsupported";
+    private static final String WARN_DIALECT_HSQL = "schema.update.warn.dialect_hsql";
     private static final String ERR_PREVIOUS_FAILED_BOOTSTRAP = "schema.update.err.previous_failed";
     private static final String ERR_STATEMENT_FAILED = "schema.update.err.statement_failed";
     private static final String ERR_UPDATE_FAILED = "schema.update.err.update_failed";
@@ -741,6 +744,10 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             if (dialectClazz.equals(MySQLDialect.class) || dialectClazz.equals(MySQL5Dialect.class))
             {
                 LogUtil.warn(logger, WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
+            }
+            if (dialectClazz.equals(HSQLDialect.class))
+            {
+                logger.info(I18NUtil.getMessage(WARN_DIALECT_HSQL));
             }
             
             // Ensure that our static connection provider is used

@@ -6,13 +6,13 @@ if ((args.n) && (args.n != ""))
 else if ((args.p) && (args.p != ""))
 {
    var path = args.p;
-   if (path == "/Company Home")
+   if (path == "/" + companyhome.name)
    {
       model.node = companyhome;
    }
    else
    {
-      var node = companyhome.childByNamePath(path.substring(13));
+      var node = companyhome.childByNamePath(path.substring(companyhome.name.length));
       if (node != null)
       {
          model.node = node;

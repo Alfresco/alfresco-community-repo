@@ -29,7 +29,7 @@
          <#assign resCount=resCount + 1>
          <#if child.isDocument>
             <#if child.name?ends_with(extn)>
-               <#assign relativePath = (child.displayPath?substring(13) + '/' + child.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
+               <#assign relativePath = (child.displayPath?substring(companyhome.name?length+1) + '/' + child.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
                <#assign openURL = "#">
                <#assign hrefExtra = " onClick=\"window.external.openDocument('${relativePath}')\"">
             <#else>

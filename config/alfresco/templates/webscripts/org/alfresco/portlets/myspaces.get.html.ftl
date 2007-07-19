@@ -21,11 +21,12 @@
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
 <#if path?ends_with("/")><#assign path=path[0..path?length-2]></#if>
 <#-- resolve the path (from Company Home) into a node or fall back to userhome-->
-<#if path?starts_with("/Company Home")>
-   <#if path?length=13>
+<#assign chLen=companyhome.name?length>
+<#if path?starts_with("/" + companyhome.name)>
+   <#if path?length=chLen+1>
       <#assign home=companyhome>
-   <#elseif companyhome.childByNamePath[args.p[14..]]?exists>
-      <#assign home=companyhome.childByNamePath[args.p[14..]]>
+   <#elseif companyhome.childByNamePath[path[(chLen+2)..]]?exists>
+      <#assign home=companyhome.childByNamePath[path[(chLen+2)..]]>
    <#else>
       <#assign home=userhome>
    </#if>

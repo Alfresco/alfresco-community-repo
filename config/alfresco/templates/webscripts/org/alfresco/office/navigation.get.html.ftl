@@ -1,6 +1,7 @@
 <#assign doc_actions="${url.serviceContext}/office/docActions">
 <#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
 <#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
+<#assign chLen=companyhome.name?length>
 <#if node.isDocument>
    <#assign thisSpace = node.parent>
 <#else>
@@ -133,7 +134,7 @@
 <#list thisSpace.children?sort_by('name') as child>
    <#if child.isDocument>
       <#assign documentsFound = documentsFound + 1>
-      <#assign relativePath = (child.displayPath?substring(13) + '/' + child.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
+      <#assign relativePath = (child.displayPath?substring(chLen+1) + '/' + child.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
       <div class="documentItem ${(documentsFound % 2 = 0)?string("even", "odd")}">
          <span class="documentItemIcon">
       <#if child.name?ends_with(extn)>
@@ -182,7 +183,7 @@
 <div class="header">Actions</div>
 
 <#assign currentPath = thisSpace.displayPath  + '/' + thisSpace.name />
-<#assign currentPath = currentPath?substring(13)?url?replace('%2F', '/')?replace('\'', '\\\'') />
+<#assign currentPath = currentPath?substring(chLen+1)?url?replace('%2F', '/')?replace('\'', '\\\'') />
 <div id="documentActionsNavigation">
    <div id="saveDetailsPanel">
       Document filename:<br />

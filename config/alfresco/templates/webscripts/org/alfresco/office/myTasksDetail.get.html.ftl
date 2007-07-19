@@ -46,7 +46,7 @@
          <tr>
       <#if res.isDocument>
          <#if res.name?ends_with(extn)>
-            <#assign relativePath = (res.displayPath?substring(13) + '/' + res.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
+            <#assign relativePath = (res.displayPath?substring(companyhome.name?length+1) + '/' + res.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
             <td width="16"><a href="${url.context}${res.url}" target="new"><img src="${url.context}${res.icon16}" alt="${res.name}"></a></td>
             <td>
                <a href="#" onclick="window.external.openDocument('${relativePath}')" title="Open ${res.name}">${res.name}</a>

@@ -6,14 +6,8 @@
    <#assign d=docWorkflow>
 <#else>
    <#-- resolve the path (from Company Home) into a node -->
-   <#if path?starts_with("/Company Home")>
-      <#if path?length=13>
-         <#assign d=companyhome>
-      <#elseif companyhome.childByNamePath[args.p[14..]]?exists>
-         <#assign d=companyhome.childByNamePath[args.p[14..]]>
-      <#else>
-         <#assign d=companyhome>
-      </#if>
+   <#if companyhome.childByNamePath[path]?exists>
+      <#assign d=companyhome.childByNamePath[path]>
    <#else>
       <#assign d=companyhome>
    </#if>

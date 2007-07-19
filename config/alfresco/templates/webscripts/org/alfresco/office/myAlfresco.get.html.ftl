@@ -4,14 +4,8 @@
 <#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
 <#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
 <#-- resolve the path (from Company Home) into a node -->
-<#if path?starts_with("/Company Home")>
-   <#if path?length=13>
-      <#assign d=companyhome>
-   <#elseif companyhome.childByNamePath[args.p[14..]]?exists>
-      <#assign d=companyhome.childByNamePath[args.p[14..]]>
-   <#else>
-      <#assign d=companyhome>
-   </#if>
+<#if companyhome.childByNamePath[path]?exists>
+   <#assign d=companyhome.childByNamePath[path]>
 <#else>
    <#assign d=companyhome>
 </#if>
@@ -47,7 +41,7 @@
    <#list companyhome.childrenByLuceneSearch[query] as child>
       <#if child.isDocument>
          <#assign rowNum=rowNum+1>
-         <#assign relativePath = (child.displayPath?substring(13) + '/' + child.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
+         <#assign relativePath = (child.displayPath?substring(companyhome.name?length+1) + '/' + child.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
    <div class="documentItem ${(rowNum % 2 = 0)?string("odd", "even")}">
          <span class="documentItemIcon">
             <img src="${url.context}${child.icon32}" alt="${child.name}" />

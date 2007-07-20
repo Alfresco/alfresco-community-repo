@@ -351,6 +351,7 @@ public class UIRichList extends UIComponentBase implements IDataContainer
    public void setCurrentPage(int index)
    {
       this.currentPage = index;
+      this.sortOrPageChanged = true;
    }
 
    /**
@@ -405,13 +406,14 @@ public class UIRichList extends UIComponentBase implements IDataContainer
    {
       this.sortColumn = column;
       this.sortDescending = descending;
+      this.sortOrPageChanged = true;
       
       // delegate to the data model to sort its contents
       // place in a UserTransaction as we may need to perform a LOT of node calls to complete
       UserTransaction tx = null;
       try
       {
-         if (getDataModel().size() > 64)
+         if (getDataModel().size() > 16)
          {
             FacesContext context = FacesContext.getCurrentInstance();
             tx = Repository.getUserTransaction(context, true);
@@ -537,7 +539,11 @@ public class UIRichList extends UIComponentBase implements IDataContainer
          }
          
          // reset current page
-         this.currentPage = 0;
+         if (this.sortOrPageChanged == false)
+         {
+            this.currentPage = 0;
+         }
+         this.sortOrPageChanged = false;
       }
       
       return this.dataModel;
@@ -566,6 +572,7 @@ public class UIRichList extends UIComponentBase implements IDataContainer
    private int rowIndex = -1;
    private int maxRowIndex = -1;
    private int pageCount = 1;
+   private boolean sortOrPageChanged = false;
    
    private static Log logger = LogFactory.getLog(IDataContainer.class);
 }

@@ -14,7 +14,7 @@
    <%-- Primary column for details view mode --%>
    <a:column id="col1" primary="true" width="200" style="padding:2px;text-align:left">
       <f:facet name="header">
-         <a:sortLink id="col1-sort" label="#{msg.description}" value="name" mode="case-insensitive" styleClass="header"/>
+         <a:sortLink id="col1-sort" label="#{msg.description}" value="bpm:description" mode="case-insensitive" styleClass="header"/>
       </f:facet>
       <f:facet name="small-icon">
          <a:actionLink id="col1-act1" value="#{r['bpm:description']}" image="/images/icons/workflow_task.gif" showLink="false"
@@ -91,5 +91,5 @@
                  styleClass="inlineAction" />
    </a:column>
    
-   <a:dataPager id="pager" styleClass="pager" />
+   <a:dataPager styleClass="pager" />
 </a:richList>

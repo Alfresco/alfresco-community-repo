@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import org.alfresco.repo.importer.Importer;
@@ -439,40 +440,45 @@ public class ViewParser implements Parser
         String idRefAttr = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_IDREF_ATTR);
         String pathRefAttr = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_PATHREF_ATTR);
         String nodeRefAttr = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_NODEREF_ATTR);
-
         if ((idRefAttr != null && idRefAttr.length() > 0) && (pathRefAttr != null && pathRefAttr.length() > 0) && (nodeRefAttr != null && nodeRefAttr.length() > 0))
         {
             // Do not support both IDREF and PATHREF
             throw new ImporterException("Only one of " + VIEW_IDREF_ATTR + " or " + VIEW_PATHREF_ATTR + " or " + VIEW_NODEREF_ATTR + " can be specified.");
         }
+        
+        // Convert to Node Reference
+        NodeRef nodeRef = null;
         if (nodeRefAttr != null)
         {
-            NodeRef nodeRef = new NodeRef(nodeRefAttr);
-            node.setUUID(nodeRef.getId());
-            node.setTypeDefinition(dictionaryService.getType(nodeService.getType(nodeRef)));
+            nodeRef = new NodeRef(nodeRefAttr);
         }
         else if (idRefAttr != null && idRefAttr.length() > 0)
         {
             // retrieve uuid from previously imported node
-            NodeRef nodeRef = getImportReference(parserContext, idRefAttr);
+            nodeRef = getImportReference(parserContext, idRefAttr);
             if (nodeRef == null)
             {
                 throw new ImporterException("Cannot find node referenced by id " + idRefAttr);
             }
-            node.setUUID(nodeRef.getId());
-            node.setTypeDefinition(dictionaryService.getType(nodeService.getType(nodeRef)));
         }
         else if (pathRefAttr != null && pathRefAttr.length() > 0)
         {
-            NodeRef referencedRef = parserContext.importer.resolvePath(pathRefAttr);
-            if (referencedRef == null)
+            nodeRef = parserContext.importer.resolvePath(pathRefAttr);
+            if (nodeRef == null)
             {
                 throw new ImporterException("Cannot find node referenced by path " + pathRefAttr);
             }
-            node.setUUID(referencedRef.getId());
-            node.setTypeDefinition(dictionaryService.getType(nodeService.getType(referencedRef)));
         }
-                
+
+        // Establish node definition
+        node.setUUID(nodeRef.getId());
+        node.setTypeDefinition(dictionaryService.getType(nodeService.getType(nodeRef)));
+        Set<QName> aspects = nodeService.getAspects(nodeRef);
+        for (QName aspect : aspects)
+        {
+            node.addAspect(dictionaryService.getAspect(aspect));
+        }
+        
         // Extract child name if explicitly defined
         String childName = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_CHILD_NAME_ATTR);
         if (childName != null && childName.length() > 0)

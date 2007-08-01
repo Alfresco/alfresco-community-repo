@@ -5,6 +5,12 @@
 <beans >
 
     <import resource="classpath:alfresco/cache-context.xml" />
+    
+    <import resource="classpath:alfresco/tenant-single-context.xml"/>
+    
+    <!-- if available, will enable multi-tenancy -->
+    <import resource="classpath*:alfresco/tenant-multi-context.xml"/>
+    
     <import resource="classpath:alfresco/core-services-context.xml" />
     <import resource="classpath:alfresco/public-services-context.xml" />
     <import resource="classpath:alfresco/model-specific-services-context.xml" />

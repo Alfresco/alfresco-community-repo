@@ -8,5 +8,7 @@
    <!--                                      -->
      
    <bean id="tenantService" class="org.alfresco.repo.tenant.SingleTServiceImpl" />
+   
+   <bean id="tenantAdminService" class="org.alfresco.repo.tenant.SingleTDeployerServiceImpl" />
      
 </beans>

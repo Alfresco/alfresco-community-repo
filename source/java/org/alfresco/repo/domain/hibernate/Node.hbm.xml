@@ -449,5 +449,47 @@
          assoc.id
       ]]>
    </query>
-
+   
+   <query name="node.GetNodeStatusesForStore">
+      select
+         status
+      from 
+         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status 
+      where 
+         status.key.protocol = :protocol and 
+         status.key.identifier = :identifier
+   </query>
+     
+   <query name="node.GetChildAssocsForStore">
+      select
+         assoc
+      from 
+         org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc 
+      where 
+         assoc.parent.id in (select 
+                                node.id 
+                             from 
+                                org.alfresco.repo.domain.hibernate.NodeImpl node 
+                             where 
+                                node.store.key.protocol = :protocol and 
+                                node.store.key.identifier = :identifier)
+   </query>
+   
+   <query name="node.GetNodesExceptRootForStore">
+      select
+         node
+      from 
+         org.alfresco.repo.domain.hibernate.NodeImpl as node 
+      where 
+         node.store.key.protocol = :nodeProtocol and 
+         node.store.key.identifier = :nodeIdentifier and 
+         node.id != (select 
+                        rootNode.id 
+                     from 
+                        org.alfresco.repo.domain.hibernate.StoreImpl store 
+                     where 
+                        store.key.protocol = :storeProtocol and 
+                        store.key.identifier = :storeIdentifier)
+   </query>
+   
 </hibernate-mapping>

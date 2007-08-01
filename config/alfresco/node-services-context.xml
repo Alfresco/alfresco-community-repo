@@ -158,6 +158,9 @@
       <property name="avmNodeService">
          <ref bean="avmNodeService"/>
       </property>
+      <property name="tenantService">
+         <ref bean="tenantService"/>
+      </property>
    </bean>
    <bean id="sessionSizeResourceInterceptor" class="org.alfresco.repo.transaction.TransactionResourceInterceptor" >
       <property name="methodResourceManagers">

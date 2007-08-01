@@ -76,6 +76,15 @@ public interface NodeDaoService
      */
     public Store createStore(String protocol, String identifier);
     
+    
+    /**
+     * Deletes the unique store for the given protocol and identifier combination
+     * 
+     * @param protocol a protocol, e.g. {@link org.alfresco.service.cmr.repository.StoreRef#PROTOCOL_WORKSPACE}
+     * @param identifier a protocol-specific identifier
+     */
+    public void deleteStore(String protocol, String identifier);   
+    
     /**
      * @param protocol the protocol that the store serves
      * @param identifier the protocol-specific identifer

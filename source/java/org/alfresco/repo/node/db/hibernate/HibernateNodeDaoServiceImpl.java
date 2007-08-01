@@ -56,6 +56,7 @@ import org.alfresco.repo.domain.hibernate.ServerImpl;
 import org.alfresco.repo.domain.hibernate.StoreImpl;
 import org.alfresco.repo.domain.hibernate.TransactionImpl;
 import org.alfresco.repo.node.db.NodeDaoService;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionAwareSingleton;
 import org.alfresco.repo.transaction.TransactionalDao;
@@ -105,6 +106,10 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_NODES_WITH_PROPERTY_VALUES_BY_ACTUAL_TYPE = "node.GetNodesWithPropertyValuesByActualType";
     private static final String QUERY_GET_SERVER_BY_IPADDRESS = "server.getServerByIpAddress";
     
+    private static final String QUERY_GET_NODE_STATUSES_FOR_STORE = "node.GetNodeStatusesForStore";
+    private static final String QUERY_GET_CHILD_ASSOCS_FOR_STORE = "node.GetChildAssocsForStore";
+    private static final String QUERY_GET_NODES_EXCEPT_ROOT_FOR_STORE = "node.GetNodesExceptRootForStore";
+    
     private static Log logger = LogFactory.getLog(HibernateNodeDaoServiceImpl.class);
     /** Log to trace parent association caching: <b>classname + .ParentAssocsCache</b> */
     private static Log loggerParentAssocsCache = LogFactory.getLog(HibernateNodeDaoServiceImpl.class.getName() + ".ParentAssocsCache");
@@ -122,6 +127,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
 
     /** used for debugging */
     private Set<String> changeTxnIdSet;
+    
+    TenantService tenantService;
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
 
     /**
      * 
@@ -347,6 +360,65 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         // done
         return store;
     }
+    
+    /**
+     * Delete store - this is a hard delete.
+     *
+     * @param protocol  the store protocol
+     * @param identifier  the store identifier
+     */
+    public void deleteStore(final String protocol, final String identifier)
+    {
+        // ensure that the store exists
+        Store store = getStore(protocol, identifier);
+        if (store == null)
+        {
+            throw new RuntimeException("Store does not exist: \n" +
+                    "   protocol: " + protocol + "\n" +
+                    "   identifier: " + identifier);
+        }
+        
+        Node rootNode = store.getRootNode();
+        
+        // TODO - convert queries to deletes ?
+
+        // delete node status
+        Query query = getSession().getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODE_STATUSES_FOR_STORE);
+
+        query.setParameter("protocol", protocol);
+        query.setParameter("identifier", identifier); 
+        
+        List<NodeImpl> list = (List<NodeImpl>)query.list();
+        getHibernateTemplate().deleteAll(list);
+        
+        // delete child assocs
+        query = getSession().getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOCS_FOR_STORE);
+
+        query.setParameter("protocol", protocol);
+        query.setParameter("identifier", identifier); 
+        
+        list = (List<NodeImpl>)query.list();
+        getHibernateTemplate().deleteAll(list); 
+   
+        // delete nodes (except root node)
+        query = getSession().getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODES_EXCEPT_ROOT_FOR_STORE);
+
+        query.setParameter("nodeProtocol", protocol);
+        query.setParameter("nodeIdentifier", identifier); 
+        query.setParameter("storeProtocol", protocol);
+        query.setParameter("storeIdentifier", identifier);
+        
+        list = (List<NodeImpl>)query.list();
+        getHibernateTemplate().deleteAll(list);
+        
+        // delete root node and store
+        getHibernateTemplate().delete(rootNode);
+        getHibernateTemplate().delete(store);
+       
+        // done
+        return;
+    }
+
 
     public Store getStore(String protocol, String identifier)
     {
@@ -796,13 +868,13 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private Collection<ChildAssociationRef> convertToChildAssocRefs(Node parentNode, List<Object[]> queryResults)
     {
         Collection<ChildAssociationRef> refs = new ArrayList<ChildAssociationRef>(queryResults.size());
-        NodeRef parentNodeRef = parentNode.getNodeRef();
+        NodeRef parentNodeRef = tenantService.getBaseName(parentNode.getNodeRef());
         for (Object[] row : queryResults)
         {
             String childProtocol = (String) row[5];
             String childIdentifier = (String) row[6];
             String childUuid = (String) row[7];
-            NodeRef childNodeRef = new NodeRef(new StoreRef(childProtocol, childIdentifier), childUuid);
+            NodeRef childNodeRef = tenantService.getBaseName(new NodeRef(new StoreRef(childProtocol, childIdentifier), childUuid));
             QName assocTypeQName = (QName) row[0];
             QName assocQName = (QName) row[1];
             Boolean assocIsPrimary = (Boolean) row[2];

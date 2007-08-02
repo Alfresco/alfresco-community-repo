@@ -243,6 +243,10 @@ public abstract class AbstractWebScript implements WebScript
 
         // add web script context
         model.put("args", createArgModel(req));
+        if (req instanceof WebScriptServletRequest)
+        {
+            model.put("formdata", new FormData(((WebScriptServletRequest)req).getHttpServletRequest()));
+        }
         model.put("guest", req.isGuest());
         model.put("url", new URLModel(req));
         model.put("server", new ServerModel(descriptorService.getServerDescriptor()));

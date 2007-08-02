@@ -40,7 +40,7 @@ public class WebScriptStatus
 {
     private Throwable exception = null;
     private int code = HttpServletResponse.SC_OK;
-    private String message = null;
+    private String message = "";
     private boolean redirect = false;
 
    

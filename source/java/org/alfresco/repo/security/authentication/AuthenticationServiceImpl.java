@@ -109,6 +109,8 @@ public class AuthenticationServiceImpl implements AuthenticationService
     {
         try
         {
+           // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'validate' below
+           clearCurrentSecurityContext();
            authenticationComponent.authenticate(userName, password);
         }
         catch(AuthenticationException ae)
@@ -142,6 +144,8 @@ public class AuthenticationServiceImpl implements AuthenticationService
     {
         try
         {
+           // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'authenticate' above
+           clearCurrentSecurityContext();
            authenticationComponent.setCurrentUser(ticketComponent.validateTicket(ticket));
         }
            catch(AuthenticationException ae)

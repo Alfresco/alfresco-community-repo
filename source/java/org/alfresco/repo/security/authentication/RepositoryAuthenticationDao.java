@@ -39,7 +39,7 @@ import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -60,6 +60,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     private static final StoreRef STOREREF_USERS = new StoreRef("user", "alfrescoUserStore");
 
     private NodeService nodeService;
+    private TenantService tenantService;
 
     private NamespacePrefixResolver namespacePrefixResolver;
 
@@ -95,6 +96,11 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
 
     public void setPasswordEncoder(PasswordEncoder passwordEncoder)
@@ -146,7 +152,16 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("@usr\\:username:\"" + searchUserName + "\"");
-        sp.addStore(STOREREF_USERS);
+       
+        try
+        {
+            sp.addStore(tenantService.getName(searchUserName, STOREREF_USERS));
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            return null; // no such tenant or tenant not enabled
+        }
+
         sp.excludeDataInTheCurrentTransaction(false);
 
         ResultSet rs = null;
@@ -210,12 +225,14 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
 
     public void createUser(String caseSensitiveUserName, char[] rawPassword) throws AuthenticationException
     {
+        tenantService.checkDomainUser(caseSensitiveUserName);
+
         NodeRef userRef = getUserOrNull(caseSensitiveUserName);
         if (userRef != null)
         {
             throw new AuthenticationException("User already exists: " + caseSensitiveUserName);
         }
-        NodeRef typesNode = getUserFolderLocation();
+        NodeRef typesNode = getUserFolderLocation(caseSensitiveUserName);
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_USER_USERNAME, caseSensitiveUserName);
         String salt = null; // GUID.generate();
@@ -230,12 +247,15 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
 
     }
 
-    private NodeRef getUserFolderLocation()
+    private NodeRef getUserFolderLocation(String caseSensitiveUserName)
     {
         QName qnameAssocSystem = QName.createQName("sys", "system", namespacePrefixResolver);
         QName qnameAssocUsers = QName.createQName("sys", "people", namespacePrefixResolver); // see
+
+        StoreRef userStoreRef = tenantService.getName(caseSensitiveUserName, new StoreRef(STOREREF_USERS.getProtocol(), STOREREF_USERS.getIdentifier()));
+
         // AR-527
-        NodeRef rootNode = nodeService.getRootNode(STOREREF_USERS);
+        NodeRef rootNode = nodeService.getRootNode(userStoreRef);
         List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNode, RegexQNamePattern.MATCH_ALL,
                 qnameAssocSystem);
         NodeRef sysNodeRef = null;

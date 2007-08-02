@@ -107,6 +107,11 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         {
             throw new AuthenticationException(ae.getMessage(), ae);
         }
+        finally
+        {       
+            // Support for logging tenantdomain / username (via log4j NDC)        
+            AuthenticationUtil.logNDC(userName);
+        }
     }
 
     /**

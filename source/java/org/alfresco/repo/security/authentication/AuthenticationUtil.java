@@ -35,7 +35,9 @@ import net.sf.acegisecurity.context.security.SecureContextImpl;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.User;
 
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.apache.log4j.NDC;
 
 public abstract class AuthenticationUtil
 {
@@ -151,7 +153,32 @@ public abstract class AuthenticationUtil
         }
         authentication.setAuthenticated(true);
         sc.setAuthentication(authentication);
+
+        // Support for logging tenant domain / username (via log4j NDC)
+        String userName = SYSTEM_USER_NAME;
+        if (authentication.getPrincipal() instanceof UserDetails)
+        {
+            userName = ((UserDetails) authentication.getPrincipal()).getUsername();            
+        }
+        
+        logNDC(userName);
+        
         return authentication;
+    }
+    
+    public static void logNDC(String userName)
+    {
+        NDC.remove();
+
+        int idx = userName.indexOf(TenantService.SEPARATOR);
+        if ((idx != -1) && (idx < (userName.length()-1)))
+        {            
+            NDC.push("Tenant:"+userName.substring(idx+1)+" User:"+userName.substring(0,idx));
+        }
+        else
+        {
+            NDC.push("User:"+userName);
+        }
     }
 
     /**

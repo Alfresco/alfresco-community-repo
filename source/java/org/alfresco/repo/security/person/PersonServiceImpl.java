@@ -40,6 +40,7 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -79,6 +80,8 @@ public class PersonServiceImpl implements PersonService,
     private StoreRef storeRef;
 
     private NodeService nodeService;
+    
+    private TenantService tenantService;
 
     private SearchService searchService;
 
@@ -224,7 +227,7 @@ public class PersonServiceImpl implements PersonService,
             SearchParameters sp = new SearchParameters();
             sp.setLanguage(SearchService.LANGUAGE_LUCENE);
             sp.setQuery("@cm\\:userName:\"" + searchUserName + "\"");
-            sp.addStore(storeRef);
+            sp.addStore(tenantService.getName(storeRef));
             sp.excludeDataInTheCurrentTransaction(false);
     
             ResultSet rs = null;
@@ -342,7 +345,7 @@ public class PersonServiceImpl implements PersonService,
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("@cm\\:userName:\"" + searchUserName + "\"");
-        sp.addStore(storeRef);
+        sp.addStore(tenantService.getName(storeRef));
         sp.excludeDataInTheCurrentTransaction(false);
 
         ResultSet rs = null;
@@ -392,7 +395,7 @@ public class PersonServiceImpl implements PersonService,
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("@cm\\:userName:\"" + searchUserName + "\"");
-        sp.addStore(storeRef);
+        sp.addStore(tenantService.getName(storeRef));
         sp.excludeDataInTheCurrentTransaction(false);
 
         ResultSet rs = null;
@@ -444,7 +447,7 @@ public class PersonServiceImpl implements PersonService,
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("@cm\\:userName:\"" + searchUserName + "\"");
-        sp.addStore(storeRef);
+        sp.addStore(tenantService.getName(storeRef));
         sp.excludeDataInTheCurrentTransaction(false);
         if (lastIsBest)
         {
@@ -599,7 +602,7 @@ public class PersonServiceImpl implements PersonService,
     {
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_USERNAME, userName);
-        properties.put(ContentModel.PROP_FIRSTNAME, userName);
+        properties.put(ContentModel.PROP_FIRSTNAME, tenantService.getBaseNameUser(userName));
         properties.put(ContentModel.PROP_LASTNAME, "");
         properties.put(ContentModel.PROP_EMAIL, "");
         properties.put(ContentModel.PROP_ORGID, "");
@@ -618,7 +621,7 @@ public class PersonServiceImpl implements PersonService,
 
     public NodeRef getPeopleContainer()
     {
-        NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+        NodeRef rootNodeRef = nodeService.getRootNode(tenantService.getName(storeRef));
         List<NodeRef> results = searchService.selectNodes(rootNodeRef, PEOPLE_FOLDER, null, namespacePrefixResolver,
                 false);
         if (results.size() == 0)
@@ -657,7 +660,7 @@ public class PersonServiceImpl implements PersonService,
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("TYPE:\"" + ContentModel.TYPE_PERSON + "\"");
-        sp.addStore(storeRef);
+        sp.addStore(tenantService.getName(storeRef));
         sp.excludeDataInTheCurrentTransaction(false);
 
         LinkedHashSet<NodeRef> nodes = new LinkedHashSet<NodeRef>();
@@ -734,6 +737,11 @@ public class PersonServiceImpl implements PersonService,
     {
         this.nodeService = nodeService;
     }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }    
 
     public void setSearchService(SearchService searchService)
     {

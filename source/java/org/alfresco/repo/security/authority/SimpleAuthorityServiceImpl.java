@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -58,6 +59,9 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
     private Set<String> adminUsers;
 
     private AuthenticationComponent authenticationComponent;
+    
+    private TenantService tenantService;
+    
 
     public SimpleAuthorityServiceImpl()
     {
@@ -73,6 +77,12 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
     {
         this.personService = personService;
     }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
 
     /**
      * Currently the admin authority is granted only to the ALFRESCO_ADMIN_USER
@@ -81,7 +91,12 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
     public boolean hasAdminAuthority()
     {
         String currentUserName = authenticationComponent.getCurrentUserName();
-        return ((currentUserName != null) && adminUsers.contains(currentUserName));
+
+        // note: for MT, this currently relies on a naming convention which assumes that all tenant admins will 
+        // have the same base name as the default non-tenant specific admin. Typically "admin" is the default required admin user, 
+        // although, if for example "bob" is also listed as an admin then all tenant-specific bob's will also have admin authority 
+
+        return ((currentUserName != null) && (adminUsers.contains(currentUserName) || adminUsers.contains(tenantService.getBaseNameUser(currentUserName))));
     }
 
     /* (non-Javadoc)

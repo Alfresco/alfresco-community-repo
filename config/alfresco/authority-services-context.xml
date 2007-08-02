@@ -22,6 +22,9 @@
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
         <property name="authorityDAO">
             <ref bean="authorityDAO" />
         </property>

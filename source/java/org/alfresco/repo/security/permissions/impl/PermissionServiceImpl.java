@@ -45,7 +45,7 @@ import org.alfresco.repo.security.permissions.NodePermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
-import org.alfresco.repo.security.permissions.impl.model.PermissionModel;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -94,6 +94,11 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     private NodeService nodeService;
 
     /*
+     * Access to the tenant service
+     */
+    private TenantService tenantService;
+
+    /*
      * Access to the data dictionary
      */
     private DictionaryService dictionaryService;
@@ -140,6 +145,11 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
 
     public void setPermissionsDaoComponent(PermissionsDaoComponent permissionsDaoComponent)
@@ -304,7 +314,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     public NodePermissionEntry getSetPermissions(NodeRef nodeRef)
     {
-        return permissionsDaoComponent.getPermissions(nodeRef);
+        return permissionsDaoComponent.getPermissions(tenantService.getName(nodeRef));
     }
 
     public AccessStatus hasPermission(NodeRef nodeRef, PermissionReference perm)
@@ -316,6 +326,8 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         {
             return AccessStatus.ALLOWED;
         }
+
+        nodeRef = tenantService.getName(nodeRef);
 
         // If the permission is null we deny
         if (perm == null)
@@ -414,6 +426,8 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
      */
     private Set<String> getAuthorisations(Authentication auth, NodeRef nodeRef)
     {
+        nodeRef = tenantService.getName(nodeRef);
+
         HashSet<String> auths = new HashSet<String>();
         // No authenticated user then no permissions
         if (auth == null)
@@ -452,7 +466,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     public void deletePermissions(NodeRef nodeRef)
     {
-        permissionsDaoComponent.deletePermissions(nodeRef);
+        permissionsDaoComponent.deletePermissions(tenantService.getName(nodeRef));
         accessCache.clear();
     }
 
@@ -475,19 +489,19 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     public void deletePermission(NodeRef nodeRef, String authority, PermissionReference perm)
     {
-        permissionsDaoComponent.deletePermission(nodeRef, authority, perm);
+        permissionsDaoComponent.deletePermission(tenantService.getName(nodeRef), authority, perm);
         accessCache.clear();
     }
 
     public void clearPermission(NodeRef nodeRef, String authority)
     {
-        permissionsDaoComponent.deletePermissions(nodeRef, authority);
+        permissionsDaoComponent.deletePermissions(tenantService.getName(nodeRef), authority);
         accessCache.clear();
     }
 
     public void setPermission(NodeRef nodeRef, String authority, PermissionReference perm, boolean allow)
     {
-        permissionsDaoComponent.setPermission(nodeRef, authority, perm, allow);
+        permissionsDaoComponent.setPermission(tenantService.getName(nodeRef), authority, perm, allow);
         accessCache.clear();
     }
 
@@ -505,7 +519,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions)
     {
-        permissionsDaoComponent.setInheritParentPermissions(nodeRef, inheritParentPermissions);
+        permissionsDaoComponent.setInheritParentPermissions(tenantService.getName(nodeRef), inheritParentPermissions);
         accessCache.clear();
     }
 
@@ -514,7 +528,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
      */
     public boolean getInheritParentPermissions(NodeRef nodeRef)
     {
-        return permissionsDaoComponent.getInheritParentPermissions(nodeRef);
+        return permissionsDaoComponent.getInheritParentPermissions(tenantService.getName(nodeRef));
     }
 
     public PermissionReference getPermissionReference(QName qname, String permissionName)

@@ -31,6 +31,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -49,6 +50,8 @@ public class AuthorityServiceImpl implements AuthorityService
     private PersonService personService;
 
     private NodeService nodeService;
+    
+    private TenantService tenantService;
 
     private AuthorityDAO authorityDAO;
     
@@ -72,6 +75,11 @@ public class AuthorityServiceImpl implements AuthorityService
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
 
     public void setPersonService(PersonService personService)
@@ -133,7 +141,13 @@ public class AuthorityServiceImpl implements AuthorityService
     public Set<String> getAuthoritiesForUser(String currentUserName)
     {
         Set<String> authorities = new HashSet<String>();
-        if (adminUsers.contains(currentUserName))
+
+        // note: for multi-tenancy, this currently relies on a naming convention which assumes that all tenant admins will 
+        // have the same base name as the default non-tenant specific admin. Typically "admin" is the default required admin user, 
+        // although, if for example "bob" is also listed as an admin then all tenant-specific bob's will also have admin authority
+
+        if (adminUsers.contains(currentUserName) ||
+            adminUsers.contains(tenantService.getBaseNameUser(currentUserName)))
         {
             authorities.addAll(adminSet);
         }

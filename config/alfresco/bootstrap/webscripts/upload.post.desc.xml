@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>File Upload Sample</shortname>
+  <description>Upload file content and meta-data into Repository</description>
+  <url>/sample/upload</url>
+  <authentication>user</authentication>
+</webscript>

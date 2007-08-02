@@ -244,6 +244,8 @@
         </property>
         <property name="configuration">
             <props>
+                <prop key="alfresco_user_store.adminusername">${alfresco_user_store.adminusername}</prop>
+                <prop key="alfresco_user_store.adminpassword">209c6174da490caeb422f3fa5a7ae634</prop>
                 <prop key="alfresco_user_store.system_container.childname">${alfresco_user_store.system_container.childname}</prop>
                 <prop key="alfresco_user_store.user_container.childname">${alfresco_user_store.user_container.childname}</prop>
                 <prop key="alfresco_user_store.authorities_container.childname">${alfresco_user_store.authorities_container.childname}</prop>
@@ -262,6 +264,7 @@
         </property>
         <property name="configuration">
             <props>
+                <prop key="alfresco_user_store.adminusername">${alfresco_user_store.adminusername}</prop>
                 <prop key="version.major">${version.major}</prop>
                 <prop key="version.minor">${version.minor}</prop>
                 <prop key="version.revision">${version.revision}</prop>
@@ -298,6 +301,7 @@
         </property>
         <property name="configuration">
             <props>
+                <prop key="alfresco_user_store.adminusername">${alfresco_user_store.adminusername}</prop>
                 <prop key="spaces.company_home.childname">${spaces.company_home.childname}</prop>
                 <prop key="spaces.guest_home.childname">${spaces.guest_home.childname}</prop>
                 <prop key="system.system_container.childname">${system.system_container.childname}</prop>

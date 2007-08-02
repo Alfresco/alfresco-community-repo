@@ -236,6 +236,9 @@
       <property name="parentAssocsCache">
          <ref bean="parentAssocsCache"/>
       </property>
+      <property name="tenantService">
+          <ref bean="tenantService"/>
+      </property>    
    </bean>
     
    <bean id="dbNodeDaoServiceTxnRegistration" class="org.alfresco.repo.transaction.TransactionalDaoInterceptor" >

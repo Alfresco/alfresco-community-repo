@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.repo.service;
@@ -39,6 +39,8 @@ import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
+import org.alfresco.service.cmr.ml.EditionService;
+import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.CopyService;
@@ -71,7 +73,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 /**
  * Implementation of a Service Registry based on the definition of
  * Services contained within a Spring Bean Factory.
- * 
+ *
  * @author David Caruana
  */
 public class ServiceDescriptorRegistry
@@ -80,7 +82,7 @@ public class ServiceDescriptorRegistry
     // Bean Factory within which the registry lives
     private BeanFactory beanFactory = null;
 
-    
+
     /* (non-Javadoc)
      * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
      */
@@ -88,7 +90,7 @@ public class ServiceDescriptorRegistry
     {
         this.beanFactory = beanFactory;
     }
-        
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.service.ServiceRegistry#getServices()
      */
@@ -112,7 +114,7 @@ public class ServiceDescriptorRegistry
      */
     public Object getService(QName service)
     {
-        return beanFactory.getBean(service.getLocalName()); 
+        return beanFactory.getBean(service.getLocalName());
     }
 
     /* (non-Javadoc)
@@ -122,7 +124,7 @@ public class ServiceDescriptorRegistry
     {
         return (DescriptorService)getService(DESCRIPTOR_SERVICE);
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.service.ServiceRegistry#getNodeService()
      */
@@ -186,7 +188,7 @@ public class ServiceDescriptorRegistry
     {
         return (SearchService)getService(SEARCH_SERVICE);
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.service.ServiceRegistry#getTransactionService()
      */
@@ -218,7 +220,7 @@ public class ServiceDescriptorRegistry
     {
         return (CheckOutCheckInService)getService(COCI_SERVICE);
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.service.ServiceRegistry#getCategoryService()
      */
@@ -234,7 +236,7 @@ public class ServiceDescriptorRegistry
     {
         return (NamespaceService)getService(NAMESPACE_SERVICE);
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.service.ServiceRegistry#getImporterService()
      */
@@ -250,7 +252,7 @@ public class ServiceDescriptorRegistry
     {
         return (ExporterService)getService(EXPORTER_SERVICE);
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.service.ServiceRegistry#getRuleService()
      */
@@ -258,7 +260,7 @@ public class ServiceDescriptorRegistry
     {
         return (RuleService)getService(RULE_SERVICE);
     }
-    
+
     /*
      *  (non-Javadoc)
      * @see org.alfresco.service.ServiceRegistry#getActionService()
@@ -275,7 +277,7 @@ public class ServiceDescriptorRegistry
     {
         return (PermissionService)getService(PERMISSIONS_SERVICE);
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.service.ServiceRegistry#getAuthorityService()
      */
@@ -315,7 +317,7 @@ public class ServiceDescriptorRegistry
     {
         return (WorkflowService)getService(WORKFLOW_SERVICE);
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.service.ServiceRegistry#getWorkflowService()
      */
@@ -366,7 +368,7 @@ public class ServiceDescriptorRegistry
     {
         return (PersonService)getService(PERSON_SERVICE);
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.service.ServiceRegistry#getCrossRepositoryCopyService()
      */
@@ -386,7 +388,7 @@ public class ServiceDescriptorRegistry
     /* (non-Javadoc)
      * @see org.alfresco.service.ServiceRegistry#getContentFilterLanguagesService()
      */
-     public ContentFilterLanguagesService getContentFilterLanguagesService() 
+     public ContentFilterLanguagesService getContentFilterLanguagesService()
      {
      return (ContentFilterLanguagesService) getService(CONTENT_FILTER_LANGUAGES_SERVICE);
      }
@@ -405,5 +407,21 @@ public class ServiceDescriptorRegistry
     public VirtServerRegistry getVirtServerRegistry()
     {
         return (VirtServerRegistry)getService(VIRT_SERVER_REGISTRY);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getEditionService()
+     */
+    public EditionService getEditionService()
+    {
+        return (EditionService) getService(EDITION_SERVICE);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getMultilingualContentService()
+     */
+    public MultilingualContentService getMultilingualContentService()
+    {
+        return (MultilingualContentService) getService(MULTILINGUAL_CONTENT_SERVICE);
     }
 }

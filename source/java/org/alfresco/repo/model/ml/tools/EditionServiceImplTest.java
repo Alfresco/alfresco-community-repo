@@ -28,7 +28,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -36,6 +35,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.version.VersionModel;
+import org.alfresco.repo.version.common.VersionLabelComparator;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
@@ -210,24 +210,12 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         return multilingualContentService.getTranslationContainer(chineseContentNodeRef);
     }
 
-    private Comparator versionComparator = new Comparator()
-    {
-        public int compare(Object o1, Object o2)
-        {
-            String label01 = ((Version) o1).getVersionLabel();
-            String label02 = ((Version) o2).getVersionLabel();
-
-            // sort the list ascending
-            return label02.compareTo(label01);
-        }
-    };
-
     @SuppressWarnings("unchecked")
     private List<Version> orderVersions(Collection<Version> allVersions)
     {
         List<Version> versionsAsList = new ArrayList<Version>(allVersions.size());
         versionsAsList.addAll(allVersions);
-        Collections.sort(versionsAsList, versionComparator);
+        Collections.sort(versionsAsList, new VersionLabelComparator());
         return versionsAsList;
     }
 }

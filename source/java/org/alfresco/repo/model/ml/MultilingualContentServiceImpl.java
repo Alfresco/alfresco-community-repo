@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.model.ml;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,13 +32,18 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.transaction.SystemException;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
+import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -85,6 +91,8 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     private SearchParameters searchParametersMLRoot;
     private ContentFilterLanguagesService contentFilterLanguagesService;
     private FileFolderService fileFolderService;
+
+    private BehaviourFilter policyBehaviourFilter;
 
     public MultilingualContentServiceImpl()
     {
@@ -284,8 +292,12 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
             // Make one
             mlContainerNodeRef = getOrCreateMLContainer(contentNodeRef, true);
 
-            // set the pivot language
+            Serializable containerFunctionalName = nodeService.getProperty(contentNodeRef, ContentModel.PROP_NAME);
+
+            // set the pivot language and the functional name
             nodeService.setProperty(mlContainerNodeRef, ContentModel.PROP_LOCALE, locale);
+            nodeService.setProperty(mlContainerNodeRef, ContentModel.PROP_NAME, containerFunctionalName);
+
         }
         else
         {
@@ -369,7 +381,57 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         }
     }
 
-    /** {@inheritDoc} */
+
+    /** @inheritDoc */
+    public void deleteTranslationContainer(NodeRef mlContainerNodeRef)
+    {
+        if(!ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(nodeService.getType(mlContainerNodeRef)))
+        {
+            throw new IllegalArgumentException(
+                    "Node type must be " + ContentModel.TYPE_MULTILINGUAL_CONTAINER);
+        }
+
+        // get the translations
+        Map<Locale, NodeRef> translations = this.getTranslations(mlContainerNodeRef);
+
+        // remember the number of childs
+        int translationCount = translations.size();
+
+        // remove the translations
+        for(NodeRef translationToRemove : translations.values())
+        {
+            // unmake the translation
+            this.unmakeTranslation(translationToRemove);
+
+            // remove it
+            if(nodeService.exists(translationToRemove))
+            {
+                nodeService.deleteNode(translationToRemove);
+            }
+        }
+
+        // if the mlContainer is not removed with the pivot,
+        if(nodeService.exists(mlContainerNodeRef))
+        {
+            // force its deletion
+            nodeService.deleteNode(mlContainerNodeRef);
+
+            if (logger.isWarnEnabled())
+            {
+                logger.warn("The ML container " + mlContainerNodeRef + " was not removed with it's pivot translation in the unmakeTranslation process.");
+            }
+        }
+
+        // done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("ML container removed: \n" +
+                    "   Container:  " + mlContainerNodeRef + "\n" +
+                    "   Number of translations: " + translationCount);
+        }
+    }
+
+    /** @inheritDoc */
     public void unmakeTranslation(NodeRef translationNodeRef)
     {
         // Get the container
@@ -622,7 +684,9 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     public NodeRef addEmptyTranslation(NodeRef translationOfNodeRef, String name, Locale locale)
     {
         boolean hasMLAspect = nodeService.hasAspect(translationOfNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
-        if (hasMLAspect)
+        boolean isMLContainer = nodeService.getType(translationOfNodeRef).equals(ContentModel.TYPE_MULTILINGUAL_CONTAINER);
+
+        if (hasMLAspect || isMLContainer)
         {
             // Get the pivot translation
             NodeRef pivotTranslationNodeRef = getPivotTranslation(translationOfNodeRef);
@@ -717,15 +781,177 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         return newTranslationNodeRef;
     }
 
-   public void setNodeService(NodeService nodeService)
-   {
-        this.nodeService = nodeService;
+    /**
+     * @throws SystemException
+     * @throws Exception
+     * @throws FileNotFoundException
+     * @throws FileExistsException
+     * @inheritDoc
+     */
+    public NodeRef copyTranslationContainer(NodeRef mlContainerNodeRef, NodeRef newParentRef, String prefixName) throws Exception
+    {
+        if(!ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(nodeService.getType(mlContainerNodeRef)))
+        {
+            throw new IllegalArgumentException(
+                    "Node type must be " + ContentModel.TYPE_MULTILINGUAL_CONTAINER);
+        }
+
+        // if the container has no translation: nothing to do
+        if(nodeService.getChildAssocs(mlContainerNodeRef, ContentModel.ASSOC_MULTILINGUAL_CHILD, RegexQNamePattern.MATCH_ALL).size() < 1)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("MLContainer has no translation "  + mlContainerNodeRef);
+            }
+
+            return null;
+        }
+
+        // keep a reference to the containing space before copy
+        NodeRef spaceBefore = nodeService.getPrimaryParent(getPivotTranslation(mlContainerNodeRef)).getParentRef();
+
+        if(spaceBefore.equals(newParentRef))
+        {
+            throw new AlfrescoRuntimeException(
+                    "Impossible to copy the mlContainer, source folder is the same as the destination container.");
+        }
+
+        // get the pivot translation and its locale
+        NodeRef pivotNodeRef = getPivotTranslation(mlContainerNodeRef);
+        Locale pivotLocale = (Locale) nodeService.getProperty(pivotNodeRef, ContentModel.PROP_LOCALE);
+        String pivotName = prefixName + (String) nodeService.getProperty(pivotNodeRef, ContentModel.PROP_NAME);
+
+        if(prefixName == null)
+        {
+            prefixName = "";
+        }
+
+        NodeRef pivotCopyNodeRef = null;
+
+        pivotCopyNodeRef = fileFolderService.copy(pivotNodeRef, newParentRef, pivotName).getNodeRef();
+
+        // make the new pivot multilingual
+        this.makeTranslation(pivotCopyNodeRef, pivotLocale);
+
+        // get a reference to the new mlContainer
+        NodeRef newMLContainerNodeRef = getMLContainer(pivotCopyNodeRef, false);
+
+        // copy each other translation and make them multilingual too
+        for(Map.Entry<Locale, NodeRef> entry : getTranslations(mlContainerNodeRef).entrySet())
+        {
+            Locale translationLocale = entry.getKey();
+            NodeRef translationNodeRef = entry.getValue();
+
+            String name = prefixName + (String) nodeService.getProperty(translationNodeRef, ContentModel.PROP_NAME);
+
+            if(!translationNodeRef.equals(pivotNodeRef))
+            {
+               if(nodeService.hasAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+                {
+                    // Turn off any empty translation policy behaviours to enabled the copy.
+                    this.policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION);
+                    this.policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
+
+                    try
+                    {
+                        // copy the translation
+                        NodeRef copyNodeRef = fileFolderService.copy(translationNodeRef, newParentRef, name).getNodeRef();
+
+                        // Add it to the newMLContainer
+                        nodeService.addChild(
+                                newMLContainerNodeRef,
+                                copyNodeRef,
+                                ContentModel.ASSOC_MULTILINGUAL_CHILD,
+                                QNAME_ML_TRANSLATION);
+                    }
+                    finally
+                    {
+                        this.policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION);
+                        this.policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
+                    }
+                }
+                else
+                {
+                    // copy the translation
+                    NodeRef copyNodeRef = fileFolderService.copy(translationNodeRef, newParentRef, name).getNodeRef();
+
+                    // add it to the mlContainer
+                    this.addTranslation(copyNodeRef, newMLContainerNodeRef, translationLocale);
+                    // set its locale property
+                    nodeService.setProperty(copyNodeRef, ContentModel.PROP_LOCALE, translationLocale);
+                }
+            }
+            else
+            {
+                // the pivot is already created
+            }
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("MLContainer copied: \n" +
+                    "   Copy of : " + mlContainerNodeRef + "(translations located in " + spaceBefore + ") \n" +
+                    "   Copy :  " + newMLContainerNodeRef + "(translations located in " + newParentRef + ") \n");
+        }
+
+        return newMLContainerNodeRef;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public void moveTranslationContainer(NodeRef mlContainerNodeRef, NodeRef newParentRef) throws FileExistsException, FileNotFoundException
+    {
+        if(!ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(nodeService.getType(mlContainerNodeRef)))
+        {
+            throw new IllegalArgumentException(
+                    "Node type must be " + ContentModel.TYPE_MULTILINGUAL_CONTAINER);
+        }
+
+        // if the container has no translation: nothing to do
+        if(nodeService.getChildAssocs(mlContainerNodeRef, ContentModel.ASSOC_MULTILINGUAL_CHILD, RegexQNamePattern.MATCH_ALL).size() < 1)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("MLContainer has no translation " + mlContainerNodeRef);
+            }
+
+            return;
+        }
+
+        // keep a reference to the containing space before moving
+        NodeRef spaceBefore = nodeService.getPrimaryParent(getPivotTranslation(mlContainerNodeRef)).getParentRef();
+
+        if(spaceBefore.equals(newParentRef))
+        {
+            // nothing to do
+            return;
+        }
+
+        // move each translation
+        for(NodeRef translationToMove : getTranslations(mlContainerNodeRef).values())
+        {
+            fileFolderService.move(translationToMove, newParentRef, null);
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("MLContainer moved: \n" +
+                    "   Old location of " + mlContainerNodeRef + " : " + spaceBefore + ") \n" +
+                    "   New location of " + mlContainerNodeRef + " : " + newParentRef + ")");
+        }
    }
 
-   public void setSearchService(SearchService searchService)
-   {
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    public void setSearchService(SearchService searchService)
+    {
         this.searchService = searchService;
-   }
+    }
 
     public void setPermissionService(PermissionService permissionService)
     {
@@ -742,13 +968,8 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         this.fileFolderService = fileFolderService;
     }
 
-    public NodeRef copyTranslationContainer(NodeRef translationNodeRef, NodeRef newParentRef)
+    public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter)
     {
-        throw new UnsupportedOperationException("This operation is not yet supported");
-    }
-
-    public void moveTranslationContainer(NodeRef translationNodeRef, NodeRef newParentRef)
-    {
-        throw new UnsupportedOperationException("This operation is not yet supported");
+        this.policyBehaviourFilter = policyBehaviourFilter;
     }
 }

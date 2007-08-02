@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.service;
@@ -38,6 +38,8 @@ import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
+import org.alfresco.service.cmr.ml.EditionService;
+import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.CopyService;
@@ -67,15 +69,15 @@ import org.alfresco.service.transaction.TransactionService;
 /**
  * This interface represents the registry of public Repository Services.
  * The registry provides meta-data about each service and provides
- * access to the service interface. 
- * 
+ * access to the service interface.
+ *
  * @author David Caruana
  */
 @PublicService
 public interface ServiceRegistry
 {
     // Service Bean Names
-    
+
     static final String SERVICE_REGISTRY = "ServiceRegistry";
 
     static final QName REGISTRY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ServiceRegistry");
@@ -89,6 +91,8 @@ public interface ServiceRegistry
     static final QName CONTENT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ContentService");
     static final QName MIMETYPE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "MimetypeService");
     static final QName CONTENT_FILTER_LANGUAGES_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ContentFilterLanguagesService");
+    static final QName MULTILINGUAL_CONTENT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "MultilingualContentService");
+    static final QName EDITION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "EditionService");
     static final QName SEARCH_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "SearchService");
     static final QName CATEGORY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CategoryService");
     static final QName COPY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CopyService");
@@ -126,14 +130,14 @@ public interface ServiceRegistry
 
     /**
      * Is the specified service provided by the Repository?
-     * 
+     *
      * @param service  name of service to test provision of
      * @return true => provided, false => not provided
      */
     @NotAuditable
     boolean isServiceProvided(QName service);
 
-    /** 
+    /**
      * Get the specified service.
      *
      * @param service  name of service to retrieve
@@ -141,13 +145,13 @@ public interface ServiceRegistry
      */
     @NotAuditable
     Object getService(QName service);
-    
+
     /**
      * @return the descriptor service
      */
     @NotAuditable
     DescriptorService getDescriptorService();
-    
+
     /**
      * @return the transaction service
      */
@@ -165,13 +169,13 @@ public interface ServiceRegistry
      */
     @NotAuditable
     NamespaceService getNamespaceService();
-    
+
     /**
      * @return the authentication service (or null, if one is not provided)
      */
     @NotAuditable
     AuthenticationService getAuthenticationService();
-    
+
     /**
      * @return the node service (or null, if one is not provided)
      */
@@ -183,7 +187,7 @@ public interface ServiceRegistry
      */
     @NotAuditable
     ContentService getContentService();
-    
+
     /**
      * @return the mimetype service (or null, if one is not provided)
      */
@@ -195,19 +199,19 @@ public interface ServiceRegistry
      */
     @NotAuditable
     ContentFilterLanguagesService getContentFilterLanguagesService();
-    
+
     /**
      * @return the search service (or null, if one is not provided)
      */
     @NotAuditable
     SearchService getSearchService();
-    
+
     /**
      * @return the version service (or null, if one is not provided)
      */
     @NotAuditable
     VersionService getVersionService();
-    
+
     /**
      * @return the lock service (or null, if one is not provided)
      */
@@ -219,73 +223,73 @@ public interface ServiceRegistry
      */
     @NotAuditable
     DictionaryService getDictionaryService();
- 
+
     /**
      * @return the copy service (or null, if one is not provided)
      */
     @NotAuditable
     CopyService getCopyService();
-    
+
     /**
      * @return the checkout / checkin service (or null, if one is not provided)
      */
     @NotAuditable
-    CheckOutCheckInService getCheckOutCheckInService();   
-    
+    CheckOutCheckInService getCheckOutCheckInService();
+
     /**
      * @return the category service (or null, if one is not provided)
      */
     @NotAuditable
     CategoryService getCategoryService();
-    
+
     /**
      * @return the importer service or null if not present
      */
     @NotAuditable
     ImporterService getImporterService();
-    
+
     /**
      * @return the exporter service or null if not present
      */
     @NotAuditable
     ExporterService getExporterService();
-    
+
     /**
      * @return the rule service (or null, if one is not provided)
      */
     @NotAuditable
     RuleService getRuleService();
-    
+
     /**
      * @return the action service (or null if one is not provided)
      */
     @NotAuditable
     ActionService getActionService();
-    
+
     /**
      * @return the permission service (or null if one is not provided)
      */
     @NotAuditable
     PermissionService getPermissionService();
-    
+
     /**
      * @return the authority service (or null if one is not provided)
      */
     @NotAuditable
     AuthorityService getAuthorityService();
-    
+
     /**
      * @return the template service (or null if one is not provided)
      */
     @NotAuditable
     TemplateService getTemplateService();
-    
+
     /**
      * @return the file-folder manipulation service (or null if one is not provided)
      */
     @NotAuditable
     FileFolderService getFileFolderService();
-    
+
     /**
      * @return the script execution service (or null if one is not provided)
      */
@@ -297,7 +301,7 @@ public interface ServiceRegistry
      */
     @NotAuditable
     WorkflowService getWorkflowService();
-    
+
     /**
      * @return the audit service (or null if one is not provided)
      */
@@ -306,13 +310,13 @@ public interface ServiceRegistry
 
     /**
      * Get the AVMService.
-     * @return The AVM service (or null if one is not provided);    
+     * @return The AVM service (or null if one is not provided);
      */
     @NotAuditable
     AVMService getAVMService();
 
     /**
-     * Get the AVMLockingAwareService.
+    * Get the AVMLockingAwareService.
      * @return The AVM locking aware service (or null if one is not provided);    
      */
     @NotAuditable
@@ -331,39 +335,53 @@ public interface ServiceRegistry
      */
     @NotAuditable
     OwnableService getOwnableService();
-    
+
     /**
      * Get the person service (or null if one is not provided)
      * @return
      */
     @NotAuditable
     PersonService getPersonService();
-    
+
     /**
      * Get the cross repository copy service (or null if one is not provided)
      * @return
      */
     @NotAuditable
     CrossRepositoryCopyService getCrossRepositoryCopyService();
-    
+
     /**
      * Get the attribute service (or null if one is not provided)
      * @return
      */
     @NotAuditable
     AttributeService getAttributeService();
-    
+
     /**
      * Get the AVM locking service (or null if one is not provided)
      * @return
      */
     @NotAuditable
     AVMLockingService getAVMLockingService();
-    
+
     /**
      * Get the Virtualisation Server registry service bean
      * @return
      */
     @NotAuditable
     VirtServerRegistry getVirtServerRegistry();
+
+    /**
+     * Get the Multilingual Content Service
+     * @return
+     */
+    @NotAuditable
+    MultilingualContentService getMultilingualContentService();
+
+    /**
+     * Get the Edition Service
+     * @return
+     */
+    @NotAuditable
+    EditionService getEditionService();
 }

@@ -378,6 +378,11 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl
                 ContentModel.PROP_VERSION_LABEL,
                 version.getVersionLabel());
 
+        // Freeze the version label property
+        Map<QName, Serializable> versionLabelAsMap = new HashMap<QName, Serializable>(1);
+        versionLabelAsMap.put(ContentModel.PROP_VERSION_LABEL, version.getVersionLabel());
+        this.freezeProperties(newVersionRef, versionLabelAsMap);
+
         // Invoke the policy behaviour
         invokeAfterCreateVersion(nodeRef, version);
 

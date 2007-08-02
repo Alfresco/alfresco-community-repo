@@ -31,6 +31,8 @@ import java.util.Set;
 
 import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
+import org.alfresco.service.cmr.model.FileExistsException;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -171,10 +173,14 @@ public interface MultilingualContentService
      *
      * @param translationNodeRef            The <b>cm:mlContainer</b> to copy
      * @param newParentRef                  The new parent of the copied <b>cm:mlDocument</b>
+     * @param prefixName                    The prefix of the name of the copied translations. Can be null.
      * @return                              The copied <b>cm:mlContainer</b>
+     * @throws FileNotFoundException
+     * @throws FileExistsException
+     * @throws Exception
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationNodeRef", "newParentRef"})
-    NodeRef copyTranslationContainer(NodeRef translationNodeRef, NodeRef newParentRef);
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"mlContainerNodeRef", "newParentRef"})
+    NodeRef copyTranslationContainer(NodeRef mlContainerNodeRef, NodeRef newParentRef, String prefixName) throws FileExistsException, FileNotFoundException, Exception;
 
     /**
      * Moves the location of the given <b>cm:mlContainer</b>.
@@ -184,10 +190,18 @@ public interface MultilingualContentService
      *
      * @param translationNodeRef            The <b>cm:mlContainer</b> to move
      * @param newParentRef                  The new parent of the moved <b>cm:mlDocument</b>
+     * @throws FileExistsException
+     * @throws FileNotFoundException
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationNodeRef", "newParentRef"})
-    void moveTranslationContainer(NodeRef translationNodeRef, NodeRef newParentRef);
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"mlContainerNodeRef", "newParentRef"})
+    void moveTranslationContainer(NodeRef mlContainerNodeRef, NodeRef newParentRef) throws FileExistsException, FileNotFoundException;
 
-
-
+    /**
+     * Delete the given mlContainer and its translations. The translations will lost their <b>cm:mlDocument</b> aspect and
+     * will be archved. The empty translations will be permanently deleted.
+     *
+     * @param mlContainerNodeRef        The <b>cm:mlContainer</b> to remove
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"mlContainerNodeRef"})
+    void deleteTranslationContainer(NodeRef mlContainerNodeRef);
 }

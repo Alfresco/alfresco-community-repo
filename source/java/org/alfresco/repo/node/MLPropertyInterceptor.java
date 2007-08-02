@@ -25,19 +25,24 @@
 package org.alfresco.repo.node;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.ml.MultilingualContentService;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
@@ -71,6 +76,8 @@ public class MLPropertyInterceptor implements MethodInterceptor
     
     /** Direct access to the NodeService */
     private NodeService nodeService;
+    /** Direct access to the MultilingualContentService */
+    private MultilingualContentService multilingualContentService;
     /** Used to access property definitions */
     private DictionaryService dictionaryService;
     
@@ -108,7 +115,12 @@ public class MLPropertyInterceptor implements MethodInterceptor
         this.nodeService = bean;
     }
     
-    public void setDictionaryService(DictionaryService dictionaryService)
+    public void setMultilingualContentService(MultilingualContentService multilingualContentService)
+   {
+      this.multilingualContentService = multilingualContentService;
+   }
+
+   public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
@@ -142,12 +154,18 @@ public class MLPropertyInterceptor implements MethodInterceptor
             NodeRef nodeRef = (NodeRef) args[0];
             QName propertyQName = (QName) args[1];
             
+            // Get the pivot translation, if appropriate
+            NodeRef pivotNodeRef = getPivotNodeRef(nodeRef);
+            
             Serializable value = (Serializable) invocation.proceed();
-            ret = convertOutboundProperty(contentLocale, nodeRef, propertyQName, value);
+            ret = convertOutboundProperty(contentLocale, nodeRef, pivotNodeRef, propertyQName, value);
         }
         else if (methodName.equals("getProperties"))
         {
             NodeRef nodeRef = (NodeRef) args[0];
+            
+            // Get the pivot translation, if appropriate
+            NodeRef pivotNodeRef = getPivotNodeRef(nodeRef);
             
             Map<QName, Serializable> properties = (Map<QName, Serializable>) invocation.proceed();
             Map<QName, Serializable> convertedProperties = new HashMap<QName, Serializable>(properties.size() * 2);
@@ -156,7 +174,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
             {
                 QName propertyQName = entry.getKey();
                 Serializable value = entry.getValue();
-                Serializable convertedValue = convertOutboundProperty(contentLocale, nodeRef, propertyQName, value);
+                Serializable convertedValue = convertOutboundProperty(contentLocale, nodeRef, pivotNodeRef, propertyQName, value);
                 // Add it to the return map
                 convertedProperties.put(propertyQName, convertedValue);
             }
@@ -173,6 +191,10 @@ public class MLPropertyInterceptor implements MethodInterceptor
         else if (methodName.equals("setProperties"))
         {
             NodeRef nodeRef = (NodeRef) args[0];
+            
+            // Get the pivot translation, if appropriate
+            NodeRef pivotNodeRef = getPivotNodeRef(nodeRef);
+
             Map<QName, Serializable> newProperties =(Map<QName, Serializable>) args[1];
             // Get the current properties for the node
             Map<QName, Serializable> currentProperties = nodeService.getProperties(nodeRef);
@@ -185,7 +207,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
                  // Get the current property value
                  Serializable currentValue = currentProperties.get(propertyQName);
                  // Convert the inbound property value
-                 inboundValue = convertInboundProperty(contentLocale, nodeRef, propertyQName, inboundValue, currentValue);
+                 inboundValue = convertInboundProperty(contentLocale, nodeRef, pivotNodeRef, propertyQName, inboundValue, currentValue);
                  // Put the value into the map
                  convertedProperties.put(propertyQName, inboundValue);
             }
@@ -199,8 +221,11 @@ public class MLPropertyInterceptor implements MethodInterceptor
             QName propertyQName = (QName) args[1];
             Serializable inboundValue = (Serializable) args[2];
             
+            // Get the pivot translation, if appropriate
+            NodeRef pivotNodeRef = getPivotNodeRef(nodeRef);
+            
             // Convert the property
-            inboundValue = convertInboundProperty(contentLocale, nodeRef, propertyQName, inboundValue, null);
+            inboundValue = convertInboundProperty(contentLocale, nodeRef, pivotNodeRef, propertyQName, inboundValue, null);
             
             // Pass this through to the node service
             nodeService.setProperty(nodeRef, propertyQName, inboundValue);
@@ -215,21 +240,71 @@ public class MLPropertyInterceptor implements MethodInterceptor
     }
     
     /**
+     * @param nodeRef
+     *      a potential empty translation
+     * @return
+     *      the pivot translation node or <tt>null</tt>
+     */
+    private NodeRef getPivotNodeRef(NodeRef nodeRef)
+    {
+       if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+       {
+          return multilingualContentService.getPivotTranslation(nodeRef);
+       }
+       else
+       {
+          return null;
+       }
+    }
+    
+    /**
      * Ensure that content is spoofed for empty translations.
      */
     private Serializable convertOutboundProperty(
             Locale contentLocale,
             NodeRef nodeRef,
+            NodeRef pivotNodeRef,
             QName propertyQName,
             Serializable outboundValue)
     {
         Serializable ret = null;
-        // Is it content?
-        if (outboundValue != null && outboundValue instanceof MLText)
+        if (outboundValue == null)
+        {
+           ret = null;
+        }
+        if (outboundValue instanceof MLText)
         {
             // It is MLText
             MLText mlText = (MLText) outboundValue;
             ret = mlText.getClosestValue(contentLocale);
+        }
+        else if (pivotNodeRef != null)       // It is an empty translation
+        {
+           if (propertyQName.equals(ContentModel.PROP_MODIFIED))
+           {
+              // An empty translation's modified date must be the later of its own
+              // modified date and the pivot translation's modified date
+              Date emptyLastModified = (Date) outboundValue;
+              Date pivotLastModified = (Date) nodeService.getProperty(pivotNodeRef, ContentModel.PROP_MODIFIED);
+              if (emptyLastModified.compareTo(pivotLastModified) < 0)
+              {
+                 ret = pivotLastModified;
+              }
+              else
+              {
+                 ret = emptyLastModified;
+              }
+           }
+           else if (propertyQName.equals(ContentModel.PROP_CONTENT))
+           {
+              // An empty translation's cm:content must track the cm:content of the
+              // pivot translation.
+              ret = nodeService.getProperty(pivotNodeRef, ContentModel.PROP_CONTENT);
+           }
+           else
+           {
+              ret = outboundValue;
+           }
         }
         else
         {
@@ -257,6 +332,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
     private Serializable convertInboundProperty(
             Locale contentLocale,
             NodeRef nodeRef,
+            NodeRef pivotNodeRef,
             QName propertyQName,
             Serializable inboundValue,
             Serializable currentValue)
@@ -264,7 +340,11 @@ public class MLPropertyInterceptor implements MethodInterceptor
         Serializable ret = null;
         PropertyDefinition propertyDef = this.dictionaryService.getProperty(propertyQName);
         //if no type definition associated to the name then just proceed
-        if (propertyDef != null && propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
+        if (propertyDef == null)
+        {
+           ret = inboundValue;
+        }
+        else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
         {
             // Don't mess with multivalued properties or instances already of type MLText
             if (propertyDef.isMultiValued() || (inboundValue instanceof MLText) )
@@ -293,7 +373,25 @@ public class MLPropertyInterceptor implements MethodInterceptor
                 ret = returnMLValue;
             }
         }
-        else            // It is not defined as d:mltext in the dictionary
+        else if (pivotNodeRef != null && propertyQName.equals(ContentModel.PROP_CONTENT))
+        {
+           // It is an empty translation.  The content must not change if it matches
+           // the content of the pivot translation
+           ContentData pivotContentData = (ContentData) nodeService.getProperty(pivotNodeRef, ContentModel.PROP_CONTENT);
+           ContentData emptyContentData = (ContentData) inboundValue;
+           String pivotContentUrl = pivotContentData == null ? null : pivotContentData.getContentUrl();
+           String emptyContentUrl = emptyContentData == null ? null : emptyContentData.getContentUrl();
+           if (EqualsHelper.nullSafeEquals(pivotContentUrl, emptyContentUrl))
+           {
+              // They are a match.  So the empty translation must be reset to it's original value
+              ret = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+           }
+           else
+           {
+              ret = inboundValue;
+           }
+        }
+        else
         {
             ret = inboundValue;
         }

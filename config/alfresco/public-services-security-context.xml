@@ -544,6 +544,7 @@
                 org.alfresco.service.cmr.ml.MultilingualContentService.addEmptyTranslation=ACL_NODE.0.sys:base.Read,ACL_NODE.0.sys:base.CreateChildren
                 org.alfresco.service.cmr.ml.MultilingualContentService.copyTranslationContainer=ACL_NODE.0.sys:base.Read,ACL_NODE.1.sys:base.CreateChildren
                 org.alfresco.service.cmr.ml.MultilingualContentService.moveTranslationContainer=ACL_NODE.0.sys:base.DeleteNode,ACL_NODE.1.sys:base.CreateChildren
+                org.alfresco.service.cmr.ml.MultilingualContentService.deleteTranslationContainer=ACL_NODE.0.sys:base.DeleteNode,ACL_NODE.0.sys:base.DeleteChildren
             </value>
          </property>
     </bean>

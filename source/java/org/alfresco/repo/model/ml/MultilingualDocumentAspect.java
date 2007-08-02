@@ -35,7 +35,6 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
-import org.alfresco.repo.version.VersionServicePolicies;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -54,21 +53,9 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  */
 public class MultilingualDocumentAspect implements
         CopyServicePolicies.OnCopyNodePolicy,
-        CopyServicePolicies.OnCopyCompletePolicy,
         NodeServicePolicies.BeforeDeleteNodePolicy,
-        NodeServicePolicies.OnUpdatePropertiesPolicy,
-        VersionServicePolicies.OnCreateVersionPolicy
+        NodeServicePolicies.OnUpdatePropertiesPolicy
 {
-
-    /**
-     * List of properties to set persistent when a version of the mlDocument is created
-     */
-    public static final QName[] PROPERTIES_TO_VERSION = {
-                ContentModel.PROP_AUTHOR,
-                ContentModel.PROP_LOCALE,
-                ContentModel.PROP_TITLE,
-                ContentModel.PROP_DESCRIPTION,
-            };
 
     //     Dependencies
     private PolicyComponent policyComponent;
@@ -89,11 +76,6 @@ public class MultilingualDocumentAspect implements
                 new JavaBehaviour(this, "onCopyNode"));
 
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete"),
-                ContentModel.ASPECT_MULTILINGUAL_DOCUMENT,
-                new JavaBehaviour(this, "onCopyComplete"));
-
-        this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
                 ContentModel.ASPECT_MULTILINGUAL_DOCUMENT,
                 new JavaBehaviour(this, "beforeDeleteNode"));
@@ -102,11 +84,6 @@ public class MultilingualDocumentAspect implements
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
                 ContentModel.ASPECT_MULTILINGUAL_DOCUMENT,
                 new JavaBehaviour(this, "onUpdateProperties"));
-
-        this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateVersion"),
-                ContentModel.ASPECT_MULTILINGUAL_DOCUMENT,
-                new JavaBehaviour(this, "onCreateVersion"));
 
     }
 
@@ -146,16 +123,6 @@ public class MultilingualDocumentAspect implements
     }
 
     /**
-     * The copy of <b>mlDocument</b> don't keep the 'locale' property.
-     *
-     * @see org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy#onCopyComplete(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, boolean, java.util.Map)
-     */
-    public void onCopyComplete(QName classRef, NodeRef sourceNodeRef, NodeRef destinationRef, boolean copyToNewNode, Map<NodeRef, NodeRef> copyMap)
-    {
-        nodeService.removeProperty(destinationRef, ContentModel.PROP_LOCALE);
-    }
-
-    /**
      * If this is not an empty translation, then ensure that the node is properly
      * unhooked from the translation mechanism first.
      */
@@ -191,10 +158,10 @@ public class MultilingualDocumentAspect implements
 
         // the after local property type can be either Locale or String
         Serializable objLocaleAfter = after.get(ContentModel.PROP_LOCALE);
+
         if (objLocaleAfter instanceof Locale )
         {
             localeAfter = (Locale) objLocaleAfter;
-
         }
         else
         {
@@ -242,19 +209,4 @@ public class MultilingualDocumentAspect implements
 
         // else no action to perform
     }
-
-    /**
-     * Persist some specific properties in the version store
-     *
-     * @see org.alfresco.repo.model.ml.MultilingualDocumentAspect.PROPERTIES_TO_VERSION
-     * @see org.alfresco.repo.version.VersionServicePolicies.OnCreateVersionPolicy#onCreateVersion(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef, java.util.Map, org.alfresco.repo.policy.PolicyScope)
-     */
-    public void onCreateVersion(QName classRef, NodeRef versionableNode, Map<String, Serializable> versionProperties, PolicyScope nodeDetails)
-    {
-        for(QName prop : PROPERTIES_TO_VERSION)
-        {
-            nodeDetails.addProperty(prop, nodeService.getProperty(versionableNode, prop));
-        }
-    }
-
 }

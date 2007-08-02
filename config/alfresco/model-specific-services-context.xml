@@ -68,7 +68,7 @@
   <!-- Multilingual specific service -->
    <bean name="multilingualContentService" class="org.alfresco.repo.model.ml.MultilingualContentServiceImpl" >
       <property name="nodeService">
-         <ref bean="nodeService" />
+         <ref bean="mlAwareNodeService" />
       </property>
       <property name="searchService">
          <ref bean="admSearchService" />
@@ -81,6 +81,9 @@
       </property>
       <property name="fileFolderService">
          <ref bean="fileFolderService" />
+      </property>
+      <property name="policyBehaviourFilter">
+         <ref bean="policyBehaviourFilter" />
       </property>
    </bean>
 

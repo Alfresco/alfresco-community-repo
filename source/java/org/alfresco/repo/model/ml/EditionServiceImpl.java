@@ -120,7 +120,7 @@ public class EditionServiceImpl implements EditionService
         // Version the container and its translations
         versionService.createVersion(mlContainerToVersion, versionProperties, true);
 
-        // 2.   Third step: prepare the current edition of the mlContainer
+        // 2.   second step: prepare the current edition of the mlContainer
 
         // Get the new starting point node, it will be returned
         NodeRef startNode;
@@ -169,6 +169,7 @@ public class EditionServiceImpl implements EditionService
         // set the starting translation become the pivot.
         nodeService.setProperty(mlContainerToVersion, ContentModel.PROP_LOCALE, locale);
         nodeService.setProperty(mlContainerToVersion, ContentModel.PROP_AUTHOR, author);
+        nodeService.setProperty(mlContainerToVersion, ContentModel.PROP_NAME, name);
 
         // Done
         if (logger.isDebugEnabled())

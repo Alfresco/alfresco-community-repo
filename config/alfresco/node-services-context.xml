@@ -8,6 +8,9 @@
       <property name="nodeService">
          <ref bean="mlAwareNodeService" />
       </property>
+      <property name="multilingualContentService">
+         <ref bean="multilingualContentService" />
+      </property>
       <property name="dictionaryService">
          <ref bean="dictionaryService" />
       </property>

@@ -37,6 +37,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.IndexerException;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -60,6 +61,8 @@ public class LuceneCategoryServiceImpl implements CategoryService
 {
     private NodeService nodeService;
 
+    private TenantService tenantService;
+    
     private NamespacePrefixResolver namespacePrefixResolver;
 
     private DictionaryService dictionaryService;
@@ -83,6 +86,15 @@ public class LuceneCategoryServiceImpl implements CategoryService
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    /**
+     * Set the tenant service
+     * @param tenantService
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
 
     /**
@@ -118,6 +130,9 @@ public class LuceneCategoryServiceImpl implements CategoryService
         {
             return Collections.<ChildAssociationRef> emptyList();
         }
+
+        categoryRef = tenantService.getName(categoryRef);
+        
         ResultSet resultSet = null;
         try
         {
@@ -244,6 +259,8 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     private Set<NodeRef> getClassificationNodes(StoreRef storeRef, QName qname)
     {
+        storeRef = tenantService.getName(storeRef);
+
         ResultSet resultSet = null;
         try
         {
@@ -269,6 +286,8 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     public Collection<ChildAssociationRef> getClassifications(StoreRef storeRef)
     {
+        storeRef = tenantService.getName(storeRef);
+
         ResultSet resultSet = null;
         try
         {

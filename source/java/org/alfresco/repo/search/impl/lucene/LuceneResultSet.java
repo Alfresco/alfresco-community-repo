@@ -30,6 +30,7 @@ import org.alfresco.repo.search.AbstractResultSet;
 import org.alfresco.repo.search.ResultSetRowIterator;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -60,6 +61,8 @@ public class LuceneResultSet extends AbstractResultSet
     
     private NodeService nodeService;
 
+    private TenantService tenantService;
+
     SearchParameters searchParameters;
     
     /**
@@ -68,12 +71,13 @@ public class LuceneResultSet extends AbstractResultSet
      * @param storeRef
      * @param hits
      */
-    public LuceneResultSet(Hits hits, Searcher searcher, NodeService nodeService, Path[]propertyPaths, SearchParameters searchParameters)
+    public LuceneResultSet(Hits hits, Searcher searcher, NodeService nodeService, TenantService tenantService, Path[]propertyPaths, SearchParameters searchParameters)
     {
         super(propertyPaths);
         this.hits = hits;
         this.searcher = searcher;
         this.nodeService = nodeService;
+        this.tenantService = tenantService;
         this.searchParameters = searchParameters;
     }
 
@@ -98,8 +102,8 @@ public class LuceneResultSet extends AbstractResultSet
             // We have to get the document to resolve this
             // It is possible the store ref is also stored in the index
             Document doc = hits.doc(n);
-            String id = doc.get("ID");
-            return new NodeRef(id);
+            String id = doc.get("ID");            
+            return tenantService.getBaseName(new NodeRef(id));
         }
         catch (IOException e)
         {

@@ -40,6 +40,7 @@ import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NodeSearcher;
 import org.alfresco.repo.search.impl.lucene.QueryParser.Operator;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -85,6 +86,8 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     private NamespacePrefixResolver namespacePrefixResolver;
 
     private NodeService nodeService;
+    
+    private TenantService tenantService;
 
     private DictionaryService dictionaryService;
 
@@ -147,6 +150,11 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     {
         this.nodeService = nodeService;
     }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
 
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -165,6 +173,8 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     public ResultSet query(StoreRef store, String language, String queryString, Path[] queryOptions,
             QueryParameterDefinition[] queryParameterDefinitions) throws SearcherException
     {
+    	store = tenantService.getName(store);
+        
         SearchParameters sp = new SearchParameters();
         sp.addStore(store);
         sp.setLanguage(language);
@@ -194,6 +204,9 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
         {
             throw new IllegalStateException("Only one store can be searched at present");
         }
+        
+        ArrayList<StoreRef> stores = searchParameters.getStores();
+        stores.set(0, tenantService.getName(searchParameters.getStores().get(0)));      
 
         String parameterisedQueryString;
         if (searchParameters.getQueryParameterDefinitions().size() > 0)
@@ -227,8 +240,10 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                     defaultOperator = LuceneQueryParser.OR_OPERATOR;
                 }
 
-                Query query = LuceneQueryParser.parse(parameterisedQueryString, DEFAULT_FIELD, new LuceneAnalyser(
-                        dictionaryService, searchParameters.getMlAnalaysisMode() == null ? getLuceneConfig().getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode()), namespacePrefixResolver, dictionaryService, defaultOperator, searchParameters, getLuceneConfig());
+                Query query = LuceneQueryParser.parse(parameterisedQueryString, DEFAULT_FIELD, 
+                        new LuceneAnalyser(dictionaryService, searchParameters.getMlAnalaysisMode() == null ? getLuceneConfig().getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode()), 
+                        namespacePrefixResolver, dictionaryService, tenantService, defaultOperator, searchParameters, getLuceneConfig());
+                
                 ClosingIndexSearcher searcher = getSearcher(indexer);
                 if (searcher == null)
                 {
@@ -277,6 +292,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                         hits,
                         searcher,
                         nodeService,
+                        tenantService,
                         paths,
                         searchParameters);
 
@@ -312,7 +328,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                     return new EmptyResultSet();
                 }
                 Hits hits = searcher.search(query);
-                return new LuceneResultSet(hits, searcher, nodeService, searchParameters.getAttributePaths().toArray(
+                return new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters.getAttributePaths().toArray(
                         new Path[0]), searchParameters);
             }
             catch (SAXPathException e)
@@ -536,6 +552,9 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
             throws InvalidNodeRefException, XPathException
     {
         NodeSearcher nodeSearcher = new NodeSearcher(nodeService, dictionaryService, this);
+        
+        contextNodeRef = tenantService.getName(contextNodeRef);
+        
         return nodeSearcher.selectNodes(contextNodeRef, xpath, parameters, namespacePrefixResolver,
                 followAllParentLinks, language);
     }

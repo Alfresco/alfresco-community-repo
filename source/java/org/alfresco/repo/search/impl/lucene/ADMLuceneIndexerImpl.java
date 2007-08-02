@@ -48,6 +48,7 @@ import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.impl.lucene.fts.FTSIndexerAware;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -97,6 +98,11 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
      * The node service we use to get information about nodes
      */
     NodeService nodeService;
+    
+    /**
+     * The tenant service we use for multi-tenancy
+     */
+    TenantService tenantService;
 
     /**
      * Content service to get content for indexing.
@@ -127,23 +133,33 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     }
 
     /**
-     * IOC setting of dictionary service
+     * IOC setting of the dictionary service
+     * 
+     * @param dictionaryService
      */
-
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         super.setDictionaryService(dictionaryService);
     }
 
     /**
-     * Setter for getting the node service via IOC Used in the Spring container
+     * IOC setting of the node service
      * 
      * @param nodeService
      */
-
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    /**
+     * IOC setting of the tenant service
+     * 
+     * @param tenantService
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
 
     /**
@@ -171,7 +187,8 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         {
             NodeRef childRef = relationshipRef.getChildRef();
             // If we have the root node we delete all other root nodes first
-            if ((relationshipRef.getParentRef() == null) && childRef.equals(nodeService.getRootNode(childRef.getStoreRef())))
+            if ((relationshipRef.getParentRef() == null)
+                    && tenantService.getBaseName(childRef).equals(nodeService.getRootNode(childRef.getStoreRef())))
             {
                 addRootNodesToDeletionList();
                 s_logger.warn("Detected root node addition: deleting all nodes from the index");
@@ -226,6 +243,8 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
     public void updateNode(NodeRef nodeRef) throws LuceneIndexException
     {
+        nodeRef = tenantService.getName(nodeRef);
+        
         if (s_logger.isDebugEnabled())
         {
             s_logger.debug("Update node " + nodeRef);
@@ -547,7 +566,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             }
         }
 
-        boolean isRoot = nodeRef.equals(nodeService.getRootNode(nodeRef.getStoreRef()));
+        boolean isRoot = nodeRef.equals(tenantService.getName(nodeService.getRootNode(nodeRef.getStoreRef())));
 
         StringBuilder qNameBuffer = new StringBuilder(64);
 
@@ -588,7 +607,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             qNameBuffer.append(";/");
                         }
                         qNameBuffer.append(ISO9075.getXPathName(qNameRef.getQName()));
-                        xdoc.add(new Field("PARENT", qNameRef.getParentRef().toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                        xdoc.add(new Field("PARENT", tenantService.getName(qNameRef.getParentRef()).toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                         xdoc.add(new Field("ASSOCTYPEQNAME", ISO9075.getXPathName(qNameRef.getTypeQName()), Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
                         xdoc.add(new Field("LINKASPECT", (pair.getSecond() == null) ? "" : ISO9075.getXPathName(pair.getSecond()), Field.Store.YES, Field.Index.UN_TOKENIZED,
                                 Field.TermVector.NO));
@@ -613,7 +632,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             directoryEntry.add(new Field("PATH", pathString, Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
                             for (NodeRef parent : getParents(pair.getFirst()))
                             {
-                                directoryEntry.add(new Field("ANCESTOR", parent.toString(), Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                                directoryEntry.add(new Field("ANCESTOR", tenantService.getName(parent).toString(), Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                             }
                             directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
 
@@ -650,7 +669,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             // true));
 
             ChildAssociationRef primary = nodeService.getPrimaryParent(nodeRef);
-            xdoc.add(new Field("PRIMARYPARENT", primary.getParentRef().toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("PRIMARYPARENT", tenantService.getName(primary.getParentRef()).toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             xdoc.add(new Field("PRIMARYASSOCTYPEQNAME", ISO9075.getXPathName(primary.getTypeQName()), Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
             QName typeQName = nodeService.getType(nodeRef);
 
@@ -1061,6 +1080,9 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         {
                             if (catRef != null)
                             {
+                                // can be running in context of System user, hence use input nodeRef
+                                catRef = tenantService.getName(nodeRef, catRef);
+                                
                                 try
                                 {
                                     for (Path path : nodeService.getPaths(catRef, false))

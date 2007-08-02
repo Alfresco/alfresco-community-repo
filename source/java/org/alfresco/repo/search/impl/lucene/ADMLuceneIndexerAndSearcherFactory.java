@@ -96,8 +96,11 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
 
     protected LuceneIndexer createIndexer(StoreRef storeRef, String deltaId)
     {
+        storeRef = tenantService.getName(storeRef);
+        
         ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(storeRef, deltaId, this);
         indexer.setNodeService(nodeService);
+        indexer.setTenantService(tenantService);
         indexer.setDictionaryService(dictionaryService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setFullTextSearchIndexer(fullTextSearchIndexer);
@@ -108,10 +111,13 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
 
     protected LuceneSearcher getSearcher(StoreRef storeRef, LuceneIndexer indexer) throws SearcherException
     {
+        storeRef = tenantService.getName(storeRef);
+
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(storeRef, indexer, this);
         searcher.setNamespacePrefixResolver(nameSpaceService);
         // searcher.setLuceneIndexLock(luceneIndexLock);
         searcher.setNodeService(nodeService);
+        searcher.setTenantService(tenantService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setQueryRegister(getQueryRegister());
         return searcher;

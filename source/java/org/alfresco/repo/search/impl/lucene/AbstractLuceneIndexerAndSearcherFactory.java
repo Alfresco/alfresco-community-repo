@@ -45,6 +45,7 @@ import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
 import org.alfresco.repo.search.transaction.SimpleTransaction;
 import org.alfresco.repo.search.transaction.SimpleTransactionManager;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -106,10 +107,8 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      */
     private static final int DEFAULT_TIMEOUT = 600000;
 
-    /**
-     * The node service we use to get information about nodes
-     */
-
+    protected TenantService tenantService;
+    
     private String indexRootLocation;
 
     private QueryRegisterComponent queryRegister;
@@ -149,6 +148,16 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         this.indexRootLocation = indexRootLocation;
     }
 
+    /**
+     * Set the tenant service
+     * 
+     * @param tenantService
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
     /**
      * Set the query register
      * 
@@ -235,6 +244,8 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      */
     public LuceneIndexer getIndexer(StoreRef storeRef) throws IndexerException
     {
+        storeRef = tenantService.getName(storeRef);
+        
         // register to receive txn callbacks
         // TODO: make this conditional on whether the XA stuff is being used
         // directly on not
@@ -346,6 +357,8 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      */
     public LuceneSearcher getSearcher(StoreRef storeRef, boolean searchDelta) throws SearcherException
     {
+        storeRef = tenantService.getName(storeRef);
+        
         String deltaId = null;
         LuceneIndexer indexer = null;
         if (searchDelta)

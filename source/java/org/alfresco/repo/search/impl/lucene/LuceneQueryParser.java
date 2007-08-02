@@ -40,11 +40,14 @@ import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.lucene.analysis.MLTokenDuplicator;
 import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
 import org.alfresco.repo.search.impl.lucene.query.PathQuery;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
@@ -70,6 +73,8 @@ public class LuceneQueryParser extends QueryParser
 
     private DictionaryService dictionaryService;
 
+    private TenantService tenantService;
+
     private SearchParameters searchParameters;
 
     private LuceneConfig config;
@@ -88,7 +93,7 @@ public class LuceneQueryParser extends QueryParser
      *             if the parsing fails
      */
     static public Query parse(String query, String field, Analyzer analyzer,
-            NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService,
+            NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService, TenantService tenantService,
             Operator defaultOperator, SearchParameters searchParameters, LuceneConfig config) throws ParseException
     {
         if (s_logger.isDebugEnabled())
@@ -99,6 +104,7 @@ public class LuceneQueryParser extends QueryParser
         parser.setDefaultOperator(defaultOperator);
         parser.setNamespacePrefixResolver(namespacePrefixResolver);
         parser.setDictionaryService(dictionaryService);
+        parser.setTenantService(tenantService);
         parser.setSearchParameters(searchParameters);
         parser.setLuceneConfig(config);
         // TODO: Apply locale contstraints at the top level if required for the non ML doc types.
@@ -123,6 +129,11 @@ public class LuceneQueryParser extends QueryParser
     public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
     {
         this.namespacePrefixResolver = namespacePrefixResolver;
+    }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
 
     public LuceneQueryParser(String arg0, Analyzer arg1)
@@ -212,6 +223,11 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (field.equals("ID"))
             {
+                if (tenantService.isTenantUser() && (queryText.contains(StoreRef.URI_FILLER)))
+                {
+                    // assume NodeRef, since it contains StorRef URI filler
+                    queryText = tenantService.getName(new NodeRef(queryText)).toString();
+                }
                 TermQuery termQuery = new TermQuery(new Term(field, queryText));
                 return termQuery;
             }
@@ -237,11 +253,21 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (field.equals("PARENT"))
             {
+                if (tenantService.isTenantUser() && (queryText.contains(StoreRef.URI_FILLER)))
+                {
+                    // assume NodeRef, since it contains StoreRef URI filler
+                    queryText = tenantService.getName(new NodeRef(queryText)).toString();
+                }
                 TermQuery termQuery = new TermQuery(new Term(field, queryText));
                 return termQuery;
             }
             else if (field.equals("PRIMARYPARENT"))
             {
+                if (tenantService.isTenantUser() && (queryText.contains(StoreRef.URI_FILLER)))
+                {
+                    // assume NodeRef, since it contains StoreRef URI filler
+                    queryText = tenantService.getName(new NodeRef(queryText)).toString();
+                }
                 TermQuery termQuery = new TermQuery(new Term(field, queryText));
                 return termQuery;
             }

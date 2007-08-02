@@ -347,6 +347,9 @@
         <property name="nodeService">
             <ref bean="mlAwareNodeService" />
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
         </property>
@@ -463,6 +466,9 @@
     <bean id="luceneCategoryService" class="org.alfresco.repo.search.impl.lucene.LuceneCategoryServiceImpl">
         <property name="nodeService">
             <ref bean="nodeService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
         </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />

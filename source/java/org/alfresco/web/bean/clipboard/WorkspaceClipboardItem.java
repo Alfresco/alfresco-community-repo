@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.web.bean.clipboard;
@@ -35,6 +35,7 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -52,20 +53,20 @@ import org.alfresco.web.ui.repo.component.shelf.UIClipboardShelfItem;
 
 /**
  * Class representing a 'workspace' store protocol clipboard item
- * 
+ *
  * @author Kevin Roast
  */
 public class WorkspaceClipboardItem extends AbstractClipboardItem
 {
    private static final String WORKSPACE_PASTE_VIEW_ID = "/jsp/browse/browse.jsp";
    private static final String AVM_PASTE_VIEW_ID = "/jsp/wcm/browse-sandbox.jsp";
-   
+
    private static final String MSG_LINK_TO = "link_to";
-   
+
    // File extension to use for link nodes
    private static final String LINK_NODE_EXTENSION = ".url";
-   
-   
+
+
    /**
     * @param ref
     * @param mode
@@ -74,7 +75,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
    {
       super(ref, mode);
    }
-   
+
    /**
     * @see org.alfresco.web.bean.clipboard.ClipboardItem#supportsLink()
     */
@@ -82,7 +83,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
    {
       return true;
    }
-   
+
    /**
     * @see org.alfresco.web.bean.clipboard.ClipboardItem#canCopyToViewId(java.lang.String)
     */
@@ -109,28 +110,31 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
       {
          NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
          NodeRef destRef = new NodeRef(Repository.getStoreRef(), navigator.getCurrentNodeId());
-         
+
          DictionaryService dd = getServiceRegistry().getDictionaryService();
          NodeService nodeService = getServiceRegistry().getNodeService();
          FileFolderService fileFolderService = getServiceRegistry().getFileFolderService();
          CopyService copyService = getServiceRegistry().getCopyService();
-         
+         MultilingualContentService multilingualContentService = getServiceRegistry().getMultilingualContentService();
+
          // TODO: Should we be using primary parent here?
          //       We are assuming that the item exists in only a single parent and that the source for
          //       the clipboard operation (e.g. the source folder) is specifically that parent node.
          //       So does not allow for more than one possible parent node - or for linked objects!
-         //       This code should be refactored to use a parent ID when appropriate. 
+         //       This code should be refactored to use a parent ID when appropriate.
          ChildAssociationRef assocRef = nodeService.getPrimaryParent(getNodeRef());
-         
+
          // initial name to attempt the copy of the item with
          String name = getName();
+         String translationPrefix = "";
+
          if (action == UIClipboardShelfItem.ACTION_PASTE_LINK)
          {
             // copy as link was specifically requested by the user
-            String linkTo = Application.getMessage(fc, MSG_LINK_TO);                
+            String linkTo = Application.getMessage(fc, MSG_LINK_TO);
             name = linkTo + ' ' + name;
          }
-         
+
          boolean operationComplete = false;
          while (operationComplete == false)
          {
@@ -147,7 +151,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                      // LINK operation
                      if (logger.isDebugEnabled())
                         logger.debug("Attempting to link node ID: " + getNodeRef() + " into node: " + destRef.toString());
-                     
+
                      // we create a special Link Object node that has a property to reference the original
                      // create the node using the nodeService (can only use FileFolderService for content)
                      if (checkExists(name + LINK_NODE_EXTENSION, destRef) == false)
@@ -164,7 +168,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                                  assocRef.getQName(),
                                  ApplicationModel.TYPE_FILELINK,
                                  props);
-                           
+
                            // apply the titled aspect - title and description
                            Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(2, 1.0f);
                            titledProps.put(ContentModel.PROP_TITLE, name);
@@ -180,7 +184,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                                  assocRef.getQName(),
                                  ApplicationModel.TYPE_FOLDERLINK,
                                  props);
-                           
+
                            // apply the uifacets aspect - icon, title and description props
                            Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(4, 1.0f);
                            uiFacetsProps.put(ApplicationModel.PROP_ICON, "space-icon-link");
@@ -188,7 +192,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                            uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, name);
                            nodeService.addAspect(childRef.getChildRef(), ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
                         }
-                        
+
                         // if we get here without an exception, the clipboard link operation was successful
                         operationComplete = true;
                      }
@@ -198,7 +202,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                      // COPY operation
                      if (logger.isDebugEnabled())
                         logger.debug("Attempting to copy node: " + getNodeRef() + " into node ID: " + destRef.toString());
-                     
+
                      // first check that we are not attempting to copy a duplicate into the same parent
                      if (destRef.equals(assocRef.getParentRef()) && name.equals(getName()))
                      {
@@ -206,7 +210,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                         String copyOf = Application.getMessage(fc, MSG_COPY_OF);
                         name = copyOf + ' ' + name;
                      }
-                     
+
                      if (dd.isSubClass(getType(), ContentModel.TYPE_CONTENT) ||
                          dd.isSubClass(getType(), ContentModel.TYPE_FOLDER))
                      {
@@ -215,6 +219,11 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                               getNodeRef(),
                               destRef,
                               name);
+                     }
+                     else if(dd.isSubClass(getType(), ContentModel.TYPE_MULTILINGUAL_CONTAINER))
+                     {
+                         // copy the mlContainer and its translations
+                         multilingualContentService.copyTranslationContainer(getNodeRef(), destRef, translationPrefix);
                      }
                      else
                      {
@@ -229,7 +238,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                                  true);
                         }
                      }
-                     
+
                      // if we get here without an exception, the clipboard copy operation was successful
                      operationComplete = true;
                   }
@@ -239,7 +248,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                   // MOVE operation
                   if (logger.isDebugEnabled())
                      logger.debug("Attempting to move node: " + getNodeRef() + " into node ID: " + destRef.toString());
-                  
+
                   if (dd.isSubClass(getType(), ContentModel.TYPE_CONTENT) ||
                       dd.isSubClass(getType(), ContentModel.TYPE_FOLDER))
                   {
@@ -248,6 +257,11 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                            getNodeRef(),
                            destRef,
                            name);
+                  }
+                  else if(dd.isSubClass(getType(), ContentModel.TYPE_MULTILINGUAL_CONTAINER))
+                  {
+                      // copy the mlContainer and its translations
+                      multilingualContentService.moveTranslationContainer(getNodeRef(), destRef);
                   }
                   else
                   {
@@ -258,7 +272,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                            ContentModel.ASSOC_CONTAINS,
                            assocRef.getQName());
                   }
-                  
+
                   // if we get here without an exception, the clipboard move operation was successful
                   operationComplete = true;
                }
@@ -266,7 +280,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
             catch (FileExistsException fileExistsErr)
             {
                if (getMode() != ClipboardStatus.COPY)
-               {    
+               {
                    // we should not rename an item when it is being moved - so exit
                    throw fileExistsErr;
                }
@@ -284,6 +298,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                   try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
                   String copyOf = Application.getMessage(fc, MSG_COPY_OF);
                   name = copyOf + ' ' + name;
+                  translationPrefix = copyOf + ' ' + translationPrefix;
                }
                else
                {
@@ -297,15 +312,15 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
       else if (AVM_PASTE_VIEW_ID.equals(viewId))
       {
          AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(fc, AVMBrowseBean.BEAN_NAME);
-         
+
          String destPath = avmBrowseBean.getCurrentPath();
          NodeRef destRef = AVMNodeConverter.ToNodeRef(-1, destPath);
-         
+
          CrossRepositoryCopyService crossRepoCopyService = getServiceRegistry().getCrossRepositoryCopyService();
-         
+
          // initial name to attempt the copy of the item with
          String name = getName();
-         
+
          boolean operationComplete = false;
          while (operationComplete == false)
          {
@@ -320,10 +335,10 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                   // COPY operation
                   if (logger.isDebugEnabled())
                      logger.debug("Attempting to copy node: " + getNodeRef() + " into node ID: " + destRef.toString());
-                  
+
                   // inter-store copy operation
                   crossRepoCopyService.copy(getNodeRef(), destRef, name);
-                  
+
                   // if we get here without an exception, the clipboard copy operation was successful
                   operationComplete = true;
                }
@@ -336,7 +351,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
             catch (FileExistsException fileExistsErr)
             {
                if (getMode() != ClipboardStatus.COPY)
-               {    
+               {
                    // we should not rename an item when it is being moved - so exit
                    throw fileExistsErr;
                }

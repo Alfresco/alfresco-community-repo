@@ -424,10 +424,10 @@
          <wizard name="regenerateRenditions" managed-bean="RegenerateRenditionsWizard"
                  title-id="regenerate_renditions_title" description-id="regenerate_renditions_desc"
                  icon="/images/icons/regenerate_renditions_large.gif">
-           <step name="select_renditions" 
-                 title-id="regenerate_renditions_select_renditions_title" 
+           <step name="select_renditions"
+                 title-id="regenerate_renditions_select_renditions_title"
                  description-id="regenerate_renditions_select_renditions_desc">
-                 <page path="/jsp/wcm/regenerate-renditions-wizard/select_renditions.jsp" 
+                 <page path="/jsp/wcm/regenerate-renditions-wizard/select_renditions.jsp"
                        title-id="regenerate_renditions_select_renditions_step_title"
                        description-id="regenerate_renditions_select_renditions_desc"
                        instruction-id="regenerate_renditions_select_renditions_instruction" />
@@ -439,7 +439,7 @@
                    instruction-id="regenerate_renditions_summary_instruction" />
            </step>
       </wizard>
-      
+
          <!-- Definition of the Dashboard Layout wizard -->
          <wizard name="configureDashboard" managed-bean="DashboardWizard"
                  title-id="configure_dashboard_title" description-id="configure_dashboard_desc"
@@ -489,25 +489,25 @@
             </step>
          </wizard>
 
-         <!-- Definition of the New Edition wizard -->
+         <!-- Definition of the 3 steps edition wizard -->
          <wizard name="newEdition" managed-bean="NewEditionWizard"
                title-id="new_edition_wizard_title"
                description-id="new_edition_wizard_desc"
                error-message-id="error_new_edition_wizard"
                  icon="/images/icons/new_edition_large.gif">
             <step name="choose-translation"
-                 title-id="step1_choose_translation"
-                  description-id="step1_choose_translation_desc">
+                      title-id="step1_choose_translation"
+                      description-id="step1_choose_translation_desc">
                <page path="/jsp/ml/new-edition-wizard/choose-translation.jsp"
-                     title-id="new_edition_choose_translation_title"
-                     description-id="new_edition_choose_translation_desc"
-                     instruction-id="default_instruction" />
+            	             title-id="new_edition_choose_translation_title"
+                	         description-id="new_edition_choose_translation_desc"
+                    	     instruction-id="default_instruction" />
             </step>
             <step name="edition-details"
                  title-id="step2_edition_details"
                   description-id="step2_edition_details_desc">
                <page path="/jsp/ml/new-edition-wizard/edition-details.jsp"
-                     title-id="new_edition_details_title"
+                     title-id="step2_new_edition_details_title"
                      description-id="new_edition_details_desc"
                      instruction-id="default_instruction" />
             </step>
@@ -515,11 +515,49 @@
                  title-id="step3_edition_summary"
                   description-id="step3_edition_summary_desc">
                <page path="/jsp/ml/new-edition-wizard/edition-summary.jsp"
-                     title-id="new_edition_summary_title"
+                     title-id="step3_new_edition_summary_title"
                      description-id="new_edition_summary_desc"
                      instruction-id="new_edition_finish_instruction" />
             </step>
          </wizard>
+
+         <!--
+         	Definition of the 2 steps edition wizard.
+         	The first step is skiped to force the new edition to start with a translation selected by the user.
+         -->
+         <wizard name="newEditionFrom" managed-bean="NewEditionWizard"
+               title-id="new_edition_wizard_title"
+               description-id="new_edition_wizard_desc"
+               error-message-id="error_new_edition_wizard"
+                 icon="/images/icons/new_edition_large.gif">
+
+            <step name="edition-details"
+                 title-id="step2_edition_details"
+                  description-id="step1_edition_details_desc">
+		       <condition if="#{NewEditionWizard.hasTranslationCheckedOut == false}">
+               		<page path="/jsp/ml/new-edition-wizard/edition-details.jsp"
+                    	  title-id="step1_new_edition_details_title"
+                     	  description-id="new_edition_details_desc"
+                          instruction-id="default_instruction" />
+                </condition>
+		        <condition if="#{NewEditionWizard.hasTranslationCheckedOut == true}">
+	               <page path="/jsp/ml/new-edition-wizard/choose-translation.jsp"
+            	             title-id="new_edition_choose_translation_title"
+                	         description-id="new_edition_choose_translation_desc"
+                    	     instruction-id="default_instruction" />
+
+                </condition>
+            </step>
+            <step name="edition-summary"
+                 title-id="step3_edition_summary"
+                  description-id="step2_edition_summary_desc">
+               <page path="/jsp/ml/new-edition-wizard/edition-summary.jsp"
+                     title-id="step2_new_edition_summary_title"
+                     description-id="new_edition_summary_desc"
+                     instruction-id="new_edition_finish_instruction" />
+            </step>
+         </wizard>
+
       </wizards>
    </config>
 

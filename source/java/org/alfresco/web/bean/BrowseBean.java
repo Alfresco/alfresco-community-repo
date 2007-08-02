@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.web.bean;
@@ -46,6 +46,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -90,17 +91,17 @@ import org.apache.log4j.Priority;
 /**
  * Bean providing properties and behaviour for the main folder/document browse screen and
  * search results screens.
- * 
+ *
  * @author Kevin Roast
  */
 public class BrowseBean implements IContextListener
 {
    /** Public JSF Bean name */
    public static final String BEAN_NAME = "BrowseBean";
-   
-   
+
+
    // ------------------------------------------------------------------------------
-   // Construction 
+   // Construction
 
    /**
     * Default Constructor
@@ -108,14 +109,14 @@ public class BrowseBean implements IContextListener
    public BrowseBean()
    {
       UIContextService.getInstance(FacesContext.getCurrentInstance()).registerBean(this);
-      
+
       initFromClientConfig();
    }
-   
-   
+
+
    // ------------------------------------------------------------------------------
-   // Bean property getters and setters 
-   
+   // Bean property getters and setters
+
    /**
     * @param nodeService The NodeService to set.
     */
@@ -131,13 +132,13 @@ public class BrowseBean implements IContextListener
    {
       this.searchService = searchService;
    }
-   
+
    /**
     * @param userPreferencesBean The UserPreferencesBean to set.
     */
    public void setUserPreferencesBean(UserPreferencesBean userPreferencesBean)
    {
-      this.userPreferencesBean = userPreferencesBean; 
+      this.userPreferencesBean = userPreferencesBean;
    }
 
    /**
@@ -147,7 +148,7 @@ public class BrowseBean implements IContextListener
    {
       this.lockService = lockService;
    }
-   
+
    /**
     * @param navigator The NavigationBean to set.
     */
@@ -155,7 +156,7 @@ public class BrowseBean implements IContextListener
    {
       this.navigator = navigator;
    }
-   
+
    /**
     * @param dictionaryService The DictionaryService to set.
     */
@@ -163,7 +164,15 @@ public class BrowseBean implements IContextListener
    {
       this.dictionaryService = dictionaryService;
    }
-   
+
+   /**
+    * @param multilingualContentService The Multilingual Content Service to set.
+    */
+   public void setMultilingualContentService(MultilingualContentService multilingualContentService)
+   {
+      this.multilingualContentService = multilingualContentService;
+   }
+
    /**
     * @param fileFolderService The FileFolderService to set.
     */
@@ -171,7 +180,7 @@ public class BrowseBean implements IContextListener
    {
       this.fileFolderService = fileFolderService;
    }
-   
+
    /**
     * @return Returns the browse View mode. See UIRichList
     */
@@ -179,7 +188,7 @@ public class BrowseBean implements IContextListener
    {
       return this.browseViewMode;
    }
-   
+
    /**
     * @param browseViewMode      The browse View mode to set. See UIRichList.
     */
@@ -187,7 +196,7 @@ public class BrowseBean implements IContextListener
    {
       this.browseViewMode = browseViewMode;
    }
-   
+
    /**
     * @return Returns true if dashboard view is available for the current node.
     */
@@ -230,7 +239,7 @@ public class BrowseBean implements IContextListener
       this.pageSizeSpaces = pageSizeSpaces;
       this.pageSizeSpacesStr = Integer.toString(pageSizeSpaces);
    }
-   
+
    public String getPageSizeContentStr()
    {
       return this.pageSizeContentStr;
@@ -259,7 +268,7 @@ public class BrowseBean implements IContextListener
       return Application.getClientConfig(FacesContext.getCurrentInstance()).
             getSearchMinimum();
    }
-   
+
    /**
     * @return Returns the panels expanded state map.
     */
@@ -275,7 +284,7 @@ public class BrowseBean implements IContextListener
    {
       this.panels = panels;
    }
-   
+
    /**
     * @return Returns the Space Node being used for the current browse screen action.
     */
@@ -283,7 +292,7 @@ public class BrowseBean implements IContextListener
    {
       return this.actionSpace;
    }
-   
+
    /**
     * @param actionSpace     Set the Space Node to be used for the current browse screen action.
     */
@@ -298,7 +307,7 @@ public class BrowseBean implements IContextListener
       }
       this.actionSpace = actionSpace;
    }
-   
+
    /**
     * @return The document node being used for the current operation
     */
@@ -344,7 +353,7 @@ public class BrowseBean implements IContextListener
          externalForceRefresh = false;
       }
    }
-   
+
    /**
     * @return Returns the contentRichList.
     */
@@ -352,7 +361,7 @@ public class BrowseBean implements IContextListener
    {
       return this.contentRichList;
    }
-   
+
    /**
     * @param spacesRichList The spacesRichList to set.
     */
@@ -372,7 +381,7 @@ public class BrowseBean implements IContextListener
          this.spacesRichList.setValue(null);
       }
    }
-   
+
    /**
     * @return Returns the spacesRichList.
     */
@@ -380,7 +389,7 @@ public class BrowseBean implements IContextListener
    {
       return this.spacesRichList;
    }
-   
+
    /**
     * @return Returns the statusMessage component.
     */
@@ -396,7 +405,7 @@ public class BrowseBean implements IContextListener
    {
       this.statusMessage = statusMessage;
    }
-   
+
    /**
     * @return Returns the deleteMessage.
     */
@@ -412,10 +421,10 @@ public class BrowseBean implements IContextListener
    {
       this.deleteMessage = deleteMessage;
    }
-   
+
    /**
     * Page accessed bean method to get the container nodes currently being browsed
-    * 
+    *
     * @return List of container Node objects for the current browse location
     */
    public List<Node> getNodes()
@@ -436,15 +445,15 @@ public class BrowseBean implements IContextListener
          }
       }
       List<Node> result = this.containerNodes;
-      
+
       // we clear the member variable during invalidateComponents()
-      
+
       return result;
    }
-   
+
    /**
     * Page accessed bean method to get the content nodes currently being browsed
-    * 
+    *
     * @return List of content Node objects for the current browse location
     */
    public List<Node> getContent()
@@ -462,12 +471,12 @@ public class BrowseBean implements IContextListener
          }
       }
       List<Node> result = this.contentNodes;
-      
+
       // we clear the member variable during invalidateComponents()
-      
+
       return result;
    }
-   
+
    /**
     * Setup the common properties required at data-binding time.
     * <p>
@@ -476,8 +485,8 @@ public class BrowseBean implements IContextListener
     * by name. Information such as download URL, size and filetype are provided etc.
     * <p>
     * We use a set of anonymous inner classes to provide the implemention for the property
-    * getters. The interfaces are only called when the properties are first requested. 
-    * 
+    * getters. The interfaces are only called when the properties are first requested.
+    *
     * @param node       Node to add the properties too
     */
    public void setupCommonBindingProperties(Node node)
@@ -491,11 +500,11 @@ public class BrowseBean implements IContextListener
       node.addPropertyResolver("size", this.resolverSize);
       node.addPropertyResolver("lang", this.resolverLang);
    }
-   
-   
+
+
    // ------------------------------------------------------------------------------
-   // IContextListener implementation 
-   
+   // IContextListener implementation
+
    /**
     * @see org.alfresco.web.app.context.IContextListener#contextUpdated()
     */
@@ -503,7 +512,7 @@ public class BrowseBean implements IContextListener
    {
       invalidateComponents();
    }
-   
+
    /**
     * @see org.alfresco.web.app.context.IContextListener#areaChanged()
     */
@@ -519,7 +528,7 @@ public class BrowseBean implements IContextListener
    {
       // nothing to do
    }
-   
+
    // ------------------------------------------------------------------------------
    // NodeEventListener listeners
 
@@ -530,7 +539,7 @@ public class BrowseBean implements IContextListener
    {
       getNodeEventListeners().add(listener);
    }
-   
+
    /**
     * Remove a listener from the list of those called by BrowseBean
     */
@@ -538,41 +547,41 @@ public class BrowseBean implements IContextListener
    {
       getNodeEventListeners().remove(listener);
    }
-   
-   
+
+
    // ------------------------------------------------------------------------------
-   // Navigation action event handlers 
-   
+   // Navigation action event handlers
+
    /**
     * Change the current view mode based on user selection
-    * 
+    *
     * @param event      ActionEvent
     */
    public void viewModeChanged(ActionEvent event)
    {
       UIModeList viewList = (UIModeList)event.getComponent();
-      
+
       // get the view mode ID
       String viewMode = viewList.getValue().toString();
-      
+
       if (VIEWMODE_DASHBOARD.equals(viewMode) == false)
-      { 
+      {
          // set the page size based on the style of display
          int pageSize = this.viewsConfig.getDefaultPageSize(PAGE_NAME_BROWSE, viewMode);
          setPageSizeContent(pageSize);
          setPageSizeSpaces(pageSize);
-         
+
          if (logger.isDebugEnabled())
             logger.debug("Browse view page size set to: " + pageSize);
-         
+
          setDashboardView(false);
-         
+
          // push the view mode into the lists
          setBrowseViewMode(viewMode);
-         
+
          // setup dispatch context for custom views
          this.navigator.setupDispatchContext(this.navigator.getCurrentNode());
-         
+
          navigateBrowseScreen();
       }
       else
@@ -581,14 +590,14 @@ public class BrowseBean implements IContextListener
          setDashboardView(true);
       }
    }
-   
-   
+
+
    // ------------------------------------------------------------------------------
    // Helper methods
-   
+
    /**
     * Query a list of nodes for the specified parent node Id
-    * 
+    *
     * @param parentNodeId     Id of the parent node or null for the root node
     */
    private void queryBrowseNodes(String parentNodeId)
@@ -596,14 +605,14 @@ public class BrowseBean implements IContextListener
       long startTime = 0;
       if (logger.isDebugEnabled())
          startTime = System.currentTimeMillis();
-      
+
       UserTransaction tx = null;
       try
       {
          FacesContext context = FacesContext.getCurrentInstance();
          tx = Repository.getUserTransaction(context, true);
          tx.begin();
-         
+
          NodeRef parentRef;
          if (parentNodeId == null)
          {
@@ -623,35 +632,35 @@ public class BrowseBean implements IContextListener
          {
             // create our Node representation from the NodeRef
             NodeRef nodeRef = fileInfo.getNodeRef();
-            
+
             // find it's type so we can see if it's a node we are interested in
             QName type = this.nodeService.getType(nodeRef);
-            
+
             // make sure the type is defined in the data dictionary
             TypeDefinition typeDef = this.dictionaryService.getType(type);
-            
+
             if (typeDef != null)
             {
                MapNode node = null;
-               
+
                // look for File content node
                if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
                {
                   // create our Node representation
                   node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
                   setupCommonBindingProperties(node);
-                  
+
                   this.contentNodes.add(node);
                }
                // look for Space folder node
-               else if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) == true && 
+               else if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) == true &&
                         this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
                {
                   // create our Node representation
                   node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
                   node.addPropertyResolver("icon", this.resolverSpaceIcon);
                   node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
-                  
+
                   this.containerNodes.add(node);
                }
                // look for File Link object node
@@ -666,7 +675,7 @@ public class BrowseBean implements IContextListener
                   node.addPropertyResolver("fileType32", this.resolverFileType32);
                   node.addPropertyResolver("size", this.resolverSize);
                   node.addPropertyResolver("lang", this.resolverLang);
-                  
+
                   this.contentNodes.add(node);
                }
                else if (ApplicationModel.TYPE_FOLDERLINK.equals(type))
@@ -675,10 +684,10 @@ public class BrowseBean implements IContextListener
                   node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
                   node.addPropertyResolver("icon", this.resolverSpaceIcon);
                   node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
-                  
+
                   this.containerNodes.add(node);
                }
-               
+
                // inform any listeners that a Node wrapper has been created
                if (node != null)
                {
@@ -694,7 +703,7 @@ public class BrowseBean implements IContextListener
                   logger.warn("Found invalid object in database: id = " + nodeRef + ", type = " + type);
             }
          }
-         
+
          // commit the transaction
          tx.commit();
       }
@@ -714,17 +723,17 @@ public class BrowseBean implements IContextListener
          this.contentNodes = Collections.<Node>emptyList();
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
       }
-      
+
       if (logger.isDebugEnabled())
       {
          long endTime = System.currentTimeMillis();
          logger.debug("Time to query and build map nodes: " + (endTime - startTime) + "ms");
       }
    }
-   
+
    /**
     * Search for a list of nodes using the specific search context
-    * 
+    *
     * @param searchContext    To use to perform the search
     */
    private void searchBrowseNodes(SearchContext searchContext)
@@ -732,7 +741,7 @@ public class BrowseBean implements IContextListener
       long startTime = 0;
       if (logger.isDebugEnabled())
          startTime = System.currentTimeMillis();
-      
+
       // get the searcher object to build the query
       String query = searchContext.buildQuery(getMinimumSearchLength());
       if (query == null)
@@ -745,7 +754,7 @@ public class BrowseBean implements IContextListener
          this.contentNodes = Collections.<Node>emptyList();
          return;
       }
-      
+
       // perform the search against the repo
       UserTransaction tx = null;
       ResultSet results = null;
@@ -753,24 +762,24 @@ public class BrowseBean implements IContextListener
       {
          tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
          tx.begin();
-         
+
          // Limit search to the first 100 matches
          SearchParameters sp = new SearchParameters();
          sp.setLanguage(SearchService.LANGUAGE_LUCENE);
          sp.setQuery(query);
          sp.addStore(Repository.getStoreRef());
-         
+
          int searchLimit = Application.getClientConfig(FacesContext.getCurrentInstance()).getSearchMaxResults();
          if(searchLimit > 0)
          {
             sp.setLimitBy(LimitBy.FINAL_SIZE);
             sp.setLimit(searchLimit);
          }
-         
+
          results = this.searchService.query(sp);
          if (logger.isDebugEnabled())
             logger.debug("Search results returned: " + results.length());
-         
+
          // create a list of items from the results
          this.containerNodes = new ArrayList<Node>(results.length());
          this.contentNodes = new ArrayList<Node>(results.length());
@@ -779,43 +788,43 @@ public class BrowseBean implements IContextListener
             for (ResultSetRow row: results)
             {
                NodeRef nodeRef = row.getNodeRef();
-               
+
                if (this.nodeService.exists(nodeRef))
                {
                   // find it's type so we can see if it's a node we are interested in
                   QName type = this.nodeService.getType(nodeRef);
-                  
+
                   // make sure the type is defined in the data dictionary
                   TypeDefinition typeDef = this.dictionaryService.getType(type);
-               
+
                   if (typeDef != null)
                   {
                      MapNode node = null;
-                     
+
                      // look for Space or File nodes
-                     if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) && 
+                     if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) &&
                          this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
                      {
                         // create our Node representation
                         node = new MapNode(nodeRef, this.nodeService, false);
-                        
+
                         node.addPropertyResolver("path", this.resolverPath);
                         node.addPropertyResolver("displayPath", this.resolverDisplayPath);
                         node.addPropertyResolver("icon", this.resolverSpaceIcon);
                         node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
-                        
+
                         this.containerNodes.add(node);
                      }
                      else if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
                      {
                         // create our Node representation
                         node = new MapNode(nodeRef, this.nodeService, false);
-                        
+
                         setupCommonBindingProperties(node);
-                        
+
                         node.addPropertyResolver("path", this.resolverPath);
                         node.addPropertyResolver("displayPath", this.resolverDisplayPath);
-                        
+
                         this.contentNodes.add(node);
                      }
                      // look for File Link object node
@@ -832,7 +841,7 @@ public class BrowseBean implements IContextListener
                         node.addPropertyResolver("lang", this.resolverLang);
                         node.addPropertyResolver("path", this.resolverPath);
                         node.addPropertyResolver("displayPath", this.resolverDisplayPath);
-                        
+
                         this.contentNodes.add(node);
                      }
                      else if (ApplicationModel.TYPE_FOLDERLINK.equals(type))
@@ -843,10 +852,10 @@ public class BrowseBean implements IContextListener
                         node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
                         node.addPropertyResolver("path", this.resolverPath);
                         node.addPropertyResolver("displayPath", this.resolverDisplayPath);
-                        
+
                         this.containerNodes.add(node);
                      }
-                     
+
                      // inform any listeners that a Node wrapper has been created
                      if (node != null)
                      {
@@ -869,7 +878,7 @@ public class BrowseBean implements IContextListener
                }
             }
          }
-         
+
          // commit the transaction
          tx.commit();
       }
@@ -897,15 +906,15 @@ public class BrowseBean implements IContextListener
             results.close();
          }
       }
-      
+
       if (logger.isDebugEnabled())
       {
          long endTime = System.currentTimeMillis();
          logger.debug("Time to query and build map nodes: " + (endTime - startTime) + "ms");
       }
    }
-   
-   
+
+
    // ------------------------------------------------------------------------------
    // Property Resolvers
 
@@ -914,25 +923,25 @@ public class BrowseBean implements IContextListener
          return DownloadContentServlet.generateDownloadURL(node.getNodeRef(), node.getName());
       }
    };
-   
+
    public NodePropertyResolver resolverUrl = new NodePropertyResolver() {
       public Object get(Node node) {
          return DownloadContentServlet.generateBrowserURL(node.getNodeRef(), node.getName());
       }
    };
-   
+
    public NodePropertyResolver resolverWebdavUrl = new NodePropertyResolver() {
       public Object get(Node node) {
-         return Utils.generateURL(FacesContext.getCurrentInstance(), node, URLMode.WEBDAV); 
-      }   
+         return Utils.generateURL(FacesContext.getCurrentInstance(), node, URLMode.WEBDAV);
+      }
    };
-   
+
    public NodePropertyResolver resolverCifsPath = new NodePropertyResolver() {
       public Object get(Node node) {
          return Utils.generateURL(FacesContext.getCurrentInstance(), node, URLMode.CIFS);
       }
    };
-   
+
    public NodePropertyResolver resolverLinkDownload = new NodePropertyResolver() {
       public Object get(Node node) {
          NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
@@ -948,7 +957,7 @@ public class BrowseBean implements IContextListener
          }
       }
    };
-   
+
    public NodePropertyResolver resolverLinkUrl = new NodePropertyResolver() {
       public Object get(Node node) {
          NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
@@ -964,7 +973,7 @@ public class BrowseBean implements IContextListener
          }
       }
    };
-   
+
    public NodePropertyResolver resolverLinkWebdavUrl = new NodePropertyResolver() {
       public Object get(Node node) {
          NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
@@ -977,9 +986,9 @@ public class BrowseBean implements IContextListener
             // TODO: link object is missing - navigate to a page with appropriate message
             return "#";
          }
-      }   
+      }
    };
-   
+
    public NodePropertyResolver resolverLinkCifsPath = new NodePropertyResolver() {
       public Object get(Node node) {
          NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
@@ -994,32 +1003,32 @@ public class BrowseBean implements IContextListener
          }
       }
    };
-   
+
    public NodePropertyResolver resolverFileType16 = new NodePropertyResolver() {
       public Object get(Node node) {
          return Utils.getFileTypeImage(node.getName(), true);
       }
    };
-   
+
    public NodePropertyResolver resolverFileType32 = new NodePropertyResolver() {
       public Object get(Node node) {
          return Utils.getFileTypeImage(node.getName(), false);
       }
    };
-   
+
    public NodePropertyResolver resolverPath = new NodePropertyResolver() {
       public Object get(Node node) {
          return node.getNodePath();
       }
    };
-   
+
    public NodePropertyResolver resolverDisplayPath = new NodePropertyResolver() {
       public Object get(Node node) {
          // TODO: replace this with a method that shows the full display name - not QNames?
          return Repository.getDisplayPath(node.getNodePath());
       }
    };
-   
+
    public NodePropertyResolver resolverSpaceIcon = new NodePropertyResolver() {
       public Object get(Node node) {
          QNameNodeMap props = (QNameNodeMap)node.getProperties();
@@ -1027,7 +1036,7 @@ public class BrowseBean implements IContextListener
          return (icon != null ? icon : CreateSpaceWizard.DEFAULT_SPACE_ICON_NAME);
       }
    };
-   
+
    public NodePropertyResolver resolverSmallIcon = new NodePropertyResolver() {
       public Object get(Node node) {
          QNameNodeMap props = (QNameNodeMap)node.getProperties();
@@ -1035,14 +1044,14 @@ public class BrowseBean implements IContextListener
          return (icon != null ? icon + "-16" : SPACE_SMALL_DEFAULT);
       }
    };
-   
+
    public NodePropertyResolver resolverMimetype = new NodePropertyResolver() {
       public Object get(Node node) {
          ContentData content = (ContentData)node.getProperties().get(ContentModel.PROP_CONTENT);
          return (content != null ? content.getMimetype() : null);
       }
    };
-   
+
    public NodePropertyResolver resolverEncoding = new NodePropertyResolver() {
       public Object get(Node node) {
          ContentData content = (ContentData)node.getProperties().get(ContentModel.PROP_CONTENT);
@@ -1059,41 +1068,51 @@ public class BrowseBean implements IContextListener
 
    public NodePropertyResolver resolverLang = new NodePropertyResolver() {
       public Object get(Node node) {
-         
-         String lang = null; 
-         
+
+         String lang = null;
+
          if (node.getAspects().contains(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
          {
-            Locale locale = (Locale) node.getProperties().get(ContentModel.PROP_LOCALE);
-            
+            Locale locale = null;
+
+            if(node.hasAspect(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+            {
+                // if the translation is empty, the lang of the content is the lang of it's pivot.
+                NodeRef pivot = multilingualContentService.getPivotTranslation(node.getNodeRef());
+                locale = (Locale) nodeService.getProperty(pivot, ContentModel.PROP_LOCALE);
+            }
+            else
+            {
+                locale = (Locale) node.getProperties().get(ContentModel.PROP_LOCALE);
+            }
             // the content filter lang defined by the user
             String userLang = userPreferencesBean.getContentFilterLanguage();
-            // the node lang 
+            // the node lang
             String nodeLang = locale.getLanguage();
-            
+
             // if filter equals all languages : display the lang for each translation
             if (nodeLang == null)
             {
                lang = nodeLang;
             }
-            
+
             // if filter is different : display the lang
             else if (!nodeLang.equalsIgnoreCase(userLang))
             {
-               lang = nodeLang; 
+               lang = nodeLang;
             }
-            
+
             // else if the filter is equal to the lang node : nothing to do [lang = null]
          }
 
-         return lang; 
+         return lang;
       }
    };
-   
-   
+
+
    // ------------------------------------------------------------------------------
    // Navigation action event handlers
-   
+
    /**
     * Action called from the Simple Search component.
     * Sets up the SearchContext object with the values from the simple search menu.
@@ -1103,10 +1122,10 @@ public class BrowseBean implements IContextListener
       // setup the search text string on the top-level navigation handler
       UISimpleSearch search = (UISimpleSearch)event.getComponent();
       this.navigator.setSearchContext(search.getSearchContext());
-      
+
       navigateBrowseScreen();
    }
-   
+
    /**
     * Action called to Close the search dialog by returning to the last view node Id
     */
@@ -1115,7 +1134,7 @@ public class BrowseBean implements IContextListener
       // set the current node Id ready for page refresh
       this.navigator.setCurrentNodeId( this.navigator.getCurrentNodeId() );
    }
-   
+
    /**
     * Update page size based on user selection
     */
@@ -1140,7 +1159,7 @@ public class BrowseBean implements IContextListener
          this.pageSizeSpacesStr = Integer.toString(this.pageSizeSpaces);
       }
    }
-   
+
    /**
     * Update page size based on user selection
     */
@@ -1165,7 +1184,7 @@ public class BrowseBean implements IContextListener
          this.pageSizeContentStr = Integer.toString(this.pageSizeContent);
       }
    }
-   
+
    /**
     * Action called when a folder space is clicked.
     * Navigate into the space.
@@ -1180,13 +1199,13 @@ public class BrowseBean implements IContextListener
          try
          {
             NodeRef ref = new NodeRef(Repository.getStoreRef(), id);
-            
+
             // handle special folder link node case
             if (ApplicationModel.TYPE_FOLDERLINK.equals(this.nodeService.getType(ref)))
             {
                ref = (NodeRef)this.nodeService.getProperty(ref, ContentModel.PROP_LINK_DESTINATION);
             }
-            
+
             clickSpace(ref);
          }
          catch (InvalidNodeRefException refErr)
@@ -1196,7 +1215,7 @@ public class BrowseBean implements IContextListener
          }
       }
    }
-   
+
    /**
     * Action called when a folder space is clicked.
     *
@@ -1207,7 +1226,7 @@ public class BrowseBean implements IContextListener
       // refresh UI based on node selection
       updateUILocation(nodeRef);
    }
-   
+
    /**
     * Handler called when a path element is clicked - navigate to the appropriate Space
     */
@@ -1226,7 +1245,7 @@ public class BrowseBean implements IContextListener
                FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] {ref.getId()}) );
       }
    }
-   
+
    /**
     * Action called when a folders direct descendant (in the 'list' browse mode) is clicked.
     * Navigate into the the descendant space.
@@ -1239,29 +1258,29 @@ public class BrowseBean implements IContextListener
       {
          throw new IllegalStateException("NodeRef returned from UINodeDescendants.NodeSelectedEvent cannot be null!");
       }
-      
+
       if (logger.isDebugEnabled())
          logger.debug("Selected noderef Id: " + nodeRef.getId());
-      
+
       try
       {
          // user can either select a descendant of a node display on the page which means we
          // must add the it's parent and itself to the breadcrumb
          ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
-         
+
          if (logger.isDebugEnabled())
          {
             logger.debug("Selected item getPrimaryParent().getChildRef() noderef Id:  " + parentAssocRef.getChildRef().getId());
             logger.debug("Selected item getPrimaryParent().getParentRef() noderef Id: " + parentAssocRef.getParentRef().getId());
             logger.debug("Current value getNavigator().getCurrentNodeId() noderef Id: " + this.navigator.getCurrentNodeId());
          }
-         
+
          if (nodeEvent.IsParent == false)
          {
             // a descendant of the displayed node was selected
             // first refresh based on the parent and add to the breadcrumb
             updateUILocation(parentAssocRef.getParentRef());
-            
+
             // now add our selected node
             updateUILocation(nodeRef);
          }
@@ -1277,12 +1296,12 @@ public class BrowseBean implements IContextListener
                FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] {nodeRef.getId()}) );
       }
    }
-   
+
    /**
     * Action event called by all Browse actions that need to setup a Space context
     * before an action page/wizard is called. The context will be a Node in setActionSpace() which
     * can be retrieved on the action page from BrowseBean.getActionSpace().
-    * 
+    *
     * @param event   ActionEvent
     */
    public void setupSpaceAction(ActionEvent event)
@@ -1292,10 +1311,10 @@ public class BrowseBean implements IContextListener
       String id = params.get("id");
       setupSpaceAction(id, true);
    }
-   
+
    /**
     * Public helper to setup action pages with Space context
-    * 
+    *
     * @param id     of the Space node to setup context for
     */
    public void setupSpaceAction(String id, boolean invalidate)
@@ -1304,19 +1323,19 @@ public class BrowseBean implements IContextListener
       {
          if (logger.isDebugEnabled())
             logger.debug("Setup for action, setting current space to: " + id);
-         
+
          try
          {
             // create the node ref, then our node representation
             NodeRef ref = new NodeRef(Repository.getStoreRef(), id);
             Node node = new Node(ref);
-            
+
             // resolve icon in-case one has not been set
             node.addPropertyResolver("icon", this.resolverSpaceIcon);
-            
+
             // prepare a node for the action context
             setActionSpace(node);
-            
+
             // setup the dispatch context in case it is required
             this.navigator.setupDispatchContext(node);
          }
@@ -1330,7 +1349,7 @@ public class BrowseBean implements IContextListener
       {
          setActionSpace(null);
       }
-      
+
       // clear the UI state in preparation for finishing the next action
       if (invalidate == true)
       {
@@ -1338,17 +1357,17 @@ public class BrowseBean implements IContextListener
          UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
       }
    }
-   
+
    /**
     * Acrtion event called by Delete Space actions. We setup the action space as normal, then prepare
-    * any special case message string to be shown to the user if they are trying to delete specific spaces. 
+    * any special case message string to be shown to the user if they are trying to delete specific spaces.
     */
    public void setupDeleteAction(ActionEvent event)
    {
       String message = null;
-      
+
       setupSpaceAction(event);
-      
+
       Node node = getActionSpace();
       if (node != null)
       {
@@ -1358,12 +1377,12 @@ public class BrowseBean implements IContextListener
             message = Application.getMessage(FacesContext.getCurrentInstance(), MSG_DELETE_COMPANYROOT);
          }
       }
-      
+
       setDeleteMessage(message);
    }
-   
+
    /**
-    * Action event called by all actions that need to setup a Content Document context on the 
+    * Action event called by all actions that need to setup a Content Document context on the
     * BrowseBean before an action page/wizard is called. The context will be a Node in
     * setDocument() which can be retrieved on the action page from BrowseBean.getDocument().
     */
@@ -1373,10 +1392,34 @@ public class BrowseBean implements IContextListener
       Map<String, String> params = link.getParameterMap();
       setupContentAction(params.get("id"), true);
    }
-   
+
+   /**
+    * Action event called by all actions that need to setup a <b>Multilingual</b> Content Document context on the
+    * BrowseBean before an action page/wizard is called. The context will be a Node in
+    * setDocument() which can be retrieved on the action page from BrowseBean.getDocument().
+    */
+   public void setupMLContainerContentAction(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+
+      String id = params.get("id");
+
+      NodeRef translation =  new NodeRef(Repository.getStoreRef(), id);
+
+      // remember the bean from wich the action comes
+      DocumentDetailsBean docDetails = (DocumentDetailsBean)FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("DocumentDetailsBean");
+      docDetails.setTranslationDocument(new Node(translation));
+
+      // set the ml container as the current document
+      NodeRef mlContainer = multilingualContentService.getTranslationContainer(translation);
+
+      setupContentAction(mlContainer.getId(), true);
+    }
+
    /**
     * Public helper to setup action pages with content context
-    * 
+    *
     * @param id     of the content node to setup context for
     */
    public void setupContentAction(String id, boolean invalidate)
@@ -1385,13 +1428,13 @@ public class BrowseBean implements IContextListener
       {
          if (logger.isDebugEnabled())
             logger.debug("Setup for action, setting current document to: " + id);
-         
+
          try
          {
             // create the node ref, then our node representation
             NodeRef ref = new NodeRef(Repository.getStoreRef(), id);
             Node node = new Node(ref);
-            
+
             // store the URL to for downloading the content
             if (ApplicationModel.TYPE_FILELINK.equals(node.getType()))
             {
@@ -1406,12 +1449,12 @@ public class BrowseBean implements IContextListener
             node.addPropertyResolver("encoding", this.resolverEncoding);
             node.addPropertyResolver("size", this.resolverSize);
             node.addPropertyResolver("lang", this.resolverLang);
-            
+
             for (NodeEventListener listener : getNodeEventListeners())
             {
                listener.created(node, node.getType());
             }
-            
+
             // get hold of the DocumentDetailsBean and reset it
             DocumentDetailsBean docDetails = (DocumentDetailsBean)FacesContext.getCurrentInstance().
                getExternalContext().getSessionMap().get("DocumentDetailsBean");
@@ -1419,10 +1462,10 @@ public class BrowseBean implements IContextListener
             {
                docDetails.reset();
             }
-            
+
             // remember the document
             setDocument(node);
-            
+
             // setup the dispatch context in case it is required
             this.navigator.setupDispatchContext(node);
          }
@@ -1436,7 +1479,7 @@ public class BrowseBean implements IContextListener
       {
          setDocument(null);
       }
-      
+
       // clear the UI state in preparation for finishing the next action
       if (invalidate == true)
       {
@@ -1444,10 +1487,10 @@ public class BrowseBean implements IContextListener
          UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
       }
    }
-   
+
    /**
     * Removes the given node from the breadcrumb i.e. following a delete
-    * 
+    *
     * @param node The space to remove from the breadcrumb
     */
    public void removeSpaceFromBreadcrumb(Node node)
@@ -1456,11 +1499,11 @@ public class BrowseBean implements IContextListener
       IBreadcrumbHandler handler = location.get(location.size() - 1);
       if (handler instanceof BrowseBreadcrumbHandler)
       {
-         // see if the current breadcrumb location is our node 
+         // see if the current breadcrumb location is our node
          if ( ((BrowseBreadcrumbHandler)handler).getNodeRef().equals(node.getNodeRef()) == true )
          {
             location.remove(location.size() - 1);
-            
+
             // now work out which node to set the list to refresh against
             if (location.size() != 0)
             {
@@ -1479,7 +1522,7 @@ public class BrowseBean implements IContextListener
          }
       }
    }
-   
+
    /**
     * Support for refresh of lists via special case for an External Access URL.
     * these URLs restart the JSF lifecycle but an old UIRichList is restored from
@@ -1489,7 +1532,7 @@ public class BrowseBean implements IContextListener
    {
       this.externalForceRefresh = true;
    }
-   
+
    /**
     * Save the state of the panel that was expanded/collapsed
     */
@@ -1501,27 +1544,27 @@ public class BrowseBean implements IContextListener
          this.panels.put(id, ((ExpandedEvent)event).State);
       }
    }
-   
-   
+
+
    // ------------------------------------------------------------------------------
    // Private helpers
-   
+
    /**
     * Initialise default values from client configuration
     */
    private void initFromClientConfig()
    {
       ConfigService config = Application.getConfigService(FacesContext.getCurrentInstance());
-      
+
       this.viewsConfig = (ViewsConfigElement)config.getConfig("Views").
             getConfigElement(ViewsConfigElement.CONFIG_ELEMENT_ID);
-      
+
       this.browseViewMode = this.viewsConfig.getDefaultView(PAGE_NAME_BROWSE);
       int pageSize = this.viewsConfig.getDefaultPageSize(PAGE_NAME_BROWSE, this.browseViewMode);
       setPageSizeContent(pageSize);
       setPageSizeSpaces(pageSize);
    }
-   
+
    /**
     * @return the Set of NodeEventListeners registered against this bean
     */
@@ -1530,9 +1573,9 @@ public class BrowseBean implements IContextListener
       if (this.nodeEventListeners == null)
       {
          this.nodeEventListeners = new HashSet<NodeEventListener>();
-         
+
          FacesContext fc = FacesContext.getCurrentInstance();
-         
+
          Config listenerConfig = Application.getConfigService(fc).getConfig("Node Event Listeners");
          if (listenerConfig != null)
          {
@@ -1557,11 +1600,11 @@ public class BrowseBean implements IContextListener
       }
       return this.nodeEventListeners;
    }
-   
+
    /**
     * Refresh the UI after a Space selection change. Adds the selected space to the breadcrumb
     * location path and also updates the list components in the UI.
-    * 
+    *
     * @param ref     NodeRef of the selected space
     */
    public void updateUILocation(NodeRef ref)
@@ -1594,13 +1637,13 @@ public class BrowseBean implements IContextListener
                   {
                      location.remove(i+1);
                   }
-                  
+
                   foundNode = true;
                   break;
                }
             }
          }
-         
+
          // add new node to the end of the existing breadcrumb
          if (foundNode == false)
          {
@@ -1614,19 +1657,19 @@ public class BrowseBean implements IContextListener
          String name = Repository.getNameForNode(this.nodeService, ref);
          location.add(new BrowseBreadcrumbHandler(ref, name));
       }
-      
+
       // set the current node Id ready for page refresh
       this.navigator.setCurrentNodeId(ref.getId());
-      
+
       // set up the dispatch context for the navigation handler
       this.navigator.setupDispatchContext(new Node(ref));
-      
+
       // inform any listeners that the current space has changed
       UIContextService.getInstance(FacesContext.getCurrentInstance()).spaceChanged();
-      
+
       navigateBrowseScreen();
    }
-   
+
    /**
     * Invalidate list component state after an action which changes the UI context
     */
@@ -1634,7 +1677,7 @@ public class BrowseBean implements IContextListener
    {
       if (logger.isDebugEnabled())
          logger.debug("Invalidating browse components...");
-      
+
       // clear the value for the list components - will cause re-bind to it's data and refresh
       if (this.contentRichList != null)
       {
@@ -1654,12 +1697,12 @@ public class BrowseBean implements IContextListener
             this.spacesRichList.clearSort();
          }
       }
-      
+
       // clear the storage of the last set of nodes
       this.containerNodes = null;
       this.contentNodes = null;
    }
-   
+
    /**
     * @return whether the current View ID is the "browse" screen
     */
@@ -1667,37 +1710,37 @@ public class BrowseBean implements IContextListener
    {
       return (FacesContext.getCurrentInstance().getViewRoot().getViewId().equals(BROWSE_VIEW_ID));
    }
-   
+
    /**
     * Perform navigation to the browse screen if it is not already the current View
     */
    private void navigateBrowseScreen()
    {
       String outcome = null;
-      
+
       if (isViewCurrent() == false)
       {
          outcome = "browse";
       }
-      
+
       FacesContext fc = FacesContext.getCurrentInstance();
       fc.getApplication().getNavigationHandler().handleNavigation(fc, null, outcome);
    }
-   
-   
+
+
    // ------------------------------------------------------------------------------
    // Inner classes
-   
+
    /**
     * Class to handle breadcrumb interaction for Browse pages
     */
    private class BrowseBreadcrumbHandler implements IRepoBreadcrumbHandler
    {
       private static final long serialVersionUID = 3833183653173016630L;
-      
+
       /**
        * Constructor
-       * 
+       *
        * @param NodeRef    The NodeRef for this browse navigation element
        * @param label      Element label
        */
@@ -1706,7 +1749,7 @@ public class BrowseBean implements IContextListener
          this.label = label;
          this.nodeRef = nodeRef;
       }
-      
+
       /**
        * @see java.lang.Object#toString()
        */
@@ -1725,104 +1768,107 @@ public class BrowseBean implements IContextListener
          // set the current node id
          navigator.setCurrentNodeId(this.nodeRef.getId());
          navigator.setLocation( (List)breadcrumb.getValue() );
-         
+
          // setup the dispatch context
          navigator.setupDispatchContext(new Node(this.nodeRef));
-         
+
          // inform any listeners that the current space has changed
          UIContextService.getInstance(FacesContext.getCurrentInstance()).spaceChanged();
-         
+
          // return to browse page if required
-         return (isViewCurrent() ? null : "browse"); 
+         return (isViewCurrent() ? null : "browse");
       }
-      
+
       public NodeRef getNodeRef()
       {
          return this.nodeRef;
       }
-      
+
       private NodeRef nodeRef;
       private String label;
    }
 
-   
+
    // ------------------------------------------------------------------------------
    // Private data
-   
+
    /** Browse screen view ID */
    public static final String BROWSE_VIEW_ID = "/jsp/browse/browse.jsp";
-   
+
    /** Small icon default name */
    public static final String SPACE_SMALL_DEFAULT = "space_small";
-   
+
    private static final String VIEWMODE_DASHBOARD = "dashboard";
    private static final String PAGE_NAME_BROWSE = "browse";
-   
+
    /** I18N messages */
    private static final String MSG_DELETE_COMPANYROOT = "delete_companyroot_confirm";
    private static final String MSG_SEARCH_MINIMUM     = "search_minimum";
-   
+
    private static Logger logger = Logger.getLogger(BrowseBean.class);
-   
+
    /** The NodeService to be used by the bean */
    protected NodeService nodeService;
-   
+
    /** The SearchService to be used by the bean */
    protected SearchService searchService;
-   
+
    /** The LockService to be used by the bean */
    protected LockService lockService;
-   
+
    /** The NavigationBean bean reference */
    protected NavigationBean navigator;
-   
+
    /** The UserPreferencesBean to be used by the bean */
    protected UserPreferencesBean userPreferencesBean;
-   
+
    /** The DictionaryService bean reference */
    protected DictionaryService dictionaryService;
-   
+
    /** The file folder service */
    protected FileFolderService fileFolderService;
 
+   /** The Multilingual Content Service */
+   protected MultilingualContentService multilingualContentService;
+
    /** Views configuration object */
    protected ViewsConfigElement viewsConfig = null;
-   
+
    /** Listeners for Node events */
    protected Set<NodeEventListener> nodeEventListeners = null;
-   
+
    /** Collapsable Panel state */
    private Map<String, Boolean> panels = new HashMap<String, Boolean>(4, 1.0f);
-   
+
    /** Component references */
    protected UIRichList spacesRichList;
    protected UIRichList contentRichList;
    private UIStatusMessage statusMessage;
-   
+
    /** Transient lists of container and content nodes for display */
    protected List<Node> containerNodes = null;
    protected List<Node> contentNodes = null;
-   
+
    /** The current space and it's properties - if any */
    protected Node actionSpace;
-   
+
    /** The current document */
    protected Node document;
-   
+
    /** Special message to display when user deleting certain folders e.g. Company Home */
    private String deleteMessage;
-   
+
    /** The current browse view mode - set to a well known IRichListRenderer identifier */
    private String browseViewMode;
-   
+
    /** The current browse view page sizes */
    private int pageSizeSpaces;
    private int pageSizeContent;
    private String pageSizeSpacesStr;
    private String pageSizeContentStr;
-   
+
    /** True if current space has a dashboard (template) view available */
    private boolean dashboardView;
-   
+
    private boolean externalForceRefresh = false;
 }

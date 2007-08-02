@@ -281,6 +281,10 @@
          <property-name>userPreferencesBean</property-name>
          <value>#{UserPreferencesBean}</value>
       </managed-property>
+      <managed-property>
+         <property-name>multilingualContentService</property-name>
+         <value>#{MultilingualContentService}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>
@@ -775,6 +779,10 @@
          <property-name>namespaceService</property-name>
          <value>#{NamespaceService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>multilingualContentService</property-name>
+         <value>#{MultilingualContentService}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>
@@ -978,7 +986,7 @@
       </managed-property>
       <managed-property>
          <property-name>authenticationService</property-name>
-         <value>#{AuthenticationService}</value>
+         <value>#{authenticationService}</value>
       </managed-property>
       <managed-property>
          <property-name>permissionService</property-name>
@@ -2032,7 +2040,7 @@
          <value>#{AVMBrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Verify Broken Links Task Dialog
@@ -2176,7 +2184,7 @@
          <property-name>editionService</property-name>
          <value>#{EditionService}</value>
       </managed-property>
-     <managed-property>
+      <managed-property>
          <property-name>multilingualContentService</property-name>
          <value>#{MultilingualContentService}</value>
       </managed-property>
@@ -2187,6 +2195,10 @@
       <managed-property>
          <property-name>contentFilterLanguagesService</property-name>
          <value>#{ContentFilterLanguagesService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>versionService</property-name>
+         <value>#{VersionService}</value>
       </managed-property>
       <managed-property>
          <property-name>lockService</property-name>
@@ -2545,7 +2557,7 @@
          <value>#{AVMSyncService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Create Web Content Wizard
@@ -2853,7 +2865,7 @@
          <value>#{FilePickerBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Snapshot Sandbox Dialog
@@ -3441,7 +3453,7 @@
          <value>#{NodeService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Link Validation Dialog
@@ -3478,7 +3490,7 @@
       </managed-property>
       -->
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that generates a mutlilingual text field component
@@ -3521,7 +3533,7 @@
       </managed-property>
       -->
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that generates a multilingual text area component
@@ -3871,7 +3883,7 @@
       <managed-bean-class>org.alfresco.web.bean.wcm.DeploymentProgressBean</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that returns link validation progress status
@@ -3884,4 +3896,36 @@
          <value>#{AVMBrowseBean}</value>
       </managed-property>
    </managed-bean>
+
+     	<!-- This is the bean for managing the profiles of one IG -->
+    <managed-bean>
+      <description>
+        The bean that backs up the view of the Versioned Properties
+      </description>
+      <managed-bean-name>VersionedDocumentDetailsBean</managed-bean-name>
+      <managed-bean-class>
+            org.alfresco.web.bean.VersionedDocumentDetailsBean
+      </managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>versionService</property-name>
+         <value>#{VersionService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>editionService</property-name>
+         <value>#{EditionService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>multilingualContentService</property-name>
+         <value>#{MultilingualContentService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>contentFilterLanguagesService</property-name>
+         <value>#{ContentFilterLanguagesService}</value>
+      </managed-property>
+    </managed-bean>
 </faces-config>

@@ -1,6 +1,6 @@
 <%--
  * Copyright (C) 2005-2007 Alfresco Software Limited.
- 
+
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
 --%>
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
@@ -31,12 +31,7 @@
    <h:outputText value="#{msg.properties}" escape="false" />
 </h:panelGrid>
 
-
 <h:panelGrid columns="3" cellpadding="3" cellspacing="3" border="0">
-   
-   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
-   <h:outputText value="#{msg.name}:"/>
-   <h:inputText id="name" value="#{DialogManager.bean.name}"  maxlength="1024" size="35" immediate="false" onkeyup="checkButtonState();" onchange="checkButtonState();"/>
 
    <h:graphicImage/>
    <h:outputText value="#{msg.title}:"/>
@@ -49,24 +44,30 @@
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.author}:"/>
    <h:inputText id="author" value="#{DialogManager.bean.author}"   maxlength="1024" size="35" immediate="false" onkeyup="checkButtonState();" onchange="checkButtonState();"/>
-   
+
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.language}:"/>
    <h:selectOneMenu id="language" value="#{DialogManager.bean.language}" immediate="false"  onchange="checkButtonState();" onkeydown="checkButtonState();" onkeyup="checkButtonState();">
       <f:selectItem  itemLabel="#{msg.select_language}" itemValue="null"/>
       <f:selectItems value="#{DialogManager.bean.unusedLanguages}"/>
-   </h:selectOneMenu>      
+   </h:selectOneMenu>
+</h:panelGrid>
+
+<h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;" width="100%" rowClasses="wizardSectionHeading">
+   <h:outputText value="#{msg.other_properties}" escape="false" />
+</h:panelGrid>
+
+<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0">
+	<h:selectBooleanCheckbox value="#{DialogManager.bean.showOtherProperties}" />
+	<h:outputText id="text10" value="#{msg.modify_props_when_page_closes}" />
 </h:panelGrid>
 
 
-
 <script type="text/javascript">
-      
+
       function checkButtonState()
       {
-                  
-         if (document.getElementById("dialog:dialog-body:name").value.length == 0 ||
-             document.getElementById("dialog:dialog-body:author").value.length == 0 || 
+         if (document.getElementById("dialog:dialog-body:author").value.length == 0 ||
              document.getElementById("dialog:dialog-body:language").selectedIndex == 0 )
          {
             document.getElementById("dialog:finish-button").disabled = true;
@@ -75,8 +76,8 @@
          {
             document.getElementById("dialog:finish-button").disabled = false;
          }
-      }            
-   
+      }
+
 </script>
 
 

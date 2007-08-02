@@ -32,7 +32,7 @@
 </h:panelGrid>
 
 <h:panelGrid style="padding-top: 2px;" columns="1">
-    <h:outputText value="#{msg.edition_notes}" />
+   <h:outputText value="#{msg.edition_notes}" />
    <h:inputTextarea value="#{WizardManager.bean.editionNotes}" rows="2" cols="50"/>
 </h:panelGrid>
 
@@ -48,6 +48,6 @@
 </h:panelGrid>
 
 <h:panelGrid style="padding-top: 2px;" columns="2">
-   <h:selectBooleanCheckbox id="add_translation" value="#{WizardManager.bean.otherProperties}" immediate="false"/>
+   <h:selectBooleanCheckbox id="other_props" value="#{WizardManager.bean.otherProperties}" immediate="false"/>
    <h:outputText value="#{msg.modify_translation_properties}" />
 </h:panelGrid>

@@ -31,13 +31,9 @@ import javax.faces.model.SelectItem;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.UserPreferencesBean;
 import org.alfresco.web.bean.content.AddContentDialog;
-import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.ui.common.Utils;
 
 /**
  * Dialog bean to upload a new document and to add it to an existing MLContainer.
@@ -81,31 +77,11 @@ public class AddTranslationDialog extends AddContentDialog
    {
       // add the new file to the repository
       outcome = super.finishImpl(context, outcome);
-      
+
       // add a new translation
       multilingualContentService.addTranslation(this.createdNode, this.mlTranslation, I18NUtil.parseLocale(this.language));
-      
-      // Get the content data of the translation
-      ContentData contentData = fileFolderService.getReader(this.createdNode).getContentData();
-      
-      Node createdNode = new Node(this.createdNode);
-      
-      Map<String, Object> browseProp = createdNode.getProperties();
-      browseProp.put("size", contentData.getSize());
-      browseProp.put("mimetype", contentData.getMimetype());
-      browseProp.put("cm:content", contentData);
-      browseProp.put("fileType32", Utils.getFileTypeImage(createdNode.getName(), false));
-      browseProp.put("url", DownloadContentServlet.generateDownloadURL(this.createdNode, createdNode.getName()));
-      
-      this.browseBean.setDocument(createdNode);
-      
-      return outcome;
-   }
 
-   @Override
-   protected String getDefaultFinishOutcome()
-   {
-      return "showDocDetails";
+      return "browse";
    }
 
    @Override

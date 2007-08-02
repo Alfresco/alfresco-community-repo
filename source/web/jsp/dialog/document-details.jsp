@@ -304,16 +304,16 @@
                                  <div style="padding:4px"></div>
                                  <h:outputText value="#{msg.properties}" styleClass="nodeWorkflowInfoTitle" style="padding:20px;"/>
                                  <div style="padding:4px"></div>
-   
+
                                  <r:propertySheetGrid id="ml-container-props-sheet" value="#{DocumentDetailsBean.documentMlContainer}"
                                           var="mlContainerProps" columns="1" labelStyleClass="propertiesLabel"
                                           externalConfig="true" cellpadding="2" cellspacing="2" mode="view"/>
-   
+
                                  <div style="padding:8px"></div>
-   
+
                                  <a:panel label="#{msg.related_translations}" id="related-translation-panel" progressive="true"
                                           expanded='#{DocumentDetailsBean.panels["related-translation-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}" styleClass="nodeWorkflowInfoTitle">
-   
+
                                     <div style="padding:4px"></div>
                                     <%-- list of translations --%>
                                     <a:richList id="TranslationList" viewMode="details" value="#{DocumentDetailsBean.translations}"
@@ -331,34 +331,43 @@
                                           </f:facet>
                                           <a:actionLink id="view-name" value="#{r.name}" href="#{r.url}" target="new" />
                                        </a:column>
-   
+
                                        <%-- Language columns --%>
                                        <a:column id="col22" width="50" style="text-align:left">
                                           <f:facet name="header">
                                              <a:sortLink label="#{msg.language}" value="language" mode="case-insensitive" styleClass="header"/>
                                           </f:facet>
-                                          <a:actionLink id="view-language" value="#{r.language}" href="#{r.url}" target="new" />
+                                          <h:outputText id="view-language" value="#{r.language}"/>
                                        </a:column>
-   
+
                                        <%-- view actions --%>
                                        <a:column id="col25" style="text-align: left">
                                           <f:facet name="header">
                                              <h:outputText value="#{msg.actions}"/>
                                           </f:facet>
                                           <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" />
+                                          <%--
+                                             Start the new edition wizard from this translation
+                                          --%>
+                                          <h:outputText id="space" value=" " />
+                                          <a:actionLink id="new-edition-from" value="#{msg.new_edition}" action="wizard:newEditionFrom" actionListener="#{NewEditionWizard.skipFirstStep}" rendered="#{r.notEmpty && r.userHasRight}">
+                                               <f:param name="lang" value="#{r.language}" />
+                                          </a:actionLink>
                                        </a:column>
-   
-                                       <a:dataPager styleClass="pager" />
+
+                                       <a:dataPager styleClass="pager" id="pager-translations"/>
                                     </a:richList>
                                  </a:panel>
-                               
+
                                  <%-- Actions - Add Translation, Add Translation with Content --%>
-                                 <div style="padding:16px">
-                                    <a:actionLink id="act-add-trans-with-c"    value="#{msg.add_translation}"    action="addTranslation" actionListener="#{AddTranslationDialog.start}" showLink="true" image="/images/icons/add_tranlsation.gif"  />
-                                    <span style="padding-left:16px">
-                                       <a:actionLink id="act-add-trans-without-c" value="#{msg.add_translation_wc}" action="dialog:addTranslationWithoutContent" showLink="true" image="/images/icons/add_tranlsation_wc.gif" />
-                                    </span>
-                                 </div>
+                                 <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write" id="evalApply">
+                                     <div style="padding:16px">
+                                        <a:actionLink id="act-add-trans-with-c"    value="#{msg.add_translation}"    action="addTranslation" actionListener="#{AddTranslationDialog.start}" showLink="true" image="/images/icons/add_tranlsation.gif"  />
+                                        <span style="padding-left:16px">
+                                           <a:actionLink id="act-add-trans-without-c" value="#{msg.add_translation_wc}" action="dialog:addTranslationWithoutContent" showLink="true" image="/images/icons/add_tranlsation_wc.gif" />
+                                        </span>
+                                     </div>
+                                 </r:permissionEvaluator>
                               </a:panel>
 
                               <%-- Panel if the node has not the multilingual aspect--%>
@@ -368,7 +377,9 @@
                                        expanded='#{DocumentDetailsBean.panels["ml-info-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}">
                                  <h:outputText id="no-ml-msg" value="#{msg.not_multilingual}" />
                                  <%-- Action - Add Translation --%>
-                                 <div style="padding:16px"><a:actionLink id="act-make-multilingual" value="#{msg.make_multilingual}" action="dialog:makeMultilingual" showLink="true" image="/images/icons/make_ml.gif" /></div>
+                                 <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write" id="evalApply">
+	                                 <div style="padding:16px"><a:actionLink id="act-make-multilingual" value="#{msg.make_multilingual}" action="dialog:makeMultilingual" showLink="true" image="/images/icons/make_ml.gif" /></div>
+	                         </r:permissionEvaluator>
                               </a:panel>
 
                               <div style="padding:4px"></div>
@@ -433,11 +444,12 @@
                                        <f:facet name="header">
                                           <a:sortLink label="#{msg.version}" value="versionLabel" mode="case-insensitive" styleClass="header"/>
                                        </f:facet>
-                                       <a:actionLink id="label" value="#{r.versionLabel}" href="#{r.url}" target="new" />
+                                       <a:actionLink id="label-link" value="#{r.versionLabel}" href="#{r.url}" target="new" rendered="#{r.url != null}"/>
+                                       <a:actionLink id="label-no-link" value="#{r.versionLabel}"  rendered="#{r.url == null}"/>
                                     </a:column>
 
                                     <%-- Version notes columns --%>
-                                    <a:column id="col2" width="200" style="text-align:left">
+                                    <a:column id="col2" width="170" style="text-align:left">
                                        <f:facet name="header">
                                           <a:sortLink label="#{msg.notes}" value="notes" styleClass="header"/>
                                        </f:facet>
@@ -467,10 +479,15 @@
                                        <f:facet name="header">
                                           <h:outputText value="#{msg.actions}"/>
                                        </f:facet>
-                                       <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" />
+                                       <a:actionLink id="view-version-props" value="#{msg.properties}" action="showVersionedDetails" actionListener="#{VersionedDocumentDetailsBean.setBrowsingVersion}" >
+                                           <f:param name="id" value="#{DocumentDetailsBean.document.id}" />
+                                           <f:param name="versionLabel" value="#{r.versionLabel}" />
+                                       </a:actionLink>
+                                       <h:outputText id="space" value=" " />
+                                       <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" rendered="#{r.url != null}"/>
                                     </a:column>
 
-                                    <a:dataPager styleClass="pager" />
+                                    <a:dataPager styleClass="pager" id="pager-version-history"/>
                                  </a:richList>
                               </a:panel>
                               <a:panel label="#{msg.version_history}" id="no-version-history-panel" progressive="true"

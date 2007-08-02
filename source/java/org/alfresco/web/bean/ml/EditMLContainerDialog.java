@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.web.bean.ml;
@@ -29,6 +29,7 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -38,7 +39,7 @@ import org.alfresco.web.bean.repository.Node;
 
 /**
  * Dialog bean to edit an existing multilingual container.
- * 
+ *
  * @author Yannick Pignot
  */
 public class EditMLContainerDialog extends  BaseDialogBean
@@ -69,7 +70,7 @@ public class EditMLContainerDialog extends  BaseDialogBean
 
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
-   {      
+   {
       // get the container node ref
       NodeRef container = editableNode.getNodeRef();
 
@@ -92,10 +93,20 @@ public class EditMLContainerDialog extends  BaseDialogBean
     */
    protected Node initEditableNode()
    {
-      return new Node(
-            multilingualContentService.getTranslationContainer(
-                  this.browseBean.getDocument().getNodeRef())
-      );
+      Node currentNode = this.browseBean.getDocument();
+
+      if(ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(currentNode.getType()))
+      {
+          return currentNode;
+      }
+      else
+      {
+          return new Node(
+                  multilingualContentService.getTranslationContainer(
+                        currentNode.getNodeRef())
+            );
+      }
+
    }
 
    /**

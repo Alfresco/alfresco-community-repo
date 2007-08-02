@@ -590,9 +590,6 @@
 
          <!-- Add a translation -->
          <action id="add_translation">
-            <permissions>
-               <permission allow="true">Write</permission>
-            </permissions>
             <evaluator>org.alfresco.web.action.evaluator.AddTranslationEvaluator</evaluator>
             <label-id>add_translation</label-id>
             <tooltip-id>add_translation_tooltip</tooltip-id>
@@ -606,9 +603,6 @@
 
          <!-- Add a translation whithout content -->
          <action id="add_translation_wc">
-            <permissions>
-               <permission allow="true">Write</permission>
-            </permissions>
             <evaluator>org.alfresco.web.action.evaluator.AddTranslationEvaluator</evaluator>
             <label-id>add_translation_wc</label-id>
             <tooltip-id>add_translation_wc_tooltip</tooltip-id>
@@ -628,7 +622,7 @@
             <label-id>manage_multilingual_details</label-id>
             <tooltip-id>manage_multilingual_details_tooltip</tooltip-id>
             <image>/images/icons/multilingual_details.gif</image>
-            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
+            <action-listener>#{BrowseBean.setupMLContainerContentAction}</action-listener>
             <action>dialog:showMLContainerDetails</action>
             <params>
                <param name="id">#{actionContext.id}</param>
@@ -640,6 +634,7 @@
             <permissions>
                <permission allow="true">Write</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.NewEditionEvaluator</evaluator>
             <label-id>new_edition</label-id>
             <tooltip-id>new_edition_tooltip</tooltip-id>
             <image>/images/icons/new_edition_icon.gif</image>
@@ -761,6 +756,10 @@
          <action-group id="multilingual_details_actions">
             <action idref="add_translation" />
             <action idref="add_translation_wc" />
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="delete_doc" />
+            <action idref="take_ownership_doc" />
             <action idref="new_edition" />
          </action-group>
 

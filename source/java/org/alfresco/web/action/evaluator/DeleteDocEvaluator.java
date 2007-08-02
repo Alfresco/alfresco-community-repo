@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.web.action.evaluator;
@@ -30,11 +30,12 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.app.servlet.FacesHelper;
+import org.alfresco.web.bean.ml.MultilingualUtils;
 import org.alfresco.web.bean.repository.Node;
 
 /**
  * UI Action Evaluator - Delete document.
- * 
+ *
  * @author Kevin Roast
  */
 public class DeleteDocEvaluator implements ActionEvaluator
@@ -44,14 +45,20 @@ public class DeleteDocEvaluator implements ActionEvaluator
     */
    public boolean evaluate(Node node)
    {
+      FacesContext fc = FacesContext.getCurrentInstance();
+
+      // the node to delete is a ml container, test if the user has enought right on each translation
+      if(node.getType().equals(ContentModel.TYPE_MULTILINGUAL_CONTAINER))
+      {
+          return MultilingualUtils.canDeleteEachTranslation(node, fc);
+      }
+
       boolean isPivot = false;
 
       // special case for multilingual documents
       if (node.getAspects().contains(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
       {
-         FacesContext fc = FacesContext.getCurrentInstance();
-
-         MultilingualContentService mlservice = 
+         MultilingualContentService mlservice =
             (MultilingualContentService) FacesHelper.getManagedBean(fc, "MultilingualContentService");
 
          // if the translation is the last translation, user can delete it
@@ -67,7 +74,7 @@ public class DeleteDocEvaluator implements ActionEvaluator
          }
          // finally, the node is not the pivot translation, user can delete it
       }
-      
+
       return (node.isLocked() == false &&
               node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false &&
               isPivot == false);

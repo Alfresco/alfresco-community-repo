@@ -45,10 +45,77 @@
    </f:verbatim>
 </h:panelGroup>
 
-<h:panelGrid columns="1" styleClass="workflowSelection" rendered="#{WizardManager.bean.hasTranslationCheckedOut == false}">
-   <h:outputText value="#{msg.available_translations}:" style="font-weight:bold;"/>
-   <h:selectOneRadio id="selected-translations" value="#{WizardManager.bean.startingItemNodeString}"
-                     layout="pageDirection">
-      <f:selectItems value="#{WizardManager.bean.selectableTranslations}" />
-   </h:selectOneRadio>
+<h:panelGrid rendered="#{WizardManager.bean.hasTranslationCheckedOut == true}" style="padding-top:7px;">
+   <div style="padding:4px"/>
+
+   <h:dataTable value="#{WizardManager.bean.translationsCheckedOutDataModel}" var="row"
+                rowClasses="selectedItemsRow,selectedItemsRowAlt"
+                styleClass="selectedItems" headerClass="selectedItemsHeader"
+                cellspacing="0" cellpadding="4">
+      <h:column>
+         <f:facet name="header">
+            <h:outputText value="#{msg.language}" />
+         </f:facet>
+         <h:outputText value="(#{row.language})" />
+      </h:column>
+      <h:column>
+         <f:facet name="header">
+            <h:outputText value="#{msg.doc_name}" />
+         </f:facet>
+         <h:outputText value="#{row.name}" />
+      </h:column>
+      <h:column>
+         <f:facet name="header">
+            <h:outputText value="#{msg.checked_out_by}" />
+         </f:facet>
+         <h:outputText value="#{row.checkedOutBy}" />
+      </h:column>
+   </h:dataTable>
 </h:panelGrid>
+
+<h:panelGrid columns="1" rendered="#{WizardManager.bean.hasTranslationCheckedOut == false}">
+
+	<h:dataTable value="#{WizardManager.bean.availableTranslationsDataModel}" var="row"
+                rowClasses="selectedItemsRow,selectedItemsRowAlt"
+                styleClass="selectedItems" headerClass="selectedItemsHeader"
+                cellspacing="0" cellpadding="4">
+
+      <h:column>
+         <f:facet name="header">
+			<h:outputText value=" " />
+	     </f:facet>
+		<h:selectOneRadio value="#{WizardManager.bean.selectedTranslationLanguage}"  onchange="dataTableSelectOneRadio(this);">
+			<f:selectItem itemValue="#{row.language}" itemLabel=""/>
+		</h:selectOneRadio>
+	  </h:column>
+
+      <h:column>
+         <f:facet name="header">
+            <h:outputText value="#{msg.doc_name}" />
+         </f:facet>
+         <h:outputText value="#{row.name}" />
+      </h:column>
+      <h:column>
+         <f:facet name="header">
+            <h:outputText value="#{msg.language}" />
+         </f:facet>
+         <h:outputText value="#{row.languageLabel}" />
+      </h:column>
+   </h:dataTable>
+</h:panelGrid>
+
+
+<script type="text/javascript">
+
+    function dataTableSelectOneRadio(radio)
+    {
+        var id = radio.name.substring(radio.name.lastIndexOf(':'));
+        var el = radio.form.elements;
+        for (var i = 0; i < el.length; i++) {
+            if (el[i].name.substring(el[i].name.lastIndexOf(':')) == id) {
+                el[i].checked = false;
+            }
+        }
+        radio.checked = true;
+    }
+</script>

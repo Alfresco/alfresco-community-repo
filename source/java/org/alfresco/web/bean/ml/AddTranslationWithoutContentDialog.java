@@ -33,13 +33,10 @@ import javax.faces.model.SelectItem;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.UserPreferencesBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.ui.common.Utils;
 
 /**
  * Dialog bean to add a new translation without content. I means, a new node is created
@@ -55,23 +52,22 @@ public class AddTranslationWithoutContentDialog extends BaseDialogBean
    // the translation being to be created
    protected NodeRef newTranslation;
 
-   private String name;
    private String title;
    private String description;
    private String author;
    private String language;
-
+   private boolean showOtherProperties;
 
    @Override
    public void init(Map<String, String> parameters)
    {
       super.init(parameters);
 
-      name = null;
       title = null;
       description = null;
       author = null;
       language = null;
+      showOtherProperties = true;
    }
 
    @Override
@@ -84,29 +80,23 @@ public class AddTranslationWithoutContentDialog extends BaseDialogBean
       Locale locale = I18NUtil.parseLocale(language);
 
       // add the empty translation
-      newTranslation = multilingualContentService.addEmptyTranslation(refNode, name, locale);
+      newTranslation = multilingualContentService.addEmptyTranslation(refNode, null, locale);
 
       // set the properties
       nodeService.setProperty(newTranslation, ContentModel.PROP_DESCRIPTION, description);
       nodeService.setProperty(newTranslation, ContentModel.PROP_AUTHOR, author);
       nodeService.setProperty(newTranslation, ContentModel.PROP_TITLE, title);
 
-      // Get the content data of the new translation
-      ContentData newTranslationContentData = fileFolderService.getReader(newTranslation).getContentData();
-      
-      // set the current browse node
-      Node browse = new Node(newTranslation);
-
-      Map<String, Object> browseProp = browse.getProperties();
-      browseProp.put("size", newTranslationContentData.getSize());
-      browseProp.put("mimetype", newTranslationContentData.getMimetype());
-      browseProp.put("cm:content", newTranslationContentData);
-      browseProp.put("fileType32", Utils.getFileTypeImage(name, false));
-      browseProp.put("url", DownloadContentServlet.generateDownloadURL(newTranslation, name));
-
-      this.browseBean.setDocument(browse);
-
-      return outcome;
+      // redirect the user according the value of (show other properties)
+      if(showOtherProperties)
+      {
+          this.browseBean.setDocument(new Node(this.newTranslation));
+          return "dialog:setContentProperties";
+      }
+      else
+      {
+          return "browse";
+      }
    }
 
    /**
@@ -174,22 +164,6 @@ public class AddTranslationWithoutContentDialog extends BaseDialogBean
    }
 
    /**
-    * @return the name
-    */
-   public String getName()
-   {
-      return name;
-   }
-
-   /**
-    * @param name the name to set
-    */
-   public void setName(String name)
-   {
-      this.name = name;
-   }
-
-   /**
     * @return the title
     */
    public String getTitle()
@@ -211,5 +185,21 @@ public class AddTranslationWithoutContentDialog extends BaseDialogBean
    public SelectItem[] getUnusedLanguages()
    {
       return userPreferencesBean.getAvailablesContentFilterLanguages(this.browseBean.getDocument().getNodeRef(), false);
+   }
+
+   /**
+    * @return the showOtherProperties
+    */
+   public boolean isShowOtherProperties()
+   {
+       return showOtherProperties;
+       }
+
+   /**
+    * @param showOtherProperties the showOtherProperties to set
+    */
+   public void setShowOtherProperties(boolean showOtherProperties)
+   {
+       this.showOtherProperties = showOtherProperties;
    }
 }

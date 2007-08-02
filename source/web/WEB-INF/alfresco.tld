@@ -210,7 +210,7 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>refreshOnBind</name>
          <required>false</required>
@@ -1814,7 +1814,7 @@
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
-      
+
       <attribute>
          <name>styleClass</name>
          <required>false</required>
@@ -2200,4 +2200,53 @@
       </attribute>
    </tag>
 
+   <!-- param -->
+   <!-- IMPORTANT NOTE: this is copied from the MyFaces tld definition so the ID attribute can use rtexprvalue=true -->
+   <tag>
+
+   <name>param</name>
+   <tag-class>org.apache.myfaces.taglib.core.ParamTag</tag-class>
+   <body-content>JSP</body-content>
+   <description>
+      Add a child UIParameter component to the UIComponent
+      associated with the closed parent UIComponent custom action.
+   </description>
+
+   <attribute>
+      <name>binding</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+         Value binding expression to a backing bean property
+         bound to the component instance for the UIComponent
+         created by this custom action.
+      </description>
+   </attribute>
+
+   <attribute>
+      <name>id</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+      <description>
+         Component identifier of the UIParameter component to be created.
+      </description>
+   </attribute>
+
+   <attribute>
+      <name>name</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+      <description>
+         Name of the parameter to be created.
+      </description>
+   </attribute>
+
+   <attribute>
+      <name>value</name>
+      <required>true</required>
+      <rtexprvalue>true</rtexprvalue>
+      <description>Value of the parameter to be set.</description>
+   </attribute>
+
+   </tag>
 </taglib>

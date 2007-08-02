@@ -54,6 +54,10 @@
          <to-view-id>/jsp/ml/ml-container-details.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
+         <from-outcome>showVersionedDetails</from-outcome>
+         <to-view-id>/jsp/dialog/versioned-details.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
          <from-outcome>showSpaceDetails</from-outcome>
          <to-view-id>/jsp/dialog/space-details.jsp</to-view-id>
       </navigation-case>

@@ -32,14 +32,14 @@
 <%@ page isELIgnored="false" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
-<r:page titleId="title_file_details">
+<r:page titleId="title_mlcontainer_details">
 
 <f:view>
 
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
 
-   <h:form acceptcharset="UTF-8" id="document-details">
+   <h:form acceptcharset="UTF-8" id="ml-container-details">
 
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">
@@ -129,7 +129,7 @@
                               <%-- properties for Ml container --%>
                                <h:panelGroup id="ml-props-panel-facets">
                                  <f:facet name="title">
-                                    <r:permissionEvaluator value="#{DocumentDetailsBean.documentMlContainer}" allow="Write">
+                                    <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write">
                                        <a:actionLink id="titleLinkMl" value="#{msg.modify}" showLink="false" image="/images/icons/edit_properties.gif"
                                                      action="dialog:editMlContainer" />
                                      </r:permissionEvaluator>
@@ -141,18 +141,18 @@
                                         expanded='#{DocumentDetailsBean.panels["ml-properties-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}">
 
 
-                                     <h:outputText styleClass="nodeWorkflowInfoTitle"/>
-                                     <r:propertySheetGrid id="ml-container-props-sheet" value="#{DocumentDetailsBean.documentMlContainer}"
-                                                      var="mlContainerProps" columns="1" labelStyleClass="propertiesLabel"
-                                                       externalConfig="true" cellpadding="2" cellspacing="2" mode="view"/>
+                               		<h:outputText styleClass="nodeWorkflowInfoTitle"/>
+                               		<r:propertySheetGrid id="ml-container-props-sheet" value="#{DocumentDetailsBean.document}"
+                                      					 var="mlContainerProps" columns="1" labelStyleClass="propertiesLabel"
+                                       					 externalConfig="true" cellpadding="2" cellspacing="2" mode="view"/>
                                </a:panel>
 
                                <div style="padding:4px"></div>
 
                                <%-- list of translations --%>
                                <a:panel label="#{msg.translations}" id="ml-translation-panel" progressive="true"
-                                        border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
-                                         expanded='#{DocumentDetailsBean.panels["ml-translation-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}">
+                               			border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
+                              	        expanded='#{DocumentDetailsBean.panels["ml-translation-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}">
 
                                         <a:richList id="TranslationList" viewMode="details" value="#{DocumentDetailsBean.translations}"
                                                     var="r" styleClass="recordSet" headerStyleClass="recordSetHeader"
@@ -189,6 +189,13 @@
                                              <h:outputText value="#{msg.actions}"/>
                                           </f:facet>
                                           <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" />
+                                          <%--
+                                                Start the new edition wizard from this translation
+                                          --%>
+                                          <h:outputText id="space" value=" " />
+                                          <a:actionLink id="new-edition-from" value="#{msg.new_edition}" action="wizard:newEditionFrom" actionListener="#{NewEditionWizard.skipFirstStep}" rendered="#{r.notEmpty && r.userHasRight}">
+                                               <f:param name="lang" value="#{r.language}" />
+                                          </a:actionLink>
                                         </a:column>
 
                                         <a:dataPager styleClass="pager" />
@@ -201,7 +208,7 @@
                                    Editions details
                               --%>
                               <a:panel label="#{msg.editions}" id="ml-editions-panel" progressive="true"
-                                      border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
+                                	   border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
                                        expanded='#{DocumentDetailsBean.panels["ml-editions-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}">
 
                                    <a:richList id="EditionTitle" viewMode="details" value="#{DocumentDetailsBean.emptyListAndInitEditions}"
@@ -275,7 +282,7 @@
                                            <%-- edition date --%>
                                            <a:column id="column-edition-date${idx}" style="text-align:left; white-space:nowrap">
                                              <a:outputText id="edition-date${idx}" value="#{ed.editionDate}">
-                                                 <a:convertXMLDate type="both" pattern="#{msg.date_pattern}" />
+	                                              <a:convertXMLDate type="both" pattern="#{msg.date_pattern}" />
                                              </a:outputText>
                                            </a:column>
                                        </a:richList>
@@ -283,35 +290,35 @@
                                        <div style="padding-left:25">
 
                                        <a:panel label="#{msg.related_content}" id="ml-versions-panel${idx}" progressive="true"  expanded="false"
-                                              expandedActionListener="#{DocumentDetailsBean.expandPanel}" styleClass="nodeWorkflowInfoTitle" >
+                                		        expandedActionListener="#{DocumentDetailsBean.expandPanel}" styleClass="nodeWorkflowInfoTitle" >
 
                                            <a:richList id="ml-versions-list${idx}" viewMode="details" value="#{DocumentDetailsBean.currentSingleEditionBean.translations}"
-                                                    var="tr" styleClass="recordSet" headerStyleClass="recordSetHeader"
-                                                    rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
-                                                    pageSize="10" initialSortColumn="versionName" initialSortDescending="true" style="padding-left:12px;padding-top:10px;">
+			                                           var="tr" styleClass="recordSet" headerStyleClass="recordSetHeader"
+			                                           rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
+			                                           pageSize="10" initialSortColumn="versionName" initialSortDescending="true" style="padding-left:12px;padding-top:10px;">
 
-                                               <%-- Icon details view mode --%>
+											   <%-- Icon details view mode --%>
                                                <a:column id="column-view-mode${idx}" primary="true" width="20" style="padding:2px;">
                                                    <a:graphicImageExprEnable id="translation-image${idx}" url="/images/filetypes/_default.gif" />
                                                </a:column>
 
-                                               <%-- Versionned name --%>
+                                               <%-- Versioned name --%>
                                                <a:column  id="column-name${idx}" width="100" style="text-align:left">
                                                    <f:facet name="header">
                                                        <a:sortLink id="sort-name${idx}" label="#{msg.name}" value="versionName" mode="case-insensitive" styleClass="header"/>
                                                    </f:facet>
-                                                   <a:outputText id="translation-name${idx}" value="#{tr.versionName}"/>
+                                                   <a:actionLink id="translation-name${idx}" value="#{tr.versionName}" href="#{tr.versionUrl}" target="new" />
                                                </a:column>
 
-                                               <%-- Versionned description --%>
-                                               <a:column id="column-description${idx}" width="200" style="text-align:left">
+                                               <%-- Versioned description --%>
+                                               <a:column id="column-description${idx}" width="170" style="text-align:left">
                                                    <f:facet name="header">
                                                        <a:outputText id="desc-title${idx}" value="#{msg.description}" styleClass="header"/>
                                                    </f:facet>
                                                    <a:outputText id="translation-description${idx}" value="#{tr.versionDescription}" />
                                                </a:column>
 
-                                               <%-- Versionned creation date --%>
+                                               <%-- Versioned creation date --%>
                                                <a:column id="column-creation-date${idx}" style="text-align:left; white-space:nowrap">
                                                    <f:facet name="header">
                                                        <a:sortLink  id="sort-cr-date${idx}" label="#{msg.created}" value="versionCreatedDate" mode="case-insensitive" styleClass="header"/>
@@ -321,7 +328,7 @@
                                                    </a:outputText>
                                                </a:column>
 
-                                               <%-- Versionned modified date --%>
+                                               <%-- Versioned modified date --%>
                                                <a:column id="column-modified-date${idx}" style="text-align:left; white-space:nowrap">
                                                    <f:facet name="header">
                                                        <a:sortLink  id="sort-mod-date${idx}" label="#{msg.modified}" value="versionModifiedDate" mode="case-insensitive" styleClass="header"/>
@@ -331,7 +338,7 @@
                                                    </a:outputText>
                                                </a:column>
 
-                                               <%-- Versionned language --%>
+                                               <%-- Versioned language --%>
                                                <a:column  id="column-language${idx}" style="text-align:left">
                                                    <f:facet name="header">
                                                        <a:sortLink  id="sort-lang${idx}" label="#{msg.language}" value="versionLanguage" mode="case-insensitive" styleClass="header"/>
@@ -344,7 +351,11 @@
                                                    <f:facet name="header">
                                                        <a:outputText id="translation-action${idx}" value="#{msg.actions}"/>
                                                    </f:facet>
-                                                   <a:actionLink id="translation-link${idx}" value="#{msg.view}" href="#{tr.versionUrl}" target="new" />
+                                                   <a:actionLink image="/images/icons/versioned_properties.gif" id="view-version-props${idx}" value="#{msg.properties}" showLink="false" action="showVersionedDetails" actionListener="#{VersionedDocumentDetailsBean.setBrowsingVersion}" >
+                                                       <a:param id="param-id${idx}" name="id" value="#{DocumentDetailsBean.document.id}" />
+                                                       <a:param id="param-vl${idx}" name="versionLabel" value="#{ed.editionLabel}" />
+                                                       <a:param id="param-lg${idx}" name="lang" value="#{tr.versionLanguage}" />
+                                                   </a:actionLink>
                                                </a:column>
                                            </a:richList>
                                        </a:panel>
@@ -357,7 +368,7 @@
                               <table cellpadding="1" cellspacing="1" border="0" width="100%">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton id="close-btn" value="#{msg.close}" action="dialog:close" styleClass="wizardButton" />
+                                       <h:commandButton id="close-btn" value="#{msg.close}" actionListener="#{DocumentDetailsBean.resetMLDocument}"  action="dialog:close" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>

@@ -49,6 +49,7 @@ import net.sf.acegisecurity.providers.dao.SaltSource;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.Ticket;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -70,6 +71,8 @@ public class AuthenticationTest extends TestCase
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
     private NodeService nodeService;
+    
+    private TenantService tenantService;
 
     private SearchService searchService;
 
@@ -119,6 +122,7 @@ public class AuthenticationTest extends TestCase
     {
 
         nodeService = (NodeService) ctx.getBean("nodeService");
+        tenantService = (TenantService) ctx.getBean("tenantService");
         searchService = (SearchService) ctx.getBean("searchService");
         dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
         passwordEncoder = (MD4PasswordEncoder) ctx.getBean("passwordEncoder");
@@ -162,6 +166,7 @@ public class AuthenticationTest extends TestCase
     private void deleteAndy()
     {
         RepositoryAuthenticationDao dao = new RepositoryAuthenticationDao();
+        dao.setTenantService(tenantService);
         dao.setNodeService(nodeService);
         dao.setSearchService(searchService);
         dao.setDictionaryService(dictionaryService);
@@ -241,10 +246,17 @@ public class AuthenticationTest extends TestCase
         authenticationService.authenticate("Andy", "".toCharArray());
         assertEquals("Andy", authenticationService.getCurrentUserName());
 
-        authenticationService.createAuthentication("Mr.Woof.Banana@chocolate.chip.cookie.com", "".toCharArray());
-        authenticationService.authenticate("Mr.Woof.Banana@chocolate.chip.cookie.com", "".toCharArray());
-        assertEquals("Mr.Woof.Banana@chocolate.chip.cookie.com", authenticationService.getCurrentUserName());
-
+        if (! tenantService.isEnabled())
+        {
+            authenticationService.createAuthentication("Mr.Woof.Banana@chocolate.chip.cookie.com", "".toCharArray());
+            authenticationService.authenticate("Mr.Woof.Banana@chocolate.chip.cookie.com", "".toCharArray());
+            assertEquals("Mr.Woof.Banana@chocolate.chip.cookie.com", authenticationService.getCurrentUserName());
+        }
+        else
+        {
+            // TODO - could create tenant domain 'chocolate.chip.cookie.com'
+        }
+        
         authenticationService.createAuthentication("Andy_Woof/Domain", "".toCharArray());
         authenticationService.authenticate("Andy_Woof/Domain", "".toCharArray());
         assertEquals("Andy_Woof/Domain", authenticationService.getCurrentUserName());
@@ -253,16 +265,22 @@ public class AuthenticationTest extends TestCase
         authenticationService.authenticate("Andy_ Woof/Domain", "".toCharArray());
         assertEquals("Andy_ Woof/Domain", authenticationService.getCurrentUserName());
         
-        
-        authenticationService.createAuthentication("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?\\|", "".toCharArray());
-        authenticationService.authenticate("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?\\|", "".toCharArray());
-        assertEquals("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?\\|", authenticationService.getCurrentUserName());
-
+        if (! tenantService.isEnabled())
+        {
+            authenticationService.createAuthentication("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?\\|", "".toCharArray());
+            authenticationService.authenticate("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?\\|", "".toCharArray());
+            assertEquals("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?\\|", authenticationService.getCurrentUserName());
+        }
+        else
+        {
+            // tenant domain ~,./<>?\\| is not valid format"
+        }
     }
 
     public void testCreateAndyUserAndOtherCRUD() throws NoSuchAlgorithmException, UnsupportedEncodingException
     {
         RepositoryAuthenticationDao dao = new RepositoryAuthenticationDao();
+        dao.setTenantService(tenantService);
         dao.setNodeService(nodeService);
         dao.setSearchService(searchService);
         dao.setDictionaryService(dictionaryService);

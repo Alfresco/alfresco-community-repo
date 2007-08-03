@@ -404,6 +404,9 @@
         <property name="nodeService">
             <ref bean="mlAwareNodeService" />
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
         </property>

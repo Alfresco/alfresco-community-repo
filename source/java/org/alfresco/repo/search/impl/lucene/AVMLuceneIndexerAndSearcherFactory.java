@@ -174,6 +174,7 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
         searcher.setNamespacePrefixResolver(nameSpaceService);
         // searcher.setLuceneIndexLock(luceneIndexLock);
         searcher.setNodeService(nodeService);
+        searcher.setTenantService(tenantService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setQueryRegister(getQueryRegister());
         return searcher;

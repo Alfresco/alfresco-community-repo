@@ -88,10 +88,14 @@ public class MLPropertyInterceptor implements MethodInterceptor
      * 
      * @param mlAwareVal <tt>true</tt> if the current thread is able to handle
      *      {@link MLText d:mltext} property types, otherwise <tt>false</tt>.
+     * @return
+     *      <tt>true</tt> if the current transaction is ML aware
      */
-    static public void setMLAware(boolean mlAwareVal)
+    static public boolean setMLAware(boolean mlAwareVal)
     {
-        mlAware.set(new Boolean(mlAwareVal));
+        boolean wasMLAware = isMLAware();
+        mlAware.set(Boolean.valueOf(mlAwareVal));
+        return wasMLAware;
     }
     
     /**

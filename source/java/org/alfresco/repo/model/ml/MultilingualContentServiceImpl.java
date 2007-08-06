@@ -37,6 +37,7 @@ import javax.transaction.SystemException;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.MLPropertyInterceptor;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
@@ -790,6 +791,9 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
      */
     public NodeRef copyTranslationContainer(NodeRef mlContainerNodeRef, NodeRef newParentRef, String prefixName) throws Exception
     {
+        // There is no need for the properties interceptor here
+        boolean wasMLAware = MLPropertyInterceptor.setMLAware(true);
+        
         if(!ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(nodeService.getType(mlContainerNodeRef)))
         {
             throw new IllegalArgumentException(
@@ -863,6 +867,10 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
                                 copyNodeRef,
                                 ContentModel.ASSOC_MULTILINGUAL_CHILD,
                                 QNAME_ML_TRANSLATION);
+                        
+                        // Add the ML aspects back
+                        nodeService.addAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT, null);
+                        nodeService.addAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION, null);
                     }
                     finally
                     {
@@ -887,6 +895,9 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
             }
         }
 
+        // The rest of the transaction can have properties modified
+        MLPropertyInterceptor.setMLAware(wasMLAware);
+        
         if (logger.isDebugEnabled())
         {
             logger.debug("MLContainer copied: \n" +

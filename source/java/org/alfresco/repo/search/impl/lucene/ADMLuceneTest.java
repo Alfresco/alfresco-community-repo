@@ -64,6 +64,7 @@ import org.alfresco.repo.search.results.ChildAssocRefResultSet;
 import org.alfresco.repo.search.results.DetachedResultSet;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -131,6 +132,8 @@ public class ADMLuceneTest extends TestCase
     NodeService nodeService;
 
     DictionaryService dictionaryService;
+    
+    TenantService tenantService;
 
     private NodeRef rootNodeRef;
 
@@ -213,6 +216,7 @@ public class ADMLuceneTest extends TestCase
         ((AbstractLuceneIndexerAndSearcherFactory)indexerAndSearcher).setMaxAtomicTransformationTime(1000000);
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
         retryingTransactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
+        tenantService = (TenantService) ctx.getBean("tenantService");
         
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
 
@@ -589,6 +593,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ID:\"" + n14 + "\"", null, null);
         assertEquals(1, results.length()); // one node
@@ -603,6 +608,7 @@ public class ADMLuceneTest extends TestCase
         searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ID:\"" + n14 + "\"", null, null);
         assertEquals(10, results.length()); // one node + 9 aux paths to n14
@@ -650,6 +656,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null, null);
         assertEquals(1, results.length());
@@ -902,6 +909,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null, null);
         assertEquals(1, results.length());
@@ -1140,6 +1148,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setQueryRegister(queryRegisterComponent);
 
@@ -1199,6 +1208,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setQueryRegister(queryRegisterComponent);
 
@@ -1449,6 +1459,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
 
         String query = "ID:\"" + rootNodeRef + "\"";
@@ -1495,6 +1506,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
 
         SearchParameters sp = new SearchParameters();
@@ -1878,6 +1890,7 @@ public class ADMLuceneTest extends TestCase
 
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
 
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene",
                 "\\@\\{namespace\\}property\\-2:\"valuetwo\"", null, null);
@@ -1919,6 +1932,7 @@ public class ADMLuceneTest extends TestCase
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
+        indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
@@ -1944,6 +1958,7 @@ public class ADMLuceneTest extends TestCase
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
+        indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
@@ -1964,6 +1979,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
 
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene",
@@ -2089,6 +2105,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
 
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@\\{namespace\\}property-1:valueone",
                 null, null);
@@ -2139,6 +2156,7 @@ public class ADMLuceneTest extends TestCase
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
+        indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
         // indexer.clearIndex();
@@ -2186,6 +2204,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setQueryRegister(queryRegisterComponent);
         ResultSet results;
@@ -3421,6 +3440,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
 
         // //*
@@ -3476,6 +3496,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
 
         // //*
@@ -3505,6 +3526,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(storeRef, indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
 
         // //*
@@ -3532,6 +3554,7 @@ public class ADMLuceneTest extends TestCase
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
+        indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
@@ -3587,6 +3610,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null, null);
         assertEquals(1, results.length());
@@ -3817,6 +3841,7 @@ public class ADMLuceneTest extends TestCase
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
+        indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
@@ -3829,6 +3854,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:"
                 + ISO9075.encode(COMPLEX_LOCAL_NAME) + "\"", null, null);
@@ -3853,6 +3879,7 @@ public class ADMLuceneTest extends TestCase
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
+        indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
@@ -3865,6 +3892,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:"
                 + ISO9075.encode(COMPLEX_LOCAL_NAME) + "\"", null, null);
@@ -3890,6 +3918,7 @@ public class ADMLuceneTest extends TestCase
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
+        indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
@@ -3908,6 +3937,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null, null);
         assertEquals(1, results.length());
@@ -4138,6 +4168,7 @@ public class ADMLuceneTest extends TestCase
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
+        indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
@@ -4151,6 +4182,7 @@ public class ADMLuceneTest extends TestCase
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null, null);
         assertEquals(1, results.length());
         results.close();
@@ -4382,6 +4414,7 @@ public class ADMLuceneTest extends TestCase
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
+        indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
@@ -4407,6 +4440,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
 
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//namespace:link//.\"", null,
@@ -4430,6 +4464,7 @@ public class ADMLuceneTest extends TestCase
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
+        indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
 
@@ -4447,6 +4482,7 @@ public class ADMLuceneTest extends TestCase
         searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//namespace:link//.\"", null, null);
         assertEquals(0, results.length());
@@ -4476,6 +4512,7 @@ public class ADMLuceneTest extends TestCase
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
 
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
                 + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"))
@@ -4503,6 +4540,7 @@ public class ADMLuceneTest extends TestCase
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
+        indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
         indexer.updateFullTextSearch(1000);
@@ -4512,7 +4550,8 @@ public class ADMLuceneTest extends TestCase
         searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setDictionaryService(dictionaryService);
-
+        searcher.setTenantService(tenantService);
+        
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
                 + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"))
                 + ":\"keyone\"", null, null);
@@ -4547,6 +4586,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
 
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
@@ -4572,6 +4612,7 @@ public class ADMLuceneTest extends TestCase
         searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
@@ -4586,6 +4627,7 @@ public class ADMLuceneTest extends TestCase
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
+        indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
         indexer.updateFullTextSearch(1000);
@@ -4633,6 +4675,7 @@ public class ADMLuceneTest extends TestCase
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
 
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PARENT:\""
                 + rootNodeRef.toString() + "\"", null, null);
@@ -4679,6 +4722,7 @@ public class ADMLuceneTest extends TestCase
         ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setQueryRegister(queryRegisterComponent);
 
@@ -5006,6 +5050,7 @@ public class ADMLuceneTest extends TestCase
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
+        indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
         if (clear)

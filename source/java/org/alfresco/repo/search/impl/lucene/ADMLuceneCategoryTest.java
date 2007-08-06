@@ -40,6 +40,7 @@ import org.alfresco.repo.dictionary.M2Aspect;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -106,6 +107,7 @@ public class ADMLuceneCategoryTest extends TestCase
     private NodeRef catRThree;
     private SearchService searcher;
     private LuceneIndexerAndSearcher indexerAndSearcher;
+    private TenantService tenantService;
 
     private CategoryService categoryService;
 
@@ -137,6 +139,7 @@ public class ADMLuceneCategoryTest extends TestCase
         indexerAndSearcher = (LuceneIndexerAndSearcher) ctx.getBean("admLuceneIndexerAndSearcherFactory");
         categoryService = (CategoryService) ctx.getBean("categoryService");
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        tenantService = (TenantService) ctx.getBean("tenantService");
         
         createTestTypes();
         
@@ -327,6 +330,7 @@ public class ADMLuceneCategoryTest extends TestCase
         indexer.setNodeService(nodeService);
         //indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
+        indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         //indexer.clearIndex();
         indexer.createNode(new ChildAssociationRef(null, null, null, rootNodeRef));
@@ -376,6 +380,7 @@ public class ADMLuceneCategoryTest extends TestCase
         
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver(""));
         ResultSet results;
         
@@ -402,6 +407,7 @@ public class ADMLuceneCategoryTest extends TestCase
         
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver(""));
         ResultSet results;
         
@@ -570,6 +576,7 @@ public class ADMLuceneCategoryTest extends TestCase
         
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver(""));
         
         ResultSet 
@@ -586,6 +593,7 @@ public class ADMLuceneCategoryTest extends TestCase
         impl.setNodeService(nodeService);
         impl.setNamespacePrefixResolver(getNamespacePrefixReolsver(""));
         impl.setIndexerAndSearcher(indexerAndSearcher);
+        impl.setTenantService(tenantService);
         impl.setDictionaryService(dictionaryService);
         
         Collection<ChildAssociationRef>

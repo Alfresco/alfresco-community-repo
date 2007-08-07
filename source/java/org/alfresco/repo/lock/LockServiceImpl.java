@@ -41,6 +41,7 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.version.VersionServicePolicies;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
@@ -77,6 +78,11 @@ public class LockServiceImpl implements LockService,
      * The node service
      */
     private NodeService nodeService;
+    
+    /**
+     * The tenant service
+     */
+    private TenantService tenantService;
 
     /**
      * The policy component
@@ -113,6 +119,17 @@ public class LockServiceImpl implements LockService,
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+ 
+    /**
+     * Set the tenant service
+     * 
+     * @param tenantService
+     *            the tenant service
+     */   
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
 
     /**
@@ -208,6 +225,8 @@ public class LockServiceImpl implements LockService,
      */
     public synchronized void lock(NodeRef nodeRef, LockType lockType, int timeToExpire)
     {
+        nodeRef = tenantService.getName(nodeRef);
+        
         // Check for lock aspect
         checkForLockApsect(nodeRef);
         
@@ -303,6 +322,8 @@ public class LockServiceImpl implements LockService,
      */
     public synchronized void unlock(NodeRef nodeRef) throws UnableToReleaseLockException
     {
+        nodeRef = tenantService.getName(nodeRef);
+        
         // Check for lock aspect
         checkForLockApsect(nodeRef);
         
@@ -357,6 +378,8 @@ public class LockServiceImpl implements LockService,
      */
     public LockStatus getLockStatus(NodeRef nodeRef)
     {
+        nodeRef = tenantService.getName(nodeRef);
+        
         return getLockStatus(nodeRef, getUserName());
     }
 
@@ -445,6 +468,8 @@ public class LockServiceImpl implements LockService,
     public void checkForLock(NodeRef nodeRef) throws NodeLockedException
     {
         String userName = getUserName();
+        
+        nodeRef = tenantService.getName(nodeRef);
  
         // Ensure we have found a node reference
         if (nodeRef != null && userName != null)

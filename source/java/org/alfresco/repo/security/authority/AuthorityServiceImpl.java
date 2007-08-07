@@ -104,7 +104,9 @@ public class AuthorityServiceImpl implements AuthorityService
     public boolean hasAdminAuthority()
     {
         String currentUserName = authenticationComponent.getCurrentUserName();
-        return ((currentUserName != null) && adminUsers.contains(currentUserName));
+        
+        // for MT, see note for getAuthoritiesForUser
+        return ((currentUserName != null) && (adminUsers.contains(currentUserName) || adminUsers.contains(tenantService.getBaseNameUser(currentUserName))));
     }
 
     /* (non-Javadoc)
@@ -117,7 +119,8 @@ public class AuthorityServiceImpl implements AuthorityService
         {
             canonicalName = authorityName;
         }
-        return adminUsers.contains(canonicalName);
+        // for MT, see note for getAuthoritiesForUser
+        return (adminUsers.contains(canonicalName) || adminUsers.contains(tenantService.getBaseNameUser(canonicalName)));
     }
 
     // IOC

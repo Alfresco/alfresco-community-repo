@@ -1335,7 +1335,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         else
         {
-            assocRef = assoc.getChildAssocRef();
+            assocRef = new ChildAssociationRef(assoc.getChildAssocRef().getTypeQName(),
+                                               tenantService.getBaseName(assoc.getChildAssocRef().getParentRef()),
+                                               assoc.getChildAssocRef().getQName(),
+                                               tenantService.getBaseName(assoc.getChildAssocRef().getChildRef()),
+                                               assoc.getChildAssocRef().isPrimary(), 
+                                               assoc.getChildAssocRef().getNthSibling());
         }
         return assocRef;
     }

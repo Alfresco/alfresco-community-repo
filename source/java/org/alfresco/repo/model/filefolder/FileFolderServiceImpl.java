@@ -35,6 +35,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.QueryParameterDefImpl;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -118,6 +119,7 @@ public class FileFolderServiceImpl implements FileFolderService
     private NamespaceService namespaceService;
     private DictionaryService dictionaryService;
     private NodeService nodeService;
+    private TenantService tenantService;
     private CopyService copyService;
     private SearchService searchService;
     private ContentService contentService;
@@ -148,7 +150,12 @@ public class FileFolderServiceImpl implements FileFolderService
     {
         this.nodeService = nodeService;
     }
-    
+
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+
     public void setCopyService(CopyService copyService)
     {
         this.copyService = copyService;
@@ -469,6 +476,8 @@ public class FileFolderServiceImpl implements FileFolderService
     
     private List<NodeRef> luceneSearch(NodeRef contextNodeRef, boolean folders, boolean files)
     {
+        contextNodeRef = tenantService.getName(contextNodeRef);
+
         SearchParameters params = new SearchParameters();
         params.setLanguage(SearchService.LANGUAGE_LUCENE);
         params.addStore(contextNodeRef.getStoreRef());

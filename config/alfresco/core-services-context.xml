@@ -492,6 +492,9 @@
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>        
         <property name="policyComponent">
             <ref bean="policyComponent" />
         </property>

@@ -37,11 +37,12 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.zip.ZipInputStream;
 
-import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.AuthorityDAO;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.workflow.BPMEngine;
 import org.alfresco.repo.workflow.TaskComponent;
 import org.alfresco.repo.workflow.WorkflowComponent;
@@ -128,6 +129,8 @@ public class JBPMEngine extends BPMEngine
     protected DictionaryService dictionaryService;
     protected NamespaceService namespaceService;
     protected NodeService nodeService;
+    private TenantService tenantService;
+    private MessageService messageService;
     protected ServiceRegistry serviceRegistry;
     protected PersonService personService;
     protected AuthorityDAO authorityDAO;
@@ -202,6 +205,26 @@ public class JBPMEngine extends BPMEngine
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    /**
+     * Sets the Tenant Service
+     * 
+     * @param tenantService
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
+    /**
+     * Sets the Message Service
+     * 
+     * @param messageService
+     */
+    public void setMessageService(MessageService messageService)
+    {
+        this.messageService = messageService;
     }
 
     /**
@@ -343,7 +366,7 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to deploy workflow definition", e);
+            throw new WorkflowException("Failed to undeploy workflow definition", e);
         }
     }
 
@@ -363,7 +386,20 @@ public class JBPMEngine extends BPMEngine
                     List<ProcessDefinition> processDefs = (List<ProcessDefinition>)graphSession.findLatestProcessDefinitions();
                     List<WorkflowDefinition> workflowDefs = new ArrayList<WorkflowDefinition>(processDefs.size());
                     for (ProcessDefinition processDef : processDefs)
-                    {
+                    {                                              
+                        if (tenantService.isEnabled())
+                        {                           
+                            try 
+                            {
+                                tenantService.checkDomain(processDef.getName());
+                            }
+                            catch (RuntimeException re)
+                            {
+                                // deliberately skip this one - due to domain mismatch
+                                continue;
+                            }                           
+                        }
+                        
                         WorkflowDefinition workflowDef = createWorkflowDefinition(processDef);
                         workflowDefs.add(workflowDef);
                     }
@@ -394,6 +430,19 @@ public class JBPMEngine extends BPMEngine
                     List<WorkflowDefinition> workflowDefs = new ArrayList<WorkflowDefinition>(processDefs.size());
                     for (ProcessDefinition processDef : processDefs)
                     {
+                        if (tenantService.isEnabled())
+                        {                           
+                            try 
+                            {
+                                tenantService.checkDomain(processDef.getName());
+                            }
+                            catch (RuntimeException re)
+                            {
+                                // deliberately skip this one - due to domain mismatch
+                                continue;
+                            } 
+                        }
+                        
                         WorkflowDefinition workflowDef = createWorkflowDefinition(processDef);
                         workflowDefs.add(workflowDef);
                     }
@@ -420,7 +469,7 @@ public class JBPMEngine extends BPMEngine
                 {
                     // retrieve process
                     GraphSession graphSession = context.getGraphSession();
-                    ProcessDefinition processDefinition = graphSession.getProcessDefinition(getJbpmId(workflowDefinitionId));
+                    ProcessDefinition processDefinition = getProcessDefinition(graphSession, workflowDefinitionId);
                     return processDefinition == null ? null : createWorkflowDefinition(processDefinition);
                 }
             });
@@ -443,8 +492,8 @@ public class JBPMEngine extends BPMEngine
                 @SuppressWarnings("synthetic-access")
                 public Object doInJbpm(JbpmContext context)
                 {
-                    GraphSession graphSession = context.getGraphSession();
-                    ProcessDefinition processDef = graphSession.findLatestProcessDefinition(createLocalId(workflowName));
+                    GraphSession graphSession = context.getGraphSession();                                                       
+                    ProcessDefinition processDef = graphSession.findLatestProcessDefinition(tenantService.getName(createLocalId(workflowName)));                                      
                     return processDef == null ? null : createWorkflowDefinition(processDef);
                 }
             });
@@ -469,7 +518,7 @@ public class JBPMEngine extends BPMEngine
                 public Object doInJbpm(JbpmContext context)
                 {
                     GraphSession graphSession = context.getGraphSession();
-                    List<ProcessDefinition> processDefs = (List<ProcessDefinition>)graphSession.findAllProcessDefinitionVersions(createLocalId(workflowName));
+                    List<ProcessDefinition> processDefs = (List<ProcessDefinition>)graphSession.findAllProcessDefinitionVersions(tenantService.getName(createLocalId(workflowName)));
                     List<WorkflowDefinition> workflowDefs = new ArrayList<WorkflowDefinition>(processDefs.size());
                     for (ProcessDefinition processDef : processDefs)
                     {
@@ -521,6 +570,19 @@ public class JBPMEngine extends BPMEngine
     protected ProcessDefinition getProcessDefinition(GraphSession graphSession, String workflowDefinitionId)
     {
         ProcessDefinition processDefinition = graphSession.getProcessDefinition(getJbpmId(workflowDefinitionId));
+        
+        if ((processDefinition != null) && (tenantService.isEnabled()))
+        {
+            try
+            {
+                tenantService.checkDomain(processDefinition.getName()); // throws exception if domain mismatch
+            }
+            catch (RuntimeException re)
+            {
+                processDefinition = null;
+            }
+        }
+        
         if (processDefinition == null)
         {
             throw new WorkflowException("Workflow definition '" + workflowDefinitionId + "' does not exist");
@@ -528,7 +590,7 @@ public class JBPMEngine extends BPMEngine
         return processDefinition;
     }
     
-    
+
     //
     // Workflow Instance Management...
     //
@@ -641,7 +703,7 @@ public class JBPMEngine extends BPMEngine
                 {
                     // retrieve workflow
                     GraphSession graphSession = context.getGraphSession();
-                    ProcessInstance processInstance = graphSession.getProcessInstance(getJbpmId(workflowId));
+                    ProcessInstance processInstance = getProcessInstance(graphSession, workflowId);
                     return processInstance == null ? null : createWorkflowInstance(processInstance);
                 }
             });
@@ -661,6 +723,19 @@ public class JBPMEngine extends BPMEngine
     protected ProcessInstance getProcessInstance(GraphSession graphSession, String workflowId)
     {
         ProcessInstance processInstance = graphSession.getProcessInstance(getJbpmId(workflowId));
+        
+        if ((processInstance != null) && (tenantService.isEnabled()))
+        {
+            try
+            {
+                tenantService.checkDomain(processInstance.getProcessDefinition().getName()); // throws exception if domain mismatch
+            } 
+            catch (RuntimeException re)
+            {
+                processInstance = null;
+            }
+        }
+        
         if (processInstance == null)
         {
             throw new WorkflowException("Workflow instance '" + workflowId + "' does not exist");
@@ -1132,6 +1207,19 @@ public class JBPMEngine extends BPMEngine
                     List<WorkflowTask> workflowTasks = new ArrayList<WorkflowTask>(tasks.size());
                     for (TaskInstance task : tasks)
                     {
+                        if (tenantService.isEnabled())
+                        {                           
+                            try 
+                            {
+                                tenantService.checkDomain(task.getTask().getProcessDefinition().getName());
+                            }
+                            catch (RuntimeException re)
+                            {
+                                // deliberately skip this one - due to domain mismatch
+                                continue;
+                            } 
+                        }
+                        
                         WorkflowTask workflowTask = createWorkflowTask(task);
                         workflowTasks.add(workflowTask);
                     }
@@ -1352,6 +1440,19 @@ public class JBPMEngine extends BPMEngine
     protected TaskInstance getTaskInstance(TaskMgmtSession taskSession, String taskId)
     {
         TaskInstance taskInstance = taskSession.getTaskInstance(getJbpmId(taskId));
+        
+        if ((taskInstance != null) && (tenantService.isEnabled()))
+        {
+            try
+            {
+                tenantService.checkDomain(taskInstance.getTask().getProcessDefinition().getName()); // throws exception if domain mismatch
+            } 
+            catch (RuntimeException re)
+            {
+                taskInstance = null;
+            }
+        }
+        
         if (taskInstance == null)
         {
             throw new WorkflowException("Task instance '" + taskId + "' does not exist");
@@ -1550,7 +1651,7 @@ public class JBPMEngine extends BPMEngine
                 {
                     // retrieve task
                     TaskMgmtSession taskSession = context.getTaskMgmtSession();
-                    TaskInstance taskInstance = taskSession.getTaskInstance(getJbpmId(taskId));
+                    TaskInstance taskInstance = getTaskInstance(taskSession, taskId);
                     return taskInstance == null ? null : createWorkflowTask(taskInstance);
                 }
             });
@@ -1641,6 +1742,11 @@ public class JBPMEngine extends BPMEngine
                 throw new JbpmException("Failed to parse process definition from jBPM xml stream", e);
             }
         }
+               
+        if (tenantService.isEnabled()) 
+        {
+            compiledDef.def.setName(tenantService.getName(compiledDef.def.getName()));
+        }       
 
         return compiledDef;
     }
@@ -2423,7 +2529,8 @@ public class JBPMEngine extends BPMEngine
     {
         String key = StringUtils.replace(displayId, ":", "_");
         key += "." + labelKey;
-        String label = I18NUtil.getMessage(key);
+        String label = messageService.getMessage(key);
+        
         return (label == null) ? defaultLabel : label;
     }
     
@@ -2434,13 +2541,26 @@ public class JBPMEngine extends BPMEngine
      */
     private NodeRef getCompanyHome()
     {
-        // TODO: Determine if caching is required
-        List<NodeRef> refs = serviceRegistry.getSearchService().selectNodes(nodeService.getRootNode(companyHomeStore), companyHomePath, null, namespaceService, false);
-        if (refs.size() != 1)
+        if (tenantService.isEnabled())
         {
-            throw new IllegalStateException("Invalid company home path: " + companyHomePath + " - found: " + refs.size());
+           try
+           {
+               return tenantService.getRootNode(nodeService, serviceRegistry.getSearchService(), namespaceService, companyHomePath, nodeService.getRootNode(companyHomeStore));           
+           }
+           catch (RuntimeException re)
+           {
+               throw new IllegalStateException("Invalid company home path: " + companyHomePath + ": " + re.getMessage());
+           }
         }
-        return refs.get(0);
+        else
+        {
+            List<NodeRef> refs = serviceRegistry.getSearchService().selectNodes(nodeService.getRootNode(companyHomeStore), companyHomePath, null, namespaceService, false);
+            if (refs.size() != 1)
+            {
+                throw new IllegalStateException("Invalid company home path: " + companyHomePath + " - found: " + refs.size());
+            }
+            return refs.get(0);
+        }
     }
     
     //
@@ -2474,6 +2594,12 @@ public class JBPMEngine extends BPMEngine
     protected WorkflowNode createWorkflowNode(Node node)
     {
         String processName = node.getProcessDefinition().getName();
+
+        if (tenantService.isEnabled())
+        {
+            tenantService.checkDomain(processName); // throws exception if domain mismatch
+        }
+        
         WorkflowNode workflowNode = new WorkflowNode();
         workflowNode.name = node.getName();
         workflowNode.title = getLabel(processName + ".node." + workflowNode.name, TITLE_LABEL, workflowNode.name);
@@ -2502,6 +2628,11 @@ public class JBPMEngine extends BPMEngine
      */
     protected WorkflowTransition createWorkflowTransition(Transition transition)
     {
+        if (tenantService.isEnabled())
+        {
+            tenantService.checkDomain(transition.getProcessDefinition().getName()); // throws exception if domain mismatch
+        }
+        
         WorkflowTransition workflowTransition = new WorkflowTransition();
         workflowTransition.id = transition.getName();
         Node node = transition.getFrom();
@@ -2529,6 +2660,11 @@ public class JBPMEngine extends BPMEngine
      */
     protected WorkflowInstance createWorkflowInstance(ProcessInstance instance)
     {
+        if (tenantService.isEnabled())
+        {
+            tenantService.checkDomain(instance.getProcessDefinition().getName()); // throws exception if domain mismatch
+        }
+        
         WorkflowInstance workflowInstance = new WorkflowInstance();
         workflowInstance.id = createGlobalId(new Long(instance.getId()).toString());
         workflowInstance.description = (String)instance.getContextInstance().getVariable(mapQNameToName(WorkflowModel.PROP_WORKFLOW_DESCRIPTION));
@@ -2562,8 +2698,13 @@ public class JBPMEngine extends BPMEngine
      */
     protected WorkflowDefinition createWorkflowDefinition(ProcessDefinition definition)
     {
+        if (tenantService.isEnabled())
+        {
+            tenantService.checkDomain(definition.getName()); // throws exception if domain mismatch
+        }
+        
         final Task startTask = definition.getTaskMgmtDefinition().getStartTask();
-        final String name = definition.getName();
+        String name = tenantService.getBaseName(definition.getName());
         final String title = getLabel(name + ".workflow", TITLE_LABEL, name);
         final String description = getLabel(name + ".workflow", DESC_LABEL, title);
         return new WorkflowDefinition(createGlobalId(new Long(definition.getId()).toString()),
@@ -2585,7 +2726,12 @@ public class JBPMEngine extends BPMEngine
     protected WorkflowTask createWorkflowTask(TaskInstance task)
     {
         String processName = task.getTask().getProcessDefinition().getName();
-
+        
+        if (tenantService.isEnabled())
+        {
+            tenantService.checkDomain(processName); // throws exception if domain mismatch
+        }
+        
         WorkflowTask workflowTask = new WorkflowTask();
         workflowTask.id = createGlobalId(new Long(task.getId()).toString());
         workflowTask.name = task.getName();

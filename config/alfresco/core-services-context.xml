@@ -246,6 +246,26 @@
             </list>
         </property>
     </bean>
+    
+    <!-- Repo-based Message Service (based on Core I18NUtil) -->
+    
+    <bean id="messageService" class="org.alfresco.repo.i18n.MessageServiceImpl">
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+        <property name="resourceBundleBaseNamesCache">
+            <ref bean="resourceBundleBaseNamesCache"/>
+        </property>
+        <property name="loadedResourceBundlesCache">
+            <ref bean="loadedResourceBundlesCache"/>
+        </property>
+         <property name="messagesCache">
+             <ref bean="messagesCache"/>
+        </property>
+    </bean>
 
 
     <!--                        -->

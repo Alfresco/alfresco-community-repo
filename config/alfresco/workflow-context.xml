@@ -26,6 +26,7 @@
       <property name="nodeService" ref="nodeService"/>
       <property name="permissionService" ref="permissionService"/>
       <property name="namespaceService" ref="namespaceService"/>
+      <property name="tenantService" ref="tenantService"/>
    </bean>
 
    <bean id="workflowInterpreter" class="org.alfresco.repo.workflow.WorkflowInterpreter">
@@ -89,6 +90,8 @@
       <property name="dictionaryService" ref="DictionaryService"/>
       <property name="namespaceService" ref="namespaceService"/>
       <property name="nodeService" ref="nodeService"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="messageService" ref="messageService"/>
       <property name="personService" ref="personService"/>
       <property name="authorityDAO" ref="authorityDAO"/>
       <property name="serviceRegistry" ref="ServiceRegistry"/>

@@ -205,6 +205,13 @@
             </list>
         </property>
     </bean>
+    
+    <!-- Bootstrap Single-Tenant Admin Context -->
+    <import resource="classpath:alfresco/bootstrap/tenant-single-admin-context.xml"/>
+    
+    <!-- Bootstrap Multi-Tenant Admin Context (if available) -->
+    <!-- note: must be after schema bootstrap and before repo-admin and workflow -->
+    <import resource="classpath*:alfresco/bootstrap/tenant-multi-admin-context.xml"/>
 
     <bean id="workflowBootstrap" parent="workflowDeployer">
 		<property name="workflowDefinitions">

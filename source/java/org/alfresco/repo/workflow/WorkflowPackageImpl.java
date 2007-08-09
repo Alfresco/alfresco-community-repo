@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.ImporterBootstrap;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -58,6 +59,7 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
     private NamespaceService namespaceService;
     private PermissionService permissionService;
     private NodeRef systemWorkflowContainer = null;
+    private TenantService tenantService;
 
     
     /**
@@ -96,6 +98,14 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
     {
         this.namespaceService = namespaceService;
     }
+    
+    /**
+     * @param tenantService  tenant service
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }   
 
     
     /* (non-Javadoc)
@@ -197,16 +207,31 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
      */
     private NodeRef getSystemWorkflowContainer()
     {
-        if (systemWorkflowContainer == null)
+        if (tenantService.isEnabled())
         {
             NodeRef systemContainer = findSystemContainer();
-            systemWorkflowContainer = findSystemWorkflowContainer(systemContainer);
-            if (systemWorkflowContainer == null)
+            NodeRef tenantSystemWorkflowContainer = findSystemWorkflowContainer(systemContainer);
+            if (tenantSystemWorkflowContainer == null)
             {
                 throw new WorkflowException("Unable to find system workflow folder - does not exist.");
             }
+            
+            return tenantSystemWorkflowContainer;
         }
-        return systemWorkflowContainer;
+        else
+        {
+            if (systemWorkflowContainer == null)
+            {
+                NodeRef systemContainer = findSystemContainer();
+                systemWorkflowContainer = findSystemWorkflowContainer(systemContainer);
+                if (systemWorkflowContainer == null)
+                {
+                    throw new WorkflowException("Unable to find system workflow folder - does not exist.");
+                }
+            }
+            return systemWorkflowContainer;
+        }
+        
     }
     
     /**
@@ -223,11 +248,24 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
             throw new WorkflowException("Unable to locate workflow system container - path not specified");
         }
         List<NodeRef> nodeRefs = searchService.selectNodes(systemContainer, path, null, namespaceService, false);
-        if (nodeRefs != null && nodeRefs.size() > 0)
+        
+        if (tenantService.isEnabled())
         {
-            systemWorkflowContainer = nodeRefs.get(0);
+            NodeRef tenantSystemWorkflowContainer = null;
+            if (nodeRefs != null && nodeRefs.size() > 0)
+            {
+                tenantSystemWorkflowContainer = nodeRefs.get(0);
+            }
+            return tenantSystemWorkflowContainer;
         }
-        return systemWorkflowContainer;
+        else
+        {
+            if (nodeRefs != null && nodeRefs.size() > 0)
+            {
+                systemWorkflowContainer = nodeRefs.get(0);
+            }
+            return systemWorkflowContainer;
+        }
     }
 
     /**

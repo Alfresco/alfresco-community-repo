@@ -599,6 +599,56 @@
                                  replicateAsynchronously = false"/>
 
     </cache>
+    
+    <!-- Messages I18N (tenant-based) -->
+    
+    <cache
+        name="org.alfresco.cache.resourceBundleBaseNamesCache" 
+        maxElementsInMemory="100"
+        eternal="true"
+        overflowToDisk="false">
+        
+             <cacheEventListenerFactory
+                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                     properties="replicatePuts = false,
+                                 replicateUpdates = true,
+                                 replicateRemovals = true,
+                                 replicateUpdatesViaCopy = false,
+                                 replicateAsynchronously = false"/>
+
+    </cache>
+        
+    <cache 
+        name="org.alfresco.cache.loadedResourceBundlesCache" 
+        maxElementsInMemory="100"
+        eternal="true"
+        overflowToDisk="false">
+        
+             <cacheEventListenerFactory
+                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                     properties="replicatePuts = false,
+                                 replicateUpdates = true,
+                                 replicateRemovals = true,
+                                 replicateUpdatesViaCopy = false,
+                                 replicateAsynchronously = false"/>
+
+    </cache>
+        
+    <cache 
+        name="org.alfresco.cache.messagesCache"
+        maxElementsInMemory="100"
+        eternal="true"
+        overflowToDisk="false">
+        
+             <cacheEventListenerFactory
+                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                     properties="replicatePuts = false,
+                                 replicateUpdates = true,
+                                 replicateRemovals = true,
+                                 replicateUpdatesViaCopy = false,
+                                 replicateAsynchronously = false"/>
+
+    </cache>
 
 </ehcache>
 

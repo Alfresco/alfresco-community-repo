@@ -331,4 +331,27 @@
         overflowToDisk="false"
         />
         
+    <!-- Messages I18N (tenant-based) -->
+    
+    <cache
+        name="org.alfresco.cache.resourceBundleBaseNamesCache" 
+        maxElementsInMemory="100"
+        eternal="true"
+        overflowToDisk="false"
+        />
+        
+    <cache 
+        name="org.alfresco.cache.loadedResourceBundlesCache" 
+        maxElementsInMemory="100"
+        eternal="true"
+        overflowToDisk="false"
+        />
+        
+    <cache 
+        name="org.alfresco.cache.messagesCache"
+        maxElementsInMemory="100"
+        eternal="true"
+        overflowToDisk="false"
+        />
+        
 </ehcache>

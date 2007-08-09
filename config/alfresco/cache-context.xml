@@ -245,4 +245,104 @@
       </property>
    </bean>
    
+   <!-- ===================================== -->
+   <!-- Messages Caches                       -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for In-Memory ResourceBundleBaseNames -->
+   
+   <bean name="resourceBundleBaseNamesSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.resourceBundleBaseNamesCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for In-Memory ResourceBundleBaseNames -->
+   
+   <bean name="resourceBundleBaseNamesCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="resourceBundleBaseNamesSharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.resourceBundleBaseNamesTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>10</value>
+      </property>
+   </bean>
+
+   <!-- The cross-transaction shared cache for In-Memory LoadedResourceBundles -->
+   
+   <bean name="loadedResourceBundlesSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.loadedResourceBundlesCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for In-Memory LoadedResourceBundles -->
+   
+   <bean name="loadedResourceBundlesCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="loadedResourceBundlesSharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.loadedResourceBundlesTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>10</value>
+      </property>
+   </bean>
+   
+   <!-- The cross-transaction shared cache for In-Memory Messages -->
+   
+   <bean name="messagesSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.messagesCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for In-Memory Messages -->
+   
+   <bean name="messagesCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="messagesSharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.messagesTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>10</value>
+      </property>
+   </bean>
+   
 </beans>

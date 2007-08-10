@@ -140,4 +140,12 @@
         </property>
     </bean>
     
+    <bean id="workflowScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.workflow.jsapi.WorkflowManager">
+        <property name="extensionName">
+            <value>workflow</value>
+        </property>
+        <property name="workflowService">
+            <ref bean="WorkflowService"/>
+        </property>
+    </bean>
 </beans>

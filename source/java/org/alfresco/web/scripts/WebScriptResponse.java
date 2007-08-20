@@ -59,6 +59,13 @@ public interface WebScriptResponse
     public void setContentType(String contentType);
     
     /**
+     * Sets the Cache control
+     * 
+     * @param  cache  cache control
+     */
+    public void setCache(WebScriptCache cache);
+    
+    /**
      * Gets the Writer
      * 
      * @return writer
@@ -78,7 +85,7 @@ public interface WebScriptResponse
      * Clears response buffer
      */
     public void reset();
-    
+        
     /**
      * Encode a script URL
      * 
@@ -97,4 +104,5 @@ public interface WebScriptResponse
      * @return javascript function definition
      */
     public String getEncodeScriptUrlFunction(String name);
+        
 }

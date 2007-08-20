@@ -31,6 +31,7 @@ import java.io.Writer;
 import javax.portlet.PortletURL;
 import javax.portlet.RenderResponse;
 
+import org.alfresco.web.scripts.WebScriptCache;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
 import org.alfresco.web.ui.common.Utils;
@@ -83,6 +84,14 @@ public class WebScriptPortletResponse implements WebScriptResponse
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptResponse#getCache()
+     */
+    public void setCache(WebScriptCache cache)
+    {
+        // NOTE: Not applicable
+    }
+    
+    /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptResponse#reset()
      */
     public void reset()
@@ -111,7 +120,7 @@ public class WebScriptPortletResponse implements WebScriptResponse
     {
         return res.getPortletOutputStream();
     }
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptResponse#encodeScriptUrl(java.lang.String)
      */

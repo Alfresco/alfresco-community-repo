@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.scripts.AbstractWebScript;
+import org.alfresco.web.scripts.WebScriptCache;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
@@ -138,7 +139,6 @@ public class ContentGet extends AbstractWebScript
                 return;
             }
         }
-        httpRes.setDateHeader("Last-Modified", modified.getTime());
 
         // handle attachment
         if (attach == true)
@@ -174,10 +174,18 @@ public class ContentGet extends AbstractWebScript
             }
         }
 
-        // set mimetype for the content and the character encoding for the stream
+        // set mimetype for the content and the character encoding + length for the stream
         httpRes.setContentType(mimetype);
         httpRes.setCharacterEncoding(reader.getEncoding());
-       
+        httpRes.setHeader("Content-Length", Long.toString(reader.getSize()));
+        
+        // set caching
+        WebScriptCache cache = new WebScriptCache();
+        cache.setNeverCache(false);
+        cache.setMustRevalidate(true);
+        cache.setLastModified(modified);
+        res.setCache(cache);
+        
         // get the content and stream directly to the response output stream
         // assuming the repository is capable of streaming in chunks, this should allow large files
         // to be streamed directly to the browser response stream.

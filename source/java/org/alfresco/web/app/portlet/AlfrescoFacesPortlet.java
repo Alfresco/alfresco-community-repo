@@ -74,6 +74,7 @@ import org.springframework.web.context.WebApplicationContext;
 public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
 {
    private static final String PREF_ALF_USERNAME = "_alfUserName";
+   private static final String SESSION_LAST_VIEW_ID = "_alfLastViewId";
    
    private static final String ERROR_PAGE_PARAM = "error-page";
    private static final String ERROR_OCCURRED = "error-occurred";
@@ -151,11 +152,13 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
                }
             }
             
-            // it doesn't matter what the value is we just need the VIEW_ID parameter
-            // to tell the faces portlet bridge to treat the request as a JSF request,
-            // this will send us back to the same page we came from, which is fine for
-            // most scenarios.
-            response.setRenderParameter(VIEW_ID, "a-jsf-page");
+            // Set the VIEW_ID parameter to tell the faces portlet bridge to treat the request
+            // as a JSF request, this will send us back to the previous page we came from.
+            String lastViewId = (String)request.getPortletSession().getAttribute(SESSION_LAST_VIEW_ID);
+            if (lastViewId != null)
+            {
+               response.setRenderParameter(VIEW_ID, lastViewId);
+            }
          }
          else
          {
@@ -262,6 +265,8 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
          // use the viewId to check that we are not already on the login page
          PortletSession session = request.getPortletSession();
          String viewId = request.getParameter(VIEW_ID);
+         // keep track of last view id so we can use it as return page from multi-part requests
+         request.getPortletSession().setAttribute(SESSION_LAST_VIEW_ID, viewId);
          User user = (User)request.getPortletSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
          if (user == null && (viewId == null || viewId.equals(getLoginPage()) == false))
          {

@@ -43,6 +43,7 @@ public class WebScriptDescriptionImpl implements WebScriptDescription
     private String description;
     private RequiredAuthentication requiredAuthentication;
     private RequiredTransaction requiredTransaction;
+    private RequiredCache requiredCache;
     private FormatStyle formatStyle;
     private String httpMethod;
     private String[] uris;
@@ -202,6 +203,24 @@ public class WebScriptDescriptionImpl implements WebScriptDescription
         return this.requiredTransaction;
     }
 
+    /**
+     * Sets the required cache
+     * 
+     * @param requiredCache
+     */
+    public void setRequiredCache(RequiredCache requiredCache)
+    {
+        this.requiredCache = requiredCache;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptDescription#getRequiredCache()
+     */
+    public RequiredCache getRequiredCache()
+    {
+        return this.requiredCache;
+    }
+    
     /**
      * Sets the format style
      * 

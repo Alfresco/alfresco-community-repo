@@ -153,21 +153,16 @@ public class StartWorkflowWizard extends BaseWizardBean
          logger.debug("Starting workflow with parameters: " + params);
       
       // create a workflow package for the attached items and add them
-      if (this.packageItemsToAdd.size() > 0)
+      NodeRef workflowPackage = this.workflowService.createPackage(null);
+      params.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
+         
+      for (String addedItem : this.packageItemsToAdd)
       {
-         NodeRef workflowPackage = this.workflowService.createPackage(null);
-         
-         for (String addedItem : this.packageItemsToAdd)
-         {
-            NodeRef addedNodeRef = new NodeRef(addedItem);
-            this.nodeService.addChild(workflowPackage, addedNodeRef, 
-                  ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                  QName.createValidLocalName((String)this.nodeService.getProperty(
-                        addedNodeRef, ContentModel.PROP_NAME))));
-         }
-         
-         // add the workflow package to the parameter map
-         params.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
+        NodeRef addedNodeRef = new NodeRef(addedItem);
+        this.nodeService.addChild(workflowPackage, addedNodeRef, 
+              ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+              QName.createValidLocalName((String)this.nodeService.getProperty(
+                    addedNodeRef, ContentModel.PROP_NAME))));
       }
       
       // setup the context for the workflow (this is the space the workflow was launched from)

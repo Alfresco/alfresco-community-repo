@@ -34,6 +34,7 @@ import javax.faces.component.UIForm;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.web.scripts.WebScriptCache;
 import org.alfresco.web.scripts.WebScriptResponse;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.myfaces.shared_impl.renderkit.html.HtmlFormRendererBase;
@@ -137,6 +138,14 @@ public class WebScriptJSFResponse implements WebScriptResponse
       // makes no sense in the JSF env
    }
     
+   /**
+    * @see org.alfresco.web.scripts.WebScriptResponse#setCache()
+    */
+   public void setCache(WebScriptCache cache)
+   {
+      // NOTE: not applicable
+   }
+   
    /**
     * @see org.alfresco.web.scripts.WebScriptResponse#setContentType(java.lang.String)
     */

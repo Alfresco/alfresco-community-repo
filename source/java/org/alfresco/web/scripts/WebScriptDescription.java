@@ -57,6 +57,33 @@ public interface WebScriptDescription
     }
 
     /**
+     * Caching requirements
+     */
+    public interface RequiredCache
+    {
+        /**
+         * Determine if Web Script should ever be cached
+         * 
+         * @return  true => do not cache, false => caching may or not occur
+         */
+        public boolean getNeverCache();
+
+        /**
+         * Determine if Web Script content is for public caching
+         * 
+         * @return  true => content is public, so allow cache
+         */
+        public boolean getIsPublic();
+
+        /**
+         * Must cache re-validate to ensure content is fresh
+         *  
+         * @return  true => must re-validate
+         */
+        public boolean getMustRevalidate();
+    }
+
+    /**
      * Enumeration of ways to specify format 
      */
     public enum FormatStyle
@@ -65,6 +92,7 @@ public interface WebScriptDescription
         extension,    // /a/b/c.x
         argument      // /a/b/c?format=x
     }
+    
     
     /**
      * Gets the root path of the store of this web script
@@ -127,6 +155,12 @@ public interface WebScriptDescription
      * @return  the required transaction level
      */
     public RequiredTransaction getRequiredTransaction();
+    
+    /**
+     * Gets the required level of caching
+     * @return
+     */
+    public RequiredCache getRequiredCache();
     
     /**
      * Gets the HTTP method this service is bound to

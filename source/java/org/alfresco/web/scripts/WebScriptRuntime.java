@@ -235,6 +235,9 @@ public abstract class WebScriptRuntime
             }
 
             res.reset();
+            WebScriptCache cache = new WebScriptCache();
+            cache.setNeverCache(true);
+            res.setCache(cache);
             res.setStatus(req.forceSuccessStatus() ? HttpServletResponse.SC_OK : statusCode);
             res.setContentType(MimetypeMap.MIMETYPE_HTML + ";charset=UTF-8");
             try

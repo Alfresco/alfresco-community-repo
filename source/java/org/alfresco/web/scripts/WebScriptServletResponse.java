@@ -27,10 +27,15 @@ package org.alfresco.web.scripts;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.util.CachingDateFormat;
 import org.alfresco.web.ui.common.Utils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * HTTP Servlet Web Script Response
@@ -39,7 +44,12 @@ import org.alfresco.web.ui.common.Utils;
  */
 public class WebScriptServletResponse implements WebScriptResponse
 {
+    // Logger
+    private static final Log logger = LogFactory.getLog(WebScriptServletResponse.class);
+
+    // Servlet Response
     private HttpServletResponse res;
+
     
     /**
      * Construct
@@ -78,6 +88,66 @@ public class WebScriptServletResponse implements WebScriptResponse
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptResponse#setCache(org.alfresco.web.scripts.WebScriptCache)
+     */
+    public void setCache(WebScriptCache cache)
+    {
+        // set Cache-Control
+        String cacheControl = "";
+        String pragma = "";
+        if (cache.getIsPublic())
+        {
+            cacheControl += "public";
+        }
+        if (cache.getNeverCache())
+        {
+            cacheControl += (cacheControl.length() > 0 ? ", " : "") + "no-cache";
+            pragma += (pragma.length() > 0) ? ", " : "" + "no-cache";
+        }
+        if (cache.getMaxAge() != null && cache.getNeverCache() == false)
+        {
+            cacheControl += (cacheControl.length() > 0 ? ", " : "") + " max-age=" + cache.getMaxAge();
+        }
+        if (cache.getMustRevalidate() && cache.getNeverCache() == false)
+        {
+            cacheControl += (cacheControl.length() > 0 ? ", " : "") + " must-revalidate";
+        }
+        if (cacheControl.length() > 0)
+        {
+            res.setHeader("Cache-Control", cacheControl);
+            if (logger.isDebugEnabled())
+                logger.debug("Cache - set response header Cache-Control: " + cacheControl);
+        }
+        if (pragma.length() > 0)
+        {
+            res.setHeader("Pragma", pragma);
+            if (logger.isDebugEnabled())
+                logger.debug("Cache - set response header Pragma: " + pragma);
+        }
+        
+        // set ETag
+        if (cache.getETag() != null)
+        {
+            String eTag = "\"" + cache.getETag() + "\"";
+            res.setHeader("ETag", eTag);
+            if (logger.isDebugEnabled())
+                logger.debug("Cache - set response header ETag: " + eTag);
+        }
+        
+        // set Last Modified
+        if (cache.getLastModified() != null)
+        {
+            res.setDateHeader("Last-Modified", cache.getLastModified().getTime());
+            if (logger.isDebugEnabled())
+            {
+                SimpleDateFormat formatter = getHTTPDateFormat();
+                String lastModified = formatter.format(cache.getLastModified());
+                logger.debug("Cache - set response header Last-Modified: " + lastModified);
+            }
+        }
+    }
+
+    /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptResponse#reset()
      */
     public void reset()
@@ -90,7 +160,7 @@ public class WebScriptServletResponse implements WebScriptResponse
         {
         }
     }
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptResponse#getWriter()
      */
@@ -124,4 +194,25 @@ public class WebScriptServletResponse implements WebScriptResponse
     }
     
     private static final String ENCODE_FUNCTION = "{ $name$: function(url) { return url; } }";
+    
+    /**
+     * Helper to return a HTTP Date Formatter
+     * 
+     * @return  HTTP Date Formatter
+     */
+    private static SimpleDateFormat getHTTPDateFormat()
+    {
+        if (s_dateFormat.get() != null)
+        {
+            return s_dateFormat.get();
+        }
+
+        SimpleDateFormat formatter = CachingDateFormat.getDateFormat("EEE, dd MMM yyyy kk:mm:ss zzz", false);
+        formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+        s_dateFormat.set(formatter);
+        return s_dateFormat.get();
+    }
+    
+    private static ThreadLocal<SimpleDateFormat> s_dateFormat = new ThreadLocal<SimpleDateFormat>();
+
 }

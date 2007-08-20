@@ -356,7 +356,7 @@ public abstract class AbstractWebScript implements WebScript
      * @param model  model
      * @throws IOException
      */
-    final protected void sendStatus(WebScriptRequest req, WebScriptResponse res, WebScriptStatus status, String format, Map<String, Object> model)
+    final protected void sendStatus(WebScriptRequest req, WebScriptResponse res, WebScriptStatus status, WebScriptCache cache, String format, Map<String, Object> model)
         throws IOException
     {
         // locate status template
@@ -389,6 +389,7 @@ public abstract class AbstractWebScript implements WebScript
         }
     
         res.reset();
+        res.setCache(cache);
         res.setStatus(req.forceSuccessStatus() ? HttpServletResponse.SC_OK : statusCode);
         res.setContentType(mimetype + ";charset=UTF-8");
         renderTemplate(template.path, model, res.getWriter());

@@ -102,9 +102,6 @@ public class WebScriptServlet extends HttpServlet
         if (logger.isDebugEnabled())
             logger.debug("Processing request ("  + req.getMethod() + ") " + req.getRequestURL() + (req.getQueryString() != null ? "?" + req.getQueryString() : ""));
         
-        res.setHeader("Cache-Control", "no-cache");
-        res.setHeader("Pragma", "no-cache");
-        
         WebScriptRuntime runtime = new WebScriptServletRuntime(registry, serviceRegistry, authenticator, req, res, serverConfig);
         runtime.executeScript();
     }

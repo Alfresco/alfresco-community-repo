@@ -93,14 +93,16 @@ public class DeclarativeWebScript extends AbstractWebScript
                 throw new WebScriptException("Web Script format '" + format + "' is not registered");
             }
             
-            // construct data model for template
+            // construct model for script / template
             WebScriptStatus status = new WebScriptStatus();
-            Map<String, Object> model = executeImpl(req, status);
+            WebScriptCache cache = new WebScriptCache(getDescription().getRequiredCache());
+            Map<String, Object> model = executeImpl(req, status, cache);
             if (model == null)
             {
                 model = new HashMap<String, Object>(7, 1.0f);
             }
             model.put("status", status);
+            model.put("cache", cache);
             
             // execute script if it exists
             if (executeScript != null)
@@ -122,7 +124,7 @@ public class DeclarativeWebScript extends AbstractWebScript
             // is a redirect to a status specific template required?
             if (status.getRedirect())
             {
-                sendStatus(req, res, status, format, templateModel);
+                sendStatus(req, res, status, cache, format, templateModel);
             }
             else
             {
@@ -134,6 +136,9 @@ public class DeclarativeWebScript extends AbstractWebScript
                     logger.debug("Setting status " + statusCode);
                     res.setStatus(statusCode);
                 }
+                
+                // apply cache
+                res.setCache(cache);
                 
                 String callback = req.getJSONCallback();
                 if (format.equals(WebScriptResponse.JSON_FORMAT) && callback != null)
@@ -178,10 +183,12 @@ public class DeclarativeWebScript extends AbstractWebScript
             status.setCode(statusCode);
             status.setMessage(e.getMessage());
             status.setException(e);
+            WebScriptCache cache = new WebScriptCache();
+            cache.setNeverCache(true);
             Map<String, Object> customModel = new HashMap<String, Object>();
             customModel.put("status", status);
             Map<String, Object> templateModel = createTemplateModel(req, res, customModel);
-            sendStatus(req, res, status, format, templateModel);
+            sendStatus(req, res, status, cache, format, templateModel);
         }
     }
     
@@ -207,11 +214,26 @@ public class DeclarativeWebScript extends AbstractWebScript
      * Execute custom Java logic
      * 
      * @param req  Web Script request
+     * @param status Web Script status
      * @return  custom service model
      */
     protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptStatus status)
     {
         return null;
+    }
+    
+    /**
+     * Execute custom Java logic
+     * 
+     * @param  req  Web Script request
+     * @param  status Web Script status
+     * @param  cache  Web Script cache
+     * @return  custom service model
+     */
+    protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptStatus status, WebScriptCache cache)
+    {
+        // NOTE: Redirect to those web scripts implemented before cache support
+        return executeImpl(req, status);
     }
     
     /**

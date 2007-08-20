@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
@@ -531,6 +530,34 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
                 }
             }
             
+            // retrieve caching
+            WebScriptCache cache = new WebScriptCache();
+            Element cacheElement = rootElement.element("cache");
+            if (cacheElement != null)
+            {
+                Element neverElement = cacheElement.element("never");
+                if (neverElement != null)
+                {
+                    String neverStr = neverElement.getTextTrim();
+                    boolean neverBool = (neverStr == null || neverStr.length() == 0) ? true : Boolean.valueOf(neverStr);
+                    cache.setNeverCache(neverBool);
+                }
+                Element publicElement = cacheElement.element("public");
+                if (publicElement != null)
+                {
+                    String publicStr = publicElement.getTextTrim();
+                    boolean publicBool = (publicStr == null || publicStr.length() == 0) ? true : Boolean.valueOf(publicStr);
+                    cache.setIsPublic(publicBool);
+                }
+                Element revalidateElement = cacheElement.element("mustrevalidate");
+                if (revalidateElement != null)
+                {
+                    String revalidateStr = revalidateElement.getTextTrim();
+                    boolean revalidateBool = (revalidateStr == null || revalidateStr.length() == 0) ? true : Boolean.valueOf(revalidateStr);
+                    cache.setMustRevalidate(revalidateBool);
+                }
+            }
+            
             // construct service description
             WebScriptDescriptionImpl serviceDesc = new WebScriptDescriptionImpl();
             serviceDesc.setStore(store);
@@ -541,6 +568,7 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
             serviceDesc.setDescription(description);
             serviceDesc.setRequiredAuthentication(reqAuth);
             serviceDesc.setRequiredTransaction(reqTrx);
+            serviceDesc.setRequiredCache(cache);
             serviceDesc.setMethod(method);
             serviceDesc.setUris(uris.toArray(new String[uris.size()]));
             serviceDesc.setDefaultFormat(defaultFormat);

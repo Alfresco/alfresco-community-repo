@@ -26,11 +26,11 @@ package org.alfresco.web.config;
 
 import java.util.List;
 
+import org.alfresco.config.ConfigDeployer;
 import org.alfresco.config.ConfigService;
-import org.alfresco.config.ConfigSource;
 import org.alfresco.config.source.UrlConfigSource;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -40,10 +40,13 @@ import org.springframework.context.ApplicationContextAware;
  * 
  * @author Roy Wetherall
  */
-public class WebClientConfigBootstrap implements ApplicationContextAware
+public class WebClientConfigBootstrap implements ApplicationContextAware, ConfigDeployer
 {
     /** The application context */
     private ApplicationContext applicationContext;
+    
+    /** Dependency */
+    private ConfigService configService;
     
     /** List of configs */
     private List<String> configs;
@@ -59,17 +62,21 @@ public class WebClientConfigBootstrap implements ApplicationContextAware
     }
     
     /**
-     * Initialisation method
+     *
+     * @deprecated
      */
     public void init()
     {
+    	// TODO - see JIRA Task AR-1715 - refactor calling modules to inject webClientConfigService, and use init-method="register" directly 
+    	// (instead of init-method="init"). Can then remove applicationContext and no longer implement ApplicationContextAware
+        
         if (this.applicationContext.containsBean("webClientConfigService") == true)
         {    
             ConfigService configService = (ConfigService)this.applicationContext.getBean("webClientConfigService"); 
-            if (configService != null && this.configs != null && this.configs.size() != 0)
+            if (configService != null)
             {
-                UrlConfigSource configSource = new UrlConfigSource(this.configs);
-                configService.appendConfig(configSource);
+                setConfigService(configService);
+                register();
             }
         }
     }
@@ -77,5 +84,32 @@ public class WebClientConfigBootstrap implements ApplicationContextAware
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.applicationContext = applicationContext;        
+    }
+    
+    public void setConfigService(ConfigService configService)
+    {
+    	this.configService = configService;
+    }
+    
+    public void register()
+    {
+    	if (configService == null)
+        {
+    		throw new AlfrescoRuntimeException("Config service must be provided");
+        }
+    	
+    	configService.addDeployer(this);
+    }
+    
+    /**
+     * Initialisation method
+     */
+    public void initConfig()
+    {
+    	if (configService != null && this.configs != null && this.configs.size() != 0)
+        {
+            UrlConfigSource configSource = new UrlConfigSource(this.configs);
+            configService.appendConfig(configSource);
+        }
     }
 }

@@ -21,8 +21,8 @@
          </list>
       </constructor-arg>
    </bean>
-
-   <bean id="webClientConfigService" class="org.alfresco.config.xml.XMLConfigService" init-method="init">
+   
+   <bean id="webClientConfigService" class="org.alfresco.config.xml.XMLConfigService">
       <constructor-arg>
          <ref bean="webClientConfigSource" />
       </constructor-arg>

@@ -1340,7 +1340,18 @@ public class AdvancedSearchBean
             }
             else
             {
-               this.customProperties.put(qname, search.getAttributeQuery(QName.createQName(qname)));
+               // a default datatype may indicate either an attribute query, or if a Fixed Value
+               // is present then it's a LOV constraint with a value selected
+               Object value = search.getFixedValueQuery(QName.createQName(qname));
+               if (value != null)
+               {
+                  this.customProperties.put(UISearchCustomProperties.PREFIX_LOV_ITEM + qname, value);
+                  this.customProperties.put(qname, Boolean.TRUE);
+               }
+               else
+               {
+                  this.customProperties.put(qname, search.getAttributeQuery(QName.createQName(qname)));
+               }
                this.panels.put(PANEL_CUSTOM, true);
             }
          }

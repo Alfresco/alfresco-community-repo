@@ -412,7 +412,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
             UISelectItems itemsComponent = (UISelectItems)facesApp.
             createComponent(ComponentConstants.JAVAX_FACES_SELECT_ITEMS);
 
-            List<SelectItem> items = new ArrayList<SelectItem>(3);
+            List<SelectItem> items = new ArrayList<SelectItem>();
             List<String> values = constraint.getAllowedValues();
             for (String value : values)
             {

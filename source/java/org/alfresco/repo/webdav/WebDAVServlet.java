@@ -37,6 +37,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.filesys.server.config.ServerConfiguration;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -77,7 +78,10 @@ public class WebDAVServlet extends HttpServlet
     
     // Transaction service, each request is wrapped in a transaction
     private TransactionService m_transactionService;
-    
+
+    // Tenant service
+    private TenantService m_tenantService;
+
     // WebDAV method handlers
     private Hashtable<String,Class> m_davMethods;
     
@@ -87,6 +91,9 @@ public class WebDAVServlet extends HttpServlet
     // WebDAV helper class
     private WebDAVHelper m_davHelper;
     
+    // Root path
+    private String m_rootPath;
+
     /**
      * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest,
      *      javax.servlet.http.HttpServletResponse)
@@ -214,7 +221,22 @@ public class WebDAVServlet extends HttpServlet
                 // Create the handler method
                 
                 method = (WebDAVMethod) methodClass.newInstance();
-                method.setDetails(request, response, m_davHelper, m_rootNodeRef);
+                NodeRef rootNodeRef = null;
+                if (m_tenantService.isEnabled())
+                {
+                    WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
+                    NodeService nodeService = (NodeService) context.getBean("NodeService");
+                    SearchService searchService = (SearchService) context.getBean("SearchService");
+                    NamespaceService namespaceService = (NamespaceService) context.getBean("NamespaceService");
+
+                    rootNodeRef = m_tenantService.getRootNode(nodeService, searchService, namespaceService, m_rootPath, rootNodeRef);
+                }
+                else
+                {
+                	rootNodeRef = m_rootNodeRef;
+                }
+
+                method.setDetails(request, response, m_davHelper, rootNodeRef);
             }
             catch (Exception ex)
             {
@@ -246,7 +268,7 @@ public class WebDAVServlet extends HttpServlet
         m_serviceRegistry = (ServiceRegistry)context.getBean(ServiceRegistry.SERVICE_REGISTRY);
         
         m_transactionService = m_serviceRegistry.getTransactionService();
-        
+        m_tenantService = (TenantService) context.getBean("tenantService");
         AuthenticationService authService = (AuthenticationService) context.getBean("authenticationService");
         NodeService nodeService = (NodeService) context.getBean("NodeService");
         SearchService searchService = (SearchService) context.getBean("SearchService");
@@ -296,28 +318,28 @@ public class WebDAVServlet extends HttpServlet
             NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
             
             // Get the root path
-            
-            String rootPath = config.getInitParameter(KEY_ROOT_PATH);
-            if (rootPath == null)
+
+            m_rootPath = config.getInitParameter(KEY_ROOT_PATH);
+            if (m_rootPath == null)
             {
                 throw new ServletException("Device missing init value: " + KEY_ROOT_PATH);
             }
             
             // Find the root node for this device
-            
-            List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, rootPath, null, namespaceService, false);
-            
+
+            List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, m_rootPath, null, namespaceService, false);
+
             if (nodeRefs.size() > 1)
             {
                 throw new ServletException("Multiple possible roots for device: \n" +
-                        "   root path: " + rootPath + "\n" +
+                        "   root path: " + m_rootPath + "\n" +
                         "   results: " + nodeRefs);
             }
             else if (nodeRefs.size() == 0)
             {
                 // nothing found
                 throw new ServletException("No root found for device: \n" +
-                        "   root path: " + rootPath);
+                        "   root path: " + m_rootPath);
             }
             else
             {

@@ -138,7 +138,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         super(configSource);
     }
 
-    public void init()
+    public void initConfig()
     {
         // can be null e.g. initial login, after fresh bootstrap
         String currentUser = authenticationComponent.getCurrentUserName();
@@ -153,8 +153,9 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         {
             userTransaction.begin();
             
-            super.init(); // parse config and initialise caches
-            
+            // parse config and initialise caches
+            super.initConfig();
+                       
             userTransaction.commit();
             
             logger.info("Config initialised");
@@ -189,7 +190,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         {
             public Object doWork()
             {            
-                init();
+                initConfig();
                 return null;
             }                               
         }, AuthenticationUtil.getSystemUserName());
@@ -223,7 +224,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
   
     public void onEnableTenant()
     {
-        init(); // will be called in context of tenant
+        initConfig(); // will be called in context of tenant
     }
     
     public void onDisableTenant()

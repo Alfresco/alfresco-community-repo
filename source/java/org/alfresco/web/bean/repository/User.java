@@ -49,6 +49,7 @@ import org.alfresco.web.app.Application;
  */
 public final class User
 {
+   private String companyRootId;
    private String homeSpaceId;
    private String userName;
    private String ticket;
@@ -126,6 +127,22 @@ public final class User
    public void setHomeSpaceId(String homeSpaceId)
    {
       this.homeSpaceId = homeSpaceId;
+   }
+
+   /**
+    * @return Retrieves the company home space
+    */
+   public String getCompanyRootId()
+   {
+      return this.companyRootId;
+   }
+
+   /**
+    * @param companyRootId Sets the id of the company home space
+    */
+   public void setCompanyRootId(String companyRootId)
+   {
+      this.companyRootId = companyRootId;
    }
 
    /**

@@ -1371,10 +1371,11 @@ public class BrowseBean implements IContextListener
       Node node = getActionSpace();
       if (node != null)
       {
-         NodeRef companyRootRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());
+    	 FacesContext fc = FacesContext.getCurrentInstance();
+         NodeRef companyRootRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId(fc));
          if (node.getNodeRef().equals(companyRootRef))
          {
-            message = Application.getMessage(FacesContext.getCurrentInstance(), MSG_DELETE_COMPANYROOT);
+            message = Application.getMessage(fc, MSG_DELETE_COMPANYROOT);
          }
       }
 

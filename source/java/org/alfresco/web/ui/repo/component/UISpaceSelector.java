@@ -66,7 +66,7 @@ public class UISpaceSelector extends AbstractItemSelector
    {
       String id = null;
       
-      if (this.navigationId != null && this.navigationId.equals(Application.getCompanyRootId()) == false)
+      if (this.navigationId != null && this.navigationId.equals(Application.getCompanyRootId(context)) == false)
       {
          try
          {
@@ -107,7 +107,7 @@ public class UISpaceSelector extends AbstractItemSelector
 
    public Collection<NodeRef> getRootChildren(FacesContext context)
    {
-      NodeRef rootRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());
+      NodeRef rootRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId(context));
       
       // get a child association reference back from the parent node to satisfy
       // the generic API we have in the abstract super class

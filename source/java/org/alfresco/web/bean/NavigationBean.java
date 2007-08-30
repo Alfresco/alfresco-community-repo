@@ -574,10 +574,11 @@ public class NavigationBean
          }
          catch (InvalidNodeRefException refErr)
          {
+        	FacesContext fc = FacesContext.getCurrentInstance();
             Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-                  FacesContext.getCurrentInstance(), ERROR_DELETED_FOLDER), new Object[] {this.currentNodeId}) );
+                  fc, ERROR_DELETED_FOLDER), new Object[] {this.currentNodeId}) );
             
-            nodeRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());
+            nodeRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId(fc));
             node = new Node(nodeRef);
             props = node.getProperties();
          }
@@ -679,8 +680,13 @@ public class NavigationBean
    {
       if (this.companyHomeNode == null)
       {
-         NodeRef companyRootRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());
-         this.companyHomeNode = new Node(companyRootRef);
+          FacesContext fc = FacesContext.getCurrentInstance();
+          String companyRootId = Application.getCompanyRootId(fc);
+          if (companyRootId != null)
+          {
+              NodeRef companyRootRef = new NodeRef(Repository.getStoreRef(), companyRootId);
+              this.companyHomeNode = new Node(companyRootRef);
+          }
       }
       return this.companyHomeNode;
    }
@@ -721,7 +727,15 @@ public class NavigationBean
     */
    public boolean getCompanyHomeVisible()
    {
-      return getCompanyHomeNode().hasPermission(PermissionService.READ);
+      Node companyHomeNode = getCompanyHomeNode();
+      if (companyHomeNode != null)
+      {
+          return companyHomeNode.hasPermission(PermissionService.READ);
+      }
+      else
+      {
+          return false;
+      }
    }
    
    /**

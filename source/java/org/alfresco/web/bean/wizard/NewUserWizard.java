@@ -41,6 +41,8 @@ import javax.transaction.UserTransaction;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -101,6 +103,9 @@ public class NewUserWizard extends AbstractWizardBean
 
    /** PersonService bean reference */
    private PersonService personService;
+   
+   /** TenantService bean reference */
+   private TenantService tenantService;
 
    /** OwnableService bean reference */
    private OwnableService ownableService;
@@ -153,6 +158,14 @@ public class NewUserWizard extends AbstractWizardBean
    public void setOwnableService(OwnableService ownableService)
    {
       this.ownableService = ownableService;
+   }
+   
+   /**
+    * @param tenantService         The tenantService to set.
+    */
+   public void setTenantService(TenantService tenantService)
+   {
+      this.tenantService = tenantService;
    }
 
    /**
@@ -474,6 +487,31 @@ public class NewUserWizard extends AbstractWizardBean
          }
          else
          {
+            if (tenantService.isEnabled())
+            {         
+                String currentDomain = tenantService.getCurrentUserDomain();
+                if (currentDomain != null)
+                {
+                    if (! tenantService.isTenantUser(this.userName))
+                    {
+                        // force domain onto the end of the username
+                        this.userName = tenantService.getDomainUser(this.userName, currentDomain);
+                        logger.warn("Added domain to username: " + this.userName);
+                    }
+                    else
+                    {
+                        try
+                        {                  
+                            tenantService.checkDomainUser(this.userName);
+                        }
+                        catch (RuntimeException re)
+                        {
+                            throw new AuthenticationException("User must belong to same domain as admin: " + currentDomain);
+                        }
+                    }
+                }               
+            }
+             
             if (this.password.equals(this.confirm))
             {   
                // create properties for Person type from submitted Form data
@@ -840,18 +878,7 @@ public class NewUserWizard extends AbstractWizardBean
    {
       if (this.companyHomeSpaceRef == null)
       {
-         String companyXPath =  Application.getRootPath(FacesContext.getCurrentInstance());
-         
-         NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
-         List<NodeRef> nodes = this.searchService.selectNodes(rootNodeRef, companyXPath, null, this.namespaceService,
-               false);
-         
-         if (nodes.size() == 0)
-         {
-            throw new IllegalStateException("Unable to find company home space path: " + companyXPath);
-         }
-         
-         this.companyHomeSpaceRef = nodes.get(0);
+         this.companyHomeSpaceRef = Repository.getCompanyRoot(FacesContext.getCurrentInstance());
       }
       
       return this.companyHomeSpaceRef;

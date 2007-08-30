@@ -321,12 +321,12 @@ public class NavigatorPluginBean implements IContextListener
          UserTransaction tx = null;
          try
          {
-            tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
+        	FacesContext fc = FacesContext.getCurrentInstance();
+            tx = Repository.getUserTransaction(fc, true);
             tx.begin();
             
             // query for the child nodes of company home
-            NodeRef root = new NodeRef(Repository.getStoreRef(),
-                  Application.getCompanyRootId());         
+            NodeRef root = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId(fc));
             List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(root, 
                   ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
             

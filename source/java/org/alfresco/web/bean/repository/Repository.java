@@ -42,6 +42,9 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.metadata.MetadataExtracter;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.lock.LockService;
@@ -121,6 +124,67 @@ public final class Repository
       storeRef = Application.getRepositoryStoreRef(context);
       
       return storeRef;
+   }
+   
+   /**
+    * Returns a company root node reference object.
+    * 
+    * @return The NodeRef object
+    */
+   public static NodeRef getCompanyRoot(final FacesContext context)
+   {
+       // note: run in context of System user using tenant-specific store
+       // so that Company Root can be returned, even if the user does not have 
+       // permission to access the Company Root (including, for example, the Guest user)
+       return AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+       {
+            public NodeRef doWork() throws Exception
+            {
+         	   ServiceRegistry sr = getServiceRegistry(context);
+         	   
+               TenantService tenantService = (TenantService)FacesContextUtils.getRequiredWebApplicationContext(context).getBean("tenantService");
+
+               // get store ref (from config)
+               StoreRef storeRef = tenantService.getName(Repository.getStoreRef());
+               
+               // get root path (from config)
+               String rootPath = Application.getRootPath(context);
+               
+         	   return getCompanyRoot(sr.getNodeService(), sr.getSearchService(), sr.getNamespaceService(), storeRef, rootPath);
+            }
+       }, AuthenticationUtil.getSystemUserName());
+   }
+   
+   /**
+    * Returns a company root node reference object.
+    * 
+    * @return The NodeRef object
+    */
+   public static NodeRef getCompanyRoot(NodeService nodeService, SearchService searchService, NamespaceService namespaceService, StoreRef storeRef, String rootPath)
+   {
+	   // check the repository exists, create if it doesn't
+	   if (nodeService.exists(storeRef) == false)
+	   {
+	      throw new AlfrescoRuntimeException("Store not created prior to application startup: " + storeRef);
+	   }
+	
+	   // get hold of the root node
+	   NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+	
+	   // see if the company home space is present
+	   if (rootPath == null)
+	   {
+	      throw new AlfrescoRuntimeException("Root path has not been configured");
+	   }
+	
+	   List<NodeRef> nodes = searchService.selectNodes(rootNodeRef, rootPath, null, namespaceService, false);
+	   if (nodes.size() == 0)
+	   {
+	      throw new AlfrescoRuntimeException("Root path not created prior to application startup: " + rootPath);
+	   }
+	
+	   // return company root
+	   return nodes.get(0);
    }
 
    /**

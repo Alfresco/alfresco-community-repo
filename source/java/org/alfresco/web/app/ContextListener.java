@@ -25,7 +25,6 @@
 package org.alfresco.web.app;
 
 import java.util.Enumeration;
-import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -49,8 +48,6 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -93,33 +90,14 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
          tx.begin();
          authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
-         // get and setup the initial store ref from config
+         // get and setup the initial store ref and root path from config
          StoreRef storeRef = Repository.getStoreRef(servletContext);
-
-         // check the repository exists, create if it doesn't
-         if (nodeService.exists(storeRef) == false)
-         {
-            throw new AlfrescoRuntimeException("Store not created prior to application startup: " + storeRef);
-         }
-
-         // get hold of the root node
-         NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
-
-         // see if the company home space is present
+         
+         // get root path
          String rootPath = Application.getRootPath(servletContext);
-         if (rootPath == null)
-         {
-            throw new AlfrescoRuntimeException("Root path has not been configured");
-         }
-
-         List<NodeRef> nodes = searchService.selectNodes(rootNodeRef, rootPath, null, namespaceService, false);
-         if (nodes.size() == 0)
-         {
-            throw new AlfrescoRuntimeException("Root path not created prior to application startup: " + rootPath);
-         }
 
          // Extract company space id and store it in the Application object
-         companySpaceNodeRef = nodes.get(0);
+         companySpaceNodeRef = Repository.getCompanyRoot(nodeService, searchService, namespaceService, storeRef, rootPath);
          Application.setCompanyRootId(companySpaceNodeRef.getId());
          
          // commit the transaction

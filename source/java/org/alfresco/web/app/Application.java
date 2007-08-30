@@ -49,6 +49,7 @@ import org.alfresco.web.bean.ErrorBean;
 import org.alfresco.web.bean.SidebarBean;
 import org.alfresco.web.bean.dashboard.DashboardManager;
 import org.alfresco.web.bean.dialog.DialogManager;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.wizard.WizardManager;
 import org.alfresco.web.config.ClientConfigElement;
@@ -312,7 +313,9 @@ public class Application
    }
    
    /**
-    * @return Returns id of the company root 
+    * @return Returns id of the company root
+    * 
+    * @deprecated Replace with user-context-specific getCompanyRootId (e.g. could be tenant-specific)
     */
    public static String getCompanyRootId()
    {
@@ -323,10 +326,35 @@ public class Application
     * Sets the company root id. This is setup by the ContextListener.
     * 
     * @param id The company root id
+    * 
+    * @deprecated Replace with user-context-specific getCompanyRootId (e.g. could be tenant-specific)
     */
    public static void setCompanyRootId(String id)
    {
       companyRootId = id;
+   }
+   
+   /**
+    * @return Returns id of the company root 
+    */
+   public static String getCompanyRootId(FacesContext context)
+   {   
+	   User user = Application.getCurrentUser(context);
+	   if (user != null)
+	   {
+		   String userCompanyRootId = user.getCompanyRootId();
+		   if (userCompanyRootId == null)
+		   {
+			   userCompanyRootId = Repository.getCompanyRoot(context).getId();
+			   user.setCompanyRootId(userCompanyRootId);
+		   }
+		   
+		   return userCompanyRootId;
+	   }
+	   else
+	   {
+		   return null;
+	   }
    }
    
    /**

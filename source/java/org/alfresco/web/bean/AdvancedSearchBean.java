@@ -1375,7 +1375,7 @@ public class AdvancedSearchBean
       {
          xpath = xpath.substring(0, xpath.lastIndexOf("/*"));
       }
-      NodeRef rootRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());
+      NodeRef rootRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId(FacesContext.getCurrentInstance()));
       List<NodeRef> results = null;
       try
       {

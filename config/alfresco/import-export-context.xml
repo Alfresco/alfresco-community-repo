@@ -264,7 +264,7 @@
         </property>
         <property name="configuration">
             <props>
-                <prop key="alfresco_user_store.adminusername">${alfresco_user_store.adminusername}</prop>
+                <prop key="alfresco_user_store.adminusername">${alfresco_user_store.adminusername}</prop>         
                 <prop key="version.major">${version.major}</prop>
                 <prop key="version.minor">${version.minor}</prop>
                 <prop key="version.revision">${version.revision}</prop>
@@ -302,6 +302,7 @@
         <property name="configuration">
             <props>
                 <prop key="alfresco_user_store.adminusername">${alfresco_user_store.adminusername}</prop>
+                <prop key="alfresco_user_store.guestusername">${alfresco_user_store.guestusername}</prop>               
                 <prop key="spaces.company_home.childname">${spaces.company_home.childname}</prop>
                 <prop key="spaces.guest_home.childname">${spaces.guest_home.childname}</prop>
                 <prop key="system.system_container.childname">${system.system_container.childname}</prop>

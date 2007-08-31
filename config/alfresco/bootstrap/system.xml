@@ -34,7 +34,7 @@
                               <view:permission>Read</view:permission>
                            </view:ace>
                         </view:acl>
-                        <cm:userName>guest</cm:userName>
+                        <cm:userName>${alfresco_user_store.guestusername}</cm:userName>
                         <cm:firstName>Guest</cm:firstName>
                         <cm:lastName></cm:lastName>
                         <cm:email></cm:email>

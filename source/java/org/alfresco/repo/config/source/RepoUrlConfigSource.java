@@ -50,7 +50,7 @@ import org.alfresco.service.namespace.NamespaceService;
  *
  * Example store URLs
  *   <code>workspace://SpacesStore/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.webclient_extension.childname}/cm:web-client-config-custom.xml</code>
- *   <code>workspace://SpacesStore/app:company_home/app:dictionary/cm:webclient_extension/cm:web-client-config-custom.xml</code> 
+ *   <code>workspace://SpacesStore/app:company_home/app:dictionary/app:webclient_extension/cm:web-client-config-custom.xml</code> 
  */
 public class RepoUrlConfigSource extends UrlConfigSource
 {   

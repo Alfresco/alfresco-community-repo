@@ -24,11 +24,9 @@
  */
 package org.alfresco.repo.workflow;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -38,12 +36,11 @@ import java.util.Map;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.admin.BaseInterpreter;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authority.AuthorityDAO;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
@@ -68,8 +65,6 @@ import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.AbstractLifecycleBean;
-import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
@@ -80,24 +75,18 @@ import org.springframework.core.io.ClassPathResource;
  * 
  * @author davidc
  */
-public class WorkflowInterpreter extends AbstractLifecycleBean
+public class WorkflowInterpreter extends BaseInterpreter
 {
     // Service dependencies    
     private WorkflowService workflowService;
     private NamespaceService namespaceService;
     private NodeService nodeService;
-    private TransactionService transactionService;
     private AuthorityDAO authorityDAO;
     private AVMService avmService;
     private AVMSyncService avmSyncService;
     private PersonService personService;
     private FileFolderService fileFolderService;
-    
-    
-    /**
-     * The reader for interaction.
-     */
-    private BufferedReader fIn;
+
 
     /**
      * Current context
@@ -105,38 +94,15 @@ public class WorkflowInterpreter extends AbstractLifecycleBean
     private WorkflowDefinition currentWorkflowDef = null;
     private WorkflowPath currentPath = null;
     private String currentDeploy = null;
-    private String username = "admin";
-    
-    /**
-     * Last command issued
-     */
-    private String lastCommand = null;
-    
+
+
     /**
      * Variables
      */
     private Map<QName, Serializable> vars = new HashMap<QName, Serializable>();
     
 
-    /**
-     * Main entry point.
-     */
-    public static void main(String[] args)
-        throws IOException
-    {
-        ApplicationContext context = ApplicationContextHelper.getApplicationContext();
-        WorkflowInterpreter console = (WorkflowInterpreter)context.getBean("workflowInterpreter");
-        console.rep();
-        System.exit(0);
-    }
 
-    /**
-     * Make up a new console.
-     */
-    public WorkflowInterpreter()
-    {
-        fIn = new BufferedReader(new InputStreamReader(System.in));
-    }
 
     /* (non-Javadoc)
      * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
@@ -146,8 +112,12 @@ public class WorkflowInterpreter extends AbstractLifecycleBean
     {
         try
         {
+            setCurrentUserName(BaseInterpreter.DEFAULT_ADMIN);
+            
             interpretCommand("var bpm:package package 1");
             interpretCommand("var bpm:assignee person admin");
+            
+            setCurrentUserName(null);
         }
         catch(IOException e)
         {
@@ -237,60 +207,17 @@ public class WorkflowInterpreter extends AbstractLifecycleBean
     }
 
     /**
-     * A Read-Eval-Print loop.
+     * 
      */
-    public void rep()
+    public static BaseInterpreter getConsoleBean(ApplicationContext context)
     {
-        // accept commands
-        while (true)
-        {
-            System.out.print("ok> ");
-            try
-            {
-                // get command
-                final String line = fIn.readLine();
-                if (line.equals("exit") || line.equals("quit"))
-                {
-                    return;
-                }
-                
-                // execute command in context of currently selected user
-                long startms = System.currentTimeMillis();
-                System.out.print(interpretCommand(line));
-                System.out.println("" + (System.currentTimeMillis() - startms) + "ms");
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace(System.err);
-                System.out.println("");
-            }
-        }
+        return (WorkflowInterpreter)context.getBean("workflowInterpreter");
     }
 
-    /**
-     * Interpret a single command using the BufferedReader passed in for any data needed.
-     * 
-     * @param line The unparsed command
-     * @return The textual output of the command.
-     */
-    public String interpretCommand(final String line)
-        throws IOException
+    protected boolean hasAuthority(String username)
     {
-        // execute command in context of currently selected user
-        return AuthenticationUtil.runAs(new RunAsWork<String>()
-        {
-            public String doWork() throws Exception
-            {
-                RetryingTransactionCallback<String> txnWork = new RetryingTransactionCallback<String>()
-                {
-                    public String execute() throws Exception
-                    {
-                        return executeCommand(line);
-                    }
-                };
-                return transactionService.getRetryingTransactionHelper().doInTransaction(txnWork);
-            }
-        }, username);
+        // admin can change to any user (via worklow command "user <username>")
+        return true;
     }
     
     /**
@@ -301,7 +228,7 @@ public class WorkflowInterpreter extends AbstractLifecycleBean
      * @param line The unparsed command
      * @return The textual output of the command.
      */
-    private String executeCommand(String line)
+    protected String executeCommand(String line)
         throws IOException
     {
         String[] command = line.split(" ");
@@ -911,9 +838,9 @@ public class WorkflowInterpreter extends AbstractLifecycleBean
         {
             if (command.length == 2)
             {
-                username = command[1];
+            	setCurrentUserName(command[1]);
             }
-            out.println("using user " + username);
+            out.println("using user " + getCurrentUserName());
         }
         
         else if (command[0].equals("start"))
@@ -1314,16 +1241,6 @@ public class WorkflowInterpreter extends AbstractLifecycleBean
     public WorkflowDefinition getCurrentWorkflowDef()
     {
         return currentWorkflowDef;
-    }
-    
-    /**
-     * Get current user name
-     * 
-     * @return  user name
-     */
-    public String getCurrentUserName()
-    {
-        return username;
     }
 
 }

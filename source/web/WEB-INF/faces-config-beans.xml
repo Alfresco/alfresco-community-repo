@@ -1004,6 +1004,10 @@
          <property-name>ownableService</property-name>
          <value>#{OwnableService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>tenantService</property-name>
+         <value>#{tenantService}</value>
+      </managed-property> 
    </managed-bean>
 
    <managed-bean>

@@ -224,7 +224,7 @@ public class DashboardWizard extends BaseWizardBean
     */
    public List<SelectItem> getAllDashlets()
    {
-      if (this.dashlets == null)
+      if ((this.dashlets == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          FacesContext fc = FacesContext.getCurrentInstance();
          DashboardsConfigElement config = DashboardManager.getDashboardConfig();
@@ -282,7 +282,7 @@ public class DashboardWizard extends BaseWizardBean
     */
    public List<UIDescription> getLayoutDescriptions()
    {
-      if (this.layoutDescriptions == null)
+      if ((this.layoutDescriptions == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          buildLayoutValueLists();
       }
@@ -294,7 +294,7 @@ public class DashboardWizard extends BaseWizardBean
     */
    public List<UIListItem> getLayoutIcons()
    {
-      if (this.layoutIcons == null)
+      if ((this.layoutIcons == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          buildLayoutValueLists();
       }

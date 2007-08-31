@@ -2,8 +2,12 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
+
+   <!-- ===================================== -->
+   <!-- Web Client Config Sources             -->
+   <!-- ===================================== -->
    
-   <bean id="webClientConfigSource" class="org.alfresco.config.source.UrlConfigSource">
+   <bean id="webClientConfigSource" class="org.alfresco.repo.config.source.RepoUrlConfigSource">
       <constructor-arg>
          <list>
             <value>classpath:alfresco/web-client-config.xml</value>
@@ -18,13 +22,227 @@
             <value>classpath:alfresco/web-client-config-workflow-actions.xml</value>
             <value>classpath:alfresco/extension/web-client-config-custom.xml</value>
             <value>jar:*!/META-INF/web-client-config-custom.xml</value>
+            
+            <!-- note: will be skipped if not present -->
+            <value>workspace://SpacesStore/${spaces.company_home.childname}/${spaces.dictionary.childname}/app:webclient_extension/cm:web-client-config-custom.xml</value>
+
          </list>
       </constructor-arg>
+      
+      <property name="tenantService" ref="tenantService"/>
+      <property name="searchService" ref="SearchService"/>
+      <property name="contentService" ref="ContentService"/>
+      <property name="namespaceService" ref="NamespaceService"/>
+      <property name="nodeService" ref="NodeService"/>
+    
    </bean>
    
-   <bean id="webClientConfigService" class="org.alfresco.config.xml.XMLConfigService">
-      <constructor-arg>
+   
+   <!-- ===================================== -->
+   <!-- Web Client Config Caches              -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for in-memory GlobalConfig -->
+   
+   <bean name="globalConfigSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.globalConfigCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for in-memory GlobalConfig -->
+   
+   <bean name="globalConfigCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="globalConfigSharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.globalConfigTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>10</value>
+      </property>
+   </bean>
+     
+   <!-- The cross-transaction shared cache for in-memory Evaluators -->
+   
+   <bean name="evaluatorsSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.evaluatorsCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for in-memory Evaluators -->
+   
+   <bean name="evaluatorsCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="evaluatorsSharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.evaluatorsTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>10</value>
+      </property>
+   </bean>
+     
+   <!-- The cross-transaction shared cache for in-memory SectionsByArea -->
+   
+   <bean name="sectionsByAreaSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.sectionsByAreaCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for in-memory SectionsByArea -->
+   
+   <bean name="sectionsByAreaCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="sectionsByAreaSharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.sectionsByAreaTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>10</value>
+      </property>
+   </bean>
+   
+   <!-- The cross-transaction shared cache for in-memory Sections -->
+   
+   <bean name="sectionsSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.sectionsCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for in-memory Sections -->
+   
+   <bean name="sectionsCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="sectionsSharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.sectionsTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>10</value>
+      </property>
+   </bean>
+   
+   <!-- The cross-transaction shared cache for in-memory ElementReaders -->
+   
+   <bean name="elementReadersSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.elementReadersCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for in-memory ElementReaders -->
+   
+   <bean name="elementReadersCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="elementReadersSharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.elementReadersTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>10</value>
+      </property>
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- Web Client Config Service             -->
+   <!-- ===================================== -->
+   
+   <bean id="webClientConfigService" class="org.alfresco.repo.config.xml.RepoXMLConfigService">
+       <constructor-arg>
          <ref bean="webClientConfigSource" />
+      </constructor-arg>
+      
+      <property name="tenantService" ref="tenantService"/>
+      <property name="tenantDeployerService" ref="tenantAdminService"/>  
+      <property name="transactionService" ref="transactionComponent"/>
+      <property name="authenticationComponent" ref="authenticationComponent"/>
+      
+      <property name="globalConfigCache"   ref="globalConfigCache"/>
+      <property name="evaluatorsCache"     ref="evaluatorsCache"/>
+      <property name="sectionsByAreaCache" ref="sectionsByAreaCache"/>
+      <property name="sectionsCache"       ref="sectionsCache"/>
+      <property name="elementReadersCache" ref="elementReadersCache"/>
+      
+   </bean>
+   
+   <bean id="webClientConfigAdminInterpreter" class="org.alfresco.web.config.ConfigAdminInterpreter">   
+      <property name="transactionService" ref="transactionComponent"/>
+      <property name="repoXMLConfigService" ref="webClientConfigService"/>
+      <property name="tenantService" ref="tenantService"/>        
+   </bean>
+   
+   <bean id="webClientConfigAdminInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent"> 
+      <property name="resourceBundles">
+         <list>
+             <value>alfresco.messages.webclient-config-admin-interpreter-help</value>
+         </list>
+      </property>       
+   </bean>
+   
+   
+   <!-- NOTE: This references a bean in the repository Spring configuration -->
+   <bean id="resourceBundleWrapper" class="org.alfresco.web.app.ResourceBundleWrapper">
+      <constructor-arg>
+         <ref bean="messageService" />
       </constructor-arg>
    </bean>
    

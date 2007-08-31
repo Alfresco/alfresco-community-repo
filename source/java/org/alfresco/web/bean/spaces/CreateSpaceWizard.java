@@ -522,7 +522,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    @SuppressWarnings("unchecked")
    public List<UIListItem> getFolderTypes()
    {
-      if (this.folderTypes == null)
+      if ((this.folderTypes == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          FacesContext context = FacesContext.getCurrentInstance();
          this.folderTypes = new ArrayList<UIListItem>(2);
@@ -637,7 +637,7 @@ public class CreateSpaceWizard extends BaseWizardBean
     */
    public List<UIDescription> getFolderTypeDescriptions()
    {
-      if (this.folderTypeDescriptions == null)
+      if ((this.folderTypeDescriptions == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          // call the getFolderType method to construct the list
          getFolderTypes();

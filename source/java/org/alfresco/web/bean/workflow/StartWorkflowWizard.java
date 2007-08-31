@@ -662,9 +662,9 @@ public class StartWorkflowWizard extends BaseWizardBean
     * @return The configured comma separated list of WCM workflows, if the config
     *         can not be found an empty string will be returned
     */
-   protected Map<String, String> getWCMWorkflows()
+   protected Map<String, String> getWCMWorkflows()   
    {
-      if (wcmWorkflows == null)
+      if ((wcmWorkflows == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          FacesContext fc = FacesContext.getCurrentInstance();
          ConfigElement config = Application.getConfigService(fc).getGlobalConfig().getConfigElement("wcm");

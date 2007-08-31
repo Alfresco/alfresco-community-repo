@@ -88,6 +88,9 @@ public class Application
    private static String websitesFolderName;
    private static String contentFormsFolderName;
    
+   private static Boolean isDynamicConfig = null;
+   
+   
    /**
     * Private constructor to prevent instantiation of this class 
     */
@@ -651,7 +654,7 @@ public class Application
          {
             locale = Locale.getDefault();
          }
-         bundle = ResourceBundleWrapper.getResourceBundle(MESSAGE_BUNDLE, locale);
+         bundle = ResourceBundleWrapper.getResourceBundleWrapper(session.getServletContext()).getResourceBundle(MESSAGE_BUNDLE, locale);
          
          session.setAttribute(MESSAGE_BUNDLE, bundle);
       }
@@ -682,7 +685,7 @@ public class Application
          {
             locale = Locale.getDefault();
          }
-         bundle = ResourceBundleWrapper.getResourceBundle(MESSAGE_BUNDLE, locale);
+         bundle = ResourceBundleWrapper.getResourceBundleWrapper(FacesContextUtils.getRequiredWebApplicationContext(context).getServletContext()).getResourceBundle(MESSAGE_BUNDLE, locale);
          
          session.put(MESSAGE_BUNDLE, bundle);
       }
@@ -990,5 +993,16 @@ public class Application
       }
       
       return loginPage;
+   }
+   
+   public static boolean isDynamicConfig(FacesContext context)
+   {
+       if (isDynamicConfig == null)
+       {
+          String dynamicConfigParam = FacesContextUtils.getRequiredWebApplicationContext(context).getServletContext().getInitParameter("org.alfresco.webclient.dynamicConfig");
+          isDynamicConfig = new Boolean(((dynamicConfigParam == null) || (new Boolean(dynamicConfigParam).booleanValue() == true)));
+       }
+       
+       return isDynamicConfig.booleanValue();
    }
 }

@@ -188,7 +188,7 @@ public class AVMWorkflowUtil extends WorkflowUtil
     */
    public static List<WorkflowDefinition> getConfiguredWorkflows()
    {
-      if (configuredWorkflowDefs == null)
+      if ((configuredWorkflowDefs == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          FacesContext fc = FacesContext.getCurrentInstance();
          List<WorkflowDefinition> defs = Collections.<WorkflowDefinition>emptyList();

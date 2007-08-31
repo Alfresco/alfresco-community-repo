@@ -282,7 +282,7 @@ public class AddContentDialog extends BaseContentWizard
    
    protected List<String> getInlineEditableMimeTypes()
    {
-      if (this.inlineEditableMimeTypes == null)
+      if ((this.inlineEditableMimeTypes == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))	  
       {
          this.inlineEditableMimeTypes = new ArrayList<String>(8);
          

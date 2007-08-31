@@ -286,7 +286,7 @@ public class CreateRuleWizard extends BaseActionWizard
     */
    public List<SelectItem> getModelTypes()
    {
-      if (this.modelTypes == null)
+      if ((this.modelTypes == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          FacesContext context = FacesContext.getCurrentInstance();
          ConfigService svc = Application.getConfigService(context);
@@ -772,7 +772,7 @@ public class CreateRuleWizard extends BaseActionWizard
     */
    protected void initialiseConditionHandlers()
    {
-      if (this.conditionHandlers == null)
+      if ((this.conditionHandlers == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
          Config wizardCfg = svc.getConfig("Action Wizards");

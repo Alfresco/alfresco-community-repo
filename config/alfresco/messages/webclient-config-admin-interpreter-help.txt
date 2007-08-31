@@ -1,0 +1,29 @@
+##
+##  Meta commands
+##
+
+ok> help
+
+    List this help.
+
+ok> r
+
+    Repeat last command.
+
+ok> quit | exit
+
+    Quit this console.
+
+
+##
+##  Web Client Config Admin Commands
+##
+
+ok> reload
+
+    Re-load Web Client config from configured config sources (refer to web-client-application-context.xml)
+
+
+##
+##  end
+##

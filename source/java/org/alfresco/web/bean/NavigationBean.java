@@ -844,12 +844,14 @@ public class NavigationBean
    
    
    // ------------------------------------------------------------------------------
-   // Private helpers
+   // Helpers
    
    /**
     * Initialise default values from client configuration
+    * 
+    * Package visibility to allow LoginBean to re-init (for example, in context of tenant config)
     */
-   private void initFromClientConfig()
+   /* package */ void initFromClientConfig()
    {
       this.clientConfig = Application.getClientConfig(FacesContext.getCurrentInstance());
       this.helpUrl = clientConfig.getHelpUrl();

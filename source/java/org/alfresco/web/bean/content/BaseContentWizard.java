@@ -285,7 +285,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
     */
    public List<SelectItem> getObjectTypes()
    {
-      if (this.objectTypes == null)
+	  if ((this.objectTypes == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          FacesContext context = FacesContext.getCurrentInstance();
          
@@ -493,6 +493,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
     */
    protected void initOtherProperties()
    {
+      // TODO - review implications of these default values for dynamic/MT client
       ConfigService configSvc = Application.getConfigService(FacesContext.getCurrentInstance());
       
       if (configSvc != null)

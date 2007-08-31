@@ -247,7 +247,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
     */
    public List<SelectItem> getRemovableAspects()
    {
-      if (this.removableAspects == null)
+      if ((this.removableAspects == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          // get the list of common aspects
          this.removableAspects = new ArrayList<SelectItem>();
@@ -289,7 +289,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
     */
    public List<SelectItem> getAddableAspects()
    {
-      if (this.addableAspects == null)
+      if ((this.addableAspects == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          // get the list of common aspects
          this.addableAspects = new ArrayList<SelectItem>();
@@ -331,7 +331,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
     */
    public List<SelectItem> getTestableAspects()
    {
-      if (this.testableAspects == null)
+      if ((this.testableAspects == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          // get the list of common aspects
          this.testableAspects = new ArrayList<SelectItem>();
@@ -371,7 +371,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
     */
    public List<SelectItem> getObjectTypes()
    {
-      if (this.objectTypes == null)
+      if ((this.objectTypes == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          FacesContext context = FacesContext.getCurrentInstance();
          
@@ -477,7 +477,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
     */
    public List<SelectItem> getTransformers()
    {
-      if (this.transformers == null)
+      if ((this.transformers == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
          Config wizardCfg = svc.getConfig("Action Wizards");
@@ -530,7 +530,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
     */
    public List<SelectItem> getImageTransformers()
    {
-      if (this.imageTransformers == null)
+      if ((this.imageTransformers == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
          Config wizardCfg = svc.getConfig("Action Wizards");
@@ -891,7 +891,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
     */
    protected void initialiseActionHandlers()
    {
-      if (this.actionHandlers == null)
+      if ((this.actionHandlers == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
          Config wizardCfg = svc.getConfig("Action Wizards");
@@ -944,7 +944,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
     */
    protected List<SelectItem> getCommonAspects()
    {
-      if (this.commonAspects == null)
+      if ((this.commonAspects == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
          Config wizardCfg = svc.getConfig("Action Wizards");

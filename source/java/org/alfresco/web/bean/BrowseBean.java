@@ -537,7 +537,11 @@ public class BrowseBean implements IContextListener
     */
    public void addNodeEventListener(NodeEventListener listener)
    {
-      getNodeEventListeners().add(listener);
+      if (this.nodeEventListeners == null)
+      {
+          this.nodeEventListeners = new HashSet<NodeEventListener>();
+      }
+      this.nodeEventListeners.add(listener);
    }
 
    /**
@@ -545,7 +549,10 @@ public class BrowseBean implements IContextListener
     */
    public void removeNodeEventListener(NodeEventListener listener)
    {
-      getNodeEventListeners().remove(listener);
+      if (this.nodeEventListeners != null)
+      {
+          this.nodeEventListeners.remove(listener);
+      }
    }
 
 
@@ -628,6 +635,10 @@ public class BrowseBean implements IContextListener
          List<FileInfo> children = this.fileFolderService.list(parentRef);
          this.containerNodes = new ArrayList<Node>(children.size());
          this.contentNodes = new ArrayList<Node>(children.size());
+         
+         // in case of dynamic config, only lookup once
+         Set<NodeEventListener> nodeEventListeners = getNodeEventListeners();
+         
          for (FileInfo fileInfo : children)
          {
             // create our Node representation from the NodeRef
@@ -691,7 +702,7 @@ public class BrowseBean implements IContextListener
                // inform any listeners that a Node wrapper has been created
                if (node != null)
                {
-                  for (NodeEventListener listener : getNodeEventListeners())
+                  for (NodeEventListener listener : nodeEventListeners)
                   {
                      listener.created(node, type);
                   }
@@ -785,6 +796,9 @@ public class BrowseBean implements IContextListener
          this.contentNodes = new ArrayList<Node>(results.length());
          if (results.length() != 0)
          {
+            // in case of dynamic config, only lookup once
+            Set<NodeEventListener> nodeEventListeners = getNodeEventListeners();
+             
             for (ResultSetRow row: results)
             {
                NodeRef nodeRef = row.getNodeRef();
@@ -859,7 +873,7 @@ public class BrowseBean implements IContextListener
                      // inform any listeners that a Node wrapper has been created
                      if (node != null)
                      {
-                        for (NodeEventListener listener : getNodeEventListeners())
+                        for (NodeEventListener listener : nodeEventListeners)
                         {
                            listener.created(node, type);
                         }
@@ -1555,6 +1569,7 @@ public class BrowseBean implements IContextListener
     */
    private void initFromClientConfig()
    {
+      // TODO - review implications of these default values on dynamic/MT client: viewsConfig & browseViewMode, as well as page size content/spaces ...
       ConfigService config = Application.getConfigService(FacesContext.getCurrentInstance());
 
       this.viewsConfig = (ViewsConfigElement)config.getConfig("Views").
@@ -1571,33 +1586,49 @@ public class BrowseBean implements IContextListener
     */
    private Set<NodeEventListener> getNodeEventListeners()
    {
-      if (this.nodeEventListeners == null)
-      {
-         this.nodeEventListeners = new HashSet<NodeEventListener>();
+      if ((this.nodeEventListeners == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
+      { 
+	     Set<NodeEventListener> allNodeEventListeners = new HashSet<NodeEventListener>();		     
 
-         FacesContext fc = FacesContext.getCurrentInstance();
+	     if (Application.isDynamicConfig(FacesContext.getCurrentInstance()) && (this.nodeEventListeners != null))
+	     {	 
+	    	 // for dynamic config, can add/remove node event listeners dynamically ...
+		     // however, in case anyone is using public methods (add/removeNodeEventListener)
+		     // we merge list here with list returned from the config
+	         allNodeEventListeners.addAll(this.nodeEventListeners);
+	     }
 
-         Config listenerConfig = Application.getConfigService(fc).getConfig("Node Event Listeners");
-         if (listenerConfig != null)
-         {
-            ConfigElement listenerElement = listenerConfig.getConfigElement("node-event-listeners");
-            if (listenerElement != null)
-            {
-               for (ConfigElement child : listenerElement.getChildren())
-               {
-                  if (child.getName().equals("listener"))
-                  {
-                     // retrieved the JSF Managed Bean identified in the config
-                     String listenerName = child.getValue().trim();
-                     Object bean = FacesHelper.getManagedBean(fc, listenerName);
-                     if (bean instanceof NodeEventListener)
-                     {
-                        addNodeEventListener((NodeEventListener)bean);
-                     }
-                  }
-               }
-            }
-         }
+	     FacesContext fc = FacesContext.getCurrentInstance();
+	     Config listenerConfig = Application.getConfigService(fc).getConfig("Node Event Listeners");
+	     if (listenerConfig != null)
+	     {
+	        ConfigElement listenerElement = listenerConfig.getConfigElement("node-event-listeners");
+	        if (listenerElement != null)
+	        {
+	           for (ConfigElement child : listenerElement.getChildren())
+	           {
+	              if (child.getName().equals("listener"))
+	              {
+	                 // retrieved the JSF Managed Bean identified in the config
+	                 String listenerName = child.getValue().trim();
+	                 Object bean = FacesHelper.getManagedBean(fc, listenerName);
+	                 if (bean instanceof NodeEventListener)
+	                 {
+	                     allNodeEventListeners.add((NodeEventListener)bean);
+	                 }
+	              }
+	           }
+	        }
+	     }
+
+	     if (Application.isDynamicConfig(FacesContext.getCurrentInstance()))
+	     {	     
+	    	 return allNodeEventListeners;
+	     }
+	     else
+	     {
+	    	 this.nodeEventListeners = allNodeEventListeners;
+	     }
       }
       return this.nodeEventListeners;
    }

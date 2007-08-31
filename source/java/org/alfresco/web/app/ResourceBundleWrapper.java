@@ -24,15 +24,23 @@
  */
 package org.alfresco.web.app;
 
+import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
+import javax.servlet.ServletContext;
+
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.i18n.MessageService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.web.bean.repository.Repository;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Wrapper around Alfresco Resource Bundle objects. Used to catch and handle missing
@@ -47,6 +55,24 @@ public final class ResourceBundleWrapper extends ResourceBundle
    
    private ResourceBundle delegate;
    private ResourceBundle delegateCustom;
+   
+   private MessageService messageService;
+   
+   public static final String BEAN_RESOURCE_BUNDLE_WRAPPER = "resourceBundleWrapper";
+      
+   public static final String PATH = "app:company_home/app:dictionary/cm:webclient_extension";
+
+   public ResourceBundleWrapper(MessageService messageService)
+   {
+      this.messageService = messageService;
+   }
+   
+   // Helper to get the ResourceBundleWrapper instance with access to the repository
+   public static ResourceBundleWrapper getResourceBundleWrapper(ServletContext context)
+   {
+      return (ResourceBundleWrapper)WebApplicationContextUtils.getRequiredWebApplicationContext(context).getBean(
+            BEAN_RESOURCE_BUNDLE_WRAPPER);
+   }
    
    /**
     * Constructor
@@ -139,7 +165,7 @@ public final class ResourceBundleWrapper extends ResourceBundle
     * 
     * @return Wrapped ResourceBundle instance for specified locale
     */
-   public static ResourceBundle getResourceBundle(String name, Locale locale)
+   public ResourceBundle getResourceBundle(String name, Locale locale)
    {
       ResourceBundle bundle = ResourceBundle.getBundle(name, locale);
       if (bundle == null)
@@ -148,18 +174,55 @@ public final class ResourceBundleWrapper extends ResourceBundle
       }
       
       // also look up the custom version of the bundle in the extension package
-      String customName = determineCustomBundleName(name);
       ResourceBundle customBundle = null;
+      
+      // first try in the repo otherwise try the classpath
+      StoreRef storeRef = null;
+      String path = null;
+      
       try
       {
-         customBundle = ResourceBundle.getBundle(customName, locale);
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Located and loaded custom bundle: " + customName);
+          String customName = null;
+          int idx = name.lastIndexOf(".");
+          if (idx != -1)
+          {
+              customName = name.substring(idx+1, name.length());
+          }
+          else
+          {
+              customName = name;
+          }
+
+          storeRef = Repository.getStoreRef();
+          
+          // TODO - make path configurable in one place ... 
+          // Note: path here is XPath for selectNodes query
+          path = PATH + "/cm:" + customName;
+          InputStream is = messageService.getRepoResourceBundle(Repository.getStoreRef(), path, locale);
+          customBundle = new PropertyResourceBundle(is);
+          is.close();
       }
-      catch (MissingResourceException mre)
+      catch (Throwable t)
       {
-         // ignore the error, just leave custom bundle as null
+          // for now ... ignore the error, cannot be found or read from repo
+          logger.debug("Custom Web Client properties not found: " + storeRef + path);
+      }
+
+      if (customBundle == null)
+      {
+          // classpath
+          String customName = determineCustomBundleName(name);
+          try
+          {
+             customBundle = ResourceBundle.getBundle(customName, locale);
+             
+             if (logger.isDebugEnabled())
+                logger.debug("Located and loaded custom bundle: " + customName);
+          }
+          catch (MissingResourceException mre)
+          {
+             // ignore the error, just leave custom bundle as null
+          }
       }
       
       // apply our wrapper to catch MissingResourceException

@@ -376,7 +376,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       
       if (obj != null && obj instanceof Boolean && ((Boolean)obj).booleanValue())
       {
-         if (this.plainDialogContainer == null)
+         if ((this.plainDialogContainer == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
          {
             ConfigService configSvc = Application.getConfigService(context);
             Config globalConfig = configSvc.getGlobalConfig();
@@ -391,7 +391,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       }
       else
       {
-         if (this.dialogContainer == null)
+         if ((this.dialogContainer == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
          {
             ConfigService configSvc = Application.getConfigService(context);
             Config globalConfig = configSvc.getGlobalConfig();
@@ -427,7 +427,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       
       if (obj != null && obj instanceof Boolean && ((Boolean)obj).booleanValue())
       {
-         if (this.plainWizardContainer == null)
+         if ((this.plainWizardContainer == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
          {
             ConfigService configSvc = Application.getConfigService(context);
             Config globalConfig = configSvc.getGlobalConfig();
@@ -442,7 +442,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       }
       else
       {
-         if (this.wizardContainer == null)
+         if ((this.wizardContainer == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
          {
             ConfigService configSvc = Application.getConfigService(context);
             Config globalConfig = configSvc.getGlobalConfig();

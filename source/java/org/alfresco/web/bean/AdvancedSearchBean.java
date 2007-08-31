@@ -593,7 +593,7 @@ public class AdvancedSearchBean
     */
    public List<SelectItem> getContentTypes()
    {
-      if (this.contentTypes == null)
+      if ((this.contentTypes == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          FacesContext context = FacesContext.getCurrentInstance();
          
@@ -641,7 +641,7 @@ public class AdvancedSearchBean
     */
    public List<SelectItem> getFolderTypes()
    {
-      if (this.folderTypes == null)
+      if ((this.folderTypes == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))     
       {
          FacesContext context = FacesContext.getCurrentInstance();
          
@@ -689,7 +689,7 @@ public class AdvancedSearchBean
     */
    public List<SelectItem> getContentFormats()
    {
-      if (this.contentFormats == null)
+      if ((this.contentFormats == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          this.contentFormats = new ArrayList<SelectItem>(80);
          ServiceRegistry registry = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
@@ -813,11 +813,14 @@ public class AdvancedSearchBean
          search.addRangeQuery(ContentModel.PROP_MODIFIED, strModifiedDate, strModifiedDateTo, true);
       }
       
+      // in case of dynamic config, only lookup once
+      Map<String, DataTypeDefinition> customPropertyLookup = getCustomPropertyLookup();
+      
       // walk each of the custom properties add add them as additional attributes
       for (String qname : this.customProperties.keySet())
       {
          Object value = this.customProperties.get(qname);
-         DataTypeDefinition typeDef = getCustomPropertyLookup().get(qname);
+         DataTypeDefinition typeDef = customPropertyLookup.get(qname);
          if (typeDef != null)
          {
             QName typeName = typeDef.getName();
@@ -1292,10 +1295,13 @@ public class AdvancedSearchBean
          this.panels.put(PANEL_ATTRS, true);
       }
       
+      // in case of dynamic config, only lookup once
+      Map<String, DataTypeDefinition> customPropertyLookup = getCustomPropertyLookup();
+      
       // custom fields - calculate which are required to set through the custom properties lookup table
-      for (String qname : getCustomPropertyLookup().keySet())
+      for (String qname : customPropertyLookup.keySet())
       {
-         DataTypeDefinition typeDef = getCustomPropertyLookup().get(qname);
+         DataTypeDefinition typeDef = customPropertyLookup.get(qname);
          if (typeDef != null)
          {
             QName typeName = typeDef.getName();
@@ -1523,7 +1529,7 @@ public class AdvancedSearchBean
     */
    private AdvancedSearchConfigElement getSearchConfig()
    {
-      if (searchConfigElement == null)
+      if ((this.searchConfigElement == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          searchConfigElement = (AdvancedSearchConfigElement)Application.getConfigService(
                FacesContext.getCurrentInstance()).getConfig("Advanced Search").
@@ -1540,7 +1546,7 @@ public class AdvancedSearchBean
     */
    private Map<String, DataTypeDefinition> getCustomPropertyLookup()
    {
-      if (customPropertyLookup == null)
+      if ((customPropertyLookup == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          customPropertyLookup = new HashMap<String, DataTypeDefinition>(7, 1.0f);
          List<CustomProperty> customProps = getSearchConfig().getCustomProperties();

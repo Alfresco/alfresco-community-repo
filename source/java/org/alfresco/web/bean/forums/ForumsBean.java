@@ -890,6 +890,7 @@ public class ForumsBean implements IContextListener
     */
    private void initFromClientConfig()
    {
+	  // TODO - review implications of these default values for dynamic/MT client
       this.viewsConfig = (ViewsConfigElement)Application.getConfigService(
             FacesContext.getCurrentInstance()).getConfig("Views").
             getConfigElement(ViewsConfigElement.CONFIG_ELEMENT_ID);

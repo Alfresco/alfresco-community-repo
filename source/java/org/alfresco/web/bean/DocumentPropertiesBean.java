@@ -350,7 +350,7 @@ public class DocumentPropertiesBean
     */
    public boolean getOtherPropertiesPresent()
    {
-      if (this.hasOtherProperties == null)
+      if ((this.hasOtherProperties == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          // we need to use the config service to see whether there are any
          // editable properties configured for this document.

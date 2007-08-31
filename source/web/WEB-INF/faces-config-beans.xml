@@ -2349,6 +2349,17 @@
          <value>#{workflowInterpreter}</value>
       </managed-property>
    </managed-bean>
+   
+   <managed-bean>
+      <description>Backing bean used for the Web Client Config Admin Console</description>
+      <managed-bean-name>ConfigAdminConsoleBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.ConfigAdminConsoleBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>configAdminInterpreter</property-name>
+         <value>#{webClientConfigAdminInterpreter}</value>
+      </managed-property>
+   </managed-bean>
 
    <managed-bean>
       <description>

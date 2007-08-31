@@ -292,6 +292,11 @@ public class LoginBean
             else
             {
                // special case to handle jump to My Alfresco page initially
+            	
+               // note: to enable MT runtime client config customization, need to re-init NavigationBean
+               // in context of tenant login page
+               this.navigator.initFromClientConfig();
+                 
                if (NavigationBean.LOCATION_MYALFRESCO.equals(this.preferences.getStartLocation()))
                {
                   return "myalfresco";

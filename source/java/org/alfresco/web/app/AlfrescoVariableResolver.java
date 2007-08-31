@@ -129,7 +129,7 @@ public class AlfrescoVariableResolver extends DelegatingVariableResolver
     */
    protected String getDialogContainer(FacesContext context)
    {
-      if (this.dialogContainer == null)
+	  if ((this.dialogContainer == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          ConfigService configSvc = Application.getConfigService(context);
          Config globalConfig = configSvc.getGlobalConfig();
@@ -151,7 +151,7 @@ public class AlfrescoVariableResolver extends DelegatingVariableResolver
     */
    protected String getWizardContainer(FacesContext context)
    {
-      if (this.wizardContainer == null)
+	  if ((this.wizardContainer == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          ConfigService configSvc = Application.getConfigService(context);
          Config globalConfig = configSvc.getGlobalConfig();

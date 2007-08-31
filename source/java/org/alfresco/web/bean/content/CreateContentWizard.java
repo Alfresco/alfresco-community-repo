@@ -146,7 +146,7 @@ public class CreateContentWizard extends BaseContentWizard
     */
    public List<SelectItem> getCreateMimeTypes()
    {
-      if (this.createMimeTypes == null)
+      if ((this.createMimeTypes == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          FacesContext context = FacesContext.getCurrentInstance();
          

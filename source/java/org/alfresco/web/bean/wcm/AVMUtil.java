@@ -1034,7 +1034,7 @@ public final class AVMUtil
    
    private static ConfigElement getDeploymentConfig()
    {
-      if (deploymentConfig == null)
+      if ((deploymentConfig == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          ConfigService cfgService = Application.getConfigService(FacesContext.getCurrentInstance());
          ConfigElement wcmCfg = cfgService.getGlobalConfig().getConfigElement("wcm");
@@ -1049,7 +1049,7 @@ public final class AVMUtil
    
    private static ConfigElement getLinksManagementConfig()
    {
-      if (linksManagementConfig == null)
+      if ((linksManagementConfig == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          ConfigService cfgService = Application.getConfigService(FacesContext.getCurrentInstance());
          ConfigElement wcmCfg = cfgService.getGlobalConfig().getConfigElement("wcm");

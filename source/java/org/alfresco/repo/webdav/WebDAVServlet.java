@@ -221,7 +221,7 @@ public class WebDAVServlet extends HttpServlet
                 // Create the handler method
                 
                 method = (WebDAVMethod) methodClass.newInstance();
-                NodeRef rootNodeRef = null;
+                NodeRef rootNodeRef = m_rootNodeRef;
                 if (m_tenantService.isEnabled())
                 {
                     WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
@@ -229,11 +229,8 @@ public class WebDAVServlet extends HttpServlet
                     SearchService searchService = (SearchService) context.getBean("SearchService");
                     NamespaceService namespaceService = (NamespaceService) context.getBean("NamespaceService");
 
+                    // note: rootNodeRef is required (for storeRef part)
                     rootNodeRef = m_tenantService.getRootNode(nodeService, searchService, namespaceService, m_rootPath, rootNodeRef);
-                }
-                else
-                {
-                	rootNodeRef = m_rootNodeRef;
                 }
 
                 method.setDetails(request, response, m_davHelper, rootNodeRef);

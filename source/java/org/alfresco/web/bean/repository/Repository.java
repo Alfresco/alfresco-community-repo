@@ -133,6 +133,8 @@ public final class Repository
     */
    public static NodeRef getCompanyRoot(final FacesContext context)
    {
+	   final String currentUserName = Application.getCurrentUser(context).getUserName();
+
        // note: run in context of System user using tenant-specific store
        // so that Company Root can be returned, even if the user does not have 
        // permission to access the Company Root (including, for example, the Guest user)
@@ -145,7 +147,7 @@ public final class Repository
                TenantService tenantService = (TenantService)FacesContextUtils.getRequiredWebApplicationContext(context).getBean("tenantService");
 
                // get store ref (from config)
-               StoreRef storeRef = tenantService.getName(Repository.getStoreRef());
+               StoreRef storeRef = tenantService.getName(currentUserName, Repository.getStoreRef());
                
                // get root path (from config)
                String rootPath = Application.getRootPath(context);

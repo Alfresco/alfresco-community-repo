@@ -42,10 +42,12 @@ import java.util.Vector;
 
 import javax.transaction.UserTransaction;
 
+import org.alfresco.filesys.avm.AVMDiskDriver;
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.auth.ClientInfo;
 import org.alfresco.filesys.server.auth.acl.AccessControl;
 import org.alfresco.filesys.server.auth.acl.AccessControlManager;
+import org.alfresco.filesys.server.core.InvalidDeviceInterfaceException;
 import org.alfresco.filesys.server.core.SharedDevice;
 import org.alfresco.filesys.server.core.SharedDeviceList;
 import org.alfresco.filesys.server.filesys.AccessDeniedException;
@@ -69,10 +71,15 @@ import org.alfresco.filesys.server.filesys.TreeConnectionHash;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -3931,6 +3938,8 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
             // Search for disk shares
 
+            TenantService tenantService = getServer().getConfiguration().getTenantService();
+
             m_shares = new SharedDeviceList();
             Enumeration enm = shares.enumerateShares();
 
@@ -3944,7 +3953,36 @@ public class FTPSrvSession extends SrvSession implements Runnable
                 // Check if the share is a disk share
 
                 if (shr instanceof DiskSharedDevice)
-                    m_shares.addShare(shr);
+                {
+                	if ((tenantService.isEnabled()) && (tenantService.isTenantUser()))
+                	{
+	                	DiskSharedDevice dsd = (DiskSharedDevice)shr;
+	                	DiskDeviceContext ddc = dsd.getDiskContext();
+	                	if (ddc instanceof ContentContext)
+	                	{
+	                		// TODO - consider fixed tenant-specific shares ?
+	                		ContentContext cc = (ContentContext)ddc;
+	                        
+	                        DiskSharedDevice tenantCompanyHomeShare = createCompanyHomeDiskShare(cc.getFilesystemName(), cc.getStoreName(), cc.getRootPath());
+	                        m_shares.addShare(tenantCompanyHomeShare);
+	                        continue;
+	                	}
+	                	
+	                	try
+	                	{
+		                	if (shr.getInterface() instanceof AVMDiskDriver)
+		                	{
+		                		// skip
+		                		continue;
+		                	}
+	                	}
+	                	catch (InvalidDeviceInterfaceException ex)
+	                	{
+	                	}
+                	}
+                    
+                	m_shares.addShare(shr);
+                }
             }
 
             // Check if there is an access control manager available, if so then
@@ -4082,6 +4120,34 @@ public class FTPSrvSession extends SrvSession implements Runnable
         
         return new DiskSharedDevice( client.getUserName(), diskDrv, diskCtx, SharedDevice.Temporary);
     }
+ 
+    private final DiskSharedDevice createCompanyHomeDiskShare(String filesysName, String storeName, String rootPath)
+    {
+        TenantService tenantService = getServer().getConfiguration().getTenantService();
+        NodeService nodeService = getServer().getConfiguration().getNodeService();
+        SearchService searchService = getServer().getConfiguration().getSearchService();
+        NamespaceService namespaceService = getServer().getConfiguration().getNamespaceService();
+
+        StoreRef storeRef = new StoreRef(storeName);
+        NodeRef rootNodeRef = new NodeRef(storeRef.getProtocol(), storeRef.getIdentifier(), "dummy"); 
+        
+        // root nodeRef is required for storeRef part
+        rootNodeRef = tenantService.getRootNode(nodeService, searchService, namespaceService, rootPath, rootNodeRef);
+
+        //  Create the disk driver and context
+
+        DiskInterface diskDrv = getServer().getConfiguration().getDiskInterface();
+        DiskDeviceContext diskCtx = new ContentContext(filesysName, "", rootPath, rootNodeRef);
+
+        //  Default the filesystem to look like an 80Gb sized disk with 90% free space
+
+        diskCtx.setDiskInformation(new SrvDiskInfo(2560, 64, 512, 2304));
+
+        //  Create a temporary shared device for the user to access the tenant company home directory
+
+        return new DiskSharedDevice(filesysName, diskDrv, diskCtx, SharedDevice.Temporary);
+    }
+
     
     /**
      * Start the FTP session in a seperate thread

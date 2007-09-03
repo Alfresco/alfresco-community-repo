@@ -32,8 +32,17 @@
          <ref bean="authenticationComponent"/>
       </property>
       <property name="nodeService">
-         <ref bean="nodeService"/>
+         <ref bean="NodeService"/>
+      </property> 
+      <property name="tenantService">
+         <ref bean="tenantService" />
       </property>
+      <property name="searchService">
+         <ref bean="SearchService" />
+      </property>
+      <property name="namespaceService">
+         <ref bean="namespaceService" />
+      </property>      
       <property name="personService">
          <ref bean="personService"/>
       </property>

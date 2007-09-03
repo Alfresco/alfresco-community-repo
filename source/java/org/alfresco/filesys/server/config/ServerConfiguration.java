@@ -97,9 +97,12 @@ import org.alfresco.filesys.util.StringList;
 import org.alfresco.filesys.util.X64;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.NTLMMode;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
@@ -402,6 +405,9 @@ public class ServerConfiguration extends AbstractLifecycleBean
     // Various services
     
     private NodeService m_nodeService;
+    private TenantService m_tenantService;
+    private SearchService m_searchService;
+    private NamespaceService m_namespaceService;
     private PersonService m_personService;
     private TransactionService m_transactionService;
 
@@ -522,6 +528,36 @@ public class ServerConfiguration extends AbstractLifecycleBean
     }
 
     /**
+     * Set the namespace service
+     *
+     * @param service NamespaceService
+     */
+    public void setNamespaceService(NamespaceService service)
+    {
+        m_namespaceService = service;
+    }
+
+    /**
+     * Set the search service
+     *
+     * @param service SearchService
+     */
+    public void setSearchService(SearchService service)
+    {
+        m_searchService = service;
+    }
+    
+    /**
+     * Set the tenant service
+     *
+     * @param service TenantService
+     */
+    public void setTenantService(TenantService service)
+    {
+        m_tenantService = service;
+    }
+
+    /**
      * Set the person service
      * 
      * @param service PersonService
@@ -573,6 +609,18 @@ public class ServerConfiguration extends AbstractLifecycleBean
         {
             throw new AlfrescoRuntimeException("Property 'nodeService' not set");
         }
+        else if (m_tenantService == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'tenantService' not set");
+        }
+        else if (m_searchService == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'searchService' not set");
+        }
+        else if (m_namespaceService == null)
+        {
+            throw new AlfrescoRuntimeException("Property 'namespaceService' not set");
+        }        
         else if (m_personService == null)
         {
             throw new AlfrescoRuntimeException("Property 'personService' not set");
@@ -2789,6 +2837,36 @@ public class ServerConfiguration extends AbstractLifecycleBean
     public final NodeService getNodeService()
     {
         return m_nodeService;
+    }
+    
+    /**
+     * Return the tenant service
+     *
+     * @return TenantService
+     */
+    public final TenantService getTenantService()
+    {
+        return m_tenantService;
+    }
+    
+    /**
+     * Return the namespace service
+     *
+     * @return NamespaceService
+     */
+    public final NamespaceService getNamespaceService()
+    {
+        return m_namespaceService;
+    }
+
+    /**
+     * Return the node service
+     *
+     * @return NodeService
+     */
+    public final SearchService getSearchService()
+    {
+        return m_searchService;
     }
     
     /**

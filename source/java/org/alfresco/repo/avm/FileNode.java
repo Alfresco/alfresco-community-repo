@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.repository.ContentData;
  * Interface for the generic idea of a file.
  * @author britt
  */
-interface FileNode extends AVMNode
+public interface FileNode extends AVMNode
 {
     /**
      * Set the ContentData for this file.

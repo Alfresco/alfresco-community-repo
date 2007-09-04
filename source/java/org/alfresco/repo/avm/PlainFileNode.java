@@ -6,7 +6,7 @@ import org.alfresco.service.cmr.repository.ContentData;
  * Interface for Plain file nodes.
  * @author britt
  */
-interface PlainFileNode extends FileNode
+public interface PlainFileNode extends FileNode
 {
     /**
      * Set the encoding of this file.

@@ -27,9 +27,9 @@ package org.alfresco.repo.dictionary;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Map;
 
+import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -48,7 +48,7 @@ import org.alfresco.util.ParameterCheck;
  * 
  * @author David Caruana
  */
-public class DictionaryComponent implements DictionaryService
+public class DictionaryComponent implements DictionaryService, TenantDeployer
 {
     private DictionaryDAO dictionaryDAO;
 
@@ -338,6 +338,26 @@ public class DictionaryComponent implements DictionaryService
             props.add(def.getName());
         }
         return props;
+    }
+
+    public void init()
+    {
+        dictionaryDAO.init();
+    }
+    
+    public void destroy()
+    {
+        dictionaryDAO.destroy();
+    }
+    
+    public void onEnableTenant()
+    {
+        dictionaryDAO.reset(); // to initialise empty dictionary and re-populate
+    }
+    
+    public void onDisableTenant()
+    {
+        dictionaryDAO.destroy();
     }
     
     

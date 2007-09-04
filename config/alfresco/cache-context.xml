@@ -345,4 +345,137 @@
       </property>
    </bean>
    
+
+   <!-- ===================================== -->
+   <!-- Dictionary / Namespace Caches         -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for In-Memory UriToModels -->
+   
+   <bean name="uriToModelsSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.uriToModelsCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for In-Memory UriToModels -->
+   
+   <bean name="uriToModelsCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="uriToModelsSharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.uriToModelsTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>10</value>
+      </property>
+   </bean>
+   
+   <!-- The cross-transaction shared cache for In-Memory CompiledModels -->
+   
+   <bean name="compiledModelsSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.compiledModelsCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for In-Memory CompiledModels -->
+   
+   <bean name="compiledModelsCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="compiledModelsSharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.compiledModelsTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>10</value>
+      </property>
+   </bean>
+
+   <!-- The cross-transaction shared cache for In-Memory Namespace Uris -->
+   
+   <bean name="urisSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.urisCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for In-Memory Namespace Uris -->
+   
+   <bean name="urisCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="urisSharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.urisTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>10</value>
+      </property>
+   </bean>
+   
+   <!-- The cross-transaction shared cache for In-Memory Namespace Prefixes -->
+   
+   <bean name="prefixesSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.prefixesCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for In-Memory Namespace Prefixes -->
+   
+   <bean name="prefixesCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="prefixesSharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.prefixesTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>10</value>
+      </property>
+   </bean>
+   
 </beans>

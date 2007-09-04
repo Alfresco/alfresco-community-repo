@@ -66,4 +66,18 @@ public interface NamespaceDAO extends NamespacePrefixResolver
      */
     public void removePrefix(String prefix);
     
+    /**
+     * Initialise Namespaces
+     */
+    public void init();
+    
+    /**
+     * Destroy Namespaces
+     */
+    public void destroy();
+    
+    /**
+     * Register with the Dictionary
+     */
+    public void registerDictionary(DictionaryDAO dictionaryDAO);
 }

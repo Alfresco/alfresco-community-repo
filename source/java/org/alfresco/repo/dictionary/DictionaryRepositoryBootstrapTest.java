@@ -6,14 +6,16 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap.RepositoryLocation;
+import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.tenant.TenantDeployerService;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseAlfrescoSpringTest;
@@ -67,9 +69,18 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
 
     /** The transaction service */
     private TransactionService transactionService;
-
-    /** The authentication service */
-    private AuthenticationComponent authenticationComponent;
+    
+    /** The tenant service */
+    private TenantService tenantService;
+    
+    /** The tenant deployer service */
+    private TenantDeployerService tenantDeployerService;
+    
+    /** The namespace service */
+    private NamespaceService namespaceService;
+    
+    /** The message service */
+    private MessageService messageService;
 
     /**
      * @see org.springframework.test.AbstractTransactionalSpringContextTests#onSetUpInTransaction()
@@ -85,24 +96,35 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
         
         this.searchService = (SearchService)this.applicationContext.getBean("searchService");
         this.dictionaryDAO = (DictionaryDAO)this.applicationContext.getBean("dictionaryDAO");
-        this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
-        this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
+        this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");        
+        this.tenantService = (TenantService)this.applicationContext.getBean("tenantService");
+        this.tenantDeployerService = (TenantDeployerService)this.applicationContext.getBean("tenantAdminService");
+        this.namespaceService = (NamespaceService)this.applicationContext.getBean("namespaceService");
+        this.messageService = (MessageService)this.applicationContext.getBean("messageService");
         
         this.bootstrap = new DictionaryRepositoryBootstrap();
         this.bootstrap.setContentService(this.contentService);
         this.bootstrap.setSearchService(this.searchService);
         this.bootstrap.setDictionaryDAO(this.dictionaryDAO);
-        this.bootstrap.setAuthenticationComponent(this.authenticationComponent);
-        this.bootstrap.setTransactionService(this.transactionService);        
-        
-        RepositoryLocation location = this.bootstrap.new RepositoryLocation();
+        this.bootstrap.setTransactionService(this.transactionService);
+        this.bootstrap.setTenantService(this.tenantService);    
+        this.bootstrap.setTenantDeployerService(this.tenantDeployerService); 
+        this.bootstrap.setNodeService(this.nodeService);
+        this.bootstrap.setNamespaceService(this.namespaceService);
+        this.bootstrap.setMessageService(this.messageService);
+
+        RepositoryLocation location = new RepositoryLocation();
         location.setStoreProtocol(this.storeRef.getProtocol());
         location.setStoreId(this.storeRef.getIdentifier());
         // NOTE: we are not setting the path for now .. in doing so we are searching the whole dictionary
         
         List<RepositoryLocation> locations = new ArrayList<RepositoryLocation>();
         locations.add(location);
-        this.bootstrap.setRepositoryLocations(locations);      
+        
+        this.bootstrap.setRepositoryModelsLocations(locations);
+        
+        // register with dictionary service
+        this.bootstrap.register();
     }
     
     /**
@@ -148,7 +170,7 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
         }        
         
         // Now do the bootstrap
-        this.bootstrap.bootstrap();
+        this.bootstrap.init();
         
         // Check that the model is now there
         ModelDefinition modelDefinition1 = this.dictionaryDAO.getModel(

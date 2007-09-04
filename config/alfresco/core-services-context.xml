@@ -600,7 +600,19 @@
     <!-- Data Dictionary -->
     <!--                 -->
 
-    <bean id="namespaceDAO" class="org.alfresco.repo.dictionary.NamespaceDAOImpl" />
+    <bean id="namespaceDAO" class="org.alfresco.repo.dictionary.NamespaceDAOImpl">
+    
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="urisCache">
+            <ref bean="urisCache"/>
+        </property>
+        <property name="prefixesCache">
+            <ref bean="prefixesCache"/>
+        </property>
+        
+    </bean>
 
     <bean id="dictionaryModelType" class="org.alfresco.repo.dictionary.DictionaryModelType" init-method="init">
         <property name="dictionaryDAO">
@@ -624,6 +636,15 @@
         <constructor-arg index="0">
             <ref bean="namespaceDAO" />
         </constructor-arg>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>    
+        <property name="uriToModelsCache">
+            <ref bean="uriToModelsCache"/>
+        </property>
+        <property name="compiledModelsCache">
+            <ref bean="compiledModelsCache"/>
+        </property>
     </bean>
 
     <bean id="dictionaryService" class="org.alfresco.repo.dictionary.DictionaryComponent" depends-on="dictionaryBootstrap">
@@ -641,6 +662,9 @@
 
     <bean id="dictionaryModelBootstrap" class="org.alfresco.repo.dictionary.DictionaryBootstrap" init-method="bootstrap" abstract="true">
         <property name="dictionaryDAO"><ref local="dictionaryDAO"/></property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
     </bean>
 
     <bean id="dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="resourceBundles">
@@ -688,24 +712,6 @@
             <list>
                 <value>alfresco/model/defaultCustomModel.xml</value>
             </list>
-        </property>
-    </bean>
-    
-    <bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap" init-method="bootstrap">
-        <property name="dictionaryDAO">
-            <ref local="dictionaryDAO"/>
-        </property>
-        <property name="contentService">
-            <ref bean="contentService"/>
-        </property>
-        <property name="searchService">
-            <ref bean="searchService"/>
-        </property>
-        <property name="transactionService">
-            <ref bean="transactionService"/>
-        </property>
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponent"/>
         </property>
     </bean>
 

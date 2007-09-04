@@ -354,4 +354,34 @@
         overflowToDisk="false"
         />
         
+    <!-- Dictionary / Namespace (tenant-based) -->
+    
+    <cache 
+        name="org.alfresco.cache.uriToModelsCache" 
+        maxElementsInMemory="100"
+        eternal="true"
+        overflowToDisk="false"
+        />
+        
+    <cache 
+        name="org.alfresco.cache.compiledModelsCache" 
+        maxElementsInMemory="100"
+        eternal="true"
+        overflowToDisk="false"
+        />
+
+    <cache 
+        name="org.alfresco.cache.urisCache" 
+        maxElementsInMemory="100"
+        eternal="true"
+        overflowToDisk="false"
+        />
+        
+    <cache 
+        name="org.alfresco.cache.prefixesCache" 
+        maxElementsInMemory="100"
+        eternal="true"
+        overflowToDisk="false"
+        />
+        
 </ehcache>

@@ -29,18 +29,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 
 /**
- * Bootstrap Dictionary DAO with pre-defined models
+ * Bootstrap Dictionary DAO with pre-defined models & message resources (from classpath)
  * 
  * @author David Caruana
  *
  */
-public class DictionaryBootstrap
+public class DictionaryBootstrap implements DictionaryDeployer
 {
     // The list of models to bootstrap with
     private List<String> models = new ArrayList<String>();
@@ -50,6 +51,9 @@ public class DictionaryBootstrap
 
     // Dictionary DAO
     private DictionaryDAO dictionaryDAO = null;
+    
+    // Tenant Service
+    private TenantService tenantService;
 
     // Logger
     private static Log logger = LogFactory.getLog(DictionaryDAO.class);
@@ -63,6 +67,16 @@ public class DictionaryBootstrap
     public void setDictionaryDAO(DictionaryDAO dictionaryDAO)
     {
         this.dictionaryDAO = dictionaryDAO;
+    }
+    
+    /**
+     * Sets the Tenant Service
+     * 
+     * @param tenantService
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
     
     /**
@@ -86,37 +100,65 @@ public class DictionaryBootstrap
     }
     
     /**
-     * Bootstrap the Dictionary
+     * Bootstrap the Dictionary - register and populate
+     * 
      */
     public void bootstrap()
     {
-        // register models
-        for (String bootstrapModel : models)
+        initDictionary();
+        initStaticMessages();
+        
+        register();
+    }
+    
+    /**
+     * Register with the Dictionary
+     */
+    public void register()
+    {
+    	dictionaryDAO.register(this);
+    }
+
+    /**
+     * Populate the Dictionary
+     */
+    public void initDictionary()
+    {
+        if ((tenantService == null) || (! tenantService.isTenantUser()))
         {
-            InputStream modelStream = getClass().getClassLoader().getResourceAsStream(bootstrapModel);
-            if (modelStream == null)
+            // register models
+            for (String bootstrapModel : models)
             {
-                throw new DictionaryException("Could not find bootstrap model " + bootstrapModel);
-            }
-            try
-            {
-                if (logger.isInfoEnabled())
-                    logger.info("Loading model from " + bootstrapModel);
-                
-                M2Model model = M2Model.createModel(modelStream);
-                dictionaryDAO.putModel(model);
-            }
-            catch(DictionaryException e)
-            {
-                throw new DictionaryException("Could not import bootstrap model " + bootstrapModel, e);
+                InputStream modelStream = getClass().getClassLoader().getResourceAsStream(bootstrapModel);
+                if (modelStream == null)
+                {
+                    throw new DictionaryException("Could not find bootstrap model " + bootstrapModel);
+                }
+                try
+                {
+                    if (logger.isInfoEnabled())
+                        logger.info("Loading model from " + bootstrapModel);
+                    
+                    M2Model model = M2Model.createModel(modelStream);
+                    dictionaryDAO.putModel(model);
+                }
+                catch(DictionaryException e)
+                {
+                    throw new DictionaryException("Could not import bootstrap model " + bootstrapModel, e);
+                }
             }
         }
-        
-        // register models
+    }
+    
+    /**
+     * Register the static resource bundles
+     */
+    private void initStaticMessages()
+    {
+        // register messages
         for (String resourceBundle : resourceBundles)
         {
             I18NUtil.registerResourceBundle(resourceBundle);
         }
     }
-
 }

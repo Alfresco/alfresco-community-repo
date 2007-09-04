@@ -93,8 +93,9 @@ public interface DictionaryDAO extends ModelQuery
      * Adds a model to the dictionary.  The model is compiled and validated.
      * 
      * @param model the model to add
+     * @return QName name of model
      */
-    public void putModel(M2Model model);
+    public QName putModel(M2Model model);
     
     /**
      * Removes a model from the dictionary.  The types and aspect in the model will no longer be 
@@ -114,4 +115,26 @@ public interface DictionaryDAO extends ModelQuery
      */
     public Collection<PropertyDefinition> getProperties(QName modelName, QName dataType);
     
+    /**
+     *
+     * Register with the Dictionary
+     * 
+     * @param dictionaryDeployer
+     */
+    public void register(DictionaryDeployer dictionaryDeployer);
+    
+    /**
+     * Reset the Dictionary - destroy & re-initialise
+     */
+    public void reset();
+    
+    /**
+     * Initialise the Dictionary
+     */
+    public void init();
+    
+    /**
+     * Destroy the Dictionary
+     */
+    public void destroy();
 }

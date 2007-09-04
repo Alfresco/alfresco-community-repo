@@ -30,26 +30,43 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.i18n.MessageDeployer;
+import org.alfresco.repo.i18n.MessageService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantDeployer;
+import org.alfresco.repo.tenant.TenantDeployerService;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
-
+import org.alfresco.util.AbstractLifecycleBean;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * Bootstrap the dictionary from specified locations within the repository
  * 
- * @author Roy Wetherall
+ * @author Roy Wetherall, JanV
  */
-public class DictionaryRepositoryBootstrap
-{   
-    /** Loactions in the respository fro which models should be loaded */
-    private List<RepositoryLocation> repositoryLocations = new ArrayList<RepositoryLocation>();
+public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean implements TenantDeployer, DictionaryDeployer, MessageDeployer
+{
+    // Logging support
+    private static Log logger = LogFactory
+            .getLog("org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap");
+
+    /** Locations in the repository from which models should be loaded */
+    private List<RepositoryLocation> repositoryModelsLocations = new ArrayList<RepositoryLocation>();
+
+    /** Locations in the repository from which messages should be loaded */
+    private List<RepositoryLocation> repositoryMessagesLocations = new ArrayList<RepositoryLocation>();
 
     /** Dictionary DAO */
     private DictionaryDAO dictionaryDAO = null;
@@ -59,12 +76,24 @@ public class DictionaryRepositoryBootstrap
     
     /** The content service */
     private ContentService contentService;
+
+    /** The node service */
+    private NodeService nodeService;
+
+    /** The tenant service */
+    private TenantService tenantService;
     
+    /** The tenant deployer service */
+    private TenantDeployerService tenantDeployerService;
+
+    /** The namespace service */
+    private NamespaceService namespaceService;
+
+    /** The message service */
+    private MessageService messageService;
+
     /** The transaction service */
     private TransactionService transactionService;
-    
-    /** The authentication component */
-    private AuthenticationComponent authenticationComponent;
       
     /**
      * Sets the Dictionary DAO
@@ -95,7 +124,57 @@ public class DictionaryRepositoryBootstrap
     {
         this.contentService = contentService;
     }
+
+    /**
+     * Set the node service
+     * 
+     * @param nodeService   the node service
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    /**
+     * Set the tenant service
+     * 
+     * @param tenantService     the tenant service
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
     
+    /**
+     * Set the tenant admin service
+     * 
+     * @param tenantAdminService    the tenant admin service
+     */
+    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    {
+        this.tenantDeployerService = tenantDeployerService;
+    }
+
+    /**
+     * Set the namespace service
+     * 
+     * @param namespaceService the namespace service
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
+    /**
+     * Set the message service
+     * 
+     * @param messageService    the message service
+     */
+    public void setMessageService(MessageService messageService)
+    {
+        this.messageService = messageService;
+    }
+
     /**
      * Set the transaction service
      * 
@@ -107,95 +186,175 @@ public class DictionaryRepositoryBootstrap
     }
     
     /**
-     * Set the authentication service
+     * Set the repository models locations
      * 
-     * @param authenticationComponent   the authentication component
-     */
-    public void setAuthenticationComponent(
-            AuthenticationComponent authenticationComponent)
+     * @param repositoryModelsLocations   list of the repository models locations
+     */    public void setRepositoryModelsLocations(
+            List<RepositoryLocation> repositoryLocations)
     {
-        this.authenticationComponent = authenticationComponent;
+        this.repositoryModelsLocations = repositoryLocations;
     }
         
     /**
-     * Set the respository locations
+     * Set the repository messages (resource bundle) locations
      * 
-     * @param repositoryLocations   list of the repository locaitons
+     * @param repositoryLocations
+     *            list of the repository messages locations
      */
-    public void setRepositoryLocations(
+    public void setRepositoryMessagesLocations(
             List<RepositoryLocation> repositoryLocations)
     {
-        this.repositoryLocations = repositoryLocations;
+        this.repositoryMessagesLocations = repositoryLocations;
     }
-    
-    @SuppressWarnings("unchecked")
-    public void bootstrap()
+
+
+    /**
+     * Initialise - after bootstrap of schema and tenant admin service
+     */
+    public void init()
     {
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Exception
             {
-                DictionaryRepositoryBootstrap.this.authenticationComponent.setCurrentUser(
-                        DictionaryRepositoryBootstrap.this.authenticationComponent.getSystemUserName());
-                try
-                {
-                    bootstrapImpl();
-                }
-                finally
-                {
-                    DictionaryRepositoryBootstrap.this.authenticationComponent.clearCurrentSecurityContext();
-                }
-                return null;
+                initDictionary();
+                initMessages();
+                
+                return (Object)null;
             }
         });
     }
     
-    /**
-     * Bootstrap the Dictionary
-     */
-    public void bootstrapImpl()
+    public void destroy()
+    {    
+        // NOOP - will be destroyed directly via DictionaryComponent
+    }
+    
+    public void initDictionary()
     {
-        Map<String, M2Model> modelMap = new HashMap<String, M2Model>();
-        
-        // Register the models found in the respository
-        for (RepositoryLocation repositoryLocation : this.repositoryLocations)
-        {
-            ResultSet resultSet = null;
-            try
+        if (this.repositoryModelsLocations != null)
+        {            
+            Map<String, M2Model> modelMap = new HashMap<String, M2Model>();
+    
+            // Register the models found in the repository
+    
+            for (RepositoryLocation repositoryLocation : this.repositoryModelsLocations)
             {
-                resultSet = this.searchService.query(repositoryLocation.getStoreRef(), SearchService.LANGUAGE_LUCENE, repositoryLocation.getQueryStatement());
-            
-                for (NodeRef dictionaryModel : resultSet.getNodeRefs())
+                StoreRef storeRef = repositoryLocation.getStoreRef();
+                
+                if (! nodeService.exists(storeRef))
                 {
-                    M2Model model = createM2Model(dictionaryModel);
-                    if (model != null)
+                    logger.warn("StoreRef '"+ storeRef+"' does not exist");
+                    continue; // skip this location
+                }          
+    
+                if (repositoryLocation.getQueryLanguage().equals(
+                        SearchService.LANGUAGE_XPATH))
+                {
+                    NodeRef rootNode = nodeService.getRootNode(storeRef);
+    
+                    List<NodeRef> nodeRefs = searchService.selectNodes(rootNode,
+                                                                       repositoryLocation.getXPathQueryStatement(ContentModel.TYPE_DICTIONARY_MODEL.getPrefixedQName(namespaceService)),
+                                                                       null, 
+                                                                       namespaceService, 
+                                                                       false);
+    
+                    for (NodeRef dictionaryModel : nodeRefs)
                     {
-                        for (M2Namespace namespace : model.getNamespaces())
+                        // TODO - should validate in case of re-deploy - e.g. update or delete
+                        M2Model model = createM2Model(dictionaryModel);
+                        if (model != null)
                         {
-                            modelMap.put(namespace.getUri(), model);
-                        } 
+                            for (M2Namespace namespace : model.getNamespaces())
+                            {
+                                modelMap.put(namespace.getUri(), model);
+                            }
+                        }
                     }
                 }
             }
-            finally
+    
+            // Load the models ensuring that they are loaded in the correct order
+            List<String> loadedModels = new ArrayList<String>();
+            for (Map.Entry<String, M2Model> entry : modelMap.entrySet())
             {
-                if (resultSet != null)
-                {
-                    resultSet.close();
-                }
+                loadModel(modelMap, loadedModels, entry.getValue());
             }
         }
-        
-        // Load the models ensuring that they are loaded in the correct order
-        List<String> loadedModels = new ArrayList<String>();
-        for (Map.Entry<String, M2Model> entry : modelMap.entrySet())
+    }
+    
+    public void initMessages()
+    {
+        if (this.repositoryMessagesLocations != null)
         {
-            loadModel(modelMap, loadedModels, entry.getValue());
+            // Register the messages found in the repository
+            for (RepositoryLocation repositoryLocation : this.repositoryMessagesLocations)
+            {                
+                StoreRef storeRef = repositoryLocation.getStoreRef();
+                String path = repositoryLocation.getPath();
+                
+                if (! nodeService.exists(storeRef))
+                {
+                    logger.warn("StoreRef '"+ storeRef+"' does not exist");
+                    continue; // skip this location
+                } 
+  
+                if (repositoryLocation.getQueryLanguage().equals(
+                        SearchService.LANGUAGE_XPATH))
+                {
+                    NodeRef rootNode = nodeService.getRootNode(storeRef);
+    
+                    List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, 
+                                                                       repositoryLocation.getXPathQueryStatement(ContentModel.TYPE_CONTENT.getPrefixedQName(namespaceService)), 
+                                                                       null, 
+                                                                       namespaceService, 
+                                                                       false);
+     
+                    List<String> resourceBundleBaseNames = new ArrayList<String>();
+    
+                    for (NodeRef messageResource : nodeRefs)
+                    {
+                        String name = (String) nodeService.getProperty(
+                                messageResource, ContentModel.PROP_NAME);
+    
+                        // convert resource file name to a resource bundle basename
+                        // e.g. either 'workflow_fr_FR.properties' or 'workflow.properties' should be converted to 'workflow'
+                        // note: this assumes that the baseName itself does not contain underscore !
+                        int idx = name.indexOf("_");
+                        if (idx > 0)
+                        {
+                            name = name.substring(0, idx - 1);
+                        }
+                        else
+                        {                       
+	                        int idx1 = name.indexOf(".");
+	                        if (idx1 > 0)
+	                        {
+	                            name = name.substring(0, idx1);
+	                        }
+                        }
+    
+                        if (!resourceBundleBaseNames.contains(name))
+                        {
+                            resourceBundleBaseNames.add(name);
+                        }
+                    }
+    
+                    // Only need to register resource bundle names
+                    for (String resourceBundleBaseName : resourceBundleBaseNames)
+                    {
+                        logger.info("Register bundle: " + resourceBundleBaseName);
+    
+                        messageService.registerResourceBundle(storeRef.toString() + path + "/cm:" + resourceBundleBaseName);
+    
+                    }
+                } 
+            }
         }
     }
     
     /**
-     * Loads a model (and it dependants) if it does not exist in the list of loaded models.
+     * Loads a model (and its dependents) if it does not exist in the list of loaded models.
      * 
      * @param modelMap          a map of the models to be loaded
      * @param loadedModels      the list of models already loaded
@@ -240,77 +399,92 @@ public class DictionaryRepositoryBootstrap
         // TODO should we inactivate the model node and put the error somewhere??
         return model;
     }
-
-    /**
-     * Repositotry location object, defines a location in the repository from within which dictionary models should be loaded
-     * for inclusion in the data dictionary.
-     * 
-     * @author Roy Wetherall
-     */
-    public class RepositoryLocation
+    
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
     {
-        /** Store protocol */
-        private String storeProtocol; 
-        
-        /** Store identifier */
-        private String storeId;
-        
-        /** Path */
-        private String path;
-        
-        /** 
-         * Set the store protocol
-         * 
-         * @param storeProtocol     the store protocol
-         */
-        public void setStoreProtocol(String storeProtocol)
+        // run as System on bootstrap
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
-            this.storeProtocol = storeProtocol;
+            public Object doWork()
+            {            
+                init();
+                return null;
+            }                               
+        }, AuthenticationUtil.getSystemUserName());
+               
+        if (tenantService.isEnabled())
+        {
+            tenantDeployerService.deployTenants(this, logger);
         }
         
-        /**
-         * Set the store identifier
-         * 
-         * @param storeId       the store identifier
-         */
-        public void setStoreId(String storeId)
-        {
-            this.storeId = storeId;
-        }
+    	register();
+    }
+
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
+        unregister();
         
-        /**
-         * Set the path
-         * 
-         * @param path  the path
-         */
-        public void setPath(String path)
+        // run as System on shutdown
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
-            this.path = path;
-        }
+            public Object doWork()
+            {            
+                destroy();
+                return null;
+            }                               
+        }, AuthenticationUtil.getSystemUserName());
         
-        /**
-         * Get the store reference
-         * 
-         * @return  the store reference
-         */
-        public StoreRef getStoreRef()
+        if (tenantService.isEnabled())
         {
-            return new StoreRef(this.storeProtocol, this.storeId);
+            tenantDeployerService.undeployTenants(this, logger);
         }
+    }
+    
+    public void onEnableTenant()
+    {
+        init(); // will be called in context of tenant
+    }
+    
+    public void onDisableTenant()
+    {
+        destroy(); // will be called in context of tenant
+    }
+    
+    /**
+     * Register
+     */
+    public void register()
+    {
+    	// register with Dictionary Service to allow (re-)init
+    	dictionaryDAO.register(this);
+    	
+        // register with Message Service to allow (re-)init
+        messageService.register(this);
         
-        /**
-         * Get the query statement, based on the path
-         * 
-         * @return  the query statement
-         */
-        public String getQueryStatement()
+        if (tenantService.isEnabled())
         {
-            String result = "+TYPE:\"" + ContentModel.TYPE_DICTIONARY_MODEL.toString() + "\"";
-            if (this.path != null)
-            {
-                result += " +PATH:\"" + this.path + "\"";
-            }
-            return result;
+            // register dictionary repository bootstrap
+            tenantDeployerService.register(this);
+            
+            // register repository message (I18N) service
+            tenantDeployerService.register(messageService);
+        }
+    }
+    
+    /**
+     * Unregister
+     */
+    protected void unregister()
+    {
+        if (tenantService.isEnabled())
+        {
+            // register dictionary repository bootstrap
+            tenantDeployerService.unregister(this);
+            
+            // register repository message (I18N) service
+            tenantDeployerService.unregister(messageService);
         }
     }
 }

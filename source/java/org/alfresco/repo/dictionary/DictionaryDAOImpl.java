@@ -31,7 +31,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -59,20 +67,51 @@ public class DictionaryDAOImpl implements DictionaryDAO
     //       registration of models, the ability to load models
     //       from a persistent store, the refresh of the cache
     //       and concurrent read/write of the models.
+    //       (in progress)
+    
+    /**
+     * Lock objects
+     */
+    private ReadWriteLock lock = new ReentrantReadWriteLock();
+    private Lock readLock = lock.readLock();
+    private Lock writeLock = lock.writeLock();
     
     // Namespace Data Access
     private NamespaceDAO namespaceDAO;
 
+    // Tenant Service
+    private TenantService tenantService;
+
     // Map of Namespace URI usages to Models
-    private Map<String, List<CompiledModel>> uriToModels = new HashMap<String, List<CompiledModel>>();
-    
+    private SimpleCache<String, Map<String, List<CompiledModel>>> uriToModelsCache;
+
     // Map of model name to compiled model
-    private Map<QName,CompiledModel> compiledModels = new HashMap<QName,CompiledModel>();
+    private SimpleCache<String, Map<QName,CompiledModel>> compiledModelsCache;
+
+    // Static list of registered dictionary deployers
+    private List<DictionaryDeployer> dictionaryDeployers = new ArrayList<DictionaryDeployer>();
 
     // Logger
     private static Log logger = LogFactory.getLog(DictionaryDAO.class);
 
 
+	// inject dependencies
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
+    public void setUriToModelsCache(SimpleCache<String, Map<String, List<CompiledModel>>> uriToModelsCache)
+    {
+        this.uriToModelsCache = uriToModelsCache;
+    }
+    
+    public void setCompiledModelsCache(SimpleCache<String, Map<QName,CompiledModel>> compiledModelsCache)
+    {
+        this.compiledModelsCache = compiledModelsCache;
+    }
+    
     /**
      * Construct
      * 
@@ -81,20 +120,111 @@ public class DictionaryDAOImpl implements DictionaryDAO
     public DictionaryDAOImpl(NamespaceDAO namespaceDAO)
     {
         this.namespaceDAO = namespaceDAO;
+        this.namespaceDAO.registerDictionary(this);
+        
     }
     
+    /**
+     * Register with the Dictionary
+     */
+    public void register(DictionaryDeployer dictionaryDeployer)
+    {
+        if (! dictionaryDeployers.contains(dictionaryDeployer))
+        {
+            dictionaryDeployers.add(dictionaryDeployer);
+        }
+    }
+    
+    /**
+     * Initialise the Dictionary & Namespaces
+     */
+    public void init()
+    {
+        String tenantDomain = getTenantDomain();
+        
+        // initialise empty dictionary & namespaces
+        putCompiledModels(tenantDomain, new HashMap<QName,CompiledModel>());
+        putUriToModels(tenantDomain, new HashMap<String, List<CompiledModel>>());
+                
+        namespaceDAO.init();
+        
+        // populate the dictionary
+        for (DictionaryDeployer dictionaryDeployer : dictionaryDeployers)
+        {
+        	dictionaryDeployer.initDictionary();
+        }
+        
+        logger.info("Dictionary initialised");
+    }
+    
+    /**
+     * Destroy the Dictionary & Namespaces
+     */
+    public void destroy()
+    {
+        String tenantDomain = getTenantDomain();
+        
+        removeCompiledModels(tenantDomain);
+        removeUriToModels(tenantDomain);                 
+        
+        namespaceDAO.destroy();
+        
+        logger.info("Dictionary destroyed");
+    }
+    
+    /**
+     * Reset the Dictionary & Namespaces
+     */      
+    public void reset()
+    {
+    	reset(getTenantDomain());
+    }
+    
+    private void reset(String tenantDomain)
+    {
+		if (logger.isDebugEnabled()) 
+		{
+			logger.debug("Resetting dictionary ...");
+		}
+		    
+		String userName;
+		if (tenantDomain == "")
+		{
+			userName = AuthenticationUtil.getSystemUserName();
+		}
+		else
+		{
+			userName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
+		}
+		   
+		AuthenticationUtil.runAs(new RunAsWork<Object>()
+		{
+			public Object doWork()
+			{  
+		       destroy();
+		       init();
+		       
+		       return null;
+			}                               
+		}, userName);
+		
+		if (logger.isDebugEnabled()) 
+		{
+			logger.debug("... resetting dictionary completed");
+		}
+    }
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.impl.DictionaryDAO#putModel(org.alfresco.repo.dictionary.impl.M2Model)
      */
-    public void putModel(M2Model model)
+    public QName putModel(M2Model model)
     {
         // Compile model definition
         CompiledModel compiledModel = model.compile(this, namespaceDAO);
         QName modelName = compiledModel.getModelDefinition().getName();
 
         // Remove namespace definitions for previous model, if it exists
-        CompiledModel previousVersion = compiledModels.get(modelName);
+        CompiledModel previousVersion = getCompiledModels().get(modelName);
         if (previousVersion != null)
         {
             for (M2Namespace namespace : previousVersion.getM2Model().getNamespaces())
@@ -122,7 +252,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
         }
         
         // Publish new Model Definition
-        compiledModels.put(modelName, compiledModel);
+        getCompiledModels().put(modelName, compiledModel);
 
         if (logger.isInfoEnabled())
         {
@@ -132,6 +262,8 @@ public class DictionaryDAOImpl implements DictionaryDAO
                 logger.info("Registered namespace '" + namespace.getUri() + "' (prefix '" + namespace.getPrefix() + "')");
             }
         }
+
+        return modelName;
     }
     
 
@@ -140,7 +272,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public void removeModel(QName modelName)
     {
-        CompiledModel compiledModel = this.compiledModels.get(modelName);
+        CompiledModel compiledModel = getCompiledModels().get(modelName);
         if (compiledModel != null)
         {
             // Remove the namespaces from the namespace service
@@ -153,7 +285,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
             }
             
             // Remove the model from the list
-            this.compiledModels.remove(modelName);
+            getCompiledModels().remove(modelName);
         }
     }
 
@@ -166,11 +298,11 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     private void mapUriToModel(String uri, CompiledModel model)
     {
-    	List<CompiledModel> models = uriToModels.get(uri);
+    	List<CompiledModel> models = getUriToModels().get(uri);
     	if (models == null)
     	{
     		models = new ArrayList<CompiledModel>();
-    		uriToModels.put(uri, models);
+    		getUriToModels().put(uri, models);
     	}
     	if (!models.contains(model))
     	{
@@ -187,7 +319,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     private void unmapUriToModel(String uri, CompiledModel model)
     {
-    	List<CompiledModel> models = uriToModels.get(uri);
+    	List<CompiledModel> models = getUriToModels().get(uri);
     	if (models != null)
     	{
     		models.remove(model);
@@ -203,25 +335,93 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     private List<CompiledModel> getModelsForUri(String uri)
     {
-    	List<CompiledModel> models = uriToModels.get(uri);
-    	if (models == null)
-    	{
-    		models = Collections.emptyList(); 
-    	}
-    	return models;
+        // note: special case, if running as System - e.g. addAuditAspect
+        String currentUserName = AuthenticationUtil.getCurrentUserName();
+        
+        if ((tenantService.isTenantUser()) ||
+            (tenantService.isTenantName(uri) && (currentUserName != null) && (currentUserName.equals(AuthenticationUtil.getSystemUserName()))))
+        {
+            String tenantDomain = null;
+            if (currentUserName.equals(AuthenticationUtil.getSystemUserName()))
+            {
+                tenantDomain = tenantService.getDomain(uri);
+            }
+            else
+            {
+                tenantDomain = tenantService.getCurrentUserDomain();
+            }
+            uri = tenantService.getBaseName(uri, true);
+            
+            // get non-tenant models (if any)
+            List<CompiledModel> models = getUriToModels("").get(uri);
+            
+            List<CompiledModel> filteredModels = new ArrayList<CompiledModel>();
+            if (models != null)
+            {
+                filteredModels.addAll(models);
+            }
+    
+            // get tenant models (if any)
+            List<CompiledModel> tenantModels = getUriToModels(tenantDomain).get(uri);
+            if (tenantModels != null)
+            {
+                if (models != null)
+                {
+                    // check to see if tenant model overrides a non-tenant model
+                    for (CompiledModel tenantModel : tenantModels)
+                    {
+                        for (CompiledModel model : models)
+                        {
+                            if (tenantModel.getM2Model().getName().equals(model.getM2Model().getName()))
+                            {
+                                filteredModels.remove(model);
+                            }
+                        }
+                    }
+                }
+                filteredModels.addAll(tenantModels);
+                models = filteredModels;
+            }
+    
+            if (models == null)
+            {
+                models = Collections.emptyList();
+            }
+            return models;       
+        }
+        else
+        {
+            List<CompiledModel> models = getUriToModels().get(uri);
+            if (models == null)
+            {
+                models = Collections.emptyList(); 
+            }
+            return models;
+        }
     }
-    
-    
+
+
     /**
      * @param modelName  the model name
      * @return the compiled model of the given name
      */
     private CompiledModel getCompiledModel(QName modelName)
     {
-        CompiledModel model = compiledModels.get(modelName);
+        if (tenantService.isTenantUser())
+        {
+            // get tenant-specific model (if any)
+            CompiledModel model = getCompiledModels().get(modelName);
+            if (model != null)
+            {
+                return model;
+            }
+            // else drop down to check for shared (core/system) models ...
+        }
+
+        // get non-tenant model (if any)
+        CompiledModel model = getCompiledModels("").get(modelName);
         if (model == null)
         {
-            // TODO: Load model from persistent store 
             throw new DictionaryException("d_dictionary.model.err.no_model", modelName);
         }
         return model;
@@ -251,12 +451,39 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public DataTypeDefinition getDataType(Class javaClass)
     {
-        for (CompiledModel model : compiledModels.values())
+        if (tenantService.isTenantUser() == true)
         {
-            DataTypeDefinition dataTypeDef = model.getDataType(javaClass);
-            if (dataTypeDef != null)
-            {
-                return dataTypeDef;
+            // get tenant models (if any)                
+            for (CompiledModel model : getCompiledModels().values())
+            { 
+                DataTypeDefinition dataTypeDef = model.getDataType(javaClass);
+                if (dataTypeDef != null)
+                {
+                    return dataTypeDef;
+                }
+            }          
+        
+            // get non-tenant models (if any)
+            for (CompiledModel model : getCompiledModels("").values())
+            {    
+                DataTypeDefinition dataTypeDef = model.getDataType(javaClass);
+                if (dataTypeDef != null)
+                {
+                    return dataTypeDef;
+                }
+            }
+        
+            return null;
+        }
+        else
+        {
+            for (CompiledModel model : getCompiledModels().values())
+            {    
+                DataTypeDefinition dataTypeDef = model.getDataType(javaClass);
+                if (dataTypeDef != null)
+                {
+                    return dataTypeDef;
+                }
             }
         }
         return null;
@@ -315,6 +542,11 @@ public class DictionaryDAOImpl implements DictionaryDAO
     public ClassDefinition getClass(QName className)
     {
         List<CompiledModel> models = getModelsForUri(className.getNamespaceURI());
+   
+        // note: special case, if running as System - e.g. addAuditAspect
+        // now force, even for System user
+        className = tenantService.getBaseName(className, true);
+
         for (CompiledModel model : models)
         {
         	ClassDefinition classDef = model.getClass(className);
@@ -386,9 +618,56 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public Collection<QName> getModels()
     {
-        return compiledModels.keySet();
-    }
+        if (tenantService.isTenantUser())
+        {
+            // return all tenant-specific models and all shared (non-overridden) models
+            Collection<QName> filteredModels = new ArrayList<QName>();
+            Collection<QName> tenantModels = new ArrayList<QName>();
+            Collection<QName> nontenantModels = new ArrayList<QName>();
 
+            // get tenant models (if any)
+            for (QName key : getCompiledModels().keySet())
+            {
+                tenantModels.add(key);
+            }
+            
+            // get non-tenant models (if any)
+            // note: these will be shared, if not overridden - could be core/system model or additional custom model shared between tenants
+            for (QName key : getCompiledModels("").keySet())
+            {
+                nontenantModels.add(key);
+            }
+
+            // check for overrides
+            filteredModels.addAll(nontenantModels);
+
+            for (QName tenantModel : tenantModels)
+            {
+                for (QName nontenantModel : nontenantModels)
+                {
+                    if (tenantModel.equals(nontenantModel))
+                    {
+                        // override
+                        filteredModels.remove(nontenantModel);
+                        break;
+                    }
+                }
+            }
+
+            filteredModels.addAll(tenantModels);
+            return filteredModels;
+        }
+        else
+        {
+            return getCompiledModels().keySet();
+        } 
+    }
+    
+    // used for clean-up, e.g. when deleting a tenant
+    protected Collection<QName> getNonSharedModels()
+    {            
+        return getCompiledModels().keySet();    
+    }
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.impl.DictionaryDAO#getModel(org.alfresco.repo.ref.QName)
@@ -479,4 +758,196 @@ public class DictionaryDAOImpl implements DictionaryDAO
         return properties;
     }
 
+    /**
+     * Get compiledModels from the cache (in the context of the current user's tenant domain)
+     * 
+     * @param tenantDomain
+     */
+    /* package */ Map<QName,CompiledModel> getCompiledModels()
+    {
+        return getCompiledModels(getTenantDomain());
+    }
+    
+    /**
+     * Get compiledModels from the cache (in the context of the given tenant domain)
+     * 
+     * @param tenantDomain
+     */
+    private Map<QName,CompiledModel> getCompiledModels(String tenantDomain)
+    {
+        Map<QName,CompiledModel> compiledModels = null;
+        try 
+        {
+            readLock.lock();
+            compiledModels = compiledModelsCache.get(tenantDomain);
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+        
+        
+        if (compiledModels == null)
+        {          
+            reset(tenantDomain); // reset caches - may have been invalidated (e.g. in a cluster)
+
+            try 
+            {
+                readLock.lock();
+                compiledModels = compiledModelsCache.get(tenantDomain);
+            }
+            finally
+            {
+                readLock.unlock();
+            }                
+                
+            if (compiledModels == null)
+            {     
+                // unexpected
+                throw new AlfrescoRuntimeException("Failed to re-initialise compiledModelsCache " + tenantDomain);
+            }
+        }
+            
+        return compiledModels;
+    }  
+
+    /**
+     * Put compiledModels into the cache (in the context of the given tenant domain)
+     * 
+     * @param tenantDomain
+     */
+    private void putCompiledModels(String tenantDomain, Map<QName, CompiledModel> compiledModels)
+    {      
+        try 
+        {
+            writeLock.lock();
+            compiledModelsCache.put(tenantDomain, compiledModels);
+        }
+        finally
+        {
+            writeLock.unlock();
+        }       
+    } 
+    
+    /**
+     * Remove compiledModels from the cache (in the context of the given tenant domain)
+     * 
+     * @param tenantDomain
+     */
+    private void removeCompiledModels(String tenantDomain)
+    {
+        try
+        {
+            writeLock.lock();
+            if (compiledModelsCache.get(tenantDomain) != null)
+            {
+                compiledModelsCache.get(tenantDomain).clear();
+                compiledModelsCache.remove(tenantDomain);
+            }
+        }
+        finally
+        {
+            writeLock.unlock();
+        }        
+    }
+    
+    /**
+     * Get uriToModels from the cache (in the context of the current user's tenant domain)
+     * 
+     * @param tenantDomain
+     */
+    private Map<String, List<CompiledModel>> getUriToModels()
+    {
+        return getUriToModels(getTenantDomain());
+    }
+
+    /**
+     * Get uriToModels from the cache (in the context of the given tenant domain)
+     * 
+     * @param tenantDomain
+     */
+    private Map<String, List<CompiledModel>> getUriToModels(String tenantDomain)
+    {
+        Map<String, List<CompiledModel>> uriToModels = null;
+        try
+        {
+            readLock.lock();
+            uriToModels = uriToModelsCache.get(tenantDomain);
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+        
+        if (uriToModels == null)
+        {
+            reset(tenantDomain); // reset caches - may have been invalidated (e.g. in a cluster)
+            
+            try
+            {
+                readLock.lock();
+                uriToModels = uriToModelsCache.get(tenantDomain);
+            }
+            finally
+            {
+                readLock.unlock();
+            }
+            
+            if (uriToModels == null)
+            {     
+                // unexpected
+                throw new AlfrescoRuntimeException("Failed to re-initialise uriToModelsCache " + tenantDomain);
+            }
+        }
+            
+        return uriToModels;
+    }  
+    
+    /**
+     * Put uriToModels into the cache (in the context of the given tenant domain)
+     * 
+     * @param tenantDomain
+     */
+    private void putUriToModels(String tenantDomain, Map<String, List<CompiledModel>> uriToModels)
+    {
+        try 
+        {
+            writeLock.lock();
+            uriToModelsCache.put(tenantDomain, uriToModels);
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
+    } 
+    
+    /**
+     * Remove uriToModels from the cache (in the context of the given tenant domain)
+     * 
+     * @param tenantDomain
+     */
+    private void removeUriToModels(String tenantDomain)
+    {
+        try 
+        {
+            writeLock.lock();
+            if (uriToModelsCache.get(tenantDomain) != null)
+            {
+                uriToModelsCache.get(tenantDomain).clear();
+                uriToModelsCache.remove(tenantDomain);
+            }
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
+    } 
+    
+    /**
+     * Local helper - returns tenant domain (or empty string if default non-tenant)
+     */
+    private String getTenantDomain()
+    {
+        return tenantService.getCurrentUserDomain();
+    }
 }

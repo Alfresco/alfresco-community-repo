@@ -26,6 +26,15 @@ package org.alfresco.repo.dictionary;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.CacheManager;
+
+import org.alfresco.repo.cache.EhCacheAdapter;
+import org.alfresco.repo.tenant.SingleTServiceImpl;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.namespace.QName;
 
 
 /**
@@ -67,8 +76,17 @@ public class TestModel
         }
         
         // construct dictionary dao        
-        NamespaceDAO namespaceDAO = new NamespaceDAOImpl();
+        TenantService tenantService = new SingleTServiceImpl();
+        
+        NamespaceDAOImpl namespaceDAO = new NamespaceDAOImpl();
+        namespaceDAO.setTenantService(tenantService);
+        
+        initNamespaceCaches(namespaceDAO);
+        
         DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl(namespaceDAO);
+        dictionaryDAO.setTenantService(tenantService);
+        
+        initDictionaryCaches(dictionaryDAO);
 
         // bootstrap dao
         try
@@ -89,5 +107,43 @@ public class TestModel
                 t = t.getCause();
             }
         }
+    }
+    
+    private static void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO)
+    {
+        CacheManager cacheManager = new CacheManager();
+        
+        Cache uriToModelsEhCache = new Cache("uriToModelsCache", 50, false, true, 0L, 0L);
+        cacheManager.addCache(uriToModelsEhCache);      
+        EhCacheAdapter<String, Map<String, List<CompiledModel>>> uriToModelsCache = new EhCacheAdapter<String, Map<String, List<CompiledModel>>>();
+        uriToModelsCache.setCache(uriToModelsEhCache);
+        
+        dictionaryDAO.setUriToModelsCache(uriToModelsCache);
+        
+        Cache compileModelsEhCache = new Cache("compiledModelsCache", 50, false, true, 0L, 0L);
+        cacheManager.addCache(compileModelsEhCache);
+        EhCacheAdapter<String, Map<QName,CompiledModel>> compileModelCache = new EhCacheAdapter<String, Map<QName,CompiledModel>>();
+        compileModelCache.setCache(compileModelsEhCache);
+        
+        dictionaryDAO.setCompiledModelsCache(compileModelCache);
+    }
+    
+    private static void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
+    {
+        CacheManager cacheManager = new CacheManager();
+        
+        Cache urisEhCache = new Cache("urisCache", 50, false, true, 0L, 0L);
+        cacheManager.addCache(urisEhCache);      
+        EhCacheAdapter<String, List<String>> urisCache = new EhCacheAdapter<String, List<String>>();
+        urisCache.setCache(urisEhCache);
+        
+        namespaceDAO.setUrisCache(urisCache);
+        
+        Cache prefixesEhCache = new Cache("prefixesCache", 50, false, true, 0L, 0L);
+        cacheManager.addCache(prefixesEhCache);
+        EhCacheAdapter<String, Map<String, String>> prefixesCache = new EhCacheAdapter<String, Map<String, String>>();
+        prefixesCache.setCache(prefixesEhCache);
+        
+        namespaceDAO.setPrefixesCache(prefixesCache);
     }
 }

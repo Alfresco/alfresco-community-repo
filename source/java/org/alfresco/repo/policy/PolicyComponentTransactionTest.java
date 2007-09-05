@@ -36,6 +36,7 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.Policy.Arg;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -68,6 +69,7 @@ public class PolicyComponentTransactionTest extends TestCase
         bootstrapModels.add(TEST_MODEL);
         bootstrap.setModels(bootstrapModels);
         bootstrap.setDictionaryDAO((DictionaryDAO)applicationContext.getBean("dictionaryDAO"));
+        bootstrap.setTenantService((TenantService)applicationContext.getBean("tenantService"));
         bootstrap.bootstrap();
         
         // retrieve policy component

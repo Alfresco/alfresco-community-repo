@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <bean id="repoAdminService" class="org.alfresco.repo.admin.RepoAdminServiceImpl">
+   
+      <property name="dictionaryDAO" ref="dictionaryDAO"/>      
+      <property name="searchService" ref="SearchService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="contentService" ref="ContentService"/>
+      <property name="namespaceService" ref="namespaceService"/>
+      <property name="messageService" ref="messageService"/>
+      
+      <property name="repositoryModelsLocation" ref="customModelsRepositoryLocation"/>
+      <property name="repositoryMessagesLocation" ref="customMessagesRepositoryLocation"/>
+      
+   </bean>
+   
+   <bean id="repoAdminInterpreter" class="org.alfresco.repo.admin.RepoAdminInterpreter">
+   
+      <property name="transactionService" ref="transactionComponent"/>
+      <property name="repoAdminService" ref="RepoAdminService"/>
+      <property name="tenantService" ref="tenantService"/>
+        
+   </bean>
+
+   <bean id="repoAdminInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+   
+      <property name="resourceBundles">
+         <list>
+             <value>alfresco.messages.repoadmin-interpreter-help</value>
+         </list>
+      </property>
+        
+   </bean>
+   
+    
+   <!-- Load any additional models/messages from repo into data dictionary -->    
+   <!-- note: needs to match import-export-context.xml locations -->
+   
+   <bean id="customModelsRepositoryLocation" class="org.alfresco.repo.dictionary.RepositoryLocation">
+        <!-- other properties will be defaulted, but can be overriden here -->
+        <property name="path">
+            <value>/app:company_home/app:dictionary/app:models</value>
+        </property>
+   </bean>
+
+   <bean id="customMessagesRepositoryLocation" class="org.alfresco.repo.dictionary.RepositoryLocation">
+        <!-- other properties will be defaulted, but can be overriden here -->
+        <property name="path">
+            <value>/app:company_home/app:dictionary/app:messages</value>
+        </property>
+   </bean>  
+    
+   <bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap">
+
+         <property name="dictionaryDAO">
+            <ref bean="dictionaryDAO"/>
+         </property>
+         <property name="contentService">
+            <ref bean="contentService"/>
+         </property>
+         <property name="searchService">
+            <ref bean="searchService"/>
+         </property>
+         <property name="transactionService">
+             <ref bean="transactionComponent"/>
+         </property>
+                  
+         <property name="namespaceService"><ref bean="namespaceService"/></property>
+         <property name="nodeService"><ref bean="NodeService"/></property>
+         <property name="messageService"><ref bean="messageService"/></property>
+         
+         <property name="tenantService"><ref bean="tenantService"/></property>
+         <property name="tenantDeployerService" ref="tenantAdminService"/>
+         
+         <property name="repositoryModelsLocations">
+            <list>
+               <ref bean="customModelsRepositoryLocation" />
+            </list>        
+         </property>
+         
+         <property name="repositoryMessagesLocations">
+            <list>
+               <ref bean="customMessagesRepositoryLocation" />
+            </list>        
+         </property>
+         
+   </bean>
+   
+</beans>

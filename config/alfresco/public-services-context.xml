@@ -1419,4 +1419,36 @@
         </property>
     </bean>
 
+      
+    <!-- Repository Admin Service -->
+    
+    <bean id="RepoAdminService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.admin.RepoAdminService</value>
+        </property>
+        <property name="target">
+            <ref bean="repoAdminService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="RepoAdminService_transaction"/>
+                <idref local="AuditMethodInterceptor"/>
+                <idref local="exceptionTranslator"/>
+                <idref bean="RepoAdminService_security"/>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="RepoAdminService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+      
 </beans>

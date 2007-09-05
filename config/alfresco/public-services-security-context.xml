@@ -795,4 +795,12 @@
 
     <bean id="AuditService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
 
+    <!-- ======================== -->
+    <!-- Repository Admin Service -->
+    <!-- ======================== -->
+    
+    <!-- TODO: Add repository admin security -->
+    
+    <bean id="RepoAdminService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    
 </beans>

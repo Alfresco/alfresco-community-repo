@@ -2362,6 +2362,17 @@
    </managed-bean>
 
    <managed-bean>
+      <description>Backing bean used for the Repository Admin Console</description>
+      <managed-bean-name>RepoAdminConsoleBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.repository.admin.RepoAdminConsoleBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>repoAdminInterpreter</property-name>
+         <value>#{repoAdminInterpreter}</value>
+      </managed-property>
+   </managed-bean>
+
+   <managed-bean>
       <description>
          The bean that backs up the Email Space Users Dialog
       </description>

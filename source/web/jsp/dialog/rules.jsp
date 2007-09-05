@@ -229,6 +229,16 @@
                                     </h:outputText>
                                  </a:column>
                                  
+                                 <%-- Rule status collumn --%>
+                                 <a:column style="text-align:left">
+                                    <f:facet name="header">
+                                       <h:outputText value="#{msg.rule_active}" styleClass="header"/>
+                                    </f:facet>
+                                    <h:outputText value="#{!r.rule.ruleDisabled}">
+                                       <a:convertBoolean/>
+                                    </h:outputText>
+                                 </a:column>
+                                 
                                  <%-- Actions column --%>
                                  <a:column actions="true" style="text-align:left">
                                     <f:facet name="header">

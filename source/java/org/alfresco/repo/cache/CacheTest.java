@@ -33,6 +33,9 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 import net.sf.ehcache.CacheManager;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
@@ -168,13 +171,27 @@ public class CacheTest extends TestCase
             assertFalse("Transactionally removed item found in keys", transactionalKeys.contains(newGlobalOne));
             assertTrue("Transactionally added item not found in keys", transactionalKeys.contains(updatedTxnThree));
             
+            // Register a post-commit stresser.  We do this here so that it is registered after the transactional cache
+            PostCommitCacheUser listener = new PostCommitCacheUser(transactionalCache, updatedTxnThree);
+            AlfrescoTransactionSupport.bindListener(listener);
+            
             // commit the transaction
             txn.commit();
+            
+            // Check the post-commit stresser
+            if (listener.e != null)
+            {
+                throw listener.e;
+            }
             
             // check that backing cache was updated with the in-transaction changes
             assertFalse("Item was not removed from backing cache", backingCache.contains(newGlobalOne));
             assertNull("Item could still be fetched from backing cache", backingCache.get(newGlobalOne));
             assertEquals("Item not updated in backing cache", "XXX", backingCache.get(updatedTxnThree));
+            
+            // Check that the transactional cache serves get requests
+            assertEquals("Transactional cache must serve post-commit get requests", "XXX",
+                    transactionalCache.get(updatedTxnThree));
         }
         catch (Throwable e)
         {
@@ -184,6 +201,53 @@ public class CacheTest extends TestCase
             }
             throw e;
         }
+    }
+    
+    /**
+     * This transaction listener attempts to use the cache in the afterCommit phase.  Technically the
+     * transaction has finished, but the transaction resources are still available.
+     * 
+     * @author Derek Hulley
+     * @since 2.1
+     */
+    private class PostCommitCacheUser extends TransactionListenerAdapter
+    {
+        private final SimpleCache<String, Object> transactionalCache;
+        private final String key;
+        private Throwable e;
+        private PostCommitCacheUser(SimpleCache<String, Object> transactionalCache, String key)
+        {
+            this.transactionalCache = transactionalCache;
+            this.key = key;
+        }
+        @Override
+        public void afterCommit()
+        {
+            try
+            {
+                transactionalCache.get(key);
+            }
+            catch (Throwable e)
+            {
+                this.e = e;
+                return;
+            }
+            try
+            {
+                transactionalCache.put(key, "ZZZ");
+                e = new RuntimeException("Transactional caches should not allow puts in the after-commit phase");
+            }
+            catch (AlfrescoRuntimeException e)
+            {
+                // Expected
+            }
+        }
+        @Override
+        public int hashCode()
+        {
+            return -100000;
+        }
+        
     }
     
     /**

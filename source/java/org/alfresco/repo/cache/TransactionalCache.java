@@ -291,47 +291,55 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         if (AlfrescoTransactionSupport.getTransactionId() != null)
         {
             TransactionData txnData = getTransactionData();
-            try
+            if (txnData.isClosed)
             {
-                if (!txnData.isClearOn)   // deletions cache only useful before a clear
+                // This check could have been done in the first if block, but that would have added another call to the
+                // txn resources.
+            }
+            else            // The txn is still active
+            {
+                try
                 {
-                    // check to see if the key is present in the transaction's removed items
-                    if (txnData.removedItemsCache.get(key) != null)
+                    if (!txnData.isClearOn)   // deletions cache only useful before a clear
                     {
-                        // it has been removed in this transaction
+                        // check to see if the key is present in the transaction's removed items
+                        if (txnData.removedItemsCache.get(key) != null)
+                        {
+                            // it has been removed in this transaction
+                            if (isDebugEnabled)
+                            {
+                                logger.debug("get returning null - item has been removed from transactional cache: \n" +
+                                        "   cache: " + this + "\n" +
+                                        "   key: " + key);
+                            }
+                            return null;
+                        }
+                    }
+                    
+                    // check for the item in the transaction's new/updated items
+                    Element element = txnData.updatedItemsCache.get(key);
+                    if (element != null)
+                    {
+                        CacheBucket<V> bucket = (CacheBucket<V>) element.getValue();
+                        V value = bucket.getValue();
+                        // element was found in transaction-specific updates/additions
                         if (isDebugEnabled)
                         {
-                            logger.debug("get returning null - item has been removed from transactional cache: \n" +
+                            logger.debug("Found item in transactional cache: \n" +
                                     "   cache: " + this + "\n" +
-                                    "   key: " + key);
+                                    "   key: " + key + "\n" +
+                                    "   value: " + value);
                         }
-                        return null;
+                        return value;
                     }
                 }
-                
-                // check for the item in the transaction's new/updated items
-                Element element = txnData.updatedItemsCache.get(key);
-                if (element != null)
+                catch (CacheException e)
                 {
-                    CacheBucket<V> bucket = (CacheBucket<V>) element.getValue();
-                    V value = bucket.getValue();
-                    // element was found in transaction-specific updates/additions
-                    if (isDebugEnabled)
-                    {
-                        logger.debug("Found item in transactional cache: \n" +
-                                "   cache: " + this + "\n" +
-                                "   key: " + key + "\n" +
-                                "   value: " + value);
-                    }
-                    return value;
+                    throw new AlfrescoRuntimeException("Cache failure", e);
                 }
+                // check if the cleared flag has been set - cleared flag means ignore shared as unreliable
+                ignoreSharedCache = txnData.isClearOn;
             }
-            catch (CacheException e)
-            {
-                throw new AlfrescoRuntimeException("Cache failure", e);
-            }
-            // check if the cleared flag has been set - cleared flag means ignore shared as unreliable
-            ignoreSharedCache = txnData.isClearOn;
         }
         // no value found - must we ignore the shared cache?
         if (!ignoreSharedCache)
@@ -384,6 +392,11 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         else  // transaction present
         {
             TransactionData txnData = getTransactionData();
+            // Ensure that the cache isn't being modified
+            if (txnData.isClosed)
+            {
+                throw new AlfrescoRuntimeException("onCommit cache modifications are not allowed.");
+            }
             // we have a transaction - add the item into the updated cache for this transaction
             // are we in an overflow condition?
             if (txnData.updatedItemsCache.getMemoryStoreSize() >= maxCacheSize)
@@ -444,6 +457,11 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         else  // transaction present
         {
             TransactionData txnData = getTransactionData();
+            // Ensure that the cache isn't being modified
+            if (txnData.isClosed)
+            {
+                throw new AlfrescoRuntimeException("onCommit cache modifications are not allowed.");
+            }
             // is the shared cache going to be cleared?
             if (txnData.isClearOn)
             {
@@ -509,6 +527,11 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             }
             
             TransactionData txnData = getTransactionData();
+            // Ensure that the cache isn't being modified
+            if (txnData.isClosed)
+            {
+                throw new AlfrescoRuntimeException("onCommit cache modifications are not allowed.");
+            }
             // the shared cache must be cleared at the end of the transaction
             // and also serves to ensure that the shared cache will be ignored
             // for the remainder of the transaction
@@ -630,6 +653,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     {
         cacheManager.removeCache(txnData.updatedItemsCache.getName());
         cacheManager.removeCache(txnData.removedItemsCache.getName());
+        txnData.isClosed = true;
     }
     
     /**
@@ -760,8 +784,9 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     /** Data holder to bind data to the transaction */
     private class TransactionData
     {
-        public Cache updatedItemsCache;
-        public Cache removedItemsCache;
-        public boolean isClearOn;
+        private Cache updatedItemsCache;
+        private Cache removedItemsCache;
+        private boolean isClearOn;
+        private boolean isClosed;
     }
 }

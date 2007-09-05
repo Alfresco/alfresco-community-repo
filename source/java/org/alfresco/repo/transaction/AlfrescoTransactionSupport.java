@@ -27,6 +27,7 @@ package org.alfresco.repo.transaction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -461,7 +462,7 @@ public abstract class AlfrescoTransactionSupport
         private final Set<TransactionalDao> daoServices;
         private final Set<IntegrityChecker> integrityCheckers;
         private final Set<LuceneIndexerAndSearcher> lucenes;
-        private final Set<TransactionListener> listeners;
+        private final LinkedHashSet<TransactionListener> listeners;
         private final Map<Object, Object> resources;
         
         /**
@@ -476,7 +477,7 @@ public abstract class AlfrescoTransactionSupport
             daoServices = new HashSet<TransactionalDao>(3);
             integrityCheckers = new HashSet<IntegrityChecker>(3);
             lucenes = new HashSet<LuceneIndexerAndSearcher>(3);
-            listeners = new HashSet<TransactionListener>(5);
+            listeners = new LinkedHashSet<TransactionListener>(5);
             resources = new HashMap<Object, Object>(17);
         }
         

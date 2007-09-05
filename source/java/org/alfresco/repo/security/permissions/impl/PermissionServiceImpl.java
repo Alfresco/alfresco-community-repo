@@ -472,7 +472,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     public void deletePermissions(NodePermissionEntry nodePermissionEntry)
     {
-        permissionsDaoComponent.deletePermissions(nodePermissionEntry.getNodeRef());
+        permissionsDaoComponent.deletePermissions(tenantService.getName(nodePermissionEntry.getNodeRef()));
         accessCache.clear();
     }
 
@@ -507,12 +507,14 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     public void setPermission(PermissionEntry permissionEntry)
     {
+    	// TODO - not MT-enabled nodeRef - currently only used by tests
         permissionsDaoComponent.setPermission(permissionEntry);
         accessCache.clear();
     }
 
     public void setPermission(NodePermissionEntry nodePermissionEntry)
     {
+    	// TODO - not MT-enabled nodeRef- currently only used by tests
         permissionsDaoComponent.setPermission(nodePermissionEntry);
         accessCache.clear();
     }
@@ -565,7 +567,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     public Set<PermissionReference> getSettablePermissionReferences(NodeRef nodeRef)
     {
-        return modelDAO.getExposedPermissions(nodeRef);
+        return modelDAO.getExposedPermissions(tenantService.getName(nodeRef));
     }
 
     public void deletePermission(NodeRef nodeRef, String authority, String perm)
@@ -822,6 +824,8 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
         public boolean hasSinglePermission(Set<String> authorisations, NodeRef nodeRef)
         {
+        	nodeRef = tenantService.getName(nodeRef);
+        	
             Serializable key = generateKey(authorisations, nodeRef, this.required, CacheType.SINGLE_PERMISSION_GLOBAL);
 
             AccessStatus status = accessCache.get(key);
@@ -847,6 +851,8 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         public boolean hasSinglePermission(Set<String> authorisations, NodeRef nodeRef,
                 Set<Pair<String, PermissionReference>> denied)
         {
+        	nodeRef = tenantService.getName(nodeRef);
+        	
             // Add any denied permission to the denied list - these can not
             // then
             // be used to given authentication.

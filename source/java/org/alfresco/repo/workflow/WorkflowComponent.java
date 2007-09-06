@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTimer;
 import org.alfresco.service.namespace.QName;
 
@@ -130,6 +131,15 @@ public interface WorkflowComponent
      */
     @Auditable(parameters = {"workflowDefinitionId"})
     public byte[] getDefinitionImage(String workflowDefinitionId);
+    
+    /**
+     * Gets the Task Definitions for the given Workflow Definition
+     * 
+     * @param workflowDefinitionId  the workflow definition id
+     * @return the deployed task definitions (or null if not found)
+     */
+    @Auditable(parameters = {"workflowDefinitionId"})
+    public List<WorkflowTaskDefinition> getTaskDefinitions(final String workflowDefinitionId);
     
 
     //

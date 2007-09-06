@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
@@ -160,4 +161,17 @@ public class WorkflowServiceImplTest extends BaseSpringTest
         assertEquals(0, completedInstances.size());
     }
     
+    public void testGetWorkflowTaskDefinitions()
+    {
+        List<WorkflowDefinition> workflowDefs = workflowService.getDefinitions();
+        assertNotNull(workflowDefs);
+        assertTrue(workflowDefs.size() > 0);
+        
+        for (WorkflowDefinition workflowDef : workflowDefs)
+        {
+        	List<WorkflowTaskDefinition> workflowTaskDefs = workflowService.getTaskDefinitions(workflowDef.getId());
+            assertNotNull(workflowTaskDefs);
+            assertTrue(workflowTaskDefs.size() > 0);
+        }
+    }
 }

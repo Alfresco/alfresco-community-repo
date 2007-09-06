@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTimer;
@@ -218,6 +219,16 @@ public class WorkflowServiceImpl implements WorkflowService
             definitionImage = new byte[0];
         }
         return definitionImage;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#getAllTaskDefinitions(java.lang.String)
+     */
+    public List<WorkflowTaskDefinition> getTaskDefinitions(final String workflowDefinitionId)
+    {
+        String engineId = BPMEngineRegistry.getEngineId(workflowDefinitionId);
+        WorkflowComponent component = getWorkflowComponent(engineId);
+        return component.getTaskDefinitions(workflowDefinitionId);
     }
     
     /* (non-Javadoc)

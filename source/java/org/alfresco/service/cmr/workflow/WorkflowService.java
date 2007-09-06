@@ -148,6 +148,15 @@ public interface WorkflowService
     @Auditable(parameters = {"workflowDefinitionId"})
     public byte[] getDefinitionImage(String workflowDefinitionId);
 
+    /**
+     * Gets the Task Definitions for the given Workflow Definition
+     * 
+     * @param workflowDefinitionId  the workflow definition id
+     * @return the deployed task definitions (or null if not found)
+     */
+    @Auditable(parameters = {"workflowDefinitionId"})
+    public List<WorkflowTaskDefinition> getTaskDefinitions(final String workflowDefinitionId);
+   
     
     //
     // Workflow Instance Management

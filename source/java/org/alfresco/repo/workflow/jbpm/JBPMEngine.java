@@ -106,6 +106,7 @@ import org.jbpm.job.Timer;
 import org.jbpm.jpdl.par.ProcessArchive;
 import org.jbpm.jpdl.xml.Problem;
 import org.jbpm.taskmgmt.def.Task;
+import org.jbpm.taskmgmt.def.TaskMgmtDefinition;
 import org.jbpm.taskmgmt.exe.PooledActor;
 import org.jbpm.taskmgmt.exe.TaskInstance;
 import org.springframework.util.StringUtils;
@@ -557,6 +558,51 @@ public class JBPMEngine extends BPMEngine
         catch(JbpmException e)
         {
             throw new WorkflowException("Failed to retrieve workflow definition image for '" + workflowDefinitionId + "'", e);
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.WorkflowComponent#getAllTaskDefinitions(java.lang.String)
+     */
+    @SuppressWarnings("unchecked")
+    public List<WorkflowTaskDefinition> getTaskDefinitions(final String workflowDefinitionId)
+    {
+        try
+        {
+            return (List<WorkflowTaskDefinition>)jbpmTemplate.execute(new JbpmCallback()
+            {
+                public Object doInJbpm(JbpmContext context)
+                {
+                    // retrieve process
+                    GraphSession graphSession = context.getGraphSession();
+                    ProcessDefinition processDefinition = getProcessDefinition(graphSession, workflowDefinitionId);
+                    
+                    if (processDefinition == null)
+                    {
+                        return null;
+                    }
+                    else
+                    {
+                        String processName = processDefinition.getName();
+                        if (tenantService.isEnabled())
+                        {
+                            tenantService.checkDomain(processName); // throws exception if domain mismatch
+                        }
+                        
+                        TaskMgmtDefinition taskMgmtDef = processDefinition.getTaskMgmtDefinition();
+                        List<WorkflowTaskDefinition> workflowTaskDefs = new ArrayList<WorkflowTaskDefinition>();
+                        for (Object task : taskMgmtDef.getTasks().values())
+                        {
+                            workflowTaskDefs.add(createWorkflowTaskDefinition((Task)task));
+                        }
+                        return (workflowTaskDefs.size() == 0) ? null : workflowTaskDefs;
+                    }
+                }
+            });
+        }
+        catch(JbpmException e)
+        {
+            throw new WorkflowException("Failed to retrieve workflow task definitions for workflow definition '" + workflowDefinitionId + "'", e);
         }
     }
     

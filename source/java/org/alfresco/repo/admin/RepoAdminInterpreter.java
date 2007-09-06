@@ -274,7 +274,7 @@ public class RepoAdminInterpreter extends BaseInterpreter
         
         else if (command[0].equals("reload"))
         {
-            if (command.length != 2)
+            if (command.length != 3)
             {
                 return "Syntax Error.\n";
             }

@@ -163,7 +163,7 @@ public class RepoAdminServiceImpl implements RepoAdminService
                     
                 try
                 {
-                    ContentReader cr = contentService.getReader(nodeRefs.get(0), ContentModel.TYPE_CONTENT);
+                    ContentReader cr = contentService.getReader(nodeRef, ContentModel.TYPE_CONTENT);
                     InputStream is = cr.getContentInputStream();
                               
                     M2Model model = M2Model.createModel(is);

@@ -208,7 +208,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             StoreRef storeRef = store.getStoreRef();
             try
             {
-                if (tenantService.isTenantUser())
+            	if (tenantService.isEnabled())
                 {
                     tenantService.checkDomain(storeRef.getIdentifier());
                     storeRef = tenantService.getBaseName(storeRef); 
@@ -987,6 +987,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             PropertyValue propertyValue = entry.getValue();
             // get the property definition
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+            
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.NODE_REF)) && (propertyValue.getStringValue() != null))
+            {
+            	propertyValue.setStringValue(tenantService.getBaseName(new NodeRef(propertyValue.getStringValue())).toString());
+            }
+            
             // convert to the correct type
             Serializable value = makeSerializableValue(propertyDef, propertyValue);
             // copy across
@@ -1033,6 +1039,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // get the property definition
         PropertyDefinition propertyDef = dictionaryService.getProperty(qname);
+        
+        if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.NODE_REF)) && (propertyValue.getStringValue() != null))
+        {
+        	propertyValue.setStringValue(tenantService.getBaseName(new NodeRef(propertyValue.getStringValue())).toString());
+        }
+        
         // convert to the correct type
         Serializable value = makeSerializableValue(propertyDef, propertyValue);
         // done

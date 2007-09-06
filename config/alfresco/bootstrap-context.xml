@@ -202,6 +202,20 @@
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
                     <prop key="location">alfresco/bootstrap/webScriptsReadme.xml</prop>
                 </props>
+                
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/customModelsSpace.acp</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/customMessagesSpace.xml</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/customWebClientExtensionSpace.xml</prop>
+                </props>
+                                 
             </list>
         </property>
     </bean>

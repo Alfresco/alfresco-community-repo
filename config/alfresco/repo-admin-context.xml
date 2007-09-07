@@ -11,10 +11,18 @@
       <property name="contentService" ref="ContentService"/>
       <property name="namespaceService" ref="namespaceService"/>
       <property name="messageService" ref="messageService"/>
+      <property name="workflowService" ref="WorkflowService"/>
       
       <property name="repositoryModelsLocation" ref="customModelsRepositoryLocation"/>
       <property name="repositoryMessagesLocation" ref="customMessagesRepositoryLocation"/>
       
+      <property name="storeUrls">
+         <list>
+            <value>${spaces.store}</value>
+            <value>${spaces.archive.store}</value>
+         </list>
+      </property>
+           
    </bean>
    
    <bean id="repoAdminInterpreter" class="org.alfresco.repo.admin.RepoAdminInterpreter">

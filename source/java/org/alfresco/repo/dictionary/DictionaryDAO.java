@@ -29,6 +29,7 @@ import java.util.Collection;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
@@ -70,12 +71,10 @@ public interface DictionaryDAO extends ModelQuery
      * @return the aspects of the model
      */
     public Collection<AspectDefinition> getAspects(QName model);
-    
-    
+       
     /**
-     * 
-     * @param model the model for which to get properties
-     * @return
+     * @param model the model for which to get properties for
+     * @return the properties of the model
      */
     public Collection<PropertyDefinition> getProperties(QName model);
 
@@ -114,6 +113,28 @@ public interface DictionaryDAO extends ModelQuery
      * @return
      */
     public Collection<PropertyDefinition> getProperties(QName modelName, QName dataType);
+     
+    /**
+     * @param model the model to retrieve namespaces for
+     * @return the namespaces of the model
+     */
+    public Collection<NamespaceDefinition> getNamespaces(QName modelName);
+    
+    /**
+     * validate against dictionary
+     * 
+     * if new model 
+     * then nothing to validate
+     * 
+     * else if an existing model 
+     * then could be updated (or unchanged) so validate to currently only allow incremental updates
+     *   - addition of new types, aspects (except default aspects), properties, associations
+     *   - no deletion of types, aspects or properties or associations
+     *   - no addition, update or deletion of default/mandatory aspects
+     * 
+     * @param newOrUpdatedModel
+     */
+    public void validateModel(M2Model newOrUpdatedModel);
     
     /**
      *

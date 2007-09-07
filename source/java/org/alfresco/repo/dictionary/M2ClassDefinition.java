@@ -26,6 +26,7 @@ package org.alfresco.repo.dictionary;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -460,4 +461,206 @@ import org.alfresco.service.namespace.QName;
         return name.equals(((M2ClassDefinition)obj).name);
     }
 
+    /**
+     * return differences in class definition
+     * 
+     * note:
+     * - ignores changes in model title, description, author, published date, version
+     * - ignores changes in default values
+     * - checks properties for incremental updates, but does not include the diffs
+     * - checks assocs &Êchild assocs for incremental updates, but does not include the diffs
+     * - does not check default values
+     */
+    /* package */ List<M2ModelDiff> diffClass(ClassDefinition classDef)
+    {
+        List<M2ModelDiff> modelDiffs = new ArrayList<M2ModelDiff>();
+        boolean isUpdated = false;
+        boolean isUpdatedIncrementally = false;
+        
+        if (this == classDef)
+        {
+            return modelDiffs;
+        }
+        
+        // check name - cannot be null
+        if (! name.equals(classDef.getName())) 
+        { 
+            isUpdatedIncrementally = true;
+        }
+        
+        // check parent name
+        if (parentName != null) 
+        {
+            if (! parentName.equals(classDef.getParentName())) 
+            { 
+                isUpdated = true;
+            }
+        } 
+        else if (classDef.getParentName() != null)
+        {
+            isUpdated = true;
+        }
+        
+        // check if aspect (or type)
+        if (isAspect() != classDef.isAspect())
+        {
+            isUpdated = true;
+        }
+        
+        // check if container
+        if (isContainer() != classDef.isContainer())
+        {
+            if (isContainer())
+            {
+                // updated (non-incrementally) if class was a container and now is not a container - ie. all child associations removed
+                isUpdated = true; 
+            }
+            
+            if (classDef.isContainer())
+            {
+                // updated incrementally if class was not a container and now is a container - ie. some child associations added
+                isUpdatedIncrementally = true;
+            }
+        }
+        
+        // check all properties (including inherited properties)
+        Collection<M2ModelDiff> propertyDiffs = M2PropertyDefinition.diffPropertyLists(getProperties().values(), classDef.getProperties().values());
+        
+        for (M2ModelDiff propertyDiff : propertyDiffs)
+        {
+            // note: incremental property updates not supported yet, added for completeness
+            if (propertyDiff.getDiffType().equals(M2ModelDiff.DIFF_CREATED) || propertyDiff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED_INC))
+            {     
+                isUpdatedIncrementally = true;
+            }
+            
+            if (propertyDiff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED) || propertyDiff.getDiffType().equals(M2ModelDiff.DIFF_DELETED))
+            {
+                isUpdated = true;
+                break;
+            }
+        }
+               
+        // check all associations (including inherited associations, child associations and inherited child associations)
+        Collection<M2ModelDiff> assocDiffs = M2AssociationDefinition.diffAssocLists(getAssociations().values(), classDef.getAssociations().values());
+
+        for (M2ModelDiff assocDiff : assocDiffs)
+        {
+            // note: incremental association updates not supported yet, added for completeness
+            if (assocDiff.getDiffType().equals(M2ModelDiff.DIFF_CREATED) || assocDiff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED_INC))
+            {     
+                isUpdatedIncrementally = true;
+            }
+            
+            if (assocDiff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED) || assocDiff.getDiffType().equals(M2ModelDiff.DIFF_DELETED))
+            {
+                isUpdated = true;
+                break;
+            }
+        }
+
+        // check default/mandatory aspects (including inherited default aspects)
+        Collection<M2ModelDiff> defaultAspectsDiffs = M2ClassDefinition.diffClassLists(new ArrayList<ClassDefinition>(getDefaultAspects()), new ArrayList<ClassDefinition>(classDef.getDefaultAspects()), M2ModelDiff.TYPE_DEFAULT_ASPECT);
+       
+        for (M2ModelDiff defaultAspectDiff : defaultAspectsDiffs)
+        {
+            // note: incremental default/mandatory aspect updates not supported yet, added for completeness
+            if (defaultAspectDiff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED_INC))
+            {     
+                isUpdatedIncrementally = true;
+            }
+            
+            if (defaultAspectDiff.getDiffType().equals(M2ModelDiff.DIFF_CREATED) || defaultAspectDiff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED) || defaultAspectDiff.getDiffType().equals(M2ModelDiff.DIFF_DELETED))
+            {
+                isUpdated = true;
+                break;
+            }
+        }
+        
+        // check archive/inheritedArchive
+        if (isArchive() != classDef.isArchive())
+        {
+            isUpdatedIncrementally = true;
+        }
+        
+        String modelDiffType;
+        if (isAspect())
+        {
+            modelDiffType = M2ModelDiff.TYPE_ASPECT;
+        }
+        else
+        {
+            modelDiffType = M2ModelDiff.TYPE_TYPE;
+        }
+        
+        if (isUpdated)
+        {
+            modelDiffs.add(new M2ModelDiff(name, modelDiffType, M2ModelDiff.DIFF_UPDATED));
+        }
+        else if (isUpdatedIncrementally)
+        {
+            modelDiffs.add(new M2ModelDiff(name, modelDiffType, M2ModelDiff.DIFF_UPDATED_INC));
+        }
+        else
+        {
+            for (M2ModelDiff modelDiff : modelDiffs)
+            {
+                if (! modelDiff.getDiffType().equals(M2ModelDiff.DIFF_UNCHANGED))
+                {
+                    throw new DictionaryException("Unexpected: diff found although '" + name + "' not marked as updated");
+                }
+            }
+            modelDiffs.add(new M2ModelDiff(name, modelDiffType, M2ModelDiff.DIFF_UNCHANGED));
+        }
+
+        return modelDiffs;
+    }
+    
+    /**
+     * return differences in class definition lists
+     *
+     */
+    /*package*/ static List<M2ModelDiff> diffClassLists(Collection<ClassDefinition> previousClasses, Collection<ClassDefinition> newClasses, String M2ModelDiffType)
+    {                
+        List<M2ModelDiff> modelDiffs = new ArrayList<M2ModelDiff>();
+        
+        for (ClassDefinition previousClass : previousClasses)
+        {
+            boolean found = false;
+            for (ClassDefinition newClass : newClasses)
+            {
+                if (newClass.getName().equals(previousClass.getName()))
+                {
+                    modelDiffs.addAll(((M2ClassDefinition)previousClass).diffClass(newClass));
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (! found)
+            {
+                modelDiffs.add(new M2ModelDiff(previousClass.getName(), M2ModelDiffType, M2ModelDiff.DIFF_DELETED));
+            }
+        }
+        
+        for (ClassDefinition newClass : newClasses)
+        {
+            boolean found = false;
+            for (ClassDefinition previousClass : previousClasses)
+            {
+                if (newClass.getName().equals(previousClass.getName()))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (! found)
+            {
+                modelDiffs.add(new M2ModelDiff(newClass.getName(), M2ModelDiffType, M2ModelDiff.DIFF_CREATED));
+            }                        
+        }
+        
+        return modelDiffs;
+    }
 }

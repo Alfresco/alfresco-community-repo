@@ -47,9 +47,11 @@ import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
+import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -449,6 +451,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.ModelQuery#getDataType(java.lang.Class)
      */
+    @SuppressWarnings("unchecked")
     public DataTypeDefinition getDataType(Class javaClass)
     {
         if (tenantService.isTenantUser() == true)
@@ -758,6 +761,24 @@ public class DictionaryDAOImpl implements DictionaryDAO
         return properties;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.DictionaryDAO#getNamespaces(org.alfresco.service.namespace.QName)
+     */
+    public Collection<NamespaceDefinition> getNamespaces(QName modelName)
+    {
+        CompiledModel model = getCompiledModel(modelName);
+        ModelDefinition modelDef = model.getModelDefinition();
+        
+        List<NamespaceDefinition> namespaces = new ArrayList<NamespaceDefinition>();
+        for (M2Namespace namespace : model.getM2Model().getNamespaces())
+        {
+            namespaces.add(new M2NamespaceDefinition(modelDef, namespace.getUri(), namespace.getPrefix()));
+        }
+        
+        return namespaces;
+    }
+
     /**
      * Get compiledModels from the cache (in the context of the current user's tenant domain)
      * 
@@ -949,5 +970,152 @@ public class DictionaryDAOImpl implements DictionaryDAO
     private String getTenantDomain()
     {
         return tenantService.getCurrentUserDomain();
+    }
+    
+    /**
+     * Return diffs between input model and model in the Dictionary.
+     * 
+     * If the input model does not exist in the Dictionary or is equivalent to the one in the Dictionary
+     * then no diffs will be returned.
+     * 
+     * @param model
+     * @return model diffs (if any)
+     */
+    private List<M2ModelDiff> diffModel(M2Model model)
+    {
+        // Compile model definition
+        CompiledModel compiledModel = model.compile(this, namespaceDAO);
+        QName modelName = compiledModel.getModelDefinition().getName();
+        
+        CompiledModel previousVersion = getCompiledModels().get(modelName);
+        if (previousVersion == null)
+        {
+            return new ArrayList<M2ModelDiff>(0);
+        }
+        else
+        {
+            return diffModel(previousVersion, compiledModel);
+        }
+    }
+    
+    /**
+     * Return diffs between two compiled models.
+     * 
+     * 
+     * @param model
+     * @return model diffs (if any)
+     */
+    /* package */ List<M2ModelDiff> diffModel(CompiledModel previousVersion, CompiledModel model)
+    {
+        List<M2ModelDiff> M2ModelDiffs = new ArrayList<M2ModelDiff>();
+        
+        if (previousVersion != null)
+        { 
+            Collection<TypeDefinition> previousTypes = previousVersion.getTypes();
+            Collection<AspectDefinition> previousAspects = previousVersion.getAspects();
+           
+            if (model == null)
+            {
+                // delete model
+                for (TypeDefinition previousType : previousTypes)
+                {
+                    M2ModelDiffs.add(new M2ModelDiff(previousType.getName(), M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_DELETED));
+                }
+                for (AspectDefinition previousAspect : previousAspects)
+                {
+                    M2ModelDiffs.add(new M2ModelDiff(previousAspect.getName(), M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_DELETED));
+                }              
+            }
+            else
+            {
+                // update model
+                Collection<TypeDefinition> types = model.getTypes();
+                Collection<AspectDefinition> aspects = model.getAspects();
+                
+                if (previousTypes.size() != 0)
+                {
+                    M2ModelDiffs.addAll(M2ClassDefinition.diffClassLists(new ArrayList<ClassDefinition>(previousTypes), new ArrayList<ClassDefinition>(types), M2ModelDiff.TYPE_TYPE));
+                }
+                else
+                {
+                    for (TypeDefinition type : types)
+                    {
+                        M2ModelDiffs.add(new M2ModelDiff(type.getName(), M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_CREATED));
+                    }
+                }
+                
+                if (previousAspects.size() != 0)
+                {
+                    M2ModelDiffs.addAll(M2ClassDefinition.diffClassLists(new ArrayList<ClassDefinition>(previousAspects), new ArrayList<ClassDefinition>(aspects), M2ModelDiff.TYPE_ASPECT));
+                }
+                else
+                {
+                    for (AspectDefinition aspect : aspects)
+                    {
+                        M2ModelDiffs.add(new M2ModelDiff(aspect.getName(), M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_CREATED));
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (model != null)
+            {
+                // new model
+                Collection<TypeDefinition> types = model.getTypes();
+                Collection<AspectDefinition> aspects = model.getAspects();
+                
+                for (TypeDefinition type : types)
+                {
+                    M2ModelDiffs.add(new M2ModelDiff(type.getName(), M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_CREATED));
+                }
+                           
+                for (AspectDefinition aspect : aspects)
+                {
+                    M2ModelDiffs.add(new M2ModelDiff(aspect.getName(), M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_CREATED));
+                }  
+            }
+            else 
+            {
+                // nothing to diff
+            }
+        }
+        
+        return M2ModelDiffs;
+    }
+    
+    /**
+     * validate against dictionary
+     * 
+     * if new model 
+     * then nothing to validate
+     * 
+     * else if an existing model 
+     * then could be updated (or unchanged) so validate to currently only allow incremental updates
+     *   - addition of new types, aspects (except default aspects), properties, associations
+     *   - no deletion of types, aspects or properties or associations
+     *   - no addition, update or deletion of default/mandatory aspects
+     * 
+     * @param newOrUpdatedModel
+     */
+    public void validateModel(M2Model newOrUpdatedModel)
+    {
+        // Check that all the passed values are not null        
+        ParameterCheck.mandatory("newOrUpdatedModel", newOrUpdatedModel);
+        
+        List<M2ModelDiff> modelDiffs = diffModel(newOrUpdatedModel);
+        
+        for (M2ModelDiff modelDiff : modelDiffs)
+        {
+            if (modelDiff.getDiffType().equals(M2ModelDiff.DIFF_DELETED))
+            {
+                throw new AlfrescoRuntimeException("Failed to validate model update - found deleted " + modelDiff.getElementType() + " '" + modelDiff.getElementName() + "'");
+            }
+            
+            if (modelDiff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED))
+            {
+                throw new AlfrescoRuntimeException("Failed to validate model update - found non-incrementally updated " + modelDiff.getElementType() + " '" + modelDiff.getElementName() + "'");
+            }
+        } 
     }
 }

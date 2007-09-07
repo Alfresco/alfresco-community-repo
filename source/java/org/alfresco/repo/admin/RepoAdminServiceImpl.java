@@ -43,7 +43,12 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.RepositoryLocation;
 import org.alfresco.repo.i18n.MessageService;
+import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.service.cmr.admin.RepoAdminService;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -51,7 +56,11 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
@@ -79,9 +88,12 @@ public class RepoAdminServiceImpl implements RepoAdminService
     private ContentService contentService;
     private NamespaceService namespaceService;
     private MessageService messageService;
+    private WorkflowService workflowService;
     
     private RepositoryLocation repoModelsLocation;
     private RepositoryLocation repoMessagesLocation;
+    
+    private List<String> storeUrls; // stores against which model changes (updates/deletes) should be validated
     
     public final static String CRITERIA_ALL = "/*"; // immediate children only
    
@@ -114,9 +126,14 @@ public class RepoAdminServiceImpl implements RepoAdminService
         this.namespaceService = namespaceService;
     }
     
-    public void setmessageService(MessageService messageService)
+    public void setMessageService(MessageService messageService)
     {
         this.messageService = messageService;
+    }
+ 
+    public void setWorkflowService(WorkflowService workflowService)
+    {
+        this.workflowService = workflowService;
     }
     
     
@@ -128,6 +145,11 @@ public class RepoAdminServiceImpl implements RepoAdminService
     public void setRepositoryMessagesLocation(RepositoryLocation repoMessagesLocation)
     {
         this.repoMessagesLocation = repoMessagesLocation;
+    }
+    
+    public void setStoreUrls(List<String> storeUrls)
+    {
+        this.storeUrls = storeUrls;
     }
     
       
@@ -202,7 +224,7 @@ public class RepoAdminServiceImpl implements RepoAdminService
         ParameterCheck.mandatory("ModelStream", modelStream);
         ParameterCheck.mandatoryString("ModelFileName", modelFileName);
              
-        QName modelName = null;
+        QName modelQName = null;
         
         try
         {        
@@ -262,10 +284,13 @@ public class RepoAdminServiceImpl implements RepoAdminService
                 writer.putContent(out.toString("UTF-8"));
                 */
                 
-                // parse and update model in the dictionary
-                modelName = dictionaryDAO.putModel(model); 
+                // validate model against dictionary - could be new, unchanged or updated
+                dictionaryDAO.validateModel(model);
                 
-                logger.info("Model re-deployed: " + modelName);
+                // parse and update model in the dictionary
+                modelQName = dictionaryDAO.putModel(model); 
+                
+                logger.info("Model re-deployed: " + modelQName);
             }
             else
             {
@@ -305,11 +330,14 @@ public class RepoAdminServiceImpl implements RepoAdminService
                 model.toXML(out); // fails with NPE in JIBX - see also: http://issues.alfresco.com/browse/AR-1304
                 writer.putContent(out.toString("UTF-8"));
                 */
+
+                // validate model against dictionary - could be new, unchanged or updated
+                dictionaryDAO.validateModel(model);
                 
                 // parse and add model to dictionary
-                modelName = dictionaryDAO.putModel(model);  
+                modelQName = dictionaryDAO.putModel(model);  
                 
-                logger.info("Model deployed: " + modelName);
+                logger.info("Model deployed: " + modelQName);
             }
         }
         catch (Throwable e)
@@ -317,7 +345,7 @@ public class RepoAdminServiceImpl implements RepoAdminService
             throw new AlfrescoRuntimeException("Model deployment failed", e);
         }
         
-        return modelName;                  
+        return modelQName;                  
     }
     
     /*
@@ -359,12 +387,13 @@ public class RepoAdminServiceImpl implements RepoAdminService
 
             if (model != null)
             {
-                String modelName = model.getName();
-            
+                // validate model against dictionary - could be new, unchanged or updated
+                dictionaryDAO.validateModel(model);
+                
                 // parse and update model in the dictionary
-                modelQName = dictionaryDAO.putModel(model); 
-  
-                logger.info("Model loaded: " + modelName);
+                modelQName = dictionaryDAO.putModel(model);
+                
+                logger.info("Model loaded: " + modelQName);
             }
         }
         catch (Throwable e)
@@ -430,9 +459,12 @@ public class RepoAdminServiceImpl implements RepoAdminService
             
             modelQName = QName.createQName(modelName, namespaceService);
             
+            // simple check for usages
+            validateModelDelete(modelQName);
+                
             dictionaryDAO.removeModel(modelQName);               
 
-            logger.info("Model undeployed: " + modelFileName);
+            logger.info("Model undeployed: " + modelQName);
         }
         catch (Throwable e)
         {
@@ -738,4 +770,74 @@ public class RepoAdminServiceImpl implements RepoAdminService
             throw new AlfrescoRuntimeException("Message resource re-load failed", e);
         }      
     } 
+    
+    /**
+     * validate against repository contents / workflows (e.g. when deleting an existing model)
+     * 
+     * @param modelName
+     */
+    private void validateModelDelete(QName modelName)
+    {
+        // TODO add model locking during delete (would need to be tenant-aware & cluster-aware) to avoid potential 
+    	//      for concurrent addition of new content/workflow as model is being deleted
+        
+        for (WorkflowDefinition workflowDef : workflowService.getDefinitions())
+        {
+            String workflowDefName = workflowDef.getName();
+            String workflowNamespaceURI = QName.createQName(BPMEngineRegistry.getLocalId(workflowDefName), namespaceService).getNamespaceURI();
+            for (NamespaceDefinition namespace : dictionaryDAO.getNamespaces(modelName))
+            {
+                if (workflowNamespaceURI.equals(namespace.getUri()))
+                {
+                    throw new AlfrescoRuntimeException("Failed to validate model delete - found workflow process definition " + workflowDefName + " using model namespace '" + namespace.getUri() + "'");
+                }
+            }
+        }
+ 
+        for (TypeDefinition type : dictionaryDAO.getTypes(modelName))
+        {
+        	validateClass(type);
+        }
+
+        for (AspectDefinition aspect : dictionaryDAO.getAspects(modelName))
+        {
+        	validateClass(aspect);
+        }
+    }
+    
+    private void validateClass(ClassDefinition classDef)
+    {
+    	QName className = classDef.getName();
+        
+        String classType = "TYPE";
+        if (classDef instanceof AspectDefinition)
+        {
+        	classType = "ASPECT";
+        }
+        
+        for (String storeUrl : this.storeUrls)
+        {
+            StoreRef store = new StoreRef(storeUrl);
+            
+            // search for TYPE or ASPECT - TODO - alternative would be to extract QName and search by namespace ...
+            ResultSet rs = searchService.query(store, SearchService.LANGUAGE_LUCENE, classType+":\""+className+"\"");
+            if (rs.length() > 0)
+            {
+                throw new AlfrescoRuntimeException("Failed to validate model delete - found " + rs.length() + " nodes in store " + store + " with " + classType + " '" + className + "'");
+            }
+        }
+        
+        // check against workflow usage
+        for (WorkflowDefinition workflowDef : workflowService.getDefinitions())
+        {
+            for (WorkflowTaskDefinition workflowTaskDef : workflowService.getTaskDefinitions(workflowDef.getId()))
+            {
+                TypeDefinition workflowTypeDef = workflowTaskDef.metadata;
+                if (workflowTypeDef.getName().toString().equals(className))
+                {
+                    throw new AlfrescoRuntimeException("Failed to validate model delete - found task definition in workflow " + workflowDef.getName() + " with " + classType + " '" + className + "'");
+                }
+            }
+        }
+    }
 }

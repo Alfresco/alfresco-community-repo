@@ -24,6 +24,10 @@
  */
 package org.alfresco.repo.dictionary;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
@@ -70,6 +74,7 @@ import org.alfresco.service.namespace.QName;
     @Override
     public String toString()
     {
+    	// note: currently used for model 'diffs'
         StringBuilder sb = new StringBuilder(56);
         sb.append("Association")
           .append("[ class=").append(classDef)
@@ -244,6 +249,58 @@ import org.alfresco.service.namespace.QName;
     public boolean isTargetMany()
     {
         return assoc.isTargetMany();
+    }
+    
+    /*package*/ static Collection<M2ModelDiff> diffAssocLists(Collection<AssociationDefinition> previousAssocs, Collection<AssociationDefinition> newAssocs)
+    {
+        List<M2ModelDiff> M2ModelDiffs = new ArrayList<M2ModelDiff>();
+        
+        for (AssociationDefinition previousAssoc : previousAssocs)
+        {
+            boolean found = false;
+            for (AssociationDefinition newAssoc : newAssocs)
+            {
+                if (newAssoc.getName().equals(previousAssoc.getName()))
+                {
+                    // TODO currently uses toString() to check whether changed - could override equals()
+                    if ((((M2AssociationDefinition)previousAssoc).toString()).equals(((M2AssociationDefinition)newAssoc).toString()))
+                    {
+                        M2ModelDiffs.add(new M2ModelDiff(newAssoc.getName(), M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_UNCHANGED));
+                    }
+                    else
+                    {
+                        M2ModelDiffs.add(new M2ModelDiff(newAssoc.getName(), M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_UPDATED));
+                    }
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (! found)
+            {
+                M2ModelDiffs.add(new M2ModelDiff(previousAssoc.getName(), M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_DELETED));
+            }
+        }
+        
+        for (AssociationDefinition newAssoc : newAssocs)
+        {
+            boolean found = false;
+            for (AssociationDefinition previousAssoc : previousAssocs)
+            {
+                if (newAssoc.getName().equals(previousAssoc.getName()))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (! found)
+            {
+                M2ModelDiffs.add(new M2ModelDiff(newAssoc.getName(), M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_CREATED));
+            }                        
+        }
+        
+        return M2ModelDiffs;
     }
 
 }

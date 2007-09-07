@@ -25,6 +25,7 @@
 package org.alfresco.repo.dictionary;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -224,7 +225,24 @@ import org.alfresco.service.namespace.QName;
     @Override
     public String toString()
     {
-        return getName().toString();
+        // note: currently used for model 'diffs'   	
+        StringBuffer sb = new StringBuffer();
+        sb.append("Name: " + getName() + "\n");
+        sb.append("Title: " + getTitle() + "\n");
+        sb.append("Description: " + getDescription() + "\n");
+        sb.append("Default Value: " + getDefaultValue() + "\n");
+        sb.append("DataType Name: " + getDataType().getName() + "\n");
+        sb.append("ContainerClass Name: " + getContainerClass().getName() + "\n");
+        sb.append("isMultiValued: " + isMultiValued() + "\n");
+        sb.append("isMandatory: " + isMandatory() + "\n");
+        sb.append("isMandatoryEnforced: " + isMandatoryEnforced() + "\n");
+        sb.append("isProtected: " + isProtected() + "\n");
+        sb.append("isIndexed: " + isIndexed() + "\n");
+        sb.append("isStoredInIndex: " + isStoredInIndex() + "\n");
+        sb.append("isIndexedAtomically: " + isIndexedAtomically() + "\n");
+        sb.append("isTokenisedInIndex: " + isTokenisedInIndex() + "\n");
+        
+        return sb.toString();
     }
     
     /* (non-Javadoc)
@@ -365,8 +383,64 @@ import org.alfresco.service.namespace.QName;
         return m2Property.isTokenisedInIndex();
     }
 
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getConstraints()
+     */
     public List<ConstraintDefinition> getConstraints()
     {
         return constraintDefs;
+    }
+    
+    /*package*/ static Collection<M2ModelDiff> diffPropertyLists(Collection<PropertyDefinition> previousProperties, Collection<PropertyDefinition> newProperties)
+    {
+        List<M2ModelDiff> M2ModelDiffs = new ArrayList<M2ModelDiff>();
+        
+        for (PropertyDefinition previousProperty : previousProperties)
+        {
+            boolean found = false;
+            for (PropertyDefinition newProperty : newProperties)
+            {
+                if (newProperty.getName().equals(previousProperty.getName()))
+                {
+                    // TODO currently uses toString() to check whether changed - could override equals()
+                    if ((((M2PropertyDefinition)previousProperty).toString()).equals(((M2PropertyDefinition)newProperty).toString()))
+                    {
+                        M2ModelDiffs.add(new M2ModelDiff(newProperty.getName(), M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
+                    }
+                    else
+                    {
+                        M2ModelDiffs.add(new M2ModelDiff(newProperty.getName(), M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UPDATED));
+                    }
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (! found)
+            {
+                M2ModelDiffs.add(new M2ModelDiff(previousProperty.getName(), M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_DELETED));
+            }
+        }
+        
+        for (PropertyDefinition newProperty : newProperties)
+        {
+            boolean found = false;
+            for (PropertyDefinition previousProperty : previousProperties)
+            {
+                if (newProperty.getName().equals(previousProperty.getName()))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (! found)
+            {
+                M2ModelDiffs.add(new M2ModelDiff(newProperty.getName(), M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_CREATED));
+            }                        
+        }
+        
+        return M2ModelDiffs;
     }
 }

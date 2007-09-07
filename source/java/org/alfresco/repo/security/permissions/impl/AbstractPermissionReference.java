@@ -35,6 +35,7 @@ import org.alfresco.repo.security.permissions.PermissionReference;
 public abstract class AbstractPermissionReference implements PermissionReference
 {
     private int hashcode = 0;
+    private String str = null;
     
     public AbstractPermissionReference()
     {
@@ -69,6 +70,10 @@ public abstract class AbstractPermissionReference implements PermissionReference
     @Override
     public String toString()
     {
-        return getQName()+ "." + getName(); 
+        if (str == null)
+        {
+            str = getQName() + "." + getName();
+        }
+        return str;
     }
 }

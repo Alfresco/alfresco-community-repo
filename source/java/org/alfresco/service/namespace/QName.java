@@ -296,10 +296,6 @@ public final class QName implements QNamePattern, Serializable, Cloneable
         {
             return true;
         }
-        else if (object == null)
-        {
-            return false;
-        }
         if (object instanceof QName)
         {
             QName other = (QName)object;
@@ -307,10 +303,7 @@ public final class QName implements QNamePattern, Serializable, Cloneable
             return (this.localName.equals(other.localName) &&
                     this.namespaceURI.equals(other.namespaceURI));
         }
-        else
-        {
-            return false;
-        }
+        return false;
     }
 
     /**
@@ -347,7 +340,10 @@ public final class QName implements QNamePattern, Serializable, Cloneable
      */
     public String toString()
     {
-        return NAMESPACE_BEGIN + namespaceURI + NAMESPACE_END + localName;
+        return new StringBuffer(80).append(NAMESPACE_BEGIN)
+                                   .append(namespaceURI)
+                                   .append(NAMESPACE_END)
+                                   .append(localName).toString();
     }
 
     

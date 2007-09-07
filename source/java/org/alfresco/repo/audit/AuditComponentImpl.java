@@ -31,6 +31,7 @@ import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.List;
 
+import org.alfresco.repo.audit.model.AuditEntry;
 import org.alfresco.repo.audit.model.TrueFalseUnset;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -160,77 +161,84 @@ public class AuditComponentImpl implements AuditComponent
     {
         if ((auditFlag.get() == null) || (!auditFlag.get().booleanValue()))
         {
-            boolean auditInternal = (auditModel.getAuditInternalServiceMethods(mi) == TrueFalseUnset.TRUE);
-            try
+            if (auditModel instanceof AuditEntry && ((AuditEntry)auditModel).getEnabled() == TrueFalseUnset.TRUE)
             {
-                Method method = mi.getMethod();
-                String methodName = method.getName();
-                String serviceName = publicServiceIdentifier.getPublicServiceName(mi);
+                boolean auditInternal = (auditModel.getAuditInternalServiceMethods(mi) == TrueFalseUnset.TRUE);
+                try
+                {
+                    Method method = mi.getMethod();
+                    String methodName = method.getName();
+                    String serviceName = publicServiceIdentifier.getPublicServiceName(mi);
 
-                if (!auditInternal)
-                {
-                    auditFlag.set(Boolean.TRUE);
-                }
-                else
-                {
-                    if (s_logger.isDebugEnabled())
+                    if (!auditInternal)
                     {
-                        s_logger.debug("Auditing internal service use for  - " + serviceName + "." + methodName);
-                    }
-                }
-
-                if (method.isAnnotationPresent(Auditable.class))
-                {
-
-                    if (serviceName != null)
-                    {
-                        if (s_logger.isDebugEnabled())
-                        {
-                            s_logger.debug("Auditing - " + serviceName + "." + methodName);
-                        }
-                        return auditImpl(mi);
+                        auditFlag.set(Boolean.TRUE);
                     }
                     else
                     {
                         if (s_logger.isDebugEnabled())
                         {
-                            s_logger.debug("UnknownService." + methodName);
+                            s_logger.debug("Auditing internal service use for  - " + serviceName + "." + methodName);
                         }
-                        return auditImpl(mi);
                     }
 
-                }
-                else if (method.isAnnotationPresent(NotAuditable.class))
-                {
-                    if (s_logger.isDebugEnabled())
+                    if (method.isAnnotationPresent(Auditable.class))
                     {
-                        s_logger.debug("Not Audited. " + serviceName + "." + methodName);
+
+                        if (serviceName != null)
+                        {
+                            if (s_logger.isDebugEnabled())
+                            {
+                                s_logger.debug("Auditing - " + serviceName + "." + methodName);
+                            }
+                            return auditImpl(mi);
+                        }
+                        else
+                        {
+                            if (s_logger.isDebugEnabled())
+                            {
+                                s_logger.debug("UnknownService." + methodName);
+                            }
+                            return auditImpl(mi);
+                        }
+
                     }
-                    return mi.proceed();
-                }
-                else
-                {
-                    if (s_logger.isDebugEnabled())
+                    else if (method.isAnnotationPresent(NotAuditable.class))
                     {
-                        s_logger.debug("Unannotated service method " + serviceName + "." + methodName);
-                    }
-                    if (method.getDeclaringClass().isInterface()
-                            && method.getDeclaringClass().isAnnotationPresent(PublicService.class))
-                    {
-                        throw new RuntimeException("Unannotated service method " + serviceName + "." + methodName);
-                    }
-                    else
-                    {
+                        if (s_logger.isDebugEnabled())
+                        {
+                            s_logger.debug("Not Audited. " + serviceName + "." + methodName);
+                        }
                         return mi.proceed();
+                    }
+                    else
+                    {
+                        if (s_logger.isDebugEnabled())
+                        {
+                            s_logger.debug("Unannotated service method " + serviceName + "." + methodName);
+                        }
+                        if (method.getDeclaringClass().isInterface()
+                                && method.getDeclaringClass().isAnnotationPresent(PublicService.class))
+                        {
+                            throw new RuntimeException("Unannotated service method " + serviceName + "." + methodName);
+                        }
+                        else
+                        {
+                            return mi.proceed();
+                        }
+                    }
+                }
+                finally
+                {
+                    if (!auditInternal)
+                    {
+                        auditFlag.set(Boolean.FALSE);
                     }
                 }
             }
-            finally
+            else
             {
-                if (!auditInternal)
-                {
-                    auditFlag.set(Boolean.FALSE);
-                }
+                return mi.proceed();
             }
         }
         else

@@ -222,11 +222,15 @@ public abstract class AuthenticationUtil
      */
     private static String getUserName(Authentication authentication)
     {
-        String username = authentication.getPrincipal().toString();
+        String username;
 
         if (authentication.getPrincipal() instanceof UserDetails)
         {
             username = ((UserDetails) authentication.getPrincipal()).getUsername();
+        }
+        else
+        {
+            username = authentication.getPrincipal().toString();
         }
 
         return username;

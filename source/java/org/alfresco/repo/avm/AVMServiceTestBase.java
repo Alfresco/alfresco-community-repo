@@ -24,7 +24,6 @@
 package org.alfresco.repo.avm;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -39,9 +38,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
@@ -225,6 +222,7 @@ public class AVMServiceTestBase extends TestCase
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(version, path, true);
             for (String name : listing.keySet())
             {
+                System.err.println(name);
                 builder.append(recursiveList(basename + name, version, indent + 2, followLinks));
             }
         }

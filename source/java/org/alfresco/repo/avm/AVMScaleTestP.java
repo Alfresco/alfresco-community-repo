@@ -36,12 +36,12 @@ public class AVMScaleTestP extends AVMServiceTestBase
 {
     public void testScaling()
     {
-        int n = 4; // The number of BulkLoads to do.
+        int n = 250; // The number of BulkLoads to do.
         int futzCount = 10; // The number of post snapshot modifications to make after each load.
         String load = "/Users/britt/hibernate-3.1"; // The tree of stuff to load.
         BulkLoader loader = new BulkLoader();
         loader.setAvmService(fService);
-        loader.setPropertyCount(5);
+        loader.setPropertyCount(50);
         BulkReader reader = new BulkReader();
         reader.setAvmService(fService);
         long lastTime = System.currentTimeMillis();

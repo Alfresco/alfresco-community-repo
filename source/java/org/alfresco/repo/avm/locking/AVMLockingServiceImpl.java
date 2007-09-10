@@ -53,6 +53,8 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.MD5;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Implementation of the lock service.
@@ -66,6 +68,8 @@ public class AVMLockingServiceImpl implements AVMLockingService
     public static final String STORES = "stores";
     
     private static final String ROLE_CONTENT_MANAGER = "ContentManager";
+    
+    private static final Log logger = LogFactory.getLog(AVMLockingServiceImpl.class);
     
     /**
      * Store name containing the web project nodes.
@@ -164,34 +168,14 @@ public class AVMLockingServiceImpl implements AVMLockingService
         {
             public Object execute()
             {
-                Attribute table = fAttributeService.getAttribute(LOCK_TABLE);
-                if (table != null)
+                if (!fAttributeService.exists(LOCK_TABLE))
                 {
-/*
-                    Attribute stores = fAttributeService.getAttribute(LOCK_TABLE + '/' + STORES);
-                    if (stores == null)
-                    {
-                        fAttributeService.setAttribute(LOCK_TABLE, STORES, new MapAttributeValue());
-                    }
-                    Attribute users = fAttributeService.getAttribute(LOCK_TABLE + '/' + USERS);
-                    if (users == null)
-                    {
-                        fAttributeService.setAttribute(LOCK_TABLE, USERS, new MapAttributeValue());
-                    }
-*/
-                    Attribute webProjects = fAttributeService.getAttribute(LOCK_TABLE + '/' + WEB_PROJECTS);
-                    if (webProjects == null)
-                    {
-                        fAttributeService.setAttribute(LOCK_TABLE, WEB_PROJECTS, new MapAttributeValue());
-                    }
-                    return null;
+                    fAttributeService.setAttribute("", LOCK_TABLE, new MapAttributeValue());
                 }
-                fAttributeService.setAttribute("", LOCK_TABLE, new MapAttributeValue());
-                fAttributeService.setAttribute(LOCK_TABLE, WEB_PROJECTS, new MapAttributeValue());
-/*
-                fAttributeService.setAttribute(LOCK_TABLE, USERS, new MapAttributeValue());
-                fAttributeService.setAttribute(LOCK_TABLE, STORES, new MapAttributeValue());
-*/
+                if (!fAttributeService.exists(LOCK_TABLE + '/' + WEB_PROJECTS))
+                {
+                    fAttributeService.setAttribute(LOCK_TABLE, WEB_PROJECTS, new MapAttributeValue());
+                }
                 return null;
             }
         };
@@ -621,6 +605,42 @@ public class AVMLockingServiceImpl implements AVMLockingService
 
     private boolean hasAccess(String webProject, NodeRef webProjectRef, String avmPath, String user)
     {
+        String[] storePath = avmPath.split(":");
+        if (storePath.length != 2)
+        {
+            throw new AVMBadArgumentException("Malformed AVM Path : " + avmPath);
+        }
+        
+        if (logger.isDebugEnabled())
+           logger.debug("Testing lock access on path: " + avmPath + " for user: " + user + " in webproject: " + webProject);
+        
+        // check if a lock exists at all for this path in the specified webproject id
+        String path = normalizePath(storePath[1]);
+        AVMLock lock = getLock(webProject, path);
+        if (lock == null)
+        {
+            if (logger.isDebugEnabled())
+                logger.debug(" GRANTED: No lock found.");
+            return true;
+        }
+        
+        // locks are ignored in a workflow store
+        if (storePath[0].contains("--workflow"))
+        {
+            if (logger.isDebugEnabled())
+                logger.debug(" GRANTED: Workflow store path.");
+            return true;
+        }
+        
+        // locks are specific to a store - no access if the stores are different
+        if (!lock.getStore().equals(storePath[0]))
+        {
+            if (logger.isDebugEnabled())
+                logger.debug(" DENIED: Store on path and lock (" + lock.getStore().toString() + ") do not match.");
+            return false;
+        }
+        
+        // check for content manager role - we allow access to all managers within the same store
         List<ChildAssociationRef> children = fNodeService.getChildAssocs(
                 webProjectRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
         for (ChildAssociationRef child : children)
@@ -629,36 +649,32 @@ public class AVMLockingServiceImpl implements AVMLockingService
             if (fNodeService.getProperty(childRef, WCMAppModel.PROP_WEBUSERNAME).equals(user) &&
                 fNodeService.getProperty(childRef, WCMAppModel.PROP_WEBUSERROLE).equals(ROLE_CONTENT_MANAGER))
             {
+                if (logger.isDebugEnabled())
+                    logger.debug(" GRANTED: Store match and user is ContentManager role in webproject.");
                 return true;
             }
         }
-        String[] storePath = avmPath.split(":");
-        if (storePath.length != 2)
-        {
-            throw new AVMBadArgumentException("Malformed AVM Path : " + avmPath);
-        }
-        String path = normalizePath(storePath[1]);
-        AVMLock lock = getLock(webProject, path);
-        if (lock == null)
-        {
-            return true;
-        }
-        if (!lock.getStore().equals(storePath[0]))
-        {
-            return false;
-        }
+        
+        // finally check the owners of the lock against the specified authority
         List<String> owners = lock.getOwners();
         for (String owner : owners)
         {
             if (AuthorityType.getAuthorityType(owner) == AuthorityType.EVERYONE)
             {
+                if (logger.isDebugEnabled())
+                    logger.debug(" GRANTED: Authority EVERYONE matched lock owner.");
                 return true;
             }
             if (checkAgainstAuthority(user, owner))
             {
+                if (logger.isDebugEnabled())
+                    logger.debug(" GRANTED: User matched as lock owner.");
                 return true;
             }
         }
+        
+        if (logger.isDebugEnabled())
+            logger.debug(" DENIED: User did not match as lock owner.");
         return false;
     }
     

@@ -347,136 +347,6 @@ public class AVMServiceTest extends AVMServiceTestBase
     }
     
     
-    /**
-     * Test async indexing.
-     * @throws Exception
-     */
-    public void testAsyncIndex() throws Exception
-    {
-        // Make sure the slate is clean ...
-        UserTransaction tx = fTransactionService.getUserTransaction();
-        tx.begin();
-        if(fService.getStore("avmAsynchronousTest") != null)
-        {
-            assertTrue(fIndexingInterceptor.hasIndexBeenCreated("avmAsynchronousTest"));
-            fService.purgeStore("avmAsynchronousTest");
-            assertTrue(fIndexingInterceptor.hasIndexBeenCreated("avmAsynchronousTest"));
-            assertFalse(fIndexingInterceptor.hasIndexBeenCreated("bananaStoreWoof"));
-        }
-        else
-        {
-            assertFalse(fIndexingInterceptor.hasIndexBeenCreated("avmAsynchronousTest"));
-        }
-        StoreRef storeRef = AVMNodeConverter.ToStoreRef("avmAsynchronousTest");
-        Indexer indexer = fIndexerAndSearcher.getIndexer(storeRef);
-        if(indexer instanceof AVMLuceneIndexer)
-        {
-            AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer)indexer;
-            avmIndexer.deleteIndex("avmAsynchronousTest", IndexMode.SYNCHRONOUS);
-        }
-        tx.commit();
-        
-        tx = fTransactionService.getUserTransaction();
-        tx.begin();
-        assertEquals(-1, fIndexingInterceptor.getLastIndexedSnapshot("bananaStoreWoof"));
-        assertEquals(-1, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
-        tx.commit();
-      
-        // TODO: Suspend and resume indexing in case we are really unlucky and hit an index before we expect it.
-        
-        SearchService searchService = fIndexerAndSearcher.getSearcher(storeRef, true);
-        ResultSet results;
-        
-        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
-        assertEquals(0, results.length());
-        results.close();
-        
-        fService.createStore("avmAsynchronousTest");
-        
-        tx = fTransactionService.getUserTransaction();
-        tx.begin();
-        assertEquals(0, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
-        tx.commit();
-        
-        fService.createSnapshot("avmAsynchronousTest", null, null);
-        
-        tx = fTransactionService.getUserTransaction();
-        tx.begin();
-        assertEquals(0, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
-        tx.commit();
-        
-        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
-        assertEquals(1, results.length());
-        results.close();
-        
-        fService.createDirectory("avmAsynchronousTest:/", "a");
-        fService.createDirectory("avmAsynchronousTest:/a", "b");
-        fService.createDirectory("avmAsynchronousTest:/a/b", "c");
-        
-        tx = fTransactionService.getUserTransaction();
-        tx.begin();
-        assertEquals(0, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
-        assertTrue(fIndexingInterceptor.isIndexUpToDate("avmAsynchronousTest"));
-        tx.commit();
-        
-        fService.createSnapshot("avmAsynchronousTest", null, null);
-        
-        tx = fTransactionService.getUserTransaction();
-        tx.begin();
-        assertEquals(1, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
-        assertTrue(fIndexingInterceptor.isIndexUpToDate("avmAsynchronousTest"));
-        assertFalse(fIndexingInterceptor.isIndexUpToDateAndSearchable("avmAsynchronousTest"));
-        assertEquals(IndexMode.ASYNCHRONOUS, fIndexingInterceptor.getIndexMode("avmAsynchronousTest"));
-        assertEquals(IndexMode.SYNCHRONOUS, fIndexingInterceptor.getIndexMode("main"));
-        assertTrue(fIndexingInterceptor.isSnapshotIndexed("avmAsynchronousTest", 0));
-        assertTrue(fIndexingInterceptor.isSnapshotIndexed("avmAsynchronousTest", 1));
-        assertFalse(fIndexingInterceptor.isSnapshotIndexed("avmAsynchronousTest", 2));
-        tx.commit();
-        
-        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
-        assertEquals(1, results.length());
-        results.close();
-        
-        Thread.sleep(180000);
-        
-        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
-        assertEquals(4, results.length());
-        results.close();
-        
-        
-        tx = fTransactionService.getUserTransaction();
-        tx.begin();
-        assertEquals(1, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
-        assertTrue(fIndexingInterceptor.isIndexUpToDate("avmAsynchronousTest"));
-        assertTrue(fIndexingInterceptor.isIndexUpToDateAndSearchable("avmAsynchronousTest"));
-        tx.commit();
-        
-        fService.purgeStore("avmAsynchronousTest");
-        
-        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
-        assertEquals(0, results.length());
-        results.close();
-        
-        fService.createStore("avmAsynchronousTest");
-        fService.createSnapshot("avmAsynchronousTest", null, null);
-        fService.createDirectory("avmAsynchronousTest:/", "a");
-        fService.createDirectory("avmAsynchronousTest:/a", "b");
-        fService.createDirectory("avmAsynchronousTest:/a/b", "c");
-        fService.createSnapshot("avmAsynchronousTest", null, null);
-        fService.purgeStore("avmAsynchronousTest");
-        fService.createStore("avmAsynchronousTest");
-        fService.createSnapshot("avmAsynchronousTest", null, null);
-        fService.createDirectory("avmAsynchronousTest:/", "a");
-        fService.createDirectory("avmAsynchronousTest:/a", "b");
-        fService.createDirectory("avmAsynchronousTest:/a/b", "c");
-        fService.createSnapshot("avmAsynchronousTest", null, null);
-        
-        Thread.sleep(180000);
-        
-        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
-        assertEquals(4, results.length());
-        results.close();
-    }
     
     public void testForceCopyDeleted()
     {
@@ -537,8 +407,16 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createBranch(1, "layer:/root", "branch:/", "branch");
             fService.createSnapshot("branch", null, null);
             fService.getFileOutputStream("main:/a/b/c/foo").close();
+            System.out.println("main 1");
+            System.out.println(recursiveList("main", 1, true));
+            System.out.println("branch 1");
+            System.out.println(recursiveList("branch", 1, true));
             assertEquals(fService.lookup(1, "main:/a/b/c/foo").getId(), fService.lookup(1,
                     "branch:/branch/layer/b/c/foo").getId());
+            System.out.println("main -1");
+            System.out.println(recursiveList("main", -1, true));
+            System.out.println("branch -1");
+            System.out.println(recursiveList("branch", -1, true));
             assertEquals(fService.lookup(-1, "main:/a/b/c/foo").getId(), fService.lookup(-1,
                     "branch:/branch/layer/b/c/foo").getId());
         }
@@ -5640,5 +5518,136 @@ public class AVMServiceTest extends AVMServiceTestBase
             e.printStackTrace(System.err);
             fail();
         }
+    }
+
+    /**
+     * Test async indexing.
+     * @throws Exception
+     */
+    public void testAsyncIndex() throws Exception
+    {
+        // Make sure the slate is clean ...
+        UserTransaction tx = fTransactionService.getUserTransaction();
+        tx.begin();
+        if(fService.getStore("avmAsynchronousTest") != null)
+        {
+            assertTrue(fIndexingInterceptor.hasIndexBeenCreated("avmAsynchronousTest"));
+            fService.purgeStore("avmAsynchronousTest");
+            assertTrue(fIndexingInterceptor.hasIndexBeenCreated("avmAsynchronousTest"));
+            assertFalse(fIndexingInterceptor.hasIndexBeenCreated("bananaStoreWoof"));
+        }
+        else
+        {
+            assertFalse(fIndexingInterceptor.hasIndexBeenCreated("avmAsynchronousTest"));
+        }
+        StoreRef storeRef = AVMNodeConverter.ToStoreRef("avmAsynchronousTest");
+        Indexer indexer = fIndexerAndSearcher.getIndexer(storeRef);
+        if(indexer instanceof AVMLuceneIndexer)
+        {
+            AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer)indexer;
+            avmIndexer.deleteIndex("avmAsynchronousTest", IndexMode.SYNCHRONOUS);
+        }
+        tx.commit();
+        
+        tx = fTransactionService.getUserTransaction();
+        tx.begin();
+        assertEquals(-1, fIndexingInterceptor.getLastIndexedSnapshot("bananaStoreWoof"));
+        assertEquals(-1, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
+        tx.commit();
+      
+        // TODO: Suspend and resume indexing in case we are really unlucky and hit an index before we expect it.
+        
+        SearchService searchService = fIndexerAndSearcher.getSearcher(storeRef, true);
+        ResultSet results;
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
+        assertEquals(0, results.length());
+        results.close();
+        
+        fService.createStore("avmAsynchronousTest");
+        
+        tx = fTransactionService.getUserTransaction();
+        tx.begin();
+        assertEquals(0, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
+        tx.commit();
+        
+        fService.createSnapshot("avmAsynchronousTest", null, null);
+        
+        tx = fTransactionService.getUserTransaction();
+        tx.begin();
+        assertEquals(0, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
+        tx.commit();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        fService.createDirectory("avmAsynchronousTest:/", "a");
+        fService.createDirectory("avmAsynchronousTest:/a", "b");
+        fService.createDirectory("avmAsynchronousTest:/a/b", "c");
+        
+        tx = fTransactionService.getUserTransaction();
+        tx.begin();
+        assertEquals(0, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
+        assertTrue(fIndexingInterceptor.isIndexUpToDate("avmAsynchronousTest"));
+        tx.commit();
+        
+        fService.createSnapshot("avmAsynchronousTest", null, null);
+        
+        tx = fTransactionService.getUserTransaction();
+        tx.begin();
+        assertEquals(1, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
+        assertTrue(fIndexingInterceptor.isIndexUpToDate("avmAsynchronousTest"));
+        assertFalse(fIndexingInterceptor.isIndexUpToDateAndSearchable("avmAsynchronousTest"));
+        assertEquals(IndexMode.ASYNCHRONOUS, fIndexingInterceptor.getIndexMode("avmAsynchronousTest"));
+        assertEquals(IndexMode.SYNCHRONOUS, fIndexingInterceptor.getIndexMode("main"));
+        assertTrue(fIndexingInterceptor.isSnapshotIndexed("avmAsynchronousTest", 0));
+        assertTrue(fIndexingInterceptor.isSnapshotIndexed("avmAsynchronousTest", 1));
+        assertFalse(fIndexingInterceptor.isSnapshotIndexed("avmAsynchronousTest", 2));
+        tx.commit();
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
+        assertEquals(1, results.length());
+        results.close();
+        
+        Thread.sleep(180000);
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
+        assertEquals(4, results.length());
+        results.close();
+        
+        
+        tx = fTransactionService.getUserTransaction();
+        tx.begin();
+        assertEquals(1, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
+        assertTrue(fIndexingInterceptor.isIndexUpToDate("avmAsynchronousTest"));
+        assertTrue(fIndexingInterceptor.isIndexUpToDateAndSearchable("avmAsynchronousTest"));
+        tx.commit();
+        
+        fService.purgeStore("avmAsynchronousTest");
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
+        assertEquals(0, results.length());
+        results.close();
+        
+        fService.createStore("avmAsynchronousTest");
+        fService.createSnapshot("avmAsynchronousTest", null, null);
+        fService.createDirectory("avmAsynchronousTest:/", "a");
+        fService.createDirectory("avmAsynchronousTest:/a", "b");
+        fService.createDirectory("avmAsynchronousTest:/a/b", "c");
+        fService.createSnapshot("avmAsynchronousTest", null, null);
+        fService.purgeStore("avmAsynchronousTest");
+        fService.createStore("avmAsynchronousTest");
+        fService.createSnapshot("avmAsynchronousTest", null, null);
+        fService.createDirectory("avmAsynchronousTest:/", "a");
+        fService.createDirectory("avmAsynchronousTest:/a", "b");
+        fService.createDirectory("avmAsynchronousTest:/a/b", "c");
+        fService.createSnapshot("avmAsynchronousTest", null, null);
+        
+        Thread.sleep(180000);
+        
+        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
+        assertEquals(4, results.length());
+        results.close();
     }
 }

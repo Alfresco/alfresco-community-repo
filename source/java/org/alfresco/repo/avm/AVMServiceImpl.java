@@ -36,8 +36,6 @@ import java.util.SortedMap;
 
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
@@ -72,8 +70,6 @@ public class AVMServiceImpl implements AVMService
      */
     private AVMRepository fAVMRepository;
     
-    private TransactionListener fTransactionListener;
-    
     /**
      * Basic constructor for the service.
      */
@@ -90,15 +86,6 @@ public class AVMServiceImpl implements AVMService
         fAVMRepository = avmRepository;
     }
 
-    /**
-     * Set the transaction listener.
-     * @param transactionListener
-     */
-    public void setTransactionListener(TransactionListener transactionListener)
-    {
-        fTransactionListener = transactionListener;
-    }
-    
     /**
      * Get an InputStream from a file.
      * @param version The version to look under.
@@ -139,7 +126,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         return fAVMRepository.getOutputStream(path);
     }
 
@@ -169,7 +155,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         return fAVMRepository.createContentWriter(path);
     }
 
@@ -361,7 +346,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         return fAVMRepository.createFile(path, name);
     }
 
@@ -378,7 +362,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         // Save the contents to temp space.
         File temp;
         try
@@ -419,7 +402,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.createDirectory(path, name);
     }
 
@@ -436,7 +418,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.createLayeredFile(srcPath, parent, name);
     }
 
@@ -453,7 +434,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);        
         fAVMRepository.createLayeredDirectory(srcPath, parent, name);
     }
 
@@ -485,7 +465,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.createBranch(version, srcPath, dstPath, name);
     }
 
@@ -501,7 +480,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.remove(parent, name);
     }
     
@@ -520,7 +498,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Cannot remove root node: " + path);
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.remove(basePath[0], basePath[1]);
     }
 
@@ -539,7 +516,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.rename(srcParent, srcName, dstParent, dstName);
     }
 
@@ -554,7 +530,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.uncover(dirPath, name);
     }
 
@@ -570,7 +545,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.flatten(dirPath, name);
     }
 
@@ -616,7 +590,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Store is null.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         return fAVMRepository.createSnapshot(store, tag, description);
     }
 
@@ -861,7 +834,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);        
         fAVMRepository.retargetLayeredDirectory(path, target);
     }
 
@@ -875,7 +847,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Path is null.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.makePrimary(path);
     }
 
@@ -967,7 +938,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.setOpacity(path, opacity);
     }
 
@@ -1018,7 +988,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.setNodeProperty(path, name, value);
     }
 
@@ -1033,7 +1002,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.setNodeProperties(path, properties);
     }
 
@@ -1091,7 +1059,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.deleteNodeProperty(path, name);
     }
 
@@ -1105,7 +1072,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.deleteNodeProperties(path);
     }
 
@@ -1208,7 +1174,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Invalid null argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.deleteStoreProperty(store, name);
     }
     
@@ -1250,7 +1215,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Null Path.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         return fAVMRepository.getContentDataForWrite(path);
     }
 
@@ -1268,7 +1232,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Null Path.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.setContentData(path, data);
     }
 
@@ -1283,7 +1246,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.setMetaDataFrom(path, from);
     }
 
@@ -1300,7 +1262,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal Null Argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.addAspect(path, aspectName);
     }
     
@@ -1342,7 +1303,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.removeAspect(path, aspectName);
     }
     
@@ -1374,7 +1334,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal Null Argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.link(parentPath, name, toLink);
     }
 
@@ -1388,7 +1347,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Null Path.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         return fAVMRepository.forceCopy(path);
     }
     
@@ -1427,7 +1385,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal name.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         AVMNodeDescriptor srcDesc = lookup(srcVersion, srcPath);
         recursiveCopy(srcVersion, srcDesc, dstPath, name);
     }
@@ -1508,7 +1465,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Cannot revert store root: " + path);
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.revert(baseName[0], baseName[1], toRevertTo);
     }
 
@@ -1521,7 +1477,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal Null Argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.setGuid(path, guid);
     }
 
@@ -1534,7 +1489,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal Null Argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.setEncoding(path, encoding);
     }
 
@@ -1547,7 +1501,6 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal Null Argument.");
         }
-        AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.setMimeType(path, mimeType);
     }
 }

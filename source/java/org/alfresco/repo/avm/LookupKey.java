@@ -3,14 +3,18 @@
  */
 package org.alfresco.repo.avm;
 
+import java.io.Serializable;
+
 import org.alfresco.repo.avm.util.SimplePath;
 
 /**
  * This is the key by which Lookup's are retrieved from the cache.
  * @author britt
  */
-public class LookupKey 
+public class LookupKey implements Serializable
 {
+    private static final long serialVersionUID = 8471482833953423406L;
+
     /**
      * The name of the store.
      */

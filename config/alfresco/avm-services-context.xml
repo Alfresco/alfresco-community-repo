@@ -146,14 +146,8 @@
 	    <property name="avmStoreDAO">
 	        <ref bean="avmStoreDAO"/>
 	    </property>
-	    <property name="maxSize">
-	    	<value>50</value>
-	    </property>
-	</bean>
-	
-	<bean id="lookupCacheListener" class="org.alfresco.repo.avm.AVMLookupCacheListener">
-	    <property name="lookupCache">
-	        <ref bean="lookupCache"/>
+	    <property name="transactionalCache">
+	    	<ref bean="lookupTransactionalCache"/>
 	    </property>
 	</bean>
 	
@@ -289,6 +283,9 @@
         </property>
         <property name="avmSyncService">
             <ref bean="AVMSyncService" />
+        </property>
+        <property name="avmLockingAwareService">
+            <ref bean="AVMLockingAwareService" />
         </property>
         <property name="nodeService">
             <ref bean="NodeService" />

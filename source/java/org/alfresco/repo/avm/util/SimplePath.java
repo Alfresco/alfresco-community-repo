@@ -3,12 +3,16 @@
  */
 package org.alfresco.repo.avm.util;
 
+import java.io.Serializable;
+
 /**
  * Holds a simple path.
  * @author britt
  */
-public class SimplePath 
+public class SimplePath implements Serializable 
 {
+    private static final long serialVersionUID = 2696828491008988470L;
+
     /**
      * The names of the path's components.
      */

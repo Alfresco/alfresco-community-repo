@@ -795,9 +795,6 @@
         <property name="avmRepository">
             <ref bean="avmRepository"/>
         </property>
-        <property name="transactionListener">
-            <ref bean="lookupCacheListener"/>
-        </property>
     </bean>
 
     <bean id="avmServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">

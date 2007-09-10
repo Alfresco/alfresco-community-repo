@@ -23,6 +23,7 @@
 
 package org.alfresco.repo.avm;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,8 +35,10 @@ import org.alfresco.util.Pair;
  * from the root directory of a repository.
  * @author britt
  */
-class Lookup
+class Lookup implements Serializable
 {
+    private static final long serialVersionUID = -2844833688622561L;
+
     /**
      * Is this lookup valid?
      */

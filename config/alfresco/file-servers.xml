@@ -2,7 +2,7 @@
 
    <config evaluator="string-compare" condition="CIFS Server">
 	  <serverEnable enabled="true"/>
-      <host name="${localname}_A"/>
+      <host name="${localname}A"/>
       <comment>Alfresco CIFS Server</comment>
 
       <!-- Set to the broadcast mask for the subnet -->

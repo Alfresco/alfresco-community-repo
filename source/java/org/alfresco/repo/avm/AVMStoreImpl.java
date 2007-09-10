@@ -214,11 +214,20 @@ public class AVMStoreImpl implements AVMStore, Serializable
             {
                 continue;
             }
+            fAVMRepository.forceCopy(entry.getPath());
+            // TODO This leaves the behavior of LayeredFiles not quite
+            // right.
+            /*
             String parentName[] = AVMNodeConverter.SplitBase(entry.getPath());
             parentName[0] = parentName[0].substring(parentName[0].indexOf(':') + 1);
             lookup = lookupDirectory(-1, parentName[0], true);
             DirectoryNode parent = (DirectoryNode)lookup.getCurrentNode();
             AVMNode child = parent.lookupChild(lookup, parentName[1], false);
+            // TODO For debugging.
+            if (child == null)
+            {
+                System.err.println("Yoiks!");
+            }
             // TODO This is funky. Need to look carefully to see that this call
             // does exactly what's needed.
             lookup.add(child, parentName[1], false);
@@ -232,6 +241,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
                 newChild = ((LayeredFileNode)child).copyLiterally(lookup);
             }
             parent.putChild(parentName[1], newChild);
+            */
         }
         // Clear out the new nodes.
         List<AVMNode> newInRep = AVMDAOs.Instance().fAVMNodeDAO.getNewInStore(this);

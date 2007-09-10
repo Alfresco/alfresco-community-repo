@@ -633,7 +633,6 @@ public class AVMRepository
             {
                 throw new AVMNotFoundException("Store not found.");
             }
-            fLookupCache.onDelete(pathParts[0]);
             sPath = srcRepo.lookupDirectory(-1, pathParts[1], true);
             if (sPath == null)
             {
@@ -645,6 +644,7 @@ public class AVMRepository
             {
                 throw new AVMNotFoundException("Not found: " + srcName);
             }
+            fLookupCache.onDelete(pathParts[0]);
         }
         finally
         {
@@ -659,7 +659,6 @@ public class AVMRepository
             {
                 throw new AVMNotFoundException("Store not found.");
             }
-            fLookupCache.onWrite(pathParts[0]);
             Lookup dPath = dstRepo.lookupDirectory(-1, pathParts[1], true);
             if (dPath == null)
             {
@@ -761,6 +760,7 @@ public class AVMRepository
             {
                 dstNode.setAncestor(srcNode);
             }
+            fLookupCache.onWrite(pathParts[0]);
         }
         finally
         {
@@ -808,10 +808,10 @@ public class AVMRepository
         {
             throw new AVMNotFoundException("Store not found.");
         }
-        fLookupCache.onSnapshot(storeName);
         Map<String, Integer> result = store.createSnapshot(tag, description, new HashMap<String, Integer>());
         for (Map.Entry<String, Integer> entry : result.entrySet())
         {
+            fLookupCache.onSnapshot(entry.getKey());
             fCreateVersionTxnListener.versionCreated(entry.getKey(), entry.getValue());
         }
         return result;
@@ -1639,18 +1639,33 @@ public class AVMRepository
      */
     public Lookup lookupDirectory(int version, String path)
     {
-        fLookupCount.set(fLookupCount.get() + 1);
-        if (fLookupCount.get() > 50)
+        Integer count = fLookupCount.get();
+        try
         {
-            throw new AVMCycleException("Cycle in lookup.");
+            if (count == null)
+            {
+                fLookupCount.set(1);
+            }
+            fLookupCount.set(fLookupCount.get() + 1);
+            if (fLookupCount.get() > 50)
+            {
+                throw new AVMCycleException("Cycle in lookup.");
+            }
+            String [] pathParts = SplitPath(path);
+            AVMStore store = getAVMStoreByName(pathParts[0]);
+            if (store == null)
+            {
+                return null;
+            }
+            return store.lookupDirectory(version, pathParts[1], false);
         }
-        String [] pathParts = SplitPath(path);
-        AVMStore store = getAVMStoreByName(pathParts[0]);
-        if (store == null)
+        finally
         {
-            return null;
+            if (count == null)
+            {
+                fLookupCount.set(null);
+            }
         }
-        return store.lookupDirectory(version, pathParts[1], false);
     }
 
     /**

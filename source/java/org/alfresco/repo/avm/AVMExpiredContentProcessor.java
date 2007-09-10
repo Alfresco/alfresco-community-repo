@@ -48,6 +48,7 @@ import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -86,6 +87,7 @@ public class AVMExpiredContentProcessor
     protected Map<String, Map<String, List<String>>> expiredContent;
     protected AVMService avmService;
     protected AVMSyncService avmSyncService;
+    protected AVMService avmLockingAwareService;
     protected NodeService nodeService;
     protected WorkflowService workflowService;
     protected PersonService personService;
@@ -156,6 +158,11 @@ public class AVMExpiredContentProcessor
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
+    }
+    
+    public void setAvmLockingAwareService(AVMService avmLockingAwareService)
+    {
+        this.avmLockingAwareService = avmLockingAwareService;
     }
 
     /**
@@ -305,7 +312,7 @@ public class AVMExpiredContentProcessor
                 
              if (logger.isDebugEnabled())
                  logger.debug("Examining expiration date for '" + nodePath + "': " + 
-                          expirationDateProp.getStringValue());
+                          expirationDateProp);
              
              if (expirationDateProp != null)
              {
@@ -465,10 +472,10 @@ public class AVMExpiredContentProcessor
         String path = workflowStoreName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + 
                  "/" + JNDIConstants.DIR_DEFAULT_APPBASE;
         // DNS name mangle the property name - can only contain value DNS characters!
-        String dnsProp = SandboxConstants.PROP_DNS + DNSNameMangler.MakeDNSName(userStore, packageName);
+        String dnsProp = SandboxConstants.PROP_DNS + DNSNameMangler.MakeDNSName(stagingStore, packageName);
         this.avmService.setStoreProperty(workflowStoreName, QName.createQName(null, dnsProp),
                  new PropertyValue(DataTypeDefinition.TEXT, path));
-         
+        
         // the main workflow store depends on the main user store (dist=1)
         String prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + userStore;
         this.avmService.setStoreProperty(workflowStoreName, QName.createQName(null, prop_key),
@@ -560,11 +567,10 @@ public class AVMExpiredContentProcessor
             String pathInWorkflowStore = workflowStoreName + ":" + relPath;
             
             // call forceCopy to make sure the path appears modified in the workflow
-            // sandbox, if the item is already modified or deleted this call has no
-            // effect.
-            this.avmService.forceCopy(pathInWorkflowStore);
+            // sandbox, if the item is already modified or deleted this call has no effect.
+            this.avmLockingAwareService.forceCopy(pathInWorkflowStore);
         }
-                    
+        
         // convert package to workflow package
         AVMNodeDescriptor packageDesc = avmService.lookup(-1, packagesPath);
         NodeRef packageNodeRef = workflowService.createPackage(

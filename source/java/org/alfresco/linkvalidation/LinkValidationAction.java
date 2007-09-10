@@ -158,47 +158,21 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
                 // get the broken files created due to deletions and new/modified files
                 HrefManifest manifest = this.linkValidationService.getBrokenHrefManifest(hdiff);
 
-                // TODO: use the counts retrieved from the manifest object and pass them
-                //       into the constructor, the report object can then store these for
-                //       later retrieval.
-                
-//                int baseVersion   = manifest.getBaseSnapshotVersion(); 
-//                int latestVersion = manifest.getLatestSnapshotVersion(); 
-//                int fileCount     = manifest.getBaseFileCount(); 
-//                int linkCount     = manifest.getBaseLinkCount(); 
-
-                HrefManifest bogus  = new HrefManifest();
-
-                // TODO: change the constructor to just take one manifest object
-
                 // create the report object using the 2 sets of results
-                report = new LinkValidationReport(storeName, webappName, monitor, manifest, bogus);
+                report = new LinkValidationReport(storeName, webappName, manifest,
+                         monitor.getFileUpdateCount(), monitor.getUrlUpdateCount());
             }
             else
             {
                 // retrieve the manifest of all the broken links and files for the webapp
                 HrefManifest manifest =  this.linkValidationService.getBrokenHrefManifest(webappPath);
 
-                List<HrefManifestEntry>  manifests = 
-                                         manifest.getManifestEntries();
-                
-                // TODO: use the counts retrieved from the manifest object and pass them
-                //       into the constructor, the report object can then store these for
-                //       later retrieval to show how far 'bejind' the report is.
-                //       NOTE: that latestVersion >= baseVersion
-                //             Whenever  latestVersion >  baseVersion, 
-                //             link validation  is "behind".
-                
-//                int baseVersion        = manifest.getBaseSnapshotVersion(); 
-//                int latestVersion      = manifest.getLatestSnapshotVersion(); 
-//                int fileCount = manifest.getBaseFileCount(); 
-//                int linkCount = manifest.getBaseLinkCount(); 
-
                 // Create the report object using the link check results
-                report = new LinkValidationReport(storeName, webappName, monitor, manifests);
+                report = new LinkValidationReport(storeName, webappName, manifest,
+                         manifest.getBaseFileCount(), manifest.getBaseLinkCount());
                 
-                // the monitor object is not used anymore so manually set
-                // the done status so the client ca retrieve the report.
+                // the monitor object is not used here so manually set
+                // the done status so the client can retrieve the report.
                 monitor.setDone( true );
             }
         }

@@ -20,109 +20,36 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.repo.avm.wf;
 
-import java.util.List;
-
-import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.workflow.jbpm.JBPMNode;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avmsync.AVMDifference;
-import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.Pair;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
 
 
 /**
- * Clear "submitted" mark from (source of) items within the WCM Workflow Package
- * 
- * @author davidc
+ * No-op stub for the no longer used AVMSubmittedApsect. 
  */
 public class AVMClearSubmittedHandler extends JBPMSpringActionHandler 
 {
-   private static final long serialVersionUID = 4113360751217684995L;
+    private static final long serialVersionUID = 4113360751217684995L;
 
-   /**
-    * The AVMService instance.
-    */
-   private AVMService avmService;
-    
-   /**
-    * The AVMSyncService instance.
-    */
-   private AVMSyncService avmSyncService;
-    
-   /**
-    * The AVMSubmittedAspect instance.
-    */
-   private AVMSubmittedAspect avmSubmittedAspect;
-    
-   /**
-    * Initialize service references.
-    * @param factory The BeanFactory to get references from.
-    */
-   @Override
-   protected void initialiseHandler(BeanFactory factory) 
-   {
-      this.avmService = (AVMService)factory.getBean(ServiceRegistry.AVM_SERVICE.getLocalName());
-      this.avmSyncService = (AVMSyncService)factory.getBean(ServiceRegistry.AVM_SYNC_SERVICE.getLocalName());
-      this.avmSubmittedAspect = (AVMSubmittedAspect)factory.getBean("AVMSubmittedAspect");
-   }
+    /**
+     * Initialize service references.
+     * @param factory The BeanFactory to get references from.
+     */
+    @Override
+    protected void initialiseHandler(BeanFactory factory) 
+    {
+    }
 
-   /**
-    * Do the actual work.
-    * @param executionContext The context to get stuff from.
-    */
-   public void execute(final ExecutionContext executionContext) 
-      throws Exception 
-   {
-      // TODO: Allow submit parameters to be passed into this action handler
-      //       rather than pulling directly from execution context
-        
-      // NOTE: Submitted items can only be marked as "submitted" if we know where they came from
-      String from = (String)executionContext.getContextInstance().getVariable("wcmwf_fromPath");
-      if (from == null || from.length() == 0)
-      {
-         return;
-      }
-      // retrieve list of changes in submitted package
-      NodeRef pkg = ((JBPMNode)executionContext.getContextInstance().getVariable("bpm_package")).getNodeRef();
-      Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(pkg);
-      AVMNodeDescriptor pkgDesc = this.avmService.lookup(pkgPath.getFirst(), pkgPath.getSecond());
-      String targetPath = pkgDesc.getIndirection();
-      final List<AVMDifference> diffs = this.avmSyncService.compare(pkgPath.getFirst(), 
-                                                                    pkgPath.getSecond(), 
-                                                                    -1, 
-                                                                    targetPath, 
-                                                                    null);
-
-      // for each change, mark original as submitted
-      for (final AVMDifference diff : diffs)
-      {
-         final String submittedPath = from + diff.getSourcePath().substring(pkgPath.getSecond().length());
-         this.clearSubmitted(this.avmService.lookup(-1, submittedPath, true));
-      }
-   }
-
-   /**
-    * Recursively clear the submitted aspect.
-    */
-   private void clearSubmitted(final AVMNodeDescriptor d)
-   {
-      this.avmSubmittedAspect.clearSubmitted(d.getVersionID(), d.getPath());
-      if (d.isDirectory())
-      {
-         for (final AVMNodeDescriptor c : this.avmService.getDirectoryListingArray(d, true))
-         {
-            this.clearSubmitted(c);
-         }
-      }
-   }
+    /**
+     * Do the actual work.
+     * @param executionContext The context to get stuff from.
+     */
+    public void execute(ExecutionContext executionContext) throws Exception 
+    {
+    }
 }

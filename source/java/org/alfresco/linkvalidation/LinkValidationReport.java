@@ -52,6 +52,8 @@ public class LinkValidationReport implements Serializable
    private int numberFilesChecked = -1;
    private int numberLinksChecked = -1;
    private int numberBrokenLinks = -1;
+   private int baseSnapshotVersion = -1;
+   private int latestSnapshotVersion = -1;
    private boolean successful = true;
    private Date completedAt;
    
@@ -67,63 +69,29 @@ public class LinkValidationReport implements Serializable
     * 
     * @param store The store the link check was run against
     * @param webapp The webapp within the store the check was run against
-    * @param status The object containing status i.e. file, link counts and the list
-    *               of files containing broken links
-    * @param manifests The manifest of broken links and files
+    * @param manifest The manifest of broken links and snapshot info
+    * @param noFilesChecked The number of files checked
+    * @param noLinksChecked The number of links checked
     */
-   public LinkValidationReport(String store, String webapp, HrefValidationProgress status, 
-            List<HrefManifestEntry> manifests)
+   public LinkValidationReport(String store, String webapp, HrefManifest manifest,
+            int noFilesChecked, int noLinksChecked)
    {
       this.store = store;
       this.webapp = webapp;
       this.completedAt = new Date();
-      this.numberFilesChecked = status.getFileUpdateCount();
-      this.numberLinksChecked = status.getUrlUpdateCount();
       this.numberBrokenLinks = 0;
+      this.numberFilesChecked = noFilesChecked;
+      this.numberLinksChecked = noLinksChecked;
+      this.baseSnapshotVersion   = manifest.getBaseSnapshotVersion(); 
+      this.latestSnapshotVersion = manifest.getLatestSnapshotVersion();
       
       // create list and map
+      List<HrefManifestEntry> manifests = manifest.getManifestEntries();
       this.brokenFiles = new ArrayList<String>(manifests.size());
       this.brokenLinksByFile = new HashMap<String, HrefManifestEntry>(manifests.size());
       
       // build the required list and map
       storeBrokenFiles(manifests);
-   }
-   
-   /**
-    * Constructs a link validation report from the results of a comparison check
-    * between the staging area and another sandbox i.e. an authors sandbox or a 
-    * workflow sandbox.
-    * 
-    * @param store The store the link check was run against
-    * @param webapp The webapp within the store the check was run against
-    * @param status The object containing status i.e. file, link counts and the list
-    *               of files containing broken links
-    * @param brokenByDelete Object representing the broken links caused by deleted assets
-    * @param brokenByNewOrMod Object representing the broken links caused by new or 
-    *                         modified assets
-    */
-   public LinkValidationReport(String store, String webapp, HrefValidationProgress status, 
-            HrefManifest brokenByDelete, HrefManifest brokenByNewOrMod)
-   {
-      this.store = store;
-      this.webapp = webapp;
-      this.completedAt = new Date();
-      this.numberFilesChecked = status.getFileUpdateCount();
-      this.numberLinksChecked = status.getUrlUpdateCount();
-      this.numberBrokenLinks = 0;
-      
-      // get the lists of broken files
-      List<HrefManifestEntry> byDelete = brokenByDelete.getManifestEntries();
-      List<HrefManifestEntry> byNewOrMod = brokenByNewOrMod.getManifestEntries();
-      
-      // create list and map
-      this.brokenFiles = new ArrayList<String>(byDelete.size() + byNewOrMod.size());
-      this.brokenLinksByFile = new HashMap<String, HrefManifestEntry>(
-               byDelete.size() + byNewOrMod.size());
-      
-      // build the required list and map
-      storeBrokenFiles(byDelete);
-      storeBrokenFiles(byNewOrMod);
    }
    
    /**
@@ -197,6 +165,16 @@ public class LinkValidationReport implements Serializable
       return links;
    }
    
+   public int getBaseSnapshotVersion()
+   {
+      return this.baseSnapshotVersion;
+   }
+   
+   public int getLatestSnapshotVersion()
+   {
+      return this.latestSnapshotVersion;
+   }
+   
    public boolean wasSuccessful()
    {
       return this.successful;
@@ -219,6 +197,8 @@ public class LinkValidationReport implements Serializable
       StringBuilder buffer = new StringBuilder(super.toString());
       buffer.append(" (store=").append(this.store);
       buffer.append(" webapp=").append(this.webapp);
+      buffer.append(" baseSnapshot=").append(this.baseSnapshotVersion);
+      buffer.append(" latestSnapshot=").append(this.latestSnapshotVersion);
       buffer.append(" error=").append(this.error).append(")");
       return buffer.toString();
    }
@@ -236,13 +216,9 @@ public class LinkValidationReport implements Serializable
       {
          String fileName = manifest.getFileName();
          
-         // make sure the same file only gets added once
-         if (this.brokenFiles.contains(fileName) == false)
-         {
-            this.brokenFiles.add(fileName);
-            this.brokenLinksByFile.put(fileName, manifest);
-            this.numberBrokenLinks = this.numberBrokenLinks + manifest.getHrefs().size();
-         }
+         this.brokenFiles.add(fileName);
+         this.brokenLinksByFile.put(fileName, manifest);
+         this.numberBrokenLinks = this.numberBrokenLinks + manifest.getHrefs().size();
       }
    }
 }

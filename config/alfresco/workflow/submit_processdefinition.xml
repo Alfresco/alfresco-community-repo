@@ -210,9 +210,6 @@
     </task-node>
 
     <task-node name="submitcancelled">
-        <event type="node-enter">
-           <action class="org.alfresco.repo.avm.wf.AVMClearSubmittedHandler"/>
-        </event>
         <task name="wcmwf:submitcancelledTask" swimlane="initiator" />
         <transition name="" to="end" />
     </task-node>
@@ -225,7 +222,6 @@
         <transition name="" to="end" />
     </task-node>
 
-
     <!--                 -->
     <!-- End the Process -->
     <!--                 -->
@@ -233,7 +229,6 @@
     <end-state name="end"/>
     
     <event type="process-end">
-        <action class="org.alfresco.repo.avm.wf.AVMClearSubmittedHandler"/>
         <action class="org.alfresco.repo.avm.wf.AVMRemoveAllWebappsHandler"/>
         <action class="org.alfresco.repo.avm.wf.AVMRemoveWFStoreHandler"/>
     </event>

@@ -238,11 +238,6 @@
 	    </property>
 	</bean>
 
-    <bean id="AVMSubmittedAspect" class="org.alfresco.repo.avm.wf.AVMSubmittedAspect">
-        <property name="avmService">
-            <ref bean="AVMService"/>
-        </property>
-    </bean>
 
     <!-- Used to notify virtualization server occur after commit/rollback -->
     <bean id="AVMSubmitTransactionListener" 

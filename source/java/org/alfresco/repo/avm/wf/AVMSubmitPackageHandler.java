@@ -42,6 +42,8 @@ import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
 
@@ -51,24 +53,15 @@ public class AVMSubmitPackageHandler
 {
     private static final long serialVersionUID = 4113360751217684995L;
 
-    /**
-     * The AVMService instance.
-     */
+    private static final Log LOGGER = LogFactory.getLog(AVMSubmitPackageHandler.class);
+
+    /** The AVMService instance. */
     private AVMService fAVMService;
     
-    /**
-     * The AVMSyncService instance.
-     */
+    /** The AVMSyncService instance. */
     private AVMSyncService fAVMSyncService;
 
-    /**
-     * The AVMSubmittedAspect instance.
-     */
-    private AVMSubmittedAspect fAVMSubmittedAspect;
-
-    /**
-     * The AVMLockingService instance.
-     */
+    /** The AVMLockingService instance. */
     private AVMLockingService fAVMLockingService;
 
     /**
@@ -76,19 +69,17 @@ public class AVMSubmitPackageHandler
      * (for JMX notification of virtualization server after commit/rollback).
      */
     private AVMSubmitTransactionListener fAVMSubmitTransactionListener;
-
     
     /**
      * Initialize service references.
      * @param factory The BeanFactory to get references from.
      */
     @Override
-    protected void initialiseHandler(BeanFactory factory) 
+    protected void initialiseHandler(final BeanFactory factory) 
     {
         fAVMService = (AVMService)factory.getBean(ServiceRegistry.AVM_SERVICE.getLocalName());
         fAVMSyncService = (AVMSyncService)factory.getBean(ServiceRegistry.AVM_SYNC_SERVICE.getLocalName());
         fAVMLockingService = (AVMLockingService)factory.getBean(ServiceRegistry.AVM_LOCKING_SERVICE.getLocalName());
-        fAVMSubmittedAspect = (AVMSubmittedAspect)factory.getBean("AVMSubmittedAspect");
         fAVMSubmitTransactionListener = (AVMSubmitTransactionListener) factory.getBean("AVMSubmitTransactionListener");
 
         AlfrescoTransactionSupport.bindListener(fAVMSubmitTransactionListener);
@@ -103,24 +94,30 @@ public class AVMSubmitPackageHandler
     {
         // TODO: Allow submit parameters to be passed into this action handler
         //       rather than pulling directly from execution context
-        
         final NodeRef pkg = ((JBPMNode)executionContext.getContextInstance().getVariable("bpm_package")).getNodeRef();
         final Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(pkg);
+        final AVMNodeDescriptor pkgDesc = fAVMService.lookup(pkgPath.getFirst(), pkgPath.getSecond());
+        final String from = (String)executionContext.getContextInstance().getVariable("wcmwf_fromPath");
+        final String targetPath = pkgDesc.getIndirection();
+        LOGGER.debug("handling submit of " + pkgPath.getSecond() + " from " + from + " to " + targetPath);
 
         // submit the package changes
         final String description = (String)executionContext.getContextInstance().getVariable("bpm_workflowDescription");
         final String tag = (String)executionContext.getContextInstance().getVariable("wcmwf_label");
-        final AVMNodeDescriptor pkgDesc = fAVMService.lookup(pkgPath.getFirst(), pkgPath.getSecond());
-        final String targetPath = pkgDesc.getIndirection();
+
+
         final Map<QName, PropertyValue> dnsProperties = this.fAVMService.queryStorePropertyKey(targetPath.split(":")[0], QName.createQName(null, ".dns%"));
         String webProject = dnsProperties.keySet().iterator().next().getLocalName();
         webProject = webProject.substring(webProject.lastIndexOf('.') + 1, webProject.length());
         final List<AVMDifference> stagingDiffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, targetPath, null);
         for (final AVMDifference diff : stagingDiffs)
         {
-            this.recursivelyRemoveLocksAndSubmittedAspect(webProject, 
-                                                          diff.getSourceVersion(), 
-                                                          diff.getSourcePath());
+            String p = diff.getSourcePath();
+            if (from != null && from.length() != 0)
+            {
+               p = from + p.substring(pkgPath.getSecond().length());
+            }
+            this.recursivelyRemoveLocks(webProject, -1, p); 
         }
         
         // Allow AVMSubmitTransactionListener to inspect the staging diffs
@@ -133,16 +130,17 @@ public class AVMSubmitPackageHandler
         AlfrescoTransactionSupport.bindResource("staging_diffs", stagingDiffs);
 
         fAVMSyncService.update(stagingDiffs, null, false, false, true, true, tag, description);
+        AVMDAOs.Instance().fAVMNodeDAO.flush();
+        fAVMSyncService.flatten(pkgPath.getSecond(), targetPath);
 
         // flatten source folder where changes were submitted from
-        String from = (String)executionContext.getContextInstance().getVariable("wcmwf_fromPath");
         if (from != null && from.length() > 0)
         {
             // first, submit changes back to sandbox forcing addition of edits in workflow (and submission 
             // flag removal). second, flatten sandbox, removing modified items that have been submitted
             // TODO: Without locking on the sandbox, it's possible that a change to a "submitted" item
             //       may get lost when the item is finally approved
-            List<AVMDifference> sandboxDiffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, from, null);
+            final List<AVMDifference> sandboxDiffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, from, null);
             fAVMSyncService.update(sandboxDiffs, null, true, true, false, false, tag, description);
             AVMDAOs.Instance().fAVMNodeDAO.flush();
             fAVMSyncService.flatten(from, targetPath);
@@ -153,10 +151,10 @@ public class AVMSubmitPackageHandler
      * Recursively remove locks from a path. Walking child folders looking for files
      * to remove locks from.
      */
-    private void recursivelyRemoveLocksAndSubmittedAspect(final String webProject, final int version, final String path)
+    private void recursivelyRemoveLocks(final String webProject, final int version, final String path)
     {
-        fAVMSubmittedAspect.clearSubmitted(version, path);
-        AVMNodeDescriptor desc = fAVMService.lookup(version, path, true);
+        LOGGER.debug("removing lock on " + path);
+        final AVMNodeDescriptor desc = fAVMService.lookup(version, path, true);
         if (desc.isFile() || desc.isDeletedFile())
         {
             fAVMLockingService.removeLock(webProject, path.substring(path.indexOf(":") + 1));
@@ -165,7 +163,7 @@ public class AVMSubmitPackageHandler
         {
             for (final AVMNodeDescriptor child : fAVMService.getDirectoryListingArray(version, path, true))
             {
-                this.recursivelyRemoveLocksAndSubmittedAspect(webProject, version, child.getPath());
+                this.recursivelyRemoveLocks(webProject, version, child.getPath());
             }
         }
     }

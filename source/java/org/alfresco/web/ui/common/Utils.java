@@ -34,9 +34,11 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.NamingContainer;
@@ -102,7 +104,45 @@ public final class Utils
    
    private static final Map<String, String> s_fileExtensionMap = new HashMap<String, String>(89, 1.0f);
    
-   private static Log logger = LogFactory.getLog(Utils.class);
+   private static final Log logger = LogFactory.getLog(Utils.class);
+   
+   private static final Set<String> safeTags = new HashSet<String>();
+   
+   static
+   {
+      safeTags.add("p");
+      safeTags.add("/p");
+      safeTags.add("b");
+      safeTags.add("/b");
+      safeTags.add("i");
+      safeTags.add("/i");
+      safeTags.add("br");
+      safeTags.add("ul");
+      safeTags.add("/ul");
+      safeTags.add("ol");
+      safeTags.add("/ol");
+      safeTags.add("li");
+      safeTags.add("/li");
+      safeTags.add("h1");
+      safeTags.add("/h1");
+      safeTags.add("h2");
+      safeTags.add("/h2");
+      safeTags.add("h3");
+      safeTags.add("/h3");
+      safeTags.add("h4");
+      safeTags.add("/h4");
+      safeTags.add("h5");
+      safeTags.add("/h5");
+      safeTags.add("h6");
+      safeTags.add("/h6");
+      safeTags.add("span");
+      safeTags.add("/span");
+      safeTags.add("a");
+      safeTags.add("/a");
+      safeTags.add("img");
+      safeTags.add("font");
+      safeTags.add("/font");
+   }
    
    /**
     * Private constructor
@@ -257,6 +297,92 @@ public final class Utils
    }
    
    /**
+    * Strip unsafe HTML tags from a string - only leaves most basic formatting tags
+    * and encodes or strips the remaining characters.
+    * 
+    * @param s HTML string to strip tags from
+    * 
+    * @return safe string
+    */
+   public static String stripUnsafeHTMLTags(String s)
+   {
+      s = s.replace("onclick", "$");
+      s = s.replace("onmouseover", "$");
+      s = s.replace("onmouseout", "$");
+      s = s.replace("onmousemove", "$");
+      s = s.replace("onfocus", "$");
+      s = s.replace("onblur", "$");
+      StringBuilder buf = new StringBuilder(s.length());
+      char[] chars = s.toCharArray();
+      for (int i=0; i<chars.length; i++)
+      {
+         if (chars[i] == '<')
+         {
+            // found a tag?
+            int endMatchIndex = -1;
+            int endTagIndex = -1;
+            if (i < chars.length - 2)
+            {
+               for (int x=(i + 1); x<chars.length; x++)
+               {
+                  if (chars[x] == ' ' && endMatchIndex == -1)
+                  {
+                     // keep track of the match point for comparing tags in the safeTags set
+                     endMatchIndex = x;
+                  }
+                  else if (chars[x] == '>')
+                  {
+                     endTagIndex = x;
+                     break;
+                  }
+                  else if (chars[x] == '<')
+                  {
+                     // found another angle bracket - not a tag def so we can safely output to here
+                     break;
+                  }
+               }
+            }
+            if (endTagIndex != -1)
+            {
+               // found end of the tag to match
+               String tag = s.substring(i + 1, endTagIndex).toLowerCase();
+               String matchTag = tag;
+               if (endMatchIndex != -1)
+               {
+                  matchTag = s.substring(i + 1, endMatchIndex).toLowerCase();
+               }
+               if (safeTags.contains(matchTag))
+               {
+                  // safe tag - append to buffer
+                  buf.append('<').append(tag).append('>');
+               }
+               // inc counter to skip past whole tag
+               i = endTagIndex;
+               continue;
+            }
+         }
+         String enc = null;
+         switch (chars[i])
+         {
+            case '"': enc = "&quot;"; break;
+            case '&': enc = "&amp;"; break;
+            case '<': enc = "&lt;"; break;
+            case '>': enc = "&gt;"; break;
+            
+            default:
+               if (((int)chars[i]) >= 0x80)
+               {
+                  //encode all non basic latin characters
+                  enc = "&#" + ((int)chars[i]) + ";";
+               }
+            break;
+         }
+         buf.append(enc == null ? chars[i] : enc);
+      }
+      return buf.toString();
+   }
+   
+   /**
     * Replace one string instance with another within the specified string
     * 
     * @param str
@@ -337,8 +463,12 @@ public final class Utils
             String line = reader.readLine();
             while (line != null)
             {
-               parsedContent.append(line).append("<br/>");
+               parsedContent.append(line);
                line = reader.readLine();
+               if (line != null)
+               {
+                  parsedContent.append("<br>");
+               }
             }
             
             replaced = parsedContent.toString();

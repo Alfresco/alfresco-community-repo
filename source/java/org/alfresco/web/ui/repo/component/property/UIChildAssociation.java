@@ -121,8 +121,17 @@ public class UIChildAssociation extends PropertySheetItem
    private void generateControl(FacesContext context, UIPropertySheet propSheet,
          AssociationDefinition assocDef)
    {
+      // get the custom component generator (if one)
+      String componentGeneratorName = this.getComponentGenerator();
+      
+      // use the default component generator if there wasn't an overridden one
+      if (componentGeneratorName == null)
+      {
+         componentGeneratorName = RepoConstants.GENERATOR_CHILD_ASSOCIATION;
+      }
+      
       UIChildAssociationEditor control = (UIChildAssociationEditor)FacesHelper.getComponentGenerator(
-            context, RepoConstants.GENERATOR_CHILD_ASSOCIATION).generateAndAdd(context, propSheet, this);
+            context, componentGeneratorName).generateAndAdd(context, propSheet, this);
       
       if (logger.isDebugEnabled())
          logger.debug("Created control " + control + "(" + 

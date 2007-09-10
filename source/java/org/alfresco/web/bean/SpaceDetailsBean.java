@@ -177,7 +177,8 @@ public class SpaceDetailsBean extends BaseDetailsBean
       String id = params.get("id");
       if (id != null && id.length() != 0)
       {
-         List<Node> nodes = this.browseBean.getNodes();
+    	 NodeRef currNodeRef = new NodeRef(Repository.getStoreRef(), id);
+         List<Node> nodes = this.browseBean.getParentNodes(currNodeRef);
          if (nodes.size() > 1)
          {
             // perform a linear search - this is slow but stateless
@@ -214,7 +215,6 @@ public class SpaceDetailsBean extends BaseDetailsBean
          // to the default one.
          if (foundNextItem == false)
          {
-            NodeRef currNodeRef = new NodeRef(Repository.getStoreRef(), id);
             Node currNode = new Node(currNodeRef);
             this.navigator.setupDispatchContext(currNode);
          }
@@ -232,7 +232,8 @@ public class SpaceDetailsBean extends BaseDetailsBean
       String id = params.get("id");
       if (id != null && id.length() != 0)
       {
-         List<Node> nodes = this.browseBean.getNodes();
+    	 NodeRef currNodeRef = new NodeRef(Repository.getStoreRef(), id);
+         List<Node> nodes = this.browseBean.getParentNodes(currNodeRef);
          if (nodes.size() > 1)
          {
             // see above
@@ -266,7 +267,6 @@ public class SpaceDetailsBean extends BaseDetailsBean
          // to the default one.
          if (foundPreviousItem == false)
          {
-            NodeRef currNodeRef = new NodeRef(Repository.getStoreRef(), id);
             Node currNode = new Node(currNodeRef);
             this.navigator.setupDispatchContext(currNode);
          }

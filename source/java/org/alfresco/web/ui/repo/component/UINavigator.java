@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
@@ -37,9 +38,11 @@ import javax.faces.el.ValueBinding;
 import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.FacesEvent;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.BrowseBean;
@@ -183,17 +186,44 @@ public class UINavigator extends SelfRenderingComponent
             case NODE_SELECTED:
             {
                // a node was clicked in the tree
+               boolean nodeExists = true;
                NodeRef nodeClicked = new NodeRef(navEvent.getItem());
                
-               // setup the context to make the node the current node
-               BrowseBean bb = (BrowseBean)FacesHelper.getManagedBean(
-                     context, BrowseBean.BEAN_NAME);
-               if (bb != null)
+               // make sure the node exists still before navigating to it
+               UserTransaction tx = null;
+               try
                {
-                  if (logger.isDebugEnabled())
-                     logger.debug("Selected node: " + nodeClicked);
+                  tx = Repository.getUserTransaction(context, true);
+                  tx.begin();
                   
-                  bb.clickSpace(nodeClicked);
+                  NodeService nodeSvc = Repository.getServiceRegistry(
+                           context).getNodeService();
+                  nodeExists = nodeSvc.exists(nodeClicked);
+                  
+                  tx.commit();
+               }
+               catch (Throwable err)
+               {
+                  try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+               }
+               
+               if (nodeExists)
+               {
+                  // setup the context to make the node the current node
+                  BrowseBean bb = (BrowseBean)FacesHelper.getManagedBean(
+                        context, BrowseBean.BEAN_NAME);
+                  if (bb != null)
+                  {
+                     if (logger.isDebugEnabled())
+                        logger.debug("Selected node: " + nodeClicked);
+                     
+                     bb.clickSpace(nodeClicked);
+                  }
+               }
+               else
+               {
+                  String msg = Application.getMessage(context, "navigator_node_deleted");
+                  Utils.addErrorMessage(msg);
                }
                
                break;

@@ -190,6 +190,9 @@ public abstract class WebScriptRuntime
         }
         catch(Throwable e)
         {
+            if (logger.isInfoEnabled())
+                logger.info("Caught exception & redirecting to status template: " + e.getMessage());
+            
             // extract status code, if specified
             int statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
             if (e instanceof WebScriptException)

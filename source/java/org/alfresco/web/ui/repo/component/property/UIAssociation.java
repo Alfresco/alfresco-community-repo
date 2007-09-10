@@ -121,8 +121,17 @@ public class UIAssociation extends PropertySheetItem
    private void generateControl(FacesContext context, UIPropertySheet propSheet, 
          AssociationDefinition assocDef)
    {
+      // get the custom component generator (if one)
+      String componentGeneratorName = this.getComponentGenerator();
+      
+      // use the default component generator if there wasn't an overridden one
+      if (componentGeneratorName == null)
+      {
+         componentGeneratorName = RepoConstants.GENERATOR_ASSOCIATION;
+      }
+      
       UIAssociationEditor control = (UIAssociationEditor)FacesHelper.getComponentGenerator(
-            context, RepoConstants.GENERATOR_ASSOCIATION).generateAndAdd(context, propSheet, this);
+            context, componentGeneratorName).generateAndAdd(context, propSheet, this);
       
       if (logger.isDebugEnabled())
          logger.debug("Created control " + control + "(" + 

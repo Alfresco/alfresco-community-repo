@@ -66,7 +66,7 @@
    </#if>
       </span>
       <span class="taskItemDetails">
-         <span style="font-weight: bold;">${t.description?html}</span> (${t.type?html})
+         <span style="font-weight: bold;">${t.description!""?html}</span> (${t.type?html})
    <#if hasDue>
             <br />Due date: ${due?date}
    <#else>

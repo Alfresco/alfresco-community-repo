@@ -524,6 +524,7 @@ public class TestWebScriptServer
                     String[] parts = arg.split("=");
                     req.addParameter(parts[0], (parts.length == 2) ? URLDecoder.decode(parts[1], "UTF-8") : null);
                 }
+                req.setQueryString(URLDecoder.decode(uriArgs, "UTF-8"));
             }
             String requestURI = "/alfresco/service" + (iArgIndex == -1 ? uri : uri.substring(0, iArgIndex));
             req.setRequestURI(URLDecoder.decode(requestURI, "UTF-8"));

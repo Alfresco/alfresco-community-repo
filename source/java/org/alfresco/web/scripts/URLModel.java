@@ -114,6 +114,22 @@ public class URLModel
     }
 
     /**
+     * Gets the URL arguments (query string)
+     * 
+     * @return  args (query string)
+     */
+    public String getArgs()
+    {
+        String args = req.getQueryString();
+        return (args == null) ? "" : args;
+    }
+    
+    public String jsGet_args()
+    {
+        return getArgs();
+    }
+    
+    /**
      * Gets the matching service path
      * 
      * e.g.

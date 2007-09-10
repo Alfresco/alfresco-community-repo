@@ -831,7 +831,7 @@ public class ForumsBean implements IContextListener
          
          if (reader != null)
          {
-            content = reader.getContentString();
+            content = Utils.stripUnsafeHTMLTags(reader.getContentString());
          }
          
          return content;

@@ -11,7 +11,7 @@
       <tr>
          <td width="32" valign="top"><img src="${url.context}/images/office/task_item.gif" alt="Task item" /></td>
          <td>
-            <span style="font-weight: bold;">${task.description?html}</span>
+            <span style="font-weight: bold;">${task.description!""?html}</span>
             <br />     
             <table style="margin-top: 4px;">
                <tr>

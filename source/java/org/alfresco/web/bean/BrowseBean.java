@@ -476,6 +476,113 @@ public class BrowseBean implements IContextListener
 
       return result;
    }
+   
+   /**
+    * Page accessed bean method to get the parent container nodes currently being browsed
+    *
+    * @return List of parent container Node objects for the current browse location
+    */
+   public List<Node> getParentNodes(NodeRef currNodeRef)
+   {
+	  // As per AWC-1507 there are two scenarios for navigating to the space details. First
+	  // scenario is to show space details of the current space. Second scenario is to show 
+	  // space details of a child space of the current space. For now, added an extra query
+	  // so that existing context remains unaffected for second scenario, although it does 
+	  // mean that in first scenario there will be an extra query even though parentContainerNodes
+	  // and containerNodes will contain the same list.
+	   
+	  if (this.parentContainerNodes == null)
+	  {
+	      long startTime = 0;
+	      if (logger.isDebugEnabled())
+	         startTime = System.currentTimeMillis();
+  
+	      UserTransaction tx = null;
+	      try
+	      {
+	         FacesContext context = FacesContext.getCurrentInstance();
+	         tx = Repository.getUserTransaction(context, true);
+	         tx.begin();
+
+	         NodeRef parentRef = nodeService.getPrimaryParent(currNodeRef).getParentRef();
+	         
+	         List<FileInfo> children = this.fileFolderService.list(parentRef);
+	         this.parentContainerNodes = new ArrayList<Node>(children.size());
+	         for (FileInfo fileInfo : children)
+	         {
+	            // create our Node representation from the NodeRef
+	            NodeRef nodeRef = fileInfo.getNodeRef();
+
+	            // find it's type so we can see if it's a node we are interested in
+	            QName type = this.nodeService.getType(nodeRef);
+
+	            // make sure the type is defined in the data dictionary
+	            TypeDefinition typeDef = this.dictionaryService.getType(type);
+
+	            if (typeDef != null)
+	            {
+	               MapNode node = null;
+
+	               // look for Space folder node
+	               if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) == true &&
+	                        this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
+	               {
+	                  // create our Node representation
+	                  node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
+	                  node.addPropertyResolver("icon", this.resolverSpaceIcon);
+	                  node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
+
+	                  this.parentContainerNodes.add(node);
+	               }
+	               else if (ApplicationModel.TYPE_FOLDERLINK.equals(type))
+	               {
+	                  // create our Folder Link Node representation
+	                  node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
+	                  node.addPropertyResolver("icon", this.resolverSpaceIcon);
+	                  node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
+
+	                  this.parentContainerNodes.add(node);
+	               }
+	            }
+	            else
+	            {
+	               if (logger.isEnabledFor(Priority.WARN))
+	                  logger.warn("Found invalid object in database: id = " + nodeRef + ", type = " + type);
+	            }
+	         }
+
+	         // commit the transaction
+	         tx.commit();
+	      }
+	      catch (InvalidNodeRefException refErr)
+	      {
+	         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+	               FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] {refErr.getNodeRef()}), refErr );
+	         this.parentContainerNodes = Collections.<Node>emptyList();
+	         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+	      }
+	      catch (Throwable err)
+	      {
+	         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+	               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+	         this.parentContainerNodes = Collections.<Node>emptyList();
+	         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+	      }
+
+	      if (logger.isDebugEnabled())
+	      {
+	         long endTime = System.currentTimeMillis();
+	         logger.debug("Time to query and build map parent nodes: " + (endTime - startTime) + "ms");
+	      }	   
+	  }
+	      
+      List<Node> result = this.parentContainerNodes;
+
+      // we clear the member variable during invalidateComponents()
+
+      return result;
+   }
+
 
    /**
     * Setup the common properties required at data-binding time.
@@ -1733,6 +1840,7 @@ public class BrowseBean implements IContextListener
       // clear the storage of the last set of nodes
       this.containerNodes = null;
       this.contentNodes = null;
+      this.parentContainerNodes = null;
    }
 
    /**
@@ -1880,6 +1988,7 @@ public class BrowseBean implements IContextListener
    /** Transient lists of container and content nodes for display */
    protected List<Node> containerNodes = null;
    protected List<Node> contentNodes = null;
+   protected List<Node> parentContainerNodes = null;
 
    /** The current space and it's properties - if any */
    protected Node actionSpace;

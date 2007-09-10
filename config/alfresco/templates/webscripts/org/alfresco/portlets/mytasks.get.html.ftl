@@ -1,11 +1,11 @@
 <link rel="stylesheet" href="${url.context}/css/main.css" TYPE="text/css">
 
-<script type="text/javascript" src="/alfresco/scripts/ajax/yahoo/yahoo/yahoo-min.js"></script>
-<script type="text/javascript" src="/alfresco/scripts/ajax/yahoo/connection/connection-min.js"></script>
-<script type="text/javascript" src="/alfresco/scripts/ajax/mootools.v1.11.js"></script>
-<script type="text/javascript" src="/alfresco/scripts/ajax/common.js"></script>
-<script type="text/javascript" src="/alfresco/scripts/ajax/summary-info.js"></script>
-<script type="text/javascript" src="/alfresco/scripts/ajax/mytasks.js"></script>
+<script type="text/javascript" src="${url.context}/scripts/ajax/yahoo/yahoo/yahoo-min.js"></script>
+<script type="text/javascript" src="${url.context}/scripts/ajax/yahoo/connection/connection-min.js"></script>
+<script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.11.js"></script>
+<script type="text/javascript" src="${url.context}/scripts/ajax/common.js"></script>
+<script type="text/javascript" src="${url.context}/scripts/ajax/summary-info.js"></script>
+<script type="text/javascript" src="${url.context}/scripts/ajax/mytasks.js"></script>
 <script type="text/javascript">setContextPath('${url.context}');</script>
 
 <script>

@@ -125,7 +125,7 @@
     </node>
 
     <task-node name="parallelreview">
-        <task name="wcmwf:reviewTask">
+        <task name="wcmwf:parallelReviewTask">
            <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
               <actor>#{reviewer}</actor>
            </assignment>

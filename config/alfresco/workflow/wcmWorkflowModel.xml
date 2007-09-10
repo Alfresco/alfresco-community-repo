@@ -109,6 +109,22 @@
       </mandatory-aspects>
     </type>
 
+    <type name="wcmwf:parallelReviewTask">
+      <parent>wcmwf:workflowTask</parent>
+      <overrides>
+        <property name="bpm:packageItemActionGroup">
+          <default>review_wcm_package_item_actions</default>
+        </property>
+      </overrides>
+      <mandatory-aspects>
+        <!-- One or more reviewers - this is here to allow view of all reviewers -->
+        <!-- in the review task -->
+        <aspect>bpm:assignees</aspect>
+        <aspect>wcmwf:submission</aspect>
+        <aspect>wcmwf:reviewType</aspect>
+      </mandatory-aspects>
+    </type>
+    
     <type name="wcmwf:rejectedTask">
       <parent>wcmwf:workflowTask</parent>
       <overrides>

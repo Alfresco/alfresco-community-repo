@@ -104,7 +104,7 @@ import org.springframework.beans.PropertyAccessException;
             // pick the name up from the property and some anonymous value
             String localName = m2PropertyDef.getName().getLocalName() + "_anon_" + (++anonPropCount);
             this.name = QName.createQName(m2PropertyDef.getName().getNamespaceURI(), localName);
-            m2Constraint.setName(localName);
+            m2Constraint.setName(this.name.getPrefixedQName(prefixResolver).toPrefixString());
         }
         else
         {

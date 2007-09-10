@@ -25,6 +25,7 @@
 package org.alfresco.web.bean.wcm;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.faces.context.FacesContext;
@@ -34,9 +35,11 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.AVMNodeType;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Node;
@@ -123,12 +126,13 @@ public class AVMNode extends Node implements Map<String, Object>
          }
       };
 
+   private final AVMNodeDescriptor avmRef;
+   private LayeringDescriptor layeringDesc;
+   private final int version;
+   private final boolean deleted;
+   private WebProject webProject;
+   private Boolean workflowInFlight;
 
-   private AVMNodeDescriptor avmRef;
-   private int version;
-   private boolean deleted = false;
-   
-   
    /**
     * Constructor
     * 
@@ -191,6 +195,58 @@ public class AVMNode extends Node implements Map<String, Object>
    public final boolean isFile()
    {
       return this.avmRef.isFile() || this.avmRef.isDeletedFile();
+   }
+
+   public final boolean isModified()
+   {
+      if (this.layeringDesc == null)
+      {
+         this.layeringDesc = getServiceRegistry().getAVMService().getLayeringInfo(this.version, this.id);
+      }
+      return !this.layeringDesc.isBackground();
+   }
+
+   public final boolean isWorkflowInFlight()
+   {
+      if (this.workflowInFlight == null)
+      {
+         if (!this.isModified())
+         {
+            this.workflowInFlight = false;
+         }
+         else
+         {
+            // optimization to avoid having to perform a workflow query and multiple lookups
+            // per workflow sandbox.  only accurate for files, not new directories
+            if (!this.isDirectory())
+            {
+               this.workflowInFlight = false;
+               final List<Pair<Integer, String>> headPaths = this.getServiceRegistry().getAVMService().getHeadPaths(this.getDescriptor());
+               for (final Pair<Integer, String> headPath : headPaths)
+               {
+                  if (AVMUtil.isWorkflowStore(AVMUtil.getStoreName(headPath.getSecond())))
+                  {
+                     this.workflowInFlight = true;
+                     break;
+                  }
+               }
+            }
+            else
+            {
+               this.workflowInFlight = AVMWorkflowUtil.getAssociatedTasksForNode(this.getDescriptor()).size() != 0;
+            }
+         }
+      }
+      return this.workflowInFlight;
+   }
+
+   public WebProject getWebProject()
+   {
+      if (this.webProject == null)
+      {
+         this.webProject = new WebProject(this.id);
+      }
+      return this.webProject;
    }
 
    /**

@@ -13,6 +13,10 @@
             wcmwf:changerequest
          </admin-workflows>
          
+         <views>
+            <browse-page-size>25</browse-page-size>
+         </views>
+         
          <!-- default values for website deployment -->
          <deployment>
             <!-- username to login as on the remote machine -->

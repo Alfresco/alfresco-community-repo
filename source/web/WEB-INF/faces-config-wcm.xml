@@ -50,18 +50,8 @@
    </component>
    
    <component>
-      <component-type>org.alfresco.faces.LinkValidationBrokenFiles</component-type>
-      <component-class>org.alfresco.web.ui.wcm.component.UILinkValidationBrokenFiles</component-class>
-   </component>
-   
-   <component>
-      <component-type>org.alfresco.faces.LinkValidationBrokenForms</component-type>
-      <component-class>org.alfresco.web.ui.wcm.component.UILinkValidationBrokenForms</component-class>
-   </component>
-   
-   <component>
-      <component-type>org.alfresco.faces.LinkValidationFixedFiles</component-type>
-      <component-class>org.alfresco.web.ui.wcm.component.UILinkValidationFixedFiles</component-class>
+      <component-type>org.alfresco.faces.LinkValidationReport</component-type>
+      <component-class>org.alfresco.web.ui.wcm.component.UILinkValidationReport</component-class>
    </component>
    
    <!-- ==================== CONVERTERS ==================== -->

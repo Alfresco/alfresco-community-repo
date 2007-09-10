@@ -47,7 +47,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.model.WCMWorkflowModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.avm.wf.AVMSubmittedAspect;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMExistsException;
@@ -109,7 +108,6 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected AVMService avmService;
    protected AVMSyncService avmSyncService;
    protected AVMBrowseBean avmBrowseBean;
-   protected AVMSubmittedAspect avmSubmittedAspect;
    protected FilePickerBean filePickerBean;
    protected FormsService formsService;
 
@@ -127,14 +125,6 @@ public class CreateWebContentWizard extends BaseContentWizard
    public void setAvmSyncService(final AVMSyncService avmSyncService)
    {
       this.avmSyncService = avmSyncService;
-   }
-   
-   /**
-    * @param avmSubmittedAspect  The AVM Submitted Aspect to set.
-    */
-   public void setAvmSubmittedAspect(AVMSubmittedAspect avmSubmittedAspect)
-   {
-      this.avmSubmittedAspect = avmSubmittedAspect;
    }
    
    /**

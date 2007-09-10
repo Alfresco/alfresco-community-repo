@@ -375,7 +375,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write(")</td><td><nobr>");
                   
                   // Direct actions for a sandbox...
-                  Map<String, String> params = new HashMap<String, String>(3);
+                  Map<String, String> params = new HashMap<String, String>(6);
                   params.put("store", mainStore);
                   params.put("username", username);
                   params.put("webapp", this.getWebapp());

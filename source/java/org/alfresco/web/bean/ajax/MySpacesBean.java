@@ -27,21 +27,19 @@ package org.alfresco.web.bean.ajax;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
-import org.alfresco.filesys.server.filesys.FileExistsException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.web.app.servlet.BaseServlet;
 import org.alfresco.web.app.servlet.ajax.InvokeCommand;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.spaces.CreateSpaceWizard;

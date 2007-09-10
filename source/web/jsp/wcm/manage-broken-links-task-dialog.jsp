@@ -52,10 +52,11 @@
 <a:panel id="link-validation-panel" label="#{msg.link_validation}" rendered="#{AVMBrowseBean.linkValidationState != null}"
          border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
    
-   <w:linkValidationSummary value="#{AVMBrowseBean.linkValidationState}" initialCheckOnly="true" />
+   <w:linkValidationSummary value="#{AVMBrowseBean.linkValidationState}" styleClass="linkValidationSummaryPanelTask"
+                            showPanel="false" showTitle="false" />
    
    <a:actionLink value="#{msg.view_link_validation_report}" action="#{DialogManager.bean.viewLinkReport}" 
-                 style='margin-left: 14px;' />
+                 style='margin-left: 4px;'/>
    <h:outputText value="<div>&nbsp;</div>" escape="false" />
 </a:panel>
 

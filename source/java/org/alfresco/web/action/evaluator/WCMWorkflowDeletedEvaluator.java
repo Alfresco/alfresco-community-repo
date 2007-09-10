@@ -27,11 +27,10 @@ package org.alfresco.web.action.evaluator;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.avm.wf.AVMSubmittedAspect;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.util.Pair;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.bean.wcm.AVMUtil;
 
 /**
@@ -52,14 +51,12 @@ public class WCMWorkflowDeletedEvaluator extends WCMLockEvaluator
       {
          final FacesContext facesContext = FacesContext.getCurrentInstance();
          final AVMService avmService = Repository.getServiceRegistry(facesContext).getAVMService();
-         final Pair<Integer, String> p = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef());
-         final int version = p.getFirst();
-         final String path = p.getSecond();
+         final String path = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef()).getSecond();
 
          // evaluate to true if we are within a workflow store (i.e. list of resources in the task
          // dialog) or not part of an already in-progress workflow
          proceed = (AVMUtil.isWorkflowStore(AVMUtil.getStoreName(path)) ||
-                    avmService.hasAspect(version, path, AVMSubmittedAspect.ASPECT) == false);
+                    !((AVMNode)node).isWorkflowInFlight());
       }
       return proceed;
    }

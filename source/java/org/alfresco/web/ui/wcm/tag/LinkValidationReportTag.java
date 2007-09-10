@@ -29,20 +29,22 @@ import javax.faces.component.UIComponent;
 import org.alfresco.web.ui.common.tag.HtmlComponentTag;
 
 /**
- * Tag class for adding the UILinkValidationFixedFiles component to a JSP page.
+ * Tag class for adding the UILinkValidationReport component to a JSP page.
  * 
  * @author gavinc
  */
-public class LinkValidationFixedFilesTag extends HtmlComponentTag
+public class LinkValidationReportTag extends HtmlComponentTag
 {
    private String value;
+   private String itemsExpanded;
+   private String initialTab;
    
    /**
     * @see javax.faces.webapp.UIComponentTag#getComponentType()
     */
    public String getComponentType()
    {
-      return "org.alfresco.faces.LinkValidationFixedFiles";
+      return "org.alfresco.faces.LinkValidationReport";
    }
 
    /**
@@ -61,6 +63,8 @@ public class LinkValidationFixedFilesTag extends HtmlComponentTag
       super.setProperties(component);
       
       setStringProperty(component, "value", this.value);
+      setStringProperty(component, "initialTab", this.initialTab);
+      setBooleanProperty(component, "itemsExpanded", this.itemsExpanded);
    }
    
    /**
@@ -70,6 +74,8 @@ public class LinkValidationFixedFilesTag extends HtmlComponentTag
    {
       super.release();
       this.value = null;
+      this.itemsExpanded = null;
+      this.initialTab = null;
    }
    
    /**
@@ -78,5 +84,22 @@ public class LinkValidationFixedFilesTag extends HtmlComponentTag
    public void setValue(String value)
    {
       this.value = value;
+   }
+   
+   /**
+    * @param value true to render the report with all broken links and 
+    *        generated files expanded
+    */
+   public void setItemsExpanded(String value)
+   {
+      this.itemsExpanded = value;
+   }
+
+   /**
+    * @param initialTab The initial tab to be selected
+    */
+   public void setInitialTab(String initialTab)
+   {
+      this.initialTab = initialTab;
    }
 }

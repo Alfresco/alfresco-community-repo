@@ -27,20 +27,15 @@ package org.alfresco.web.ui.wcm.component;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.faces.component.UICommand;
-import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
-import javax.faces.el.MethodBinding;
 
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.wcm.LinkValidationState;
 import org.alfresco.web.ui.common.PanelGenerator;
 import org.alfresco.web.ui.common.Utils;
-import org.alfresco.web.ui.common.component.UIActionLink;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -80,73 +75,108 @@ public class UILinkValidationSummary extends AbstractLinkValidationReportCompone
       if (logger.isDebugEnabled())
          logger.debug("Rendering summary from state object: " + linkState);
       
+      // determine what to display i.e. surrounding panel and title 
+      boolean showPanel = true;
+      boolean showTitle = true;
+      
+      Object showPanelObj = this.getAttributes().get("showPanel");
+      if (showPanelObj instanceof Boolean)
+      {
+         showPanel = ((Boolean)showPanelObj).booleanValue();
+      }
+      
+      Object showTitleObj = this.getAttributes().get("showTitle");
+      if (showTitleObj instanceof Boolean)
+      {
+         showTitle = ((Boolean)showTitleObj).booleanValue();
+      }
+      
+      if (showPanel)
+      {
+         // render the summary area with a surrounding panel
+         PanelGenerator.generatePanelStart(out, context.getExternalContext().getRequestContextPath(), 
+                  "innerwhite", "white");
+      }
+      
+      String styleClass = (String)this.getAttributes().get("styleClass");
+      if (styleClass == null || styleClass.length() == 0)
+      {
+         styleClass = "linkValidationSummaryPanel";
+      }
+      
+      out.write("<div class='");
+      out.write(styleClass);
+      out.write("'>");
+      
+      if (showTitle)
+      {
+         out.write("<div class='linkValidationSummaryTitle'>");
+         out.write(bundle.getString("report_summary"));
+         out.write("</div>");
+      }
+      
       if (linkState.getError() == null)
       {
-         Object initialCheckOnly = this.getAttributes().get("initialCheckOnly");
-         if (initialCheckOnly instanceof Boolean && 
-             ((Boolean)initialCheckOnly).booleanValue())
+         // render the main summary info
+         
+         int latestVersion = linkState.getLatestSnapshotVersion();
+         int baseVersion = linkState.getBaseSnapshotVersion();
+
+         String pattern = bundle.getString("link_check_completed_at");
+         Date checkAt = linkState.getCheckCompletedAt();
+         String checkTime = Utils.getDateTimeFormat(context).format(checkAt);
+         String checkTimeSummary = MessageFormat.format(pattern, 
+                 new Object[] {checkTime, baseVersion});
+         
+         out.write("<div class='linkValSummaryText'>");
+         out.write(checkTimeSummary);
+         
+         // NOTE: Whenever latestVersion > baseVersion, link validation  is "behind".
+         if (latestVersion > baseVersion)
          {
-            out.write("<div style='padding: 4px 4px 2px 13px;'>");
-            renderInitialCheckSummary(context, out, linkState, bundle);
-            out.write("</div>");
+            out.write("&nbsp;(<img src='");
+            out.write(context.getExternalContext().getRequestContextPath());
+            out.write("/images/icons/warning.gif' />&nbsp;");
+            out.write(bundle.getString("link_check_not_latest"));
+            out.write(")");
+         }
+         
+         pattern = bundle.getString("link_check_items_found");
+         String checkedSummary = MessageFormat.format(pattern, 
+                  new Object[] {linkState.getNumberFilesChecked(), 
+                                linkState.getNumberLinksChecked()});
+         
+         pattern = bundle.getString("link_check_items_broken");
+         String brokenSummary = MessageFormat.format(pattern, 
+                  new Object[] {linkState.getNumberBrokenLinks(),
+                                linkState.getNumberBrokenFiles()});
+         
+         out.write("</div><div class='linkValSummaryText'>");
+         out.write(checkedSummary);
+         out.write("&nbsp;<img src='");
+         out.write(context.getExternalContext().getRequestContextPath());
+         
+         if (linkState.getNumberBrokenLinks() == 0)
+         {
+            out.write("/images/icons/info_icon.gif' />&nbsp;");
+            out.write(bundle.getString("link_check_no_broken"));
          }
          else
          {
-            String pattern = bundle.getString("files_links_still_broken");
-            String stillBroken = MessageFormat.format(pattern, 
-                     new Object[] {linkState.getNumberBrokenLinks(), linkState.getNumberBrokenFiles()});
-            pattern = bundle.getString("broken_items_fixed");
-            String linksFixed = MessageFormat.format(pattern, 
-                     new Object[] {linkState.getNumberFixedItems()});
-            
-            // get the action to update the current status
-            UICommand updateStatusAction = aquireAction(context, "update_status_" + linkState.getStore());
-            
-            
-            out.write("<div class='linkValidationSummaryPanel'>");
-            
-            // render the summary area with a surrounding panel
-            PanelGenerator.generatePanelStart(out, context.getExternalContext().getRequestContextPath(), 
-                     "innerwhite", "white");
-            
-            out.write("<div class='linkValidationReportTitle'>");
-            out.write(bundle.getString("summary"));
-            out.write("</div><table cellpadding='0' cellspacing='0' style='margin-bottom: 6px;'><tr>");
-            out.write("<td valign='top' class='linkValidationReportSubTitle'>");
-            out.write(bundle.getString("initial_check"));
-            out.write(":</td><td>");
-            renderInitialCheckSummary(context, out, linkState, bundle);
-            out.write("</td></tr><tr><td class='linkValidationReportSubTitle'>");
-            out.write(bundle.getString("current_status"));
-            out.write(":</td><td><div><img src='");
-            out.write(context.getExternalContext().getRequestContextPath());
-            out.write("/images/icons/broken_link.gif' style='vertical-align: -4px;' >&nbsp;");
-            out.write(stillBroken);
-            out.write("&nbsp;&nbsp;<img src='");
-            out.write(context.getExternalContext().getRequestContextPath());
-            out.write("/images/icons/fixed_link.gif' style='vertical-align: -4px;' >&nbsp;");
-            out.write(linksFixed);
-            out.write("&nbsp;&nbsp;");
-            Utils.encodeRecursive(context, updateStatusAction);
-            out.write("</div></td></tr>");
-            out.write("</table>");
-            
-            // finish the surrounding panel
-            PanelGenerator.generatePanelEnd(out, context.getExternalContext().getRequestContextPath(),
-                        "innerwhite");
-            
-            out.write("</div>");
+            out.write("/images/icons/warning.gif' />&nbsp;");
+            out.write(brokenSummary);
          }
+         out.write("</div>");
       }
       else
       {
-         String pattern = bundle.getString("files_links_checked_error");
-         Date initialCheck = linkState.getInitialCheckCompletedAt();
+         // render the error that occurred
+         String pattern = bundle.getString("link_check_error");
+         Date initialCheck = linkState.getCheckCompletedAt();
          String initialCheckTime = Utils.getDateTimeFormat(context).format(initialCheck);
          String initialCheckSummary = MessageFormat.format(pattern, 
                   new Object[] {initialCheckTime});
          
-         out.write("<div class='linkValidationSummaryPanel'>");
          out.write(initialCheckSummary);
          out.write("&nbsp;<span class='errorMessage'>");
          String err = linkState.getError().getMessage();
@@ -158,61 +188,16 @@ public class UILinkValidationSummary extends AbstractLinkValidationReportCompone
          {
             out.write(err);
          }
-         out.write("</span></div>");
+         out.write("</span>");
       }
-   }
-
-   protected void renderInitialCheckSummary(FacesContext context, 
-            ResponseWriter out, LinkValidationState linkState,
-            ResourceBundle bundle) throws IOException
-   {
-      String pattern = bundle.getString("files_links_checked");
-      Date initialCheck = linkState.getInitialCheckCompletedAt();
-      String initialCheckTime = Utils.getDateTimeFormat(context).format(initialCheck);
-      String initialCheckSummary = MessageFormat.format(pattern, 
-               new Object[] {initialCheckTime, linkState.getInitialNumberFilesChecked(), 
-                             linkState.getInitialNumberLinksChecked()});
-      pattern = bundle.getString("files_links_broken");
-      String initialBrokenSummary = MessageFormat.format(pattern, 
-               new Object[] {linkState.getInitialNumberBrokenLinks(), linkState.getInitialNumberBrokenFiles()});
       
-      out.write("<div style='margin-bottom: 6px;'>");
-      out.write(initialCheckSummary);
-      out.write("</div><div style='margin-bottom: 14px;'><img src='");
-      out.write(context.getExternalContext().getRequestContextPath());
-      out.write("/images/icons/broken_link.gif'' style='vertical-align: -4px;'/>&nbsp;");
-      out.write(initialBrokenSummary);
       out.write("</div>");
-   }
-   
-   @SuppressWarnings("unchecked")
-   private UICommand aquireAction(FacesContext context, String actionId)
-   {
-      UICommand action = null;
       
-      // try find the action as a child of this component
-      for (UIComponent component : (List<UIComponent>)getChildren())
+      if (showPanel)
       {
-         if (actionId.equals(component.getId()))
-         {
-            action = (UICommand)component;
-            break;
-         }
+         // finish the surrounding panel
+         PanelGenerator.generatePanelEnd(out, context.getExternalContext().getRequestContextPath(), 
+                  "innerwhite");
       }
-      
-      if (action == null)
-      {
-         // create the action and add as a child component
-         javax.faces.application.Application facesApp = context.getApplication();
-         action = (UICommand)facesApp.createComponent(UICommand.COMPONENT_TYPE);
-         action.setId(actionId);
-         action.setValue(Application.getMessage(context, "update_status"));
-         MethodBinding binding = facesApp.createMethodBinding("#{DialogManager.bean.updateStatus}", 
-                  new Class[] {});
-         action.setAction(binding);
-         this.getChildren().add(action);
-      }
-      
-      return action;
    }
 }

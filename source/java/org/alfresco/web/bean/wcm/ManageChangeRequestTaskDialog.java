@@ -35,7 +35,6 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.avm.wf.AVMSubmittedAspect;
 import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
@@ -62,7 +61,6 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
 {
    protected boolean doResubmitNow = false;
    protected AVMBrowseBean avmBrowseBean;
-   protected AVMSubmittedAspect avmSubmittedAspect;
    
    private final static Log logger = LogFactory.getLog(ManageChangeRequestTaskDialog.class);
    
@@ -189,15 +187,6 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
       this.avmBrowseBean = avmBrowseBean;
    }
 
-   /**
-    * Sets the avm submitted aspect service to use
-    * 
-    * @param avmSubmittedAspect AVMSubmittedAspect instance
-    */
-   public void setAvmSubmittedAspect(AVMSubmittedAspect avmSubmittedAspect)
-   {
-      this.avmSubmittedAspect = avmSubmittedAspect;
-   }
    
    // ------------------------------------------------------------------------------
    // Helper methods

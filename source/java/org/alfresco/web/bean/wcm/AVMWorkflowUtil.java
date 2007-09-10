@@ -20,7 +20,7 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.web.bean.wcm;
 
@@ -30,26 +30,21 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 import javax.faces.context.FacesContext;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.model.WCMWorkflowModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.avm.wf.AVMSubmittedAspect;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.*;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -59,10 +54,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.workflow.WorkflowDefinition;
-import org.alfresco.service.cmr.workflow.WorkflowException;
-import org.alfresco.service.cmr.workflow.WorkflowPath;
-import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.cmr.workflow.*;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.web.app.Application;
@@ -79,57 +71,53 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AVMWorkflowUtil extends WorkflowUtil
 {
-   private static final Log logger = LogFactory.getLog(AVMWorkflowUtil.class);
+   private static final Log LOGGER = LogFactory.getLog(AVMWorkflowUtil.class);
 
    // cached configured lists
    private static List<WorkflowDefinition> configuredWorkflowDefs = null;
    
    public static NodeRef createWorkflowPackage(final List<String> srcPaths,
                                                final SandboxInfo sandboxInfo,
-                                               final WorkflowPath path,
-                                               final AVMSubmittedAspect avmSubmittedAspect,
-                                               final AVMSyncService avmSyncService,
-                                               final AVMService avmService,
-                                               final WorkflowService workflowService,
-                                               final NodeService nodeService)
+                                               final WorkflowPath path)
    {
+      final FacesContext fc = FacesContext.getCurrentInstance();
+      final WorkflowService workflowService = Repository.getServiceRegistry(fc).getWorkflowService();
+      final AVMService avmService = Repository.getServiceRegistry(fc).getAVMLockingAwareService();
+      final AVMSyncService avmSyncService = Repository.getServiceRegistry(fc).getAVMSyncService();
 
       // create package paths (layered to user sandbox area as target)
       final String workflowMainStoreName = sandboxInfo.getMainStoreName();
       final String packagesPath = AVMUtil.buildStoreRootPath(workflowMainStoreName);
 
       final String stagingStoreName = AVMUtil.getStoreId(workflowMainStoreName);
-      final HashSet<String> directoriesAdded = new HashSet<String>();
       final List<AVMDifference> diffs = new ArrayList<AVMDifference>(srcPaths.size());
       for (final String srcPath : srcPaths)
       {
-         // add all newly created directories
-         String parentPath = AVMNodeConverter.SplitBase(srcPath)[0];
-         while (!directoriesAdded.contains(parentPath) &&
-                avmService.lookup(-1, AVMUtil.getCorrespondingPath(parentPath, stagingStoreName)) == null)
+         final AVMNodeDescriptor node = avmService.lookup(-1, srcPath, true);
+         if (node.isDirectory())
          {
-            diffs.add(new AVMDifference(-1, parentPath,
-                                        -1, AVMUtil.getCorrespondingPath(parentPath, workflowMainStoreName),
+            diffs.add(new AVMDifference(-1, srcPath,
+                                        -1, AVMUtil.getCorrespondingPath(srcPath, workflowMainStoreName),
                                         AVMDifference.NEWER));
-            try
-            {
-               avmSubmittedAspect.markSubmitted(-1, parentPath, path.instance.id);
-            }
-            catch (final WorkflowException alreadySubmitted)
-            {
-               if (! path.instance.id.equals(avmSubmittedAspect.getWorkflowInstance(-1, parentPath)))
-               {
-                  throw alreadySubmitted;
-               }
-            }
-            directoriesAdded.add(parentPath);
-            parentPath = AVMNodeConverter.SplitBase(parentPath)[0];
          }
-
-         diffs.add(new AVMDifference(-1, srcPath, 
-                                     -1, AVMUtil.getCorrespondingPath(srcPath, workflowMainStoreName),
-                                     AVMDifference.NEWER));
-         avmSubmittedAspect.markSubmitted(-1, srcPath, path.instance.id);
+         else
+         {
+            final HashSet<String> directoriesAdded = new HashSet<String>();
+            // add all newly created directories
+            String parentPath = AVMNodeConverter.SplitBase(srcPath)[0];
+            while (!directoriesAdded.contains(parentPath) &&
+                   avmService.lookup(-1, AVMUtil.getCorrespondingPath(parentPath, stagingStoreName), true) == null)
+            {
+               diffs.add(new AVMDifference(-1, parentPath,
+                                           -1, AVMUtil.getCorrespondingPath(parentPath, workflowMainStoreName),
+                                           AVMDifference.NEWER));
+               directoriesAdded.add(parentPath);
+               parentPath = AVMNodeConverter.SplitBase(parentPath)[0];
+            }
+            diffs.add(new AVMDifference(-1, srcPath, 
+                                        -1, AVMUtil.getCorrespondingPath(srcPath, workflowMainStoreName),
+                                        AVMDifference.NEWER));
+         }
       }
                   
       // write changes to layer so files are marked as modified
@@ -139,7 +127,6 @@ public class AVMWorkflowUtil extends WorkflowUtil
       final AVMNodeDescriptor packageDesc = avmService.lookup(-1, packagesPath);
       final NodeRef packageNodeRef = workflowService.createPackage(AVMNodeConverter.ToNodeRef(-1, packageDesc.getPath()));
       avmService.setNodeProperty(packagesPath, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, new PropertyValue(null, true));
-      // nodeService.setProperty(packageNodeRef, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, true);
 
       // apply global permission to workflow package
       // TODO: Determine appropriate permissions
@@ -148,7 +135,7 @@ public class AVMWorkflowUtil extends WorkflowUtil
       permissionService.setPermission(packageNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
       return packageNodeRef;
    }
-   
+
    /**
     * Serialize the workflow params to a content stream
     * 
@@ -220,10 +207,18 @@ public class AVMWorkflowUtil extends WorkflowUtil
          FacesContext fc = FacesContext.getCurrentInstance();
          List<WorkflowDefinition> defs = Collections.<WorkflowDefinition>emptyList();
          ConfigElement config = Application.getConfigService(fc).getGlobalConfig().getConfigElement("wcm");
-         if (config != null)
+         if (config == null)
+         {
+            LOGGER.warn("WARNING: Unable to find 'wcm' config element definition.");
+         }
+         else
          {
             ConfigElement workflowConfig = config.getChild("workflows");
-            if (workflowConfig != null)
+            if (workflowConfig == null)
+            {
+               LOGGER.warn("WARNING: Unable to find WCM 'workflows' config element definition.");
+            }
+            else
             {
                WorkflowService service = Repository.getServiceRegistry(fc).getWorkflowService();
                StringTokenizer t = new StringTokenizer(workflowConfig.getValue().trim(), ", ");
@@ -238,21 +233,64 @@ public class AVMWorkflowUtil extends WorkflowUtil
                   }
                   else
                   {
-                     logger.warn("WARNING: Cannot find WCM workflow def for configured definition name: " + wfName); 
+                     LOGGER.warn("WARNING: Cannot find WCM workflow def for configured definition name: " + wfName); 
                   }
                }
             }
-            else
-            {
-               logger.warn("WARNING: Unable to find WCM 'workflows' config element definition.");
-            }
-         }
-         else
-         {
-            logger.warn("WARNING: Unable to find 'wcm' config element definition.");
          }
          configuredWorkflowDefs = defs;
       }
       return configuredWorkflowDefs;
+   }
+
+   public static List<WorkflowTask> getAssociatedTasksForSandbox(final String storeName)
+   {
+      final String fromPath = AVMUtil.buildStoreRootPath(storeName);
+      final FacesContext fc = FacesContext.getCurrentInstance();
+      final WorkflowService workflowService = Repository.getServiceRegistry(fc).getWorkflowService();
+      final WorkflowTaskQuery query = new WorkflowTaskQuery();
+      final HashMap<QName, Object> props = new HashMap<QName, Object>(1, 1.0f);
+      props.put(WCMWorkflowModel.PROP_FROM_PATH, fromPath);
+      query.setProcessCustomProps(props);
+      final List<WorkflowTask> tasks = workflowService.queryTasks(query);
+      LOGGER.debug("found " + tasks.size() + " tasks originating user sandbox " + fromPath);
+      return tasks;
+   }
+
+   public static List<WorkflowTask> getAssociatedTasksForNode(final AVMNodeDescriptor node)
+   {
+      final List<WorkflowTask> tasks = AVMWorkflowUtil.getAssociatedTasksForSandbox(AVMUtil.getStoreName(node.getPath()));
+      final List<WorkflowTask> result = new LinkedList<WorkflowTask>();
+      final FacesContext fc = FacesContext.getCurrentInstance();
+      final AVMService avmService = Repository.getServiceRegistry(fc).getAVMService();
+      for (final WorkflowTask task : tasks)
+      {
+         final NodeRef ref = task.path.instance.workflowPackage;
+         final String path = AVMUtil.getCorrespondingPath(node.getPath(), ref.getStoreRef().getIdentifier());
+         if (LOGGER.isDebugEnabled())
+         {
+            LOGGER.debug("checking store " + ref.getStoreRef().getIdentifier() +
+                         " for " + node.getPath() + " (" + path + ")");
+         }
+         try
+         {
+            final LayeringDescriptor ld = avmService.getLayeringInfo(-1, path);
+            if (!ld.isBackground())
+            {
+               LOGGER.debug(path + " is in the foreground.  workflow active");
+               result.add(task);
+            }
+            else
+            {
+//               LOGGER.debug(path + " is in the background");
+            }
+         }
+         catch (final AVMNotFoundException avmnfe)
+         {
+            LOGGER.debug(path + " not found");
+         }
+      }
+
+      return result;
    }
 }

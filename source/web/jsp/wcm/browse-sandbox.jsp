@@ -35,6 +35,32 @@
 
 <r:page titleId="title_browse_sandbox">
 
+<script language="JavaScript1.2">
+   function applySizeFolders(e)
+   {
+      return applySize(e, 'folders-apply');
+   }
+   
+   function applySizeFiles(e)
+   {
+      return applySize(e, 'files-apply');
+   }
+   
+   function applySize(e, field)
+   {
+      var keycode;
+      if (window.event) keycode = window.event.keyCode;
+      else if (e) keycode = e.which;
+      if (keycode == 13)
+      {
+         document.forms['browse-sandbox']['browse-sandbox:act'].value='browse-sandbox:' + field;
+         document.forms['browse-sandbox'].submit();
+         return false;
+      }
+      return true;
+   }
+</script>
+
 <f:view>
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
@@ -137,10 +163,19 @@
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
                      
+                     <h:panelGroup id="folder-panel-facets">
+                        <f:facet name="title">
+                           <a:panel id="page-controls1" style="font-size:9px">
+                              <h:outputText value="#{msg.items_per_page}" id="items-txt1"/>
+                              <h:inputText id="folder-pages" value="#{AVMBrowseBean.pageSizeFoldersStr}" style="width:24px;margin-left:4px" maxlength="3" onkeyup="return applySizeFolders(event);" />
+                              <div style="display:none"><a:actionLink id="folders-apply" value="" actionListener="#{AVMBrowseBean.updateFoldersPageSize}" /></div>
+                           </a:panel>
+                        </f:facet>
+                     </h:panelGroup>
                      <a:panel id="folders-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle"
-                              label="#{msg.website_browse_folders}">
+                              facetsId="folder-panel-facets" label="#{msg.website_browse_folders}">
                         
-                        <a:richList id="folder-list" binding="#{AVMBrowseBean.foldersRichList}" viewMode="details" pageSize="10"
+                        <a:richList id="folder-list" binding="#{AVMBrowseBean.foldersRichList}" viewMode="details" pageSize="#{AVMBrowseBean.pageSizeFolders}"
                               styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
                               value="#{AVMBrowseBean.folders}" var="r">
                            
@@ -159,14 +194,6 @@
                               </a:actionLink>
                               <w:avmLockIcon id="col10-lock" value="#{r.nodeRef}" align="absmiddle" />
                            </a:column>
-                           
-                           <%-- Description column
-                           <a:column id="col4" style="text-align:left">
-                              <f:facet name="header">
-                                 <a:sortLink id="col4-sort" label="#{msg.description}" value="description" styleClass="header"/>
-                              </f:facet>
-                              <h:outputText id="col4-txt" value="#{r.description}" />
-                           </a:column>--%>
                            
                            <%-- Creator column --%>
                            <a:column id="col5" style="text-align:left">
@@ -228,10 +255,19 @@
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
                      
+                     <h:panelGroup id="files-panel-facets">
+                        <f:facet name="title">
+                           <a:panel id="page-controls2" style="font-size:9px">
+                              <h:outputText value="#{msg.items_per_page}" id="items-txt2"/>
+                              <h:inputText id="files-pages" value="#{AVMBrowseBean.pageSizeFilesStr}" style="width:24px;margin-left:4px" maxlength="3" onkeyup="return applySizeFiles(event);" />
+                              <div style="display:none"><a:actionLink id="files-apply" value="" actionListener="#{AVMBrowseBean.updateFilesPageSize}" /></div>
+                           </a:panel>
+                        </f:facet>
+                     </h:panelGroup>
                      <a:panel id="files-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle"
-                              label="#{msg.website_browse_files}">
+                              facetsId="files-panel-facets" label="#{msg.website_browse_files}">
                         
-                        <a:richList id="files-list" binding="#{AVMBrowseBean.filesRichList}" viewMode="details" pageSize="10"
+                        <a:richList id="files-list" binding="#{AVMBrowseBean.filesRichList}" viewMode="details" pageSize="#{AVMBrowseBean.pageSizeFiles}"
                               styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
                               value="#{AVMBrowseBean.files}" var="r">
                            
@@ -246,14 +282,6 @@
                               <a:actionLink id="col10-act2" value="#{r.name}" href="#{r.url}" target="new" />
                               <w:avmLockIcon id="col10-lock" value="#{r.nodeRef}" align="absmiddle" />
                            </a:column>
-                           
-                           <%-- Description column
-                           <a:column id="col13" style="text-align:left">
-                              <f:facet name="header">
-                                 <a:sortLink id="col13-sort" label="#{msg.description}" value="description" styleClass="header"/>
-                              </f:facet>
-                              <h:outputText id="col13-txt" value="#{r.description}" />
-                           </a:column> --%>
                            
                            <%-- Size column --%>
                            <a:column id="col15" style="text-align:left">

@@ -42,6 +42,8 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.config.ConfigElement;
+import org.alfresco.config.ConfigService;
 import org.alfresco.linkvalidation.HrefValidationProgress;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
@@ -68,14 +70,15 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
-import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
-import org.alfresco.web.bean.wizard.WizardManager;
-import org.alfresco.web.forms.*;
+import org.alfresco.web.forms.FormInstanceData;
+import org.alfresco.web.forms.FormNotFoundException;
+import org.alfresco.web.forms.FormsService;
+import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -85,9 +88,9 @@ import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.alfresco.web.ui.wcm.WebResources;
 import org.alfresco.web.ui.wcm.component.UISandboxSnapshots;
 import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Bean backing up the AVM specific browse screens
@@ -98,7 +101,7 @@ public class AVMBrowseBean implements IContextListener
 {
    public static final String BEAN_NAME = "AVMBrowseBean";
    
-   private static final Log LOGGER = LogFactory.getLog(AVMBrowseBean.class);
+   private static final Log logger = LogFactory.getLog(AVMBrowseBean.class);
    
    private static final String REQUEST_BEEN_DEPLOYED_KEY = "_alfBeenDeployedEvaluated";
    private static final String REQUEST_BEEN_DEPLOYED_RESULT = "_alfBeenDeployedResult";
@@ -110,9 +113,6 @@ public class AVMBrowseBean implements IContextListener
    private static final String MSG_CREATED_ON = "store_created_on";
    private static final String MSG_CREATED_BY = "store_created_by";
    private static final String MSG_WORKING_USERS = "store_working_users";
-//   private static final String MSG_SUBMIT_SUCCESS = "submit_success";
-//   private static final String MSG_SUBMITALL_SUCCESS = "submitall_success";
-//   private static final String MSG_SUBMITSELECTED_SUCCESS = "submitselected_success";
 
    /** Component id the status messages are tied too */
    static final String COMPONENT_SANDBOXESPANEL = "sandboxes-panel";
@@ -178,6 +178,12 @@ public class AVMBrowseBean implements IContextListener
    /** breadcrumb location */
    private List<IBreadcrumbHandler> location = null;
    
+   /** The current view page sizes */
+   private int pageSizeFolders;
+   private int pageSizeFiles;
+   private String pageSizeFoldersStr;
+   private String pageSizeFilesStr;
+   
    /** The NodeService to be used by the bean */
    protected NodeService nodeService;
    
@@ -205,6 +211,8 @@ public class AVMBrowseBean implements IContextListener
    public AVMBrowseBean()
    {
       UIContextService.getInstance(FacesContext.getCurrentInstance()).registerBean(this);
+      
+      initFromClientConfig();
    }
 
    
@@ -276,6 +284,48 @@ public class AVMBrowseBean implements IContextListener
    public void setFormsService(final FormsService formsService)
    {
       this.formsService = formsService;
+   }
+   
+   public int getPageSizeFiles()
+   {
+      return this.pageSizeFiles;
+   }
+
+   public void setPageSizeFiles(int pageSizeContent)
+   {
+      this.pageSizeFiles = pageSizeContent;
+      this.pageSizeFilesStr = Integer.toString(pageSizeContent);
+   }
+
+   public int getPageSizeFolders()
+   {
+      return this.pageSizeFolders;
+   }
+
+   public void setPageSizeFolders(int pageSizeSpaces)
+   {
+      this.pageSizeFolders = pageSizeSpaces;
+      this.pageSizeFoldersStr = Integer.toString(pageSizeSpaces);
+   }
+
+   public String getPageSizeFilesStr()
+   {
+      return this.pageSizeFilesStr;
+   }
+
+   public void setPageSizeFilesStr(String pageSizeContentStr)
+   {
+      this.pageSizeFilesStr = pageSizeContentStr;
+   }
+
+   public String getPageSizeFoldersStr()
+   {
+      return this.pageSizeFoldersStr;
+   }
+
+   public void setPageSizeFoldersStr(String pageSizeSpacesStr)
+   {
+      this.pageSizeFoldersStr = pageSizeSpacesStr;
    }
 
    /**
@@ -510,15 +560,11 @@ public class AVMBrowseBean implements IContextListener
       this.linkValidationState = state;
    }
 
-   /**
-    */
    public List<AVMNodeDescriptor> getNodesForSubmit()
    {
       return this.nodesForSubmit;
    }
 
-   /**
-    */
    public void setNodesForSubmit(final List<AVMNodeDescriptor> nodesForSubmit)
    {
       this.nodesForSubmit = nodesForSubmit;
@@ -962,8 +1008,8 @@ public class AVMBrowseBean implements IContextListener
    
    /*package*/ void setupContentAction(final String path, final boolean refresh)
    {
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("Setup content action for path: " + path);
+      if (logger.isDebugEnabled())
+         logger.debug("Setup content action for path: " + path);
 
       if (path == null && path.length() == 0)
       {
@@ -1030,16 +1076,16 @@ public class AVMBrowseBean implements IContextListener
       String avmPath = this.getAvmActionNode().getPath();
       if (this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_RENDITION))
       {
-         if (LOGGER.isDebugEnabled())
-            LOGGER.debug(avmPath + " is a rendition, editing primary rendition instead");
+         if (logger.isDebugEnabled())
+            logger.debug(avmPath + " is a rendition, editing primary rendition instead");
 
          try
          {
             final FormInstanceData fid = this.formsService.getRendition(-1, avmPath).getPrimaryFormInstanceData();
             avmPath = fid.getPath();
 
-            if (LOGGER.isDebugEnabled())
-               LOGGER.debug("Editing primary form instance data " + avmPath);
+            if (logger.isDebugEnabled())
+               logger.debug("Editing primary form instance data " + avmPath);
 
             this.setAvmActionNode(new AVMNode(this.avmService.lookup(-1, avmPath)));
          }
@@ -1051,8 +1097,8 @@ public class AVMBrowseBean implements IContextListener
          }
       }
 
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("Editing AVM node: " + avmPath);
+      if (logger.isDebugEnabled())
+         logger.debug("Editing AVM node: " + avmPath);
       String outcome = null;
       // calculate which editor screen to display
       if (this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
@@ -1068,7 +1114,7 @@ public class AVMBrowseBean implements IContextListener
          }
          catch (FormNotFoundException fnfe)
          {
-            LOGGER.debug(fnfe.getMessage(), fnfe);
+            logger.debug(fnfe.getMessage(), fnfe);
             final Map<String, String> params = new HashMap<String, String>(2, 1.0f);
             params.put("finishOutcome", "wizard:editWebContent");
             params.put("cancelOutcome", "dialog:editAvmFile");
@@ -1083,7 +1129,7 @@ public class AVMBrowseBean implements IContextListener
          outcome = "dialog:editAvmFile";
       }
          
-      LOGGER.debug("outcome " + outcome + " for path " + path);
+      logger.debug("outcome " + outcome + " for path " + path);
          
       final FacesContext fc = FacesContext.getCurrentInstance();
       fc.getApplication().getNavigationHandler().handleNavigation(fc, null, outcome);
@@ -1330,6 +1376,57 @@ public class AVMBrowseBean implements IContextListener
       }
    }
    
+   /**
+    * Update page size based on user selection
+    */
+   public void updateFoldersPageSize(ActionEvent event)
+   {
+      try
+      {
+         int size = Integer.parseInt(this.pageSizeFoldersStr);
+         if (size >= 0)
+         {
+            this.pageSizeFolders = size;
+         }
+         else
+         {
+            // reset to known value if this occurs
+            this.pageSizeFoldersStr = Integer.toString(this.pageSizeFolders);
+         }
+      }
+      catch (NumberFormatException err)
+      {
+         // reset to known value if this occurs
+         this.pageSizeFoldersStr = Integer.toString(this.pageSizeFolders);
+      }
+   }
+
+   /**
+    * Update page size based on user selection
+    */
+   public void updateFilesPageSize(ActionEvent event)
+   {
+      try
+      {
+         int size = Integer.parseInt(this.pageSizeFilesStr);
+         if (size >= 0)
+         {
+            this.pageSizeFiles = size;
+         }
+         else
+         {
+            // reset to known value if this occurs
+            this.pageSizeFilesStr = Integer.toString(this.pageSizeFiles);
+         }
+      }
+      catch (NumberFormatException err)
+      {
+         // reset to known value if this occurs
+         this.pageSizeFilesStr = Integer.toString(this.pageSizeFiles);
+      }
+   }
+   
+   
    // ------------------------------------------------------------------------------
    // Private helpers
    
@@ -1348,6 +1445,33 @@ public class AVMBrowseBean implements IContextListener
    /*package*/ boolean isCurrentPathNull()
    {
       return (this.currentPath == null);
+   }
+   
+   /**
+    * Initialise default values from client configuration
+    */
+   private void initFromClientConfig()
+   {
+      ConfigService config = Application.getConfigService(FacesContext.getCurrentInstance());
+      ConfigElement wcmConfig = config.getGlobalConfig().getConfigElement("wcm");
+      if (wcmConfig != null)
+      {
+         ConfigElement viewsConfig = wcmConfig.getChild("views");
+         if (viewsConfig != null)
+         {
+            ConfigElement pageConfig = viewsConfig.getChild("browse-page-size");
+            if (pageConfig != null)
+            {
+               String strPageSize = pageConfig.getValue();
+               if (strPageSize != null)
+               {
+                  int pageSize = Integer.valueOf(strPageSize.trim());
+                  setPageSizeFiles(pageSize);
+                  setPageSizeFolders(pageSize);
+               }
+            }
+         }
+      }
    }
    
    /**

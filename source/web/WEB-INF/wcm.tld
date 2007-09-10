@@ -303,10 +303,17 @@
       </attribute>
       
       <attribute>
-         <name>initialCheckOnly</name>
+         <name>showPanel</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
-         <description>Only shows the initial check summary if set to true, false by default</description>
+         <description>Hides the surrounding panel if set to false, true by default</description>
+      </attribute>
+      
+      <attribute>
+         <name>showTitle</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>Hides the summary report title if set to false, true by default</description>
       </attribute>
       
       <attribute>
@@ -322,14 +329,21 @@
          <rtexprvalue>true</rtexprvalue>
          <description>Flag to determine whether component should be rendered</description>
       </attribute>
+      
+      <attribute>
+         <name>styleClass</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>CSS class to apply to the summary panel (applies to outer div element)</description>
+      </attribute>
    </tag>
    
    <tag>
-      <name>linkValidationBrokenFiles</name>
-      <tag-class>org.alfresco.web.ui.wcm.tag.LinkValidationBrokenFilesTag</tag-class>
+      <name>linkValidationReport</name>
+      <tag-class>org.alfresco.web.ui.wcm.tag.LinkValidationReportTag</tag-class>
       <body-content>JSP</body-content>
-      <display-name>Link Validation Broken Files</display-name>
-      <description>Displays broken file information for a link validation report</description>
+      <display-name>Link Validation Report</display-name>
+      <description>Displays the results of a link validation report</description>
       
       <attribute>
          <name>value</name>
@@ -351,63 +365,22 @@
          <rtexprvalue>true</rtexprvalue>
          <description>Flag to determine whether component should be rendered</description>
       </attribute>
-   </tag>
-   
-   <tag>
-      <name>linkValidationBrokenForms</name>
-      <tag-class>org.alfresco.web.ui.wcm.tag.LinkValidationBrokenFormsTag</tag-class>
-      <body-content>JSP</body-content>
-      <display-name>Link Validation Broken Forms</display-name>
-      <description>Displays broken form information for a link validation report</description>
       
       <attribute>
-         <name>value</name>
-         <required>true</required>
+         <name>itemsExpanded</name>
+         <required>false</required>
          <rtexprvalue>true</rtexprvalue>
-         <description>The link validation state object holding the report data</description>
+         <description>
+            Flag to determine whether component should render the broken
+            links and generated files sections expanded
+         </description>
       </attribute>
       
       <attribute>
-         <name>id</name>
+         <name>initialTab</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
-         <description>The component identifier for this component</description>
-      </attribute>
-
-      <attribute>
-         <name>rendered</name>
-         <required>false</required>
-         <rtexprvalue>true</rtexprvalue>
-         <description>Flag to determine whether component should be rendered</description>
-      </attribute>
-   </tag>
-   
-   <tag>
-      <name>linkValidationFixedFiles</name>
-      <tag-class>org.alfresco.web.ui.wcm.tag.LinkValidationFixedFilesTag</tag-class>
-      <body-content>JSP</body-content>
-      <display-name>Link Validation Fixed Files</display-name>
-      <description>Displays the list of files fixed since the initial run of a link validation report</description>
-      
-      <attribute>
-         <name>value</name>
-         <required>true</required>
-         <rtexprvalue>true</rtexprvalue>
-         <description>The link validation state object holding the report data</description>
-      </attribute>
-      
-      <attribute>
-         <name>id</name>
-         <required>false</required>
-         <rtexprvalue>true</rtexprvalue>
-         <description>The component identifier for this component</description>
-      </attribute>
-
-      <attribute>
-         <name>rendered</name>
-         <required>false</required>
-         <rtexprvalue>true</rtexprvalue>
-         <description>Flag to determine whether component should be rendered</description>
+         <description>The tab to be initially selected</description>
       </attribute>
    </tag>
    

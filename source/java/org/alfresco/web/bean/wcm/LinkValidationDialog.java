@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.linkvalidation.HrefValidationProgress;
@@ -46,6 +47,8 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.component.UIActionLink;
+import org.alfresco.web.ui.wcm.component.UILinkValidationReport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -66,10 +69,12 @@ public class LinkValidationDialog extends BaseDialogBean
    private String store;
    private String webapp;
    private String webappPath;
+   private String initialTab;
    private NodeRef webappPathRef;
    private boolean runningReport = false;
    private boolean update = false;
    private boolean compareToStaging = false;
+   private boolean sectionsExpanded = false;
    
    private static final Log logger = LogFactory.getLog(LinkValidationDialog.class);
    
@@ -90,6 +95,7 @@ public class LinkValidationDialog extends BaseDialogBean
       // setup context for dialog
       this.webappPath = AVMUtil.buildStoreWebappPath(this.store, this.webapp);
       this.webappPathRef = AVMNodeConverter.ToNodeRef(-1, this.webappPath);
+      this.initialTab = UILinkValidationReport.DEFAULT_INTIAL_TAB;
       
       this.runningReport = false;
       String modeParam = parameters.get("mode");
@@ -230,6 +236,20 @@ public class LinkValidationDialog extends BaseDialogBean
       return outcome;
    }
    
+   public void toggleSections(ActionEvent event)
+   {
+      this.sectionsExpanded = !this.sectionsExpanded;
+
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String tab = params.get("tab");
+
+      if (tab != null)
+      {
+         this.initialTab = tab;
+      }
+   }
+   
    /**
     * Sets up the dialog to update the status and display the differences
     * 
@@ -287,6 +307,39 @@ public class LinkValidationDialog extends BaseDialogBean
       return !this.runningReport;
    }
    
+   /**
+    * @return true if the broken links and generated files section are expanded
+    */
+   public boolean getSectionsExpanded()
+   {
+      return sectionsExpanded;
+   }
+
+   /**
+    * @param sectionsExpanded true if the broken links and generated 
+    *                         files section are expanded
+    */
+   public void setSectionsExpanded(boolean sectionsExpanded)
+   {
+      this.sectionsExpanded = sectionsExpanded;
+   }
+   
+   /**
+    * @return The initial tab to be selected
+    */
+   public String getInitialTab()
+   {
+      return initialTab;
+   }
+
+   /**
+    * @param initialTab Sets the initial tab to be selected
+    */
+   public void setInitialTab(String initialTab)
+   {
+      this.initialTab = initialTab;
+   }
+
    /**
     * @param avmBrowseBean    The AVM BrowseBean to set
     */

@@ -45,7 +45,6 @@ import org.alfresco.model.WCMAppModel;
 import org.alfresco.model.WCMWorkflowModel;
 import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.avm.wf.AVMSubmittedAspect;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -106,7 +105,6 @@ public class SubmitDialog extends BaseDialogBean
    private List<ItemWrapper> submitItems;
    private List<ItemWrapper> warningItems;
    private HashSet<FormWorkflowWrapper> workflows;
-//   private Map<String, FormWorkflowWrapper> formWorkflowMap;
    private Map<String, Date> expirationDates;
    private List<UIListItem> workflowItems;
    private Map<QName, Serializable> workflowParams;
@@ -124,7 +122,6 @@ public class SubmitDialog extends BaseDialogBean
    private String virtUpdatePath;     
    
    protected AVMService avmService;
-   protected AVMSubmittedAspect avmSubmittedAspect;
    protected AVMBrowseBean avmBrowseBean;
    protected WorkflowService workflowService;
    protected AVMSyncService avmSyncService;
@@ -135,7 +132,7 @@ public class SubmitDialog extends BaseDialogBean
    /** Current workflow for dialog context */
    protected WorkflowConfiguration actionWorkflow = null;
    
-   private static final Log LOGGER = LogFactory.getLog(SubmitDialog.class);
+   private static final Log logger = LogFactory.getLog(SubmitDialog.class);
    
    /**
     * @param avmService       The AVM Service to set.
@@ -145,14 +142,6 @@ public class SubmitDialog extends BaseDialogBean
       this.avmService = avmService;
    }
    
-   /**
-    * @param avmSubmittedAspect  The AVM Submitted Aspect to set.
-    */
-   public void setAvmSubmittedAspect(AVMSubmittedAspect avmSubmittedAspect)
-   {
-      this.avmSubmittedAspect = avmSubmittedAspect;
-   }
-
    /**
     * @param avmSyncService   The AVMSyncService to set.
     */
@@ -562,14 +551,7 @@ public class SubmitDialog extends BaseDialogBean
                if (startTask.state == WorkflowTaskState.IN_PROGRESS)
                {                
                   final NodeRef workflowPackage =
-                     AVMWorkflowUtil.createWorkflowPackage(this.srcPaths,
-                           sandboxInfo,
-                           path,
-                           this.avmSubmittedAspect,
-                           this.avmSyncService,
-                           this.avmService,
-                           this.workflowService,
-                           this.nodeService);
+                     AVMWorkflowUtil.createWorkflowPackage(this.srcPaths, sandboxInfo, path);
                   
                   this.workflowParams.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
                   
@@ -624,7 +606,7 @@ public class SubmitDialog extends BaseDialogBean
       catch (Throwable e)
       {
          // not much we can do now, just log the error to inform admins
-         LOGGER.error("Failed to cleanup workflow sandbox after workflow failure", e);
+         logger.error("Failed to cleanup workflow sandbox after workflow failure", e);
       }
    }
    
@@ -938,6 +920,7 @@ public class SubmitDialog extends BaseDialogBean
             // if the dialog was started from a workflow the AVM browse bean should
             // have the list of nodes that need submitting
             selected = this.avmBrowseBean.getNodesForSubmit();
+            this.avmBrowseBean.setNodesForSubmit(null);
          }
          // if the dialog was started from the UI determine what nodes the user selected to submit
          else if (this.avmBrowseBean.getAllItemsAction())
@@ -976,7 +959,7 @@ public class SubmitDialog extends BaseDialogBean
             this.warningItems = new ArrayList<ItemWrapper>(selected.size() >> 1);
             for (AVMNodeDescriptor node : selected)
             {
-               if (this.avmService.hasAspect(-1, node.getPath(), AVMSubmittedAspect.ASPECT))
+               if (AVMWorkflowUtil.getAssociatedTasksForNode(node).size() != 0)
                {
                   this.warningItems.add(new ItemWrapper(node));
                   continue;
@@ -1071,8 +1054,8 @@ public class SubmitDialog extends BaseDialogBean
       this.avmService.setNodeProperty(srcPath, WCMAppModel.PROP_EXPIRATIONDATE, 
                                       new PropertyValue(DataTypeDefinition.DATETIME, expirationDate));
          
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("Set expiration date of " + expirationDate + 
+      if (logger.isDebugEnabled())
+         logger.debug("Set expiration date of " + expirationDate + 
                       " for " + srcPath);
    }
    
@@ -1081,16 +1064,15 @@ public class SubmitDialog extends BaseDialogBean
     */
    public void setupConfigureWorkflow(ActionEvent event)
    {
-      if (this.workflowSelectedValue == null)
+      if (this.workflowSelectedValue != null)
       {
-         return;
-      }
-      String workflowName = this.workflowSelectedValue[0];
-      for (WorkflowConfiguration wrapper : this.workflows)
-      {
-         if (wrapper.getName().equals(workflowName))
+         String workflowName = this.workflowSelectedValue[0];
+         for (WorkflowConfiguration wrapper : this.workflows)
          {
-            setActionWorkflow(wrapper);
+            if (wrapper.getName().equals(workflowName))
+            {
+               setActionWorkflow(wrapper);
+            }
          }
       }
    }
@@ -1118,8 +1100,8 @@ public class SubmitDialog extends BaseDialogBean
     */
    public void applyDefaultExpireDateToAll(ActionEvent event)
    {
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("applying default expiration date of " + this.defaultExpireDate + " to all modified items");
+      if (logger.isDebugEnabled())
+         logger.debug("applying default expiration date of " + this.defaultExpireDate + " to all modified items");
       
       List<ItemWrapper> items = this.getSubmitItems();
       for (ItemWrapper item : items)

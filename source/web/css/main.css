@@ -719,6 +719,90 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
    white-space: nowrap;
 }
 
+.tabs 
+{
+   width: 100%;
+   line-height: 1.5em;
+}
+
+.tabs ul 
+{
+   margin: 0px;
+   padding: 10px 10px 0px 0px;
+   list-style: none;
+}
+
+.tabs li 
+{
+   display: inline;
+   margin: 0px;
+   padding: 0px;
+}
+
+.tabs a 
+{
+   float: left;
+   background: url("../images/parts/tab_left.gif") no-repeat left top;
+   margin: 0px;
+   padding: 0px 0px 0px 4px;
+   text-decoration: none;
+   cursor: pointer;
+}
+
+.tabs a:hover
+{
+   text-decoration: none;
+}
+
+.tabs a span 
+{
+   float: left;
+   display: block;
+   background: url("../images/parts/tab_right.gif") no-repeat right top;
+   padding: 5px 10px 4px 4px;
+   margin-right: 2px;
+   color: #627EB7;
+}
+
+.tabs .selectedTab a 
+{
+   background:url("../images/parts/tab_left_selected.gif") no-repeat left top;
+}
+
+.tabs .selectedTab a span 
+{
+   background:url("../images/parts/tab_right_selected.gif") no-repeat right top;
+   color: white;
+}
+
+.tabs span.tabLabel
+{
+   font-weight: bold;
+   float:left;
+   display: block;
+   color: #627EB7;
+   padding: 4px 6px 0px 6px;
+}
+
+.tabs span.tabButton
+{
+   float:left;
+   display: block;
+   color: #627EB7;
+   padding: 3px 0px 0px 15px;
+}
+
+.expandCollapseControls
+{
+   float: left;
+   padding-top: 3px;
+}
+
+.incDecControls
+{
+   text-align: right;
+}
+
 .linkValidationProgressPanel
 {
    width: 100%;
@@ -736,68 +820,176 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
    font-size: 11px;
 }
 
-.linkValidationReportTitle
-{
-   color: #004488; 
-   font-size: 14px; 
-   font-weight: bold; 
-   padding-bottom: 8px;
-}
-
-.linkValidationReportSubTitle
-{
-   color: #004488;
-   font-weight: bold;
-   font-size: 11px;
-   padding-right: 8px;
-}
-
 .linkValidationSummaryPanel
 {
-   margin: 6px;
-   margin-top: 3px;
-   padding: 8px;
-   background-color: white;
+   text-align: center;
+}
+
+.linkValidationSummaryPanel img
+{
+   vertical-align: -4px;
+}
+
+.linkValidationSummaryTitle
+{
+   font-weight: bold;
+   font-size: 12px;
+   padding-bottom: 7px;
+}
+
+.linkValSummaryText
+{
+   padding-bottom: 4px;
+}
+
+.linkValidationSummaryPanelTask
+{
+   text-align: left;
+   margin-bottom: 10px;
+   margin-left: 4px;
+}
+
+.linkValidationSummaryPanelTask img
+{
+   vertical-align: -4px;
+}
    
-   _width: 100%;
+.linkValTabContentHeader
+{
+   border-bottom: 1px dotted #BCD2E6;
+   padding: 8px 15px 8px 10px;
 }
 
-.linkValidationBrokenFilesPanel
+.linkValTabContentHeader img
 {
-   margin: 6px;
-   padding: 8px;
-   background-color: white;
+   cursor: pointer;
 }
 
-.linkValidationBrokenFormsPanel
+.linkValTabContentBody
 {
-   margin: 6px;
-   padding: 8px;
-   background-color: white;
-}
-
-.linkValidationFixedFilesPanel
-{
-   margin: 6px;
-   padding: 8px;
-   background-color: white;
-}
-
-.linkValidationList
-{
+   height: 300px;
+   width: 100%;
    overflow: auto;
-   height: 132px;
-   border: 1px solid #aaa;
 }
 
-.linkValidationListOddRow
+.linkValRow
 {
-   background-color: white;
+   padding: 10px 0px 10px 10px;
 }
 
-.linkValidationListEvenRow
+.linkValRowEven
 {
-   background-color: #f9f9f9;
+   background-color: #f9f9f9 !important;
+}
+
+.linkValRowOdd
+{
+   background-color: #fff !important;
+}
+
+.linkValNoItems
+{
+   padding: 10px;
+}
+
+.linkValIcon
+{
+   float: left;
+   width: 40px;
+}
+
+.linkValActions
+{
+   float: right;
+   width: 70px;
+   text-align: right;
+   padding-right: 10px;
+}
+
+.linkValItemDetails
+{
+   margin: 0px 80px 0px 40px;
+}
+
+.linkValFileName
+{
+   font-weight: bold;
+}
+
+.linkValFilePath
+{
+   padding-top: 2px;
+}
+
+.linkValFormName
+{
+   font-weight: bold;
+}
+
+.linkValFormPath
+{
+   padding-top: 2px;
+}
+
+.linkValToggle
+{
+   color: #505E6B;
+   padding-bottom: 3px;
+}
+
+.linkValToggleExpanded
+{
+   vertical-align: -6px; 
+}
+
+.linkValToggleCollapsed
+{
+   vertical-align: -6px; 
+}
+
+.linkValBrokenLinks
+{
+   margin-left: 2px;
+}
+
+.linkValBrokenLinks img
+{
+   vertical-align: -4px;
+}
+
+.tabTitleBrokenLinkIcon
+{
+   border: none;
+   vertical-align: -4px;
+   margin-right: 2px;
+   margin-left: 2px;
+}
+
+#staticTabContent
+{
+   -moz-border-radius: 9px;
+   border: 1px solid #BCD2E6;
+   clear: both;
+   padding-bottom: 5px;
+   margin-bottom: 5px;
+}
+
+#generatedTabContent
+{
+   -moz-border-radius: 9px;
+   border: 1px solid #BCD2E6;
+   clear: both;
+   padding-bottom: 5px;
+   margin-bottom: 5px;
+}
+
+#fixedTabContent
+{
+   -moz-border-radius: 9px;
+   border: 1px solid #BCD2E6;
+   clear: both;
+   padding-bottom: 5px;
+   margin-bottom: 5px;
 }
 
 

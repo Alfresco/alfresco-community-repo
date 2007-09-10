@@ -53,7 +53,7 @@ import org.apache.commons.logging.LogFactory;
 public final class FacesHelper
 {
    private static Log logger = LogFactory.getLog(FacesHelper.class);
-   private static Pattern FACES_ID_PATTERN = Pattern.compile("[^a-z^A-Z^_]?[^a-z^A-Z^_^-]");
+   private static Pattern FACES_ID_PATTERN = Pattern.compile("[^a-z^A-Z^_]?[^a-z^A-Z^0-9^_^-]");
    
    /**
     * Private constructor

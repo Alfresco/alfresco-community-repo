@@ -36,11 +36,11 @@
 <w:linkValidationProgress rendered="#{DialogManager.bean.runningReport}" />
 
 <%-- Display the reporting components if showing a report --%>
-<h:panelGroup rendered="#{DialogManager.bean.showingReport}">
+<h:panelGroup rendered="#{DialogManager.bean.showingReport}">   
    <w:linkValidationSummary value="#{AVMBrowseBean.linkValidationState}" />
-   <w:linkValidationBrokenFiles value="#{AVMBrowseBean.linkValidationState}" />
-   <w:linkValidationBrokenForms value="#{AVMBrowseBean.linkValidationState}" />
-   <w:linkValidationFixedFiles value="#{AVMBrowseBean.linkValidationState}" />
+   <w:linkValidationReport value="#{AVMBrowseBean.linkValidationState}" 
+                           initialTab="#{DialogManager.bean.initialTab}"
+                           itemsExpanded="#{DialogManager.bean.sectionsExpanded}" />
 </h:panelGroup>
 
 

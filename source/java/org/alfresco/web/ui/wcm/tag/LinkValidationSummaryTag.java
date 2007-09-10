@@ -36,7 +36,8 @@ import org.alfresco.web.ui.common.tag.HtmlComponentTag;
 public class LinkValidationSummaryTag extends HtmlComponentTag
 {
    private String value;
-   private String initialCheckOnly;
+   private String showPanel;
+   private String showTitle;
    
    /**
     * @see javax.faces.webapp.UIComponentTag#getComponentType()
@@ -62,7 +63,8 @@ public class LinkValidationSummaryTag extends HtmlComponentTag
       super.setProperties(component);
       
       setStringProperty(component, "value", this.value);
-      setBooleanProperty(component, "initialCheckOnly", this.initialCheckOnly);
+      setBooleanProperty(component, "showPanel", this.showPanel);
+      setBooleanProperty(component, "showTitle", this.showTitle);
    }
    
    /**
@@ -72,7 +74,8 @@ public class LinkValidationSummaryTag extends HtmlComponentTag
    {
       super.release();
       this.value = null;
-      this.initialCheckOnly = null;
+      this.showPanel = null;
+      this.showTitle = null;
    }
    
    /**
@@ -84,10 +87,18 @@ public class LinkValidationSummaryTag extends HtmlComponentTag
    }
 
    /**
-    * @param initialCheckOnly true will make the component only show the initial check summary info
+    * @param showPanel false to hide the surrounding panel
     */
-   public void setInitialCheckOnly(String initialCheckOnly)
+   public void setShowPanel(String showPanel)
    {
-      this.initialCheckOnly = initialCheckOnly;
+      this.showPanel = showPanel;
+   }
+
+   /**
+    * @param showTitle false to hide the title within the panel
+    */
+   public void setShowTitle(String showTitle)
+   {
+      this.showTitle = showTitle;
    }
 }

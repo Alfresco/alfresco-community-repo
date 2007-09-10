@@ -60,7 +60,7 @@ public class LinkValidationState
    private String store;
    private String webapp;
    private boolean checkBeenReRun = false;
-   private Date initialCheckCompletedAt;
+   private Date checkCompletedAt;
    
    private int noFilesCheckedStart = -1;
    private int noFilesCheckedLast = -1;
@@ -75,6 +75,12 @@ public class LinkValidationState
    private int noBrokenLinksLast = -1;
    
    private int noFixedItems = -1;
+   
+   private int noBrokenLinksInStaticFiles = -1;
+   private int noBrokenLinksInForms = -1;
+   
+   private int baseSnapshotVersion = 0;
+   private int latestSnapshotVersion = 0;
    
    private List<String> brokenStaticFilesStart;
    private List<String> brokenFormsStart;
@@ -123,11 +129,11 @@ public class LinkValidationState
    }
    
    /**
-    * @return The date the initial check was completed
+    * @return The date the check was completed
     */
-   public Date getInitialCheckCompletedAt()
+   public Date getCheckCompletedAt()
    {
-      return this.initialCheckCompletedAt;
+      return this.checkCompletedAt;
    }
    
    /**
@@ -203,6 +209,22 @@ public class LinkValidationState
    }
    
    /**
+    * @return The number of broken links in static files
+    */
+   public int getNoBrokenLinksInStaticFiles()
+   {
+      return noBrokenLinksInStaticFiles;
+   }
+
+   /**
+    * @return The number of broken links in forms
+    */
+   public int getNoBrokenLinksInForms()
+   {
+      return noBrokenLinksInForms;
+   }
+
+   /**
     * @return The number of items fixed since the initial link check
     */
    public int getNumberFixedItems()
@@ -210,6 +232,22 @@ public class LinkValidationState
       return this.noFixedItems;
    }
    
+   /**
+    * @return The snapshot version of the staging area the link check was run against 
+    */
+   public int getBaseSnapshotVersion()
+   {
+      return baseSnapshotVersion;
+   }
+
+   /**
+    * @return The snapshot version of the staging area at the end of the link check
+    */
+   public int getLatestSnapshotVersion()
+   {
+      return latestSnapshotVersion;
+   }
+
    /**
     * @return A list of paths to non-generated files that contain broken links
     */
@@ -302,6 +340,8 @@ public class LinkValidationState
       StringBuilder buffer = new StringBuilder(super.toString());
       buffer.append(" (store=").append(this.store);
       buffer.append(" webapp=").append(this.webapp);
+      buffer.append(" baseSnapshot=").append(this.baseSnapshotVersion);
+      buffer.append(" latestSnapshot=").append(this.latestSnapshotVersion);
       buffer.append(" error=").append(this.cause).append(")");
       return buffer.toString();
    }
@@ -314,11 +354,12 @@ public class LinkValidationState
       this.checkBeenReRun = updatedReport;
       this.cause = report.getError();
       
-      // make sure there is an initial check completed date
-      if (this.initialCheckCompletedAt == null)
-      {
-         this.initialCheckCompletedAt = report.getCheckCompletedAt();
-      }
+      // update the check completed date
+      this.checkCompletedAt = report.getCheckCompletedAt();
+      
+      // get the snapshot versions
+      this.baseSnapshotVersion = report.getBaseSnapshotVersion();
+      this.latestSnapshotVersion = report.getLatestSnapshotVersion();
          
       if (this.cause == null)
       {
@@ -365,6 +406,7 @@ public class LinkValidationState
                   this.fixedFiles.add(file);
                }
             }
+            
             for (String file : this.brokenFormsStart)
             {
                if (this.brokenFormsLast.contains(file) == false &&
@@ -376,6 +418,32 @@ public class LinkValidationState
             
             // calculate the number of fixed items we have
             this.noFixedItems = this.fixedFiles.size() + this.fixedForms.size();
+         }
+         
+         // calculate the number of broken links for static files and how
+         // many are from generated files (forms)
+         this.noBrokenLinksInStaticFiles = 0;
+         this.noBrokenLinksInForms = 0;
+         
+         for (String file : this.brokenStaticFilesLast)
+         {
+            List<String> links = this.getBrokenLinksForFile(file);
+            if (links != null)
+            {
+               this.noBrokenLinksInStaticFiles += links.size();
+            }
+         }
+         
+         for (String form : this.brokenFormsLast)
+         {
+            for (String file: this.getBrokenFilesByForm(form))
+            {
+               List<String> links = this.getBrokenLinksForFile(file);
+               if (links != null)
+               {
+                  this.noBrokenLinksInForms += links.size();
+               }
+            }
          }
       }
    }

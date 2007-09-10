@@ -1,4 +1,4 @@
-<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
+<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if><#assign extnx=extn+"x">
 <#if args.search?exists>
    <#assign searchString = args.search>
    <#if searchString != "">
@@ -28,7 +28,7 @@
       <#list results as child>
          <#assign resCount=resCount + 1>
          <#if child.isDocument>
-            <#if child.name?ends_with(extn)>
+            <#if child.name?ends_with(extn) || child.name?ends_with(extnx)>
                <#assign relativePath = (child.displayPath?substring(companyhome.name?length+1) + '/' + child.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
                <#assign openURL = "#">
                <#assign hrefExtra = " onClick=\"window.external.openDocument('${relativePath}')\"">

@@ -1,4 +1,4 @@
-<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
+<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if><#assign extnx=extn+"x">
 <#if args.t?exists>
    <#assign taskid = args.t>
    <#if taskid != "">
@@ -45,7 +45,7 @@
    <#list task.packageResources as res>
          <tr>
       <#if res.isDocument>
-         <#if res.name?ends_with(extn)>
+         <#if child.name?ends_with(extn) || child.name?ends_with(extnx)>
             <#assign relativePath = (res.displayPath?substring(companyhome.name?length+1) + '/' + res.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
             <td width="16"><a href="${url.context}${res.url}" target="new"><img src="${url.context}${res.icon16}" alt="${res.name}"></a></td>
             <td>

@@ -1,5 +1,5 @@
 <#assign doc_actions="${url.serviceContext}/office/docActions">
-<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
+<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if><#assign extnx=extn+"x">
 <#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
 <#assign chLen=companyhome.name?length>
 <#if node.isDocument>
@@ -137,14 +137,14 @@
       <#assign relativePath = (child.displayPath?substring(chLen+1) + '/' + child.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
       <div class="documentItem ${(documentsFound % 2 = 0)?string("even", "odd")}">
          <span class="documentItemIcon">
-      <#if child.name?ends_with(extn)>
+      <#if child.name?ends_with(extn) || child.name?ends_with(extnx)>
             <a href="#" onclick="window.external.openDocument('${relativePath}')"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
       <#else>
             <a href="${url.context}${child.url}?ticket=${session.ticket}" rel="_blank"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
       </#if>
          </span>
          <span class="documentItemDetails">
-      <#if child.name?ends_with(extn)>
+      <#if child.name?ends_with(extn) || child.name?ends_with(extnx)>
             <a href="#" onclick="window.external.openDocument('${relativePath}')"><span class="bold">${child.name}</span></a>
       <#else>
             <a href="${url.context}${child.url}?ticket=${session.ticket}" rel="_blank"><span class="bold">${child.name}</span></a>

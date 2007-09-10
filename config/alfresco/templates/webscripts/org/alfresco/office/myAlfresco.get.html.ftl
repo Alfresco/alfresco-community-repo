@@ -1,6 +1,6 @@
 <#assign doc_actions="${url.serviceContext}/office/docActions">
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
-<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
+<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if><#assign extnx=extn+"x">
 <#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
 <#-- resolve the path (from Company Home) into a node -->
 <#if companyhome.childByNamePath[path]?exists>
@@ -46,7 +46,7 @@
             <img src="${url.context}${child.icon32}" alt="${child.name}" />
          </span>
          <span class="documentItemDetails">
-         <#if child.name?ends_with(extn)>
+         <#if child.name?ends_with(extn) || child.name?ends_with(extnx)>
             <a href="#" onclick="window.external.openDocument('${relativePath}')" title="Open ${child.name}" style="font-weight: bold;">${child.name}</a><br />
          <#else>
             <a href="${url.context}${child.url}?ticket=${session.ticket}" target="_blank" title="Open ${child.name}" style="font-weight: bold;">${child.name}</a><br />

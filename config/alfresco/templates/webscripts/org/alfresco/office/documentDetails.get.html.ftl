@@ -1,6 +1,6 @@
 <#assign doc_actions="${url.serviceContext}/office/docActions">
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
-<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
+<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if><#assign extnx=extn+"x">
 <#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
 <#-- resolve the path (from Company Home) into a node -->
 <#if companyhome.childByNamePath[path]?exists>
@@ -167,7 +167,7 @@
             </a>
             <br />Start Advanced Workflow for the current document.
          </li>
-   <#if d.name?ends_with(extn)>
+   <#if d.name?ends_with(extn) || d.name?ends_with(extnx)>
          <li>
             <a href="#" onclick="OfficeAddin.runAction('${doc_actions}','makepdf','${d.id}', '');">
                <img src="${url.context}/images/office/makepdf.gif" alt="Transform to PDF" />

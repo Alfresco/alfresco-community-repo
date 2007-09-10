@@ -60,6 +60,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
@@ -110,7 +111,17 @@ public class AVMWorkflowUtil extends WorkflowUtil
             diffs.add(new AVMDifference(-1, parentPath,
                                         -1, AVMUtil.getCorrespondingPath(parentPath, workflowMainStoreName),
                                         AVMDifference.NEWER));
-            avmSubmittedAspect.markSubmitted(-1, parentPath, path.instance.id);
+            try
+            {
+               avmSubmittedAspect.markSubmitted(-1, parentPath, path.instance.id);
+            }
+            catch (final WorkflowException alreadySubmitted)
+            {
+               if (! path.instance.id.equals(avmSubmittedAspect.getWorkflowInstance(-1, parentPath)))
+               {
+                  throw alreadySubmitted;
+               }
+            }
             directoriesAdded.add(parentPath);
             parentPath = AVMNodeConverter.SplitBase(parentPath)[0];
          }

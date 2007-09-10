@@ -1,6 +1,6 @@
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
 <#if args.n?exists><#assign node=args.n><#else><#assign node=companyhome></#if>
-<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
+<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if><#assign extnx=extn+"x">
 <#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
 <#assign searchCommand="OfficeSearch.runSearch('${url.serviceContext}/office/searchResults', '${path}&amp;e=${extn}')" >
 <#if (args.searchagain?exists)><#assign searchText=args.searchagain><#else><#assign searchText=""></#if>

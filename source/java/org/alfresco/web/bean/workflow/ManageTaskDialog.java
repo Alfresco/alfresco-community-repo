@@ -41,6 +41,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
@@ -67,11 +68,13 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.TransientNode;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.wcm.AVMNode;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.AVMWorkflowUtil;
 import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.data.UIRichList;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -816,6 +819,14 @@ public class ManageTaskDialog extends BaseDialogBean
          node.addPropertyResolver("url", this.browseBean.resolverUrl);
       }
       this.resources.add(node);
+      if (node.isDirectory())
+      {
+         for (final AVMNodeDescriptor d : 
+                 this.avmService.getDirectoryListingArray(node.getDescriptor(), true))
+         {
+            this.addAVMNode(new AVMNode(d));
+         }
+      }
    }
    
    protected void createAndAddNode(NodeRef nodeRef)

@@ -421,8 +421,8 @@ public class NodeContext extends ElementContext
      */
     public AspectDefinition determineAspect(QName defName)
     {
-        AspectDefinition def = null;
-        if (nodeAspects.containsKey(defName) == false)
+        AspectDefinition def = nodeAspects.get(defName);
+        if (def == null)
         {
             def = getDictionaryService().getAspect(defName);
         }

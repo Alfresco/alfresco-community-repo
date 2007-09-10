@@ -9,7 +9,7 @@
 -- The MySQL InnoDB Dialect has special support for foreign keys.
 
 -- Remove pointless duplicated FK indexes
-ALTER TABLE alf_global_attributes DROP INDEX FK64D0B9CF69B9F16A;
+ALTER TABLE alf_global_attributes DROP INDEX FK64D0B9CF69B9F16A;(optional)
 
 --
 -- Record script finish

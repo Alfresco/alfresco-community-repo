@@ -78,7 +78,11 @@ public class TemplateServiceImpl implements TemplateService
      * @see org.alfresco.service.cmr.repository.TemplateService#getTemplateProcessor(java.lang.String)
      */
     public TemplateProcessor getTemplateProcessor(String engine)
-    {        
+    {
+        if (engine == null)
+        {
+           engine = this.defaultTemplateEngine;
+        }
         return this.processors.get(engine);
     }
     

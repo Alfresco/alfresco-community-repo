@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -278,7 +279,7 @@ public class AdministrationWebService extends AbstractWebService implements
         else
         {
             // Throw an exception to indicate that the user does not exist
-            throw new RuntimeException(MessageFormat.format("The user with name {0} does not exist.", new Object[]{userName}));
+            throw new AlfrescoRuntimeException(MessageFormat.format("The user with name {0} does not exist.", new Object[]{userName}));
         }
         
         return userDetails;

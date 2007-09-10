@@ -1213,9 +1213,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Check for delete access
             
-            if ( params.hasAccessMode(AccessMode.NTDelete) &&
-                    permissionService.hasPermission(nodeRef, PermissionService.DELETE) == AccessStatus.DENIED)
-                throw new AccessDeniedException("No delete access to " + params.getFullPath());
+//            if ( params.hasAccessMode(AccessMode.NTDelete) &&
+//                    permissionService.hasPermission(nodeRef, PermissionService.DELETE) == AccessStatus.DENIED)
+//                throw new AccessDeniedException("No delete access to " + params.getFullPath());
 
             // Check if the file has a lock
             
@@ -1899,6 +1899,14 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             NodeRef targetFolderRef = getNodeForPath(tree, splitPaths[0]);
             String name = splitPaths[1];
 
+            // Check if this is a rename within the same folder
+            
+            String[] oldPaths = FileName.splitPath( oldName);
+            
+            boolean sameFolder = false;
+            if ( splitPaths[0].equalsIgnoreCase( oldPaths[0]))
+            	sameFolder = true;
+            
             // Update the state table
             
             boolean relinked = false;
@@ -1961,9 +1969,30 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             if (!relinked)
             {
-            	// Move the file/folder
+            	// Move or rename the file/folder
             	
-                cifsHelper.move(nodeToMoveRef, targetFolderRef, name);
+            	if ( sameFolder == true)
+            	{
+            		// Rename the file/folder
+            		
+            		cifsHelper.rename(nodeToMoveRef, name);
+            		
+            		// DEBUG
+            		
+            		if ( logger.isDebugEnabled())
+            			logger.debug("Renamed file: from: " + oldName + " to: " + newName);
+            	}
+            	else
+            	{
+            		// Move the file/folder
+            		
+            		cifsHelper.move(nodeToMoveRef, targetFolderRef, name);
+            		
+            		// DEBUG
+            		
+            		if ( logger.isDebugEnabled())
+            			logger.debug("Moved file: from: " + oldName + " to: " + newName);
+            	}
 
                 // Check if we renamed a file, if so then cache the rename details for a short period
                 // in case another file renamed to the old name. MS Word uses renames to move a new
@@ -2009,7 +2038,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             // DEBUG
             
             if (logger.isDebugEnabled())
-                logger.debug("Moved node: " + " from: " + oldName + " to: " + newName);
+                logger.debug("Moved node: from: " + oldName + " to: " + newName);
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {
@@ -2042,7 +2071,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Convert to a general I/O exception
             
-            throw new IOException("Rename file " + oldName);
+            throw new AccessDeniedException("Rename file " + oldName);
         }
     }
 

@@ -553,10 +553,15 @@ public class CifsHelper
 
         try
         {
+        	// remove the tempory aspects from the nodes, this will be reapplied if the new name dictates it
+            nodeService.removeAspect(tempNodeRef, ContentModel.ASPECT_TEMPORARY);
+            
             // rename temp file to the new name
             fileFolderService.rename(tempNodeRef, newName);
+            
             // rename new file to old name
             fileFolderService.rename(nodeToMoveRef, tempName);
+            this.nodeService.addAspect(nodeToMoveRef, ContentModel.ASPECT_TEMPORARY, null);
         }
         catch (org.alfresco.service.cmr.model.FileNotFoundException e)
         {
@@ -612,6 +617,36 @@ public class CifsHelper
             throw new AlfrescoRuntimeException("Move failed: \n" +
                     "   node to move: " + nodeToMoveRef + "\n" +
                     "   new parent: " + newParentNodeRef + "\n" +
+                    "   new name: " + newName,
+                    e);
+        }
+    }
+    
+    /**
+     * Rename a node
+     * 
+     * @param nodeToRenameRef Node to be renamed
+     * @param newName New name for the node
+     * @throws FileExistsException
+     */
+    public void rename(NodeRef nodeToRenameRef, String newName) throws FileExistsException
+    {
+        try
+        {
+        	// Check if the new file name is a temporary file name            
+            if ( newName.endsWith(".tmp") || newName.endsWith(".temp"))
+                nodeService.addAspect(nodeToRenameRef, ContentModel.ASPECT_TEMPORARY, null);
+            
+            fileFolderService.rename(nodeToRenameRef, newName);
+        }
+        catch (org.alfresco.service.cmr.model.FileExistsException e)
+        {
+            throw new FileExistsException(newName);
+        }
+        catch (Throwable e)
+        {
+            throw new AlfrescoRuntimeException("Rename failed: \n" +
+                    "   node to rename: " + nodeToRenameRef + "\n" +
                     "   new name: " + newName,
                     e);
         }

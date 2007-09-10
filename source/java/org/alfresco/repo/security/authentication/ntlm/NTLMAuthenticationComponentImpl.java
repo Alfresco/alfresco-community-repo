@@ -868,7 +868,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
 
                 // Wrap the service calls in a transaction
                 
-            	tx = m_transactionService.getUserTransaction( true);
+            	tx = m_transactionService.getUserTransaction( false);
             	tx.begin();
             	
                 // Map the passthru username to an Alfresco person

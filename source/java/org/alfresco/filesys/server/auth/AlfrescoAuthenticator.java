@@ -394,7 +394,7 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
     {
     	// Start a transaction
     	
-    	sess.beginReadTransaction( m_transactionService);
+    	sess.beginWriteTransaction( m_transactionService);
     	
     	// Default logon status to disallow
     	

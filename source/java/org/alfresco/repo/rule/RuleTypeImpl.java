@@ -27,9 +27,11 @@ package org.alfresco.repo.rule;
 import java.util.List;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.CommonResourceAbstractBase;
 import org.alfresco.repo.rule.ruletrigger.RuleTrigger;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
@@ -52,6 +54,11 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
 	 * The rule service
 	 */
 	private RuleService ruleService;
+	
+	/**
+	 * The node service
+	 */
+	private NodeService nodeService;
     
     /**
      * Constructor
@@ -78,6 +85,16 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
 	{
 		this.ruleService = ruleService;
 	}
+    
+    /**
+     * Set the node service
+     * 
+     * @param nodeService	the node service
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+    	this.nodeService = nodeService;
+    }
 
     /**
      * Rule type initialise method
@@ -108,7 +125,9 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
      */
 	public void triggerRuleType(NodeRef nodeRef, NodeRef actionedUponNodeRef, boolean executeRuleImmediately)
 	{
-        if (this.ruleService.isEnabled() == true)
+		if (this.ruleService.isEnabled() == true && 
+        	this.nodeService.exists(actionedUponNodeRef) == true && 
+        	this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_TEMPORARY) == false)
         {
     		if (this.ruleService.hasRules(nodeRef) == true)
             {

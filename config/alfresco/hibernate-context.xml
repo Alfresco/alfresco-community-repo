@@ -275,6 +275,9 @@
         <property name="contentStore">
             <ref bean="auditFileContentStore"/>
         </property>
+		<property name="localSessionFactory">
+          <ref bean="&amp;sessionFactory"></ref>  <!-- inject the actual factory, not a session -->
+        </property>
     </bean>
     
 </beans>

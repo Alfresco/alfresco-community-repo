@@ -19,7 +19,8 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's
  * FLOSS exception.  You should have recieved a copy of the text describing
  * the FLOSS exception, and it is also available here:
- * http://www.alfresco.com/legal/licensing" */
+ * http://www.alfresco.com/legal/licensing
+ */
 package org.alfresco.repo.avm.wf;
 
 import java.io.Serializable;
@@ -44,8 +45,9 @@ import org.alfresco.util.Pair;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
 
-public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
-        Serializable 
+public class AVMSubmitPackageHandler 
+   extends JBPMSpringActionHandler 
+   implements Serializable 
 {
     private static final long serialVersionUID = 4113360751217684995L;
 
@@ -116,8 +118,9 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
         final List<AVMDifference> stagingDiffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, targetPath, null);
         for (final AVMDifference diff : stagingDiffs)
         {
-            fAVMSubmittedAspect.clearSubmitted(diff.getSourceVersion(), diff.getSourcePath());
-            recursivelyRemoveLocks(webProject, diff.getSourceVersion(), diff.getSourcePath());
+            this.recursivelyRemoveLocksAndSubmittedAspect(webProject, 
+                                                          diff.getSourceVersion(), 
+                                                          diff.getSourcePath());
         }
         
         // Allow AVMSubmitTransactionListener to inspect the staging diffs
@@ -150,8 +153,9 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
      * Recursively remove locks from a path. Walking child folders looking for files
      * to remove locks from.
      */
-    private void recursivelyRemoveLocks(String webProject, int version, String path)
+    private void recursivelyRemoveLocksAndSubmittedAspect(final String webProject, final int version, final String path)
     {
+        fAVMSubmittedAspect.clearSubmitted(version, path);
         AVMNodeDescriptor desc = fAVMService.lookup(version, path, true);
         if (desc.isFile() || desc.isDeletedFile())
         {
@@ -159,10 +163,9 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
         }
         else
         {
-            Map<String, AVMNodeDescriptor> list = fAVMService.getDirectoryListing(version, path, true);
-            for (AVMNodeDescriptor child : list.values())
+            for (final AVMNodeDescriptor child : fAVMService.getDirectoryListingArray(version, path, true))
             {
-                recursivelyRemoveLocks(webProject, version, child.getPath());
+                this.recursivelyRemoveLocksAndSubmittedAspect(webProject, version, child.getPath());
             }
         }
     }

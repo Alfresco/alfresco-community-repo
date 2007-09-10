@@ -31,10 +31,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.webservice.AbstractWebService;
 import org.alfresco.repo.webservice.CMLUtil;
+import org.alfresco.repo.webservice.ServerQuery;
 import org.alfresco.repo.webservice.Utils;
 import org.alfresco.repo.webservice.types.CML;
 import org.alfresco.repo.webservice.types.ClassDefinition;
@@ -44,9 +44,9 @@ import org.alfresco.repo.webservice.types.NodeDefinition;
 import org.alfresco.repo.webservice.types.Predicate;
 import org.alfresco.repo.webservice.types.Query;
 import org.alfresco.repo.webservice.types.Reference;
+import org.alfresco.repo.webservice.types.ResultSet;
 import org.alfresco.repo.webservice.types.Store;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -67,22 +67,7 @@ public class RepositoryWebService extends AbstractWebService implements
 {
     private static Log logger = LogFactory.getLog(RepositoryWebService.class);
 
-    private DictionaryService dictionaryService;
-
     private CMLUtil cmlUtil;
-
-    private SimpleCache<String, QuerySession> querySessionCache;
-
-    /**
-     * Sets the instance of the DictionaryService to be used
-     * 
-     * @param dictionaryService
-     *            The DictionaryService
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
 
     /**
      * Sets the CML Util
@@ -94,18 +79,6 @@ public class RepositoryWebService extends AbstractWebService implements
         this.cmlUtil = cmlUtil;
     }
 
-    /**
-     * Sets the instance of the SimpleCache to be used
-     * 
-     * @param querySessionCache
-     *            The SimpleCache
-     */
-    public void setQuerySessionCache(
-            SimpleCache<String, QuerySession> querySessionCache)
-    {
-        this.querySessionCache = querySessionCache;
-    }
-    
     /**
      * {@inheritDoc}
      */
@@ -157,10 +130,57 @@ public class RepositoryWebService extends AbstractWebService implements
     }
 
     /**
+     * Executes the given query, caching the results as required.
+     */
+    private QueryResult executeQuery(final MessageContext msgContext, final ServerQuery<ResultSet> query) throws RepositoryFault
+    {
+        try
+        {
+            RetryingTransactionCallback<QueryResult> callback = new RetryingTransactionCallback<QueryResult>()
+            {
+                public QueryResult execute() throws Throwable
+                {
+                    // Construct a session to handle the iteration
+                    long batchSize = Utils.getBatchSize(msgContext);
+                    RepositoryQuerySession session = new RepositoryQuerySession(Long.MAX_VALUE, batchSize, query);
+                    String sessionId = session.getId();
+
+                    // Get the first batch of results
+                    ResultSet batchedResults = session.getNextResults(serviceRegistry);
+                    // Construct the result
+                    // TODO: http://issues.alfresco.com/browse/AR-1689
+                    boolean haveMoreResults = session.haveMoreResults();
+                    QueryResult queryResult = new QueryResult(
+                            haveMoreResults ? sessionId : null,
+                            batchedResults);
+
+                    // Cache the session
+                    if (session.haveMoreResults())
+                    {
+                        querySessionCache.put(sessionId, session);
+                    }
+
+                    // Done
+                    return queryResult;
+                }
+            };
+            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback, true);
+        }
+        catch (Throwable e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", e);
+            }
+            e.printStackTrace();
+            throw new RepositoryFault(0, e.toString());
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
-    public QueryResult query(final Store store, final Query query, final boolean includeMetaData)
-            throws RemoteException, RepositoryFault
+    public QueryResult query(final Store store, final Query query, final boolean includeMetaData) throws RemoteException, RepositoryFault
     {
         String language = query.getLanguage();
         if (language.equals(Utils.QUERY_LANG_LUCENE) == false)
@@ -171,131 +191,52 @@ public class RepositoryWebService extends AbstractWebService implements
         }
 
         final MessageContext msgContext = MessageContext.getCurrentContext();
-        try
-        {
-            RetryingTransactionCallback<QueryResult> callback = new RetryingTransactionCallback<QueryResult>()
-            {
-                public QueryResult execute() throws Throwable
-                {
-                    // setup a query session and get the first batch of results
-                    QuerySession querySession = new ResultSetQuerySession(Utils
-                            .getBatchSize(msgContext), store, query, includeMetaData);
-                    QueryResult queryResult = querySession
-                            .getNextResultsBatch(searchService, nodeService, namespaceService, dictionaryService);
-
-                    // add the session to the cache if there are more results to come
-                    if (queryResult.getQuerySession() != null)
-                    {
-                        // this.querySessionCache.putQuerySession(querySession);
-                        querySessionCache.put(queryResult.getQuerySession(), querySession);
-                    }
-
-                    return queryResult;
-                }
-            };
-            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
-        }
-        catch (Throwable e)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.error("Unexpected error occurred", e);
-            }
-            e.printStackTrace();
-            throw new RepositoryFault(0, e.toString());
-        }
+        SearchQuery serverQuery = new SearchQuery(store, query);
+        QueryResult queryResult = executeQuery(msgContext, serverQuery);
+        // Done
+        return queryResult;
     }
 
     /**
      * {@inheritDoc}
      */
-    public QueryResult queryChildren(final Reference node) throws RemoteException,
-            RepositoryFault
+    public QueryResult queryChildren(final Reference node) throws RemoteException, RepositoryFault
     {
-        try
-        {
-            RetryingTransactionCallback<QueryResult> callback = new RetryingTransactionCallback<QueryResult>()
-            {
-                public QueryResult execute() throws Throwable
-                {
-                    // setup a query session and get the first batch of results
-                    QuerySession querySession = new ChildrenQuerySession(Utils
-                            .getBatchSize(MessageContext.getCurrentContext()), node);
-                    QueryResult queryResult = querySession
-                            .getNextResultsBatch(searchService, nodeService, namespaceService, dictionaryService);
-
-                    // add the session to the cache if there are more results to come
-                    if (queryResult.getQuerySession() != null)
-                    {
-                        querySessionCache.put(queryResult.getQuerySession(), querySession);
-                    }
-                    
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Method end ... queryChildren");
-                    }
-
-                    return queryResult;
-                }
-            };
-            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
-        }
-        catch (Throwable e)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.error("Unexpected error occurred", e);
-            }
-            e.printStackTrace();
-            throw new RepositoryFault(0, e.toString());
-        }
+        final MessageContext msgContext = MessageContext.getCurrentContext();
+        ChildAssociationQuery query = new ChildAssociationQuery(node);
+        QueryResult queryResult = executeQuery(msgContext, query);
+        // Done
+        return queryResult;
     }
-
+    
     /**
      * {@inheritDoc}
      */
     public QueryResult queryParents(final Reference node) throws RemoteException, RepositoryFault
     {
-        try
-        {
-            RetryingTransactionCallback<QueryResult> callback = new RetryingTransactionCallback<QueryResult>()
-            {
-                public QueryResult execute() throws Throwable
-                {
-                    // setup a query session and get the first batch of results
-                    QuerySession querySession = new ParentsQuerySession(Utils
-                            .getBatchSize(MessageContext.getCurrentContext()), node);
-                    QueryResult queryResult = querySession.getNextResultsBatch(
-                            searchService, nodeService, namespaceService, dictionaryService);
-
-                    // add the session to the cache if there are more results to come
-                    if (queryResult.getQuerySession() != null)
-                    {
-                        // this.querySessionCache.putQuerySession(querySession);
-                        querySessionCache.put(queryResult.getQuerySession(), querySession);
-                    }
-
-                    return queryResult;
-                }
-            };
-            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
-
-        }
-        catch (Throwable e)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.error("Unexpected error occurred", e);
-            }
-            throw new RepositoryFault(0, e.toString());
-        }
+        final MessageContext msgContext = MessageContext.getCurrentContext();
+        ParentAssociationQuery query = new ParentAssociationQuery(node);
+        QueryResult queryResult = executeQuery(msgContext, query);
+        // Done
+        return queryResult;
     }
 
     /**
      * {@inheritDoc}
      */
-    public QueryResult queryAssociated(final Reference node, final Association association)
-            throws RemoteException, RepositoryFault
+    public QueryResult queryAssociated(final Reference node, final Association association) throws RemoteException, RepositoryFault
+    {
+        final MessageContext msgContext = MessageContext.getCurrentContext();
+        AssociationQuery query = new AssociationQuery(node, association);
+        QueryResult queryResult = executeQuery(msgContext, query);
+        // Done
+        return queryResult;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public QueryResult fetchMore(final String querySessionId) throws RemoteException, RepositoryFault
     {
         try
         {
@@ -303,76 +244,54 @@ public class RepositoryWebService extends AbstractWebService implements
             {
                 public QueryResult execute() throws Throwable
                 {
-                    // setup a query session and get the first batch of results
-                    QuerySession querySession = new AssociatedQuerySession(Utils.getBatchSize(MessageContext.getCurrentContext()), node, association);
-                    QueryResult queryResult = querySession.getNextResultsBatch(searchService, nodeService, namespaceService, dictionaryService);
-
-                    // add the session to the cache if there are more results to come
-                    if (queryResult.getQuerySession() != null)
+                    RepositoryQuerySession session = null;
+                    try
                     {
-                        // this.querySessionCache.putQuerySession(querySession);
-                        querySessionCache.put(queryResult.getQuerySession(), querySession);
+                        // try and get the QuerySession with the given id from the cache
+                        session = (RepositoryQuerySession) querySessionCache.get(querySessionId);
                     }
-
-                    return queryResult;
-                }
-            };
-            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
-        } 
-        catch (Throwable e)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.error("Unexpected error occurred", e);
-            }
-            throw new RepositoryFault(0, e.toString());
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public QueryResult fetchMore(final String querySession) throws RemoteException, RepositoryFault
-    {
-        try
-        {
-            RetryingTransactionCallback<QueryResult> callback = new RetryingTransactionCallback<QueryResult>()
-            {
-                public QueryResult execute() throws Throwable
-                {
-                    // try and get the QuerySession with the given id from the cache
-                    QuerySession session = querySessionCache.get(querySession);
+                    catch (ClassCastException e)
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Query session was not generated by the RepositoryWebService: " + querySessionId);
+                        }
+                        throw new RepositoryFault(
+                                4,
+                                "querySession with id '" + querySessionId + "' is invalid");
+                    }
 
                     if (session == null)
                     {
                         if (logger.isDebugEnabled())
                         {
-                            logger.debug("Invalid querySession id requested: " + querySession);
+                            logger.debug("Invalid querySession id requested: " + querySessionId);
                         }
-
                         throw new RepositoryFault(
                                 4,
-                                "querySession with id '" + querySession + "' is invalid");
+                                "querySession with id '" + querySessionId + "' is invalid");
+                    }
+
+                    ResultSet moreResults = session.getNextResults(serviceRegistry);
+                    
+                    // Drop the cache results if there are no more results expected
+                    if (!session.haveMoreResults())
+                    {
+                        querySessionCache.remove(querySessionId);
                     }
 
                     // get the next batch of results
-                    QueryResult queryResult = session.getNextResultsBatch(
-                            searchService,
-                            nodeService,
-                            namespaceService,
-                            dictionaryService);
+                    // TODO: http://issues.alfresco.com/browse/AR-1689
+                    boolean haveMoreResults = session.haveMoreResults();
+                    QueryResult queryResult = new QueryResult(
+                            haveMoreResults ? querySessionId : null,
+                            moreResults);
 
-                    // remove the QuerySession from the cache if there are no more
-                    // results to come
-                    if (queryResult.getQuerySession() == null)
-                    {
-                        querySessionCache.remove(querySession);
-                    }
-
+                    // Done
                     return queryResult;
                 }
             };
-            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
+            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback, true);
         }
         catch (Throwable e)
         {

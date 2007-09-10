@@ -79,6 +79,8 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  */
 public class Utils
 {
+    /** Default batch size for query results - 1000 */
+    public static final int DEFAULT_BATCH_SIZE = 1000;
     public static final String REPOSITORY_SERVICE_NAMESPACE = "http://www.alfresco.org/ws/service/repository/1.0";
     
     /** Get the logger for this class */
@@ -384,8 +386,7 @@ public class Utils
                 }
 
                 NodeRef rootNodeRef = nodeService.getRootNode(convertToStoreRef(store));
-                List<NodeRef> nodes = searchService.selectNodes(rootNodeRef, path,
-                                null, namespaceService, false);
+                List<NodeRef> nodes = searchService.selectNodes(rootNodeRef, path, null, namespaceService, false);
 
                  // make sure we only have one result
                 if (nodes.size() != 1)
@@ -589,7 +590,7 @@ public class Utils
      */
     public static int getBatchSize(MessageContext msgContext)
     {
-        int batchSize = -1;
+        int batchSize = DEFAULT_BATCH_SIZE;
 
         Integer batchConfigSize = (Integer) MessageContext.getCurrentContext()
                 .getProperty(QueryConfigHandler.ALF_FETCH_SIZE);

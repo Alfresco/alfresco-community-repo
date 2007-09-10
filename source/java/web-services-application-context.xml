@@ -10,28 +10,6 @@
       </property>
    </bean>
    
-   <!-- Cache to use to store QuerySession instances -->
-   <bean id="querySessionCache" class="org.alfresco.repo.cache.EhCacheAdapter">
-      <property name="cache">
-         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
-            <property name="cacheName">
-               <value>webservice.QuerySessionCache</value>
-            </property>
-         </bean>
-      </property>
-   </bean>
-   
-   <!-- Cache to used to store UserQueryResults instances -->
-   <bean id="userQuerySessionCache" class="org.alfresco.repo.cache.EhCacheAdapter">
-      <property name="cache">
-         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
-            <property name="cacheName">
-               <value>webservice.UserQuerySessionCache</value>
-            </property>
-         </bean>
-      </property>
-   </bean>
-   
    <!-- CLM Util bean -->
    <bean id="CMLUtil" class="org.alfresco.repo.webservice.CMLUtil">
       <property name="nodeService">
@@ -63,6 +41,9 @@
    </bean>
    
    <bean id="repositoryWebService" class="org.alfresco.repo.webservice.repository.RepositoryWebService">
+      <property name="serviceRegistry">
+         <ref bean="ServiceRegistry"/>
+      </property>
       <property name="nodeService">
          <ref bean="NodeService"/>
       </property>
@@ -79,7 +60,7 @@
          <ref bean="DictionaryService"/>
       </property>
       <property name="querySessionCache">
-         <ref bean="querySessionCache"/>
+         <ref bean="webServicesQuerySessionCache"/>
       </property>
       <property name="cmlUtil">
          <ref bean="CMLUtil"/>
@@ -210,6 +191,9 @@
    </bean>
    
    <bean id="administrationWebService" class="org.alfresco.repo.webservice.administration.AdministrationWebService">
+      <property name="serviceRegistry">
+         <ref bean="ServiceRegistry"/>
+      </property>
       <property name="nodeService">
          <ref bean="NodeService"/>
       </property>
@@ -229,7 +213,7 @@
          <ref bean="PersonService"/>
       </property>
       <property name="querySessionCache">
-         <ref bean="userQuerySessionCache"/>
+         <ref bean="webServicesQuerySessionCache"/>
       </property>
    </bean>
  

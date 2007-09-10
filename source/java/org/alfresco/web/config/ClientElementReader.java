@@ -61,6 +61,8 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_GUESTCONFIG = "allow-guest-config";
    public static final String ELEMENT_SIMPLESEARCHADDITIONALATTRS = "simple-search-additional-attributes";
    public static final String ELEMENT_SIMPLESEARCHADDITIONALATTRSQNAME = "qname";
+   public static final String ELEMENT_MINUSERNAMELENGTH = "username-min-length";
+   public static final String ELEMENT_MINPASSWORDLENGTH = "password-min-length";
    
    /**
     * @see org.alfresco.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
@@ -227,6 +229,20 @@ public class ClientElementReader implements ConfigElementReader
                }
                configElement.setSimpleSearchAdditionalAttributes(simpleSearchAddtlAttrb);
             }
+         }
+         
+         // get the minimum length of usernames
+         Element minUsername = element.element(ELEMENT_MINUSERNAMELENGTH);
+         if (minUsername != null)
+         {
+            configElement.setMinUsernameLength(Integer.parseInt(minUsername.getTextTrim()));
+         }
+         
+         // get the minimum length of passwords
+         Element minPassword = element.element(ELEMENT_MINPASSWORDLENGTH);
+         if (minPassword != null)
+         {
+            configElement.setMinPasswordLength(Integer.parseInt(minPassword.getTextTrim()));
          }
       }
       

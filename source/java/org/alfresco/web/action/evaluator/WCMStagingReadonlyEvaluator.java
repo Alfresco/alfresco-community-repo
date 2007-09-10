@@ -20,47 +20,28 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.web.action.evaluator;
 
-import javax.faces.context.FacesContext;
-
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.util.Pair;
+import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.bean.wcm.AVMUtil;
 
 /**
- * UI Action Evaluator - return true if the node is not part of an in-progress WCM workflow.
+ * Evaluator to return if a item path is not within a staging area sandbox.
  * 
  * @author Kevin Roast
  */
-public class WCMWorkflowEvaluator extends WCMLockEvaluator
+public class WCMStagingReadonlyEvaluator implements ActionEvaluator
 {
    /**
-    * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
+    * @return true if the item is not locked by another user
     */
    public boolean evaluate(final Node node)
    {
-      boolean proceed = false;
-      if (super.evaluate(node))
-      {
-          final FacesContext facesContext = FacesContext.getCurrentInstance();
-          final AVMService avmService = Repository.getServiceRegistry(facesContext).getAVMService();
-          
-          final Pair<Integer, String> p = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef());
-          final String path = p.getSecond();
-          
-          // evaluate to true if we are not deleted and within a workflow store (i.e. list of resources
-          // in the task dialog) or not part of an already in-progress workflow
-          proceed = ((AVMUtil.isWorkflowStore(AVMUtil.getStoreName(path)) ||
-                      !((AVMNode)node).isWorkflowInFlight()) &&
-                      avmService.lookup(p.getFirst(), path) != null);
-      }
-      return proceed;
+      String path = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef()).getSecond();
+      return !AVMUtil.isMainStore(AVMUtil.getStoreName(path));
    }
 }

@@ -81,6 +81,10 @@
          <!-- to the clipboard and whether the paste all action also clears the clipboard -->
          <clipboard-status-visible>true</clipboard-status-visible>
          <paste-all-and-clear>true</paste-all-and-clear>
+         
+         <!-- minimum length for username and password -->
+         <username-min-length>2</username-min-length>
+         <password-min-length>3</password-min-length>
       </client>
    </config>
 

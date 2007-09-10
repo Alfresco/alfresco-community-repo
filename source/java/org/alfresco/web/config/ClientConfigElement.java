@@ -72,6 +72,8 @@ public class ClientConfigElement extends ConfigElementAdapter
    private boolean pasteAllAndClear = true;
    private boolean allowGuestConfig = false;
    private List<QName> simpleSearchAdditionalAttributes = null;
+   private int minUsernameLength = 2;
+   private int minPasswordLength = 3;
    
    /**
     * Default Constructor
@@ -212,6 +214,16 @@ public class ClientConfigElement extends ConfigElementAdapter
           newElement.getSimpleSearchAdditionalAttributes().equals(combinedElement.getSimpleSearchAdditionalAttributes()) == false)
       {
          combinedElement.setSimpleSearchAdditionalAttributes(newElement.getSimpleSearchAdditionalAttributes());
+      }
+      
+      if (newElement.getMinUsernameLength() != combinedElement.getMinUsernameLength())
+      {
+         combinedElement.setMinUsernameLength(newElement.getMinUsernameLength());
+      }
+      
+      if (newElement.getMinPasswordLength() != combinedElement.getMinPasswordLength())
+      {
+         combinedElement.setMinPasswordLength(newElement.getMinPasswordLength());
       }
       
       return combinedElement;
@@ -572,5 +584,37 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setSimpleSearchAdditionalAttributes(List<QName> simpleSearchAdditionalAttributes)
    {
       this.simpleSearchAdditionalAttributes = simpleSearchAdditionalAttributes;
+   }
+   
+   /**
+    * @return Returns the minimum length for a username.
+    */
+   public int getMinUsernameLength()
+   {
+      return this.minUsernameLength;
+   }
+
+   /**
+    * @param minUsernameLength The minimum length of a username
+    */
+   /*package*/ void setMinUsernameLength(int minUsernameLength)
+   {
+      this.minUsernameLength = minUsernameLength;
+   }
+   
+   /**
+    * @return Returns the minimum length for a password.
+    */
+   public int getMinPasswordLength()
+   {
+      return this.minPasswordLength;
+   }
+
+   /**
+    * @param minPasswordLength The minimum length of a password
+    */
+   /*package*/ void setMinPasswordLength(int minPasswordLength)
+   {
+      this.minPasswordLength = minPasswordLength;
    }
 }

@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
@@ -90,28 +91,31 @@ public class RevertSelectedDialog extends BaseDialogBean
    {
       List<AVMNodeDescriptor> selected = this.avmBrowseBean.getSelectedSandboxItems();
       List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
-
-
+      
+      List<WorkflowTask> tasks = null;
       for (AVMNodeDescriptor node : selected)
       {
-         String revertPath = node.getPath();
-         versionPaths.add(new Pair<Integer, String>(-1, revertPath ));
-
-         if ( (this.virtUpdatePath == null) &&
-               VirtServerUtils.requiresUpdateNotification(revertPath)
-            )
+         if (tasks == null)
          {
-             this.virtUpdatePath = revertPath;
+            tasks = AVMWorkflowUtil.getAssociatedTasksForSandbox(AVMUtil.getStoreName(node.getPath()));
+         }
+         if (AVMWorkflowUtil.getAssociatedTasksForNode(node, tasks).size() == 0)
+         {
+            String revertPath = node.getPath();
+            versionPaths.add(new Pair<Integer, String>(-1, revertPath));
+            
+            if ( (this.virtUpdatePath == null) &&
+                  VirtServerUtils.requiresUpdateNotification(revertPath) )
+            {
+                this.virtUpdatePath = revertPath;
+            }
          }
       }
-
+      
       Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
       args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
-      for (AVMNodeDescriptor node : selected)
-      {
-         Action action = this.actionService.createAction(AVMUndoSandboxListAction.NAME, args);
-         this.actionService.executeAction(action, AVMNodeConverter.ToNodeRef(-1, node.getPath()));
-      }
+      Action action = this.actionService.createAction(AVMUndoSandboxListAction.NAME, args);
+      this.actionService.executeAction(action, null);    // dummy action ref, list passed as action arg
       
       String msg = MessageFormat.format(Application.getMessage(
                   context, MSG_REVERTSELECTED_SUCCESS), this.avmBrowseBean.getUsername());

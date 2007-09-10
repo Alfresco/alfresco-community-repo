@@ -407,6 +407,7 @@ public class SubmitDialog extends BaseDialogBean
       String stagingPath = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getStagingStore());
       List<AVMDifference> diffs = new ArrayList<AVMDifference>(items.size());
 
+      String storeId = this.avmBrowseBean.getWebProject().getStoreId();
       for (ItemWrapper wrapper : items)
       {
          String srcPath = sandboxPath + wrapper.getPath();
@@ -415,7 +416,7 @@ public class SubmitDialog extends BaseDialogBean
          diffs.add(diff);
          
          // recursively remove locks from this item
-         recursivelyRemoveLocks(this.avmBrowseBean.getWebProject().getStoreId(), -1, srcPath);
+         recursivelyRemoveLocks(storeId, -1, srcPath);
          
          // If nothing has required notifying the virtualization server
          // so far, check to see if destPath forces a notification
@@ -481,11 +482,11 @@ public class SubmitDialog extends BaseDialogBean
             // server that it exists because it's useful to 
             // defer this operation until everything is already
             // in place; this allows pointlessly fine-grained
-            //  notifications to be suppressed (they're expensive).
+            // notifications to be suppressed (they're expensive).
             //
             // Therefore, just derive the name of the webapp
             // in the workflow sandbox from the 1st item in 
-            // the submiot list (even if it's not in WEB-INF), 
+            // the submit list (even if it's not in WEB-INF), 
             // and force the virt server notification after the
             // transaction has completed via doPostCommitProcessing.
             if (this.virtUpdatePath  == null)

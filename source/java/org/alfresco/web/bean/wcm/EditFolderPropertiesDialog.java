@@ -41,10 +41,13 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.spaces.EditSpaceDialog;
 import org.alfresco.web.ui.common.component.UIListItem;
 
@@ -145,10 +148,15 @@ public class EditFolderPropertiesDialog extends EditSpaceDialog
       }
 
       // Translate to what AVMService wants to take.
+      DictionaryService dd = Repository.getServiceRegistry(context).getDictionaryService();
       Map<QName, PropertyValue> avmProps = new HashMap<QName, PropertyValue>();
       for (Map.Entry<QName, Serializable> entry : repoProps.entrySet())
       {
-         avmProps.put(entry.getKey(), new PropertyValue(entry.getKey(), entry.getValue()));
+         PropertyDefinition propDef = dd.getProperty(entry.getKey());
+         if (propDef != null)
+         {
+             avmProps.put(entry.getKey(), new PropertyValue(propDef.getDataType().getName(), entry.getValue()));
+         }
       }
 
       // send the properties back to the repository

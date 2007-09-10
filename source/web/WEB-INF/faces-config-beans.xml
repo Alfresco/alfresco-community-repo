@@ -2632,6 +2632,10 @@
          <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
+         <property-name>avmLockingService</property-name>
+         <value>#{AVMLockingService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>avmSyncService</property-name>
          <value>#{AVMSyncService}</value>
       </managed-property>
@@ -2687,6 +2691,10 @@
       <managed-property>
          <property-name>avmService</property-name>
          <value>#{AVMLockingAwareService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmLockingService</property-name>
+         <value>#{AVMLockingService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmSyncService</property-name>
@@ -3480,6 +3488,10 @@
       <managed-bean-name>RevertAllDialog</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.wcm.RevertAllDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMLockingAwareService}</value>
+      </managed-property>
       <managed-property>
          <property-name>avmBrowseBean</property-name>
          <value>#{AVMBrowseBean}</value>

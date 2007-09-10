@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 import org.alfresco.util.VirtServerUtils;
@@ -58,6 +59,7 @@ public class RevertAllDialog extends BaseDialogBean
    private static final String MSG_REVERTALL_SUCCESS = "revertall_success";
    
    protected AVMBrowseBean avmBrowseBean;
+   protected AVMService avmService;
    protected AVMSyncService avmSyncService;
    protected ActionService actionService;
    protected NameMatcher nameMatcher;
@@ -69,6 +71,14 @@ public class RevertAllDialog extends BaseDialogBean
    private String virtUpdatePath;     
 
    
+   /**
+    * @param avmService the avmService to set
+    */
+   public void setAvmService(AVMService avmService)
+   {
+      this.avmService = avmService;
+   }
+
    /**
     * @param avmBrowseBean    The AVM BrowseBean to set
     */
@@ -118,23 +128,31 @@ public class RevertAllDialog extends BaseDialogBean
 
       List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
 
+      List<WorkflowTask> tasks = null;
       for (AVMDifference diff : diffs)
       {
-         String revertPath =  diff.getSourcePath();
-         versionPaths.add(new Pair<Integer, String>(-1, revertPath) );
-
-         if ( (this.virtUpdatePath == null) &&
-               VirtServerUtils.requiresUpdateNotification(revertPath)
-            )
+         AVMNodeDescriptor node = avmService.lookup(-1, diff.getSourcePath(), true);
+         if (tasks == null)
          {
-             this.virtUpdatePath = revertPath;
+            tasks = AVMWorkflowUtil.getAssociatedTasksForSandbox(AVMUtil.getStoreName(diff.getSourcePath()));
+         }
+         if (AVMWorkflowUtil.getAssociatedTasksForNode(node, tasks).size() == 0)
+         {
+            String revertPath =  diff.getSourcePath();
+            versionPaths.add(new Pair<Integer, String>(-1, revertPath) );
+   
+            if ( (this.virtUpdatePath == null) &&
+                  VirtServerUtils.requiresUpdateNotification(revertPath) )
+            {
+                this.virtUpdatePath = revertPath;
+            }
          }
       }
 
       Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
       args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
       Action action = this.actionService.createAction(AVMUndoSandboxListAction.NAME, args);
-      this.actionService.executeAction(action, null); // dummy action ref
+      this.actionService.executeAction(action, null); // dummy action ref, list passed as action arg
       
       String msg = MessageFormat.format(Application.getMessage(
             context, MSG_REVERTALL_SUCCESS), this.avmBrowseBean.getUsername());

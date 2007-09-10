@@ -184,11 +184,13 @@ public class LoginBean
    public void validatePassword(FacesContext context, UIComponent component, Object value)
          throws ValidatorException
    {
+      int minPasswordLength = Application.getClientConfig(context).getMinPasswordLength();
+      
       String pass = (String) value;
-      if (pass.length() < 3 || pass.length() > 32)
+      if (pass.length() < minPasswordLength || pass.length() > 32)
       {
          String err = MessageFormat.format(Application.getMessage(context, MSG_PASSWORD_LENGTH),
-               new Object[]{3, 32});
+               new Object[]{minPasswordLength, 32});
          throw new ValidatorException(new FacesMessage(err));
       }
    }
@@ -199,13 +201,15 @@ public class LoginBean
    public void validateUsername(FacesContext context, UIComponent component, Object value)
          throws ValidatorException
    {
+      int minUsernameLength = Application.getClientConfig(context).getMinUsernameLength();
+         
       String name = (String) value;
       name = name.trim();
 
-      if (name.length() < 2 || name.length() > 256)
+      if (name.length() < minUsernameLength || name.length() > 256)
       {
          String err = MessageFormat.format(Application.getMessage(context, MSG_USERNAME_LENGTH),
-               new Object[]{2, 256});
+               new Object[]{minUsernameLength, 256});
          throw new ValidatorException(new FacesMessage(err));
       }
       if (name.indexOf('\'') != -1 || name.indexOf('"') != -1 || name.indexOf('\\') != -1)

@@ -127,6 +127,7 @@
             <permissions>
                <permission allow="true">CreateChildren</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMStagingReadonlyEvaluator</evaluator>
             <label-id>sandbox_create</label-id>
             <image>/images/icons/new_content.gif</image>
             <action>wizard:createWebContent</action>
@@ -137,6 +138,7 @@
             <permissions>
                <permission allow="true">CreateChildren</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMStagingReadonlyEvaluator</evaluator>
             <label-id>create_folder</label-id>
             <image>/images/icons/create_space.gif</image>
             <action>dialog:createAvmFolder</action>
@@ -157,6 +159,7 @@
             <permissions>
                <permission allow="true">CreateChildren</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMStagingReadonlyEvaluator</evaluator>
             <label-id>add_content</label-id>
             <image>/images/icons/add.gif</image>
             <action>addAvmContent</action>
@@ -168,6 +171,7 @@
             <permissions>
                <permission allow="true">CreateChildren</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMStagingReadonlyEvaluator</evaluator>
             <label-id>import_website_content</label-id>
             <image>/images/icons/import_website.gif</image>
             <action>dialog:importContent</action>
@@ -304,22 +308,22 @@
             <action idref="edit_file" />
             <action idref="update_file" />
             <action idref="submit" />
-            <action idref="revert" />
             <action idref="preview_file" />
             <action idref="copy_avm_node" />
             <action idref="file_details" />
             <action idref="delete_file" />
+            <action idref="revert" />
          </action-group>
          
          <!-- Actions for a folder in Modified Files list -->
          <action-group id="avm_folder_modified">
             <show-link>false</show-link>
             <action idref="submit" />
-            <action idref="revert" />
             <action idref="preview_folder" />
             <action idref="copy_avm_node" />
             <action idref="folder_details" />
             <action idref="delete_folder" />
+            <action idref="revert" />
          </action-group>
          
          <!-- Actions for a deleted node in Modified Files list -->

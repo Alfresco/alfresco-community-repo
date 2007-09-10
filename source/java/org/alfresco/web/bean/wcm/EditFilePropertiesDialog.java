@@ -37,6 +37,7 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -159,10 +160,15 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
       }
       
       // Translate to what AVMService wants to take.
+      DictionaryService dd = Repository.getServiceRegistry(context).getDictionaryService();
       Map<QName, PropertyValue> avmProps = new HashMap<QName, PropertyValue>();
       for (Map.Entry<QName, Serializable> entry : repoProps.entrySet())
       {
-         avmProps.put(entry.getKey(), new PropertyValue(entry.getKey(), entry.getValue()));
+         PropertyDefinition propDef = dd.getProperty(entry.getKey());
+         if (propDef != null)
+         {
+             avmProps.put(entry.getKey(), new PropertyValue(propDef.getDataType().getName(), entry.getValue()));
+         }
       }
       // send the properties back to the repository
       this.avmService.setNodeProperties(AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond(), avmProps);

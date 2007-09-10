@@ -151,7 +151,7 @@
                               <h:panelGroup id="props-panel-facets">
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{FileDetailsBean.document}" allow="Write">
-                                       <r:actionInstanceEvaluator value="#{FileDetailsBean.document}" evaluatorClassName="org.alfresco.web.action.evaluator.WCMWorkflowEvaluator">
+                                       <r:actionInstanceEvaluator value="#{FileDetailsBean.avmNode}" evaluatorClassName="org.alfresco.web.action.evaluator.WCMWorkflowEvaluator">
                                           <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/Change_details.gif" action="dialog:editAvmFileProperties" />
                                        </r:actionInstanceEvaluator>
                                     </r:permissionEvaluator>

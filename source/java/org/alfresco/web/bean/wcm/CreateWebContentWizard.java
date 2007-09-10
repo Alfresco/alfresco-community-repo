@@ -52,6 +52,7 @@ import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -105,6 +106,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected boolean formSelectDisabled = false;
    protected boolean startWorkflow = false;
 
+   protected AVMLockingService avmLockingService;
    protected AVMService avmService;
    protected AVMSyncService avmSyncService;
    protected AVMBrowseBean avmBrowseBean;
@@ -114,9 +116,17 @@ public class CreateWebContentWizard extends BaseContentWizard
    /**
     * @param avmService       The AVMService to set.
     */
-   public void setAvmService(AVMService avmService)
+   public void setAvmService(final AVMService avmService)
    {
       this.avmService = avmService;
+   }
+
+   /**
+    * @param avmLockingService The AVMLockingService to set.
+    */
+   public void setAvmLockingService(final AVMLockingService avmLockingService)
+   {
+      this.avmLockingService = avmLockingService;
    }
 
    /**
@@ -130,7 +140,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    /**
     * @param avmBrowseBean    The AVMBrowseBean to set.
     */
-   public void setAvmBrowseBean(AVMBrowseBean avmBrowseBean)
+   public void setAvmBrowseBean(final AVMBrowseBean avmBrowseBean)
    {
       this.avmBrowseBean = avmBrowseBean;
    }
@@ -299,13 +309,30 @@ public class CreateWebContentWizard extends BaseContentWizard
 
       if (LOGGER.isDebugEnabled())
       {
-         for (AVMDifference diff : diffList)
+         for (final AVMDifference diff : diffList)
          {
             LOGGER.debug("updating main store with " + diff.getSourcePath());
          }
       }
       this.avmSyncService.update(diffList, null, true, true, true, true, null, null);
-
+      for (final AVMDifference diff : diffList)
+      {
+         final String path = diff.getDestinationPath();
+         if (LOGGER.isDebugEnabled())
+         {
+            LOGGER.debug("modifying lock on " + path + 
+                         ".  chaging store from " + 
+                         this.avmLockingService.getLock(AVMUtil.getStoreId(path), 
+                                                        AVMUtil.getStoreRelativePath(path)).getStore() +
+                         " to " + AVMUtil.getStoreName(path));
+         }
+         this.avmLockingService.modifyLock(AVMUtil.getStoreId(path), 
+                                           AVMUtil.getStoreRelativePath(path),
+                                           null,
+                                           AVMUtil.getStoreName(path),
+                                           null,
+                                           null);
+      }
       if (this.startWorkflow)
       {
          final List<AVMNodeDescriptor> submitNodes = 

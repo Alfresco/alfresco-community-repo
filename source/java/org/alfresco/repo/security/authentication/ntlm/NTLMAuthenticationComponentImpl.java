@@ -507,7 +507,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * @param password char[]
      * @throws AuthenticationException
      */     
-    public void authenticate(String userName, char[] password) throws AuthenticationException
+    protected void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
         // Debug
         

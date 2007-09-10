@@ -62,7 +62,7 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
     /**
      * Implement the authentication method
      */
-    public void authenticate(String userName, char[] password) throws AuthenticationException
+    protected void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
         InitialDirContext ctx = null;
         try

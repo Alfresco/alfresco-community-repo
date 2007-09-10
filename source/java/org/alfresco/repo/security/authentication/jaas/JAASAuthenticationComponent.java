@@ -126,7 +126,7 @@ public class JAASAuthenticationComponent extends AbstractAuthenticationComponent
     /**
      * Implement Authentication
      */
-    public void authenticate(String userName, char[] password) throws AuthenticationException
+    protected void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
 
         LoginContext lc;

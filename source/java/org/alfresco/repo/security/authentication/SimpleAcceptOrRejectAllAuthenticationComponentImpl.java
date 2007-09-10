@@ -51,7 +51,7 @@ public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends Abstract
         this.accept = accept;
     }
     
-    public void authenticate(String userName, char[] password) throws AuthenticationException
+    public void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
         if(accept)
         {

@@ -24,10 +24,10 @@
  */
 package org.alfresco.repo.domain;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -516,11 +516,15 @@ public class PropertyValue implements Cloneable, Serializable
         }
         else
         {
-            // Convert the value to the type required.  This ensures that any type conversion issues
-            // are caught early and prevent the scenario where the data in the DB cannot be given
-            // back out because it is unconvertable.
-            ValueType valueType = makeValueType(typeQName);
-            value = valueType.convert(value);
+            // Does the client consider the type to be important?
+            if (typeQName != null)
+            {
+                // Convert the value to the type required.  This ensures that any type conversion issues
+                // are caught early and prevent the scenario where the data in the DB cannot be given
+                // back out because it is unconvertable.
+                ValueType valueType = makeValueType(typeQName);
+                value = valueType.convert(value);
+            }
             // get the persisted type
             ValueType persistedValueType = this.actualType.getPersistedType(value);
             // convert to the persistent type
@@ -705,26 +709,40 @@ public class PropertyValue implements Cloneable, Serializable
      */
     private Serializable cloneSerializable(Serializable original)
     {
+       ObjectOutputStream objectOut = null;
+       ByteArrayOutputStream byteOut = null;
+       ObjectInputStream objectIn = null;
         try
         {
-            // Connect the pipes
-            PipedOutputStream pipeOut = new PipedOutputStream();
-            PipedInputStream pipeIn = new PipedInputStream();
-            pipeOut.connect(pipeIn);
+           // Write the object out to a byte array
+           byteOut = new ByteArrayOutputStream();
+           objectOut = new ObjectOutputStream(byteOut);
+           objectOut.writeObject(original);
+           objectOut.flush();
 
-            ObjectOutputStream objectOut = new ObjectOutputStream(pipeOut);
-            ObjectInputStream objectIn = new ObjectInputStream(pipeIn);
-            
-            // Now write the object
-            objectOut.writeObject(original);
-            // Read the new object in
-            Object newObj = objectIn.readObject();
-            // Done
-            return (Serializable) newObj;
+           objectIn = new ObjectInputStream(new ByteArrayInputStream(byteOut.toByteArray()));
+           Object target = objectIn.readObject();
+           // Done
+           return (Serializable) target;
         }
         catch (Throwable e)
         {
             throw new AlfrescoRuntimeException("Failed to clone serializable object: " + original, e);
+        }
+        finally
+        {
+           if (objectOut != null)
+           {
+              try { objectOut.close(); } catch (Throwable e) {}
+           }
+           if (byteOut != null)
+           {
+              try { byteOut.close(); } catch (Throwable e) {}
+           }
+           if (objectIn != null)
+           {
+              try { objectIn.close(); } catch (Throwable e) {}
+           }
         }
     }
 

@@ -234,6 +234,11 @@ public class AuthenticationTest extends TestCase
         }
     }
 
+    public void testGuest()
+    {
+        authenticationService.authenticate("GUEST", "".toCharArray());
+    }
+    
     public void testCreateUsers()
     {
         authenticationService.createAuthentication("GUEST", "".toCharArray());

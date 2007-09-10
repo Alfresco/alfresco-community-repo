@@ -65,7 +65,7 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
     /**
      * Authenticate
      */
-    public void authenticate(String userName, char[] password) throws AuthenticationException
+    protected void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
         try
         {

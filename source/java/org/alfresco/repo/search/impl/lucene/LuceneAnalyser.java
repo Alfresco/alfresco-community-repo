@@ -262,7 +262,7 @@ public class LuceneAnalyser extends Analyzer
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
             if (propertyDef != null)
             {
-                if (propertyDef.getDataType().equals(DataTypeDefinition.MLTEXT))
+                if (propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
                 {
                     return 1000;
                 }

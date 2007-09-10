@@ -72,6 +72,7 @@ import org.alfresco.service.cmr.avm.deploy.DeploymentReport;
 import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncException;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.remote.RepoRemote;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -111,10 +112,10 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             fService.setStoreProperty("main", QName.createQName(null, ".dns.main"), 
-                    new PropertyValue(QName.createQName(null, "silly"), "Nothing."));
+                    new PropertyValue(DataTypeDefinition.TEXT, "Nothing."));
             fService.createStore("test");
             fService.setStoreProperty("test", QName.createQName(null, ".dns.test.main"), 
-                    new PropertyValue(QName.createQName(null, "silly"), "Nothing."));
+                    new PropertyValue(DataTypeDefinition.TEXT, "Nothing."));
             setupBasicTree0();
             authService.authenticateAsGuest();
             // assertEquals(0, fLockingService.getUsersLocks("admin").size());
@@ -195,7 +196,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             results.close();
             
             QName name = QName.createQName("silly.uri", "SillyProperty");
-            PropertyValue value = new PropertyValue(name, "Silly Property Value");
+            PropertyValue value = new PropertyValue(DataTypeDefinition.TEXT, "Silly Property Value");
             fService.setNodeProperty("main:/a/b/c/foo", name, value);
             fService.createSnapshot("main", null, null);
             results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}SillyProperty")+":\"Silly\"");
@@ -5162,7 +5163,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             QName name = QName.createQName("silly.uri", "SillyProperty");
-            PropertyValue value = new PropertyValue(name, "Silly Property Value");
+            PropertyValue value = new PropertyValue(DataTypeDefinition.TEXT, "Silly Property Value");
             fService.setStoreProperty("main", name, value);
             PropertyValue found = fService.getStoreProperty("main", name);
             assertEquals(value.toString(), found.toString());

@@ -34,8 +34,7 @@ import net.sf.acegisecurity.providers.encoding.BaseDigestPasswordEncoder;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-
-import cryptix.jce.provider.CryptixCrypto;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 /**
  * <p>
@@ -62,7 +61,7 @@ public class MD4PasswordEncoderImpl extends BaseDigestPasswordEncoder implements
         }
         catch (NoSuchAlgorithmException e)
         {
-            Security.addProvider(new CryptixCrypto());
+            Security.addProvider(new BouncyCastleProvider());
         }
     }
 

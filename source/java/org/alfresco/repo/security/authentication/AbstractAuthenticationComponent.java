@@ -39,9 +39,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.security.PermissionService;
 
 /**
- * This class abstract the support required to set up and query the Acegi context for security enforcement.
- * 
- * There are some simple default method implementations to support simple authentication.
+ * This class abstract the support required to set up and query the Acegi context for security enforcement. There are
+ * some simple default method implementations to support simple authentication.
  * 
  * @author Andy Hind
  */
@@ -50,7 +49,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 
     // Name of the system user
 
-    private static final String SYSTEM_USER_NAME = "System";
+    static final String SYSTEM_USER_NAME = "System";
 
     private Boolean allowGuestLogin = null;
 
@@ -63,7 +62,24 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     {
         this.allowGuestLogin = allowGuestLogin;
     }
-    
+
+    public void authenticate(String userName, char[] password) throws AuthenticationException
+    {
+        if ((userName != null) && (userName.equalsIgnoreCase(PermissionService.GUEST_AUTHORITY)))
+        {
+            setGuestUserAsCurrentUser();
+        }
+        else
+        {
+            authenticateImpl(userName, password);
+        }
+    }
+
+    protected void authenticateImpl(String userName, char[] password)
+    {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Explicitly set the current user to be authenticated.
      * 
@@ -97,8 +113,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                 ud = getUserDetails(userName);
             }
 
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(ud, "", ud
-                    .getAuthorities());
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(ud, "", ud.getAuthorities());
             auth.setDetails(ud);
             auth.setAuthenticated(true);
             return setCurrentAuthentication(auth);
@@ -133,28 +148,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public Authentication setCurrentAuthentication(Authentication authentication)
     {
-        if (authentication == null)
-        {
-            clearCurrentSecurityContext();
-            return null;
-        }
-        else
-        {
-            Context context = ContextHolder.getContext();
-            SecureContext sc = null;
-            if ((context == null) || !(context instanceof SecureContext))
-            {
-                sc = new SecureContextImpl();
-                ContextHolder.setContext(sc);
-            }
-            else
-            {
-                sc = (SecureContext) context;
-            }
-            authentication.setAuthenticated(true);
-            sc.setAuthentication(authentication);
-            return authentication;
-        }
+        return AuthenticationUtil.setCurrentAuthentication(authentication);
     }
 
     /**
@@ -165,12 +159,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public Authentication getCurrentAuthentication() throws AuthenticationException
     {
-        Context context = ContextHolder.getContext();
-        if ((context == null) || !(context instanceof SecureContext))
-        {
-            return null;
-        }
-        return ((SecureContext) context).getAuthentication();
+        return AuthenticationUtil.getCurrentAuthentication();
     }
 
     /**
@@ -181,12 +170,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public String getCurrentUserName() throws AuthenticationException
     {
-        Context context = ContextHolder.getContext();
-        if ((context == null) || !(context instanceof SecureContext))
-        {
-            return null;
-        }
-        return getUserName(((SecureContext) context).getAuthentication());
+        return AuthenticationUtil.getCurrentUserName();
     }
 
     /**
@@ -201,7 +185,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         String username;
         if (authentication.getPrincipal() instanceof UserDetails)
         {
-            username = ((UserDetails)authentication.getPrincipal()).getUsername();
+            username = ((UserDetails) authentication.getPrincipal()).getUsername();
         }
         else
         {
@@ -246,31 +230,31 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     {
         if (allowGuestLogin == null)
         {
-            if(implementationAllowsGuestLogin())
+            if (implementationAllowsGuestLogin())
             {
                 return setCurrentUser(PermissionService.GUEST_AUTHORITY);
             }
             else
             {
-                throw new AuthenticationException("Guest authentication is not allowed");  
+                throw new AuthenticationException("Guest authentication is not allowed");
             }
         }
         else
         {
-            if(allowGuestLogin.booleanValue())
+            if (allowGuestLogin.booleanValue())
             {
                 return setCurrentUser(PermissionService.GUEST_AUTHORITY);
             }
             else
             {
-                throw new AuthenticationException("Guest authentication is not allowed"); 
+                throw new AuthenticationException("Guest authentication is not allowed");
             }
-            
+
         }
     }
 
     protected abstract boolean implementationAllowsGuestLogin();
-    
+
     /**
      * @return true if Guest user authentication is allowed, false otherwise
      */
@@ -291,7 +275,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public void clearCurrentSecurityContext()
     {
-        ContextHolder.setContext(null);
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
 
     /**

@@ -393,7 +393,7 @@ public class ADMLuceneTest extends TestCase
         writer.putContent("The quick brown fox jumped over the lazy dog and ate the Alfresco Tutorial, in pdf format, along with the following stop words;  a an and are"
                 + " as at be but by for if in into is it no not of on or such that the their then there these they this to was will with: "
                 + " and random charcters \u00E0\u00EA\u00EE\u00F0\u00F1\u00F6\u00FB\u00FF");
-        System.out.println("Size is " + writer.getSize());
+        //System.out.println("Size is " + writer.getSize());
 
         nodeService.addChild(rootNodeRef, n8, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}eight-0"));
         nodeService.addChild(n1, n8, ASSOC_TYPE_QNAME, QName.createQName("{namespace}eight-1"));
@@ -2527,6 +2527,49 @@ public class ADMLuceneTest extends TestCase
         assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "any-many-ista")));
         results.close();
 
+        // proximity searches
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"Tutorial Alfresco\"~0", null, null);
+        assertEquals(0, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"Tutorial Alfresco\"~1", null, null);
+        assertEquals(0, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"Tutorial Alfresco\"~2", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"Tutorial Alfresco\"~3", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString())+":\"Alfresco Tutorial\"", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString())+":\"Tutorial Alfresco\"", null, null);
+        assertEquals(0, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString())+":\"Tutorial Alfresco\"~0", null, null);
+        assertEquals(0, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString())+":\"Tutorial Alfresco\"~1", null, null);
+        assertEquals(0, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString())+":\"Tutorial Alfresco\"~2", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString())+":\"Tutorial Alfresco\"~3", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
         // multi ml text
 
         QName multimlQName = QName.createQName(TEST_NAMESPACE, "mltext-many-ista");

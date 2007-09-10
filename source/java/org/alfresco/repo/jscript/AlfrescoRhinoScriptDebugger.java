@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.jscript;
 
+import java.awt.event.ActionEvent;
+
 import javax.swing.WindowConstants;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -46,17 +48,15 @@ import org.mozilla.javascript.tools.shell.Global;
  * 
  * @author davidc
  */
-public class AlfrescoRhinoScriptDebugger extends Dim 
+public class AlfrescoRhinoScriptDebugger 
 {
     // Logger
     private static final Log logger = LogFactory.getLog(AlfrescoRhinoScriptDebugger.class);
-
-    private boolean active = false;
-    private boolean visible = false;
-    private ContextFactory factory = null; 
-    private Global global = null; 
-    private AlfrescoRhinoScriptDebugger dim = null;
+    
+    private ContextFactory factory = null;
+    private AlfrescoDim dim = null;
     private SwingGui gui = null;
+    
 
     
     /**
@@ -70,22 +70,27 @@ public class AlfrescoRhinoScriptDebugger extends Dim
             show();
         }
     }
-    
+
     /**
      * Activate the Debugger
      */
     public synchronized void activate()
     {
         factory = ContextFactory.getGlobal();
-        global = new Global();
+        Global global = new Global();
         global.init(factory);
-        dim = new AlfrescoRhinoScriptDebugger();
-        dim.setScopeProvider(IProxy.newScopeProvider((Scriptable)global));
-        gui = new SwingGui(dim, "Alfresco JavaScript Debugger");
-        gui.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        active = true;
+        global.setIn(System.in);
+        global.setOut(System.out);
+        global.setErr(System.err);        
+        dim = new AlfrescoDim();
+        ScopeProvider sp = IProxy.newScopeProvider((Scriptable)global);
+        dim.setScopeProvider(sp);
+        gui = new AlfrescoGui(dim, "Alfresco JavaScript Debugger", this);
+        gui.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        gui.setExitAction((Runnable)sp);
     }
 
+    
     /**
      * Show the debugger
      */
@@ -97,15 +102,14 @@ public class AlfrescoRhinoScriptDebugger extends Dim
         }
         
         dim.setBreakOnExceptions(true);
-        dim.setBreakOnEnter(true);
-        dim.setBreakOnReturn(true);
+        dim.setBreak();
         dim.attachTo(factory);
         gui.pack();
         gui.setSize(600, 460);
         gui.setVisible(true);
-        visible = true;
     }
     
+
     /**
      * Hide the Debugger
      */
@@ -115,7 +119,6 @@ public class AlfrescoRhinoScriptDebugger extends Dim
         {
             dim.detach();
             gui.dispose();
-            visible = false;
         }
     }
     
@@ -126,7 +129,7 @@ public class AlfrescoRhinoScriptDebugger extends Dim
      */
     public boolean isVisible()
     {
-        return visible;
+        return isActive() && gui.isVisible();
     }
     
     /**
@@ -136,38 +139,61 @@ public class AlfrescoRhinoScriptDebugger extends Dim
      */
     public boolean isActive()
     {
-        return active;
+        return gui != null;
     }
-    
 
-    /* (non-Javadoc)
-     * @see org.mozilla.javascript.tools.debugger.Dim#objectToString(java.lang.Object)
-     */
-    @Override
-    public String objectToString(final Object arg0)
+            
+    public static class AlfrescoDim extends Dim
     {
-        // execute command in context of currently selected user
-        return AuthenticationUtil.runAs(new RunAsWork<String>()
+        /* (non-Javadoc)
+         * @see org.mozilla.javascript.tools.debugger.Dim#objectToString(java.lang.Object)
+         */
+        @Override
+        public String objectToString(final Object arg0)
         {
-            @SuppressWarnings("synthetic-access")
-            public String doWork() throws Exception
+            // execute command in context of currently selected user
+            return AuthenticationUtil.runAs(new RunAsWork<String>()
             {
-                return AlfrescoRhinoScriptDebugger.super.objectToString(arg0);
-            }
-        }, AuthenticationUtil.getSystemUserName());
+                @SuppressWarnings("synthetic-access")
+                public String doWork() throws Exception
+                {
+                    return AlfrescoDim.super.objectToString(arg0);
+                }
+            }, AuthenticationUtil.getSystemUserName());
+        }
     }
-
     
-    /**
-     * Class to consolidate all internal implementations of interfaces to avoid
-     * class generation bloat.
-     */
-    private static class IProxy implements Runnable, ScopeProvider
+    
+    private static class AlfrescoGui extends SwingGui
     {
+        private static final long serialVersionUID = 5053205080777378416L;
+        private AlfrescoRhinoScriptDebugger debugger;
+        
+        public AlfrescoGui(Dim dim, String title, AlfrescoRhinoScriptDebugger debugger)
+        {
+            super(dim, title);
+            this.debugger = debugger;
+        }
 
+        public void actionPerformed(ActionEvent e)
+        {
+            String cmd = e.getActionCommand();
+            if (cmd.equals("Exit"))
+            {
+                debugger.hide();
+            }
+            else
+            {
+                super.actionPerformed(e);
+            }
+        }
+    }
+    
+    
+    public static class IProxy implements Runnable, ScopeProvider
+    {
         // Constants for 'type'.
         public static final int EXIT_ACTION = 1;
-
         public static final int SCOPE_PROVIDER = 2;
 
         /**
@@ -180,7 +206,7 @@ public class AlfrescoRhinoScriptDebugger extends Dim
          * {@link #SCOPE_PROVIDER}.
          */
         private Scriptable scope;
-
+        
         
         /**
          * Creates a new IProxy.
@@ -195,7 +221,7 @@ public class AlfrescoRhinoScriptDebugger extends Dim
          */
         public static ScopeProvider newScopeProvider(Scriptable scope)
         {
-            IProxy scopeProvider = new IProxy(SCOPE_PROVIDER);
+            IProxy scopeProvider = new IProxy(EXIT_ACTION);
             scopeProvider.scope = scope;
             return scopeProvider;
         }
@@ -225,5 +251,4 @@ public class AlfrescoRhinoScriptDebugger extends Dim
             return scope;
         }
     }
-
 }

@@ -140,30 +140,38 @@ public abstract class AuthenticationUtil
      */
     public static Authentication setCurrentAuthentication(Authentication authentication)
     {
-        Context context = ContextHolder.getContext();
-        SecureContext sc = null;
-        if ((context == null) || !(context instanceof SecureContext))
+        if (authentication == null)
         {
-            sc = new SecureContextImpl();
-            ContextHolder.setContext(sc);
+            clearCurrentSecurityContext();
+            return null;
         }
         else
         {
-            sc = (SecureContext) context;
-        }
-        authentication.setAuthenticated(true);
-        sc.setAuthentication(authentication);
+            Context context = ContextHolder.getContext();
+            SecureContext sc = null;
+            if ((context == null) || !(context instanceof SecureContext))
+            {
+                sc = new SecureContextImpl();
+                ContextHolder.setContext(sc);
+            }
+            else
+            {
+                sc = (SecureContext) context;
+            }
+            authentication.setAuthenticated(true);
+            sc.setAuthentication(authentication);
 
-        // Support for logging tenant domain / username (via log4j NDC)
-        String userName = SYSTEM_USER_NAME;
-        if (authentication.getPrincipal() instanceof UserDetails)
-        {
-            userName = ((UserDetails) authentication.getPrincipal()).getUsername();            
+            // Support for logging tenant domain / username (via log4j NDC)
+            String userName = SYSTEM_USER_NAME;
+            if (authentication.getPrincipal() instanceof UserDetails)
+            {
+                userName = ((UserDetails) authentication.getPrincipal()).getUsername();            
+            }
+            
+            logNDC(userName);
+            
+            return authentication;
         }
-        
-        logNDC(userName);
-        
-        return authentication;
     }
     
     public static void logNDC(String userName)

@@ -90,6 +90,8 @@ public class LuceneQueryParser extends QueryParser
 
     private IndexReader indexReader;
 
+    private int internalSlop = 0;
+
     /**
      * Parses a query string, returning a {@link org.apache.lucene.search.Query}.
      * 
@@ -166,6 +168,21 @@ public class LuceneQueryParser extends QueryParser
     public LuceneQueryParser(QueryParserTokenManager arg0)
     {
         super(arg0);
+    }
+
+    protected Query getFieldQuery(String field, String queryText, int slop) throws ParseException
+    {
+        try
+        {
+            internalSlop = slop;
+            Query query = getFieldQuery(field, queryText);
+            return query;
+        }
+        finally
+        {
+            internalSlop = 0;
+        }
+
     }
 
     protected Query getFieldQuery(String field, String queryText) throws ParseException
@@ -691,7 +708,7 @@ public class LuceneQueryParser extends QueryParser
                                 {
                                     v.add(it.next());
                                     count++;
-                                    if(count > 1)
+                                    if (count > 1)
                                     {
                                         severalTokensAtSamePosition = true;
                                     }
@@ -752,7 +769,7 @@ public class LuceneQueryParser extends QueryParser
                                 {
                                     v.add(it.next());
                                     count++;
-                                    if(count > 1)
+                                    if (count > 1)
                                     {
                                         severalTokensAtSamePosition = true;
                                     }
@@ -1019,7 +1036,7 @@ public class LuceneQueryParser extends QueryParser
                 {
                     // phrase query:
                     MultiPhraseQuery mpq = new MultiPhraseQuery();
-                    mpq.setSlop(phraseSlop);
+                    mpq.setSlop(internalSlop);
                     ArrayList<Term> multiTerms = new ArrayList<Term>();
                     for (int i = 0; i < v.size(); i++)
                     {
@@ -1053,7 +1070,7 @@ public class LuceneQueryParser extends QueryParser
             else
             {
                 MultiPhraseQuery q = new MultiPhraseQuery();
-                q.setSlop(phraseSlop);
+                q.setSlop(internalSlop);
                 for (int i = 0; i < v.size(); i++)
                 {
                     t = (org.apache.lucene.analysis.Token) v.get(i);
@@ -1096,9 +1113,9 @@ public class LuceneQueryParser extends QueryParser
             while (!wcte.endEnum())
             {
                 Term current = wcte.term();
-                if((current.text() != null) && (current.text().length() > 0) && (current.text().charAt(0) == '{'))
+                if ((current.text() != null) && (current.text().length() > 0) && (current.text().charAt(0) == '{'))
                 {
-                    if((term != null) && (term.text().length() > 0) && (term.text().charAt(0) == '{'))
+                    if ((term != null) && (term.text().length() > 0) && (term.text().charAt(0) == '{'))
                     {
                         terms.add(current);
                     }
@@ -1108,7 +1125,7 @@ public class LuceneQueryParser extends QueryParser
                 {
                     terms.add(current);
                 }
-               
+
                 wcte.next();
             }
         }

@@ -2310,9 +2310,9 @@ public class ServerConfiguration extends AbstractLifecycleBean
         }
         else
         {
-            // Use the default Cryptix JCE provider
+            // Use the default Bouncy Castle
             
-            setJCEProvider("cryptix.jce.provider.CryptixCrypto");
+            setJCEProvider("org.bouncycastle.jce.provider.BouncyCastleProvider");
         }
         
         // Check if any domain mappings have been specified

@@ -358,8 +358,7 @@ public class SchemaUtil
    public static TreeMap<String, TreeSet<XSTypeDefinition>>
       buildTypeTree(final XSModel schema) 
    {
-      final TreeMap<String, TreeSet<XSTypeDefinition>> result = new
-         TreeMap<String, TreeSet<XSTypeDefinition>>();
+      final TreeMap<String, TreeSet<XSTypeDefinition>> result = new TreeMap<String, TreeSet<XSTypeDefinition>>();
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("buildTypeTree " + schema);
       // build the type tree for complex types
@@ -371,8 +370,8 @@ public class SchemaUtil
          {
             final XSComplexTypeDefinition type = (XSComplexTypeDefinition)t;
             SchemaUtil.buildTypeTree(type, 
-                                      new TreeSet<XSTypeDefinition>(TYPE_EXTENSION_SORTER),
-                                      result);
+                                     new TreeSet<XSTypeDefinition>(TYPE_EXTENSION_SORTER),
+                                     result);
          }
       }
 

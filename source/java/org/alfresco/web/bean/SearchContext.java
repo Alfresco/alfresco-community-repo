@@ -424,7 +424,7 @@ public final class SearchContext implements Serializable
             case SearchContext.SEARCH_ALL:
                query = '(' + fileTypeQuery + " AND " + '(' + nameAttrQuery + ' ' + additionalAttrsQuery + ' ' + fullTextQuery + ')' + ')' +
                        " OR " +
-                       '(' + folderTypeQuery + " AND " + nameAttrQuery + ' ' + additionalAttrsQuery + ')';
+                       '(' + folderTypeQuery + " AND " + '(' + nameAttrQuery + ' ' + additionalAttrsQuery + "))";
                break;
             
             case SearchContext.SEARCH_FILE_NAMES:

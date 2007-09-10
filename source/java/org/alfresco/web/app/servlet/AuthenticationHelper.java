@@ -80,7 +80,7 @@ public final class AuthenticationHelper
    
    /** public service bean IDs **/
    private static final String AUTHENTICATION_SERVICE = "AuthenticationService";
-   private static final String UNPROTECTED_AUTH_SERVICE = "authenticationServiceImpl";
+   private static final String UNPROTECTED_AUTH_SERVICE = "authenticationService";
    private static final String PERSON_SERVICE = "personService";
    
    /** cookie names */

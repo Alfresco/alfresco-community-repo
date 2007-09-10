@@ -206,17 +206,15 @@ Alfresco.OpenSearchClient.prototype =
       var count = document.getElementById(this.id + _PAGE_SIZE_FIELD_ID).value;
       
       // default the count if its invalid
-      if (count.length == 0 || isNaN(count))
+      if (count.length == 0 || isNaN(count) || count < 1)
       {
          count = 5;
+         document.getElementById(this.id + _PAGE_SIZE_FIELD_ID).value = count;
       }
       
       // issue the queries if there is enough search criteria
       if (this.searchInProgress == false && term != null && term.length > 1)
       {
-         // show that we are executing a search
-         this.searchInProgress = true;
-         
          // remove previous results (if necessary)
          var resultsPanel = document.getElementById(this.id + _RESULTS_DIV_ID_SUFFIX);
          if (resultsPanel != null)
@@ -235,6 +233,8 @@ Alfresco.OpenSearchClient.prototype =
             var engCheckbox = document.getElementById(this.id + "-" + ose.id + _ENGINE_ENABLED_FIELD_ID);
             if (engCheckbox != null && engCheckbox.checked)
             {
+               // we found at least one engine - show that we are executing a search
+               this.searchInProgress = true;
                this.issueSearchRequest(ose, term, count);
             }
          }
@@ -265,7 +265,7 @@ Alfresco.OpenSearchClient.prototype =
       {
          // replace the token with the engine label
          var errorMsg = this.msgFailedGenerateUrl.replace("{0}", ose.label);
-         handleErrorYahoo(errorMsg);
+         handleCaughtError(errorMsg);
       }
    },
    
@@ -786,5 +786,8 @@ Alfresco.OpenSearchEngine.handleSearchError = function(ajaxResponse)
    var engineLabel = clientInstance.enginesById[engineId].label;
    
    var errorMsg = clientInstance.msgFailedSearch.replace("{0}", engineLabel);
-   handleErrorYahoo(errorMsg + ": " + ajaxResponse.status + " " + ajaxResponse.statusText);
+   handleCaughtError(errorMsg + ": " + ajaxResponse.status + " " + ajaxResponse.statusText);
+
+   // reset the search in progress flag
+   clientInstance.searchInProgress = false;
 }

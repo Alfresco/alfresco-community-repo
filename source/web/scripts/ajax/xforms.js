@@ -3931,6 +3931,10 @@ dojo.declare("alfresco.xforms.Binding",
                  (_hasAttribute(this.xformsNode, alfresco.xforms.constants.XFORMS_PREFIX + ":type")
                   ? this.xformsNode.getAttribute(alfresco.xforms.constants.XFORMS_PREFIX + ":type")
                   : null);
+               this._builtInType =
+                 (_hasAttribute(this.xformsNode, alfresco.xforms.constants.ALFRESCO_PREFIX + ":builtInType")
+                  ? this.xformsNode.getAttribute(alfresco.xforms.constants.ALFRESCO_PREFIX + ":builtInType")
+                  : null);
                this.constraint = 
                  (_hasAttribute(this.xformsNode, alfresco.xforms.constants.XFORMS_PREFIX + ":constraint")
                   ? this.xformsNode.getAttribute(alfresco.xforms.constants.XFORMS_PREFIX + ":constraint")
@@ -3948,6 +3952,14 @@ dojo.declare("alfresco.xforms.Binding",
                  return (this._type != null
                          ? this._type
                          : (this.parent != null ? this.parent.getType() : null));
+               },
+
+               /** Returns the expected built in schema type for this binding. */
+               getBuiltInType: function()
+               {
+                 return (this._builtInType != null
+                         ? this._builtInType
+                         : (this.parent != null ? this.parent.getBuiltInType() : null));
                },
 
                /** Returns true if a node bound by this binding has a readonly value */
@@ -3968,6 +3980,7 @@ dojo.declare("alfresco.xforms.Binding",
                {
                  return ("{id: " + this.id + 
                          ",type: " + this.getType() + 
+                         ",builtInType: " + this.getBuiltInType() + 
                          ",required: " + this.isRequired() +
                          ",readonly: " + this.isReadonly() +
                          ",nodeset: " + this.nodeset + "}");
@@ -4026,17 +4039,19 @@ dojo.declare("alfresco.xforms.XForm",
 
                  var xformsType = xformsNode.nodeName.toLowerCase();
                  var binding = this.getBinding(xformsNode);
-                 var schemaType = binding ? binding.getType() : "*";
+                 var schemaType = binding ? binding.getType() : null;
+                 var builtInSchemaType = binding ? binding.getBuiltInType() : null;
 
                  dojo.debug("creating widget for xforms type " + xformsType +
                             " schema type " + schemaType +
+                            " built in schema type " + builtInSchemaType +
                             " with appearance " + appearance);
                  var x = alfresco.xforms.widgetConfig[xformsType];
                  if (!x)
                  {
                    throw new Error("unknown type " + xformsNode.nodeName);
                  }
-                 x = schemaType in x ? x[schemaType] : x["*"];
+                 x = schemaType in x ? x[schemaType] : builtInSchemaType in x ? x[builtInSchemaType] : x["*"];
                  x = appearance in x ? x[appearance] : x["*"];
 //                 dojo.debug(xformsType + ":" + schemaType + ":" + appearance + " =>" + x);
                  if (x === undefined)

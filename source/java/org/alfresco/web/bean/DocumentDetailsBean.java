@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
@@ -690,12 +691,13 @@ public class DocumentDetailsBean extends BaseDetailsBean
    {
       try
       {
-         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+         FacesContext context = FacesContext.getCurrentInstance();
+         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(context);
          RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
          {
             public Object execute() throws Throwable
             {
-         // add the versionable aspect to the node
+               // add the versionable aspect to the node
                nodeService.addAspect(getDocument().getNodeRef(), ContentModel.ASPECT_VERSIONABLE, null);
                return null;
             }
@@ -704,6 +706,13 @@ public class DocumentDetailsBean extends BaseDetailsBean
 
          // reset the state of the current document
          getDocument().reset();
+         
+         // get hold of the main property sheet on the page and remove the children to force a refresh
+         UIComponent comp = context.getViewRoot().findComponent("document-details:document-props");
+         if (comp != null)
+         {
+            comp.getChildren().clear();
+         }
       }
       catch (Throwable e)
       {

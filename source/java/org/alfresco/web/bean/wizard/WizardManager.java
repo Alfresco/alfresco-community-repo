@@ -479,7 +479,16 @@ public final class WizardManager
    {
       // calculate next step number and update wizard state
       int currentStep = this.currentWizardState.getCurrentStep();
+      int noSteps = this.currentWizardState.getSteps().size();
       currentStep++;
+      
+      // check we haven't gone past the end (this can happen if the next 
+      // button is pressed too many times)
+      if (currentStep > noSteps)
+      {
+         currentStep = noSteps;
+      }
+      
       this.currentWizardState.setCurrentStep(currentStep);
       
       if (logger.isDebugEnabled())
@@ -499,6 +508,14 @@ public final class WizardManager
       // calculate next step number and update wizard state
       int currentStep = this.currentWizardState.getCurrentStep();
       currentStep--;
+      
+      // check we haven't gone past the beginning (this can 
+      // happen if the back button is pressed too many times)
+      if (currentStep < 1)
+      {
+         currentStep = 1;
+      }
+      
       this.currentWizardState.setCurrentStep(currentStep);
       
       if (logger.isDebugEnabled())

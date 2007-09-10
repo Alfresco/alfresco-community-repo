@@ -2358,39 +2358,7 @@ public class Schema2XForms
                                                              this.getAnnotation(owner),
                                                              resourceBundle);
       Element result = null;
-      if ("boolean".equals(controlType.getName()))
-      {
-         result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                 NamespaceConstants.XFORMS_PREFIX + ":select1");
-         final String[] values = { "true", "false" };
-         for (String v : values)
-         {
-            final Element item = this.createXFormsItem(xformsDocument, v, v);
-            result.appendChild(item);
-         }
-      }
-      else if ("string".equals(controlType.getName()))
-      {
-         result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                 NamespaceConstants.XFORMS_PREFIX + ":textarea");
-         if (appearance == null || appearance.length() == 0)
-         {
-            appearance = "compact";
-         }
-      }
-      else if ("anyURI".equals(controlType.getName()))
-      {
-         result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                 NamespaceConstants.XFORMS_PREFIX + ":upload");
-         final Element e = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                          NamespaceConstants.XFORMS_PREFIX + ":filename");
-         this.setXFormsId(e);
-         result.appendChild(e);
-         e.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                          NamespaceConstants.XFORMS_PREFIX + ":ref",
-                          ".");
-      }
-      else if (controlType.getNumeric())
+      if (controlType.getNumeric())
       {
          if (controlType.getBounded() &&
              controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXINCLUSIVE) != null &&
@@ -2437,91 +2405,132 @@ public class Schema2XForms
       }
       else
       {
-         result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS, 
-                                                 NamespaceConstants.XFORMS_PREFIX + ":input");
-         if ((appearance == null || appearance.length() == 0) &&
-             SchemaUtil.getBuiltInType(controlType) == XSConstants.NORMALIZEDSTRING_DT)
+         switch (SchemaUtil.getBuiltInType(controlType))
          {
-            appearance = "full";
+         case XSConstants.BOOLEAN_DT:
+         {
+            result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                    NamespaceConstants.XFORMS_PREFIX + ":select1");
+            final String[] values = { "true", "false" };
+            for (String v : values)
+            {
+               final Element item = this.createXFormsItem(xformsDocument, v, v);
+               result.appendChild(item);
+            }
+            break;
          }
-         if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_LENGTH))
+         case XSConstants.STRING_DT:
          {
-            result.setAttributeNS(NamespaceService.ALFRESCO_URI,
-                                  NamespaceService.ALFRESCO_PREFIX + ":length",
-                                  controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_LENGTH));
+            result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                    NamespaceConstants.XFORMS_PREFIX + ":textarea");
+            if (appearance == null || appearance.length() == 0)
+            {
+               appearance = "compact";
+            }
+            break;
          }
-         else if(controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MINLENGTH) ||
-                 controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXLENGTH))
+         case XSConstants.ANYURI_DT:
          {
-            if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MINLENGTH))
+            result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                    NamespaceConstants.XFORMS_PREFIX + ":upload");
+            final Element e = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                             NamespaceConstants.XFORMS_PREFIX + ":filename");
+            this.setXFormsId(e);
+            result.appendChild(e);
+            e.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                             NamespaceConstants.XFORMS_PREFIX + ":ref",
+                             ".");
+            break;
+         }
+         default:
+         {
+            result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS, 
+                                                    NamespaceConstants.XFORMS_PREFIX + ":input");
+            if ((appearance == null || appearance.length() == 0) &&
+                SchemaUtil.getBuiltInType(controlType) == XSConstants.NORMALIZEDSTRING_DT)
             {
-               result.setAttributeNS(NamespaceService.ALFRESCO_URI,
-                                     NamespaceService.ALFRESCO_PREFIX + ":minlength",
-                                     controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MINLENGTH));
+               appearance = "full";
             }
-            if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXLENGTH))
+            if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_LENGTH))
             {
                result.setAttributeNS(NamespaceService.ALFRESCO_URI,
-                                     NamespaceService.ALFRESCO_PREFIX + ":maxlength",
-                                     controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXLENGTH));
+                                     NamespaceService.ALFRESCO_PREFIX + ":length",
+                                     controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_LENGTH));
+            }
+            else if(controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MINLENGTH) ||
+                    controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXLENGTH))
+            {
+               if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MINLENGTH))
+               {
+                  result.setAttributeNS(NamespaceService.ALFRESCO_URI,
+                                        NamespaceService.ALFRESCO_PREFIX + ":minlength",
+                                        controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MINLENGTH));
+               }
+               if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXLENGTH))
+               {
+                  result.setAttributeNS(NamespaceService.ALFRESCO_URI,
+                                        NamespaceService.ALFRESCO_PREFIX + ":maxlength",
+                                        controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXLENGTH));
+               }
+            }
+            if (SchemaUtil.getBuiltInType(controlType) == XSConstants.DATE_DT)
+            {
+               String minInclusive = null;
+               String maxInclusive = null;
+               final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+               final Calendar calendar = Calendar.getInstance();
+               if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE))
+               {
+                  minInclusive = controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MINEXCLUSIVE);
+                  try
+                  {
+                     final Date d = sdf.parse(minInclusive);
+                     calendar.setTime(d);
+                  }
+                  catch (ParseException pe)
+                  {
+                     LOGGER.error(pe);
+                  }
+                  calendar.roll(Calendar.DATE, true);
+                  minInclusive = sdf.format(calendar.getTime());
+               }
+               else if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MININCLUSIVE))
+               {
+                  minInclusive = controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MININCLUSIVE);
+               }
+               if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE))
+               {
+                  maxInclusive = controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE);
+                  try
+                  {
+                     final Date d = sdf.parse(maxInclusive);
+                     calendar.setTime(d);
+                  }
+                  catch (ParseException pe)
+                  {
+                     LOGGER.error(pe);
+                  }
+                  calendar.roll(Calendar.DATE, false);
+                  maxInclusive = sdf.format(calendar.getTime());
+               }
+               else if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXINCLUSIVE))
+               {
+                  maxInclusive = controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXINCLUSIVE);
+               }
+               if (minInclusive != null)
+               {
+                  result.setAttributeNS(NamespaceService.ALFRESCO_URI,
+                                        NamespaceService.ALFRESCO_PREFIX + ":minInclusive",
+                                        minInclusive);
+               }
+               if (maxInclusive != null)
+               {
+                  result.setAttributeNS(NamespaceService.ALFRESCO_URI,
+                                        NamespaceService.ALFRESCO_PREFIX + ":maxInclusive",
+                                        maxInclusive);
+               }
             }
          }
-         if (SchemaUtil.getBuiltInType(controlType) == XSConstants.DATE_DT)
-         {
-            String minInclusive = null;
-            String maxInclusive = null;
-            final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            final Calendar calendar = Calendar.getInstance();
-            if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE))
-            {
-               minInclusive = controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MINEXCLUSIVE);
-               try
-               {
-                  final Date d = sdf.parse(minInclusive);
-                  calendar.setTime(d);
-               }
-               catch (ParseException pe)
-               {
-                  LOGGER.error(pe);
-               }
-               calendar.roll(Calendar.DATE, true);
-               minInclusive = sdf.format(calendar.getTime());
-            }
-            else if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MININCLUSIVE))
-            {
-               minInclusive = controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MININCLUSIVE);
-            }
-            if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE))
-            {
-               maxInclusive = controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE);
-               try
-               {
-                  final Date d = sdf.parse(maxInclusive);
-                  calendar.setTime(d);
-               }
-               catch (ParseException pe)
-               {
-                  LOGGER.error(pe);
-               }
-               calendar.roll(Calendar.DATE, false);
-               maxInclusive = sdf.format(calendar.getTime());
-            }
-            else if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXINCLUSIVE))
-            {
-               maxInclusive = controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXINCLUSIVE);
-            }
-            if (minInclusive != null)
-            {
-               result.setAttributeNS(NamespaceService.ALFRESCO_URI,
-                                     NamespaceService.ALFRESCO_PREFIX + ":minInclusive",
-                                     minInclusive);
-            }
-            if (maxInclusive != null)
-            {
-               result.setAttributeNS(NamespaceService.ALFRESCO_URI,
-                                     NamespaceService.ALFRESCO_PREFIX + ":maxInclusive",
-                                     maxInclusive);
-            }
          }
       }
       this.setXFormsId(result);
@@ -2769,8 +2778,8 @@ public class Schema2XForms
       // type.getName() may be 'null' for anonymous types, so compare against
       // static string (see bug #1172541 on sf.net)
 
-      if (!"anyType".equals(controlType.getName()) &&
-          controlType instanceof XSSimpleTypeDefinition)
+      if (controlType instanceof XSSimpleTypeDefinition &&
+          ((XSSimpleTypeDefinition)controlType).getBuiltInKind() != XSConstants.ANYSIMPLETYPE_DT)
       {
          String typeName = this.getXFormsTypeName(bindElement.getOwnerDocument(),
                                                   schema,
@@ -2779,6 +2788,14 @@ public class Schema2XForms
          {
             bindElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
                                        NamespaceConstants.XFORMS_PREFIX + ":type",
+                                       typeName);
+         }
+
+         typeName = SchemaUtil.getBuiltInTypeName(controlType);
+         if (typeName != null && typeName.length() != 0)
+         {
+            bindElement.setAttributeNS(NamespaceService.ALFRESCO_URI,
+                                       NamespaceService.ALFRESCO_PREFIX + ":builtInType",
                                        typeName);
          }
       }

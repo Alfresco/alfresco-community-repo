@@ -27,7 +27,7 @@ function handleCaughtError(err)
       msg = err;
    }
    
-   alert("An error occurred: " + msg);
+   alert("An error occurred:\n" + msg);
 }
    
 /**

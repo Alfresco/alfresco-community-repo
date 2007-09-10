@@ -24,7 +24,6 @@
  */
 package org.alfresco.web.bean.forums;
 
-import java.text.MessageFormat;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
@@ -34,7 +33,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
-import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.spaces.DeleteSpaceDialog;
 
@@ -94,20 +92,15 @@ public class DeleteTopicDialog extends DeleteSpaceDialog
       }
    }
    
-   // ------------------------------------------------------------------------------
-   // Bean Getters and Setters
-   
    /**
-    * Returns the confirmation to display to the user before deleting the content.
+    * Returns the message bundle id of the confirmation message to display to 
+    * the user before deleting the topic.
     * 
-    * @return The formatted message to display
+    * @return The message bundle id
     */
-   public String getConfirmMessage()
+   @Override
+   protected String getConfirmMessageId()
    {
-      String fileConfirmMsg = Application.getMessage(FacesContext.getCurrentInstance(), 
-               "delete_topic_confirm");
-      
-      return MessageFormat.format(fileConfirmMsg, 
-            new Object[] {this.browseBean.getActionSpace().getName()});
+      return "delete_topic_confirm";
    }
 }

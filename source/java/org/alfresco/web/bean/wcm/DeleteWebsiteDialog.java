@@ -24,7 +24,6 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.text.MessageFormat;
 import java.util.List;
 
 import javax.faces.context.FacesContext;
@@ -33,7 +32,6 @@ import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.spaces.DeleteSpaceDialog;
 
@@ -70,51 +68,54 @@ public class DeleteWebsiteDialog extends DeleteSpaceDialog
    {
       Node websiteNode = this.browseBean.getActionSpace();
       
-      // delete all attached website sandboxes in reverse order to the layering
-      String storeRoot = (String)websiteNode.getProperties().get(WCMAppModel.PROP_AVMSTORE);
-
-      // Notifiy virtualization server about removing this website
-      //
-      // Implementation note:
-      //
-      //     Because the removal of virtual webapps in the virtualization 
-      //     server is recursive,  it only needs to be given the name of 
-      //     the main staging store.  
-      //
-      //     This notification must occur *prior* to purging content
-      //     within the AVM because the virtualization server must list
-      //     the avm_webapps dir in each store to discover which 
-      //     virtual webapps must be unloaded.  The virtualization 
-      //     server traverses the sandbox's stores in most-to-least 
-      //     dependent order, so clients don't have to worry about
-      //     accessing a preview layer whose main layer has been torn
-      //     out from under it.
-      //
-      //     It does not matter what webapp name we give here, so "/ROOT"
-      //     is as sensible as anything else.  It's all going away.
-
-      String sandbox = AVMUtil.buildStagingStoreName(storeRoot);
-      String path    =  AVMUtil.buildStoreWebappPath(sandbox, "/ROOT");
-      AVMUtil.removeVServerWebapp(path, true);
-
-      
-      // get the list of users who have a sandbox in the website
-      List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
-            websiteNode.getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
-      for (ChildAssociationRef ref : userInfoRefs)
+      if (websiteNode != null)
       {
-         String username = (String)nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_WEBUSERNAME);
+         // delete all attached website sandboxes in reverse order to the layering
+         String storeRoot = (String)websiteNode.getProperties().get(WCMAppModel.PROP_AVMSTORE);
+   
+         // Notifiy virtualization server about removing this website
+         //
+         // Implementation note:
+         //
+         //     Because the removal of virtual webapps in the virtualization 
+         //     server is recursive,  it only needs to be given the name of 
+         //     the main staging store.  
+         //
+         //     This notification must occur *prior* to purging content
+         //     within the AVM because the virtualization server must list
+         //     the avm_webapps dir in each store to discover which 
+         //     virtual webapps must be unloaded.  The virtualization 
+         //     server traverses the sandbox's stores in most-to-least 
+         //     dependent order, so clients don't have to worry about
+         //     accessing a preview layer whose main layer has been torn
+         //     out from under it.
+         //
+         //     It does not matter what webapp name we give here, so "/ROOT"
+         //     is as sensible as anything else.  It's all going away.
+   
+         String sandbox = AVMUtil.buildStagingStoreName(storeRoot);
+         String path    =  AVMUtil.buildStoreWebappPath(sandbox, "/ROOT");
+         AVMUtil.removeVServerWebapp(path, true);
+   
          
-         // delete the preview store for this user
-         deleteStore(AVMUtil.buildUserPreviewStoreName(storeRoot, username));
+         // get the list of users who have a sandbox in the website
+         List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
+               websiteNode.getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+         for (ChildAssociationRef ref : userInfoRefs)
+         {
+            String username = (String)nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_WEBUSERNAME);
+            
+            // delete the preview store for this user
+            deleteStore(AVMUtil.buildUserPreviewStoreName(storeRoot, username));
+            
+            // delete the main store for this user
+            deleteStore(AVMUtil.buildUserMainStoreName(storeRoot, username));
+         }
          
-         // delete the main store for this user
-         deleteStore(AVMUtil.buildUserMainStoreName(storeRoot, username));
+         // remove the main staging and preview stores
+         deleteStore(AVMUtil.buildStagingPreviewStoreName(storeRoot));
+         deleteStore(AVMUtil.buildStagingStoreName(storeRoot));
       }
-      
-      // remove the main staging and preview stores
-      deleteStore(AVMUtil.buildStagingPreviewStoreName(storeRoot));
-      deleteStore(AVMUtil.buildStagingStoreName(storeRoot));
       
       // use the super implementation to delete the node itself
       return super.finishImpl(context, outcome);
@@ -134,21 +135,15 @@ public class DeleteWebsiteDialog extends DeleteSpaceDialog
       }
    }
    
-   
-   // ------------------------------------------------------------------------------
-   // Bean Getters and Setters
-   
    /**
-    * Returns the confirmation to display to the user before deleting the content.
+    * Returns the message bundle id of the confirmation message to display to 
+    * the user before deleting the website.
     * 
-    * @return The formatted message to display
+    * @return The message bundle id
     */
-   public String getConfirmMessage()
+   @Override
+   protected String getConfirmMessageId()
    {
-      String fileConfirmMsg = Application.getMessage(FacesContext.getCurrentInstance(), 
-               "delete_website_confirm");
-      
-      return MessageFormat.format(fileConfirmMsg, 
-            new Object[] {this.browseBean.getActionSpace().getName()});
+      return "delete_website_confirm";
    }
 }

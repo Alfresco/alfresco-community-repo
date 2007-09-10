@@ -28,7 +28,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
 
@@ -43,10 +42,8 @@ import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.content.DeleteContentDialog;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
-import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -205,6 +202,10 @@ public class DeleteSpaceDialog extends BaseDialogBean
       return false;
    }
    
+   protected String getConfirmMessageId()
+   {
+      return "delete_space_confirm";
+   }
    
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
@@ -217,10 +218,18 @@ public class DeleteSpaceDialog extends BaseDialogBean
    public String getConfirmMessage()
    {
       String fileConfirmMsg = Application.getMessage(FacesContext.getCurrentInstance(), 
-               "delete_space_confirm");
+               getConfirmMessageId());
       
-      return MessageFormat.format(fileConfirmMsg, 
-            new Object[] {this.browseBean.getActionSpace().getName()});
+      Node node = this.browseBean.getActionSpace();
+      if (node != null)
+      {
+         return MessageFormat.format(fileConfirmMsg, new Object[] {node.getName()});
+      }
+      else
+      {
+         return Application.getMessage(FacesContext.getCurrentInstance(), 
+                  "delete_node_not_found");
+      }
    }
    
    /**

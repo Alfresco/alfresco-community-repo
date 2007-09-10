@@ -908,6 +908,7 @@
         </property>
     </bean>
 
+<<<<<<< .working
     <bean id="patch.customModels" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.customModels</value></property>
         <property name="description"><value>patch.customModels.description</value></property>
@@ -986,6 +987,17 @@
                     <prop key="mimetype">text/xml</prop>
                </props>
             </list>
+        </property>
+    </bean>
+
+    <bean id="patch.db-V2.1-RemoveWcmSubmittedAspect" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.1-RemoveWcmSubmittedAspect</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>103</value></property>
+        <property name="targetSchema"><value>104</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.1/${db.script.dialect}/AlfrescoSchemaUpdate-2.1-RemoveWcmSubmittedAspect.sql</value>
         </property>
     </bean>
 

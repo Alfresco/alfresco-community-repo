@@ -285,16 +285,6 @@
       </properties>
     </aspect>
     
-    <aspect name="wcmwf:submitted">
-      <properties>
-        <property name="wcmwf:workflowInstanceId">
-          <title>Workflow Instance Id</title>
-          <type>d:text</type>
-          <mandatory>true</mandatory>
-        </property>
-      </properties>
-    </aspect>
-
   </aspects>
 
 </model>

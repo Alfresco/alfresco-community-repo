@@ -56,6 +56,7 @@
              <ref bean="patch.db-V2.1-JBPMData" />
              <ref bean="patch.db-V2.1-VersionColumns2" />
              <ref bean="patch.db-V2.1-JBPMProcessKey" />
+             <ref bean="patch.db-V2.1-RemoveWcmSubmittedAspect" />
           </list>
        </property>
     </bean>

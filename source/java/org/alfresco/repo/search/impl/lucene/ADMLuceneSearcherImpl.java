@@ -304,7 +304,6 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                 }
 
                 Path[] paths = searchParameters.getAttributePaths().toArray(new Path[0]);
-<<<<<<< .working
                 return new LuceneResultSet(
                         hits,
                         searcher,
@@ -312,10 +311,6 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                         tenantService,
                         paths,
                         searchParameters);
-=======
-                return new LuceneResultSet(hits, searcher, nodeService, paths, searchParameters);
->>>>>>> .merge-right.r6367
-
             }
             catch (ParseException e)
             {
@@ -348,12 +343,13 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                     return new EmptyResultSet();
                 }
                 Hits hits = searcher.search(query);
-<<<<<<< .working
-                return new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters.getAttributePaths().toArray(
-                        new Path[0]), searchParameters);
-=======
-                return new LuceneResultSet(hits, searcher, nodeService, searchParameters.getAttributePaths().toArray(new Path[0]), searchParameters);
->>>>>>> .merge-right.r6367
+                return new LuceneResultSet(
+                        hits,
+                        searcher,
+                        nodeService,
+                        tenantService,
+                        searchParameters.getAttributePaths().toArray(new Path[0]),
+                        searchParameters);
             }
             catch (SAXPathException e)
             {
@@ -573,15 +569,10 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
             boolean followAllParentLinks, String language) throws InvalidNodeRefException, XPathException
     {
         NodeSearcher nodeSearcher = new NodeSearcher(nodeService, dictionaryService, this);
-<<<<<<< .working
         
         contextNodeRef = tenantService.getName(contextNodeRef);
         
-        return nodeSearcher.selectNodes(contextNodeRef, xpath, parameters, namespacePrefixResolver,
-                followAllParentLinks, language);
-=======
         return nodeSearcher.selectNodes(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, language);
->>>>>>> .merge-right.r6367
     }
 
     /**

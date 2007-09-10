@@ -193,6 +193,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       
       // call a delegate wizard bean to provide invite user functionality
       InviteWebsiteUsersWizard wiz = getInviteUsersWizard();
+      wiz.init(null);
       wiz.setNode(new Node(nodeRef));
       wiz.setAvmStore(avmStore);
       wiz.setStandalone(false);

@@ -338,6 +338,11 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    border: 1px solid #CCD4DB;
 }
 
+.spaceFormItemError
+{
+   border-color: red !important;
+}
+
 .spaceToolbar
 {
    background-color: #D0D8E0;

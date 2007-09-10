@@ -504,6 +504,8 @@ var MySpaces = {
       var panel = $E(".spaceCreateSpacePanel", $(actionEl).getParent());
       panel.setStyle("opacity", 0);
       panel.setStyle("display", "inline");
+      panel.getElementById("space-name").removeClass("spaceFormItemError");
+
       Alfresco.Dom.smartAlignElement(panel, panel.getParent());
       // make into a dragable panel
       new Drag.Move(panel);
@@ -539,34 +541,43 @@ var MySpaces = {
       
       if (spaceName.length != 0)
       {
-         // ajax call to create space
-         YAHOO.util.Connect.asyncRequest(
-            "POST",
-            getContextPath() + '/ajax/invoke/MySpacesBean.createSpace',
-            {
-               success: function(response)
+         if (spaceName.test(/(.*[\"\*\\\>\<\?\/\:\|]+.*)|(.*[\.]?.*[\.]+$)|(.*[ ]+$)/i))
+         {
+            var spaceName = panel.getElementById("space-name");
+            spaceName.addClass("spaceFormItemError");
+            spaceName.focus();
+         }
+         else
+         {
+            // ajax call to create space
+            YAHOO.util.Connect.asyncRequest(
+               "POST",
+               getContextPath() + '/ajax/invoke/MySpacesBean.createSpace',
                {
-                  if (response.responseText.indexOf("OK:") == 0)
+                  success: function(response)
                   {
-                     MySpaces.refreshList();
-                  }
-                  else
+                     if (response.responseText.indexOf("OK:") == 0)
+                     {
+                        MySpaces.refreshList();
+                     }
+                     else
+                     {
+                        alert("Error during creation of new space: " + response.responseText);
+                     }
+                     MySpaces.closePopupPanel();
+                  },
+                  failure: function(response)
                   {
                      alert("Error during creation of new space: " + response.responseText);
+                     MySpaces.closePopupPanel();
                   }
-                  MySpaces.closePopupPanel();
-               },
-               failure: function(response)
-               {
-                  alert("Error during creation of new space: " + response.responseText);
-                  MySpaces.closePopupPanel();
-               }
-            }, 
-            "path=" + path.replace("_%_", "'") +
-            "&name=" + encodeURIComponent(spaceName) +
-            "&title=" + encodeURIComponent(spaceTitle) +
-            "&description=" + encodeURIComponent(spaceDesc)
-         );
+               }, 
+               "path=" + path.replace("_%_", "'") +
+               "&name=" + encodeURIComponent(spaceName) +
+               "&title=" + encodeURIComponent(spaceTitle) +
+               "&description=" + encodeURIComponent(spaceDesc)
+            );
+         }
       }
    },
    

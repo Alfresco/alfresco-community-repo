@@ -709,6 +709,17 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
    _padding: 0px 10px 10px 0px;
 }
 
+.requiredColumn
+{
+   padding-top: 6px;
+   vertical-align: top;
+}
+
+.leftHandColumn
+{
+   vertical-align: top;
+}
+
 .rightHandColumn
 {
    width: 100%;

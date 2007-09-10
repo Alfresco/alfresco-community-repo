@@ -2036,6 +2036,10 @@
          <value>#{AVMSyncService}</value>
       </managed-property>
       <managed-property>
+         <property-name>avmLockingService</property-name>
+         <value>#{AVMLockingService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>avmBrowseBean</property-name>
          <value>#{AVMBrowseBean}</value>
       </managed-property>
@@ -3047,6 +3051,10 @@
       <managed-property>
          <property-name>avmBrowseBean</property-name>
          <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>formsService</property-name>
+         <value>#{FormsService}</value>
       </managed-property>
    </managed-bean>
 

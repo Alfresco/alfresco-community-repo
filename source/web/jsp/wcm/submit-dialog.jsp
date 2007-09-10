@@ -77,14 +77,15 @@
 </h:panelGrid>
 
 <h:panelGrid columns="3" cellpadding="2" cellpadding="2" width="100%" style="margin-left:8px" 
-             columnClasses=",,rightHandColumn">
-   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
-   <h:outputText value="#{msg.submit_comment}:"/>
-   <h:inputText id="comment" value="#{DialogManager.bean.comment}" maxlength="1024" size="35"
-        onkeyup="javascript:checkButtonState();" />
+             columnClasses="requiredColumn,leftHandColumn,rightHandColumn">
+   
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.submit_snapshotlabel}:"/>
    <h:inputText id="label" value="#{DialogManager.bean.label}" maxlength="1024" size="35"
+        onkeyup="javascript:checkButtonState();" />
+   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+   <h:outputText value="#{msg.submit_comment}:"/>
+   <h:inputTextarea id="comment" value="#{DialogManager.bean.comment}" rows="3" cols="60"
         onkeyup="javascript:checkButtonState();" />
 </h:panelGrid>
 

@@ -37,6 +37,8 @@ import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.locking.AVMLock;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -61,6 +63,7 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
 {
    protected boolean doResubmitNow = false;
    protected AVMBrowseBean avmBrowseBean;
+   protected AVMLockingService avmLockingService;
    
    private final static Log logger = LogFactory.getLog(ManageChangeRequestTaskDialog.class);
    
@@ -110,6 +113,11 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
          tx = Repository.getUserTransaction(context);
          tx.begin();
         
+         // get the current username and place in list
+         String username = Application.getCurrentUser(context).getUserName();
+         List<String> newLockOwners = new ArrayList<String>(1);
+         newLockOwners.add(username);
+         
          // prepare the edited parameters for saving
          Map<QName, Serializable> params = WorkflowUtil.prepareTaskParams(this.taskNode);
          
@@ -125,23 +133,51 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
          String targetPath = pkgDesc.getIndirection();
          List<AVMDifference> diffs = this.avmSyncService.compare(pkgPath.getFirst(), 
                   pkgPath.getSecond(), -1, targetPath, null);
-         for (AVMDifference diff : diffs)
-         {
-            AVMNodeDescriptor node = this.avmService.lookup(diff.getDestinationVersion(), 
-                     diff.getDestinationPath(), true);
-            if (node != null)
-            {
-               submitNodes.add(node);
-               submitPaths.add(diff.getDestinationPath());
-            }
-         }
          
          // update the users main store with the changes from the workflow store
          this.avmSyncService.update(diffs, null, false, false, true, true, null, null);
          
+         // move locks
+         for (AVMDifference diff : diffs)
+         {
+            String sourcePath = diff.getSourcePath();
+            String destPath = diff.getDestinationPath();
+            
+            // move the lock for this path from the user workflow sandbox to the users main store
+            AVMLock lock = this.avmLockingService.getLock(AVMUtil.getStoreId(sourcePath), 
+                     AVMUtil.getStoreRelativePath(sourcePath));
+            if (lock != null)
+            {
+               this.avmLockingService.modifyLock(AVMUtil.getStoreId(sourcePath), 
+                        AVMUtil.getStoreRelativePath(sourcePath), null,
+                        AVMUtil.getStoreName(destPath), lock.getOwners(),
+                        newLockOwners);
+               
+               if (logger.isDebugEnabled())
+               {
+                  logger.debug("Moved lock: " + lock + " to: " + 
+                           this.avmLockingService.getLock(AVMUtil.getStoreId(destPath), 
+                                    AVMUtil.getStoreRelativePath(destPath)));
+               }
+            }
+         }
+         
          // re-submit all the items now if requested
          if (this.doResubmitNow)
          {
+            for (AVMDifference diff : diffs)
+            {
+               String destPath = diff.getDestinationPath();
+               
+               AVMNodeDescriptor node = this.avmService.lookup(diff.getDestinationVersion(), 
+                        destPath, true);
+               if (node != null)
+               {
+                  submitNodes.add(node);
+                  submitPaths.add(destPath);
+               }
+            }
+            
             setupSubmitDialog(context, submitPaths, submitNodes);
          }
          
@@ -191,6 +227,13 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
       this.avmBrowseBean = avmBrowseBean;
    }
 
+   /**
+    * @param avmLockingService The AVMLockingService instance
+    */
+   public void setAvmLockingService(AVMLockingService avmLockingService)
+   {
+      this.avmLockingService = avmLockingService;
+   }
    
    // ------------------------------------------------------------------------------
    // Helper methods

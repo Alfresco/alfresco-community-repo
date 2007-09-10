@@ -72,49 +72,51 @@ public class DeleteWebsiteDialog extends DeleteSpaceDialog
       {
          // delete all attached website sandboxes in reverse order to the layering
          String storeRoot = (String)websiteNode.getProperties().get(WCMAppModel.PROP_AVMSTORE);
-   
-         // Notifiy virtualization server about removing this website
-         //
-         // Implementation note:
-         //
-         //     Because the removal of virtual webapps in the virtualization 
-         //     server is recursive,  it only needs to be given the name of 
-         //     the main staging store.  
-         //
-         //     This notification must occur *prior* to purging content
-         //     within the AVM because the virtualization server must list
-         //     the avm_webapps dir in each store to discover which 
-         //     virtual webapps must be unloaded.  The virtualization 
-         //     server traverses the sandbox's stores in most-to-least 
-         //     dependent order, so clients don't have to worry about
-         //     accessing a preview layer whose main layer has been torn
-         //     out from under it.
-         //
-         //     It does not matter what webapp name we give here, so "/ROOT"
-         //     is as sensible as anything else.  It's all going away.
-   
-         String sandbox = AVMUtil.buildStagingStoreName(storeRoot);
-         String path    =  AVMUtil.buildStoreWebappPath(sandbox, "/ROOT");
-         AVMUtil.removeVServerWebapp(path, true);
-   
          
-         // get the list of users who have a sandbox in the website
-         List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
-               websiteNode.getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
-         for (ChildAssociationRef ref : userInfoRefs)
+         if (storeRoot != null)
          {
-            String username = (String)nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_WEBUSERNAME);
+            // Notifiy virtualization server about removing this website
+            //
+            // Implementation note:
+            //
+            //     Because the removal of virtual webapps in the virtualization 
+            //     server is recursive,  it only needs to be given the name of 
+            //     the main staging store.  
+            //
+            //     This notification must occur *prior* to purging content
+            //     within the AVM because the virtualization server must list
+            //     the avm_webapps dir in each store to discover which 
+            //     virtual webapps must be unloaded.  The virtualization 
+            //     server traverses the sandbox's stores in most-to-least 
+            //     dependent order, so clients don't have to worry about
+            //     accessing a preview layer whose main layer has been torn
+            //     out from under it.
+            //
+            //     It does not matter what webapp name we give here, so "/ROOT"
+            //     is as sensible as anything else.  It's all going away.
             
-            // delete the preview store for this user
-            deleteStore(AVMUtil.buildUserPreviewStoreName(storeRoot, username));
+            String sandbox = AVMUtil.buildStagingStoreName(storeRoot);
+            String path    =  AVMUtil.buildStoreWebappPath(sandbox, "/ROOT");
+            AVMUtil.removeVServerWebapp(path, true);
             
-            // delete the main store for this user
-            deleteStore(AVMUtil.buildUserMainStoreName(storeRoot, username));
+            // get the list of users who have a sandbox in the website
+            List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
+                  websiteNode.getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+            for (ChildAssociationRef ref : userInfoRefs)
+            {
+               String username = (String)nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_WEBUSERNAME);
+
+               // delete the preview store for this user
+               deleteStore(AVMUtil.buildUserPreviewStoreName(storeRoot, username));
+
+               // delete the main store for this user
+               deleteStore(AVMUtil.buildUserMainStoreName(storeRoot, username));
+            }
+            
+            // remove the main staging and preview stores
+            deleteStore(AVMUtil.buildStagingPreviewStoreName(storeRoot));
+            deleteStore(AVMUtil.buildStagingStoreName(storeRoot));
          }
-         
-         // remove the main staging and preview stores
-         deleteStore(AVMUtil.buildStagingPreviewStoreName(storeRoot));
-         deleteStore(AVMUtil.buildStagingStoreName(storeRoot));
       }
       
       // use the super implementation to delete the node itself

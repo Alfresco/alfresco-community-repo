@@ -29,7 +29,11 @@
          <#else>
             </div><div class="taskItem">
          </#if>
+         <#if t.description?exists>
             ${t.description?html} (${t.type?html})
+         <#else>
+            ${t.type?html} (${t.type?html})
+         </#if>
             <#if hasDue>
                (Due: ${due?date})
             </#if>

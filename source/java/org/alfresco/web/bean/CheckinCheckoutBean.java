@@ -479,7 +479,7 @@ public class CheckinCheckoutBean
                      // checkout to a arbituary parent Space 
                      NodeRef destRef = selectedSpaceId;
                      
-                     ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(destRef);
+                     ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(node.getNodeRef());
                      workingCopyRef = versionOperationsService.checkout(node.getNodeRef(),
                            destRef, ContentModel.ASSOC_CONTAINS, childAssocRef.getQName());
                   }

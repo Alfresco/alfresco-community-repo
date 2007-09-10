@@ -83,7 +83,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
    private static final String MSG_LABEL = "name";
    private static final String MSG_DESCRIPTION = "description";
    private static final String MSG_DATE = "date";
-   private static final String MSG_USERNAME = "username";
+   private static final String MSG_USERNAME = "snapshot_submitted_by";
    private static final String MSG_VERSION = "version";
    private static final String MSG_STATUS = "status";
    private static final String MSG_ACTIONS = "actions";

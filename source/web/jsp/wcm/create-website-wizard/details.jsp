@@ -48,7 +48,7 @@
    function checkButtonState()
    {
       if (document.getElementById("wizard:wizard-body:name").value.length == 0 ||
-          document.getElementById("wizard:wizard-body:dnsname").value.length < 2)
+          document.getElementById("wizard:wizard-body:dnsname").value.length < 1)
       {
          document.getElementById("wizard:next-button").disabled = true;
       }
@@ -69,7 +69,7 @@
          if (valid == true)
          {
             valid = validateRegex(document.getElementById("wizard:wizard-body:dnsname"),
-                  "^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$", true, null,
+                  "^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$", true, null,
                   '</f:verbatim><a:outputText value="#{msg.validation_invalid_dns_name}" /><f:verbatim>', true);
          }
          return valid;

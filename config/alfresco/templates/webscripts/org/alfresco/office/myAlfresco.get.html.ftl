@@ -1,6 +1,5 @@
 <#assign doc_actions="${url.serviceContext}/office/docActions">
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
-<#if args.n?exists><#assign node=args.n><#else><#assign node=companyhome></#if>
 <#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
 <#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
 <#-- resolve the path (from Company Home) into a node -->
@@ -131,7 +130,7 @@
          </li>
 </#if>
          <li>
-            <a title="Create Collaboration Space" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${d.id}&amp;cc=true">
+            <a title="Create Collaboration Space" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${nav}&amp;cc=true">
                <img src="${url.context}/images/office/create_space.gif" alt="Create Collaboration Space" />
                Create Collaboration Space
             </a>

@@ -252,6 +252,7 @@ public final class SMBStatus
     public static final int NTNoSuchDomain 				= 0xC00000DF;
     public static final int NTTooManyOpenFiles 			= 0xC000011F;
     public static final int NTCancelled 				= 0xC0000120;
+	public static final int NTInvalidLevel        		= 0xC0000148;
     public static final int NTFileOffline 				= 0xC0000267;
 
     public static final int Win32FileNotFound 			= 2;

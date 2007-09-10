@@ -49,7 +49,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.zip.CRC32;
 
@@ -59,6 +64,7 @@ import org.alfresco.repo.search.impl.lucene.FilterIndexReaderByStringId;
 import org.alfresco.repo.search.impl.lucene.LuceneConfig;
 import org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser;
 import org.alfresco.util.GUID;
+import org.alfresco.util.TraceableThreadFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
@@ -114,6 +120,8 @@ import org.apache.lucene.store.RAMDirectory;
  */
 public class IndexInfo
 {
+    private static Timer timer = new Timer();
+
     /**
      * The logger.
      */
@@ -214,8 +222,7 @@ public class IndexInfo
     /**
      * Map of state transitions
      */
-    private EnumMap<TransactionStatus, Transition> transitions = new EnumMap<TransactionStatus, Transition>(
-            TransactionStatus.class);
+    private EnumMap<TransactionStatus, Transition> transitions = new EnumMap<TransactionStatus, Transition>(TransactionStatus.class);
 
     /**
      * The queue of files and folders to delete
@@ -236,8 +243,7 @@ public class IndexInfo
     /**
      * The thread that deletes old index data
      */
-    private Thread cleanerThread;
-
+    // private Thread cleanerThread;
     /**
      * The class the supports index merging and applying deletions from deltas to indexes and deltas that go before it.
      */
@@ -247,8 +253,7 @@ public class IndexInfo
      * The thread that carries out index merging and applying deletions from deltas to indexes and deltas that go before
      * it.
      */
-    private Thread mergerThread;
-
+    // private Thread mergerThread;
     /**
      * A shared empty index to use if non exist.
      */
@@ -298,13 +303,15 @@ public class IndexInfo
      * Control if the cleaner thread is active
      */
 
-    private boolean enableCleanerThread = true;
+    private boolean enableCleaner = true;
 
     /**
      * Control if the merger thread is active
      */
 
-    private boolean enableMergerThread = true;
+    private boolean enableMerger = true;
+
+    private ThreadPoolExecutor threadPoolExecutor;
 
     static
     {
@@ -358,13 +365,22 @@ public class IndexInfo
     {
         super();
         initialiseTransitions();
-        
-        if(config != null)
+
+        if (config != null)
         {
             this.maxFieldLength = config.getIndexerMaxFieldLength();
+            this.threadPoolExecutor = config.getThreadPoolExecutor();
+        }
+        else
+        {
+            // need a default thread pool ....
+            TraceableThreadFactory threadFactory = new TraceableThreadFactory();
+            threadFactory.setThreadDaemon(true);
+            threadFactory.setThreadPriority(5);
+
+            threadPoolExecutor = new ThreadPoolExecutor(10, 10, 90, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
         }
 
-        
         // Create an empty in memory index
         IndexWriter writer;
         try
@@ -383,7 +399,7 @@ public class IndexInfo
         {
             throw new IndexerException("Failed to create an empty in memory index!");
         }
-        
+
         this.indexDirectory = indexDirectory;
 
         // Make sure the directory exists
@@ -446,15 +462,13 @@ public class IndexInfo
                                 long docs = writer.docCount();
                                 writer.close();
 
-                                IndexEntry entry = new IndexEntry(IndexType.INDEX, OLD_INDEX, "",
-                                        TransactionStatus.COMMITTED, "", docs, 0, false);
+                                IndexEntry entry = new IndexEntry(IndexType.INDEX, OLD_INDEX, "", TransactionStatus.COMMITTED, "", docs, 0, false);
                                 indexEntries.put(OLD_INDEX, entry);
 
                                 writeStatus();
-                                
+
                                 // The index exists and we should initialise the single reader
-                                registerReferenceCountingIndexReader(entry.getName(),
-                                        buildReferenceCountingIndexReader(entry.getName()));
+                                registerReferenceCountingIndexReader(entry.getName(), buildReferenceCountingIndexReader(entry.getName()));
                             }
                             catch (IOException e)
                             {
@@ -523,8 +537,7 @@ public class IndexInfo
                                         s_logger.info("Resetting merge to committed " + entry);
                                     }
                                     entry.setStatus(TransactionStatus.COMMITTED);
-                                    registerReferenceCountingIndexReader(entry.getName(),
-                                            buildReferenceCountingIndexReader(entry.getName()));
+                                    registerReferenceCountingIndexReader(entry.getName(), buildReferenceCountingIndexReader(entry.getName()));
                                     break;
                                 // Complete committing (which is post database
                                 // commit)
@@ -535,14 +548,12 @@ public class IndexInfo
                                         s_logger.info("Committing " + entry);
                                     }
                                     entry.setStatus(TransactionStatus.COMMITTED);
-                                    registerReferenceCountingIndexReader(entry.getName(),
-                                            buildReferenceCountingIndexReader(entry.getName()));
+                                    registerReferenceCountingIndexReader(entry.getName(), buildReferenceCountingIndexReader(entry.getName()));
                                     mainIndexReader = null;
                                     break;
                                 // States that require no action
                                 case COMMITTED:
-                                    registerReferenceCountingIndexReader(entry.getName(),
-                                            buildReferenceCountingIndexReader(entry.getName()));
+                                    registerReferenceCountingIndexReader(entry.getName(), buildReferenceCountingIndexReader(entry.getName()));
                                     break;
                                 default:
                                     // nothing to do
@@ -555,14 +566,11 @@ public class IndexInfo
                                 indexEntries.remove(id);
                             }
                             clearOldReaders();
-                            synchronized (cleaner)
-                            {
-                                cleaner.notify();
-                            }
-                            synchronized (merger)
-                            {
-                                merger.notify();
-                            }
+
+                            cleaner.schedule();
+
+                            merger.schedule();
+
                             // persist the new state
                             writeStatus();
                         }
@@ -576,25 +584,16 @@ public class IndexInfo
                 releaseWriteLock();
             }
         }
-        // TODO: Add unrecognised folders for deletion.
 
-        if (enableCleanerThread)
+        // Run the cleaner around every 20 secods - this just makes the request to the thread pool
+        timer.schedule(new TimerTask()
         {
-            cleanerThread = new Thread(cleaner);
-            cleanerThread.setDaemon(true);
-            cleanerThread.setName("Index cleaner thread " + indexDirectory);
-            cleanerThread.start();
-        }
-
-        if (enableMergerThread)
-        {
-            mergerThread = new Thread(merger);
-            mergerThread.setDaemon(true);
-            mergerThread.setName("Index merger thread " + indexDirectory);
-            mergerThread.start();
-        }
-
- 
+            @Override
+            public void run()
+            {
+                cleaner.schedule();
+            }
+        }, 0, 20000);
 
     }
 
@@ -674,8 +673,7 @@ public class IndexInfo
                     // Make sure the index exists
                     if (!indexEntries.containsKey(id))
                     {
-                        indexEntries.put(id, new IndexEntry(IndexType.DELTA, id, "", TransactionStatus.ACTIVE, "", 0,
-                                0, false));
+                        indexEntries.put(id, new IndexEntry(IndexType.DELTA, id, "", TransactionStatus.ACTIVE, "", 0, 0, false));
                     }
                 }
                 finally
@@ -868,8 +866,7 @@ public class IndexInfo
      *            should deletions on apply to nodes (ie not to containers)
      * @throws IOException
      */
-    public void setPreparedState(String id, Set<String> toDelete, long documents, boolean deleteNodesOnly)
-            throws IOException
+    public void setPreparedState(String id, Set<String> toDelete, long documents, boolean deleteNodesOnly) throws IOException
     {
         if (id == null)
         {
@@ -887,8 +884,7 @@ public class IndexInfo
                 }
             }
             // Write deletions
-            DataOutputStream os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(new File(location,
-                    INDEX_INFO_DELETIONS).getCanonicalFile())));
+            DataOutputStream os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(new File(location, INDEX_INFO_DELETIONS).getCanonicalFile())));
             os.writeInt(toDelete.size());
             for (String ref : toDelete)
             {
@@ -905,8 +901,7 @@ public class IndexInfo
             {
                 throw new IndexerException("Invalid index delta id " + id);
             }
-            if ((entry.getStatus() != TransactionStatus.PREPARING)
-                    && (entry.getStatus() != TransactionStatus.COMMITTING))
+            if ((entry.getStatus() != TransactionStatus.PREPARING) && (entry.getStatus() != TransactionStatus.COMMITTING))
             {
                 throw new IndexerException("Deletes and doc count can only be set on a preparing index");
             }
@@ -1000,8 +995,7 @@ public class IndexInfo
      * @return
      * @throws IOException
      */
-    public IndexReader getMainIndexReferenceCountingReadOnlyIndexReader(String id, Set<String> deletions,
-            boolean deleteOnlyNodes) throws IOException
+    public IndexReader getMainIndexReferenceCountingReadOnlyIndexReader(String id, Set<String> deletions, boolean deleteOnlyNodes) throws IOException
     {
         if (id == null)
         {
@@ -1073,9 +1067,7 @@ public class IndexInfo
             }
             else
             {
-                reader = new MultiReader(new IndexReader[] {
-                        new FilterIndexReaderByStringId("main+id", mainIndexReader, deletions, deleteOnlyNodes),
-                        deltaReader });
+                reader = new MultiReader(new IndexReader[] { new FilterIndexReaderByStringId("main+id", mainIndexReader, deletions, deleteOnlyNodes), deltaReader });
             }
             reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader("MainReader" + id, reader);
             ReferenceCounting refCounting = (ReferenceCounting) reader;
@@ -1089,8 +1081,7 @@ public class IndexInfo
         }
     }
 
-    public void setStatus(final String id, final TransactionStatus state, final Set<Term> toDelete, final Set<Term> read)
-            throws IOException
+    public void setStatus(final String id, final TransactionStatus state, final Set<Term> toDelete, final Set<Term> read) throws IOException
     {
         if (id == null)
         {
@@ -1229,8 +1220,7 @@ public class IndexInfo
             }
             else
             {
-                throw new IndexerException("Invalid transition for "
-                        + id + " from " + entry.getStatus() + " to " + TransactionStatus.PREPARING);
+                throw new IndexerException("Invalid transition for " + id + " from " + entry.getStatus() + " to " + TransactionStatus.PREPARING);
             }
         }
 
@@ -1303,8 +1293,7 @@ public class IndexInfo
             }
             else
             {
-                throw new IndexerException("Invalid transition for "
-                        + id + " from " + entry.getStatus() + " to " + TransactionStatus.PREPARED);
+                throw new IndexerException("Invalid transition for " + id + " from " + entry.getStatus() + " to " + TransactionStatus.PREPARED);
             }
         }
 
@@ -1335,8 +1324,7 @@ public class IndexInfo
             }
             else
             {
-                throw new IndexerException("Invalid transition for "
-                        + id + " from " + entry.getStatus() + " to " + TransactionStatus.COMMITTING);
+                throw new IndexerException("Invalid transition for " + id + " from " + entry.getStatus() + " to " + TransactionStatus.COMMITTING);
             }
         }
 
@@ -1391,17 +1379,13 @@ public class IndexInfo
                         mainIndexReader = null;
                     }
 
-                    synchronized (merger)
-                    {
-                        merger.notify();
-                    }
+                    merger.schedule();
                 }
 
             }
             else
             {
-                throw new IndexerException("Invalid transition for "
-                        + id + " from " + entry.getStatus() + " to " + TransactionStatus.COMMITTED);
+                throw new IndexerException("Invalid transition for " + id + " from " + entry.getStatus() + " to " + TransactionStatus.COMMITTED);
             }
         }
 
@@ -1433,8 +1417,7 @@ public class IndexInfo
             }
             else
             {
-                throw new IndexerException("Invalid transition for "
-                        + id + " from " + entry.getStatus() + " to " + TransactionStatus.ROLLINGBACK);
+                throw new IndexerException("Invalid transition for " + id + " from " + entry.getStatus() + " to " + TransactionStatus.ROLLINGBACK);
             }
         }
 
@@ -1466,8 +1449,7 @@ public class IndexInfo
             }
             else
             {
-                throw new IndexerException("Invalid transition for "
-                        + id + " from " + entry.getStatus() + " to " + TransactionStatus.ROLLEDBACK);
+                throw new IndexerException("Invalid transition for " + id + " from " + entry.getStatus() + " to " + TransactionStatus.ROLLEDBACK);
             }
         }
 
@@ -1495,17 +1477,13 @@ public class IndexInfo
             if (TransactionStatus.DELETABLE.follows(entry.getStatus()))
             {
                 indexEntries.remove(id);
-                synchronized (cleaner)
-                {
-                    cleaner.notify();
-                }
+                cleaner.schedule();
                 writeStatus();
                 clearOldReaders();
             }
             else
             {
-                throw new IndexerException("Invalid transition for "
-                        + id + " from " + entry.getStatus() + " to " + TransactionStatus.DELETABLE);
+                throw new IndexerException("Invalid transition for " + id + " from " + entry.getStatus() + " to " + TransactionStatus.DELETABLE);
             }
         }
 
@@ -1535,13 +1513,11 @@ public class IndexInfo
 
             if (TransactionStatus.ACTIVE.follows(null))
             {
-                indexEntries
-                        .put(id, new IndexEntry(IndexType.DELTA, id, "", TransactionStatus.ACTIVE, "", 0, 0, false));
+                indexEntries.put(id, new IndexEntry(IndexType.DELTA, id, "", TransactionStatus.ACTIVE, "", 0, 0, false));
             }
             else
             {
-                throw new IndexerException("Invalid transition for "
-                        + id + " from " + entry.getStatus() + " to " + TransactionStatus.ACTIVE);
+                throw new IndexerException("Invalid transition for " + id + " from " + entry.getStatus() + " to " + TransactionStatus.ACTIVE);
             }
         }
 
@@ -1695,9 +1671,8 @@ public class IndexInfo
                     {
                         try
                         {
-                            reader = new MultiReader(new IndexReader[] {
-                                    new FilterIndexReaderByStringId(id, reader, getDeletions(entry.getName()), entry
-                                            .isDeletOnlyNodes()), subReader });
+                            reader = new MultiReader(new IndexReader[] { new FilterIndexReaderByStringId(id, reader, getDeletions(entry.getName()), entry.isDeletOnlyNodes()),
+                                    subReader });
                         }
                         catch (IOException ioe)
                         {
@@ -1731,9 +1706,9 @@ public class IndexInfo
     private void registerReferenceCountingIndexReader(String id, IndexReader reader)
     {
         ReferenceCounting referenceCounting = (ReferenceCounting) reader;
-        if(!referenceCounting.getId().equals(id))
+        if (!referenceCounting.getId().equals(id))
         {
-            throw new IllegalStateException("Registering "+referenceCounting.getId()+ " as "+id);
+            throw new IllegalStateException("Registering " + referenceCounting.getId() + " as " + id);
         }
         referenceCountingReadOnlyIndexReaders.put(id, reader);
     }
@@ -1879,8 +1854,7 @@ public class IndexInfo
 
                     if (!status.isTransient())
                     {
-                        newIndexEntries.put(name, new IndexEntry(indexType, name, parentName, status, mergeId,
-                                documentCount, deletions, isDeletOnlyNodes));
+                        newIndexEntries.put(name, new IndexEntry(indexType, name, parentName, status, mergeId, documentCount, deletions, isDeletOnlyNodes));
                     }
                 }
                 long onDiskCRC32 = buffer.getLong();
@@ -2113,7 +2087,7 @@ public class IndexInfo
      * Helper to print out index information
      * 
      * @param args
-     * @throws Throwable 
+     * @throws Throwable
      */
     public static void main(String[] args) throws Throwable
     {
@@ -2139,44 +2113,42 @@ public class IndexInfo
             }
             IndexReader reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader();
             TermEnum terms = reader.terms(new Term("@{archiweb.model}instance", ""));
-            while(terms.next() && terms.term().field().equals("@{archiweb.model}instance"))
+            while (terms.next() && terms.term().field().equals("@{archiweb.model}instance"))
             {
-                System.out.println("F = " +terms.term().field() + "     V = "+terms.term().text() + "     F = "+terms.docFreq());
+                System.out.println("F = " + terms.term().field() + "     V = " + terms.term().text() + "     F = " + terms.docFreq());
             }
             terms.close();
             long start = System.currentTimeMillis();
             TermDocs termDocs = reader.termDocs(new Term("@{archiweb.model}instance", "tfl"));
-            while(termDocs.next())
+            while (termDocs.next())
             {
-                //System.out.println("Doc = " + termDocs.doc());
+                // System.out.println("Doc = " + termDocs.doc());
                 Document doc = reader.document(termDocs.doc());
                 doc.getField("ID");
-                //System.out.println("Ref = "+doc.getField("ID"));
+                // System.out.println("Ref = "+doc.getField("ID"));
             }
             termDocs.close();
-            System.out.println("Time = "+((System.currentTimeMillis() - start)/1000.0f));
-            
-            
-            
+            System.out.println("Time = " + ((System.currentTimeMillis() - start) / 1000.0f));
+
             terms = reader.terms(new Term("TYPE", ""));
-            while(terms.next() && terms.term().field().equals("TYPE"))
+            while (terms.next() && terms.term().field().equals("TYPE"))
             {
-                System.out.println("F = " +terms.term().field() + "     V = "+terms.term().text() + "     F = "+terms.docFreq());
+                System.out.println("F = " + terms.term().field() + "     V = " + terms.term().text() + "     F = " + terms.docFreq());
             }
             terms.close();
             start = System.currentTimeMillis();
-            termDocs = reader.termDocs(new Term("TYPE","{archiweb.model}tfdoc"));
-            while(termDocs.next())
+            termDocs = reader.termDocs(new Term("TYPE", "{archiweb.model}tfdoc"));
+            while (termDocs.next())
             {
-                //System.out.println("Doc = " + termDocs.doc());
+                // System.out.println("Doc = " + termDocs.doc());
                 Document doc = reader.document(termDocs.doc());
                 doc.getField("ID");
-                //System.out.println("Ref = "+doc.getField("ID"));
+                // System.out.println("Ref = "+doc.getField("ID"));
             }
             termDocs.close();
-            System.out.println("Time = "+((System.currentTimeMillis() - start)/1000.0f));
-            
-            //+@\{archiweb.model\}instance:TFL* 
+            System.out.println("Time = " + ((System.currentTimeMillis() - start) / 1000.0f));
+
+            // +@\{archiweb.model\}instance:TFL*
         }
     }
 
@@ -2185,102 +2157,79 @@ public class IndexInfo
      * 
      * @author Andy Hind
      */
-    private class Cleaner implements Runnable
+    private class Cleaner extends AbstractSchedulable
     {
 
         public void run()
         {
-            boolean runnable = true;
-            while (runnable)
-            {
-                // Add any closed index readers we were waiting for
-                HashSet<IndexReader> waiting = new HashSet<IndexReader>();
-                IndexReader reader;
-                while ((reader = deletableReaders.poll()) != null)
-                {
-                    ReferenceCounting refCounting = (ReferenceCounting) reader;
-                    if (refCounting.getReferenceCount() == 0)
-                    {
-                        if (s_logger.isDebugEnabled())
-                        {
-                            s_logger.debug("Deleting no longer referenced " + refCounting.getId());
-                            s_logger.debug("... queued delete for " + refCounting.getId());
-                            s_logger.debug("... "
-                                    + ReferenceCountingReadOnlyIndexReaderFactory.getState(refCounting.getId()));
-                        }
-                        getReadLock();
-                        try
-                        {
-                            if (indexEntries.containsKey(refCounting.getId()))
-                            {
-                                s_logger.error("ERROR - deleting live reader - " + refCounting.getId());
-                            }
-                        }
-                        finally
-                        {
-                            releaseReadLock();
-                        }
-                        deleteQueue.add(refCounting.getId());
-                    }
-                    else
-                    {
-                        waiting.add(reader);
-                    }
-                }
-                deletableReaders.addAll(waiting);
 
-                String id = null;
-                HashSet<String> fails = new HashSet<String>();
-                while ((id = deleteQueue.poll()) != null)
+            // Add any closed index readers we were waiting for
+            HashSet<IndexReader> waiting = new HashSet<IndexReader>();
+            IndexReader reader;
+            while ((reader = deletableReaders.poll()) != null)
+            {
+                ReferenceCounting refCounting = (ReferenceCounting) reader;
+                if (refCounting.getReferenceCount() == 0)
                 {
+                    if (s_logger.isDebugEnabled())
+                    {
+                        s_logger.debug("Deleting no longer referenced " + refCounting.getId());
+                        s_logger.debug("... queued delete for " + refCounting.getId());
+                        s_logger.debug("... " + ReferenceCountingReadOnlyIndexReaderFactory.getState(refCounting.getId()));
+                    }
+                    getReadLock();
                     try
                     {
-                        if (s_logger.isDebugEnabled())
+                        if (indexEntries.containsKey(refCounting.getId()))
                         {
-                            s_logger.debug("Expunging " + id + " remaining " + deleteQueue.size());
-                            s_logger.debug("... " + ReferenceCountingReadOnlyIndexReaderFactory.getState(id));
-                        }
-                        // try and delete
-                        File location = new File(indexDirectory, id).getCanonicalFile();
-                        if (!deleteDirectory(location))
-                        {
-                            if (s_logger.isDebugEnabled())
-                            {
-                                s_logger.debug("DELETE FAILED");
-                            }
-                            // try again later
-                            fails.add(id);
+                            s_logger.error("ERROR - deleting live reader - " + refCounting.getId());
                         }
                     }
-                    catch (IOException ioe)
+                    finally
                     {
-                        s_logger.warn("Failed to delete file - invalid canonical file", ioe);
+                        releaseReadLock();
+                    }
+                    deleteQueue.add(refCounting.getId());
+                }
+                else
+                {
+                    waiting.add(reader);
+                }
+            }
+            deletableReaders.addAll(waiting);
+
+            String id = null;
+            HashSet<String> fails = new HashSet<String>();
+            while ((id = deleteQueue.poll()) != null)
+            {
+                try
+                {
+                    if (s_logger.isDebugEnabled())
+                    {
+                        s_logger.debug("Expunging " + id + " remaining " + deleteQueue.size());
+                        s_logger.debug("... " + ReferenceCountingReadOnlyIndexReaderFactory.getState(id));
+                    }
+                    // try and delete
+                    File location = new File(indexDirectory, id).getCanonicalFile();
+                    if (!deleteDirectory(location))
+                    {
+                        if (s_logger.isDebugEnabled())
+                        {
+                            s_logger.debug("DELETE FAILED");
+                        }
+                        // try again later
                         fails.add(id);
                     }
                 }
-                deleteQueue.addAll(fails);
-                synchronized (this)
+                catch (IOException ioe)
                 {
-                    try
-                    {
-                        // wait for more deletes
-                        if (deleteQueue.size() > 0)
-                        {
-                            this.wait(20000);
-                        }
-                        else
-                        {
-                            this.wait();
-                        }
-                    }
-                    catch (InterruptedException e)
-                    {
-                        runnable = false;
-                        s_logger.warn("Cleaner thread for " + indexDirectory + "stopped by interruption.");
-                    }
+                    s_logger.warn("Failed to delete file - invalid canonical file", ioe);
+                    fails.add(id);
                 }
             }
+            deleteQueue.addAll(fails);
 
+            done();
         }
 
         private boolean deleteDirectory(File file)
@@ -2329,146 +2278,179 @@ public class IndexInfo
         NONE, MERGE_INDEX, APPLY_DELTA_DELETION, MERGE_DELTA
     }
 
-    private class Merger implements Runnable
+    private abstract class AbstractSchedulable implements Schedulable, Runnable
     {
+
+        boolean scheduled = false;
+
+        public synchronized void schedule()
+        {
+            if (!scheduled)
+            {
+                threadPoolExecutor.execute(this);
+                scheduled = true;
+            }
+            else
+            {
+                // already done
+            }
+        }
+
+        public synchronized void done()
+        {
+            if (scheduled)
+            {
+                scheduled = false;
+            }
+            else
+            {
+                throw new IllegalStateException();
+            }
+        }
+
+        public synchronized void reschedule()
+        {
+            if (scheduled)
+            {
+                threadPoolExecutor.execute(this);
+            }
+            else
+            {
+                throw new IllegalStateException();
+            }
+        }
+    }
+
+    private class Merger extends AbstractSchedulable
+    {
+
         public void run()
         {
-            boolean running = true;
 
-            while (running)
+            try
             {
+                // Get the read local to decide what to do
+                // Single JVM to start with
+                MergeAction action = MergeAction.NONE;
+
+                getReadLock();
                 try
                 {
-                    // Get the read local to decide what to do
-                    // Single JVM to start with
-                    MergeAction action = MergeAction.NONE;
-
-                    getReadLock();
-                    try
+                    if (indexIsShared && !checkVersion())
                     {
-                        if (indexIsShared && !checkVersion())
+                        releaseReadLock();
+                        getWriteLock();
+                        try
                         {
-                            releaseReadLock();
-                            getWriteLock();
+                            // Sync with disk image if required
+                            doWithFileLock(new LockWork<Object>()
+                            {
+                                public Object doWork() throws Exception
+                                {
+                                    return null;
+                                }
+                            });
+                        }
+                        finally
+                        {
                             try
                             {
-                                // Sync with disk image if required
-                                doWithFileLock(new LockWork<Object>()
-                                {
-                                    public Object doWork() throws Exception
-                                    {
-                                        return null;
-                                    }
-                                });
+                                getReadLock();
                             }
                             finally
                             {
-                                try
-                                {
-                                    getReadLock();
-                                }
-                                finally
-                                {
-                                    releaseWriteLock();
-                                }
+                                releaseWriteLock();
                             }
                         }
+                    }
 
-                        int indexes = 0;
-                        boolean mergingIndexes = false;
-                        int deltas = 0;
-                        boolean applyingDeletions = false;
+                    int indexes = 0;
+                    boolean mergingIndexes = false;
+                    int deltas = 0;
+                    boolean applyingDeletions = false;
 
-                        for (IndexEntry entry : indexEntries.values())
+                    for (IndexEntry entry : indexEntries.values())
+                    {
+                        if (entry.getType() == IndexType.INDEX)
                         {
-                            if (entry.getType() == IndexType.INDEX)
+                            indexes++;
+                            if (entry.getStatus() == TransactionStatus.MERGE)
                             {
-                                indexes++;
-                                if (entry.getStatus() == TransactionStatus.MERGE)
-                                {
-                                    mergingIndexes = true;
-                                }
+                                mergingIndexes = true;
                             }
-                            else if (entry.getType() == IndexType.DELTA)
+                        }
+                        else if (entry.getType() == IndexType.DELTA)
+                        {
+                            if (entry.getStatus() == TransactionStatus.COMMITTED)
                             {
-                                if (entry.getStatus() == TransactionStatus.COMMITTED)
-                                {
-                                    deltas++;
-                                }
-                                if (entry.getStatus() == TransactionStatus.COMMITTED_DELETING)
-                                {
-                                    applyingDeletions = true;
-                                }
+                                deltas++;
                             }
-                        }
-
-                        if (s_logger.isDebugEnabled())
-                        {
-                            s_logger.debug("Indexes = " + indexes);
-                            s_logger.debug("Merging = " + mergingIndexes);
-                            s_logger.debug("Deltas = " + deltas);
-                            s_logger.debug("Deleting = " + applyingDeletions);
-                        }
-
-                        if (!mergingIndexes && !applyingDeletions)
-                        {
-
-                            if ((indexes > mergerMergeFactor) || (deltas > mergerTargetOverlays))
+                            if (entry.getStatus() == TransactionStatus.COMMITTED_DELETING)
                             {
-                                if (indexes > deltas)
-                                {
-                                    // Try merge
-                                    action = MergeAction.MERGE_INDEX;
-                                }
-                                else
-                                {
-                                    // Try delete
-                                    action = MergeAction.APPLY_DELTA_DELETION;
-
-                                }
+                                applyingDeletions = true;
                             }
                         }
                     }
 
-                    catch (IOException e)
+                    if (s_logger.isDebugEnabled())
                     {
-                        s_logger.error("Error reading index file", e);
-                    }
-                    finally
-                    {
-                        releaseReadLock();
-                    }
-
-                    if (action == MergeAction.APPLY_DELTA_DELETION)
-                    {
-                        mergeDeletions();
-                    }
-                    else if (action == MergeAction.MERGE_INDEX)
-                    {
-                        mergeIndexes();
+                        s_logger.debug("Indexes = " + indexes);
+                        s_logger.debug("Merging = " + mergingIndexes);
+                        s_logger.debug("Deltas = " + deltas);
+                        s_logger.debug("Deleting = " + applyingDeletions);
                     }
 
-                    synchronized (this)
+                    if (!mergingIndexes && !applyingDeletions)
                     {
-                        try
+
+                        if ((indexes > mergerMergeFactor) || (deltas > mergerTargetOverlays))
                         {
-                            if (action == MergeAction.NONE)
+                            if (indexes > deltas)
                             {
-                                this.wait();
+                                // Try merge
+                                action = MergeAction.MERGE_INDEX;
                             }
-                        }
-                        catch (InterruptedException e)
-                        {
-                            // No action - could signal thread termination
+                            else
+                            {
+                                // Try delete
+                                action = MergeAction.APPLY_DELTA_DELETION;
+
+                            }
                         }
                     }
                 }
-                catch (Throwable t)
+
+                catch (IOException e)
                 {
-                    s_logger.error("??", t);
+                    s_logger.error("Error reading index file", e);
+                }
+                finally
+                {
+                    releaseReadLock();
+                }
+
+                if (action == MergeAction.APPLY_DELTA_DELETION)
+                {
+                    mergeDeletions();
+                }
+                else if (action == MergeAction.MERGE_INDEX)
+                {
+                    mergeIndexes();
+                }
+
+                if (action == MergeAction.NONE)
+                {
+                    done();
+                }
+                else
+                {
+                    reschedule();
                 }
             }
-
+            catch (Throwable t)
+            {
+                s_logger.error("??", t);
+            }
         }
 
         void mergeDeletions()
@@ -2496,8 +2478,7 @@ public class IndexInfo
                             {
                                 return set;
                             }
-                            if ((entry.getType() == IndexType.DELTA)
-                                    && (entry.getStatus() == TransactionStatus.COMMITTED_DELETING))
+                            if ((entry.getType() == IndexType.DELTA) && (entry.getStatus() == TransactionStatus.COMMITTED_DELETING))
                             {
                                 return set;
                             }
@@ -2631,9 +2612,7 @@ public class IndexInfo
                                 {
                                     if (s_logger.isDebugEnabled())
                                     {
-                                        s_logger.debug("Deleted "
-                                                + deletedCount + " from " + key + " for id " + stringRef
-                                                + " remaining docs " + reader.numDocs());
+                                        s_logger.debug("Deleted " + deletedCount + " from " + key + " for id " + stringRef + " remaining docs " + reader.numDocs());
                                     }
                                     invalidIndexes.add(key);
                                 }
@@ -2812,8 +2791,7 @@ public class IndexInfo
                             {
                                 return set;
                             }
-                            if ((entry.getType() == IndexType.DELTA)
-                                    && (entry.getStatus() == TransactionStatus.COMMITTED_DELETING))
+                            if ((entry.getType() == IndexType.DELTA) && (entry.getStatus() == TransactionStatus.COMMITTED_DELETING))
                             {
                                 return set;
                             }
@@ -2822,8 +2800,7 @@ public class IndexInfo
                         ArrayList<IndexEntry> mergeList = new ArrayList<IndexEntry>();
                         for (IndexEntry entry : indexEntries.values())
                         {
-                            if ((entry.getType() == IndexType.INDEX)
-                                    && (entry.getStatus() == TransactionStatus.COMMITTED))
+                            if ((entry.getType() == IndexType.INDEX) && (entry.getStatus() == TransactionStatus.COMMITTED))
                             {
                                 mergeList.add(entry);
                             }
@@ -2849,8 +2826,7 @@ public class IndexInfo
 
                         if (set.size() > 0)
                         {
-                            IndexEntry target = new IndexEntry(IndexType.INDEX, guid, "",
-                                    TransactionStatus.MERGE_TARGET, guid, count, 0, false);
+                            IndexEntry target = new IndexEntry(IndexType.INDEX, guid, "", TransactionStatus.MERGE_TARGET, guid, count, 0, false);
                             set.put(guid, target);
                             // rebuild merged index elements
                             LinkedHashMap<String, IndexEntry> reordered = new LinkedHashMap<String, IndexEntry>();
@@ -3056,10 +3032,7 @@ public class IndexInfo
 
                         clearOldReaders();
 
-                        synchronized (cleaner)
-                        {
-                            cleaner.notify();
-                        }
+                        cleaner.schedule();
 
                         return null;
                     }
@@ -3102,6 +3075,7 @@ public class IndexInfo
             }
             return 0;
         }
+
     }
 
     private void dumpInfo()
@@ -3194,22 +3168,22 @@ public class IndexInfo
 
     public boolean isEnableCleanerThread()
     {
-        return enableCleanerThread;
+        return enableCleaner;
     }
 
-    public void setEnableCleanerThread(boolean enableCleanerThread)
+    public void setEnableCleanerThread(boolean enableCleaner)
     {
-        this.enableCleanerThread = enableCleanerThread;
+        this.enableCleaner = enableCleaner;
     }
 
-    public boolean isEnableMergerThread()
+    public boolean isEnableMerger()
     {
-        return enableMergerThread;
+        return enableMerger;
     }
 
-    public void setEnableMergerThread(boolean enableMergerThread)
+    public void setEnableMerger(boolean enableMerger)
     {
-        this.enableMergerThread = enableMergerThread;
+        this.enableMerger = enableMerger;
     }
 
     public boolean isIndexIsShared()
@@ -3320,6 +3294,16 @@ public class IndexInfo
     public void setWriterUseCompoundFile(boolean writerUseCompoundFile)
     {
         this.writerUseCompoundFile = writerUseCompoundFile;
+    }
+
+    interface Schedulable
+    {
+        void schedule();
+
+        public void done();
+
+        public void reschedule();
+
     }
 
 }

@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.search.impl.lucene;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 import org.alfresco.repo.search.MLAnalysisMode;
 
 public interface LuceneConfig
@@ -73,5 +75,12 @@ public interface LuceneConfig
      * @return
      */
     public int getIndexerMaxFieldLength();
+    
+    /**
+     * Get the thread pool for index merging etc
+     * 
+     * @return
+     */
+    public ThreadPoolExecutor getThreadPoolExecutor();
    
 }

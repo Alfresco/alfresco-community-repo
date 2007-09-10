@@ -45,7 +45,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
     </defaultCache>
 
     <cache
@@ -62,8 +61,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -79,8 +76,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -98,8 +93,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -117,8 +110,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -136,8 +127,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -155,8 +144,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -174,8 +161,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -193,8 +178,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-                                
-
     </cache>
 
     <cache
@@ -212,8 +195,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-                                
-
     </cache>
 
     <cache
@@ -231,8 +212,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-                                
-
     </cache>
 
     <cache
@@ -250,8 +229,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-                                
-
     </cache>
 
     <cache
@@ -269,8 +246,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-                                
-
     </cache>
 
     <cache
@@ -288,8 +263,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-                                
-
     </cache>
 
     <cache
@@ -307,8 +280,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -324,8 +295,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -341,8 +310,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -358,8 +325,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -375,8 +340,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -392,8 +355,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -409,12 +370,41 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <!-- Non-Hibernate -->
     
+    <cache 
+        name="org.alfresco.repo.avm.lookupSharedCache"
+        maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false"
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+
+    <cache 
+        name="org.alfresco.repo.webservices.querySessionSharedCache"
+        maxElementsInMemory="1000"
+        eternal="false"
+        timeToLiveSeconds="300"
+        overflowToDisk="false"
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+
     <cache
         name="org.alfresco.cache.parentAssocsCache"
         maxElementsInMemory="10000"
@@ -428,8 +418,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -445,8 +433,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -462,8 +448,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -479,8 +463,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -496,8 +478,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
     <cache
@@ -513,8 +493,6 @@
                                 replicateRemovals = true,
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
-
-
     </cache>
 
         

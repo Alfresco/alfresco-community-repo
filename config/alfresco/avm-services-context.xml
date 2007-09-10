@@ -147,7 +147,7 @@
 	        <ref bean="avmStoreDAO"/>
 	    </property>
 	    <property name="transactionalCache">
-	    	<ref bean="lookupTransactionalCache"/>
+	    	<ref bean="avmLookupCache"/>
 	    </property>
 	</bean>
 	

@@ -740,6 +740,9 @@ public final class SMBErrorText
         case SMBStatus.NTPipeBusy:
             errtext = "Pipe is busy";
             break;
+        case SMBStatus.NTInvalidLevel:
+        	errtext = "Invalid information level";
+        	break;
         default:
             errtext = "Unknown NT status 0x" + Integer.toHexString(errcode);
             break;

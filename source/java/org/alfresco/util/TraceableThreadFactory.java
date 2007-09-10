@@ -60,7 +60,7 @@ public class TraceableThreadFactory implements ThreadFactory
     private int threadPriority;
     
 
-    TraceableThreadFactory()
+    public TraceableThreadFactory()
     {
         this.group = new ThreadGroup("TraceableThreadGroup-" + factoryNumber.getAndIncrement());
         TraceableThreadFactory.activeThreadGroups.add(this.group);

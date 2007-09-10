@@ -150,6 +150,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     protected NodeService nodeService;
     /** populated during setup */
     protected NodeRef rootNodeRef;
+    private NodeRef cat;
 
     @Override
     protected void onSetUpInTransaction() throws Exception
@@ -186,6 +187,13 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 StoreRef.PROTOCOL_WORKSPACE,
                 "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
+        
+        StoreRef catStoreRef = nodeService.createStore(
+                StoreRef.PROTOCOL_WORKSPACE,
+                "Test_cat_" + System.currentTimeMillis());
+        NodeRef catRootNodeRef = nodeService.getRootNode(catStoreRef);
+        
+        cat = nodeService.createNode(catRootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
         
         // downgrade integrity checks
         IntegrityChecker.setWarnInTransaction();
@@ -1142,7 +1150,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         properties.put(PROP_QNAME_QNAME_VALUE, TYPE_QNAME_TEST_CONTENT);
         properties.put(PROP_QNAME_PATH_VALUE, pathProperty);
         properties.put(PROP_QNAME_CONTENT_VALUE, new ContentData("url", "text/plain", 88L, "UTF-8"));
-        properties.put(PROP_QNAME_CATEGORY_VALUE, rootNodeRef);
+        properties.put(PROP_QNAME_CATEGORY_VALUE, cat);
         properties.put(PROP_QNAME_LOCALE_VALUE, Locale.CHINESE);
         properties.put(PROP_QNAME_NULL_VALUE, null);
         properties.put(PROP_QNAME_MULTI_VALUE, listProperty);
@@ -1180,7 +1188,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         properties.put(PROP_QNAME_QNAME_VALUE, TYPE_QNAME_TEST_CONTENT);
         properties.put(PROP_QNAME_PATH_VALUE, pathProperty);
         properties.put(PROP_QNAME_CONTENT_VALUE, new ContentData("url", "text/plain", 88L, "UTF-8"));
-        properties.put(PROP_QNAME_CATEGORY_VALUE, rootNodeRef);
+        properties.put(PROP_QNAME_CATEGORY_VALUE, cat);
         properties.put(PROP_QNAME_LOCALE_VALUE, Locale.CHINESE);
         properties.put(PROP_QNAME_NULL_VALUE, null);
         properties.put(PROP_QNAME_MULTI_VALUE, listProperty);

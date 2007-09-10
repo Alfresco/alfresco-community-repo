@@ -3477,7 +3477,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
             // Requested information level is not supported
 
-            m_sess.sendErrorResponseSMB(SMBStatus.SRVNotSupported, SMBStatus.ErrSrv);
+            m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidLevel, SMBStatus.SRVNotSupported, SMBStatus.ErrSrv);
         }
     }
 
@@ -3723,7 +3723,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
             // Requested information level is not supported
 
-            m_sess.sendErrorResponseSMB(SMBStatus.SRVNotSupported, SMBStatus.ErrSrv);
+            m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidLevel, SMBStatus.SRVNotSupported, SMBStatus.ErrSrv);
         }
     }
 
@@ -4197,7 +4197,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
             // Requested information level is not supported
 
-            m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+            m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidLevel, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
             return;
         }
     }
@@ -4412,7 +4412,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
             // Requested information level is not supported
 
-            m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+            m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidLevel, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
             return;
         }
     }

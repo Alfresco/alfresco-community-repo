@@ -257,6 +257,19 @@
 
     <!-- Internally used caches -->
     <cache 
+        name="org.alfresco.repo.avm.lookupSharedCache"
+        maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+    <cache 
+        name="org.alfresco.repo.webservices.querySessionSharedCache"
+        maxElementsInMemory="1000"
+        eternal="false"
+        timeToLiveSeconds="300"
+        overflowToDisk="false"
+        />
+    <cache 
         name="org.alfresco.cache.parentAssocsCache"
         maxElementsInMemory="10000"
         eternal="true"

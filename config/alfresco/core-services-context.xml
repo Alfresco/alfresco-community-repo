@@ -360,6 +360,15 @@
         </property>
     </bean>
 
+	<bean id="indexThreadPoolExecutor" class="org.alfresco.util.ThreadPoolExecutorFactoryBean" singleton="true">
+        <property name="corePoolSize">
+            <value>10</value>
+        </property>
+		<property name="threadPriority">
+			<value>5</value>
+		</property>
+    </bean>
+	
 
     <!-- Indexer and searchers for lucene -->
     <bean id="admLuceneIndexerAndSearcherFactory"
@@ -415,7 +424,9 @@
 		<property name="defaultMLSearchAnalysisMode">
             <value>EXACT_LANGUAGE_AND_ALL</value>
         </property>
-        
+		<property name="threadPoolExecutor">
+			<ref bean="indexThreadPoolExecutor"></ref>
+		</property>
     </bean>
 	
 	<!-- Indexer and searchers for lucene -->
@@ -481,7 +492,9 @@
         <property name="defaultMLSearchAnalysisMode">
             <value>EXACT_LANGUAGE_AND_ALL</value>
         </property>
-        
+        <property name="threadPoolExecutor">
+			<ref bean="indexThreadPoolExecutor"></ref>
+		</property>
     </bean>
 	
 

@@ -245,9 +245,13 @@
       </property>
    </bean>
    
-   <!-- Transactional caches setup for LookupCache -->
+   <!-- ===================================== -->
+   <!-- AVM Lookup Cache                      -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for AVM lookups -->
    
-   <bean name="lookupSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+   <bean name="avmLookupSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
        <property name="cache">
            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
                <property name="cacheManager">
@@ -260,9 +264,11 @@
        </property>
    </bean>
    
-   <bean name="lookupTransactionalCache" class="org.alfresco.repo.cache.TransactionalCache">
+   <!-- Transactional cache for AVM lookups -->
+
+   <bean name="avmLookupCache" class="org.alfresco.repo.cache.TransactionalCache">
        <property name="sharedCache">
-           <ref bean="lookupSharedCache"/>
+           <ref bean="avmLookupSharedCache"/>
        </property>
        <property name="cacheManager">
            <ref bean="transactionalEHCacheManager"/>
@@ -274,6 +280,43 @@
            <value>50</value>
        </property>
    </bean>
+   
+   <!-- ===================================== -->
+   <!-- WebServices Query Session Cache       -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for WebService query sessions -->
+   
+   <bean name="webServicesQuerySessionSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+       <property name="cache">
+           <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+               <property name="cacheManager">
+                   <ref bean="internalEHCacheManager"/>
+               </property>
+               <property name="cacheName">
+                   <value>org.alfresco.repo.webservices.querySessionSharedCache</value>
+               </property>
+           </bean>
+       </property>
+   </bean>
+   
+   <!-- Transactional cache for WebService query sessions -->
+
+   <bean name="webServicesQuerySessionCache" class="org.alfresco.repo.cache.TransactionalCache">
+       <property name="sharedCache">
+           <ref bean="webServicesQuerySessionSharedCache"/>
+       </property>
+       <property name="cacheManager">
+           <ref bean="transactionalEHCacheManager"/>
+       </property>
+       <property name="name">
+           <value>org.alfresco.repo.webservices.querySessionTransactionalCache</value>
+       </property>
+       <property name="maxCacheSize">
+           <value>50</value>
+       </property>
+   </bean>
+   
    <!-- ===================================== -->
    <!-- Messages Caches                       -->
    <!-- ===================================== -->

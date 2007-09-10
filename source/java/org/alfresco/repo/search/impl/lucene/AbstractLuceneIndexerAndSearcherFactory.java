@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
@@ -128,6 +129,8 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     private MLAnalysisMode defaultMLSearchAnalysisMode = MLAnalysisMode.EXACT_LANGUAGE_AND_ALL;
 
+    private ThreadPoolExecutor threadPoolExecutor;
+
     /**
      * Private constructor for the singleton TODO: FIt in with IOC
      */
@@ -137,11 +140,11 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         super();
     }
 
-   /**
-    * Set the directory that contains the indexes
-    * 
-    * @param indexRootLocation
-    */
+    /**
+     * Set the directory that contains the indexes
+     * 
+     * @param indexRootLocation
+     */
 
     public void setIndexRootLocation(String indexRootLocation)
     {
@@ -838,6 +841,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     /**
      * Set the lucene write lock timeout
+     * 
      * @param timeout
      */
     public void setWriteLockTimeout(long timeout)
@@ -847,6 +851,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     /**
      * Set the lucene commit lock timeout (no longer used with lucene 2.1)
+     * 
      * @param timeout
      */
     public void setCommitLockTimeout(long timeout)
@@ -856,6 +861,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     /**
      * Get the commit lock timout.
+     * 
      * @return - the timeout
      */
     public long getCommitLockTimeout()
@@ -864,7 +870,8 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     }
 
     /**
-     * Get the write lock timeout 
+     * Get the write lock timeout
+     * 
      * @return - the timeout in ms
      */
     public long getWriteLockTimeout()
@@ -884,6 +891,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     /**
      * Get the max number of tokens in the field
+     * 
      * @return - the max tokens considered.
      */
     public int getIndexerMaxFieldLength()
@@ -893,11 +901,22 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     /**
      * Set the max field length.
+     * 
      * @param indexerMaxFieldLength
      */
     public void setIndexerMaxFieldLength(int indexerMaxFieldLength)
     {
         this.indexerMaxFieldLength = indexerMaxFieldLength;
+    }
+
+    public ThreadPoolExecutor getThreadPoolExecutor()
+    {
+        return this.threadPoolExecutor;
+    }
+    
+    public void setThreadPoolExecutor(ThreadPoolExecutor threadPoolExecutor)
+    {
+        this.threadPoolExecutor = threadPoolExecutor;
     }
 
     /**
@@ -922,7 +941,6 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
         /**
          * Default constructor
-         *
          */
         public LuceneIndexBackupComponent()
         {
@@ -1082,8 +1100,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
                 // make sure the rename worked
                 if (!targetDir.exists())
                 {
-                    throw new AlfrescoRuntimeException(
-                            "Failed to rename temporary directory to target backup directory");
+                    throw new AlfrescoRuntimeException("Failed to rename temporary directory to target backup directory");
                 }
             }
         }
@@ -1105,8 +1122,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         public void execute(JobExecutionContext context) throws JobExecutionException
         {
             JobDataMap jobData = context.getJobDetail().getJobDataMap();
-            LuceneIndexBackupComponent backupComponent = (LuceneIndexBackupComponent) jobData
-                    .get(KEY_LUCENE_INDEX_BACKUP_COMPONENT);
+            LuceneIndexBackupComponent backupComponent = (LuceneIndexBackupComponent) jobData.get(KEY_LUCENE_INDEX_BACKUP_COMPONENT);
             if (backupComponent == null)
             {
                 throw new JobExecutionException("Missing job data: " + KEY_LUCENE_INDEX_BACKUP_COMPONENT);
@@ -1139,6 +1155,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     /**
      * Set the ML analysis mode at search time
+     * 
      * @param mode
      */
     public void setDefaultMLSearchAnalysisMode(MLAnalysisMode mode)

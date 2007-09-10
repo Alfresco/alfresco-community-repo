@@ -86,7 +86,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
 
    private static final String WEBAPP_DEFAULT = "ROOT";
 
-   private static Log logger = LogFactory.getLog(CreateWebsiteWizard.class);
+   protected final static Log LOGGER = LogFactory.getLog(CreateWebsiteWizard.class);
    
    protected boolean editMode = false;
    protected String dnsName;
@@ -101,6 +101,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    protected WorkflowService workflowService;
    protected PersonService personService;
    protected AVMLockingService avmLockingService;
+   protected FormsService formsService;
    
    /** datamodel for table of selected forms */
    protected DataModel formsDataModel = null;
@@ -170,8 +171,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
             WCMAppModel.TYPE_AVMWEBFOLDER);
       NodeRef nodeRef = fileInfo.getNodeRef();
       
-      if (logger.isDebugEnabled())
-         logger.debug("Created website folder node with name: " + this.name);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("Created website folder node with name: " + this.name);
       
       // TODO: check that this dns is unique by querying existing store properties for a match
       String avmStore = DNSNameMangler.MakeDNSName(this.dnsName);
@@ -382,6 +383,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
    public void setAvmLockingService(AVMLockingService avmLockingService)
    {
       this.avmLockingService = avmLockingService;
+   }
+
+   /**
+    * @param formsService    The FormsService to set.
+    */
+   public void setFormsService(final FormsService formsService)
+   {
+      this.formsService = formsService;
    }
 
    
@@ -614,7 +623,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
     */
    public List<UIListItem> getFormsList()
    {
-      Collection<Form> forms = FormsService.getInstance().getForms();
+      Collection<Form> forms = this.formsService.getForms();
       List<UIListItem> items = new ArrayList<UIListItem>(forms.size());
       for (Form form : forms)
       {

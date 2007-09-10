@@ -234,9 +234,10 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
                Application.getCurrentUser(context).getUserName());
       
       // setup the context for the submit dialog and initialise it
-      this.avmBrowseBean.setExpiredNodes(submitNodes);
+      this.avmBrowseBean.setNodesForSubmit(submitNodes);
       Map<String, String> dialogParams = new HashMap<String, String>(1);
-      dialogParams.put(SubmitDialog.PARAM_STARTED_FROM_WORKFLOW, Boolean.TRUE.toString());
+      dialogParams.put(SubmitDialog.PARAM_LOAD_SELECTED_NODES_FROM_BROWSE_BEAN, 
+                       Boolean.TRUE.toString());
       Application.getDialogManager().setupParameters(dialogParams);
    }
 }

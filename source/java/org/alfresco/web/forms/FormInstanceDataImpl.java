@@ -48,26 +48,41 @@ import org.xml.sax.SAXException;
  *
  * @author Ariel Backenroth
  */
-public class FormInstanceDataImpl
+/* package */ class FormInstanceDataImpl
    implements FormInstanceData
 {
 
    private static final Log LOGGER = LogFactory.getLog(RenditionImpl.class);
 
    private final NodeRef nodeRef;
+   private final FormsService formsService;
 
-   public FormInstanceDataImpl(final NodeRef nodeRef)
+   /* package */ FormInstanceDataImpl(final NodeRef nodeRef,
+                                      final FormsService formsService)
    {
       if (nodeRef == null)
       {
          throw new NullPointerException();
       }
+      if (formsService == null)
+      {
+         throw new NullPointerException();
+      }
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
+      if (!nodeService.hasAspect(nodeRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+      {
+         throw new IllegalArgumentException("node " + nodeRef +
+                                            " does not have aspect " + WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
+      }
       this.nodeRef = nodeRef;
+      this.formsService = formsService;
    }
 
-   public FormInstanceDataImpl(final int version, final String avmPath)
+   /* package */ FormInstanceDataImpl(final int version, 
+                                      final String avmPath,
+                                      final FormsService formsService)
    {
-      this(AVMNodeConverter.ToNodeRef(version, avmPath));
+      this(AVMNodeConverter.ToNodeRef(version, avmPath), formsService);
    }
 
    /** the name of this rendition */
@@ -106,7 +121,7 @@ public class FormInstanceDataImpl
       final String parentFormName = this.getParentFormName();
       try
       {
-         return FormsService.getInstance().getForm(parentFormName);
+         return this.formsService.getForm(parentFormName);
       }
       catch (FormNotFoundException fnfe)
       {
@@ -194,7 +209,8 @@ public class FormInstanceDataImpl
       {
          if (avmService.lookup(-1, storeName + ':' + (String)path) != null)
          {
-            final Rendition r = new RenditionImpl(AVMNodeConverter.ToNodeRef(-1, storeName + ':' + (String)path));
+            final Rendition r = new RenditionImpl(AVMNodeConverter.ToNodeRef(-1, storeName + ':' + (String)path), 
+                                                  this.formsService);
             if (r.getRenderingEngineTemplate() != null)
             {
                result.add(r);

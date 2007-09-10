@@ -203,6 +203,7 @@ public class CreateFormWizard
    protected ContentService contentService;
    protected MimetypeService mimetypeService;
    protected WorkflowService workflowService;
+   protected FormsService formsService;
 
    private String schemaRootElementName = null;
    private String formName = null;
@@ -234,7 +235,7 @@ public class CreateFormWizard
          LOGGER.debug("creating form " + this.getFormName());
 
       // get the node ref of the node that will contain the content
-      final NodeRef contentFormsNodeRef = FormsService.getInstance().getContentFormsNodeRef();
+      final NodeRef contentFormsNodeRef = this.formsService.getContentFormsNodeRef();
 
       final FileInfo folderInfo = 
          this.fileFolderService.create(contentFormsNodeRef,
@@ -518,7 +519,12 @@ public class CreateFormWizard
       final String name = this.getRenderingEngineTemplateName();
       if (name == null || name.length() == 0)
       {
-         Utils.addErrorMessage("Please provide a name for the rendering engine template");
+         Utils.addErrorMessage("Please provide a name for the rendering engine template.");
+         return;
+      }
+      if (this.renderingEngine == null)
+      {
+         Utils.addErrorMessage("Please select the rendering engine to use.");
          return;
       }
       final String opp = this.getOutputPathPatternForRendition();
@@ -712,9 +718,8 @@ public class CreateFormWizard
       if (this.renderingEngine == null &&
           this.getRenderingEngineTemplateFileName() != null)
       {
-         final FormsService fs = FormsService.getInstance();
          this.renderingEngine = 
-            fs.guessRenderingEngine(this.getRenderingEngineTemplateFileName());
+            this.formsService.guessRenderingEngine(this.getRenderingEngineTemplateFileName());
       }
       return (this.renderingEngine == null
               ? null
@@ -726,10 +731,9 @@ public class CreateFormWizard
     */
    public void setRenderingEngineName(final String renderingEngineName)
    {
-      final FormsService fs = FormsService.getInstance();
       this.renderingEngine = (renderingEngineName == null
                               ? null
-                              : fs.getRenderingEngine(renderingEngineName));
+                              : this.formsService.getRenderingEngine(renderingEngineName));
    }
    
    /**
@@ -737,9 +741,8 @@ public class CreateFormWizard
     */
    public List<SelectItem> getRenderingEngineChoices()
    {
-      final FormsService fs = FormsService.getInstance();
       final List<SelectItem>  result = new LinkedList<SelectItem>();
-      for (RenderingEngine re : fs.getRenderingEngines())
+      for (RenderingEngine re : this.formsService.getRenderingEngines())
       {
          result.add(new SelectItem(re.getName(), re.getName()));
       }
@@ -1096,6 +1099,14 @@ public class CreateFormWizard
    public void setWorkflowService(final WorkflowService workflowService)
    {
       this.workflowService = workflowService;
+   }
+
+   /**
+    * @param formsService    The FormsService to set.
+    */
+   public void setFormsService(final FormsService formsService)
+   {
+      this.formsService = formsService;
    }
    
    // ------------------------------------------------------------------------------

@@ -87,6 +87,7 @@ public class Schema2XForms
    private final String action;
    private final SubmitMethod submitMethod;
    private final String base;
+   private final Stack parentStack = new Stack();
 
    /**
     * generic counter -> replaced by an hashMap with:
@@ -1144,6 +1145,8 @@ public class Schema2XForms
                               final ResourceBundle resourceBundle)
       throws FormBuilderException
    {
+      LOGGER.debug("adding element " + elementDecl + " at path " + pathToRoot);
+
       XSTypeDefinition controlType = elementDecl.getTypeDefinition();
       if (controlType == null)
       {
@@ -1659,7 +1662,14 @@ public class Schema2XForms
       final String path = (pathToRoot.length() == 0
                            ? elementName
                            : pathToRoot + "/" + elementName);
-      LOGGER.debug("addElement to group " + elementName + " at "  + path);
+      LOGGER.debug("addElement to group " + elementName + " at "  + path + " parentStack " + this.parentStack);
+      
+      if (this.parentStack.contains(element))
+      {
+         throw new FormBuilderException("recursion detected at element " + elementName);
+      }
+      LOGGER.debug("pushing element " + element + " onto parent stack");
+      this.parentStack.push(element);
 
       final Element newDefaultInstanceElement = xformsDocument.createElement(elementName);
       if (element.getConstraintType() != XSConstants.VC_NONE)
@@ -1677,6 +1687,8 @@ public class Schema2XForms
                       path,
                       occurs,
                       resourceBundle);
+      LOGGER.debug("popped element " + this.parentStack.pop() + " from parent stack");
+
 
 //      final SchemaUtil.Occurrence occurs = SchemaUtil.getOccurrence(element);
       LOGGER.debug("adding " + (occurs.maximum == 1

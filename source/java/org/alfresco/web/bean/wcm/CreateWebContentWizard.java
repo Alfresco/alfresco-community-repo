@@ -64,6 +64,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.content.BaseContentWizard;
 import org.alfresco.web.bean.repository.Node;
@@ -72,7 +73,6 @@ import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormInstanceData;
-import org.alfresco.web.forms.FormInstanceDataImpl;
 import org.alfresco.web.forms.FormNotFoundException;
 import org.alfresco.web.forms.FormProcessor;
 import org.alfresco.web.forms.FormsService;
@@ -106,24 +106,13 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected boolean formSelectDisabled = false;
    protected boolean startWorkflow = false;
 
-   /** AVM service bean reference */
    protected AVMService avmService;
-
-   /** AVM sync service bean reference */
    protected AVMSyncService avmSyncService;
-   
-   /** AVM Browse Bean reference */
    protected AVMBrowseBean avmBrowseBean;
-
-   /** AVM Submitted Aspect reference */
    protected AVMSubmittedAspect avmSubmittedAspect;
-
-   /** Workflow service bean reference */
-   protected WorkflowService workflowService;
-
-   /** The FilePickerBean reference */
    protected FilePickerBean filePickerBean;
-   
+   protected FormsService formsService;
+
    /**
     * @param avmService       The AVMService to set.
     */
@@ -149,15 +138,6 @@ public class CreateWebContentWizard extends BaseContentWizard
    }
    
    /**
-    * @param workflowService  The WorkflowService to set.
-    */
-   public void setWorkflowService(WorkflowService workflowService)
-   {
-      this.workflowService = workflowService;
-   }
-
-   
-   /**
     * @param avmBrowseBean    The AVMBrowseBean to set.
     */
    public void setAvmBrowseBean(AVMBrowseBean avmBrowseBean)
@@ -172,8 +152,15 @@ public class CreateWebContentWizard extends BaseContentWizard
    {
       this.filePickerBean = filePickerBean;
    }
-   
-   
+
+   /**
+    * @param formsService    The FormsService to set.
+    */
+   public void setFormsService(final FormsService formsService)
+   {
+      this.formsService = formsService;
+   }
+  
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
@@ -295,7 +282,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    }
    
    @Override
-   protected String finishImpl(final FacesContext context, final String outcome)
+   protected String finishImpl(final FacesContext context, String outcome)
       throws Exception
    {
       final NodeRef[] uploadedFiles = this.filePickerBean.getUploadedFiles();
@@ -331,105 +318,23 @@ public class CreateWebContentWizard extends BaseContentWizard
 
       if (this.startWorkflow)
       {
-         final WorkflowDefinition wd = this.getForm().getDefaultWorkflow();
-         if (wd == null)
+         final List<AVMNodeDescriptor> submitNodes = 
+            new ArrayList<AVMNodeDescriptor>(1 + 
+                                             this.getUploadedFiles().size() +
+                                             this.getRenditions().size());
+         for (final AVMDifference d : diffList)
          {
-            throw new AlfrescoRuntimeException(Application.getMessage(context, "submit_no_workflow_warning"));
+            submitNodes.add(this.avmService.lookup(-1, d.getDestinationPath()));
          }
-
-         final Map<QName, Serializable> parameters = this.getForm().getDefaultWorkflowParameters();
-         
-         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("starting workflow " + wd + " with parameters " + parameters);
-
-         if (parameters == null)
-         {
-            throw new AlfrescoRuntimeException(Application.getMessage(context, "submit_workflow_config_error"));
-         }
-         
-         // start the workflow to get access to the start task
-         WorkflowPath path = this.workflowService.startWorkflow(wd.id, null);
-         if (path != null)
-         {
-            // extract the start task
-            List<WorkflowTask> tasks = this.workflowService.getTasksForWorkflowPath(path.id);
-            if (tasks.size() == 1)
-            {
-               WorkflowTask startTask = tasks.get(0);
-               
-               if (startTask.state == WorkflowTaskState.IN_PROGRESS)
-               {
-                  if (LOGGER.isDebugEnabled())
-                       LOGGER.debug("creating workflow package");
-                  // create package paths (layered to user sandbox area as target)
-                  final String storeId = this.avmBrowseBean.getStagingStore();
-                  final List<String> srcPaths = new ArrayList<String>();
-                  // construct diffs for selected items for submission
-                  final String sandboxName = this.avmBrowseBean.getSandbox();
-                  if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
-                  {
-                     // collect diffs for form data instance and all renditions
-                     for (Rendition rendition : this.getRenditions())
-                     {
-                        srcPaths.add(AVMUtil.getCorrespondingPath(rendition.getPath(), sandboxName));
-                     }
-                     for (NodeRef uploadedFile : uploadedFiles)
-                     {
-                        final String uploadPath = AVMNodeConverter.ToAVMVersionPath(uploadedFile).getSecond();
-                        srcPaths.add(AVMUtil.getCorrespondingPath(uploadPath, sandboxName));
-                     }
-
-                     srcPaths.add(AVMUtil.getCorrespondingPath(this.formInstanceData.getPath(), sandboxName));
-                  }
-                  else
-                  {
-                     // diff for txt or html content
-                     srcPaths.add(AVMUtil.getCorrespondingPath(this.createdPath, sandboxName));
-                  }
-
-                  if (LOGGER.isDebugEnabled())
-                  {
-                     LOGGER.debug("creating workflow package with " + srcPaths.size() + " files: {");
-                     for (final String srcPath : srcPaths)
-                     {
-                        LOGGER.debug("-- " + srcPath + ",");
-                     }
-                     LOGGER.debug("}");
-                  }
-
-                  // Create workflow sandbox for workflow package
-                  final SandboxInfo sandboxInfo = SandboxFactory.createWorkflowSandbox(storeId);
-
-                  final NodeRef packageNodeRef = 
-                     AVMWorkflowUtil.createWorkflowPackage(srcPaths,
-                                                           sandboxInfo,
-                                                           path,
-                                                           avmSubmittedAspect,
-                                                           this.avmSyncService,
-                                                           this.avmService,
-                                                           this.workflowService,
-                                                           this.nodeService);
-
-                  parameters.put(WorkflowModel.ASSOC_PACKAGE, packageNodeRef);
-                  parameters.put(WCMWorkflowModel.ASSOC_WEBPROJECT, 
-                                 this.avmBrowseBean.getWebsite().getNodeRef());
-                  // TODO: capture label and comment?
-                  parameters.put(WCMWorkflowModel.PROP_LABEL, 
-                                 MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null 
-                                 ? this.formInstanceData.getName() 
-                                 : this.getFileName());
-                  parameters.put(WCMWorkflowModel.PROP_FROM_PATH, AVMUtil.buildStoreRootPath(sandboxName));
-                    
-                  // update start task with submit parameters
-                  this.workflowService.updateTask(startTask.id, parameters, null, null);
-                   
-                  // end the start task to trigger the first 'proper' task in the workflow
-                  this.workflowService.endTask(startTask.id, null);
-               }
-            }
-         }
+         this.avmBrowseBean.setNodesForSubmit(submitNodes);
+         final Map<String, String> dialogParams = new HashMap<String, String>(1);
+         dialogParams.put(SubmitDialog.PARAM_LOAD_SELECTED_NODES_FROM_BROWSE_BEAN, 
+                          Boolean.TRUE.toString());
+         Application.getDialogManager().setupParameters(dialogParams);
+         outcome = (outcome + 
+                    AlfrescoNavigationHandler.OUTCOME_SEPARATOR + 
+                    AlfrescoNavigationHandler.DIALOG_PREFIX + "submitSandboxItems");
       }
-
       if (this.formProcessorSession != null)
       {
          this.formProcessorSession.destroy();
@@ -450,7 +355,7 @@ public class CreateWebContentWizard extends BaseContentWizard
 
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
       {
-         this.formInstanceData = new FormInstanceDataImpl(-1, this.createdPath);
+         this.formInstanceData = this.formsService.getFormInstanceData(-1, this.createdPath);
          this.renditions = this.formInstanceData.getRenditions();
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("reset form instance data " + this.formInstanceData.getName() + 
@@ -536,16 +441,12 @@ public class CreateWebContentWizard extends BaseContentWizard
 
       if (form != null)
       {
-         this.formInstanceData = new FormInstanceDataImpl(formInstanceDataNodeRef)
-         {
-            @Override
-            public Form getForm() { return form; }
-         };
          props.clear();
          props.put(WCMAppModel.PROP_PARENT_FORM_NAME, form.getName());
          props.put(WCMAppModel.PROP_ORIGINAL_PARENT_PATH, cwd);
          this.nodeService.addAspect(formInstanceDataNodeRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA, props);
 
+         this.formInstanceData = this.formsService.getFormInstanceData(formInstanceDataNodeRef);
          this.renditions = new LinkedList<Rendition>();
          for (RenderingEngineTemplate ret : form.getRenderingEngineTemplates())
          {
@@ -674,6 +575,9 @@ public class CreateWebContentWizard extends BaseContentWizard
       return this.createMimeTypes;
    }
    
+   /**
+    * @return the current seleted form's name or <tt>null</tt>.
+    */
    public String getFormName()
    {
       return this.formName;

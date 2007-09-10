@@ -98,7 +98,7 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
          String name = (String)this.nodeService.getProperty(formRef, WCMAppModel.PROP_FORMNAME);
          try
          {
-            final Form formImpl = FormsService.getInstance().getForm(name);
+            final Form formImpl = this.formsService.getForm(name);
             FormWrapper form = new FormWrapper(formImpl);
             form.setTitle((String)this.nodeService.getProperty(formRef, ContentModel.PROP_TITLE));
             form.setDescription((String)this.nodeService.getProperty(formRef, ContentModel.PROP_DESCRIPTION));
@@ -147,6 +147,7 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
          catch (FormNotFoundException fnfe)
          {
             //ignore
+            LOGGER.debug(fnfe.getMessage(), fnfe);
          }
       }
       

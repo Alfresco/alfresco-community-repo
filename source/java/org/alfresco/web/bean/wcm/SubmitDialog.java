@@ -75,7 +75,7 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.forms.FormInstanceData;
-import org.alfresco.web.forms.FormInstanceDataImpl;
+import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
@@ -89,7 +89,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class SubmitDialog extends BaseDialogBean
 {
-   public static final String PARAM_STARTED_FROM_WORKFLOW = "startedFromWorkflow";
+   public static final String PARAM_LOAD_SELECTED_NODES_FROM_BROWSE_BEAN = "loadSelectedNodesFromBrowseBean";
    private static final String SPACE_ICON = "/images/icons/" + BrowseBean.SPACE_SMALL_DEFAULT + ".gif";
    private static final String MSG_DELETED_ITEM = "avm_node_deleted";
    private static final String MSG_ERR_WORKFLOW_CONFIG = "submit_workflow_config_error";
@@ -98,7 +98,7 @@ public class SubmitDialog extends BaseDialogBean
    private String label;
    private String[] workflowSelectedValue;
    private boolean enteringExpireDate = false;
-   private boolean startedFromWorkflow = false;
+   private boolean loadSelectedNodesFromBrowseBean = false;
    private boolean validateLinks = true;
    private Date defaultExpireDate;
    private Date launchDate;
@@ -106,7 +106,7 @@ public class SubmitDialog extends BaseDialogBean
    private List<ItemWrapper> submitItems;
    private List<ItemWrapper> warningItems;
    private HashSet<FormWorkflowWrapper> workflows;
-   private Map<String, FormWorkflowWrapper> formWorkflowMap;
+//   private Map<String, FormWorkflowWrapper> formWorkflowMap;
    private Map<String, Date> expirationDates;
    private List<UIListItem> workflowItems;
    private Map<QName, Serializable> workflowParams;
@@ -130,11 +130,12 @@ public class SubmitDialog extends BaseDialogBean
    protected AVMSyncService avmSyncService;
    protected AVMLockingService avmLockingService;
    protected NameMatcher nameMatcher;
+   protected FormsService formsService;
    
    /** Current workflow for dialog context */
    protected WorkflowConfiguration actionWorkflow = null;
    
-   private static Log logger = LogFactory.getLog(SubmitDialog.class);
+   private static final Log LOGGER = LogFactory.getLog(SubmitDialog.class);
    
    /**
     * @param avmService       The AVM Service to set.
@@ -193,6 +194,14 @@ public class SubmitDialog extends BaseDialogBean
    }
 
    /**
+    * @param formsService    The FormsService to set.
+    */
+   public void setFormsService(final FormsService formsService)
+   {
+      this.formsService = formsService;
+   }
+
+   /**
     * @see org.alfresco.web.bean.dialog.BaseDialogBean#init(java.util.Map)
     */
    @Override
@@ -216,29 +225,7 @@ public class SubmitDialog extends BaseDialogBean
       this.virtUpdatePath = null;
       
       // determine if the dialog has been started from a workflow
-      Boolean bool = new Boolean(this.parameters.get(PARAM_STARTED_FROM_WORKFLOW));
-      this.startedFromWorkflow = bool;
-      
-      // walk all the web forms attached the website, and lookup the workflow defaults for each
-      NodeRef websiteRef = this.avmBrowseBean.getWebsite().getNodeRef();
-      List<ChildAssociationRef> webFormRefs = this.nodeService.getChildAssocs(
-            websiteRef, WCMAppModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
-      this.formWorkflowMap = new HashMap<String, FormWorkflowWrapper>(webFormRefs.size(), 1.0f);
-      for (ChildAssociationRef ref : webFormRefs)
-      {
-         NodeRef webFormRef = ref.getChildRef();
-         String form = (String)this.nodeService.getProperty(webFormRef, WCMAppModel.PROP_FORMNAME);
-         List<ChildAssociationRef> wfRefs = this.nodeService.getChildAssocs(
-            webFormRef, WCMAppModel.TYPE_WORKFLOW_DEFAULTS, RegexQNamePattern.MATCH_ALL);
-         if (wfRefs.size() == 1)
-         {
-            NodeRef wfDefaultsRef = wfRefs.get(0).getChildRef();
-            String wfName = (String)this.nodeService.getProperty(wfDefaultsRef, WCMAppModel.PROP_WORKFLOW_NAME);
-            Map<QName, Serializable> params = (Map<QName, Serializable>)AVMWorkflowUtil.deserializeWorkflowParams(
-                  wfDefaultsRef);
-            this.formWorkflowMap.put(form, new FormWorkflowWrapper(wfName, params));
-         }
-      }
+      this.loadSelectedNodesFromBrowseBean = Boolean.valueOf(this.parameters.get(PARAM_LOAD_SELECTED_NODES_FROM_BROWSE_BEAN));
    }
    
    @Override
@@ -637,7 +624,7 @@ public class SubmitDialog extends BaseDialogBean
       catch (Throwable e)
       {
          // not much we can do now, just log the error to inform admins
-         logger.error("Failed to cleanup workflow sandbox after workflow failure", e);
+         LOGGER.error("Failed to cleanup workflow sandbox after workflow failure", e);
       }
    }
    
@@ -873,7 +860,7 @@ public class SubmitDialog extends BaseDialogBean
             // add first workflow as default selection
             if (workflowSelectedValue == null)
             {
-               workflowSelectedValue = new String[]{workflowDef.getName()};
+               workflowSelectedValue = new String[]{ workflowDef.getName() };
             }
          }
          this.workflowItems = items;
@@ -946,131 +933,109 @@ public class SubmitDialog extends BaseDialogBean
          tx.begin();
          
          List<AVMNodeDescriptor> selected;
-         if (this.startedFromWorkflow)
+         if (this.loadSelectedNodesFromBrowseBean)
          {
             // if the dialog was started from a workflow the AVM browse bean should
             // have the list of nodes that need submitting
-            selected = this.avmBrowseBean.getExpiredNodes();
+            selected = this.avmBrowseBean.getNodesForSubmit();
+         }
+         // if the dialog was started from the UI determine what nodes the user selected to submit
+         else if (this.avmBrowseBean.getAllItemsAction())
+         {
+            String webapp = this.avmBrowseBean.getWebapp();
+            String userStore = AVMUtil.buildStoreWebappPath(this.avmBrowseBean.getSandbox(), webapp);
+            String stagingStore = AVMUtil.buildStoreWebappPath(this.avmBrowseBean.getStagingStore(), webapp);
+            List<AVMDifference> diffs = this.avmSyncService.compare(-1, userStore, -1, stagingStore, nameMatcher);
+            selected = new ArrayList<AVMNodeDescriptor>(diffs.size());
+            for (AVMDifference diff : diffs)
+            {
+               selected.add(this.avmService.lookup(-1, diff.getSourcePath(), true));
+            }
+         }
+         else if (this.avmBrowseBean.getAvmActionNode() == null)
+         {
+            // multiple items selected
+            selected = this.avmBrowseBean.getSelectedSandboxItems();
          }
          else
          {
-            // if the dialog was started from the UI determine what nodes the user selected to submit
-            if (this.avmBrowseBean.getAllItemsAction())
-            {
-               String webapp = this.avmBrowseBean.getWebapp();
-               String userStore = AVMUtil.buildStoreWebappPath(this.avmBrowseBean.getSandbox(), webapp);
-               String stagingStore = AVMUtil.buildStoreWebappPath(this.avmBrowseBean.getStagingStore(), webapp);
-               List<AVMDifference> diffs = this.avmSyncService.compare(-1, userStore, -1, stagingStore, nameMatcher);
-               selected = new ArrayList<AVMNodeDescriptor>(diffs.size());
-               for (AVMDifference diff : diffs)
-               {
-                  AVMNodeDescriptor node = this.avmService.lookup(-1, diff.getSourcePath(), true);
-                  selected.add(node);
-               }
-            }
-            else if (this.avmBrowseBean.getAvmActionNode() == null)
-            {
-               // multiple items selected
-               selected = this.avmBrowseBean.getSelectedSandboxItems();
-            }
-            else
-            {
-               // single item selected
-               AVMNodeDescriptor node =
-                  this.avmService.lookup(-1, this.avmBrowseBean.getAvmActionNode().getPath(), true);
-               selected = new ArrayList<AVMNodeDescriptor>(1);
-               selected.add(node);
-            }
+            // single item selected
+            selected = new ArrayList<AVMNodeDescriptor>(1);
+            selected.add(this.avmService.lookup(-1, this.avmBrowseBean.getAvmActionNode().getPath(), true));
          }
 
-         if (selected != null)
+         if (selected == null)
+         {
+            this.submitItems = Collections.<ItemWrapper>emptyList();
+            this.warningItems = Collections.<ItemWrapper>emptyList();
+         }
+         else
          {
             Set<String> submittedPaths = new HashSet<String>(selected.size());
             this.submitItems = new ArrayList<ItemWrapper>(selected.size());
             this.warningItems = new ArrayList<ItemWrapper>(selected.size() >> 1);
             for (AVMNodeDescriptor node : selected)
             {
-               if (this.avmService.hasAspect(-1, node.getPath(), AVMSubmittedAspect.ASPECT) == false)
+               if (this.avmService.hasAspect(-1, node.getPath(), AVMSubmittedAspect.ASPECT))
                {
-                  NodeRef ref = AVMNodeConverter.ToNodeRef(-1, node.getPath());
-                  if (submittedPaths.contains(node.getPath()) == false)
-                  {
-                     if (node.isDeleted() == false)
-                     {
-                        // lookup if this item was created via a form - then lookup the workflow defaults
-                        // for that form and store into the list of available workflows
-                        if (this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
-                        {
-                           NodeRef formInstanceDataRef = ref;
-                           
-                           // check if this is a rendition - as they also have the forminstancedata aspect
-                           if (this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_RENDITION))
-                           {
-                              // found a generated rendition asset - locate the parent form instance data file
-                              // and use this to find all generated assets that are appropriate
-                              // NOTE: this path value is store relative
-                              String strFormInstance = (String)this.nodeService.getProperty(
-                                    ref, WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA);
-                              strFormInstance = this.avmBrowseBean.getSandbox() + ':' + strFormInstance;
-                              formInstanceDataRef = AVMNodeConverter.ToNodeRef(-1, strFormInstance);
-                           }
-                           
-                           // add the form instance data file to the list for submission
-                           AVMNodeDescriptor formInstanceNode = this.avmService.lookup(
-                                 -1, AVMNodeConverter.ToAVMVersionPath(formInstanceDataRef).getSecond());
-                           if (submittedPaths.contains(formInstanceNode.getPath()) == false)
-                           {
-                              this.submitItems.add(new ItemWrapper(formInstanceNode));
-                              submittedPaths.add(formInstanceNode.getPath());
-                           }
-                           
-                           // locate renditions for this form instance data file and add to list for submission
-                           FormInstanceData formImpl = new FormInstanceDataImpl(formInstanceDataRef);
-                           for (Rendition rendition : formImpl.getRenditions())
-                           {
-                              String renditionPath = rendition.getPath();
-                              if (submittedPaths.contains(renditionPath) == false)
-                              {
-                                 AVMNodeDescriptor renditionNode = this.avmService.lookup(-1, renditionPath);
-                                 this.submitItems.add(new ItemWrapper(renditionNode));
-                                 submittedPaths.add(renditionPath);
-                              }
-                           }
-                           
-                           // lookup the associated Form workflow from the parent form property
-                           String formName = (String)this.nodeService.getProperty(
-                                 formInstanceDataRef, WCMAppModel.PROP_PARENT_FORM_NAME);
-                           FormWorkflowWrapper wrapper = this.formWorkflowMap.get(formName);
-                           if (wrapper != null)
-                           {
-                              // found a workflow attached to the form
-                              this.workflows.add(wrapper);
-                           }
-                        }
-                        else
-                        {
-                           this.submitItems.add(new ItemWrapper(node));
-                           submittedPaths.add(node.getPath());
-                        }
-                     }
-                     else
-                     {
-                        // found a deleted node for submit
-                        this.submitItems.add(new ItemWrapper(node));
-                        submittedPaths.add(node.getPath());
-                     }
-                  }
+                  this.warningItems.add(new ItemWrapper(node));
+                  continue;
+               }
+               NodeRef ref = AVMNodeConverter.ToNodeRef(-1, node.getPath());
+               if (submittedPaths.contains(node.getPath()))
+               {
+                  continue;
+               }
+               if (node.isDeleted())
+               {
+                  // found a deleted node for submit
+                  this.submitItems.add(new ItemWrapper(node));
+                  submittedPaths.add(node.getPath());
+               }
+               // lookup if this item was created via a form - then lookup the workflow defaults
+               // for that form and store into the list of available workflows
+               else if (! this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+               {
+                  this.submitItems.add(new ItemWrapper(node));
+                  submittedPaths.add(node.getPath());
                }
                else
                {
-                  this.warningItems.add(new ItemWrapper(node));
+                  FormInstanceData fid = null;
+                  // check if this is a rendition - as they also have the forminstancedata aspect
+                  if (this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_RENDITION))
+                  {
+                     // found a generated rendition asset - locate the parent form instance data file
+                     // and use this to find all generated assets that are appropriate
+                     // NOTE: this path value is store relative
+                     fid = this.formsService.getRendition(ref).getPrimaryFormInstanceData();
+                  }
+                  else
+                  {
+                     fid = this.formsService.getFormInstanceData(ref);
+                  }
+                           
+                  // add the form instance data file to the list for submission
+                  if (!submittedPaths.contains(fid.getPath()))
+                  {
+                     this.submitItems.add(new ItemWrapper(this.avmService.lookup(-1, fid.getPath())));
+                     submittedPaths.add(fid.getPath());
+                  }
+                           
+                  // locate renditions for this form instance data file and add to list for submission
+                  for (final Rendition rendition : fid.getRenditions())
+                  {
+                     final String renditionPath = rendition.getPath();
+                     if (!submittedPaths.contains(renditionPath))
+                     {
+                        this.submitItems.add(new ItemWrapper(this.avmService.lookup(-1, renditionPath)));
+                        submittedPaths.add(renditionPath);
+                     }
+                  }
+                  this.workflows.add(new FormWorkflowWrapper(fid.getForm().getDefaultWorkflow().getName(),
+                                                             fid.getForm().getDefaultWorkflowParameters()));
                }
             }
-         }
-         else
-         {
-            this.submitItems = Collections.<ItemWrapper>emptyList();
-            this.warningItems = Collections.<ItemWrapper>emptyList();
          }
          
          tx.commit();
@@ -1092,22 +1057,23 @@ public class SubmitDialog extends BaseDialogBean
       // if an expiration date has been set for this item we need to
       // add the expires aspect and the date supplied
       Date expirationDate = this.expirationDates.get(srcPath);
-      if (expirationDate != null)
+      if (expirationDate == null)
       {
-         // make sure the aspect is present
-         if (this.avmService.hasAspect(-1, srcPath, WCMAppModel.ASPECT_EXPIRES) == false)
-         {
-            this.avmService.addAspect(srcPath, WCMAppModel.ASPECT_EXPIRES);
-         }
-         
-         // set the expiration date
-         this.avmService.setNodeProperty(srcPath, WCMAppModel.PROP_EXPIRATIONDATE, 
-                  new PropertyValue(DataTypeDefinition.DATETIME, expirationDate));
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Set expiration date of " + expirationDate + 
-                     " for " + srcPath);
+         return;
       }
+      // make sure the aspect is present
+      if (this.avmService.hasAspect(-1, srcPath, WCMAppModel.ASPECT_EXPIRES) == false)
+      {
+         this.avmService.addAspect(srcPath, WCMAppModel.ASPECT_EXPIRES);
+      }
+         
+      // set the expiration date
+      this.avmService.setNodeProperty(srcPath, WCMAppModel.PROP_EXPIRATIONDATE, 
+                                      new PropertyValue(DataTypeDefinition.DATETIME, expirationDate));
+         
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("Set expiration date of " + expirationDate + 
+                      " for " + srcPath);
    }
    
    /**
@@ -1115,15 +1081,16 @@ public class SubmitDialog extends BaseDialogBean
     */
    public void setupConfigureWorkflow(ActionEvent event)
    {
-      if (this.workflowSelectedValue != null)
+      if (this.workflowSelectedValue == null)
       {
-         String workflowName = this.workflowSelectedValue[0];
-         for (WorkflowConfiguration wrapper : this.workflows)
+         return;
+      }
+      String workflowName = this.workflowSelectedValue[0];
+      for (WorkflowConfiguration wrapper : this.workflows)
+      {
+         if (wrapper.getName().equals(workflowName))
          {
-            if (wrapper.getName().equals(workflowName))
-            {
-               setActionWorkflow(wrapper);
-            }
+            setActionWorkflow(wrapper);
          }
       }
    }
@@ -1151,8 +1118,8 @@ public class SubmitDialog extends BaseDialogBean
     */
    public void applyDefaultExpireDateToAll(ActionEvent event)
    {
-      if (logger.isDebugEnabled())
-         logger.debug("applying default expiration date of " + this.defaultExpireDate + " to all modified items");
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("applying default expiration date of " + this.defaultExpireDate + " to all modified items");
       
       List<ItemWrapper> items = this.getSubmitItems();
       for (ItemWrapper item : items)
@@ -1241,14 +1208,8 @@ public class SubmitDialog extends BaseDialogBean
       
       boolean matchesPath(String path)
       {
-         if (filenamePattern != null)
-         {
-            return filenamePattern.matcher(path).matches();
-         }
-         else
-         {
-            return false;
-         }
+         return (filenamePattern != null &&
+                 filenamePattern.matcher(path).matches());
       }
 
       @Override
@@ -1260,14 +1221,8 @@ public class SubmitDialog extends BaseDialogBean
       @Override
       public boolean equals(Object obj)
       {
-         if (obj instanceof FormWorkflowWrapper)
-         {
-            return this.name.equals( ((FormWorkflowWrapper)obj).name );
-         }
-         else
-         {
-            return false;
-         }
+         return (obj instanceof FormWorkflowWrapper &&
+                 this.name.equals(((FormWorkflowWrapper)obj).name));
       }
    }
    
@@ -1376,14 +1331,8 @@ public class SubmitDialog extends BaseDialogBean
       @Override
       public boolean equals(Object obj)
       {
-         if (obj instanceof ItemWrapper)
-         {
-            return ((ItemWrapper)obj).descriptor.getPath().equals(descriptor.getPath());
-         }
-         else
-         {
-            return false;
-         }
+         return (obj instanceof ItemWrapper &&
+                 ((ItemWrapper)obj).descriptor.getPath().equals(descriptor.getPath()));
       }
 
       @Override

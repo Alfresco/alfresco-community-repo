@@ -64,6 +64,7 @@ public class FormImpl
    private static final Log LOGGER = LogFactory.getLog(FormImpl.class);
    
    private final NodeRef folderNodeRef;
+   protected final FormsService formsService;
    private transient Map<String, RenderingEngineTemplate> renderingEngineTemplates;
 
    private final static LinkedList<FormProcessor> PROCESSORS = 
@@ -73,9 +74,25 @@ public class FormImpl
       FormImpl.PROCESSORS.add(new XFormsProcessor());
    }
    
-   public FormImpl(final NodeRef folderNodeRef)
+   protected FormImpl(final NodeRef folderNodeRef, 
+                      final FormsService formsService)
    {
+      if (folderNodeRef == null)
+      {
+         throw new NullPointerException();
+      }
+      if (formsService == null)
+      {
+         throw new NullPointerException();
+      }
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
+      if (!nodeService.hasAspect(folderNodeRef, WCMAppModel.ASPECT_FORM))
+      {
+         throw new IllegalArgumentException("node " + folderNodeRef +
+                                            " does not have aspect " + WCMAppModel.ASPECT_FORM);
+      }
       this.folderNodeRef = folderNodeRef;
+      this.formsService = formsService;
    }
 
    public String getName()
@@ -304,7 +321,7 @@ public class FormImpl
             final NodeRef renditionPropertiesNodeRef = assoc2.getChildRef();
             
             final RenderingEngineTemplate ret = 
-               new RenderingEngineTemplateImpl(retNodeRef, renditionPropertiesNodeRef);
+               new RenderingEngineTemplateImpl(retNodeRef, renditionPropertiesNodeRef, this.formsService);
             LOGGER.debug("loaded rendering engine template " + ret);
             result.put(ret.getName(), ret);
          }

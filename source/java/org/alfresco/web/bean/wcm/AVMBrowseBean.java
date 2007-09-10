@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -148,7 +149,7 @@ public class AVMBrowseBean implements IContextListener
    private List<String> deploymentMonitorIds = new ArrayList<String>();
    
    /** List of expired paths to submit */
-   private List<AVMNodeDescriptor> expiredNodes = Collections.<AVMNodeDescriptor>emptyList();
+   private List<AVMNodeDescriptor> nodesForSubmit = Collections.<AVMNodeDescriptor>emptyList();
    
    /** Object used by link validation service to monitor the status of a link check  */
    private HrefValidationProgress linkValidationMonitor;
@@ -194,6 +195,9 @@ public class AVMBrowseBean implements IContextListener
    
    /** Action service bean reference */
    protected ActionService actionService;
+
+   /** The FormsService reference */
+   protected FormsService formsService;
    
    /**
     * Default Constructor
@@ -264,6 +268,14 @@ public class AVMBrowseBean implements IContextListener
    public void setActionService(ActionService actionService)
    {
       this.actionService = actionService;
+   }
+
+   /**
+    * @param formsService    The FormsService to set.
+    */
+   public void setFormsService(final FormsService formsService)
+   {
+      this.formsService = formsService;
    }
 
    /**
@@ -499,23 +511,17 @@ public class AVMBrowseBean implements IContextListener
    }
 
    /**
-    * Returns the list of expired nodes. Used by the submit dialog to retrieve
-    * nodes to potentially submit when a user completes a change request
-    * task dealing with content expiration.
-    * 
-    * @return The list of expired nodes
     */
-   public List<AVMNodeDescriptor> getExpiredNodes()
+   public List<AVMNodeDescriptor> getNodesForSubmit()
    {
-      return this.expiredNodes;
+      return this.nodesForSubmit;
    }
 
    /**
-    * @param expiredNodes List of nodes in the users sandbox that have expired
     */
-   public void setExpiredNodes(List<AVMNodeDescriptor> expiredNodes)
+   public void setNodesForSubmit(final List<AVMNodeDescriptor> nodesForSubmit)
    {
-      this.expiredNodes = expiredNodes;
+      this.nodesForSubmit = nodesForSubmit;
    }
 
    /**
@@ -1002,6 +1008,88 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
+    * Action handler called to calculate which editing screen to display based on the mimetype
+    * of a document. If appropriate, the in-line editing screen will be shown.
+    */
+   public void setupEditAction(final ActionEvent event)
+   {
+      final UIActionLink link = (UIActionLink)event.getComponent();
+      final Map<String, String> params = link.getParameterMap();
+      this.setupEditAction(params.get("id"));
+   }
+   
+   /**
+    * Action handler called to calculate which editing screen to display based on the mimetype
+    * of a document. If appropriate, the in-line editing screen will be shown.
+    */
+   public void setupEditAction(final String path)
+   {
+      this.setupContentAction(path, true);
+      
+      // retrieve the content reader for this node
+      String avmPath = this.getAvmActionNode().getPath();
+      if (this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_RENDITION))
+      {
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug(avmPath + " is a rendition, editing primary rendition instead");
+
+         try
+         {
+            final FormInstanceData fid = this.formsService.getRendition(-1, avmPath).getPrimaryFormInstanceData();
+            avmPath = fid.getPath();
+
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug("Editing primary form instance data " + avmPath);
+
+            this.setAvmActionNode(new AVMNode(this.avmService.lookup(-1, avmPath)));
+         }
+         catch (FileNotFoundException fnfe)
+         {
+            this.avmService.removeAspect(avmPath, WCMAppModel.ASPECT_RENDITION);
+            this.avmService.removeAspect(avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
+            Utils.addErrorMessage(fnfe.getMessage(), fnfe);
+         }
+      }
+
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("Editing AVM node: " + avmPath);
+      String outcome = null;
+      // calculate which editor screen to display
+      if (this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+      {
+         // make content available to the editing screen
+         try
+         {
+            // make sure the form association works before proceeding to the
+            // edit web content wizard
+            this.formsService.getFormInstanceData(-1, avmPath).getForm();
+            // navigate to appropriate screen
+            outcome = "wizard:editWebContent";
+         }
+         catch (FormNotFoundException fnfe)
+         {
+            LOGGER.debug(fnfe.getMessage(), fnfe);
+            final Map<String, String> params = new HashMap<String, String>(2, 1.0f);
+            params.put("finishOutcome", "wizard:editWebContent");
+            params.put("cancelOutcome", "dialog:editAvmFile");
+            Application.getDialogManager().setupParameters(params);
+
+            outcome = "dialog:promptForWebForm";
+         }
+      }
+      else
+      {
+         // normal downloadable document
+         outcome = "dialog:editAvmFile";
+      }
+         
+      LOGGER.debug("outcome " + outcome + " for path " + path);
+         
+      final FacesContext fc = FacesContext.getCurrentInstance();
+      fc.getApplication().getNavigationHandler().handleNavigation(fc, null, outcome);
+   }
+   
+   /**
     * Action handler for all nodes from user sandbox
     */
    public void setupAllItemsAction(ActionEvent event)
@@ -1049,11 +1137,11 @@ public class AVMBrowseBean implements IContextListener
             FormInstanceData fid = null;
             if (this.avmService.hasAspect(-1, path, WCMAppModel.ASPECT_RENDITION))
             {
-               fid = new RenditionImpl(-1, path).getPrimaryFormInstanceData();
+               fid = this.formsService.getRendition(-1, path).getPrimaryFormInstanceData();
             }
             else if (this.avmService.hasAspect(-1, path, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
             {
-               fid = new FormInstanceDataImpl(-1, path);
+               fid = this.formsService.getFormInstanceData(-1, path);
             }
             List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
             if (fid != null)
@@ -1166,15 +1254,14 @@ public class AVMBrowseBean implements IContextListener
    /**
     * Create web content from a specific Form via the User Sandbox 'Available Forms' panel
     */
-   public void createFormContent(ActionEvent event)
+   public void createFormContent(final ActionEvent event)
    {
       // setup the correct sandbox for the create action
-      setupSandboxAction(event);
+      this.setupSandboxAction(event);
       
       // pass form ID to the wizard - to be picked up in init()
-      FacesContext fc = FacesContext.getCurrentInstance();
-      WizardManager manager = (WizardManager)FacesHelper.getManagedBean(fc, WizardManager.BEAN_NAME);
-      manager.setupParameters(event);
+      Application.getWizardManager().setupParameters(event);
+      final FacesContext fc = FacesContext.getCurrentInstance();
       fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "wizard:createWebContent");
    }
    

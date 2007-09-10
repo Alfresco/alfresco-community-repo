@@ -161,11 +161,26 @@
          <dialog name="deleteAvmFolderBrowse" page="/jsp/dialog/delete.jsp" managed-bean="DeleteFolderBrowseDialog"
                  icon="/images/icons/delete_large.gif" title-id="delete_folder" 
                  description-id="delete_avm_folder_info" />
+
+         <dialog name="promptForWebForm" page="/jsp/wcm/prompt-for-web-form.jsp" managed-bean="PromptForWebFormDialog"
+                 icon="/images/icons/details_large.gif" title-id="prompt_for_web_form" 
+                 description-id="prompt_for_web_form_info" />
          
          <dialog name="createAvmFolder" page="/jsp/wcm/create-folder-dialog.jsp" managed-bean="CreateFolderDialog"
                  icon="/images/icons/create_space_large.gif" title-id="create_folder" 
                  description-id="create_avm_folder_info" />
          
+         <dialog name="editAvmFile" page="/jsp/wcm/edit-file.jsp" 
+                 managed-bean="EditAvmFileDialog" icon="/images/icons/edit_large.gif"
+                 title-id="title_edit_file" description-id="editfile_description" 
+                 show-ok-button="false"/>
+
+<!--
+         <dialog name="updateAvmFile" page="/jsp/wcm/update-file.jsp" 
+                 managed-bean="EditAvmFileDialog" icon="/images/icons/update_large.gif"
+                 title-id="title_update_file" description-id="update_avm-file_desc" />
+-->
+
          <dialog name="editAvmFileProperties" page="/jsp/content/edit-content-properties.jsp" 
                  managed-bean="EditFilePropertiesDialog" icon="/images/icons/details_large.gif"
                  title-id="edit_file_properties" description-id="edit_file_description" />

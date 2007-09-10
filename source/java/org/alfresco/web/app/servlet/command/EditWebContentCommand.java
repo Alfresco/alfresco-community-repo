@@ -41,7 +41,6 @@ import org.alfresco.web.app.servlet.BaseServlet;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.wcm.AVMBrowseBean;
-import org.alfresco.web.bean.wcm.AVMEditBean;
 import org.alfresco.web.bean.wizard.WizardManager;
 import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
 
@@ -73,7 +72,6 @@ public class EditWebContentCommand extends BaseUIActionCommand
       ServletResponse res = (ServletResponse)properties.get(PROP_RESPONSE);
       FacesContext fc = FacesHelper.getFacesContext(req, res, sc);
       AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(fc, AVMBrowseBean.BEAN_NAME);
-      AVMEditBean avmEditBean = (AVMEditBean)FacesHelper.getManagedBean(fc, AVMEditBean.BEAN_NAME);
       NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
       
       // setup context from url args in properties map
@@ -86,7 +84,7 @@ public class EditWebContentCommand extends BaseUIActionCommand
       navigator.setCurrentNodeId(webProjectId);
       avmBrowseBean.setSandbox(sandbox);
       // navigation handler is called directly in this method
-      avmEditBean.setupEditAction(path);
+      avmBrowseBean.setupEditAction(path);
       
       String viewId = fc.getViewRoot().getViewId();
       try

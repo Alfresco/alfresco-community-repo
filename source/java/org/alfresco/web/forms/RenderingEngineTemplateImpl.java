@@ -90,9 +90,11 @@ public class RenderingEngineTemplateImpl
 
    private final NodeRef nodeRef;
    private final NodeRef renditionPropertiesNodeRef;
+   private final FormsService formsService;
 
    protected RenderingEngineTemplateImpl(final NodeRef nodeRef,
-                                         final NodeRef renditionPropertiesNodeRef)
+                                         final NodeRef renditionPropertiesNodeRef,
+                                         final FormsService formsService)
    {
       if (nodeRef == null)
       {
@@ -102,8 +104,13 @@ public class RenderingEngineTemplateImpl
       {
          throw new NullPointerException();
       }
+      if (formsService == null)
+      {
+         throw new NullPointerException();
+      }
       this.nodeRef = nodeRef;
       this.renditionPropertiesNodeRef = renditionPropertiesNodeRef;
+      this.formsService = formsService;
    }
 
    public String getName()
@@ -162,8 +169,7 @@ public class RenderingEngineTemplateImpl
       final String renderingEngineName = (String)
          nodeService.getProperty(this.nodeRef,
                                  WCMAppModel.PROP_PARENT_RENDERING_ENGINE_NAME);
-      final FormsService fs = FormsService.getInstance();
-      return fs.getRenderingEngine(renderingEngineName);
+      return this.formsService.getRenderingEngine(renderingEngineName);
    }
 
    /**
@@ -262,17 +268,18 @@ public class RenderingEngineTemplateImpl
                                AVMNodeConverter.SplitBase(renditionAvmPath)[1]);
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("Created file node for file: " + renditionAvmPath);
+
+         avmService.addAspect(renditionAvmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
+         avmService.addAspect(renditionAvmPath, ContentModel.ASPECT_TITLED);
+         avmService.addAspect(renditionAvmPath, WCMAppModel.ASPECT_RENDITION);
       }
 
-      final Rendition result = new RenditionImpl(AVMNodeConverter.ToNodeRef(-1, renditionAvmPath));
+      final Rendition result = new RenditionImpl(AVMNodeConverter.ToNodeRef(-1, renditionAvmPath),
+                                                 this.formsService);
       this.render(formInstanceData, result);
 
       if (!isRegenerate)
       {
-         avmService.addAspect(renditionAvmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
-         avmService.addAspect(renditionAvmPath, ContentModel.ASPECT_TITLED);
-         avmService.addAspect(renditionAvmPath, WCMAppModel.ASPECT_RENDITION);
-
          final PropertyValue pv = 
             avmService.getNodeProperty(-1, formInstanceData.getPath(), WCMAppModel.PROP_RENDITIONS);
          final Collection<Serializable> renditions = (pv == null 

@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ import javax.faces.model.SelectItem;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.wcm.CreateWebsiteWizard.FormWrapper;
 import org.alfresco.web.bean.wcm.CreateWebsiteWizard.WorkflowWrapper;
@@ -73,6 +75,14 @@ public class FormDetailsDialog extends BaseDialogBean
       this.description = null;
       this.outputPathPattern = null;
       this.workflowSelectedValue = null;
+   }
+
+   @Override
+   public String getContainerDescription()
+   {
+      return MessageFormat.format(Application.getBundle(FacesContext.getCurrentInstance()).getString("form_template_details_desc"), 
+                                  this.getActionForm().getName(),
+                                  this.websiteWizard.getName());
    }
    
    /**

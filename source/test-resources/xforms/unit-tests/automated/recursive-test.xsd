@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   xmlns:alf="http://www.alfresco.org"
+	   elementFormDefault="qualified" >
+  <xs:complexType name="thing">
+    <xs:sequence>
+      <xs:element name="string" type="xs:normalizedString" />
+      <xs:element name="sub-thing" type="thing" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="nested-recursive-thing">
+    <xs:sequence>
+      <xs:element name="string" type="xs:normalizedString"/>
+      <xs:element name="nested-complex-type">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="nested-nested-recursive-thing" type="nested-nested-recursive-thing"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="nested-nested-recursive-thing">
+    <xs:sequence>
+      <xs:element name="string" type="xs:normalizedString"/>
+      <xs:element name="nested-recursive-thing" type="nested-recursive-thing"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:element name="recursive-test"> 
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="recursive-thing" type="thing" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="nested-recursive-test"> 
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="nested-recursive-thing" type="nested-recursive-thing" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="non-recursive-test"> 
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="non-recursive-thing" minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="string" type="xs:normalizedString"/>
+              <xs:element name="non-recursive-sub-thing" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="string" type="xs:normalizedString"/>
+                    <xs:element name="non-recursive-sub-thing" minOccurs="0" maxOccurs="1">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="string" type="xs:normalizedString"/>
+                          <xs:element name="non-recursive-sub-thing" minOccurs="0" maxOccurs="1">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="string" type="xs:normalizedString"/>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

@@ -19,7 +19,8 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's
  * FLOSS exception.  You should have recieved a copy of the text describing
  * the FLOSS exception, and it is also available here:
- * http://www.alfresco.com/legal/licensing" */
+ * http://www.alfresco.com/legal/licensing 
+ */
 package org.alfresco.web.bean.wcm;
 
 import java.io.Serializable;
@@ -80,7 +81,7 @@ public class EditFormWizard
          throw new IllegalArgumentException("Edit Form wizard requires action node context.");
       }
 
-      final Form form = FormsService.getInstance().getForm(formNodeRef);
+      final Form form = this.formsService.getForm(formNodeRef);
       // simple properties
       this.setFormName(form.getName());
       this.setFormTitle(form.getTitle());
@@ -141,7 +142,8 @@ public class EditFormWizard
     * @see org.alfresco.web.bean.dialog.BaseDialogBean#finishImpl(javax.faces.context.FacesContext, java.lang.String)
     */
    @Override
-   protected String finishImpl(FacesContext context, String outcome) 
+   protected String finishImpl(final FacesContext context, 
+                               final String outcome) 
       throws Exception
    {
       final NodeRef formNodeRef = this.browseBean.getActionSpace().getNodeRef();
@@ -225,7 +227,7 @@ public class EditFormWizard
             this.saveRenderingEngineTemplate(retd, formNodeRef);
          }
       }
-      return AlfrescoNavigationHandler.CLOSE_WIZARD_OUTCOME;
+      return outcome;
    }
 
    /**

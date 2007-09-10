@@ -51,6 +51,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.data.IDataContainer;
@@ -85,9 +86,11 @@ public class WebProject
       private Form baseForm;
       private NodeRef defaultWorkflowNodeRef;
 
-      private FormWrapper(final Form form, final NodeRef formNodeRef)
+      private FormWrapper(final Form form, 
+                          final NodeRef formNodeRef,
+                          final FormsService formsService)
       {
-         super(((FormImpl)form).getNodeRef());
+         super(((FormImpl)form).getNodeRef(), formsService);
          this.formNodeRef = formNodeRef;
       }
 
@@ -160,7 +163,8 @@ public class WebProject
                allRets.get(renderingEngineTemplateName);
             result.put(ret.getName(), 
                        new RenderingEngineTemplateImpl(ret.getNodeRef(),
-                                                       ret.getRenditionPropertiesNodeRef())
+                                                       ret.getRenditionPropertiesNodeRef(),
+                                                       this.formsService)
                        {
                           @Override
                           public String getOutputPathPattern()
@@ -308,8 +312,14 @@ public class WebProject
          throw new NullPointerException();
       }
       final Form result = this.getFormsImpl().get(name);
-      if (result == null)
+      if (result == null || !name.equals(result.getName()))
       {
+         if (result != null)
+         {
+            LOGGER.debug("removing " + name + 
+                         " from cache as it doesn't match mapped form " + result.getName());
+            this.getFormsImpl().remove(name);
+         }
          throw new FormNotFoundException(name, this);
       }
       return result;
@@ -420,7 +430,7 @@ public class WebProject
    {
       final ServiceRegistry serviceRegistry = this.getServiceRegistry();
       final NodeService nodeService = serviceRegistry.getNodeService();
-      final FormsService formsService = FormsService.getInstance();
+      final FormsService formsService = WebProject.getFormsService();
       final List<ChildAssociationRef> formRefs = 
          nodeService.getChildAssocs(this.nodeRef,
                                     WCMAppModel.ASSOC_WEBFORM,
@@ -433,14 +443,21 @@ public class WebProject
          try
          {
             final Form baseForm = formsService.getForm(formName);
-            result.put(formName, new FormWrapper(baseForm, ref.getChildRef()));
+            result.put(formName, new FormWrapper(baseForm, ref.getChildRef(), formsService));
          }
          catch (FormNotFoundException fnfe)
          {
-            LOGGER.debug(fnfe);
+            LOGGER.debug("got exception " + fnfe.getMessage() + 
+                         " while loading web forms for project " + this.getName());
          }
       }
       return result;
+   }
+
+   private static FormsService getFormsService()
+   {
+      return (FormsService)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(),
+                                                      "FormsService");
    }
 
    private static ServiceRegistry getServiceRegistry()

@@ -89,6 +89,7 @@ public class RegenerateRenditionsWizard
    private AVMSyncService avmSyncService;
    private ContentService contentService;
    private SearchService searchService;
+   private FormsService formsService;
    private WebProject selectedWebProject;
    private String[] selectedForms;
    private String[] selectedRenderingEngineTemplates;
@@ -394,6 +395,14 @@ public class RegenerateRenditionsWizard
    {
       this.searchService = searchService;
    }
+
+   /**
+    * @param formsService    The FormsService to set.
+    */
+   public void setFormsService(final FormsService formsService)
+   {
+      this.formsService = formsService;
+   }
    
    // ------------------------------------------------------------------------------
    // Helper Methods
@@ -418,24 +427,7 @@ public class RegenerateRenditionsWizard
       {
          final String avmPath = AVMNodeConverter.ToAVMVersionPath(row.getNodeRef()).getSecond();
          final String previewAvmPath = AVMUtil.getCorrespondingPathInPreviewStore(avmPath);
-         final FormInstanceDataImpl fid = new FormInstanceDataImpl(-1, previewAvmPath)
-         {
-            @Override
-            public Form getForm()
-               throws FormNotFoundException
-            {
-               final Form f = super.getForm();
-               try
-               {
-                  return RegenerateRenditionsWizard.this.selectedWebProject.getForm(f.getName());
-               }
-               catch (FormNotFoundException fnfe)
-               {
-                  throw new FormNotFoundException(f, RegenerateRenditionsWizard.this.selectedWebProject, this);
-               }
-            }
-         };
-         result.add(fid);
+         result.add(this.formsService.getFormInstanceData(-1, previewAvmPath));
       }
       return result;
    }
@@ -454,13 +446,12 @@ public class RegenerateRenditionsWizard
       LOGGER.debug("running query " + query);
       sp.setQuery(query.toString());
       final ResultSet rs = this.searchService.query(sp);
-      final List<Rendition> result = new ArrayList<Rendition>(rs.length());
+      final List<Rendition> result = new ArrayList<Rendition>(rs.length()); 
       for (final ResultSetRow row : rs)
       {
          final String avmPath = AVMNodeConverter.ToAVMVersionPath(row.getNodeRef()).getSecond();
          final String previewAvmPath = AVMUtil.getCorrespondingPathInPreviewStore(avmPath);
-         final Rendition r = new RenditionImpl(-1, previewAvmPath);
-         result.add(r);
+         result.add(this.formsService.getRendition(-1, previewAvmPath));
       }
       return result;
    }
@@ -540,24 +531,7 @@ public class RegenerateRenditionsWizard
          if (this.regenerateScope.equals(REGENERATE_SCOPE_ALL) ||
              this.regenerateScope.equals(REGENERATE_SCOPE_FORM))
          {
-            final FormInstanceDataImpl fid = new FormInstanceDataImpl(-1, previewAvmPath)
-            {
-               @Override
-               public Form getForm()
-                  throws FormNotFoundException
-               {
-                  final Form f = super.getForm();
-                  try
-                  {
-                     return RegenerateRenditionsWizard.this.selectedWebProject.getForm(f.getName());
-                  }
-                  catch (FormNotFoundException fnfe)
-                  {
-                     throw new FormNotFoundException(f, RegenerateRenditionsWizard.this.selectedWebProject, this);
-                  }
-               }
-            };
-
+            final FormInstanceData fid = this.formsService.getFormInstanceData(-1, previewAvmPath);
             try
             {
                final List<FormInstanceData.RegenerateResult> regenResults = fid.regenerateRenditions();
@@ -582,7 +556,7 @@ public class RegenerateRenditionsWizard
          }
          else
          {
-            final Rendition r = new RenditionImpl(-1, previewAvmPath);
+            final Rendition r = this.formsService.getRendition(-1, previewAvmPath);
             try
             {
                r.regenerate();

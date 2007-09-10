@@ -254,7 +254,7 @@
    </bean>
 
    <!-- NOTE: This references a bean in the repository Spring configuration -->
-   <bean id="formsService" class="org.alfresco.web.forms.FormsService">
+   <bean id="FormsService" class="org.alfresco.web.forms.FormsService">
       <constructor-arg>
          <ref bean="ContentService" />
       </constructor-arg>

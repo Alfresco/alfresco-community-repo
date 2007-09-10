@@ -684,29 +684,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
             if (logger.isDebugEnabled())
                logger.debug("Popped item from the top of the view stack: " + topOfStack);
             
-            String newViewId = null;
-            
-            if (topOfStack instanceof String)
-            {
-               newViewId = (String)topOfStack;
-            }
-            else if (topOfStack instanceof DialogState)
-            {
-               // restore the dialog state and get the dialog container viewId
-               Application.getDialogManager().restoreState((DialogState)topOfStack);
-               newViewId = getDialogContainer(context);
-            }
-            else if (topOfStack instanceof WizardState)
-            {
-               // restore the wizard state and get the wizard container viewId
-               Application.getWizardManager().restoreState((WizardState)topOfStack);
-               newViewId = getWizardContainer(context);
-            }
-            else
-            {
-               if (logger.isWarnEnabled())
-                  logger.warn("Invalid object found on view stack: " + topOfStack);
-            }
+            String newViewId = getViewIdFromStackObject(context, topOfStack);
             
             // go to the appropraite page
             goToView(context, newViewId);
@@ -714,7 +692,10 @@ public class AlfrescoNavigationHandler extends NavigationHandler
          else
          {
             // we also need to empty the dialog stack if we have been given
-            // an overidden outcome as we could be going anywhere in the app
+            // an overidden outcome as we could be going anywhere in the app.
+            // grab the current top item first though in case we need to open
+            // another dialog or wizard
+            String previousViewId = getViewIdFromStackObject(context, getViewStack(context).peek());
             getViewStack(context).clear();
             
             if (logger.isDebugEnabled())
@@ -723,7 +704,18 @@ public class AlfrescoNavigationHandler extends NavigationHandler
             // if the override is calling another dialog or wizard come back through
             // the navigation handler from the beginning
             if (isDialog(overriddenOutcome) || isWizard(overriddenOutcome))
-            {               
+            {
+               // set the view id to the page at the top of the stack so when
+               // the new dialog or wizard closes it goes back to the correct page
+               context.getViewRoot().setViewId(previousViewId);
+               
+               if (logger.isDebugEnabled())
+               {
+                  logger.debug("view stack: " + getViewStack(context));
+                  logger.debug("Opening '" + overriddenOutcome + "' after " + closingItem + 
+                               " close using view id: " + previousViewId);
+               }
+               
                this.handleNavigation(context, fromAction, overriddenOutcome);
             }
             else
@@ -743,6 +735,42 @@ public class AlfrescoNavigationHandler extends NavigationHandler
          
          navigate(context, fromAction, "browse");
       }
+   }
+   
+   /**
+    * Returns the view id of the given item retrieved from the view stack.
+    * 
+    * @param context FacesContext
+    * @param topOfStack The object retrieved from the view stack
+    * @return The view id
+    */
+   protected String getViewIdFromStackObject(FacesContext context, Object topOfStack)
+   {
+      String viewId = null;
+      
+      if (topOfStack instanceof String)
+      {
+         viewId = (String)topOfStack;
+      }
+      else if (topOfStack instanceof DialogState)
+      {
+         // restore the dialog state and get the dialog container viewId
+         Application.getDialogManager().restoreState((DialogState)topOfStack);
+         viewId = getDialogContainer(context);
+      }
+      else if (topOfStack instanceof WizardState)
+      {
+         // restore the wizard state and get the wizard container viewId
+         Application.getWizardManager().restoreState((WizardState)topOfStack);
+         viewId = getWizardContainer(context);
+      }
+      else
+      {
+         if (logger.isWarnEnabled())
+            logger.warn("Invalid object found on view stack: " + topOfStack);
+      }
+      
+      return viewId;
    }
    
    /**

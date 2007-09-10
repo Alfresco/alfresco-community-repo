@@ -51,8 +51,8 @@ public class DeleteFileDialog extends BaseDialogBean
    
    protected AVMService avmService;
    protected AVMBrowseBean avmBrowseBean;
-   
-   
+   protected FormsService formsService;
+ 
    /**
     * @param avmBrowseBean The avmBrowseBean to set.
     */
@@ -68,7 +68,14 @@ public class DeleteFileDialog extends BaseDialogBean
    {
       this.avmService = avmService;
    }
-   
+
+   /**
+    * @param formsService    The FormsService to set.
+    */
+   public void setFormsService(final FormsService formsService)
+   {
+      this.formsService = formsService;
+   }
    
    // ------------------------------------------------------------------------------
    // Dialog implementation
@@ -79,7 +86,11 @@ public class DeleteFileDialog extends BaseDialogBean
    {
       // get the content to delete
       final AVMNode node = this.avmBrowseBean.getAvmActionNode();
-      if (node != null)
+      if (node == null)
+      {
+         logger.warn("WARNING: delete called without a current AVM Node!");
+      }
+      else
       {
          if (logger.isDebugEnabled())
             logger.debug("Trying to delete AVM node: " + node.getPath());
@@ -88,7 +99,7 @@ public class DeleteFileDialog extends BaseDialogBean
          {
             try
             {
-               fid = new RenditionImpl(node.getNodeRef()).getPrimaryFormInstanceData();
+               fid = this.formsService.getRendition(node.getNodeRef()).getPrimaryFormInstanceData();
             }
             catch (FileNotFoundException fnfe)
             {
@@ -97,7 +108,7 @@ public class DeleteFileDialog extends BaseDialogBean
          }
          else if (node.hasAspect(WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
          {
-            fid = new FormInstanceDataImpl(node.getNodeRef());
+            fid = this.formsService.getFormInstanceData(node.getNodeRef());
          }
          if (fid != null)
          {
@@ -117,11 +128,6 @@ public class DeleteFileDialog extends BaseDialogBean
                                        AVMNodeConverter.SplitBase(node.getPath())[1]);
          }
       }
-      else
-      {
-         logger.warn("WARNING: delete called without a current AVM Node!");
-      }
-      
       return outcome;
    }
       
@@ -160,7 +166,7 @@ public class DeleteFileDialog extends BaseDialogBean
       {
          try
          {
-            final FormInstanceData fid = new RenditionImpl(node.getNodeRef()).getPrimaryFormInstanceData();
+            final FormInstanceData fid = this.formsService.getRendition(node.getNodeRef()).getPrimaryFormInstanceData();
             return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), 
                                                                "delete_rendition_confirm"), 
                                         node.getName(),
@@ -175,12 +181,11 @@ public class DeleteFileDialog extends BaseDialogBean
       }
       else if (node.hasAspect(WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
       {
-         final FormInstanceData fid = new FormInstanceDataImpl(node.getNodeRef());
+         final FormInstanceData fid = this.formsService.getFormInstanceData(node.getNodeRef());
          return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), 
                                                             "delete_form_instance_data_confirm"), 
                                      fid.getName(),
                                      fid.getRenditions().size());
-
       }
       return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), 
                                                          "delete_avm_file_confirm"), 

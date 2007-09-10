@@ -74,7 +74,6 @@ import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormInstanceData;
-import org.alfresco.web.forms.FormInstanceDataImpl;
 import org.alfresco.web.forms.FormNotFoundException;
 import org.alfresco.web.forms.FormProcessor;
 import org.alfresco.web.forms.FormsService;
@@ -113,7 +112,7 @@ public class EditWebContentWizard extends CreateWebContentWizard
       }
       LOGGER.debug("path is " + this.avmNode.getPath());
       this.createdPath = AVMUtil.getCorrespondingPathInPreviewStore(this.avmNode.getPath());
-      this.formInstanceData = new FormInstanceDataImpl(-1, this.createdPath);
+      this.formInstanceData = this.formsService.getFormInstanceData(-1, this.createdPath);
       final WebProject webProject = new WebProject(this.createdPath);
       try
       {
@@ -152,15 +151,8 @@ public class EditWebContentWizard extends CreateWebContentWizard
       final ContentWriter writer = this.avmService.getContentWriter(this.createdPath);
       this.content = XMLUtil.toString(this.instanceDataDocument, false);
       writer.putContent(this.content);
-      this.formInstanceData = new FormInstanceDataImpl(-1, this.createdPath)
-      {
-         @Override
-         public Form getForm()
-            throws FormNotFoundException 
-         { 
-            return EditWebContentWizard.this.getForm(); 
-         }
-      };
+      // XXXarielb might not need to do this reload
+      this.formInstanceData = this.formsService.getFormInstanceData(-1, this.createdPath);
       final List<FormInstanceData.RegenerateResult> result = this.formInstanceData.regenerateRenditions();
       this.renditions = new LinkedList<Rendition>();
       for (FormInstanceData.RegenerateResult rr : result)

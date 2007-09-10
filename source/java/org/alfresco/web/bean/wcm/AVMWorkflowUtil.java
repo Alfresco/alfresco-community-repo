@@ -32,6 +32,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -91,13 +92,29 @@ public class AVMWorkflowUtil extends WorkflowUtil
                                                final WorkflowService workflowService,
                                                final NodeService nodeService)
    {
+
       // create package paths (layered to user sandbox area as target)
       final String workflowMainStoreName = sandboxInfo.getMainStoreName();
       final String packagesPath = AVMUtil.buildStoreRootPath(workflowMainStoreName);
-                    
+
+      final String stagingStoreName = AVMUtil.getStoreId(workflowMainStoreName);
+      final HashSet<String> directoriesAdded = new HashSet<String>();
       final List<AVMDifference> diffs = new ArrayList<AVMDifference>(srcPaths.size());
       for (final String srcPath : srcPaths)
       {
+         // add all newly created directories
+         String parentPath = AVMNodeConverter.SplitBase(srcPath)[0];
+         while (!directoriesAdded.contains(parentPath) &&
+                avmService.lookup(-1, AVMUtil.getCorrespondingPath(parentPath, stagingStoreName)) == null)
+         {
+            diffs.add(new AVMDifference(-1, parentPath,
+                                        -1, AVMUtil.getCorrespondingPath(parentPath, workflowMainStoreName),
+                                        AVMDifference.NEWER));
+            avmSubmittedAspect.markSubmitted(-1, parentPath, path.instance.id);
+            directoriesAdded.add(parentPath);
+            parentPath = AVMNodeConverter.SplitBase(parentPath)[0];
+         }
+
          diffs.add(new AVMDifference(-1, srcPath, 
                                      -1, AVMUtil.getCorrespondingPath(srcPath, workflowMainStoreName),
                                      AVMDifference.NEWER));
@@ -118,7 +135,6 @@ public class AVMWorkflowUtil extends WorkflowUtil
       final ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
       final PermissionService permissionService = services.getPermissionService();
       permissionService.setPermission(packageNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
-      
       return packageNodeRef;
    }
    

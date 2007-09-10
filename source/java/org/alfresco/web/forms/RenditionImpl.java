@@ -51,27 +51,41 @@ import org.xml.sax.SAXException;
  *
  * @author Ariel Backenroth
  */
-public class RenditionImpl
+/* package */ class RenditionImpl
    implements Rendition
 {
 
    private static final Log LOGGER = LogFactory.getLog(RenditionImpl.class);
 
    private final NodeRef nodeRef;
+   private final FormsService formsService;
    private transient RenderingEngineTemplate renderingEngineTemplate;
 
-   public RenditionImpl(final NodeRef nodeRef)
+   /* package */ RenditionImpl(final NodeRef nodeRef, final FormsService formsService)
    {
       if (nodeRef == null)
       {
          throw new NullPointerException();
       }
+      if (formsService == null)
+      {
+         throw new NullPointerException();
+      }
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
+      if (!nodeService.hasAspect(nodeRef, WCMAppModel.ASPECT_RENDITION))
+      {
+         throw new IllegalArgumentException("node " + nodeRef +
+                                            " does not have aspect " + WCMAppModel.ASPECT_RENDITION);
+      }
       this.nodeRef = nodeRef;
+      this.formsService = formsService;
    }
 
-   public RenditionImpl(final int version, final String avmPath)
+   /* package */ RenditionImpl(final int version, 
+                               final String avmPath, 
+                               final FormsService formsService)
    {
-      this(AVMNodeConverter.ToNodeRef(version, avmPath));
+      this(AVMNodeConverter.ToNodeRef(version, avmPath), formsService);
    }
 
    /** the name of this rendition */
@@ -115,7 +129,7 @@ public class RenditionImpl
       {
          throw new FileNotFoundException("unable to find primary form instance data " + path);
       }
-      return new FormInstanceDataImpl(-1, path);
+      return this.formsService.getFormInstanceData(-1, path);
    }
 
    /** the rendering engine template that generated this rendition */
@@ -159,7 +173,7 @@ public class RenditionImpl
                          this.getPath());
             return null;
          }
-         this.renderingEngineTemplate = new RenderingEngineTemplateImpl(retNodeRef, rpNodeRef);
+         this.renderingEngineTemplate = new RenderingEngineTemplateImpl(retNodeRef, rpNodeRef, this.formsService);
       }
       return this.renderingEngineTemplate;
    }

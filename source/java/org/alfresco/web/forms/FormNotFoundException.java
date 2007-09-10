@@ -107,4 +107,14 @@ public class FormNotFoundException
       this.webProject = webProject;
       this.fid = fid;
    }
+
+   public String getFormName()
+   {
+      return this.formName;
+   }
+   
+   public WebProject getWebProject()
+   {
+      return this.webProject;
+   }
 }

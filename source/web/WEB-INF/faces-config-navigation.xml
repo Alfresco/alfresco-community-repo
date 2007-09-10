@@ -904,14 +904,17 @@
          <from-outcome>addAvmContent</from-outcome>
          <to-view-id>/jsp/wcm/add-content-dialog.jsp</to-view-id>
       </navigation-case>
+<!--
       <navigation-case>
          <from-outcome>editAvmFile</from-outcome>
          <to-view-id>/jsp/wcm/edit-file.jsp</to-view-id>
       </navigation-case>
+-->
       <navigation-case>
          <from-outcome>updateAvmFile</from-outcome>
          <to-view-id>/jsp/wcm/update-file.jsp</to-view-id>
       </navigation-case>
+
       <navigation-case>
          <from-outcome>showFileDetails</from-outcome>
          <to-view-id>/jsp/wcm/file-details.jsp</to-view-id>

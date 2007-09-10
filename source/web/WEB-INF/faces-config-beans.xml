@@ -2492,6 +2492,10 @@
          <property-name>workflowService</property-name>
          <value>#{WorkflowService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>formsService</property-name>
+         <value>#{FormsService}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>
@@ -2536,6 +2540,10 @@
       <managed-property>
          <property-name>workflowService</property-name>
          <value>#{WorkflowService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>formsService</property-name>
+         <value>#{FormsService}</value>
       </managed-property>
    </managed-bean>
 
@@ -2582,6 +2590,10 @@
          <property-name>avmSyncService</property-name>
          <value>#{AVMSyncService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>formsService</property-name>
+         <value>#{FormsService}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>
@@ -2620,10 +2632,6 @@
          <value>#{DictionaryService}</value>
       </managed-property>
       <managed-property>
-         <property-name>workflowService</property-name>
-         <value>#{WorkflowService}</value>
-      </managed-property>
-      <managed-property>
          <property-name>avmService</property-name>
          <value>#{AVMLockingAwareService}</value>
       </managed-property>
@@ -2642,6 +2650,10 @@
       <managed-property>
          <property-name>filePickerBean</property-name>
          <value>#{FilePickerBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>formsService</property-name>
+         <value>#{FormsService}</value>
       </managed-property>
    </managed-bean>
    
@@ -2681,10 +2693,6 @@
          <value>#{DictionaryService}</value>
       </managed-property>
       <managed-property>
-         <property-name>workflowService</property-name>
-         <value>#{WorkflowService}</value>
-      </managed-property>
-      <managed-property>
          <property-name>avmService</property-name>
          <value>#{AVMLockingAwareService}</value>
       </managed-property>
@@ -2703,6 +2711,10 @@
       <managed-property>
          <property-name>filePickerBean</property-name>
          <value>#{FilePickerBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>formsService</property-name>
+         <value>#{FormsService}</value>
       </managed-property>
    </managed-bean>
 
@@ -2745,6 +2757,10 @@
          <property-name>avmLockingService</property-name>
          <value>#{AVMLockingService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>formsService</property-name>
+         <value>#{FormsService}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>
@@ -2785,6 +2801,10 @@
       <managed-property>
          <property-name>personService</property-name>
          <value>#{PersonService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>formsService</property-name>
+         <value>#{FormsService}</value>
       </managed-property>
    </managed-bean>
 
@@ -2897,6 +2917,10 @@
          <property-name>workflowService</property-name>
          <value>#{WorkflowService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>formsService</property-name>
+         <value>#{FormsService}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>
@@ -2911,8 +2935,25 @@
          <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
-         <property-name>avmSyncService</property-name>
-         <value>#{AVMSyncService}</value>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>formsService</property-name>
+         <value>#{FormsService}</value>
+      </managed-property>
+   </managed-bean>
+
+   <managed-bean>
+      <description>
+         The bean that backs up the AVM file editing screens
+      </description>
+      <managed-bean-name>EditAvmFileDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.EditAvmFileDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmBrowseBean</property-name>
@@ -2920,6 +2961,27 @@
       </managed-property>
    </managed-bean>
 
+   <managed-bean>
+      <description>
+         The bean that backs up the dialog for associating form instance data with a form
+      </description>
+      <managed-bean-name>PromptForWebFormDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.PromptForWebFormDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMLockingAwareService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>formsService</property-name>
+         <value>#{FormsService}</value>
+      </managed-property>
+   </managed-bean>
+   
    <managed-bean>
       <description>
          The bean that backs up the Snapshot Sandbox Dialog
@@ -2951,6 +3013,10 @@
       <managed-property>
          <property-name>avmBrowseBean</property-name>
          <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>formsService</property-name>
+         <value>#{FormsService}</value>
       </managed-property>
    </managed-bean>
 
@@ -3382,6 +3448,10 @@
       <managed-property>
          <property-name>nameMatcher</property-name>
          <value>#{globalPathExcluder}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>formsService</property-name>
+         <value>#{FormsService}</value>
       </managed-property>
    </managed-bean>
 

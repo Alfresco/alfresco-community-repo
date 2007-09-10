@@ -19,7 +19,8 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's
  * FLOSS exception.  You should have recieved a copy of the text describing
  * the FLOSS exception, and it is also available here:
- * http://www.alfresco.com/legal/licensing" */
+ * http://www.alfresco.com/legal/licensing
+ */
 package org.alfresco.web.forms;
 
 import java.io.*;
@@ -58,6 +59,7 @@ import org.alfresco.util.ISO9075;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
+import org.alfresco.web.bean.wcm.WebProject;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.apache.commons.logging.Log;
@@ -75,10 +77,6 @@ public final class FormsService
    implements Serializable
 {
    private static final Log LOGGER = LogFactory.getLog(FormsService.class);
-   
-   /** the single instance initialized using spring */
-   private static FormsService INSTANCE;
-
    
    private static final RenderingEngine[] RENDERING_ENGINES = new RenderingEngine[] 
    {
@@ -104,16 +102,8 @@ public final class FormsService
       this.nodeService = nodeService;
       this.namespaceService = namespaceService;
       this.searchService = searchService;
-      if (INSTANCE == null)
-         INSTANCE = this;
    }
    
-   /** Provides the forms service instance, loads config if necessary */
-   public static FormsService getInstance()
-   {
-      return FormsService.INSTANCE;
-   }
-
    /**
     * Provides all registered rendering engines.
     */
@@ -213,24 +203,9 @@ public final class FormsService
    public Form getForm(final String name)
       throws FormNotFoundException
    {
-      final SearchParameters sp = new SearchParameters();
-      sp.addStore(Repository.getStoreRef());
-      sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-      sp.setQuery("ASPECT:\"" + WCMAppModel.ASPECT_FORM + 
-                  "\" AND QNAME:\"cm:" + ISO9075.encode(QName.createValidLocalName(name)) + "\"");
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("running query [" + sp.getQuery() + "]");
-      final ResultSet rs = this.searchService.query(sp);
-      NodeRef result = null;
-      for (ResultSetRow row : rs)
-      {
-         final NodeRef nr = row.getNodeRef();
-         if (this.nodeService.getProperty(nr, ContentModel.PROP_NAME).equals(name))
-         {
-            result = nr;
-            break;
-         }
-      }
+      final NodeRef result = this.nodeService.getChildByName(this.getContentFormsNodeRef(),
+                                                             ContentModel.ASSOC_CONTAINS,
+                                                             name);
       if (result == null)
       {
          throw new FormNotFoundException(name);
@@ -251,9 +226,47 @@ public final class FormsService
       {
          throw new IllegalArgumentException("node " + nodeRef + " is not a form");
       }
-      final Form result = new FormImpl(nodeRef);
+      final Form result = new FormImpl(nodeRef, this);
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("loaded form " + result + " for noderef " + nodeRef);
       return result;
+   }
+
+   public FormInstanceData getFormInstanceData(final int version, final String avmPath)
+   {
+      return this.getFormInstanceData(AVMNodeConverter.ToNodeRef(version, avmPath));
+   }
+
+   public FormInstanceData getFormInstanceData(final NodeRef nodeRef)
+   {
+      final String avmPath = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
+      final WebProject webProject = new WebProject(avmPath);
+      return new FormInstanceDataImpl(nodeRef, this)
+      {
+         @Override
+         public Form getForm()
+            throws FormNotFoundException
+         {
+            final Form f = super.getForm();
+            try
+            {
+               return webProject.getForm(f.getName());
+            }
+            catch (FormNotFoundException fnfne)
+            {
+               throw new FormNotFoundException(f, webProject, this);
+            }
+         }
+      };
+   }
+
+   public Rendition getRendition(final int version, final String avmPath)
+   {
+      return this.getRendition(AVMNodeConverter.ToNodeRef(version, avmPath));
+   }
+
+   public Rendition getRendition(final NodeRef nodeRef)
+   {
+      return new RenditionImpl(nodeRef, this);
    }
 }

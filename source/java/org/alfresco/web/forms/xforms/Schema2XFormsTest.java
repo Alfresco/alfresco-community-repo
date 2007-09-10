@@ -160,6 +160,7 @@ public class Schema2XFormsTest
       }
       catch (FormBuilderException fbe)
       {
+         LOGGER.debug("got expected exception " + fbe.getMessage());
       }
    }
 
@@ -179,6 +180,31 @@ public class Schema2XFormsTest
 //      catch (FormBuilderException fbe)
 //      {
 //      }
+   }
+
+   public void testRecursive()
+      throws Exception
+   {
+      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/recursive-test.xsd");
+      Document xformsDocument = this.buildXForm(null, schemaDocument, "non-recursive-test");
+      try
+      {
+         xformsDocument = this.buildXForm(null, schemaDocument, "recursive-test");
+         fail("expected failure creating xform with recursive element definition root element recursive-test in schema " + XMLUtil.toString(schemaDocument));
+      }
+      catch (FormBuilderException fbe)
+      {
+         LOGGER.debug("got expected exception " + fbe.getMessage());
+      }
+      try
+      {
+         xformsDocument = this.buildXForm(null, schemaDocument, "nested-recursive-test");
+         fail("expected failure creating xform with recursive element definition root element nested-recursive-test in schema " + XMLUtil.toString(schemaDocument));
+      }
+      catch (FormBuilderException fbe)
+      {
+         LOGGER.debug("got expected exception " + fbe.getMessage());
+      }
    }
 
    private void assertRepeatProperties(final Document xformsDocument, final String nodeset, final SchemaUtil.Occurrence o)

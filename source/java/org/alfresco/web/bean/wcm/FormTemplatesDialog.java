@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.wcm.CreateWebsiteWizard.FormWrapper;
 import org.alfresco.web.bean.wcm.CreateWebsiteWizard.PresentationTemplate;
@@ -95,6 +97,14 @@ public class FormTemplatesDialog extends BaseDialogBean
       this.templatesDataModel = null;
       this.templates = new ArrayList<PresentationTemplate>(getActionForm().getTemplates().size());
       this.templates.addAll(getActionForm().getTemplates());
+   }
+
+   @Override
+   public String getContainerDescription()
+   {
+      return MessageFormat.format(Application.getBundle(FacesContext.getCurrentInstance()).getString("form_template_templates_desc"), 
+                                  this.getActionForm().getName(),
+                                  this.websiteWizard.getName());
    }
    
    /**

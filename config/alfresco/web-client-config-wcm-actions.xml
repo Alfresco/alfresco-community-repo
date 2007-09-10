@@ -11,7 +11,7 @@
             <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
             <label-id>edit</label-id>
             <image>/images/icons/edit_icon.gif</image>
-            <action-listener>#{AVMEditBean.setupEditAction}</action-listener>
+            <action-listener>#{AVMBrowseBean.setupEditAction}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>

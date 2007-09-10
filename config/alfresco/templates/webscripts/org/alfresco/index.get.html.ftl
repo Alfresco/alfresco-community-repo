@@ -30,6 +30,7 @@
     <span class="mainSubTitle">Maintenance</span>
     <table>
         <tr><td><a href="${url.serviceContext}/api/javascript/debugger">Alfresco Javascript Debugger</a>
+        <tr><td><a href="${url.serviceContext}/installer>Web Script Installer</a>
     </table>
   </body>
 </html>

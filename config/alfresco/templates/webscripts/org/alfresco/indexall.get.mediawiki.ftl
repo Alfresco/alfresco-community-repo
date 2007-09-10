@@ -1,9 +1,7 @@
 Back to [[HTTP API]].
 
 
-'''NOTE:'''<br>
-'''This document describes features to be found in Alfresco v2.1 (not yet released).'''<br>
-'''Documentation for v2.0 can be found [[REST|here]].'''
+'''NOTE: This document describes features to be found in Alfresco v2.1 onwards.'''
 
 
 = Introduction =
@@ -43,7 +41,7 @@ Documentation for each Web Script includes:
 <#if desc.description??><#if desc.description?ends_with(".")>${desc.description}<#else>${desc.description}.</#if><#else><i>[No description supplied]</i></#if>
 
 <#list desc.URIs as uri>
- [http://localhost:8080/${url.serviceContext}${uri} ${desc.method} ${url.serviceContext}${uri}]
+ [http://localhost:8080${url.serviceContext}${uri} ${desc.method} ${url.serviceContext}${uri}]
 </#list>
 
 Requirements:

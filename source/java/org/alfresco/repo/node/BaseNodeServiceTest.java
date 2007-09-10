@@ -53,6 +53,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -68,12 +69,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.PropertyMap;
 import org.hibernate.Session;
 import org.springframework.context.ApplicationContext;
 
@@ -556,11 +559,22 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         }
         Map<QName,PropertyDefinition> propertyDefs = classDef.getProperties();
         // make up a property value for each property
-        for (QName propertyName : propertyDefs.keySet())
+        for (Map.Entry<QName, PropertyDefinition> entry : propertyDefs.entrySet())
         {
-            Serializable value = new Long(System.currentTimeMillis());
+            QName propertyQName = entry.getKey();
+            QName propertyTypeQName = entry.getValue().getDataType().getName();
+            // Get the property type
+            Serializable value = null;
+            if (propertyTypeQName.equals(DataTypeDefinition.CONTENT))
+            {
+                value = new ContentData(null, MimetypeMap.EXTENSION_BINARY, 0L, "UTF-8");
+            }
+            else
+            {
+                value = new Long(System.currentTimeMillis());
+            }
             // add it
-            properties.put(propertyName, value);
+            properties.put(propertyQName, value);
         }
     }
     
@@ -1829,10 +1843,10 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     			ContentModel.TYPE_CONTENT, 
     			props).getChildRef();
     	
-    	this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
+    	nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
     	
-    	this.nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, "my description");
-    	this.nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "my title");
+    	nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, "my description");
+    	nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "my title");
     	
     	JavaBehaviour behaviour = new JavaBehaviour(this, "onUpdateProperties");    	
     	PolicyComponent policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");
@@ -1844,7 +1858,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     	behaviourExecuted = false;
     	
     	// Update the title property and check that the behaviour has been fired
-    	this.nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "changed title");
+    	nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "changed title");
     	assertTrue("The onUpdateProperties behaviour has not been fired.", behaviourExecuted);
     }
     
@@ -1853,19 +1867,66 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             Map<QName, Serializable> before,
             Map<QName, Serializable> after)
     {
-    	behaviourExecuted = true;    	
-    	assertFalse(before.get(ContentModel.PROP_TITLE).toString().equals(after.get(ContentModel.PROP_TITLE).toString()));
-    	
-    	System.out.print("Before values: ");
-    	for (Map.Entry<QName, Serializable> entry : before.entrySet()) 
-    	{
-    		System.out.println(entry.getKey().toString() + " : " + entry.getValue().toString());
-		}
-    	System.out.print("\nAfter values: ");
-    	for (Map.Entry<QName, Serializable> entry : after.entrySet()) 
-    	{
-    		System.out.println(entry.getKey().toString() + " : " + entry.getValue().toString());
-		}
+        behaviourExecuted = true;       
+        assertFalse(before.get(ContentModel.PROP_TITLE).toString().equals(after.get(ContentModel.PROP_TITLE).toString()));
+        
+        System.out.print("Before values: ");
+        for (Map.Entry<QName, Serializable> entry : before.entrySet()) 
+        {
+            System.out.println(entry.getKey().toString() + " : " + entry.getValue().toString());
+        }
+        System.out.print("\nAfter values: ");
+        for (Map.Entry<QName, Serializable> entry : after.entrySet()) 
+        {
+            System.out.println(entry.getKey().toString() + " : " + entry.getValue().toString());
+        }
     }
     
+    /**
+     * Checks that unconvertable property values cannot be persisted.
+     */
+    public void testAR782() throws Exception
+    {
+        Map<QName, Serializable> properties = nodeService.getProperties(rootNodeRef);
+        // Set cm:created correctly
+        properties.put(ContentModel.PROP_CREATED, new Date());
+        nodeService.setProperties(rootNodeRef, properties);
+        try
+        {
+            // Set cm:created using something that can't be converted to a Date
+            properties.put(ContentModel.PROP_CREATED, "blah");
+            nodeService.setProperties(rootNodeRef, properties);
+            fail("Failed to catch type conversion issue early.");
+        }
+        catch (TypeConversionException e)
+        {
+            // Expected
+        }
+    }
+    
+    /**
+     * Helper test class for {@link BaseNodeServiceTest#testAR1414()}.
+     */
+    private static class AR1414Blob implements Serializable
+    {
+        private static final long serialVersionUID = 5616094206968290908L;
+        int i = 0;
+    }
+    
+    /**
+     * Check that Serializable properties do not remain connected to the L1 session
+     */
+    public void testAR1414() throws Exception
+    {
+        AR1414Blob blob = new AR1414Blob();
+        
+        QName propertyQName = QName.createQName(NAMESPACE, "testAR1414Prop");
+        nodeService.setProperty(rootNodeRef, propertyQName, blob);
+        // Modify our original blob
+        blob.i = 100;
+        // Get the property
+        AR1414Blob checkBlob = (AR1414Blob) nodeService.getProperty(rootNodeRef, propertyQName);
+        assertNotNull(checkBlob);
+        assertEquals("Blob was modified while persisted", 0, checkBlob.i);
+    }
 }

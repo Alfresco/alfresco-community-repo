@@ -259,10 +259,6 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         workingCopyProperties.put(ContentModel.PROP_WORKING_COPY_OWNER, userName);
         this.nodeService.addAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY, workingCopyProperties);
         
-        // Apply the sys:temporary aspect to tag the working copy as a temporary node
-        // so it doesn't get archived when checked in
-        this.nodeService.addAspect(workingCopy, ContentModel.ASPECT_TEMPORARY, null);
-      
         // Lock the origional node
         this.lockService.lock(nodeRef, LockType.READ_ONLY_LOCK);
         

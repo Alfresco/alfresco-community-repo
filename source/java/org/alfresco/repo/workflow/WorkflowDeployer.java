@@ -63,6 +63,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     public static final String REDEPLOY = "redeploy";
     
     // Dependencies
+    private boolean allowWrite = true;
     private TransactionService transactionService;
     private WorkflowService workflowService;
     private AuthenticationComponent authenticationComponent;
@@ -72,6 +73,16 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     private List<String> resourceBundles = new ArrayList<String>();
 
     
+    /**
+     * Set whether we write or not
+     * 
+     * @param write true (default) if the import must go ahead, otherwise no import will occur
+     */
+    public void setAllowWrite(boolean write)
+    {
+        this.allowWrite = write;
+    }
+
     /**
      * Sets the Transaction Service
      * 
@@ -159,7 +170,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         {
             throw new ImporterException("Workflow Service must be provided");
         }
-        
+
         UserTransaction userTransaction = transactionService.getUserTransaction();
         authenticationComponent.setSystemUserAsCurrentUser();
 
@@ -200,16 +211,24 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                     ClassPathResource workflowResource = new ClassPathResource(location);
                     
                     // deploy workflow definition
-                    if (!redeploy && workflowService.isDefinitionDeployed(engineId, workflowResource.getInputStream(), mimetype))
+                    if (!allowWrite)
                     {
-                        if (logger.isDebugEnabled())
-                            logger.debug("Workflow deployer: Definition '" + location + "' already deployed");
+                        // we're in read-only node
+                        logger.warn("Repository is in read-only mode; not deploying workflow " + location);
                     }
                     else
                     {
-                        WorkflowDeployment deployment = workflowService.deployDefinition(engineId, workflowResource.getInputStream(), mimetype);
-                        if (logger.isInfoEnabled())
-                            logger.info("Workflow deployer: Deployed process definition '" + deployment.definition.title + "' (version " + deployment.definition.version + ") from '" + location + "' with " + deployment.problems.length + " problems");
+                        if (!redeploy && workflowService.isDefinitionDeployed(engineId, workflowResource.getInputStream(), mimetype))
+                        {
+                            if (logger.isDebugEnabled())
+                                logger.debug("Workflow deployer: Definition '" + location + "' already deployed");
+                        }
+                        else
+                        {
+                            WorkflowDeployment deployment = workflowService.deployDefinition(engineId, workflowResource.getInputStream(), mimetype);
+                            if (logger.isInfoEnabled())
+                                logger.info("Workflow deployer: Deployed process definition '" + deployment.definition.title + "' (version " + deployment.definition.version + ") from '" + location + "' with " + deployment.problems.length + " problems");
+                        }
                     }
                 }
             }

@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.namespace.QName;
@@ -110,6 +111,12 @@ public class WorkflowTaskInstance extends TaskInstance
     @Override
     public void end(Transition transition)
     {
+        // Force assignment of task if transition is taken, but no owner has yet been assigned
+        if (actorId == null)
+        {
+            actorId = AuthenticationUtil.getCurrentUserName();
+        }
+        
         // Set task properties on completion of task
         // NOTE: Set properties first, so they're available during the submission of
         //       task variables to the process context

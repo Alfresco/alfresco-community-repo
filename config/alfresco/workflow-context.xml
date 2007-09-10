@@ -12,6 +12,9 @@
       <property name="authenticationComponent" ref="authenticationComponent" />
       <property name="workflowService" ref="WorkflowService" />
       <property name="dictionaryDAO" ref="dictionaryDAO"/>
+      <property name="allowWrite">
+      	<value>${server.transaction.allow-writes}</value>
+      </property>      
    </bean>
    
    <bean id="workflowServiceImpl" class="org.alfresco.repo.workflow.WorkflowServiceImpl">

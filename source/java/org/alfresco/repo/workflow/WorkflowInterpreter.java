@@ -114,8 +114,11 @@ public class WorkflowInterpreter extends BaseInterpreter
         {
             setCurrentUserName(BaseInterpreter.DEFAULT_ADMIN);
             
-            interpretCommand("var bpm:package package 1");
-            interpretCommand("var bpm:assignee person admin");
+            if (!transactionService.isReadOnly())
+            {
+                interpretCommand("var bpm:package package 1");
+                interpretCommand("var bpm:assignee person admin");
+            }
             
             setCurrentUserName(null);
         }

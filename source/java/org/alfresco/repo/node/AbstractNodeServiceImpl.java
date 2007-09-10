@@ -671,8 +671,8 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     /**
      * Extracts the externally-visible property from the {@link PropertyValue propertyValue}.
      * 
-     * @param propertyDef
-     * @param propertyValue
+     * @param propertyDef       the model property definition - may be <tt>null</tt>
+     * @param propertyValue     the persisted property
      * @return Returns the value of the property in the format dictated by the property
      *      definition, or null if the property value is null 
      */
@@ -711,8 +711,8 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     /**
      * Sets the default property values
      * 
-     * @param classDefinition
-     * @param properties
+     * @param classDefinition       the model type definition for which to get defaults
+     * @param properties            the properties of the node
      */
     protected void addDefaultPropertyValues(ClassDefinition classDefinition, Map<QName, Serializable> properties)
     {

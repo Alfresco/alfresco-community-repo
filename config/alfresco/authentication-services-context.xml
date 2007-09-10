@@ -251,7 +251,7 @@
             <ref bean="policyComponent" />
         </property>
         <property name="defaultProvider">
-            <ref bean="personalHomeFolderProvider" />
+            <ref bean="userHomesHomeFolderProvider" />
         </property>
     </bean>
     

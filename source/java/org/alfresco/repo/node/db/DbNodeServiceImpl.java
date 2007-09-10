@@ -774,10 +774,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
         // check if we need to archive the node
         StoreRef archiveStoreRef = null;
-        if (nodeAspectQNames.contains(ContentModel.ASPECT_TEMPORARY))
+        if (nodeAspectQNames.contains(ContentModel.ASPECT_TEMPORARY) ||
+                nodeAspectQNames.contains(ContentModel.ASPECT_WORKING_COPY))
         {
-           // the node has the temporary aspect meaning
-           // it can not be archived
+           // The node is either temporary or a working copy.
+           // It can not be archived.
            requiresDelete = true;
         }
         else

@@ -267,6 +267,25 @@ public class SMBSrvPacket
     }
 
     /**
+     * Check if the SMB packet has an SMB2 signature.
+     * 
+     * @return boolean True if the packet has an SMB2 signature, else false.
+     */
+    public final boolean isSMB2()
+    {
+
+        // Check for the SMB2 signature block
+
+        if (m_smbbuf[SIGNATURE] == (byte) 0xFE && m_smbbuf[SIGNATURE + 1] == 'S' && m_smbbuf[SIGNATURE + 2] == 'M'
+                && m_smbbuf[SIGNATURE + 3] == 'B')
+            return true;
+
+        // Not an SMB2 packet
+
+        return false;
+    }
+
+    /**
      * Clear the data byte count
      */
 

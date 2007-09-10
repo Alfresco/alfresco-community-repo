@@ -1365,9 +1365,6 @@
         </property>
     </bean>
 
-
-
-
     <!-- LinkValidationService -->
     <!-- Read transaction advisor for link validation service. -->
     <bean id="linkValidationServiceReadTxnAdvisor" 
@@ -1387,7 +1384,7 @@
         </property>
     </bean>
 
- <!-- Write transaction advisor for link validation service. -->
+    <!-- Write transaction advisor for link validation service. -->
     <bean id="linkValidationServiceWriteTxnAdvisor" 
           class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">

@@ -277,7 +277,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                 return null;
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork, true, true);
         // done
     }
 }

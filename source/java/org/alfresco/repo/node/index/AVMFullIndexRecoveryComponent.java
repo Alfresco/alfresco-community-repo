@@ -210,7 +210,7 @@ public class AVMFullIndexRecoveryComponent extends AbstractReindexComponent
                 return null;
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork, true, true);
         // done
     }
 

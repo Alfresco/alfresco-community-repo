@@ -32,15 +32,15 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
 
 /**
- * Simple class that checks for the presence of a valid <b>OpenOffice</b>
- * connection, as provided by the
+ * A bootstrap class that checks for the presence of a valid <b>OpenOffice</b> connection, as provided by the
  * <code>net.sf.jooreports.openoffice.connection.OpenOfficeConnection</code> implementations.
  * 
  * @author Derek Hulley
  */
-public class OpenOfficeConnectionTester
+public class OpenOfficeConnectionTester extends AbstractLifecycleBean
 {
     private static final String INFO_CONNECTION_VERIFIED = "system.openoffice.info.connection_verified";
     private static final String ERR_CONNECTION_FAILED = "system.openoffice.err.connection_failed";
@@ -74,11 +74,28 @@ public class OpenOfficeConnectionTester
     }
 
     /**
+     * @see #checkConnection()
+     */
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
+    {
+        checkConnection();
+    }
+
+    /**
+     * Does nothing.
+     */
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
+    }
+
+    /**
      * Perform the actual connection check.  If this component is {@link #setStrict(boolean) strict},
      * then a disconnected {@link #setConnection(OpenOfficeConnection) connection} will result in a
      * runtime exception being generated.
      */
-    public synchronized void checkConnection()
+    private synchronized void checkConnection()
     {
         PropertyCheck.mandatory(this, "connection", connection);
         String connectedMessage = I18NUtil.getMessage(INFO_CONNECTION_VERIFIED);

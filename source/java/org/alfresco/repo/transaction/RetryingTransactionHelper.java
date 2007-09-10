@@ -27,6 +27,7 @@ package org.alfresco.repo.transaction;
 import java.sql.BatchUpdateException;
 import java.util.Random;
 
+import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
@@ -297,8 +298,16 @@ public class RetryingTransactionHelper
                         throw new AlfrescoRuntimeException("Failure during rollback: " + cb, e1);
                     }
                 }
-                lastException = (e instanceof RuntimeException) ? 
-                        (RuntimeException)e : new AlfrescoRuntimeException("Unknown Exception in Transaction.", e);
+                if (e instanceof RollbackException)
+                {
+                    lastException = (e.getCause() instanceof RuntimeException) ?
+                         (RuntimeException)e.getCause() : new AlfrescoRuntimeException("Exception in Transaction.", e.getCause());
+                }
+                else
+                {
+                    lastException = (e instanceof RuntimeException) ? 
+                         (RuntimeException)e : new AlfrescoRuntimeException("Exception in Transaction.", e);
+                }
                 // Check if there is a cause for retrying
                 Throwable retryCause = extractRetryCause(e);
                 if (retryCause != null)

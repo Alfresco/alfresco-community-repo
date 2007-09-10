@@ -121,14 +121,6 @@
    </bean>
    
    <bean id="openOfficeConnection" class="net.sf.jooreports.openoffice.connection.SocketOpenOfficeConnection" />
-   <bean id="openOfficeConnectionTester" class="org.alfresco.util.OpenOfficeConnectionTester" init-method="checkConnection" >
-      <property name="connection">
-         <ref bean="openOfficeConnection" />
-      </property>
-      <property name="strict">
-         <value>false</value>
-      </property>
-   </bean>
    
    <!-- Metadata Extraction Regisitry -->
    <bean id="metadataExtracterRegistry" class="org.alfresco.repo.content.metadata.MetadataExtracterRegistry" />

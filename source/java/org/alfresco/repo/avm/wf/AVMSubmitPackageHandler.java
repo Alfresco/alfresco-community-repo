@@ -154,17 +154,28 @@ public class AVMSubmitPackageHandler
     private void recursivelyRemoveLocks(final String webProject, final int version, final String path)
     {
         LOGGER.debug("removing lock on " + path);
-        final AVMNodeDescriptor desc = fAVMService.lookup(version, path, true);
+        AVMNodeDescriptor desc = fAVMService.lookup(version, path, true);
         if (desc.isFile() || desc.isDeletedFile())
         {
             fAVMLockingService.removeLock(webProject, path.substring(path.indexOf(":") + 1));
         }
-        else
+        else 
         {
-            for (final AVMNodeDescriptor child : fAVMService.getDirectoryListingArray(version, path, true))
-            {
-                this.recursivelyRemoveLocks(webProject, version, child.getPath());
-            }
+           if (desc.isDeletedDirectory())
+           {
+              // lookup the previous child and get its contents
+              final List<AVMNodeDescriptor> history = fAVMService.getHistory(desc, 2);
+              if (history.size() == 1)
+              {
+                 return;
+              }
+              desc = history.get(1);
+           }
+
+           for (final AVMNodeDescriptor child : fAVMService.getDirectoryListingArray(desc.getVersionID(), desc.getPath(), true))
+           {
+              this.recursivelyRemoveLocks(webProject, child.getVersionID(), child.getPath());
+           }
         }
     }
 }

@@ -409,6 +409,15 @@
        
 	<!-- Startup Message -->
 
+    <bean id="openOfficeConnectionTester" class="org.alfresco.util.OpenOfficeConnectionTester" >
+        <property name="connection">
+            <ref bean="openOfficeConnection" />
+        </property>
+        <property name="strict">
+            <value>false</value>
+        </property>
+    </bean>
+
     <bean id="startupLog" class="org.alfresco.repo.descriptor.DescriptorStartupLog">
        <property name="descriptorService">
 	       	<ref local="descriptorComponent"/>

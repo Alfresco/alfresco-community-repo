@@ -1616,7 +1616,7 @@ public class AVMRepository
             {
                 throw new AVMNotFoundException("Store not found.");
             }
-            Lookup lookup = store.lookup(version, pathParts[1], false, false);
+            Lookup lookup = store.lookup(version, pathParts[1], false, true);
             if (lookup == null)
             {
                 throw new AVMNotFoundException("Path not found.");

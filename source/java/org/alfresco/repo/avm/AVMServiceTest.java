@@ -101,6 +101,34 @@ import org.alfresco.util.Pair;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
+    public void testHeadPathsInLayers()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createStore("user");
+            fService.createLayeredDirectory("main:/a", "user:/", "a");
+            fService.createStore("sandbox");
+            fService.createLayeredDirectory("main:/a", "sandbox:/", "a");
+            fService.createDirectory("user:/a/b", "newdir");
+            fService.createFile("user:/a/b/newdir", "bibble.txt").close();
+            List<AVMDifference> diffs = fSyncService.compare(-1, "user:/a", -1, "sandbox:/a", null);
+            System.out.println(diffs);
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            AVMNodeDescriptor dir = fService.lookup(-1, "user:/a/b/newdir");
+            List<Pair<Integer, String>> paths = fService.getHeadPaths(dir);
+            System.out.println(paths);
+            AVMNodeDescriptor file = fService.lookup(-1, "user:/a/b/newdir/bibble.txt");
+            paths = fService.getHeadPaths(file);
+            System.out.println(paths);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+    }
+    
     /**
      * Minimal testing of Locking Aware service.
      */

@@ -1321,6 +1321,35 @@ public class SMBSrvSession extends SrvSession implements Runnable
                     continue;
                 }
 
+                //  Check the packet signature if we are in an SMB state
+                
+                if ( m_state > SMBSrvSessionState.NBSESSREQ)
+                {
+	                //  Check for an SMB2 packet signature
+	                
+	                if ( m_smbPkt.isSMB2())
+	                {
+	                  //  Debug
+	                  
+	                  if ( logger.isDebugEnabled() && hasDebug(DBG_PKTTYPE))
+	                    logger.debug("SMB2 request received, ignoring");
+	                  
+	                  continue;
+	                }
+	                
+	                //  Check the packet signature
+	                
+	                if ( m_smbPkt.checkPacketSignature() == false)
+	                {
+	                  //  Debug
+	                  
+	                  if ( logger.isDebugEnabled() && hasDebug(DBG_PKTTYPE))
+	                    logger.debug("Invalid SMB packet signature received, packet ignored");
+	                  
+	                  continue;
+	                }
+                }
+                
                 // Store the received data length
 
                 m_smbPkt.setReceivedLength(m_rxlen);

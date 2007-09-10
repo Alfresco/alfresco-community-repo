@@ -308,6 +308,7 @@
           <!-- owner permissions.                                                      -->
           <includePermissionGroup permissionGroup="Consumer" type="cm:cmobject"/>
           <includePermissionGroup permissionGroup="AddChildren" type="sys:base"/>
+          <includePermissionGroup permissionGroup="ReadPermissions" type="sys:base" />
       </permissionGroup>
       
       <!-- An editor can read and write to the object; they can not create    -->
@@ -317,6 +318,7 @@
           <includePermissionGroup type="cm:cmobject" permissionGroup="Consumer"/>
           <includePermissionGroup type="sys:base" permissionGroup="Write"/>
           <includePermissionGroup type="cm:lockable" permissionGroup="CheckOut"/>
+          <includePermissionGroup type="sys:base" permissionGroup="ReadPermissions"/>
       </permissionGroup>
       
       <!-- The Consumer permission allows read to everything by default.                  -->

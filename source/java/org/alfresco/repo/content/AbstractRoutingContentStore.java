@@ -334,11 +334,12 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                     "   Chose:  " + store);
         }
         ContentWriter writer = store.getWriter(context);
+        String newContentUrl = writer.getContentUrl();
         // Cache the store against the URL
         storesCacheWriteLock.lock();
         try
         {
-            storesByContentUrl.put(contentUrl, store);
+            storesByContentUrl.put(newContentUrl, store);
         }
         finally
         {

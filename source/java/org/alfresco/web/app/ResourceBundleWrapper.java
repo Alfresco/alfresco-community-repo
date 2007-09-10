@@ -60,7 +60,7 @@ public final class ResourceBundleWrapper extends ResourceBundle
    
    public static final String BEAN_RESOURCE_BUNDLE_WRAPPER = "resourceBundleWrapper";
       
-   public static final String PATH = "app:company_home/app:dictionary/cm:webclient_extension";
+   public static final String PATH = "app:company_home/app:dictionary/app:webclient_extension";
 
    public ResourceBundleWrapper(MessageService messageService)
    {

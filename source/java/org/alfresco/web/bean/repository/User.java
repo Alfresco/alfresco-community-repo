@@ -200,7 +200,7 @@ public final class User
       NamespaceService namespaceService = registry.getNamespaceService();
       ConfigurableService configurableService = Repository.getConfigurableService(fc);
       
-      NodeRef person = Application.getCurrentUser(fc).getPerson();
+      NodeRef person = getPerson();
       if (nodeService.hasAspect(person, ApplicationModel.ASPECT_CONFIGURABLE) == false)
       {
          // create the configuration folder for this Person node

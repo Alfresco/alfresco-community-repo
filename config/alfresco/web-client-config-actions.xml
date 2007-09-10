@@ -442,6 +442,9 @@
 
          <!-- Email Space Users -->
          <action id="email_space_users">
+            <permissions>
+               <permission allow="true">ReadPermissions</permission>
+            </permissions>
             <label-id>email_space_users</label-id>
             <image>/images/icons/email_users.gif</image>
             <action>dialog:emailSpaceUsers</action>

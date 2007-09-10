@@ -55,7 +55,6 @@ import org.apache.commons.logging.LogFactory;
 public class UIWorkflowHistory extends SelfRenderingComponent
 {
    protected WorkflowInstance value = null;
-   protected Boolean completedMode = null;
    
    private static final Log logger = LogFactory.getLog(UIWorkflowHistory.class);
 
@@ -85,17 +84,15 @@ public class UIWorkflowHistory extends SelfRenderingComponent
       // standard component attributes are restored by the super class
       super.restoreState(context, values[0]);
       this.value = (WorkflowInstance)values[1];
-      this.completedMode = (Boolean)values[2];
    }
    
    @Override
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[3];
+      Object values[] = new Object[2];
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = this.value;
-      values[2] = this.completedMode;
       return values;
    }
    
@@ -116,7 +113,7 @@ public class UIWorkflowHistory extends SelfRenderingComponent
             logger.debug("Retrieving workflow history for workflow instance: " + wi);
          
          WorkflowTaskQuery query = new WorkflowTaskQuery();
-         query.setActive(!getCompletedMode());
+         query.setActive(null);
          query.setProcessId(wi.id);
          query.setTaskState(WorkflowTaskState.COMPLETED);
          query.setOrderBy(new WorkflowTaskQuery.OrderBy[] { 
@@ -256,35 +253,5 @@ public class UIWorkflowHistory extends SelfRenderingComponent
    public void setValue(WorkflowInstance value)
    {
       this.value = value;
-   }
-   
-   /**
-    * @return Returns whether the history is for a completed workflow instance
-    */
-   public boolean getCompletedMode()
-   {
-      if (this.completedMode == null)
-      {
-         ValueBinding vb = getValueBinding("completedMode");
-         if (vb != null)
-         {
-            this.completedMode = (Boolean)vb.getValue(getFacesContext());
-         }
-      }
-      
-      if (this.completedMode == null)
-      {
-         this.completedMode = Boolean.FALSE;
-      }
-      
-      return this.completedMode; 
-   }
-
-   /**
-    * @param completedMode Sets whether the history is for a completed workflow instance
-    */
-   public void setCompletedMode(boolean completedMode)
-   {
-      this.completedMode = Boolean.valueOf(completedMode);
    }
 }

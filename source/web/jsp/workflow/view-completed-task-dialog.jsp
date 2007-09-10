@@ -111,7 +111,7 @@
       <a:panel id="pending-submission-panel" label="#{msg.workflow_history}" progressive="true" 
             expanded="false" styleClass="mainSubTitle">
          <r:workflowHistory id="workflow-history" value="#{DialogManager.bean.workflowInstance}" 
-                            styleClass="workflowHistoryList" completedMode="true" />
+                            styleClass="workflowHistoryList" />
       </a:panel>
    <f:verbatim></div></f:verbatim>
 </a:panel>

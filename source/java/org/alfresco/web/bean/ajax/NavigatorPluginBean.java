@@ -52,6 +52,7 @@ import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
+import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.repo.component.UITree.TreeNode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -346,6 +347,7 @@ public class NavigatorPluginBean implements IContextListener
          }
          catch (Throwable err)
          {
+            Utils.addErrorMessage("NavigatorPluginBean exception in getCompanyHomeRootNodes()", err);
             try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          }
       }
@@ -397,6 +399,7 @@ public class NavigatorPluginBean implements IContextListener
          }
          catch (Throwable err)
          {
+            Utils.addErrorMessage("NavigatorPluginBean exception in getMyHomeRootNodes()", err);
             try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          }
       }
@@ -451,6 +454,7 @@ public class NavigatorPluginBean implements IContextListener
          }
          catch (Throwable err)
          {
+            Utils.addErrorMessage("NavigatorPluginBean exception in getGuestHomeRootNodes()", err);
             try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          }
       }

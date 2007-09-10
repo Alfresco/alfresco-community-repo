@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.SocketException;
 import java.util.Date;
+import java.util.Locale;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -39,7 +40,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.util.ISO8601DateFormat;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -67,7 +68,12 @@ import org.apache.commons.logging.LogFactory;
  * <ul>
  *   <li><b>alfresco.dr.size:</b> The content size</li>
  *   <li><b>alfresco.dr.lastModified:</b> The last modified date</li>
+ *   <li><b>alfresco.dr.mimetype:</b> The content mimetype</li>
+ *   <li><b>alfresco.dr.encoding:</b> The content encoding</li>
+ *   <li><b>alfresco.dr.locale:</b> The content locale</li>
  * </ul>
+ * Note that the mimetype, encoding and locale generally fallback to the default
+ * as implemented by the {@linkplain ContentService#getRawReader(String) raw reader}.
  * 
  * @since 2.1
  * @author Derek Hulley
@@ -83,9 +89,6 @@ public class DownloadRawContentServlet extends BaseServlet
 
    private static final String ARG_CONTENT_URL = "contentUrl";
    private static final String ARG_INFO_ONLY = "infoOnly";
-   
-   private static final String HEADER_SIZE = "alfresco.dr.size";
-   private static final String HEADER_LAST_MODIFIED = "alfresco.dr.lastModified";
    
    protected void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException
    {
@@ -154,19 +157,31 @@ public class DownloadRawContentServlet extends BaseServlet
          return;
       }
       
-      // Fill response details
-      res.setContentType(DEFAULT_MIMETYPE);
-      res.setCharacterEncoding(DEFAULT_ENCODING);
-      
       long readerSize = reader.getSize();
       Date readerLastModified = new Date(reader.getLastModified());
+      String readerMimetype = reader.getMimetype();
+      String readerEncoding = reader.getEncoding();
+      Locale readerLocale = reader.getLocale();
       // Set the content info
-      res.setIntHeader(HEADER_SIZE, (int) readerSize);
-      res.setHeader(HEADER_LAST_MODIFIED, ISO8601DateFormat.format(readerLastModified));
+      res.setHeader("alfresco.dr.size", DefaultTypeConverter.INSTANCE.convert(String.class, readerSize));
+      res.setHeader("alfresco.dr.lastModified", DefaultTypeConverter.INSTANCE.convert(String.class, readerLastModified));
+      res.setHeader("alfresco.dr.mimetype", readerMimetype);
+      res.setHeader("alfresco.dr.encoding", readerEncoding);
+      res.setHeader("alfresco.dr.locale", DefaultTypeConverter.INSTANCE.convert(String.class, readerLocale));
       
       // Pass the stream to the response, unless only the content info was requested
-      if (!infoOnly)
+      if (infoOnly)
       {
+          // Fill response details
+          res.setContentType(DEFAULT_MIMETYPE);
+          res.setCharacterEncoding(DEFAULT_ENCODING);
+      }
+      else
+      {
+          // Fill response details
+          res.setContentType(readerMimetype);
+          res.setCharacterEncoding(readerEncoding);
+          
          try
          {
             OutputStream clientOs = res.getOutputStream();

@@ -24,8 +24,15 @@
 --%>
 
 <%@ page import="javax.faces.context.FacesContext" %>
+<%@ page import="javax.transaction.UserTransaction" %>
+<%@ page import="org.springframework.web.context.WebApplicationContext" %>
 <%@ page import="org.springframework.web.context.support.WebApplicationContextUtils" %>
+<%@ page import="org.alfresco.service.transaction.TransactionService" %>
 <%@ page import="org.alfresco.service.cmr.security.PermissionService" %>
+<%@ page import="org.alfresco.service.cmr.security.AuthenticationService" %>
+<%@ page import="org.alfresco.service.cmr.security.PersonService" %>
+<%@ page import="org.alfresco.service.cmr.security.PermissionService" %>
+<%@ page import="org.alfresco.service.cmr.repository.NodeRef" %>
 <%@ page import="org.alfresco.config.ConfigService" %>
 <%@ page import="org.alfresco.web.app.servlet.AuthenticationHelper" %>
 <%@ page import="org.alfresco.web.app.servlet.FacesHelper" %>
@@ -37,13 +44,14 @@
 <%-- redirect to the web application's appropriate start page --%>
 <%
 // get the start location as configured by the web-client config
-ConfigService configService = (ConfigService)WebApplicationContextUtils.getRequiredWebApplicationContext(session.getServletContext()).getBean("webClientConfigService");
+WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(session.getServletContext());
+ConfigService configService = (ConfigService)context.getBean("webClientConfigService");
 ClientConfigElement configElement = (ClientConfigElement)configService.getGlobalConfig().getConfigElement("client");
 String location = configElement.getInitialLocation();
 
 // override with the users preference if they have one
 User user = (User)session.getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
-if (user != null && (user.getUserName().equals(PermissionService.GUEST_AUTHORITY) == false))
+if (user != null)
 {
    // ensure construction of the FacesContext before attemping a service call
    FacesContext fc = FacesHelper.getFacesContext(request, response, application);
@@ -51,6 +59,33 @@ if (user != null && (user.getUserName().equals(PermissionService.GUEST_AUTHORITY
    if (preference != null)
    {
       location = preference;
+   }
+}
+else
+{
+	UserTransaction tx = ((TransactionService)context.getBean("TransactionService")).getUserTransaction();;
+   tx.begin();
+	try
+	{
+		AuthenticationService authService = (AuthenticationService)context.getBean("AuthenticationService");
+	   authService.authenticateAsGuest();
+		PersonService personService = (PersonService)context.getBean("personService");
+      NodeRef guestRef = personService.getPerson(PermissionService.GUEST_AUTHORITY);
+      user = new User(authService.getCurrentUserName(), authService.getCurrentTicket(), guestRef);
+      
+      // ensure construction of the FacesContext before attemping a service call
+	   FacesContext fc = FacesHelper.getFacesContext(request, response, application);
+	   String preference = (String)PreferencesService.getPreferences(user).getValue("start-location");
+	   if (preference != null)
+	   {
+	      location = preference;
+	   }
+      
+      tx.commit();
+   }
+   catch (Throwable e)
+   {
+      try { tx.rollback(); } catch (Throwable tex) {}
    }
 }
 if (NavigationBean.LOCATION_MYALFRESCO.equals(location))

@@ -1666,8 +1666,7 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 
 				// Write to the network file
 
-				disk.writeFile(sess, conn, netFile, rpc.getBuffer(), rpc
-						.getPosition(), count, offset);
+				disk.writeFile(sess, conn, netFile, rpc.getBuffer(), rpc.getPosition(), count, offset);
 			}
 
 			// Get file information for the path and pack the response
@@ -1707,8 +1706,7 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 			// DEBUG
 
 			if (logger.isDebugEnabled() && hasDebugFlag(DBG_ERROR)) {
-				logger.debug("Write Exception: netFile=" + netFile + ", cache=" + sess.getFileCache().numberOfEntries());
-				logger.debug(ex);
+				logger.debug("Write Exception: netFile=" + netFile + ", cache=" + sess.getFileCache().numberOfEntries(), ex);
 			}
 		}
 
@@ -1902,6 +1900,9 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 		}
 		catch (AccessDeniedException ex) {
 			errorSts = NFS.StsAccess;
+			
+			if ( logger.isDebugEnabled())
+				logger.debug("Create error:", ex);
 		}
 		catch (Exception ex) {
 			errorSts = NFS.StsServerFault;
@@ -1909,7 +1910,7 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 			// DEBUG
 
 			if (logger.isDebugEnabled() && hasDebugFlag(DBG_ERROR))
-				logger.debug("Create Exception: " + ex.toString());
+				logger.debug("Create Exception: " + ex.toString(), ex);
 		}
 
 		// Check for a failure status
@@ -3241,8 +3242,7 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 			// DEBUG
 
 			if (logger.isDebugEnabled() && hasDebugFlag(DBG_SEARCH))
-				logger.debug("ReadDir return entries=" + entCnt + ", eof="
-						+ search.hasMoreFiles());
+				logger.debug("ReadDir return entries=" + (entCnt - 1) + ", eof=" + search.hasMoreFiles());
 		}
 		catch (BadHandleException ex) {
 			errorSts = NFS.StsBadHandle;
@@ -3612,7 +3612,7 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 			// DEBUG
 
 			if (logger.isDebugEnabled() && hasDebugFlag(DBG_SEARCH))
-				logger.debug("ReadDirPlus return entries=" + entCnt + ", eof=" + (search.hasMoreFiles() ? false : true));
+				logger.debug("ReadDirPlus return entries=" + (entCnt - 1) + ", eof=" + (search.hasMoreFiles() ? false : true));
 		}
 		catch (BadHandleException ex) {
 			errorSts = NFS.StsBadHandle;

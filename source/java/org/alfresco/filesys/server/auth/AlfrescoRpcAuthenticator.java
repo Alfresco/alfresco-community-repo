@@ -261,6 +261,11 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator {
     		// Clear the authentication, null user should not be allowed to do any service calls
     		
     		m_authComponent.clearCurrentSecurityContext();
+    		
+    		// DEBUG
+    		
+    		if ( logger.isDebugEnabled())
+    			logger.debug("Clear security context, client=" + client);
     	}
     	else if ( client.isGuest() == false)
     	{
@@ -272,12 +277,22 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator {
     			
     			m_authComponent.setCurrentUser( client.getUserName());
     			client.setAuthenticationToken( m_authComponent.getCurrentAuthentication());
+    			
+    			// DEBUG
+    			
+    			if ( logger.isDebugEnabled())
+    				logger.debug("Set user name=" + client.getUserName() + ", token=" + client.getAuthenticationToken());
     		}
     		else
     		{
 	    		// Set the authentication context for the request
 	    		
 	    		m_authComponent.setCurrentAuthentication( client.getAuthenticationToken());
+    			
+    			// DEBUG
+    			
+    			if ( logger.isDebugEnabled())
+    				logger.debug("Set user using auth token, token=" + client.getAuthenticationToken());
     		}
     	}
     	else
@@ -285,7 +300,16 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator {
     		// Enable guest access for the request
     		
     		m_authComponent.setGuestUserAsCurrentUser();
+			
+			// DEBUG
+			
+			if ( logger.isDebugEnabled())
+				logger.debug("Set guest user");
     	}
+    	
+    	//	Commit the authentication transaction
+    	
+    	sess.endTransaction();
     }
     
 	/**

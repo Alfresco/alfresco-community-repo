@@ -27,7 +27,6 @@ package org.alfresco.filesys.server;
 import java.net.InetAddress;
 
 import javax.transaction.Status;
-import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -36,7 +35,11 @@ import org.alfresco.filesys.server.auth.ClientInfo;
 import org.alfresco.filesys.server.core.SharedDevice;
 import org.alfresco.filesys.server.core.SharedDeviceList;
 import org.alfresco.filesys.server.filesys.FilesysTransaction;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.transaction.SpringAwareUserTransaction;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Server Session Base Class
@@ -45,6 +48,9 @@ import org.alfresco.service.transaction.TransactionService;
  */
 public abstract class SrvSession
 {
+    // Logging
+    
+    private static final Log logger = LogFactory.getLog(SrvSession.class);
 
     // Network server this session is associated with
 
@@ -101,9 +107,6 @@ public abstract class SrvSession
     // Active transaction and read/write flag
     
     private ThreadLocal<FilesysTransaction> m_tx = new ThreadLocal<FilesysTransaction>();
-    
-//    UserTransaction m_transaction;
-//    private boolean m_readOnlyTrans;
     
     // Request and transaction counts
     
@@ -505,6 +508,11 @@ public abstract class SrvSession
     private final boolean beginTransaction(TransactionService transService, boolean readOnly)
         throws AlfrescoRuntimeException
     {
+    	// DEBUG
+    	
+    	if ( logger.isDebugEnabled())
+    		logger.debug( "Begin transaction readOnly=" + readOnly);
+    	
         boolean created = false;
         
         // Get the filesystem transaction
@@ -514,6 +522,11 @@ public abstract class SrvSession
         {
         	filesysTx = new FilesysTransaction();
         	m_tx.set( filesysTx);
+        	
+        	// DEBUG
+        	
+        	if ( logger.isDebugEnabled())
+        		logger.debug("Created FilesysTransaction");
         }
         
         // If there is an active transaction check that it is the required type
@@ -535,6 +548,11 @@ public abstract class SrvSession
                     //  Rollback the current transaction
                     
                     tx.rollback();
+                    
+                    // DEBUG
+                    
+                    if ( logger.isDebugEnabled())
+                    	logger.debug("Rolled back existing transaction");
                 }
             }
             catch ( Exception ex)
@@ -552,15 +570,21 @@ public abstract class SrvSession
                     tx.commit();
                     m_transConvCount++;
                 }
-                catch ( Exception ex)
+                catch ( Throwable ex)
                 {
-                    throw new AlfrescoRuntimeException("Failed to commit read-only transaction, " + ex.getMessage());
+                	ex.printStackTrace();
+//                    throw new AlfrescoRuntimeException("Failed to commit read-only transaction, " + ex.getMessage());
                 }
                 finally
                 {
                     // Clear the active transaction
 
                     filesysTx.clearTransaction();
+                    
+                    // DEBUG
+                    
+                    if ( logger.isDebugEnabled())
+                    	logger.debug("Cleared existing transaction (read/write)");
                 }
             }
         }
@@ -571,15 +595,46 @@ public abstract class SrvSession
         {
             try
             {
-                UserTransaction userTrans = transService.getUserTransaction(readOnly);
-                userTrans.begin();
+            	// Create the transaction
+            	
+                UserTransaction userTrans = null; 
+                	
+                if ( AlfrescoTransactionSupport.getTransactionId() != null) {
+                	
+                	// Create a non-propagating transaction as there is an active transaction
+                	
+                	userTrans = transService.getNonPropagatingUserTransaction(readOnly);
+                	
+                	// DEBUG
+                	
+            		if ( logger.isDebugEnabled())
+            			logger.debug("%%%%% Transaction active id=" + AlfrescoTransactionSupport.getTransactionId() + ", started=" + AlfrescoTransactionSupport.getTransactionStartTime());
+                }
+                else {
+                	
+                	// Create a normal transaction
+
+                	userTrans = transService.getUserTransaction(readOnly);
+                }
                 
+                // Start the transaction
+                
+                userTrans.begin();
+
                 created = true;
 
                 // Store the transaction
                 
                 filesysTx.setTransaction( userTrans, readOnly);
                 m_transCount++;
+                
+                // DEBUG
+                
+                if ( logger.isDebugEnabled()) {
+                	logger.debug("Created transaction readOnly=" + readOnly + ", tx=" + userTrans + ", txSts=" + userTrans.getStatus());
+                	SpringAwareUserTransaction springTx = (SpringAwareUserTransaction) userTrans;
+                	logger.debug("  Tx details readOnly=" + springTx.isReadOnly() + ", txStatus=" + springTx.getStatus() + ",id=" + AlfrescoTransactionSupport.getTransactionId());
+                }
             }
             catch (Exception ex)
             {
@@ -614,7 +669,9 @@ public abstract class SrvSession
             {
                 // Commit or rollback the transaction
                 
-                if ( tx.getStatus() == Status.STATUS_MARKED_ROLLBACK)
+                if ( tx.getStatus() == Status.STATUS_MARKED_ROLLBACK ||
+                     tx.getStatus() == Status.STATUS_ROLLEDBACK ||
+                     tx.getStatus() == Status.STATUS_ROLLING_BACK)
                 {
                     // Transaction is marked for rollback
                     
@@ -629,13 +686,19 @@ public abstract class SrvSession
             }
             catch ( Exception ex)
             {
-                throw new AlfrescoRuntimeException("Failed to end transaction", ex);
+            	ex.printStackTrace();
+//                throw new AlfrescoRuntimeException("Failed to end transaction", ex);
             }
             finally
             {
                 // Clear the current transaction
                 
                 filesysTx.clearTransaction();
+                
+                // DEBUG
+                
+                if ( logger.isDebugEnabled())
+                	logger.debug("Cleared existing transaction (end)");
         }
     }
     

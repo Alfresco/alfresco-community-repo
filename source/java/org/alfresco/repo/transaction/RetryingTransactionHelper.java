@@ -51,7 +51,7 @@ import org.springframework.dao.DeadlockLoserDataAccessException;
 public class RetryingTransactionHelper
 {
     private static final String MSG_READ_ONLY = "permissions.err_read_only";
-    private static Logger fgLogger = Logger.getLogger(RetryingTransactionHelper.class);
+    private static Logger logger = Logger.getLogger(RetryingTransactionHelper.class);
     
     /**
      * Exceptions that trigger retries.
@@ -71,12 +71,12 @@ public class RetryingTransactionHelper
     /**
      * Reference to the TransactionService instance.
      */
-    private TransactionService fTxnService;
+    private TransactionService txnService;
     
     /**
      * The maximum number of retries. -1 for infinity.
      */
-    private int fMaxRetries;
+    private int maxRetries;
     
     /**
      * Whether the the transactions may only be reads
@@ -86,7 +86,7 @@ public class RetryingTransactionHelper
     /**
      * Random number generator for retry delays.
      */
-    private Random fRandom;
+    private Random random;
     
     /**
      * Callback interface
@@ -108,7 +108,7 @@ public class RetryingTransactionHelper
      */
     public RetryingTransactionHelper()
     {
-        fRandom = new Random(System.currentTimeMillis());
+        this.random = new Random(System.currentTimeMillis());
     }
     
     // Setters.
@@ -117,7 +117,7 @@ public class RetryingTransactionHelper
      */
     public void setTransactionService(TransactionService service)
     {
-        fTxnService = service;
+        this.txnService = service;
     }
     
     /**
@@ -125,7 +125,7 @@ public class RetryingTransactionHelper
      */
     public void setMaxRetries(int maxRetries)
     {
-        fMaxRetries = maxRetries;
+        this.maxRetries = maxRetries;
     }
     
     /**
@@ -199,7 +199,7 @@ public class RetryingTransactionHelper
         // Track the last exception caught, so that we
         // can throw it if we run out of retries.
         RuntimeException lastException = null;
-        for (int count = 0; fMaxRetries < 0 || count < fMaxRetries; ++count)
+        for (int count = 0; maxRetries < 0 || count < maxRetries; ++count)
         {
             UserTransaction txn = null;
             boolean isNew = false;
@@ -207,11 +207,11 @@ public class RetryingTransactionHelper
             {
                 if (requiresNew)
                 {
-                    txn = fTxnService.getNonPropagatingUserTransaction();
+                    txn = txnService.getNonPropagatingUserTransaction();
                 }
                 else
                 {
-                    txn = fTxnService.getUserTransaction(readOnly);
+                    txn = txnService.getUserTransaction(readOnly);
                 }
                 // Only start a transaction if required.  This check isn't necessary as the transactional
                 // behaviour ensures that the appropriate propogation is performed.  It is a useful and
@@ -239,11 +239,11 @@ public class RetryingTransactionHelper
                         txn.commit();
                     }
                 }
-                if (fgLogger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     if (count != 0)
                     {
-                        fgLogger.debug(
+                        logger.debug(
                                 "Transaction succeeded after " + count +
                                 " retries on thread " + Thread.currentThread().getName());
                     }
@@ -271,21 +271,29 @@ public class RetryingTransactionHelper
                 {
                     try 
                     {
-                        if (txn.getStatus() != Status.STATUS_ROLLEDBACK)
+                        int txnStatus = txn.getStatus();
+                        // We can only rollback if a transaction was started (NOT NO_TRANSACTION) and
+                        // if that transaction has not been rolled back (NOT ROLLEDBACK).
+                        // If an exception occurs while the transaction is being created (e.g. no database connection)
+                        // then the status will be NO_TRANSACTION.
+                        if (txnStatus != Status.STATUS_NO_TRANSACTION && txnStatus != Status.STATUS_ROLLEDBACK)
                         {
                             txn.rollback();
                         }
                     } 
                     catch (IllegalStateException e1) 
                     {
+                        logger.error(e);
                         throw new AlfrescoRuntimeException("Failure during rollback: " + cb, e1);
                     } 
                     catch (SecurityException e1) 
                     {
+                        logger.error(e);
                         throw new AlfrescoRuntimeException("Failure during rollback: " + cb, e1);
                     }
                     catch (SystemException e1) 
                     {
+                        logger.error(e);
                         throw new AlfrescoRuntimeException("Failure during rollback: " + cb, e1);
                     }
                 }
@@ -299,7 +307,7 @@ public class RetryingTransactionHelper
                     // The sleep interval increases with the number of retries.
                     try
                     {
-                        Thread.sleep(fRandom.nextInt(500 * count + 500));
+                        Thread.sleep(random.nextInt(500 * count + 500));
                     }
                     catch (InterruptedException ie)
                     {

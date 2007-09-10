@@ -277,6 +277,12 @@ public class NetworkFileCache {
 								// Close the file via the disk interface
 
 								try {
+									
+									// DEBUG
+									
+									if ( logger.isDebugEnabled())
+										logger.debug( "NFSFileExpiry: Closing file " + fentry.getFile().getFullName());
+									
 
 									// Set the current user using the session that last accessed the file
 									

@@ -88,7 +88,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * <h2><u>No Replication</u></h2>
  * <p>
- * Content is not written to the primary store only.  The other stores are
+ * Content is written to the primary store only.  The other stores are
  * only used to retrieve content and the primary store is not updated with
  * the content.
  * 

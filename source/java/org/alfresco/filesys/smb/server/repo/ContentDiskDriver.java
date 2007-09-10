@@ -567,6 +567,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      */
     public FileInfo getFileInformation(SrvSession session, TreeConnection tree, String path) throws IOException
     {
+    	// Start a transaction
+    	
+        session.beginReadTransaction(transactionService);
+        
         // Get the device root
         
         ContentContext ctx = (ContentContext) tree.getContext();
@@ -598,7 +602,6 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     {
                         // Get the file information for the node
                             
-                        session.beginReadTransaction(transactionService);
                         finfo = cifsHelper.getFileInformation(nodeRef);
                     }
                         
@@ -624,10 +627,6 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             		
             		if ( fstate.hasNodeRef() == false)
             		{
-    	            	// Create the transaction
-    	                
-    	                session.beginReadTransaction(transactionService);
-    	            
     	                // Get the node for the folder path
     	                
     	                fstate.setNodeRef( getNodeForPath( tree, paths[0]));
@@ -674,7 +673,6 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             {
                 // Get the file information for the node
                 
-                session.beginReadTransaction(transactionService);
                 finfo = cifsHelper.getFileInformation(nodeRef);
 
                 // DEBUG
@@ -688,10 +686,6 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             if ( finfo == null)
             {
-            	//	Start a transaction
-            	
-                session.beginReadTransaction(transactionService);
-                
                 String[] paths = FileName.splitPath( path);
                 
                 if ( paths[0] != null && paths[0].length() > 1)
@@ -737,6 +731,13 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         }
         catch (FileNotFoundException e)
         {
+        	// Check if there is a transaction active
+        	
+        	if ( session.hasUserTransaction() == false) {
+        		System.out.println("***** getFileInformation() - no transaction active");
+        		e.printStackTrace();
+        	}
+        	
             // a valid use case
             if (logger.isDebugEnabled())
                 logger.debug("Getting file information - File not found: \n" +
@@ -1458,7 +1459,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     // DEBUG
                     
                     if ( logger.isDebugEnabled())
-                        logger.debug("Creaste file, state=" + fstate);
+                        logger.debug("Create file, state=" + fstate);
                 }
             }
             

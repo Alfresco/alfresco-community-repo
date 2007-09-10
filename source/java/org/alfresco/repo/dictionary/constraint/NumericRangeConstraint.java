@@ -102,7 +102,7 @@ public class NumericRangeConstraint extends AbstractConstraint
     {
         if (maxValue < this.minValue)
         {
-            throw new DictionaryException(ERR_INVALID_MAX_VALUE, minValue);
+            throw new DictionaryException(ERR_INVALID_MAX_VALUE, maxValue);
         }
         this.maxValue = maxValue;
     }

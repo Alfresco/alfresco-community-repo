@@ -51,10 +51,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.Wrapper;
 import org.springframework.util.FileCopyUtils;
 
 /**
@@ -538,18 +536,26 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
      */
     private Map<String, Object> convertToRhinoModel(Map<String, Object> model)
     {
-        Map<String, Object> newModel = new HashMap<String, Object>(model.size());
-        for (Map.Entry<String, Object> entry : model.entrySet())
-        {
-            if (entry.getValue() instanceof NodeRef)
-            {
-                newModel.put(entry.getKey(), new ScriptNode((NodeRef)entry.getValue(), this.services));
-            }
-            else
-            {
-                newModel.put(entry.getKey(), entry.getValue());
-            }
-        }
+    	Map<String, Object> newModel = null;
+    	if (model != null)
+    	{
+	        newModel = new HashMap<String, Object>(model.size());
+	        for (Map.Entry<String, Object> entry : model.entrySet())
+	        {
+	            if (entry.getValue() instanceof NodeRef)
+	            {
+	                newModel.put(entry.getKey(), new ScriptNode((NodeRef)entry.getValue(), this.services));
+	            }
+	            else
+	            {
+	                newModel.put(entry.getKey(), entry.getValue());
+	            }
+	        }
+    	}
+    	else
+    	{
+    		newModel = new HashMap<String, Object>(0);
+    	}
         return newModel;
     }
         

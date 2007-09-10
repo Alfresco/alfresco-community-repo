@@ -609,7 +609,7 @@ var MyDocs = {
       
       var anim = new Fx.Styles(panel, {duration: MyDocs.ANIM_LENGTH, transition: Fx.Transitions.linear});
       anim.start({'opacity': 1});
-      this.fxOverlay.start(OVERLAY_OPACITY);
+      this.fxOverlay.start(MyDocs.OVERLAY_OPACITY);
       
       this.popupPanel = panel;
       this.popupPanel.nodeRef = nodeRef;

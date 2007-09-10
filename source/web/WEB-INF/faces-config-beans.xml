@@ -2045,8 +2045,8 @@
       <description>
          The bean that backs up the Verify Broken Links Task Dialog
       </description>
-      <managed-bean-name>ManageVerifyBrokenLinksTaskDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wcm.ManageVerifyBrokenLinksTaskDialog</managed-bean-class>
+      <managed-bean-name>ManageLinkValidationTaskDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.ManageLinkValidationTaskDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>

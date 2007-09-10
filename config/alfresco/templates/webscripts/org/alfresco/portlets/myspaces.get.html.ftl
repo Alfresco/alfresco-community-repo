@@ -62,7 +62,7 @@
          <input class="spaceFormItem" type="button" value="OK" onclick='MySpaces.uploadOK(this, "${path?url?replace("'","_%_")}");'>
          <input class="spaceFormItem" type="button" value="Cancel" onclick="MySpaces.closePopupPanel();">
       </div>
-      <div id="docUpdatePanel">
+      <div id="spaceUpdateDocPanel">
          <input class="spaceFormItem" type="button" value="OK" onclick="MySpaces.updateOK(this);">
          <input class="spaceFormItem" type="button" value="Cancel" onclick="MySpaces.closePopupPanel();">
       </div>
@@ -506,7 +506,7 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    font-size: 12px;
 }
 
-#docUpdatePanel
+#spaceUpdateDocPanel
 {
    position: absolute;
    border: 1px solid #CCD4DB;

@@ -46,6 +46,8 @@ public class UICharsetSelector extends UISelectOne
    public static final String COMPONENT_TYPE = "org.alfresco.faces.CharsetSelector";
    public static final String COMPONENT_FAMILY = "javax.faces.SelectOne";
    
+   private static List<SelectItem> charsetEncodings = null;
+   
    @Override
    @SuppressWarnings("unchecked")
    public void encodeBegin(FacesContext context) throws IOException
@@ -75,13 +77,25 @@ public class UICharsetSelector extends UISelectOne
     */
    protected List<SelectItem> createList()
    {
-      Map<String, Charset> availableCharsets = Charset.availableCharsets();
-      List<SelectItem> items = new ArrayList<SelectItem>(availableCharsets.size());
-      for (Charset charset : availableCharsets.values())
+      return getCharsetEncodingList();
+   }
+   
+   /**
+    * @return the List of available system character set encodings as a List of SelectItem objects
+    */
+   public static List<SelectItem> getCharsetEncodingList()
+   {
+      if (charsetEncodings == null)
       {
-         SelectItem item = new SelectItem(charset.name(), charset.displayName());
-         items.add(item);
+         Map<String, Charset> availableCharsets = Charset.availableCharsets();
+         List<SelectItem> items = new ArrayList<SelectItem>(availableCharsets.size());
+         for (Charset charset : availableCharsets.values())
+         {
+            SelectItem item = new SelectItem(charset.name(), charset.displayName());
+            items.add(item);
+         }
+         charsetEncodings = items;
       }
-      return items;
+      return charsetEncodings;
    }
 }

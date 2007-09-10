@@ -643,7 +643,18 @@ public class SubmitDialog extends BaseDialogBean
       }
       else
       {
-         Map<String, AVMNodeDescriptor> list = avmService.getDirectoryListing(version, path, true);
+         if (desc.isDeletedDirectory())
+         {
+            // lookup the previous child and get its contents
+            final List<AVMNodeDescriptor> history = avmService.getHistory(desc, 2);
+            if (history.size() == 1)
+            {
+               return;
+            }
+            desc = history.get(1);
+         }
+         
+         Map<String, AVMNodeDescriptor> list = avmService.getDirectoryListing(desc, true);
          for (AVMNodeDescriptor child : list.values())
          {
             recursivelyRemoveLocks(webProject, version, child.getPath());

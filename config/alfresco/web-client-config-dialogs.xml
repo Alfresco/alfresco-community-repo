@@ -243,8 +243,7 @@
                  
          <dialog name="viewDeploymentReport" page="/jsp/wcm/deployment-report.jsp" 
                  managed-bean="ViewDeploymentReportDialog"
-                 icon="/images/icons/deployment_report_large.gif" 
-                 title-id="deployment_report_title" 
+                 icon="/images/icons/deployment_report_large.gif"  
                  description-id="deployment_report_desc" show-ok-button="false" />
                  
          <dialog name="monitorDeployment" page="/jsp/wcm/monitor-deployment.jsp" 
@@ -303,7 +302,7 @@
    <config evaluator="node-type" condition="wcmwf:reviewTask">
       <dialogs>
          <dialog name="manageTask" page="/jsp/wcm/manage-review-task-dialog.jsp"
-                 managed-bean="ManageTaskDialog" 
+                 managed-bean="ManageLinkValidationTaskDialog" 
                  icon="/images/icons/manage_workflow_task_large.gif" 
                  description-id="manage_task_desc" />
       </dialogs>
@@ -311,8 +310,8 @@
    
    <config evaluator="node-type" condition="wcmwf:verifyBrokenLinksTask">
       <dialogs>
-         <dialog name="manageTask" page="/jsp/wcm/manage-broken-links-task-dialog.jsp"
-                 managed-bean="ManageVerifyBrokenLinksTaskDialog" 
+         <dialog name="manageTask" page="/jsp/wcm/manage-review-task-dialog.jsp"
+                 managed-bean="ManageLinkValidationTaskDialog" 
                  icon="/images/icons/manage_workflow_task_large.gif" 
                  description-id="manage_task_desc" />
       </dialogs>

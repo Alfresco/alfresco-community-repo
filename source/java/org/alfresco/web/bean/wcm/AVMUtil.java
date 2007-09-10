@@ -1075,7 +1075,7 @@ public final class AVMUtil
    }
    
    // Component Separator.
-   private static final String STORE_SEPARATOR = "--";
+   /*package*/ static final String STORE_SEPARATOR = "--";
    
    // names of the stores representing the layers for an AVM website
    //XXXarielb this should be private

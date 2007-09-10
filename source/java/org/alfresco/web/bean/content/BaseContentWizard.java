@@ -54,6 +54,7 @@ import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.repo.component.UICharsetSelector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -167,6 +168,27 @@ public abstract class BaseContentWizard extends BaseWizardBean
     */
    public String getEncoding()
    {
+      if (encoding == null)
+      {
+         ConfigService configSvc = Application.getConfigService(FacesContext.getCurrentInstance());
+         Config config = configSvc.getConfig("Content Wizards");
+         if (config != null)
+         {
+            ConfigElement defaultEncCfg = config.getConfigElement("default-encoding");
+            if (defaultEncCfg != null)
+            {
+               String value = defaultEncCfg.getValue();
+               if (value != null)
+               {
+                  encoding = value.trim();
+               }
+            }
+         }
+         if (encoding == null || encoding.length() == 0)
+         {
+            encoding = Charset.defaultCharset().name();
+         }
+      }
       return encoding;
    }
 
@@ -270,14 +292,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
    
    public List<SelectItem> getEncodings()
    {
-      Map<String, Charset> availableCharsets = Charset.availableCharsets();
-      List<SelectItem> items = new ArrayList<SelectItem>(availableCharsets.size());
-      for (Charset charset : availableCharsets.values())
-      {
-         SelectItem item = new SelectItem(charset.name(), charset.displayName());
-         items.add(item);
-      }
-      return items;
+      return UICharsetSelector.getCharsetEncodingList();
    }
    
    /**
@@ -437,7 +452,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
       ContentWriter writer = contentService.getWriter(fileNodeRef, ContentModel.PROP_CONTENT, true);
       // set the mimetype and encoding
       writer.setMimetype(this.mimeType);
-      writer.setEncoding(this.encoding);
+      writer.setEncoding(getEncoding());
       if (fileContent != null)
       {
          writer.putContent(fileContent);

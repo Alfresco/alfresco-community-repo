@@ -764,7 +764,7 @@ var MySpaces = {
       
       this.fxOverlay = $("spacePanelOverlay").effect('opacity', {duration: MySpaces.ANIM_LENGTH});
       
-      var panel = $("docUpdatePanel");
+      var panel = $("spaceUpdateDocPanel");
       panel.setStyle("opacity", 0);
       panel.setStyle("display", "inline");
       Alfresco.Dom.smartAlignElement(panel, actionEl);

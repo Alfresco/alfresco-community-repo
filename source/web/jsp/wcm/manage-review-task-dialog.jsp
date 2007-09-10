@@ -26,6 +26,7 @@
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
+<%@ taglib uri="/WEB-INF/wcm.tld" prefix="w" %>
 
 <a:panel id="pooled-panel" label="#{msg.task_pooled_properties}" rendered="#{DialogManager.bean.pooledTask}" 
          border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
@@ -47,6 +48,19 @@
 </a:panel>
 
 <h:outputText id="padding2" styleClass="paddingRow" value="&nbsp;" escape="false" />
+
+<a:panel id="link-validation-panel" label="#{msg.link_validation}" rendered="#{AVMBrowseBean.linkValidationState != null}"
+         border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
+   
+   <w:linkValidationSummary value="#{AVMBrowseBean.linkValidationState}" styleClass="linkValidationSummaryPanelTask"
+                            showPanel="false" showTitle="false" />
+   
+   <a:actionLink value="#{msg.view_link_validation_report}" action="#{DialogManager.bean.viewLinkReport}" 
+                 style='margin-left: 4px;'/>
+   <h:outputText value="<div>&nbsp;</div>" escape="false" />
+</a:panel>
+
+<h:outputText id="padding3" styleClass="paddingRow" value="&nbsp;" escape="false" />
 
 <a:panel id="resources-panel" label="#{msg.resources}"
          border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
@@ -152,7 +166,7 @@
 
 </a:panel>
 
-<h:outputText id="padding3" styleClass="paddingRow" value="&nbsp;" escape="false" />
+<h:outputText id="padding4" styleClass="paddingRow" value="&nbsp;" escape="false" />
 
 <a:panel id="workflow-summary-panel" label="#{msg.part_of_workflow}"
          border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
@@ -167,7 +181,7 @@
    <f:verbatim></div></f:verbatim>
 </a:panel>
 
-<h:outputText id="padding4" styleClass="paddingRow" value="&nbsp;" escape="false" />
+<h:outputText id="padding5" styleClass="paddingRow" value="&nbsp;" escape="false" />
 
 <a:panel rendered="false" id="workflow-outline" label="#{msg.workflow_outline}" progressive="true" expanded="false" 
          border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">

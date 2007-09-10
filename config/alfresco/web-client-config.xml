@@ -289,6 +289,10 @@
          <mime-type name="text/xml" />
       </create-mime-types>
       
+      <!-- default encoding when creating new inline content
+           if not set then server default charset encoding will be used -->
+      <default-encoding></default-encoding>
+      
       <!-- Controls the message regarding property editing after the content is created -->
       <other-properties user-choice-visible="true" user-choice-default="true" /> 
    </config>

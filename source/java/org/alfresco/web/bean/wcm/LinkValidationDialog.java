@@ -25,6 +25,7 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,6 +71,7 @@ public class LinkValidationDialog extends BaseDialogBean
    private String webapp;
    private String webappPath;
    private String initialTab;
+   private String title;
    private NodeRef webappPathRef;
    private boolean runningReport = false;
    private boolean update = false;
@@ -118,6 +120,28 @@ public class LinkValidationDialog extends BaseDialogBean
          this.compareToStaging = true;
       }
       
+      // work out title for dialog by examining store type
+      FacesContext context = FacesContext.getCurrentInstance(); 
+      if (this.avmService.getStoreProperty(this.store, 
+               SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN) != null)
+      {
+         String pattern = Application.getMessage(context, "link_validaton_dialog_title_user");
+         String user = this.store.substring(
+                  this.store.indexOf(AVMUtil.STORE_SEPARATOR)+AVMUtil.STORE_SEPARATOR.length());
+         this.title = MessageFormat.format(pattern, 
+                  new Object[] {user});
+      }
+      else if (this.avmService.getStoreProperty(this.store, 
+               SandboxConstants.PROP_SANDBOX_STAGING_MAIN) != null)
+      {
+         this.title = Application.getMessage(context, "link_validaton_dialog_title_staging");
+      }
+      else if (this.avmService.getStoreProperty(this.store, 
+               SandboxConstants.PROP_SANDBOX_WORKFLOW_MAIN) != null)
+      {
+         this.title = Application.getMessage(context, "link_validaton_dialog_title_workflow");
+      }
+
       if (logger.isDebugEnabled())
       {
          if (this.runningReport)
@@ -155,6 +179,12 @@ public class LinkValidationDialog extends BaseDialogBean
       return null;
    }
    
+   @Override
+   public String getContainerTitle()
+   {
+      return this.title;
+   }
+
    @Override
    public boolean getFinishButtonDisabled()
    {

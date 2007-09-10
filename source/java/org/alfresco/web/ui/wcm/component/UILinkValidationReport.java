@@ -776,7 +776,7 @@ public class UILinkValidationReport extends AbstractLinkValidationReportComponen
    protected String getIcon(String fileName)
    {
       // work out what icon to use
-      String icon = "/images/filetypes32/html.gif";
+      String icon = "/images/filetypes32/_default.gif";
       String ext = "";
       int idx = fileName.indexOf(".");
       if (idx != -1)
@@ -784,7 +784,11 @@ public class UILinkValidationReport extends AbstractLinkValidationReportComponen
          ext = fileName.substring(idx);
       }
       
-      if (ext.equals(".xml"))
+      if (ext.equals(".html") || ext.equals(".htm"))
+      {
+         icon = "/images/filetypes32/html.gif";
+      }
+      else if (ext.equals(".xml"))
       {
          icon = "/images/icons/webform_large.gif";
       }

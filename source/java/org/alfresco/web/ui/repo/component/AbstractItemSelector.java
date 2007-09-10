@@ -791,6 +791,24 @@ public abstract class AbstractItemSelector extends UIInput
     */
    protected static NodeService getNodeService(FacesContext context)
    {
+      NodeService service = Repository.getServiceRegistry(context).getNodeService();
+      if (service == null)
+      {
+         throw new IllegalStateException("Unable to obtain NodeService bean reference.");
+      }
+      
+      return service;
+   }
+   
+    /**
+    * Use Spring JSF integration to return the node Service bean instance
+    * 
+    * @param context    FacesContext
+    * 
+    * @return Node Service bean instance or throws exception if not found
+    */
+   protected static NodeService getFastNodeService(FacesContext context)
+   {
       NodeService service = (NodeService)FacesContextUtils.getRequiredWebApplicationContext(
                context).getBean("nodeService");
       if (service == null)

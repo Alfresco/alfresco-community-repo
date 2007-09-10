@@ -91,7 +91,7 @@ public class UICategorySelector extends AbstractItemSelector
       
       if (this.navigationId != null)
       {
-         ChildAssociationRef parentRef = getNodeService(context).getPrimaryParent(
+         ChildAssociationRef parentRef = getFastNodeService(context).getPrimaryParent(
                new NodeRef(Repository.getStoreRef(), this.navigationId));
          Node parentNode = new Node(parentRef.getParentRef());
          

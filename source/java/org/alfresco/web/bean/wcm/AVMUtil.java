@@ -154,6 +154,18 @@ public final class AVMUtil
       }
       return storeName.indexOf(AVMUtil.STORE_SEPARATOR) != -1;
    }
+   
+   /**
+    * Indicates whether the store name describes a main store.
+    * 
+    * @param storeName the store name
+    * 
+    * @return <tt>true</tt> if the store is a main store, <tt>false</tt> otherwise.
+    */
+   public static boolean isMainStore(String storeName)
+   {
+      return (storeName.indexOf(AVMUtil.STORE_SEPARATOR) == -1);
+   }
 
    /**
     * Extracts the username from the store name.

@@ -946,7 +946,7 @@ public class SubmitDialog extends BaseDialogBean
             selected = new ArrayList<AVMNodeDescriptor>(1);
             selected.add(this.avmService.lookup(-1, this.avmBrowseBean.getAvmActionNode().getPath(), true));
          }
-
+         
          if (selected == null)
          {
             this.submitItems = Collections.<ItemWrapper>emptyList();
@@ -957,9 +957,14 @@ public class SubmitDialog extends BaseDialogBean
             Set<String> submittedPaths = new HashSet<String>(selected.size());
             this.submitItems = new ArrayList<ItemWrapper>(selected.size());
             this.warningItems = new ArrayList<ItemWrapper>(selected.size() >> 1);
+            List<WorkflowTask> tasks = null;
             for (AVMNodeDescriptor node : selected)
             {
-               if (AVMWorkflowUtil.getAssociatedTasksForNode(node).size() != 0)
+               if (tasks == null)
+               {
+                  tasks = AVMWorkflowUtil.getAssociatedTasksForSandbox(AVMUtil.getStoreName(node.getPath()));
+               }
+               if (AVMWorkflowUtil.getAssociatedTasksForNode(node, tasks).size() != 0)
                {
                   this.warningItems.add(new ItemWrapper(node));
                   continue;
@@ -977,7 +982,7 @@ public class SubmitDialog extends BaseDialogBean
                }
                // lookup if this item was created via a form - then lookup the workflow defaults
                // for that form and store into the list of available workflows
-               else if (! this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+               else if (!this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
                {
                   this.submitItems.add(new ItemWrapper(node));
                   submittedPaths.add(node.getPath());

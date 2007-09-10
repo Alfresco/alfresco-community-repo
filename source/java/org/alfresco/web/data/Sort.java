@@ -202,6 +202,13 @@ public abstract class Sort
             if (getter != null)
             {
                // if we have a bean getter method impl use that
+               try
+               {
+                  getter.setAccessible(true);
+               }
+               catch (SecurityException se)
+               {
+               }
                obj = getter.invoke(data.get(iIndex), (Object [])null);
             }
             else

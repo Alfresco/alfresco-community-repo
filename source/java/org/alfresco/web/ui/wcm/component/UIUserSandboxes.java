@@ -409,11 +409,10 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write("&nbsp;&nbsp;");
                   
                   // Submit All Items
-                  // NOTE: removed for 2.0 final
-                  /*Utils.encodeRecursive(context, aquireAction(
+                  Utils.encodeRecursive(context, aquireAction(
                         context, mainStore, username, ACT_SANDBOX_SUBMITALL, "/images/icons/submit_all.gif",
                         "#{AVMBrowseBean.setupAllItemsAction}", "dialog:submitSandboxItems"));
-                  out.write("&nbsp;&nbsp;");*/
+                  out.write("&nbsp;&nbsp;");
                   
                   // Revert All Items
                   Utils.encodeRecursive(context, aquireAction(

@@ -723,6 +723,7 @@
             <action idref="import_space" />
             <action idref="manage_space_users" />
             <action idref="manage_space_rules" />
+            <action idref="regenerate_renditions" />
             <!-- NOTE: now found on the User Console
             <action idref="manage_deleted_items" />-->
          </action-group>

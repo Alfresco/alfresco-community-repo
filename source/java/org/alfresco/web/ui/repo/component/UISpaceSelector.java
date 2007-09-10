@@ -70,7 +70,7 @@ public class UISpaceSelector extends AbstractItemSelector
       {
          try
          {
-            ChildAssociationRef parentRef = getNodeService(context).getPrimaryParent(
+            ChildAssociationRef parentRef = getFastNodeService(context).getPrimaryParent(
                   new NodeRef(Repository.getStoreRef(), this.navigationId));
             id = parentRef.getParentRef().getId();
          }
@@ -89,7 +89,7 @@ public class UISpaceSelector extends AbstractItemSelector
       List<ChildAssociationRef> allKids = getNodeService(context).getChildAssocs(nodeRef,
             ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
       DictionaryService dd = getDictionaryService(context);
-      NodeService service = getNodeService(context);
+      NodeService service = getFastNodeService(context);
       
       // filter out those children that are not spaces
       List<NodeRef> spaceKids = new ArrayList<NodeRef>(); 
@@ -126,7 +126,7 @@ public class UISpaceSelector extends AbstractItemSelector
 
    public String getItemIcon(FacesContext context, NodeRef ref)
    {
-      String icon = (String)getNodeService(context).getProperty(ref, ApplicationModel.PROP_ICON);
+      String icon = (String)getFastNodeService(context).getProperty(ref, ApplicationModel.PROP_ICON);
       if (icon != null)
       {
          icon = "/images/icons/" + icon + "-16.gif";

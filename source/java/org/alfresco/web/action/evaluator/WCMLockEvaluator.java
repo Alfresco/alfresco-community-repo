@@ -34,6 +34,7 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMBrowseBean;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.WebProject;
 
 /**
@@ -48,20 +49,25 @@ public class WCMLockEvaluator implements ActionEvaluator
     */
    public boolean evaluate(final Node node)
    {
-      final FacesContext fc = FacesContext.getCurrentInstance();
-      final AVMLockingService avmLockService = Repository.getServiceRegistry(fc).getAVMLockingService();
-      final AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(fc, AVMBrowseBean.BEAN_NAME);
-      
+      boolean result = false;
       final String path = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef()).getSecond();
-      final String username = Application.getCurrentUser(fc).getUserName();
-      
-      WebProject webProject = avmBrowseBean.getWebProject();
-      if (webProject == null)
+      if (!AVMUtil.isMainStore(AVMUtil.getStoreName(path)))
       {
-         // when in a workflow context, the WebProject may not be accurate on the browsebean
-         // so get the web project associated with the path
-         webProject = new WebProject(path);
+         final FacesContext fc = FacesContext.getCurrentInstance();
+         final AVMLockingService avmLockService = Repository.getServiceRegistry(fc).getAVMLockingService();
+         final AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(fc, AVMBrowseBean.BEAN_NAME);
+         
+         final String username = Application.getCurrentUser(fc).getUserName();
+         
+         WebProject webProject = avmBrowseBean.getWebProject();
+         if (webProject == null)
+         {
+            // when in a workflow context, the WebProject may not be accurate on the browsebean
+            // so get the web project associated with the path
+            webProject = new WebProject(path);
+         }
+         result = avmLockService.hasAccess(webProject.getNodeRef(), path, username);
       }
-      return avmLockService.hasAccess(webProject.getNodeRef(), path, username);
+      return result;
    }
 }

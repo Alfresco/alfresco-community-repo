@@ -819,7 +819,7 @@ public class ManageTaskDialog extends BaseDialogBean
          node.addPropertyResolver("url", this.browseBean.resolverUrl);
       }
       this.resources.add(node);
-      if (node.isDirectory())
+      if (node.isDirectory() && !node.getDescriptor().isDeleted())
       {
          for (final AVMNodeDescriptor d : 
                  this.avmService.getDirectoryListingArray(node.getDescriptor(), true))

@@ -142,10 +142,10 @@ public class UIWebProjectFolderSelector extends AbstractItemSelector
 
    public Collection<NodeRef> getRootChildren(FacesContext context)
    {
-      // query for all nodes under the "Web Projects" foler in company home.
+      // query for all nodes under the "Web Projects" folder in company home.
       FacesContext fc = FacesContext.getCurrentInstance();
       String xpath = Application.getRootPath(fc) + "/" + Application.getWebsitesFolderName(fc) + "/*";
-      NodeRef rootNodeRef = getNodeService(fc).getRootNode(Repository.getStoreRef());
+      NodeRef rootNodeRef = getFastNodeService(fc).getRootNode(Repository.getStoreRef());
       NamespaceService resolver = Repository.getServiceRegistry(fc).getNamespaceService();
       SearchService searchService = Repository.getServiceRegistry(fc).getSearchService();
       List<NodeRef> nodes = searchService.selectNodes(rootNodeRef, xpath, null, resolver, false);
@@ -179,7 +179,7 @@ public class UIWebProjectFolderSelector extends AbstractItemSelector
 
    public String getItemIcon(FacesContext context, NodeRef ref)
    {
-      String icon = (String)getNodeService(context).getProperty(ref, ApplicationModel.PROP_ICON);
+      String icon = (String)getFastNodeService(context).getProperty(ref, ApplicationModel.PROP_ICON);
       if (icon != null)
       {
          icon = "/images/icons/" + icon + "-16.gif";

@@ -461,11 +461,11 @@ public class CategoriesBean implements IContextListener
                NodeRef ref;
                if (categoryRef == null)
                {
-                  ref = categoryService.createRootCategory(Repository.getStoreRef(), ContentModel.ASPECT_GEN_CLASSIFIABLE, name);
+                  ref = categoryService.createRootCategory(Repository.getStoreRef(), ContentModel.ASPECT_GEN_CLASSIFIABLE, name.trim());
                }
                else
                {
-                  ref = categoryService.createCategory(categoryRef, name);
+                  ref = categoryService.createCategory(categoryRef, name.trim());
                }
                
                // apply the titled aspect - for description

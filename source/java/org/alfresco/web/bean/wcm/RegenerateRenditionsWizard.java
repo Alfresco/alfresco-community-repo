@@ -201,7 +201,12 @@ public class RegenerateRenditionsWizard
    @Override
    public boolean getNextButtonDisabled()
    {
-      return false;
+      boolean disabled = false;
+      if ("select_renditions".equals(Application.getWizardManager().getCurrentStepName()))
+      {
+         disabled = this.selectedWebProject == null;
+      }
+      return disabled;
    }
 
    @Override
@@ -413,7 +418,7 @@ public class RegenerateRenditionsWizard
       final StoreRef storeRef = AVMNodeConverter.ToStoreRef(webProject.getStagingStore());
       sp.addStore(storeRef);
       sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-      StringBuilder query = new StringBuilder();
+      final StringBuilder query = new StringBuilder();
       query.append("+ASPECT:\"" + WCMAppModel.ASPECT_FORM_INSTANCE_DATA + "\"");
       query.append("-ASPECT:\"" + WCMAppModel.ASPECT_RENDITION + "\"");
       query.append(" +@" + Repository.escapeQName(WCMAppModel.PROP_PARENT_FORM_NAME) + 
@@ -438,9 +443,9 @@ public class RegenerateRenditionsWizard
       final StoreRef storeRef = AVMNodeConverter.ToStoreRef(webProject.getStagingStore());
       sp.addStore(storeRef);
       sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-      StringBuilder query = new StringBuilder();
+      final StringBuilder query = new StringBuilder();
       query.append("+ASPECT:\"" + WCMAppModel.ASPECT_RENDITION + "\"");
-      query.append("+@" + Repository.escapeQName(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE) + 
+      query.append(" +@" + Repository.escapeQName(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE) + 
                    ":\"" + ((RenderingEngineTemplateImpl)ret).getNodeRef() + "\"");
 
       LOGGER.debug("running query " + query);

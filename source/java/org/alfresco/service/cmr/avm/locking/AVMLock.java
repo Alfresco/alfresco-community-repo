@@ -183,4 +183,15 @@ public class AVMLock implements Serializable
     {
         return fWebProject;
     }
+    
+    public String toString()
+    {
+       StringBuilder buffer = new StringBuilder();
+       buffer.append(" (webproject=").append(this.fWebProject);
+       buffer.append(" store=").append(this.fStore);
+       buffer.append(" path=").append(this.fPath);
+       buffer.append(" type=").append(this.fType);
+       buffer.append(" owners=").append(this.fOwners).append(")");
+       return buffer.toString();
+    }
 }

@@ -708,14 +708,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         {
             return true;
         }
-        try
-        {
-            return fAVMService.hasAspect(version, path, aspectTypeQName);
-        }
-        catch (AVMNotFoundException e)
-        {
-            throw new InvalidNodeRefException(nodeRef);
-        }
+        return fAVMService.hasAspect(version, path, aspectTypeQName);
     }
 
     private static QName [] fgBuiltinAspects = new QName[] { ContentModel.ASPECT_AUDITABLE,

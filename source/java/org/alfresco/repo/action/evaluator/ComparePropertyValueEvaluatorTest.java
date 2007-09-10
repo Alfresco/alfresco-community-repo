@@ -108,7 +108,7 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
                         + System.currentTimeMillis());
         this.rootNodeRef = this.nodeService.getRootNode(this.testStoreRef);
 
-        this.nodeValue = new NodeRef(this.testStoreRef, "1234");
+        this.nodeValue = this.rootNodeRef;
         
         this.beforeDateValue = new Date();
         Thread.sleep(2000);

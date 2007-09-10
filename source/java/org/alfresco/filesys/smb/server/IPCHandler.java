@@ -24,11 +24,15 @@
  */
 package org.alfresco.filesys.smb.server;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.alfresco.filesys.server.filesys.FileInfo;
 import org.alfresco.filesys.server.filesys.NetworkFile;
+import org.alfresco.filesys.server.filesys.PathNotFoundException;
 import org.alfresco.filesys.server.filesys.TooManyFilesException;
 import org.alfresco.filesys.server.filesys.TreeConnection;
+import org.alfresco.filesys.server.filesys.UnsupportedInfoLevelException;
 import org.alfresco.filesys.smb.PacketType;
 import org.alfresco.filesys.smb.SMBStatus;
 import org.alfresco.filesys.smb.TransactionNames;
@@ -186,6 +190,12 @@ class IPCHandler
             DCERPCHandler.processDCERPCRequest(sess, vc, tbuf, outPkt);
             break;
 
+  	    //  Query file information via handle
+  	      
+        case PacketType.Trans2QueryFile:
+          procTrans2QueryFile(sess, vc, tbuf, outPkt);
+          break;
+          
         // Unknown command
 
         default:
@@ -661,4 +671,134 @@ class IPCHandler
 
         sess.sendResponseSMB(outPkt);
     }
+
+    /**
+	 * Process a transact2 query file information (via handle) request.
+	 *
+	 * @param sess SMBSrvSession
+	 * @param vc VirtualCircuit
+	 * @param tbuf       Transaction request details
+	 * @param outPkt SMBSrvPacket
+	 * @exception java.io.IOException The exception description.
+	 * @exception org.alfresco.aifs.smb.SMBSrvException SMB protocol exception
+	 */
+	protected static final void procTrans2QueryFile(SMBSrvSession sess, VirtualCircuit vc, SrvTransactBuffer tbuf, SMBSrvPacket outPkt)
+			throws java.io.IOException, SMBSrvException {
+
+		//  Get the tree connection details
+
+		int treeId = tbuf.getTreeId();
+		TreeConnection conn = vc.findConnection(treeId);
+
+		if (conn == null) {
+			sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.DOSInvalidDrive, SMBStatus.ErrDos);
+			return;
+		}
+
+		//  Check if the user has the required access permission
+
+		if (conn.hasReadAccess() == false) {
+
+			//  User does not have the required access rights
+
+			sess.sendErrorResponseSMB(SMBStatus.NTAccessDenied, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+			return;
+		}
+
+		//  Get the file id and query path information level
+
+		DataBuffer paramBuf = tbuf.getParameterBuffer();
+
+		int fid = paramBuf.getShort();
+		int infoLevl = paramBuf.getShort();
+
+		//  Get the file details via the file id
+
+		NetworkFile netFile = conn.findFile(fid);
+
+		if (netFile == null) {
+			sess.sendErrorResponseSMB(SMBStatus.DOSInvalidHandle, SMBStatus.ErrDos);
+			return;
+		}
+
+		//  Debug
+
+		if (logger.isDebugEnabled() && sess.hasDebug(SMBSrvSession.DBG_IPC))
+			logger.debug("IPC$ Query File - level=0x" + Integer.toHexString(infoLevl) + ", fid=" + fid + ", name=" + netFile.getFullName());
+
+		//  Access the shared device disk interface
+
+		try {
+
+			//  Set the return parameter count, so that the data area position can be calculated.
+
+			outPkt.setParameterCount(10);
+
+			//  Pack the file information into the data area of the transaction reply
+
+			byte[] buf = outPkt.getBuffer();
+			int prmPos = DataPacker.longwordAlign(outPkt.getByteOffset());
+			int dataPos = prmPos + 4;
+
+			//  Pack the return parametes, EA error offset
+
+			outPkt.setPosition(prmPos);
+			outPkt.packWord(0);
+
+			//  Create a data buffer using the SMB packet. The response should always fit into a single
+			//  reply packet.
+
+			DataBuffer replyBuf = new DataBuffer(buf, dataPos, buf.length - dataPos);
+
+			//  Build the file information from the network file details
+
+			FileInfo fileInfo = new FileInfo(netFile.getName(), netFile.getFileSize(), netFile.getFileAttributes());
+
+			fileInfo.setAccessDateTime(netFile.getAccessDate());
+			fileInfo.setCreationDateTime(netFile.getCreationDate());
+			fileInfo.setModifyDateTime(netFile.getModifyDate());
+			fileInfo.setChangeDateTime(netFile.getModifyDate());
+
+			fileInfo.setFileId(netFile.getFileId());
+
+			//  Pack the file information into the return data packet
+
+			int dataLen = QueryInfoPacker.packInfo(fileInfo, replyBuf, infoLevl, true);
+
+			//  Check if any data was packed, if not then the information level is not supported
+
+			if (dataLen == 0) {
+				sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+				return;
+			}
+
+			SMBSrvTransPacket.initTransactReply(outPkt, 2, prmPos, dataLen, dataPos);
+			outPkt.setByteCount(replyBuf.getPosition() - outPkt.getByteOffset());
+
+			//  Send the transact reply
+
+			sess.sendResponseSMB(outPkt);
+		}
+		catch (FileNotFoundException ex) {
+
+			//  Requested file does not exist
+
+			sess.sendErrorResponseSMB(SMBStatus.NTObjectNotFound, SMBStatus.DOSFileNotFound, SMBStatus.ErrDos);
+			return;
+		}
+		catch (PathNotFoundException ex) {
+
+			//  Requested path does not exist
+
+			sess.sendErrorResponseSMB(SMBStatus.NTObjectPathNotFound, SMBStatus.DOSFileNotFound, SMBStatus.ErrDos);
+			return;
+		}
+		catch (UnsupportedInfoLevelException ex) {
+
+			//  Requested information level is not supported
+
+			sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+			return;
+		}
+	}
 }

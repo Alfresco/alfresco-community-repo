@@ -178,6 +178,7 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
         }
         catch (Throwable err)
         {
+            // capture the error in the report
             if (report != null)
             {
                 report.setError(err);
@@ -185,6 +186,12 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
             else
             {
                report = new LinkValidationReport(storeName, webappName, err);
+            }
+            
+            // set the monitor object as completed
+            if (monitor != null)
+            {
+               monitor.setDone(true);
             }
             
             logger.error("Link Validation Error: ", err);

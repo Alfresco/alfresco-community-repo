@@ -15,6 +15,15 @@
          <ref bean="dictionaryService" />
       </property>
    </bean>
+	
+   <bean id="nodeRefPropertyInterceptor" class="org.alfresco.repo.node.NodeRefPropertyMethodInterceptor">
+      <property name="nodeService">
+         <ref bean="mlAwareNodeService" />
+      </property>
+      <property name="dictionaryService">
+         <ref bean="dictionaryService" />
+      </property>
+   </bean>
    
    <bean id="nodeService" class="org.springframework.aop.framework.ProxyFactoryBean" >
       <property name="targetName">
@@ -27,6 +36,7 @@
       </property>
       <property name="interceptorNames">
          <list>
+			<value>nodeRefPropertyInterceptor</value>
             <value>mlPropertyInterceptor</value>
          </list>
       </property>

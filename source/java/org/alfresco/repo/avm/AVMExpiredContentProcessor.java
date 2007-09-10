@@ -48,6 +48,7 @@ import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -88,6 +89,7 @@ public class AVMExpiredContentProcessor
     protected AVMService avmService;
     protected AVMSyncService avmSyncService;
     protected AVMService avmLockingAwareService;
+    protected AVMLockingService avmLockingService;
     protected NodeService nodeService;
     protected WorkflowService workflowService;
     protected PersonService personService;
@@ -118,6 +120,11 @@ public class AVMExpiredContentProcessor
     public void setAvmService(AVMService avmService)
     {
         this.avmService = avmService;
+    }
+    
+    public void setAvmLockingService(AVMLockingService avmLockingService)
+    {
+        this.avmLockingService = avmLockingService;
     }
     
     public void setAvmSyncService(AVMSyncService avmSyncService)
@@ -321,35 +328,53 @@ public class AVMExpiredContentProcessor
                 
                  if (expirationDate != null && expirationDate.before(now))
                  {
-                     // get the map of expired content for the store
-                     Map<String, List<String>> storeExpiredContent = this.expiredContent.get(storeName);
-                     if (storeExpiredContent == null)
-                     {
-                         storeExpiredContent = new HashMap<String, List<String>>(4);
-                         this.expiredContent.put(storeName, storeExpiredContent);
-                     }
-                   
-                     // get the list of expired content for the last modifier of the node
-                     String modifier = node.getLastModifier();
-                     List<String> userExpiredContent = storeExpiredContent.get(modifier);
-                     if (userExpiredContent == null)
-                     {
-                         userExpiredContent = new ArrayList<String>(4);
-                         storeExpiredContent.put(modifier, userExpiredContent);
-                     }
-                   
-                     // add the content to the user's list for the current store
-                     userExpiredContent.add(nodePath);
-                   
+                     // before doing anything else see whether the item is locked by any user,
+                     // if it is then just log a warning messge and wait until the next time around
+                     String[] splitPath = nodePath.split(":");
+                     AVMLock lock = this.avmLockingService.getLock(storeName, splitPath[1]);
+                     
                      if (logger.isDebugEnabled())
-                         logger.debug("Added " + nodePath + " to " + modifier + "'s list of expired content");
+                         logger.debug("lock details for '" + nodePath + "': " + lock);
+                     
+                     if (lock == null)
+                     {
+                         // get the map of expired content for the store
+                         Map<String, List<String>> storeExpiredContent = this.expiredContent.get(storeName);
+                         if (storeExpiredContent == null)
+                         {
+                             storeExpiredContent = new HashMap<String, List<String>>(4);
+                             this.expiredContent.put(storeName, storeExpiredContent);
+                         }
                    
-                     // reset the expiration date
-                     this.avmService.setNodeProperty(nodePath, WCMAppModel.PROP_EXPIRATIONDATE, 
-                              new PropertyValue(DataTypeDefinition.DATETIME, null));
-                   
-                     if (logger.isDebugEnabled())
-                         logger.debug("Reset expiration date for: " + nodePath);
+                         // get the list of expired content for the last modifier of the node
+                         String modifier = node.getLastModifier();
+                         List<String> userExpiredContent = storeExpiredContent.get(modifier);
+                         if (userExpiredContent == null)
+                         {
+                             userExpiredContent = new ArrayList<String>(4);
+                             storeExpiredContent.put(modifier, userExpiredContent);
+                         }
+                      
+                         // add the content to the user's list for the current store
+                         userExpiredContent.add(nodePath);
+                      
+                         if (logger.isDebugEnabled())
+                             logger.debug("Added " + nodePath + " to " + modifier + "'s list of expired content");
+                      
+                         // reset the expiration date
+                         this.avmService.setNodeProperty(nodePath, WCMAppModel.PROP_EXPIRATIONDATE, 
+                                  new PropertyValue(DataTypeDefinition.DATETIME, null));
+                      
+                         if (logger.isDebugEnabled())
+                             logger.debug("Reset expiration date for: " + nodePath);
+                     }
+                     else
+                     {
+                        if (logger.isWarnEnabled())
+                        {
+                            logger.warn("ignoring '" + nodePath + "', although it has expired, it's currently locked");
+                        }
+                     }
                 }
             }
         }

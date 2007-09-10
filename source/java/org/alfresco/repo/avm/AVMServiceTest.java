@@ -101,6 +101,21 @@ import org.alfresco.util.Pair;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
+    public void testSpacesInStoreNames()
+    {
+        try
+        {
+            fService.createStore("I have spaces");
+            fService.createFile("I have spaces:/", "in my name.txt").close();
+            assertNotNull(fService.lookup(-1, "I have spaces:/in my name.txt"));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+    }
+    
     public void testHeadPathsInLayers()
     {
         try

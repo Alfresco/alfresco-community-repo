@@ -291,11 +291,13 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         VersionRoot versionRoot = new VersionRootImpl(this,
                                                       fRoot,
-                                                      fNextVersionID,
+                                                      fNextVersionID++,
                                                       System.currentTimeMillis(),
                                                       user,
                                                       tag,
                                                       description);
+        // Another embarassing flush needed.
+        AVMDAOs.Instance().fAVMNodeDAO.flush();
         AVMDAOs.Instance().fVersionRootDAO.save(versionRoot);
         for (AVMNode node : layeredNodes)
         {
@@ -308,7 +310,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
             }
         }
         // Increment the version id.
-        fNextVersionID++;
         return snapShotMap;
     }
 
@@ -462,6 +463,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
                 RawServices.Instance().getMimetypeService().guessMimetype(name),
                 -1,
                 "UTF-8"));
+        // Yet another flush.
+        AVMDAOs.Instance().fAVMNodeDAO.flush();
         ContentWriter writer = createContentWriter(AVMNodeConverter.ExtendAVMPath(path, name));
         writer.putContent(data);
     }

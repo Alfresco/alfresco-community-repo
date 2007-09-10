@@ -287,6 +287,9 @@
         <property name="avmLockingAwareService">
             <ref bean="AVMLockingAwareService" />
         </property>
+        <property name="avmLockingService">
+            <ref bean="AVMLockingService" />
+        </property>
         <property name="nodeService">
             <ref bean="NodeService" />
         </property>

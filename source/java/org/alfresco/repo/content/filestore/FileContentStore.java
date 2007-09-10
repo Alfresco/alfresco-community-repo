@@ -304,7 +304,7 @@ public class FileContentStore extends AbstractContentStore
      */
     public boolean isWriteSupported()
     {
-        return true;
+        return !readOnly;
     }
 
     /**

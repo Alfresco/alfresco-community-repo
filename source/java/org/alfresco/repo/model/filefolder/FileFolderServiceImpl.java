@@ -721,9 +721,8 @@ public class FileFolderServiceImpl implements FileFolderService
         // done
         if (logger.isDebugEnabled())
         {
-            FileInfo parentFileInfo = toFileInfo(parentNodeRef, false);
             logger.debug("Created: \n" +
-                    "   parent: " + parentFileInfo + "\n" +
+                    "   parent: " + parentNodeRef + "\n" +
                     "   created: " + fileInfo);
         }
         return fileInfo;

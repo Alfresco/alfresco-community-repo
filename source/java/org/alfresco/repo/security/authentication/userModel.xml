@@ -22,7 +22,7 @@
    <types>
       
       <type name="usr:authority">
-        <title>Alfreco Authority Abstract Type</title>
+        <title>Alfresco Authority Abstract Type</title>
          <parent>sys:base</parent>
       </type>
       

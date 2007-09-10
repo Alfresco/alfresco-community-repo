@@ -348,6 +348,11 @@ public class ReplicatingContentStore extends AbstractContentStore
         {
             for (ContentStore store : secondaryStores)
             {
+                // Ignore read-only stores
+                if (!store.isWriteSupported())
+                {
+                    continue;
+                }
                 store.delete(contentUrl);
             }
             // log
@@ -445,6 +450,19 @@ public class ReplicatingContentStore extends AbstractContentStore
                 for (int i = 0; i < stores.size(); i++)
                 {
                     ContentStore store = stores.get(i);
+                    // Bypass read-only stores
+                    if (!store.isWriteSupported())
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Ignoring read-only store for content replication: \n" +
+                                    "   Content: " + writer + "\n" +
+                                    "   Store:   " + store + "\n" +
+                                    "   Number:  " + i);
+                        }
+                        continue;
+                    }
+                    
                     try
                     {
                         // replicate the content to the store - we know the URL that we want to write to

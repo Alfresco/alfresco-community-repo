@@ -24,10 +24,19 @@
  */
 package org.alfresco.repo.content.http;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+
 import org.alfresco.repo.content.AbstractContentStore;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
+import org.springframework.context.ApplicationContext;
 
 /**
  * A read-only store using HTTP to access content from a remote Alfresco application.
@@ -40,8 +49,8 @@ import org.alfresco.service.cmr.security.AuthenticationService;
  */
 public class HttpAlfrescoStore extends AbstractContentStore
 {
-    AuthenticationComponent authenticationComponent;
-    AuthenticationService authenticationService;
+    private TransactionService transactionService;
+    private AuthenticationService authenticationService;
     private String baseHttpUrl;
 
     /**
@@ -52,11 +61,12 @@ public class HttpAlfrescoStore extends AbstractContentStore
     }
 
     /**
-     * @param authenticationComponent       the authentication compoent
+     * 
+     * @param transactionService            used to ensure proper ticket propagation in a cluster
      */
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    public void setTransactionService(TransactionService transactionService)
     {
-        this.authenticationComponent = authenticationComponent;
+        this.transactionService = transactionService;
     }
 
     /**
@@ -68,7 +78,8 @@ public class HttpAlfrescoStore extends AbstractContentStore
     }
 
     /**
-     * Set the base HTTP URL of the remote Alfresco application.
+     * Set the base HTTP URL of the remote Alfresco application.<br/>
+     * For example: <pre>http://192.168.1.66:8080/alfresco</pre>.
      * 
      * @param baseHttpUrl       the remote HTTP address including the <b>.../alfresco</b>
      */
@@ -80,7 +91,7 @@ public class HttpAlfrescoStore extends AbstractContentStore
         }
         this.baseHttpUrl = baseHttpUrl;
     }
-
+    
     /**
      * This <b>is</b> a read only store.
      * 
@@ -97,10 +108,140 @@ public class HttpAlfrescoStore extends AbstractContentStore
     public ContentReader getReader(String contentUrl)
     {
         ContentReader reader = new HttpAlfrescoContentReader(
+                transactionService,
                 authenticationService,
-                authenticationComponent,
                 baseHttpUrl,
                 contentUrl);
         return reader;
+    }
+    
+    /**
+     * Tests the HTTP store against a given server.<br>
+     * Usage:
+     * <pre>
+     *    HttpAlfrescoStore help
+     *       Print the usage message
+     * </pre>
+     * 
+     * @param args  the program arguments
+     */
+    public static void main(String[] args)
+    {
+        String baseUrl = null;
+        String contentUrl = null;
+        try
+        {
+            if (args.length != 2)
+            {
+                printUsage(System.err);
+                System.exit(1);
+            }
+            else if (args[0].equalsIgnoreCase("help"))
+            {
+                printUsage(System.out);
+                System.exit(0);
+            }
+            baseUrl = args[0];
+            contentUrl = args[1];
+            
+            // Start the application to get hold of all the beans
+            ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+            
+            System.out.println(
+                    "Starting test of " + HttpAlfrescoStore.class.getName() + " using server " + baseUrl + ".");
+
+            // Do the test
+            doTest(ctx, baseUrl, contentUrl);
+            
+            System.out.println(
+                    "Completed test of " + HttpAlfrescoStore.class.getName() + " using server " + baseUrl + ".");
+
+            // Done
+            System.exit(0);
+        }
+        catch (Throwable e)
+        {
+            e.printStackTrace();
+            System.err.println(
+                    "Test of " + HttpAlfrescoStore.class.getName() + " using server " + baseUrl + " failed.");
+            System.exit(1);
+        }
+        finally
+        {
+            try
+            {
+                ApplicationContextHelper.closeApplicationContext();
+            }
+            catch (Throwable e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    private static void doTest(ApplicationContext ctx, String baseUrl, String contentUrl) throws Exception
+    {
+        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        TransactionService transactionService = serviceRegistry.getTransactionService();
+        AuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
+        // Construct the store
+        HttpAlfrescoStore store = new HttpAlfrescoStore();
+        store.setTransactionService(transactionService);
+        store.setAuthenticationService(authenticationService);
+        store.setBaseHttpUrl(baseUrl);
+        
+        // Now test
+        System.out.println(
+                "   Retrieving reader for URL " + contentUrl);
+        ContentReader reader = store.getReader(contentUrl);
+        System.out.println(
+                "   Retrieved reader for URL " + contentUrl);
+        // Check if the content exists
+        boolean exists = reader.exists();
+        if (!exists)
+        {
+            System.out.println(
+                    "   Content doesn't exist: " + contentUrl);
+            return;
+        }
+        else
+        {
+            System.out.println(
+                    "   Content exists: " + contentUrl);
+        }
+        // Get the content data
+        ContentData contentData = reader.getContentData();
+        System.out.println(
+                "   Retrieved content data: " + contentData);
+        
+        // Now get the content
+        ByteBuffer buffer = ByteBuffer.allocate((int)reader.getSize());
+        FileChannel channel = reader.getFileChannel();
+        try
+        {
+            int count = channel.read(buffer);
+            if (count != reader.getSize())
+            {
+                System.err.println("The number of bytes read was " + count + " but expected " + reader.getSize());
+                return;
+            }
+        }
+        finally
+        {
+            channel.close();
+        }
+    }
+    
+    private static void printUsage(OutputStream os) throws IOException
+    {
+        String msg = "Usage: \n" +
+                "   HttpAlfrescoStore <server-ip> <content-url>\n" +
+                "      server-ip: the remote HTTP server running Alfresco \n" +
+                "      content-url: the content URL to retrieve \n" +
+                "      Run the test against a server. \n" +
+                "   HttpAlfrescoStore help \n" +
+                "      Print the usage message";
+        os.write(msg.getBytes());
+        os.flush();
     }
 }

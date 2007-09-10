@@ -179,7 +179,7 @@ public class ConfigurationChecker extends AbstractLifecycleBean
                 return null;
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(checkWork);
+        transactionService.getRetryingTransactionHelper().doInTransaction(checkWork, true);
     }
     
     /**

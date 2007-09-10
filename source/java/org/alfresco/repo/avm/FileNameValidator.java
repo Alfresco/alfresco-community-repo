@@ -34,7 +34,7 @@ public class FileNameValidator
     /**
      * The bad file name pattern.
      */
-    private static String fgBadPattern = ".*[\"\\*\\\\><\\?/:\\|\\xA3\\xAC%&;]+.*";
+    private static String fgBadPattern = ".*[\"\\*\\\\><\\?/:\\|]+.*";
     
     /**
      * The compiled regex.

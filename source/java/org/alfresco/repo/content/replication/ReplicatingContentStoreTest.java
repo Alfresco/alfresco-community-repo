@@ -71,12 +71,18 @@ public class ReplicatingContentStoreTest extends AbstractWritableContentStoreTes
         primaryStore = new FileContentStore(storeDir);
         // create some secondary file stores
         secondaryStores = new ArrayList<ContentStore>(3);
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 4; i++)
         {
             storeDir = tempDir.getAbsolutePath() + File.separatorChar + GUID.generate();
-            ContentStore store = new FileContentStore(storeDir);
+            FileContentStore store = new FileContentStore(storeDir);
             secondaryStores.add(store);
+            // Only the first 3 are writable
+            if (i >= 3)
+            {
+                store.setReadOnly(true);
+            }
         }
+        // Create the replicating store
         replicatingStore = new ReplicatingContentStore();
         replicatingStore.setPrimaryStore(primaryStore);
         replicatingStore.setSecondaryStores(secondaryStores);
@@ -106,6 +112,11 @@ public class ReplicatingContentStoreTest extends AbstractWritableContentStoreTes
         {
             for (ContentStore store : secondaryStores)
             {
+                // This is only required for writable stores
+                if (!store.isWriteSupported())
+                {
+                    continue;
+                }
                 ContentReader reader = store.getReader(contentUrl);
                 assertTrue("Content was not replicated out to the secondary stores within a second", reader.exists());
                 assertEquals("The replicated content was incorrect", content, reader.getContentString());

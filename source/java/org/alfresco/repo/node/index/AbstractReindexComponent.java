@@ -217,7 +217,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                         return null;
                     }
                 };
-                transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork);
+                transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork, true);
             }
             finally
             {

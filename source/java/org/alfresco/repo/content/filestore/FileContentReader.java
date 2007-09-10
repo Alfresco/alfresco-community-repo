@@ -208,7 +208,7 @@ public class FileContentReader extends AbstractContentReader
             // the file must exist
             if (!file.exists())
             {
-                throw new IOException("File does not exist");
+                throw new IOException("File does not exist: " + file);
             }
             // create the channel
             ReadableByteChannel channel = null;

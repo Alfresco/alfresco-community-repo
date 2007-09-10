@@ -148,11 +148,11 @@ public class AuthenticationServiceImpl implements AuthenticationService
            clearCurrentSecurityContext();
            authenticationComponent.setCurrentUser(ticketComponent.validateTicket(ticket));
         }
-           catch(AuthenticationException ae)
-           {
-               clearCurrentSecurityContext();
-               throw ae;
-           } 
+        catch(AuthenticationException ae)
+        {
+            clearCurrentSecurityContext();
+            throw ae;
+        } 
     }
 
     public String getCurrentTicket()

@@ -358,7 +358,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         tx.begin();
         if(fService.getStore("avmAsynchronousTest") != null)
         {
+            assertTrue(fIndexingInterceptor.hasIndexBeenCreated("avmAsynchronousTest"));
             fService.purgeStore("avmAsynchronousTest");
+            assertTrue(fIndexingInterceptor.hasIndexBeenCreated("avmAsynchronousTest"));
+            assertFalse(fIndexingInterceptor.hasIndexBeenCreated("bananaStoreWoof"));
+        }
+        else
+        {
+            assertFalse(fIndexingInterceptor.hasIndexBeenCreated("avmAsynchronousTest"));
         }
         StoreRef storeRef = AVMNodeConverter.ToStoreRef("avmAsynchronousTest");
         Indexer indexer = fIndexerAndSearcher.getIndexer(storeRef);
@@ -367,6 +374,12 @@ public class AVMServiceTest extends AVMServiceTestBase
             AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer)indexer;
             avmIndexer.deleteIndex("avmAsynchronousTest", IndexMode.SYNCHRONOUS);
         }
+        tx.commit();
+        
+        tx = fTransactionService.getUserTransaction();
+        tx.begin();
+        assertEquals(-1, fIndexingInterceptor.getLastIndexedSnapshot("bananaStoreWoof"));
+        assertEquals(-1, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
         tx.commit();
       
         // TODO: Suspend and resume indexing in case we are really unlucky and hit an index before we expect it.
@@ -379,7 +392,18 @@ public class AVMServiceTest extends AVMServiceTestBase
         results.close();
         
         fService.createStore("avmAsynchronousTest");
+        
+        tx = fTransactionService.getUserTransaction();
+        tx.begin();
+        assertEquals(0, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
+        tx.commit();
+        
         fService.createSnapshot("avmAsynchronousTest", null, null);
+        
+        tx = fTransactionService.getUserTransaction();
+        tx.begin();
+        assertEquals(0, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
+        tx.commit();
         
         results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
         assertEquals(1, results.length());
@@ -388,7 +412,26 @@ public class AVMServiceTest extends AVMServiceTestBase
         fService.createDirectory("avmAsynchronousTest:/", "a");
         fService.createDirectory("avmAsynchronousTest:/a", "b");
         fService.createDirectory("avmAsynchronousTest:/a/b", "c");
+        
+        tx = fTransactionService.getUserTransaction();
+        tx.begin();
+        assertEquals(0, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
+        assertTrue(fIndexingInterceptor.isIndexUpToDate("avmAsynchronousTest"));
+        tx.commit();
+        
         fService.createSnapshot("avmAsynchronousTest", null, null);
+        
+        tx = fTransactionService.getUserTransaction();
+        tx.begin();
+        assertEquals(1, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
+        assertTrue(fIndexingInterceptor.isIndexUpToDate("avmAsynchronousTest"));
+        assertFalse(fIndexingInterceptor.isIndexUpToDateAndSearchable("avmAsynchronousTest"));
+        assertEquals(IndexMode.ASYNCHRONOUS, fIndexingInterceptor.getIndexMode("avmAsynchronousTest"));
+        assertEquals(IndexMode.SYNCHRONOUS, fIndexingInterceptor.getIndexMode("main"));
+        assertTrue(fIndexingInterceptor.isSnapshotIndexed("avmAsynchronousTest", 0));
+        assertTrue(fIndexingInterceptor.isSnapshotIndexed("avmAsynchronousTest", 1));
+        assertFalse(fIndexingInterceptor.isSnapshotIndexed("avmAsynchronousTest", 2));
+        tx.commit();
         
         results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
         assertEquals(1, results.length());
@@ -399,6 +442,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
         assertEquals(4, results.length());
         results.close();
+        
+        
+        tx = fTransactionService.getUserTransaction();
+        tx.begin();
+        assertEquals(1, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
+        assertTrue(fIndexingInterceptor.isIndexUpToDate("avmAsynchronousTest"));
+        assertTrue(fIndexingInterceptor.isIndexUpToDateAndSearchable("avmAsynchronousTest"));
+        tx.commit();
         
         fService.purgeStore("avmAsynchronousTest");
         

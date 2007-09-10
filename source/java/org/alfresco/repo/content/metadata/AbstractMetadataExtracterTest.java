@@ -50,7 +50,7 @@ import org.springframework.context.ApplicationContext;
  */
 public abstract class AbstractMetadataExtracterTest extends TestCase
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    protected static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     protected static final String QUICK_TITLE = "The quick brown fox jumps over the lazy dog";
     protected static final String QUICK_DESCRIPTION = "Gym class featuring a brown fox and lazy dog";

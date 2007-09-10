@@ -80,25 +80,6 @@ public class OpenOfficeMetadataExtracter extends AbstractMappingMetadataExtracte
         this.connection = connection;
     }
     
-    private synchronized void connect()
-    {
-        if (isConnected())
-        {
-            // just leave it
-        }
-        else
-        {
-            try
-            {
-                connection.connect();
-            }
-            catch (ConnectException e)
-            {
-                logger.warn(e.getMessage());
-            }
-        }
-    }
-
     /**
      * Initialises the bean by establishing an UNO connection
      */
@@ -109,15 +90,6 @@ public class OpenOfficeMetadataExtracter extends AbstractMappingMetadataExtracte
         
         // Base initialization
         super.init();
-
-        // attempt a connection
-        connect();
-        // Only allow registration if the connection is good
-        if (!isConnected())
-        {
-            // Reconnections are only supported if the server is able to connection initially.
-            super.setRegistry(null);
-        }
     }
 
     /**
@@ -127,6 +99,19 @@ public class OpenOfficeMetadataExtracter extends AbstractMappingMetadataExtracte
     public boolean isConnected()
     {
         return connection.isConnected();
+    }
+
+    /**
+     * Perform the default check, but also check if the OpenOffice connection is good.
+     */
+    @Override
+    public boolean isSupported(String sourceMimetype)
+    {
+        if (!isConnected())
+        {
+            return false;
+        }
+        return super.isSupported(sourceMimetype);
     }
 
     @Override
@@ -146,35 +131,32 @@ public class OpenOfficeMetadataExtracter extends AbstractMappingMetadataExtracte
         String sourceUrl = toUrl(tempFromFile, connection);
 
         // UNO Interprocess Bridge *should* be thread-safe, but...
-        synchronized (connection)
+        XComponentLoader desktop = connection.getDesktop();
+        XComponent document = desktop.loadComponentFromURL(
+                sourceUrl,
+                "_blank",
+                0,
+                new PropertyValue[] { property("Hidden", Boolean.TRUE) });
+        if (document == null)
         {
-            XComponentLoader desktop = connection.getDesktop();
-            XComponent document = desktop.loadComponentFromURL(
-                    sourceUrl,
-                    "_blank",
-                    0,
-                    new PropertyValue[] { property("Hidden", Boolean.TRUE) });
-            if (document == null)
-            {
-                throw new FileNotFoundException("could not open source document: " + sourceUrl);
-            }
-            try
-            {
-                XDocumentInfoSupplier infoSupplier = (XDocumentInfoSupplier) UnoRuntime.queryInterface(
-                        XDocumentInfoSupplier.class, document);
-                XPropertySet propSet = (XPropertySet) UnoRuntime.queryInterface(
-                        XPropertySet.class,
-                        infoSupplier
-                        .getDocumentInfo());
+            throw new FileNotFoundException("could not open source document: " + sourceUrl);
+        }
+        try
+        {
+            XDocumentInfoSupplier infoSupplier = (XDocumentInfoSupplier) UnoRuntime.queryInterface(
+                    XDocumentInfoSupplier.class, document);
+            XPropertySet propSet = (XPropertySet) UnoRuntime.queryInterface(
+                    XPropertySet.class,
+                    infoSupplier
+                    .getDocumentInfo());
 
-                putRawValue(KEY_TITLE, propSet.getPropertyValue("Title").toString(), rawProperties);
-                putRawValue(KEY_DESCRIPTION, propSet.getPropertyValue("Subject").toString(), rawProperties);
-                putRawValue(KEY_AUTHOR, propSet.getPropertyValue("Author").toString(), rawProperties);
-            }
-            finally
-            {
-                document.dispose();
-            }
+            putRawValue(KEY_TITLE, propSet.getPropertyValue("Title").toString(), rawProperties);
+            putRawValue(KEY_DESCRIPTION, propSet.getPropertyValue("Subject").toString(), rawProperties);
+            putRawValue(KEY_AUTHOR, propSet.getPropertyValue("Author").toString(), rawProperties);
+        }
+        finally
+        {
+            document.dispose();
         }
         // Done
         return rawProperties;
@@ -186,14 +168,6 @@ public class OpenOfficeMetadataExtracter extends AbstractMappingMetadataExtracte
         XFileIdentifierConverter fic = (XFileIdentifierConverter) UnoRuntime.queryInterface(
                 XFileIdentifierConverter.class, fcp);
         return fic.getFileURLFromSystemPath("", file.getAbsolutePath());
-    }
-
-    public double getReliability(String sourceMimetype)
-    {
-        if (isConnected())
-            return super.getReliability(sourceMimetype);
-        else
-            return 0.0;
     }
 
     private static PropertyValue property(String name, Object value)

@@ -638,6 +638,19 @@ public class FileFolderServiceImpl implements FileFolderService
             {
                 // changed the name property
                 nodeService.setProperty(targetNodeRef, ContentModel.PROP_NAME, newName);
+                
+                // May need to update the mimetype, to support apps using .tmp files when saving
+                ContentData contentData = (ContentData)nodeService.getProperty(targetNodeRef, ContentModel.PROP_CONTENT);
+                if (contentData != null)
+                {
+                	String targetMimetype = contentData.getMimetype();
+                	String newMimetype = mimetypeService.guessMimetype(newName);
+                	if (!targetMimetype.equalsIgnoreCase(newMimetype))
+                	{
+                		contentData = ContentData.setMimetype(contentData, newMimetype);
+                		nodeService.setProperty(targetNodeRef, ContentModel.PROP_CONTENT, contentData);
+                	}
+                }
             }
             catch (DuplicateChildNodeNameException e)
             {

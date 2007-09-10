@@ -100,7 +100,6 @@
            </event>           
         </task>
 
-        <transition name="reject" to="endreview" />
         <transition name="approve" to="submitserialreview">
            <script>
               <variable name="wcmwf_approveCnt" access="read, write"/>
@@ -109,6 +108,7 @@
               </expression>
            </script>
         </transition>
+        <transition name="reject" to="endreview" />
     </task-node>
 
 
@@ -136,7 +136,6 @@
               </script>
            </event>           
         </task>
-        <transition name="reject" to="joinparallelreview" />
         <transition name="approve" to="joinparallelreview">
             <script>
                 <variable name="wcmwf_approveCnt" access="read,write" />
@@ -145,6 +144,7 @@
                 </expression>
             </script>
         </transition>
+        <transition name="reject" to="joinparallelreview" />
     </task-node>
 
     <join name="joinparallelreview">

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.alfresco.repo.node.index.FullIndexRecoveryComponent.RecoveryMode;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
+import org.alfresco.repo.search.IndexMode;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
@@ -116,6 +117,11 @@ public class AVMFullIndexRecoveryComponent extends AbstractReindexComponent
         else
         // validate first
         {
+            if(avmSnapShotTriggeredIndexingMethodInterceptor.getIndexMode(store) == IndexMode.UNINDEXED)
+            {
+                return;
+            }
+                
             int lastActualSnapshotId = avmService.getLatestSnapshotID(store);
             if (lastActualSnapshotId <= 0)
             {

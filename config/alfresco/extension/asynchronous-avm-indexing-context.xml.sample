@@ -24,7 +24,7 @@
         <!-- Entries are of the form  [SYNCHRONOUS | ASYNCHRONOUS |UNINDEXED]:[TYPE | NAME]:regexp -->
         <property name="indexingDefinitions">
             <list>
-                <value>SYNCHRONOUS:TYPE:STAGING</value>
+                <value>ASYNCHRONOUS:TYPE:STAGING</value>
                 <value>UNINDEXED:TYPE:STAGING_PREVIEW</value>
                 <value>UNINDEXED:TYPE:AUTHOR</value>
                 <value>UNINDEXED:TYPE:AUTHOR_PREVIEW</value>

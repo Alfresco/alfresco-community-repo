@@ -38,7 +38,7 @@ public class OpenOfficeMetadataExtracterTest extends AbstractMetadataExtracterTe
     {
         super.setUp();
         
-        OpenOfficeConnection connection = new SocketOpenOfficeConnection();
+        OpenOfficeConnection connection = (OpenOfficeConnection) ctx.getBean("openOfficeConnection");
         
         extracter = new OpenOfficeMetadataExtracter();
         extracter.setMimetypeService(mimetypeMap);

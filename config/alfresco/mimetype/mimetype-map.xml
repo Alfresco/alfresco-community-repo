@@ -306,6 +306,15 @@
          <mimetype mimetype="message/rfc822" display="EMail">
             <extension>msg</extension>
          </mimetype>
+         <mimetype mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document" display="Microsoft Word 2007">
+            <extension>docx</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" display="Microsoft Excel 2007">
+            <extension>xlsx</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation" display="Microsoft PowerPoint 2007">
+            <extension>pptx</extension>
+         </mimetype>
       </mimetypes>
    </config>
    

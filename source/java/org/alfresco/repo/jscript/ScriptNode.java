@@ -643,6 +643,19 @@ public class ScriptNode implements Serializable, Scopeable
     }
     
     /**
+     * @return QName path to this node. This can be used for Lucene PATH: style queries
+     */
+    public String getQnamePath()
+    {
+        return this.services.getNodeService().getPath(getNodeRef()).toPrefixString(this.services.getNamespaceService());
+    }
+
+    public String jsGet_qnamePath()
+    {
+        return getQnamePath();
+    }
+
+    /**
      * @return Display path to this node
      */
     public String getDisplayPath()

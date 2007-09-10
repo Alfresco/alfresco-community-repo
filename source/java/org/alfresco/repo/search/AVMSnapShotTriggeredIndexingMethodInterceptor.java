@@ -230,7 +230,7 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
             avmIndexer.index(store, before, after, getIndexMode(store));
         }
     }
-    
+
     public void indexSnapshot(String store, int after)
     {
         StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
@@ -279,7 +279,73 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
         return false;
     }
 
-    private synchronized IndexMode getIndexMode(String store)
+    /**
+     * Check if the index is up to date according to its index defintion and that all asynchronous work is done.
+     * 
+     * @param store
+     * @return
+     */
+    public boolean isIndexUpToDateAndSearchable(String store)
+    {
+
+        switch (getIndexMode(store))
+        {
+        case UNINDEXED:
+            return false;
+        case SYNCHRONOUS:
+        case ASYNCHRONOUS:
+            int last = avmService.getLatestSnapshotID(store);
+            StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
+            Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
+            if (indexer instanceof AVMLuceneIndexer)
+            {
+                AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
+                avmIndexer.flushPending();
+                return avmIndexer.isSnapshotSearchable(store, last);
+            }
+            return false;
+        default:
+            return false;
+        }
+    }
+    
+    /**
+     * Check if the index is up to date according to its index defintion i it does not check that all asynchronous work is done.
+     * 
+     * @param store
+     * @return
+     */
+    public boolean isIndexUpToDate(String store)
+    {
+
+        switch (getIndexMode(store))
+        {
+        case UNINDEXED:
+            return true;
+        case SYNCHRONOUS:
+        case ASYNCHRONOUS:
+            int last = avmService.getLatestSnapshotID(store);
+            StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
+            Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
+            if (indexer instanceof AVMLuceneIndexer)
+            {
+                AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
+                avmIndexer.flushPending();
+                return avmIndexer.getLastIndexedSnapshot(store) == last;
+            }
+            return false;
+        default:
+            return false;
+        }
+    }
+
+    /**
+     * Given an avm store name determine if it is indexed and if so how.
+     * 
+     * @param store
+     * @return
+     */
+    public synchronized IndexMode getIndexMode(String store)
     {
         IndexMode mode = modeCache.get(store);
         if (mode == null)

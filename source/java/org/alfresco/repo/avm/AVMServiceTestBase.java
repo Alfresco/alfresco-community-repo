@@ -31,6 +31,7 @@ import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
 import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -81,6 +82,8 @@ public class AVMServiceTestBase extends TestCase
      */
     private long fStartTime;
 
+    protected static AVMSnapShotTriggeredIndexingMethodInterceptor fIndexingInterceptor;
+
     protected static TransactionService fTransactionService;
 
     protected static IndexerAndSearcher fIndexerAndSearcher;
@@ -104,6 +107,8 @@ public class AVMServiceTestBase extends TestCase
             fIndexerAndSearcher = (IndexerAndSearcher)fContext.getBean("indexerAndSearcherFactory");
             fTransactionService = (TransactionService)fContext.getBean("transactionComponent");
             fLockingService = (AVMLockingService)fContext.getBean("AVMLockingService");
+            fIndexingInterceptor = (AVMSnapShotTriggeredIndexingMethodInterceptor)fContext.getBean("avmSnapShotTriggeredIndexingMethodInterceptor");
+            
             AuthenticationService authService = (AuthenticationService)fContext.getBean("AuthenticationService");
             authService.authenticate("admin", "admin".toCharArray());
             CreateStoreTxnListener cstl = (CreateStoreTxnListener)fContext.getBean("createStoreTxnListener");

@@ -51,6 +51,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.search.IndexMode;
+import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.impl.lucene.fts.FTSIndexerAware;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -379,16 +380,16 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
         if (desc != null)
         {
-    
+
             NodeRef nodeRef = AVMNodeConverter.ToNodeRef(endVersion, stringNodeRef);
-    
+
             Document xdoc = new Document();
             xdoc.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             xdoc.add(new Field("ID", stringNodeRef, Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             xdoc.add(new Field("TX", AlfrescoTransactionSupport.getTransactionId(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-    
+
             boolean isAtomic = true;
-    
+
             Map<QName, Serializable> properties = getIndexableProperties(desc, nodeRef, endVersion, stringNodeRef);
             for (QName propertyName : properties.keySet())
             {
@@ -402,11 +403,11 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                     isAtomic &= indexProperty(nodeRef, propertyName, value, xdoc, true, properties);
                 }
             }
-    
+
             StringBuilder qNameBuffer = new StringBuilder(64);
             if (node.getIsRoot())
             {
-    
+
             }
             // pseudo roots?
             else
@@ -492,7 +493,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
             }
             else
-                // not a root node
+            // not a root node
             {
                 xdoc.add(new Field("QNAME", qNameBuffer.toString(), Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
 
@@ -1375,7 +1376,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                                 {
                                     String[] split = term.text().split(":");
                                     int test = Integer.parseInt(split[3]);
-                                    if(test > end)
+                                    if (test > end)
                                     {
                                         end = test;
                                     }
@@ -1485,7 +1486,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                                 {
                                     String[] split = term.text().split(":");
                                     int test = Integer.parseInt(split[4]);
-                                    if(test > end)
+                                    if (test > end)
                                     {
                                         end = test;
                                     }

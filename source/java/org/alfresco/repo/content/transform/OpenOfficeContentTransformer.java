@@ -27,7 +27,6 @@ package org.alfresco.repo.content.transform;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.ConnectException;
 import java.util.Map;
 
 import net.sf.jooreports.converter.DocumentFamily;
@@ -46,8 +45,6 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.DefaultResourceLoader;
 
 /**
@@ -58,11 +55,7 @@ import org.springframework.core.io.DefaultResourceLoader;
  */
 public class OpenOfficeContentTransformer extends AbstractContentTransformer
 {
-    private static Log logger = LogFactory.getLog(OpenOfficeContentTransformer.class);
-    
     private OpenOfficeConnection connection;
-    /** Keep track of the initial connection state */
-    private boolean initiallyConnected;
     private OpenOfficeDocumentConverter converter;
     private String documentFormatsConfiguration;
     private DocumentFormatRegistry formatRegistry;
@@ -91,30 +84,6 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer
         return connection.isConnected();
     }
 
-    private synchronized boolean connect()
-    {
-        boolean success = false;
-        if (isConnected())
-        {
-            // just leave it
-            success = true;
-        }
-        else
-        {
-            try
-            {
-                connection.connect();
-                success = true;
-            }
-            catch (ConnectException e)
-            {
-                logger.warn(e.getMessage());
-            }
-        }
-        // Done
-        return success;
-    }
-
     @Override
     public void register()
     {
@@ -140,18 +109,11 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer
             formatRegistry = new XmlDocumentFormatRegistry();
         }
         
-        // attempt to establish a connection
-        initiallyConnected = connect();
-        
         // set up the converter
         converter = new OpenOfficeDocumentConverter(connection);
         
-        if (initiallyConnected)
-        {
-            // If the server starts with OO running, then it will attempt reconnections.  Otherwise it will
-            // just be wasting time trying to see if a connection is available all the time.
-            super.register();
-        }
+        // Register
+        super.register();
     }
 
     /**
@@ -161,16 +123,8 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer
     {
         if (!isConnected())
         {
-            if (!initiallyConnected)
-            {
-                // It wasn't there to start with, so we won't bother trying to connect
-                return 0.0;
-            }
-            // The connection may have gone away, so attempt to get it again
-            if (!connect())
-            {
-                return 0.0;
-            }
+            // The connection management is must take care of this
+            return 0.0;
         }
         
         // there are some conversions that fail, despite the converter believing them possible

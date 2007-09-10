@@ -572,7 +572,7 @@
             <value>org.alfresco.service.cmr.security.AuthenticationService</value>
         </property>
         <property name="target">
-            <ref bean="authenticationServiceImpl"/>
+            <ref bean="authenticationService"/>
         </property>
         <property name="interceptorNames">
             <list>
@@ -938,7 +938,7 @@
         </property>
         <property name="indexingDefinitions">
             <list>
-                <value>ASYNCHRONOUS:TYPE:STAGING</value>
+                <value>SYNCHRONOUS:TYPE:STAGING</value>
                 <value>UNINDEXED:TYPE:STAGING_PREVIEW</value>
                 <value>UNINDEXED:TYPE:AUTHOR</value>
                 <value>UNINDEXED:TYPE:AUTHOR_PREVIEW</value>

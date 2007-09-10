@@ -49,7 +49,7 @@ public class MetadataExtracterRegistry
     private static final Log logger = LogFactory.getLog(MetadataExtracterRegistry.class);
 
     private List<MetadataExtracter> extracters;
-    private Map<String, MetadataExtracter> extracterCache;
+    private Map<String, List<MetadataExtracter>> extracterCache;
 
     /** Controls read access to the cache */
     private Lock extracterCacheReadLock;
@@ -60,7 +60,7 @@ public class MetadataExtracterRegistry
     {
         // initialise lists
         extracters = new ArrayList<MetadataExtracter>(10);
-        extracterCache = new HashMap<String, MetadataExtracter>(17);
+        extracterCache = new HashMap<String, List<MetadataExtracter>>(17);
 
         // create lock objects for access to the cache
         ReadWriteLock extractionCacheLock = new ReentrantReadWriteLock();
@@ -104,7 +104,7 @@ public class MetadataExtracterRegistry
      */
     public MetadataExtracter getExtracter(String sourceMimetype)
     {
-        MetadataExtracter extracter = null;
+        List<MetadataExtracter> extractors = null;
         extracterCacheReadLock.lock();
         try
         {
@@ -112,7 +112,7 @@ public class MetadataExtracterRegistry
             {
                 // the translation has been requested before
                 // it might have been null
-                return extracterCache.get(sourceMimetype);
+                extractors = extracterCache.get(sourceMimetype);
             }
         }
         finally
@@ -120,44 +120,59 @@ public class MetadataExtracterRegistry
             extracterCacheReadLock.unlock();
         }
 
-        // the translation has not been requested before
-        // get a write lock on the cache
-        // no double check done as it is not an expensive task
-        extracterCacheWriteLock.lock();
-        try
+        if (extractors == null)
         {
-            // find the most suitable transformer - may be empty list
-            extracter = findBestExtracter(sourceMimetype);
-            // store the result even if it is null
-            extracterCache.put(sourceMimetype, extracter);
-            return extracter;
+            // No request has been made before
+            // Get a write lock on the cache
+            // No double check done as it is not an expensive task
+            extracterCacheWriteLock.lock();
+            try
+            {
+                // find the most suitable transformer - may be empty list
+                extractors = findBestExtracters(sourceMimetype);
+                // store the result even if it is null
+                extracterCache.put(sourceMimetype, extractors);
+            }
+            finally
+            {
+                extracterCacheWriteLock.unlock();
+            }
         }
-        finally
+        
+        // We have the list of extractors that supposedly work (as registered).
+        // Take the first one that still claims to work
+        MetadataExtracter liveExtractor = null;
+        for (MetadataExtracter extractor : extractors)
         {
-            extracterCacheWriteLock.unlock();
+            // An extractor may dynamically become unavailable 
+            if (!extractor.isSupported(sourceMimetype))
+            {
+                continue;
+            }
+            liveExtractor = extractor;
         }
+        return liveExtractor;
     }
 
     /**
-     * @param sourceMimetype The MIME type under examination
-     * @return The fastest of the most reliable extracters in <code>extracters</code>
-     *      for the given MIME type, or null if none is available.
+     * @param       sourceMimetype The MIME type under examination
+     * @return      Returns a set of extractors that will work for the given mimetype
      */
-    private MetadataExtracter findBestExtracter(String sourceMimetype)
+    private List<MetadataExtracter> findBestExtracters(String sourceMimetype)
     {
-        logger.debug("Finding best extracter for " + sourceMimetype);
+        logger.debug("Finding extractors for " + sourceMimetype);
 
-        MetadataExtracter bestExtracter = null;
+        List<MetadataExtracter> extractors = new ArrayList<MetadataExtracter>(1);
 
-        for (MetadataExtracter ext : extracters)
+        for (MetadataExtracter extractor : extracters)
         {
-            if (!ext.isSupported(sourceMimetype))
+            if (!extractor.isSupported(sourceMimetype))
             {
                 // extraction not achievable
                 continue;
             }
-            bestExtracter = ext;
+            extractors.add(extractor);
         }
-        return bestExtracter;
+        return extractors;
     }
 }

@@ -477,6 +477,21 @@
       </property-sheet>
    </config>
 
+   <config evaluator="node-type" condition="wcmwf:parallelReviewTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" />
+         <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true"/>
+         <show-property name="wcmwf:label" read-only="true" />
+         <show-property name="wcmwf:launchDate" read-only="true"/>
+         <show-property name="bpm:status" />
+         <show-property name="bpm:comment" component-generator="TextAreaGenerator" />
+         <separator name="sep2" display-label-id="wf_reviewers" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="wcmwf:reviewType" read-only="true" />
+         <show-association name="bpm:assignees" display-label-id="wf_reviewers" read-only="true"/>
+      </property-sheet>
+   </config>
+
    <config evaluator="node-type" condition="wcmwf:rejectedTask" replace="true">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />

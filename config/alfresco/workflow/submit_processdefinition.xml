@@ -229,7 +229,7 @@
     <end-state name="end"/>
     
     <event type="process-end">
-        <action class="org.alfresco.repo.avm.wf.AVMRemoveAllWebappsHandler"/>
+        <action class="org.alfresco.repo.avm.wf.AVMRemoveAllSrcWebappsHandler"/>
         <action class="org.alfresco.repo.avm.wf.AVMRemoveWFStoreHandler"/>
     </event>
 

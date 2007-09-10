@@ -53,7 +53,7 @@ public class AVMSubmitPackageHandler
 {
     private static final long serialVersionUID = 4113360751217684995L;
 
-    private static final Log LOGGER = LogFactory.getLog(AVMSubmitPackageHandler.class);
+    private static final Log logger = LogFactory.getLog(AVMSubmitPackageHandler.class);
 
     /** The AVMService instance. */
     private AVMService fAVMService;
@@ -99,7 +99,8 @@ public class AVMSubmitPackageHandler
         final AVMNodeDescriptor pkgDesc = fAVMService.lookup(pkgPath.getFirst(), pkgPath.getSecond());
         final String from = (String)executionContext.getContextInstance().getVariable("wcmwf_fromPath");
         final String targetPath = pkgDesc.getIndirection();
-        LOGGER.debug("handling submit of " + pkgPath.getSecond() + " from " + from + " to " + targetPath);
+        if (logger.isDebugEnabled())
+            logger.debug("handling submit of " + pkgPath.getSecond() + " from " + from + " to " + targetPath);
 
         // submit the package changes
         final String description = (String)executionContext.getContextInstance().getVariable("bpm_workflowDescription");
@@ -153,7 +154,8 @@ public class AVMSubmitPackageHandler
      */
     private void recursivelyRemoveLocks(final String webProject, final int version, final String path)
     {
-        LOGGER.debug("removing lock on " + path);
+        if (logger.isDebugEnabled())
+            logger.debug("removing lock on " + path);
         AVMNodeDescriptor desc = fAVMService.lookup(version, path, true);
         if (desc.isFile() || desc.isDeletedFile())
         {
@@ -172,9 +174,10 @@ public class AVMSubmitPackageHandler
               desc = history.get(1);
            }
 
-           for (final AVMNodeDescriptor child : fAVMService.getDirectoryListingArray(desc.getVersionID(), desc.getPath(), true))
+           Map<String, AVMNodeDescriptor> list = fAVMService.getDirectoryListing(desc, true);
+           for (AVMNodeDescriptor child : list.values())
            {
-              this.recursivelyRemoveLocks(webProject, child.getVersionID(), child.getPath());
+               recursivelyRemoveLocks(webProject, child.getVersionID(), child.getPath());
            }
         }
     }

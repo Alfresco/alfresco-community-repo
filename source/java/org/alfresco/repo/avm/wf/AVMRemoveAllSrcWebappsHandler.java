@@ -22,7 +22,7 @@
 *  
 *  
 *  Author  Jon Cox  <jcox@alfresco.com>
-*  File    AVMRemoveAllWebappsHandler.java
+*  File    AVMRemoveAllSrcWebappsHandler.java
 *----------------------------------------------------------------------------*/
 
 package org.alfresco.repo.avm.wf;
@@ -49,12 +49,12 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Jon Cox
  */
-public class AVMRemoveAllWebappsHandler extends JBPMSpringActionHandler 
+public class AVMRemoveAllSrcWebappsHandler extends JBPMSpringActionHandler 
 {
     static final long serialVersionUID = 3004374776252613278L;
 
     private static Logger log = 
-        Logger.getLogger(AVMRemoveAllWebappsHandler.class);
+        Logger.getLogger(AVMRemoveAllSrcWebappsHandler.class);
 
     /**
      * The AVMService instance.
@@ -79,7 +79,7 @@ public class AVMRemoveAllWebappsHandler extends JBPMSpringActionHandler
     public void execute(ExecutionContext executionContext) throws Exception 
     {
         if (log.isDebugEnabled())
-            log.debug("AVMRemoveAllWebappsHandler.execute()");
+            log.debug("AVMRemoveAllSrcWebappsHandler.execute()");
 
         // retrieve submitted package
         NodeRef pkg = ((JBPMNode)executionContext.getContextInstance().

@@ -24,7 +24,9 @@
  */
 package org.alfresco.web.scripts;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,6 +45,7 @@ public abstract class WebScriptURLRequest extends WebScriptRequestImpl
     protected String pathInfo;
     protected String queryString;
     protected Map<String, String> queryArgs;
+    protected Map<String, List<String>> queryArgsMulti;
     
     /** Service bound to this request */
     protected WebScriptMatch serviceMatch;
@@ -111,14 +114,27 @@ public abstract class WebScriptURLRequest extends WebScriptRequestImpl
         this.pathInfo = scriptUrlParts[2];
         this.queryString = scriptUrlParts[3];
         this.queryArgs = new HashMap<String, String>();
+        this.queryArgsMulti = new HashMap<String, List<String>>();
         if (this.queryString != null)
         {
             String[] args = this.queryString.split("&");
             for (String arg : args)
             {
                 String[] parts = arg.split("=");
-                // TODO: Handle multi-value parameters
-                this.queryArgs.put(parts[0], parts.length == 2 ? parts[1] : "");
+                if (this.queryArgs.containsKey(parts[0]))
+                {
+                    List<String> values = this.queryArgsMulti.get(parts[0]);
+                    if (values == null)
+                    {
+                        values = new ArrayList<String>();
+                        this.queryArgsMulti.put(parts[0], values);
+                    }
+                    values.add(parts.length == 2 ? parts[1] : "");
+                }
+                else
+                {
+                    this.queryArgs.put(parts[0], parts.length == 2 ? parts[1] : "");
+                }
             }
         }
         this.serviceMatch = serviceMatch;
@@ -198,4 +214,28 @@ public abstract class WebScriptURLRequest extends WebScriptRequestImpl
     {
         return queryArgs.get(name);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequest#getArrayParameter(java.lang.String)
+     */
+    public String[] getParameterValues(String name)
+    {
+        List<String> values = queryArgsMulti.get(name);
+        if (values != null)
+        {
+            String[] array = new String[values.size()];
+            values.toArray(array);
+            return array;
+        }
+        else
+        {
+            String value = queryArgs.get(name);
+            if (value != null)
+            {
+                return new String[]{value};
+            }
+        }
+        return null;
+    }
+    
 }

@@ -29,11 +29,13 @@ import java.io.Writer;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.repo.jscript.Scopeable;
 import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.template.AbsoluteUrlMethod;
 import org.alfresco.service.ServiceRegistry;
@@ -50,6 +52,8 @@ import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredTransaction;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
 
 
 /**
@@ -189,22 +193,79 @@ public abstract class AbstractWebScript implements WebScript
     //
 
     /**
-     * Create a map of arguments from Web Script Request
+     * Create a map of arguments from Web Script Request (for scripting)
      * 
      * @param req  Web Script Request
      * @return  argument map
      */
-    final protected Map<String, String> createArgModel(WebScriptRequest req)
+    final protected Map<String, String> createScriptArgs(WebScriptRequest req)
     {
         Map<String, String> args = new ScriptableHashMap<String, String>();
         String[] names = req.getParameterNames();
         for (String name : names)
         {
-           args.put(name, req.getParameter(name));
+            args.put(name, req.getParameter(name));
         }
         return args;
     }
-    
+
+    /**
+     * Create a map of arguments from Web Script Request (for templating)
+     * 
+     * @param req  Web Script Request
+     * @return  argument map
+     */
+    final protected Map<String, String> createTemplateArgs(WebScriptRequest req)
+    {
+        Map<String, String> args = new HashMap<String, String>();
+        String[] names = req.getParameterNames();
+        for (String name : names)
+        {
+            args.put(name, req.getParameter(name));
+        }
+        return args;
+    }
+
+    /**
+     * Create a map of (array) arguments from Web Script Request (for scripting)
+     * 
+     * @param req  Web Script Request
+     * @return  argument map
+     */
+    final protected Map<String, Map<String, String>> createScriptArgsM(WebScriptRequest req)
+    {
+        Map<String, Map<String, String>> args = new ScriptableHashMap<String, Map<String, String>>();
+        String[] names = req.getParameterNames();
+        for (String name : names)
+        {
+            ScriptableHashMap<String, String> values = new ScriptableHashMap<String, String>();
+            int i = 0;
+            for (String value : req.getParameterValues(name))
+            {
+                values.put(new Integer(i++).toString(), value);
+            }
+            args.put(name, values);
+        }
+        return args;
+    }
+
+    /**
+     * Create a map of (array) arguments from Web Script Request (for scripting)
+     * 
+     * @param req  Web Script Request
+     * @return  argument map
+     */
+    final protected Map<String, String[]> createTemplateArgsM(WebScriptRequest req)
+    {
+        Map<String, String[]> args = new HashMap<String, String[]>();
+        String[] names = req.getParameterNames();
+        for (String name : names)
+        {
+            args.put(name, req.getParameterValues(name));
+        }
+        return args;
+    }
+
     /**
      * Create a model for script usage
      *  
@@ -242,7 +303,8 @@ public abstract class AbstractWebScript implements WebScript
         }
 
         // add web script context
-        model.put("args", createArgModel(req));
+        model.put("args", createScriptArgs(req));
+        model.put("argsM", createScriptArgsM(req));
         if (req instanceof WebScriptServletRequest)
         {
             model.put("formdata", new FormData(((WebScriptServletRequest)req).getHttpServletRequest()));
@@ -298,7 +360,8 @@ public abstract class AbstractWebScript implements WebScript
         }
         
         // add web script context
-        model.put("args", createArgModel(req));
+        model.put("args", createTemplateArgs(req));
+        model.put("argsM", createTemplateArgsM(req));
         model.put("guest", req.isGuest());
         model.put("url", new URLModel(req));
         model.put("webscript", getDescription());

@@ -106,6 +106,17 @@ public interface WebScriptRequest
      * @return  parameter value (or null, if parameter does not exist)
      */
     public String getParameter(String name);
+
+    /**
+     * Gets the (array) value of the named parameter
+     * 
+     * Note: An array of one item is returned when a "single value" named parameter 
+     *       is requested
+     *       
+     * @param  name  parameter name
+     * @return  array of values (or null, if parameter does not exist)
+     */
+    public String[] getParameterValues(String name);
     
     /**
      * Gets the path extension beyond the path registered for this service

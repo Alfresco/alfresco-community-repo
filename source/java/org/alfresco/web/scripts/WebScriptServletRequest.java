@@ -179,6 +179,14 @@ public class WebScriptServletRequest extends WebScriptRequestImpl
         return req.getParameter(name);
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequest#getArrayParameter(java.lang.String)
+     */
+    public String[] getParameterValues(String name)
+    {
+        return req.getParameterValues(name);
+    }
+
     /**
      * Get User Agent
      * 

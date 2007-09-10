@@ -151,7 +151,7 @@ public class KeywordSearch extends DeclarativeWebScript
             // construct search statement
             String[] terms = searchTerms.split(" "); 
             Map<String, Object> statementModel = new HashMap<String, Object>(7, 1.0f);
-            statementModel.put("args", createArgModel(req));
+            statementModel.put("args", createTemplateArgs(req));
             statementModel.put("terms", terms);
             Writer queryWriter = new StringWriter(1024);
             renderFormatTemplate(QUERY_FORMAT, statementModel, queryWriter);

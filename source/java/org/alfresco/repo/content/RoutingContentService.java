@@ -422,7 +422,7 @@ public class RoutingContentService implements ContentService
         if (update)
         {
             // need a listener to update the node when the stream closes
-            WriteStreamListener listener = new WriteStreamListener(nodeService, avmService, nodeRef, propertyQName, writer);
+            WriteStreamListener listener = new WriteStreamListener(nodeService, nodeRef, propertyQName, writer);
             writer.addListener(listener);
             writer.setRetryingTransactionHelper(transactionHelper);
         }
@@ -524,20 +524,17 @@ public class RoutingContentService implements ContentService
     private static class WriteStreamListener implements ContentStreamListener
     {
         private NodeService nodeService;
-        private AVMService avmService;
         private NodeRef nodeRef;
         private QName propertyQName;
         private ContentWriter writer;
         
         public WriteStreamListener(
                 NodeService nodeService,
-                AVMService avmService,
                 NodeRef nodeRef,
                 QName propertyQName,
                 ContentWriter writer)
         {
             this.nodeService = nodeService;
-            this.avmService = avmService;
             this.nodeRef = nodeRef;
             this.propertyQName = propertyQName;
             this.writer = writer;
@@ -553,8 +550,6 @@ public class RoutingContentService implements ContentService
                 if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
                 {
                     nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, contentData);
-//                    Pair<Integer, String> versionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-//                    avmService.setContentData(versionPath.getSecond(), contentData);
                 }
                 else
                 {

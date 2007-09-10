@@ -230,7 +230,7 @@ public class AVMDeploySnapshotAction extends ActionExecuterAbstractBase
          if (fileServerDeployment)
          {
             // remove the prefixed \\
-            host = targetServer.substring(FILE_SERVER_PREFIX.length());
+            host = host.substring(FILE_SERVER_PREFIX.length());
             
             if (logger.isDebugEnabled())
                logger.debug("Performing file server deployment to " + host + ":" + port);

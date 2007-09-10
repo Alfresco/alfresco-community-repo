@@ -337,69 +337,73 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     private List<CompiledModel> getModelsForUri(String uri)
     {
-        // note: special case, if running as System - e.g. addAuditAspect
-        String currentUserName = AuthenticationUtil.getCurrentUserName();
-        
-        if ((tenantService.isTenantUser()) ||
-            (tenantService.isTenantName(uri) && (currentUserName != null) && (currentUserName.equals(AuthenticationUtil.getSystemUserName()))))
+        if (tenantService.isEnabled())
         {
-            String tenantDomain = null;
-            if (currentUserName.equals(AuthenticationUtil.getSystemUserName()))
-            {
-                tenantDomain = tenantService.getDomain(uri);
-            }
-            else
-            {
-                tenantDomain = tenantService.getCurrentUserDomain();
-            }
-            uri = tenantService.getBaseName(uri, true);
+            // note: special case, if running as System - e.g. addAuditAspect
+            String currentUserName = AuthenticationUtil.getCurrentUserName();
             
-            // get non-tenant models (if any)
-            List<CompiledModel> models = getUriToModels("").get(uri);
-            
-            List<CompiledModel> filteredModels = new ArrayList<CompiledModel>();
-            if (models != null)
+            if (currentUserName != null)
             {
-                filteredModels.addAll(models);
+	        	if ((tenantService.isTenantUser(currentUserName)) ||
+	        	    (currentUserName.equals(AuthenticationUtil.getSystemUserName()) && tenantService.isTenantName(uri)))
+	            {
+		            String tenantDomain = null;
+		            if (currentUserName.equals(AuthenticationUtil.getSystemUserName()))
+		            {
+		                tenantDomain = tenantService.getDomain(uri);
+		            }
+		            else
+		            {
+		                tenantDomain = tenantService.getCurrentUserDomain();
+		            }
+		            uri = tenantService.getBaseName(uri, true);
+		            
+		            // get non-tenant models (if any)
+		            List<CompiledModel> models = getUriToModels("").get(uri);
+		            
+		            List<CompiledModel> filteredModels = new ArrayList<CompiledModel>();
+		            if (models != null)
+		            {
+		                filteredModels.addAll(models);
+		            }
+		    
+		            // get tenant models (if any)
+		            List<CompiledModel> tenantModels = getUriToModels(tenantDomain).get(uri);
+		            if (tenantModels != null)
+		            {
+		                if (models != null)
+		                {
+		                    // check to see if tenant model overrides a non-tenant model
+		                    for (CompiledModel tenantModel : tenantModels)
+		                    {
+		                        for (CompiledModel model : models)
+		                        {
+		                            if (tenantModel.getM2Model().getName().equals(model.getM2Model().getName()))
+		                            {
+		                                filteredModels.remove(model);
+		                            }
+		                        }
+		                    }
+		                }
+		                filteredModels.addAll(tenantModels);
+		                models = filteredModels;
+		            }
+		    
+		            if (models == null)
+		            {
+		                models = Collections.emptyList();
+		            }
+		            return models;
+	            }
             }
-    
-            // get tenant models (if any)
-            List<CompiledModel> tenantModels = getUriToModels(tenantDomain).get(uri);
-            if (tenantModels != null)
-            {
-                if (models != null)
-                {
-                    // check to see if tenant model overrides a non-tenant model
-                    for (CompiledModel tenantModel : tenantModels)
-                    {
-                        for (CompiledModel model : models)
-                        {
-                            if (tenantModel.getM2Model().getName().equals(model.getM2Model().getName()))
-                            {
-                                filteredModels.remove(model);
-                            }
-                        }
-                    }
-                }
-                filteredModels.addAll(tenantModels);
-                models = filteredModels;
-            }
-    
-            if (models == null)
-            {
-                models = Collections.emptyList();
-            }
-            return models;       
         }
-        else
+
+        List<CompiledModel> models = getUriToModels().get(uri);
+        if (models == null)
         {
-            List<CompiledModel> models = getUriToModels().get(uri);
-            if (models == null)
-            {
-                models = Collections.emptyList(); 
-            }
-            return models;
+            models = Collections.emptyList(); 
         }
+        return models;
     }
 
 

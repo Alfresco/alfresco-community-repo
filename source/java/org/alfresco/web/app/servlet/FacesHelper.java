@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.app.servlet;
 
+import java.util.regex.Pattern;
+
 import javax.faces.FactoryFinder;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIViewRoot;
@@ -51,6 +53,7 @@ import org.apache.commons.logging.LogFactory;
 public final class FacesHelper
 {
    private static Log logger = LogFactory.getLog(FacesHelper.class);
+   private static Pattern FACES_ID_PATTERN = Pattern.compile("[^a-z^A-Z^_]?[^a-z^A-Z^_^-]");
    
    /**
     * Private constructor
@@ -167,14 +170,7 @@ public final class FacesHelper
    {
       if (id != null)
       {
-         // replace illegal ID characters with an underscore
-         id = id.replace(':', '_');
-         id = id.replace(' ', '_');
-         id = id.replace('.', '_');
-         id = id.replace('+', '_');
-         
-         // TODO: check all other illegal characters - only allowed dash and underscore
-         // TODO: use regular expression to do check and replacment of characters
+         id = FACES_ID_PATTERN.matcher(id).replaceAll("_");
       }
       
       return id;

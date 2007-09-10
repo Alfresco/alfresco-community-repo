@@ -24,10 +24,7 @@
  */
 package org.alfresco.repo.admin;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,12 +40,9 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.RepositoryLocation;
 import org.alfresco.repo.i18n.MessageService;
-import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.service.cmr.admin.RepoAdminService;
-import org.alfresco.service.cmr.dictionary.AspectDefinition;
-import org.alfresco.service.cmr.dictionary.ClassDefinition;
-import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
-import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryException;
+import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -56,11 +50,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.workflow.WorkflowDefinition;
-import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
@@ -88,12 +78,9 @@ public class RepoAdminServiceImpl implements RepoAdminService
     private ContentService contentService;
     private NamespaceService namespaceService;
     private MessageService messageService;
-    private WorkflowService workflowService;
     
     private RepositoryLocation repoModelsLocation;
     private RepositoryLocation repoMessagesLocation;
-    
-    private List<String> storeUrls; // stores against which model changes (updates/deletes) should be validated
     
     public final static String CRITERIA_ALL = "/*"; // immediate children only
    
@@ -130,11 +117,7 @@ public class RepoAdminServiceImpl implements RepoAdminService
     {
         this.messageService = messageService;
     }
- 
-    public void setWorkflowService(WorkflowService workflowService)
-    {
-        this.workflowService = workflowService;
-    }
+
     
     
     public void setRepositoryModelsLocation(RepositoryLocation repoModelsLocation)
@@ -147,11 +130,6 @@ public class RepoAdminServiceImpl implements RepoAdminService
         this.repoMessagesLocation = repoMessagesLocation;
     }
     
-    public void setStoreUrls(List<String> storeUrls)
-    {
-        this.storeUrls = storeUrls;
-    }
-    
       
     /*
      * (non-Javadoc)
@@ -162,53 +140,55 @@ public class RepoAdminServiceImpl implements RepoAdminService
         StoreRef storeRef = repoModelsLocation.getStoreRef();
         NodeRef rootNode = nodeService.getRootNode(storeRef);
         
-        Collection<QName> models = dictionaryDAO.getModels();  
-        
-        List<String> dictionaryModels = new ArrayList<String>();
-        for (QName model : models)
-        {
-            dictionaryModels.add(model.toPrefixString());
-        }
-
-        List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, repoModelsLocation.getPath()+CRITERIA_ALL+"["+defaultSubtypeOfDictionaryModel+"]", null, namespaceService, false);
-                
         List<RepoModelDefinition> modelsInRepo = new ArrayList<RepoModelDefinition>();
         
-        if (nodeRefs.size() > 0)
+        try
+        {   	
+	        Collection<QName> models = dictionaryDAO.getModels();  
+	        
+	        List<String> dictionaryModels = new ArrayList<String>();
+	        for (QName model : models)
+	        {
+	            dictionaryModels.add(model.toPrefixString());
+	        }
+	
+	        List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, repoModelsLocation.getPath()+CRITERIA_ALL+"["+defaultSubtypeOfDictionaryModel+"]", null, namespaceService, false);
+
+	        if (nodeRefs.size() > 0)
+	        {
+	            for (NodeRef nodeRef : nodeRefs)
+	            {
+	                String modelFileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+	                String repoVersion = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+	               
+	                String modelName = null;
+	                    
+	
+	                    ContentReader cr = contentService.getReader(nodeRef, ContentModel.TYPE_CONTENT);
+	                    InputStream is = cr.getContentInputStream();
+	                              
+	                    M2Model model = M2Model.createModel(is);
+	                    is.close();
+	    
+	                    modelName = model.getName();
+	
+	                
+	                // check against models loaded in dictionary and give warning if not found
+	                if (dictionaryModels.contains(modelName))
+	                {
+	                    // note: uses dictionary model cache, rather than getting content from repo and re-compiling
+	                    modelsInRepo.add(new RepoModelDefinition(modelFileName, repoVersion, dictionaryDAO.getModel(QName.createQName(modelName, namespaceService)), true));
+	                }
+	                else
+	                {
+	                    modelsInRepo.add(new RepoModelDefinition(modelFileName, repoVersion, null, false));
+	                }             
+	            }  
+	        }
+        }
+        catch (Throwable t)
         {
-            for (NodeRef nodeRef : nodeRefs)
-            {
-                String modelFileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-                String repoVersion = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
-               
-                String modelName = null;
-                    
-                try
-                {
-                    ContentReader cr = contentService.getReader(nodeRef, ContentModel.TYPE_CONTENT);
-                    InputStream is = cr.getContentInputStream();
-                              
-                    M2Model model = M2Model.createModel(is);
-                    is.close();
-    
-                    modelName = model.getName();
-                }
-                catch (Throwable t)
-                {
-                    throw new AlfrescoRuntimeException("Failed to getModels " + t);
-                }
-                
-                // check against models loaded in dictionary and give warning if not found
-                if (dictionaryModels.contains(modelName))
-                {
-                    // note: uses dictionary model cache, rather than getting content from repo and re-compiling
-                    modelsInRepo.add(new RepoModelDefinition(modelFileName, repoVersion, dictionaryDAO.getModel(QName.createQName(modelName, namespaceService)), true));
-                }
-                else
-                {
-                    modelsInRepo.add(new RepoModelDefinition(modelFileName, repoVersion, null, false));
-                }             
-            }  
+            throw new AlfrescoRuntimeException("Failed to get models " + t);
         }
         
         return modelsInRepo;
@@ -218,28 +198,13 @@ public class RepoAdminServiceImpl implements RepoAdminService
      * (non-Javadoc)
      * @see org.alfresco.service.cmr.admin.RepoAdminService#deployModel(java.io.InputStream, java.lang.String)
      */
-    public QName deployModel(InputStream modelStream, String modelFileName)
+    public void deployModel(InputStream modelStream, String modelFileName)
     {     
-        // Check that all the passed values are not null        
-        ParameterCheck.mandatory("ModelStream", modelStream);
-        ParameterCheck.mandatoryString("ModelFileName", modelFileName);
-             
-        QName modelQName = null;
-        
         try
-        {        
-            // TODO workaround due to issue with model.toXML() - see below
-            BufferedReader in = new BufferedReader(new InputStreamReader(modelStream));
-            StringBuffer buffer = new StringBuffer();
-            String line = null;
-            while ((line = in.readLine()) != null) {
-              buffer.append(line);
-            }
-            
-            InputStream is = new ByteArrayInputStream(buffer.toString().getBytes());
-                                
-            M2Model model = M2Model.createModel(is);
-            is.close();
+        {   
+            // Check that all the passed values are not null        
+            ParameterCheck.mandatory("ModelStream", modelStream);
+            ParameterCheck.mandatoryString("ModelFileName", modelFileName);
             
             Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
             contentProps.put(ContentModel.PROP_NAME, modelFileName);
@@ -259,106 +224,99 @@ public class RepoAdminServiceImpl implements RepoAdminService
                 throw new AlfrescoRuntimeException("Found multiple custom models location " + repoModelsLocation.getPath());
             }
 
-            NodeRef customModelsNodeRef = nodeRefs.get(0);
+            NodeRef customModelsSpaceNodeRef = nodeRefs.get(0);
             
-            nodeRefs = searchService.selectNodes(customModelsNodeRef, "*[@cm:name='"+modelFileName+"' and "+defaultSubtypeOfDictionaryModel+"]", null, namespaceService, false);
+            nodeRefs = searchService.selectNodes(customModelsSpaceNodeRef, "*[@cm:name='"+modelFileName+"' and "+defaultSubtypeOfDictionaryModel+"]", null, namespaceService, false);
             
+            NodeRef modelNodeRef = null;
+            	
             if (nodeRefs.size() == 1)
             {
                 // re-deploy existing model to the repository       
             	
-                NodeRef modelNodeRef = nodeRefs.get(0);
-                
-                ContentWriter writer = contentService.getWriter(modelNodeRef, ContentModel.PROP_CONTENT, true);
-
-                writer.setMimetype(MimetypeMap.MIMETYPE_XML);
-                writer.setEncoding("UTF-8");
-            
-                is = new ByteArrayInputStream(buffer.toString().getBytes());            
-                writer.putContent(is); // also invokes policies for DictionaryModelType - e.g. onContentUpdate
-                is.close();
-                
-                /* TODO
-                ByteArrayOutputStream out = new ByteArrayOutputStream();         
-                model.toXML(out); // fails with NPE in JIBX - see also: http://issues.alfresco.com/browse/AR-1304
-                writer.putContent(out.toString("UTF-8"));
-                */
-                
-                // validate model against dictionary - could be new, unchanged or updated
-                dictionaryDAO.validateModel(model);
-                
-                // parse and update model in the dictionary
-                modelQName = dictionaryDAO.putModel(model); 
-                
-                logger.info("Model re-deployed: " + modelQName);
+                modelNodeRef = nodeRefs.get(0);
             }
             else
             {
                 // deploy new model to the repository
                 
                 // note: dictionary model type has associated policies that will be invoked
-                ChildAssociationRef association = nodeService.createNode(customModelsNodeRef, 
+                ChildAssociationRef association = nodeService.createNode(customModelsSpaceNodeRef, 
                         ContentModel.ASSOC_CONTAINS, 
                         QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, modelFileName), 
                         ContentModel.TYPE_DICTIONARY_MODEL,
                         contentProps); // also invokes policies for DictionaryModelType - e.g. onUpdateProperties
                             
-                NodeRef content = association.getChildRef();
+                modelNodeRef = association.getChildRef();
                 
                 // add titled aspect (for Web Client display)
                 Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>();
                 titledProps.put(ContentModel.PROP_TITLE, modelFileName);
                 titledProps.put(ContentModel.PROP_DESCRIPTION, modelFileName);
-                nodeService.addAspect(content, ContentModel.ASPECT_TITLED, titledProps);
+                nodeService.addAspect(modelNodeRef, ContentModel.ASPECT_TITLED, titledProps);
                 
                 // add versionable aspect (set auto-version)
                 Map<QName, Serializable> versionProps = new HashMap<QName, Serializable>();
                 versionProps.put(ContentModel.PROP_AUTO_VERSION, true);
-                nodeService.addAspect(content, ContentModel.ASPECT_VERSIONABLE, versionProps);
-                                   
-                ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
-
-                writer.setMimetype(MimetypeMap.MIMETYPE_XML);
-                writer.setEncoding("UTF-8");
-            
-                is = new ByteArrayInputStream(buffer.toString().getBytes());            
-                writer.putContent(is); // also invokes policies for DictionaryModelType - e.g. onContentUpdate
-                is.close();    
-                
-                /* TODO
-                ByteArrayOutputStream out = new ByteArrayOutputStream();         
-                model.toXML(out); // fails with NPE in JIBX - see also: http://issues.alfresco.com/browse/AR-1304
-                writer.putContent(out.toString("UTF-8"));
-                */
-
-                // validate model against dictionary - could be new, unchanged or updated
-                dictionaryDAO.validateModel(model);
-                
-                // parse and add model to dictionary
-                modelQName = dictionaryDAO.putModel(model);  
-                
-                logger.info("Model deployed: " + modelQName);
+                nodeService.addAspect(modelNodeRef, ContentModel.ASPECT_VERSIONABLE, versionProps);
             }
+            
+            ContentWriter writer = contentService.getWriter(modelNodeRef, ContentModel.PROP_CONTENT, true);
+
+            writer.setMimetype(MimetypeMap.MIMETYPE_XML);
+            writer.setEncoding("UTF-8");
+            
+            writer.putContent(modelStream); // also invokes policies for DictionaryModelType - e.g. onContentUpdate
+            modelStream.close();
+            
+            // activate the model
+            nodeService.setProperty(modelNodeRef, ContentModel.PROP_MODEL_ACTIVE, new Boolean(true));
+            
+            // note: model will be loaded as part of DictionaryModelType.beforeCommit()
         }
         catch (Throwable e)
         {
-            throw new AlfrescoRuntimeException("Model deployment failed", e);
-        }
-        
-        return modelQName;                  
+            throw new AlfrescoRuntimeException("Model deployment failed ", e);
+        }     
     }
     
     /*
      * (non-Javadoc)
-     * @see org.alfresco.service.cmr.admin.RepoAdminService#reloadModel(java.lang.String)
+     * @see org.alfresco.service.cmr.admin.RepoAdminService#activateModel(java.lang.String)
      */
-    public QName reloadModel(String modelFileName)
+    public QName activateModel(String modelFileName)
     {     
+        try
+        {
+        	return activateOrDeactivate(modelFileName, true);
+        }
+        catch (Throwable e)
+        {
+            throw new AlfrescoRuntimeException("Model activation failed ", e);
+        }
+    }  
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.admin.RepoAdminService#deactivateModel(java.lang.String)
+     */
+    public QName deactivateModel(String modelFileName)
+    { 
+        try
+        {
+        	return activateOrDeactivate(modelFileName, false);
+        }
+        catch (Throwable e)
+        {
+            throw new AlfrescoRuntimeException("Model deactivation failed ", e);
+        }	
+    }
+    
+    private QName activateOrDeactivate(String modelFileName, boolean activate)
+    {
         // Check that all the passed values are not null        
         ParameterCheck.mandatoryString("modelFileName", modelFileName);
-          
-        QName modelQName = null;
-        
+
         StoreRef storeRef = repoModelsLocation.getStoreRef();          
         NodeRef rootNode = nodeService.getRootNode(storeRef);
         
@@ -376,32 +334,74 @@ public class RepoAdminServiceImpl implements RepoAdminService
         
         NodeRef modelNodeRef = nodeRefs.get(0);
         
-        try
-        {     
-            ContentReader cr = contentService.getReader(modelNodeRef, ContentModel.TYPE_CONTENT);
-            InputStream is = cr.getContentInputStream();
-            
-            // create model            
-            M2Model model = M2Model.createModel(is);
-            is.close();
-
-            if (model != null)
-            {
-                // validate model against dictionary - could be new, unchanged or updated
-                dictionaryDAO.validateModel(model);
-                
-                // parse and update model in the dictionary
-                modelQName = dictionaryDAO.putModel(model);
-                
-                logger.info("Model loaded: " + modelQName);
-            }
-        }
-        catch (Throwable e)
+        boolean isActive = ((Boolean)nodeService.getProperty(modelNodeRef, ContentModel.PROP_MODEL_ACTIVE)).booleanValue();
+        QName modelQName = (QName)nodeService.getProperty(modelNodeRef, ContentModel.PROP_MODEL_NAME);
+        
+        ModelDefinition modelDef = null;
+        if (modelQName != null)
         {
-            throw new AlfrescoRuntimeException("Model deployment failed", e);
+	        try
+	        {
+	        	modelDef = dictionaryDAO.getModel(modelQName);
+	        }
+	        catch (DictionaryException e)
+	        {
+	        	logger.warn(e);
+	        }
         }
         
-        return modelQName;                  
+        if (activate) 
+        {
+        	// activate
+        	if (isActive)
+        	{
+	        	if (modelDef != null)
+	        	{
+	        		// model is already activated
+	        		throw new AlfrescoRuntimeException("Model activation failed - model '" + modelQName + "' is already activated");
+	        	}
+	        	else
+	        	{
+	        		logger.warn("Model is set to active but not loaded in Dictionary - trying to load...");
+	        	}
+        	}
+        	else
+        	{
+	        	if (modelDef != null)
+	        	{
+	        		logger.warn("Model is loaded in Dictionary but is not set to active - trying to activate...");
+	        	}
+        	}
+        }
+        else
+        {
+        	// deactivate
+        	if (!isActive)
+        	{
+	        	if (modelDef == null)
+	        	{
+	        		// model is already deactivated
+	        		throw new AlfrescoRuntimeException("Model deactivation failed - model '" + modelQName + "' is already deactivated");
+	        	}
+	        	else
+	        	{
+	        		logger.warn("Model is set to inactive but loaded in Dictionary - trying to unload...");
+	        	}
+        	}
+        	else
+        	{
+	        	if (modelDef == null)
+	        	{
+	        		logger.warn("Model is not loaded in Dictionary but is set to active - trying to deactivate...");
+	        	}
+        	}
+        }
+         
+        // activate/deactivate the model 
+        nodeService.setProperty(modelNodeRef, ContentModel.PROP_MODEL_ACTIVE, new Boolean(activate));
+        
+        // note: model will be loaded/unloaded as part of DictionaryModelType.beforeCommit()
+        return modelQName;
     }  
 
     /*
@@ -436,39 +436,39 @@ public class RepoAdminServiceImpl implements RepoAdminService
             
             NodeRef modelNodeRef = nodeRefs.get(0);
             
-            String modelName = null;
+            boolean isActive = ((Boolean)nodeService.getProperty(modelNodeRef, ContentModel.PROP_MODEL_ACTIVE)).booleanValue();
+            modelQName = (QName)nodeService.getProperty(modelNodeRef, ContentModel.PROP_MODEL_NAME);
             
-            try
+            ModelDefinition modelDef = null;
+            if (modelQName != null)
             {
-                ContentReader cr = contentService.getReader(modelNodeRef, ContentModel.TYPE_CONTENT);
-                InputStream is = cr.getContentInputStream();
-                            
-                M2Model model = M2Model.createModel(is);
-                is.close();
-
-                modelName = model.getName();
+	            try
+	            {
+	            	modelDef = dictionaryDAO.getModel(modelQName);
+	            }
+	            catch (DictionaryException e)
+	            {
+	            	logger.warn(e);
+	            }
             }
-            catch (Throwable t)
-            {
-                throw new AlfrescoRuntimeException("Failed to get model " + t);
+ 
+        	if (isActive)
+        	{
+        		if (modelDef == null)
+        		{
+        			logger.warn("Model is set to active but not loaded in Dictionary - trying to undeploy...");
+        		}
             }
-               
+        	
             // permanently remove model from repository
             nodeService.addAspect(modelNodeRef, ContentModel.ASPECT_TEMPORARY, null);
             nodeService.deleteNode(modelNodeRef);
             
-            modelQName = QName.createQName(modelName, namespaceService);
-            
-            // simple check for usages
-            validateModelDelete(modelQName);
-                
-            dictionaryDAO.removeModel(modelQName);               
-
-            logger.info("Model undeployed: " + modelQName);
+            // note: deleted model will be unloaded as part of DictionaryModelType.beforeCommit()
         }
         catch (Throwable e)
         {
-            throw new AlfrescoRuntimeException("Model undeployment failed", e);
+            throw new AlfrescoRuntimeException("Model undeployment failed ", e);
         }        
         
         return modelQName;
@@ -769,75 +769,5 @@ public class RepoAdminServiceImpl implements RepoAdminService
         {
             throw new AlfrescoRuntimeException("Message resource re-load failed", e);
         }      
-    } 
-    
-    /**
-     * validate against repository contents / workflows (e.g. when deleting an existing model)
-     * 
-     * @param modelName
-     */
-    private void validateModelDelete(QName modelName)
-    {
-        // TODO add model locking during delete (would need to be tenant-aware & cluster-aware) to avoid potential 
-    	//      for concurrent addition of new content/workflow as model is being deleted
-        
-        for (WorkflowDefinition workflowDef : workflowService.getDefinitions())
-        {
-            String workflowDefName = workflowDef.getName();
-            String workflowNamespaceURI = QName.createQName(BPMEngineRegistry.getLocalId(workflowDefName), namespaceService).getNamespaceURI();
-            for (NamespaceDefinition namespace : dictionaryDAO.getNamespaces(modelName))
-            {
-                if (workflowNamespaceURI.equals(namespace.getUri()))
-                {
-                    throw new AlfrescoRuntimeException("Failed to validate model delete - found workflow process definition " + workflowDefName + " using model namespace '" + namespace.getUri() + "'");
-                }
-            }
-        }
- 
-        for (TypeDefinition type : dictionaryDAO.getTypes(modelName))
-        {
-        	validateClass(type);
-        }
-
-        for (AspectDefinition aspect : dictionaryDAO.getAspects(modelName))
-        {
-        	validateClass(aspect);
-        }
-    }
-    
-    private void validateClass(ClassDefinition classDef)
-    {
-    	QName className = classDef.getName();
-        
-        String classType = "TYPE";
-        if (classDef instanceof AspectDefinition)
-        {
-        	classType = "ASPECT";
-        }
-        
-        for (String storeUrl : this.storeUrls)
-        {
-            StoreRef store = new StoreRef(storeUrl);
-            
-            // search for TYPE or ASPECT - TODO - alternative would be to extract QName and search by namespace ...
-            ResultSet rs = searchService.query(store, SearchService.LANGUAGE_LUCENE, classType+":\""+className+"\"");
-            if (rs.length() > 0)
-            {
-                throw new AlfrescoRuntimeException("Failed to validate model delete - found " + rs.length() + " nodes in store " + store + " with " + classType + " '" + className + "'");
-            }
-        }
-        
-        // check against workflow usage
-        for (WorkflowDefinition workflowDef : workflowService.getDefinitions())
-        {
-            for (WorkflowTaskDefinition workflowTaskDef : workflowService.getTaskDefinitions(workflowDef.getId()))
-            {
-                TypeDefinition workflowTypeDef = workflowTaskDef.metadata;
-                if (workflowTypeDef.getName().toString().equals(className))
-                {
-                    throw new AlfrescoRuntimeException("Failed to validate model delete - found task definition in workflow " + workflowDef.getName() + " with " + classType + " '" + className + "'");
-                }
-            }
-        }
     }
 }

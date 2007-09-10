@@ -27,6 +27,7 @@ package org.alfresco.repo.admin;
 import java.io.InputStream;
 import java.util.List;
 
+import org.alfresco.service.Auditable;
 import org.alfresco.service.namespace.QName;
 
 
@@ -47,11 +48,13 @@ public interface RepoAdminService
     
     public List<RepoModelDefinition> getModels();
      
-    public QName deployModel(InputStream modelStream, String modelFileName);
+    public void deployModel(InputStream modelStream, String modelFileName);
     
     public QName undeployModel(String modelFileName);
     
-    public QName reloadModel(String modelFileName);
+    public QName activateModel(String modelFileName);
+    
+    public QName deactivateModel(String modelFileName);
     
     /* Custom message/resource bundles managed in the repository */
     

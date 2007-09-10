@@ -11,17 +11,9 @@
       <property name="contentService" ref="ContentService"/>
       <property name="namespaceService" ref="namespaceService"/>
       <property name="messageService" ref="messageService"/>
-      <property name="workflowService" ref="WorkflowService"/>
       
       <property name="repositoryModelsLocation" ref="customModelsRepositoryLocation"/>
       <property name="repositoryMessagesLocation" ref="customMessagesRepositoryLocation"/>
-      
-      <property name="storeUrls">
-         <list>
-            <value>${spaces.store}</value>
-            <value>${spaces.archive.store}</value>
-         </list>
-      </property>
            
    </bean>
    
@@ -63,38 +55,47 @@
     
    <bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap">
 
-         <property name="dictionaryDAO">
-            <ref bean="dictionaryDAO"/>
-         </property>
-         <property name="contentService">
-            <ref bean="contentService"/>
-         </property>
-         <property name="searchService">
-            <ref bean="searchService"/>
-         </property>
-         <property name="transactionService">
-             <ref bean="transactionComponent"/>
-         </property>
-                  
-         <property name="namespaceService"><ref bean="namespaceService"/></property>
-         <property name="nodeService"><ref bean="NodeService"/></property>
-         <property name="messageService"><ref bean="messageService"/></property>
+      <property name="dictionaryDAO" ref="dictionaryDAO"/>
+      <property name="contentService" ref="ContentService"/>      
+      <property name="searchService" ref="SearchService"/>
+      <property name="transactionService" ref="transactionComponent"/>
+      <property name="namespaceService" ref="namespaceService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="messageService" ref="messageService"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="tenantDeployerService" ref="tenantAdminService"/>
          
-         <property name="tenantService"><ref bean="tenantService"/></property>
-         <property name="tenantDeployerService" ref="tenantAdminService"/>
+      <property name="repositoryModelsLocations">
+         <list>
+            <ref bean="customModelsRepositoryLocation" />
+         </list>        
+      </property>
          
-         <property name="repositoryModelsLocations">
-            <list>
-               <ref bean="customModelsRepositoryLocation" />
-            </list>        
-         </property>
-         
-         <property name="repositoryMessagesLocations">
-            <list>
-               <ref bean="customMessagesRepositoryLocation" />
-            </list>        
-         </property>
-         
+      <property name="repositoryMessagesLocations">
+         <list>
+            <ref bean="customMessagesRepositoryLocation" />
+         </list>        
+      </property>
+           
    </bean>
    
+   <bean id="dictionaryModelType" class="org.alfresco.repo.dictionary.DictionaryModelType" init-method="init">
+      <property name="dictionaryDAO" ref="dictionaryDAO"/>
+      <property name="namespaceDAO" ref="namespaceDAO"/>
+      <property name="nodeService" ref="NodeService"/> 
+      <property name="contentService" ref="contentService"/>
+      <property name="policyComponent" ref="policyComponent"/>
+      <property name="workflowService" ref="WorkflowService"/>
+      <property name="searchService" ref="SearchService"/>
+      <property name="namespaceService" ref="namespaceService"/>
+      <property name="tenantService" ref="tenantService"/>
+        
+      <property name="storeUrls">
+            <list>
+                <value>${spaces.store}</value>
+                <value>${spaces.archive.store}</value>
+            </list>
+      </property>
+    </bean>
+    
 </beans>

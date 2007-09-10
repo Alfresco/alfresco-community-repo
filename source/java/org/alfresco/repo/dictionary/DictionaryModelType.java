@@ -26,24 +26,43 @@ package org.alfresco.repo.dictionary;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
+import org.alfresco.repo.workflow.BPMEngineRegistry;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
+import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Dictionary model type behaviour.
@@ -54,6 +73,9 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                             NodeServicePolicies.OnUpdatePropertiesPolicy,
                                             NodeServicePolicies.BeforeDeleteNodePolicy
 {
+    // Logger
+    private static Log logger = LogFactory.getLog(DictionaryModelType.class);
+    
     /** Key to the pending models */
     private static final String KEY_PENDING_MODELS = "dictionaryModelType.pendingModels";
     
@@ -72,9 +94,24 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     /** The policy component */
     private PolicyComponent policyComponent;
     
+    /** The workflow service */
+    private WorkflowService workflowService;
+    
+    /** The search service */
+    private SearchService searchService;
+    
+    /** The namespace service */
+    private NamespaceService namespaceService;
+    
+    /** The tenant service */
+    private TenantService tenantService;
+    
     /** Transaction listener */
     private DictionaryModelTypeTransactionListener transactionListener;
         
+    private List<String> storeUrls; // stores against which model deletes should be validated
+
+    
     /**
      * Set the dictionary DAO
      * 
@@ -124,6 +161,53 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     {
         this.policyComponent = policyComponent;
     }
+    
+    /**
+     * Set the workflow service
+     *
+     * @param workflowService   the workflow service
+     */
+    public void setWorkflowService(WorkflowService workflowService)
+    {
+        this.workflowService = workflowService;
+    }
+    
+    /**
+     * Set the search service
+     *
+     * @param searchService   the search service
+     */
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+
+    /**
+     * Set the namespace service
+     *
+     * @param namespaceService   the namespace service
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+    
+    /**
+     * Set the tenant service
+     *
+     * @param tenantService   the tenant service
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
+    
+    public void setStoreUrls(List<String> storeUrls)
+    {
+        this.storeUrls = storeUrls;
+    }
+    
     
     /**
      * The initialise method     
@@ -215,10 +299,11 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             QName modelName = (QName)this.nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_NAME);
             if (modelName != null)
             {
+            	// Validate model delete against usages - content and/or workflows
+            	validateModelDelete(modelName);
+            	
                 // Remove the model from the dictionary
                 dictionaryDAO.removeModel(modelName);
-                
-                // TODO how can we make this transactional ??
             }
         }
     }
@@ -259,60 +344,73 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             
             if (pendingModels != null)
             {
-                for (NodeRef nodeRef : pendingModels)
+                for (final NodeRef nodeRef : pendingModels)
                 {
-                    // Find out whether the model is active (by default it is)
-                    boolean isActive = false;
-                    Boolean value = (Boolean)nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_ACTIVE);
-                    if (value != null)
-                    {
-                        isActive = value.booleanValue();
-                    }
+                    String tenantDomain = tenantService.getDomain(nodeRef.getStoreRef().getIdentifier());
+                    String tenantAdminUserName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
                     
-                    // Ignore if the node is a working copy or if its inactive
-                    if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
+                    AuthenticationUtil.runAs(new RunAsWork<Object>()
                     {
-                        if (isActive == true)
-                        {
-                            // 1. Compile the model and update the details on the node            
-                            // 2. Re-put the model
+                        public Object doWork()
+                        {            
+                            // Find out whether the model is active (by default it is)
+                            boolean isActive = false;
+                            Boolean value = (Boolean)nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_ACTIVE);
+                            if (value != null)
+                            {
+                                isActive = value.booleanValue();
+                            }
                             
-                            ContentReader contentReader = this.contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-                            if (contentReader != null)
+                            // Ignore if the node is a working copy or if its inactive
+                            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
                             {
-                                // Create a model from the current content
-                                M2Model m2Model = M2Model.createModel(contentReader.getContentInputStream());                
-                                // TODO what do we do if we don't have a model??
-                                
-                                // Try and compile the model
-                                ModelDefinition modelDefintion = m2Model.compile(dictionaryDAO, namespaceDAO).getModelDefinition();
-                                // TODO what do we do if the model does not compile
-                                
-                                // Update the meta data for the model
-                                Map<QName, Serializable> props = this.nodeService.getProperties(nodeRef);
-                                props.put(ContentModel.PROP_MODEL_NAME, modelDefintion.getName());
-                                props.put(ContentModel.PROP_MODEL_DESCRIPTION, modelDefintion.getDescription());
-                                props.put(ContentModel.PROP_MODEL_AUTHOR, modelDefintion.getAuthor());
-                                props.put(ContentModel.PROP_MODEL_PUBLISHED_DATE, modelDefintion.getPublishedDate());
-                                props.put(ContentModel.PROP_MODEL_VERSION, modelDefintion.getVersion());
-                                this.nodeService.setProperties(nodeRef, props);
-                                
-                                // TODO how do we get the dependancies for this model ??
-                                
-                                // Put the model
-                                dictionaryDAO.putModel(m2Model);
+                                if (isActive == true)
+                                {
+                                    // 1. Compile the model and update the details on the node            
+                                    // 2. Re-put the model
+                                    
+                                    ContentReader contentReader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+                                    if (contentReader != null)
+                                    {
+                                        // Create a model from the current content
+                                        M2Model m2Model = M2Model.createModel(contentReader.getContentInputStream());
+                                        
+                                        // Try and compile the model
+                                        ModelDefinition modelDefintion = m2Model.compile(dictionaryDAO, namespaceDAO).getModelDefinition();
+                                        
+                                        // Update the meta data for the model
+                                        Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
+                                        props.put(ContentModel.PROP_MODEL_NAME, modelDefintion.getName());
+                                        props.put(ContentModel.PROP_MODEL_DESCRIPTION, modelDefintion.getDescription());
+                                        props.put(ContentModel.PROP_MODEL_AUTHOR, modelDefintion.getAuthor());
+                                        props.put(ContentModel.PROP_MODEL_PUBLISHED_DATE, modelDefintion.getPublishedDate());
+                                        props.put(ContentModel.PROP_MODEL_VERSION, modelDefintion.getVersion());
+                                        nodeService.setProperties(nodeRef, props);
+                                        
+                                        // Validate model against dictionary - could be new, unchanged or updated
+                                        dictionaryDAO.validateModel(m2Model);
+                                        
+                                        // Put the model
+                                        dictionaryDAO.putModel(m2Model);
+                                    }
+                                }
+                                else
+                                {
+                                    QName modelName = (QName)nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_NAME);
+                                    if (modelName != null)
+                                    {
+                                        // Validate model delete against usages - content and/or workflows
+                                        validateModelDelete(modelName);
+                                        
+                                        // Remove the model from the dictionary
+                                        dictionaryDAO.removeModel(modelName);
+                                    }
+                                }
                             }
+
+                            return null; 
                         }
-                        else
-                        {
-                            QName modelName = (QName)this.nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_NAME);
-                            if (modelName != null)
-                            {
-                                // Remove the model from the dictionary
-                                dictionaryDAO.removeModel(modelName);
-                            }
-                        }
-                    }
+                    }, tenantAdminUserName);
                 }
             }
         }
@@ -357,6 +455,89 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             else
             {
                 return false;
+            }
+        }
+    }
+    
+    /**
+     * validate against repository contents / workflows (e.g. when deleting an existing model)
+     * 
+     * @param modelName
+     */
+    private void validateModelDelete(QName modelName)
+    {
+        // TODO add model locking during delete (would need to be tenant-aware & cluster-aware) to avoid potential 
+    	//      for concurrent addition of new content/workflow as model is being deleted
+        
+        try
+        {
+        	dictionaryDAO.getModel(modelName); // ignore returned model definition
+        }
+        catch (DictionaryException e)
+        {
+        	logger.warn("Model ' + modelName + ' does not exist ... skip delete validation : " + e);
+        	return;
+        }
+    
+        // check workflow namespace usage
+        for (WorkflowDefinition workflowDef : workflowService.getDefinitions())
+        {
+            String workflowDefName = workflowDef.getName();
+            String workflowNamespaceURI = QName.createQName(BPMEngineRegistry.getLocalId(workflowDefName), namespaceService).getNamespaceURI();
+            for (NamespaceDefinition namespace : dictionaryDAO.getNamespaces(modelName))
+            {
+                if (workflowNamespaceURI.equals(namespace.getUri()))
+                {
+                    throw new AlfrescoRuntimeException("Failed to validate model delete - found workflow process definition " + workflowDefName + " using model namespace '" + namespace.getUri() + "'");
+                }
+            }
+        }
+ 
+        // check for type usages
+        for (TypeDefinition type : dictionaryDAO.getTypes(modelName))
+        {
+        	validateClass(type);
+        }
+
+        // check for aspect usages
+        for (AspectDefinition aspect : dictionaryDAO.getAspects(modelName))
+        {
+        	validateClass(aspect);
+        }
+    }
+    
+    private void validateClass(ClassDefinition classDef)
+    {
+    	QName className = classDef.getName();
+        
+        String classType = "TYPE";
+        if (classDef instanceof AspectDefinition)
+        {
+        	classType = "ASPECT";
+        }
+        
+        for (String storeUrl : this.storeUrls)
+        {
+            StoreRef store = new StoreRef(storeUrl);
+            
+            // search for TYPE or ASPECT - TODO - alternative would be to extract QName and search by namespace ...
+            ResultSet rs = searchService.query(store, SearchService.LANGUAGE_LUCENE, classType+":\""+className+"\"");
+            if (rs.length() > 0)
+            {
+                throw new AlfrescoRuntimeException("Failed to validate model delete - found " + rs.length() + " nodes in store " + store + " with " + classType + " '" + className + "'");
+            }
+        }
+        
+        // check against workflow task usage
+        for (WorkflowDefinition workflowDef : workflowService.getDefinitions())
+        {
+            for (WorkflowTaskDefinition workflowTaskDef : workflowService.getTaskDefinitions(workflowDef.getId()))
+            {
+                TypeDefinition workflowTypeDef = workflowTaskDef.metadata;
+                if (workflowTypeDef.getName().toString().equals(className))
+                {
+                    throw new AlfrescoRuntimeException("Failed to validate model delete - found task definition in workflow " + workflowDef.getName() + " with " + classType + " '" + className + "'");
+                }
             }
         }
     }

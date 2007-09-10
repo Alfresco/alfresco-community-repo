@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageDeployer;
 import org.alfresco.repo.i18n.MessageService;
@@ -260,15 +261,18 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                                                                        false);
     
                     for (NodeRef dictionaryModel : nodeRefs)
-                    {
-                        // TODO - should validate in case of re-deploy - e.g. update or delete
-                        M2Model model = createM2Model(dictionaryModel);
-                        if (model != null)
-                        {
-                            for (M2Namespace namespace : model.getNamespaces())
-                            {
-                                modelMap.put(namespace.getUri(), model);
-                            }
+                    {                    	
+                        boolean isActive = ((Boolean)nodeService.getProperty(dictionaryModel, ContentModel.PROP_MODEL_ACTIVE)).booleanValue();         
+                        if (isActive)
+                        {             	
+	                        M2Model model = createM2Model(dictionaryModel);
+	                        if (model != null)
+	                        {
+	                            for (M2Namespace namespace : model.getNamespaces())
+	                            {
+	                                modelMap.put(namespace.getUri(), model);
+	                            }
+	                        }
                         }
                     }
                 }
@@ -377,8 +381,16 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                 //      an error will be raised during compilation
             }
             
-            dictionaryDAO.putModel(model);
-            loadedModels.add(modelName);
+            try
+            {
+                dictionaryDAO.putModel(model);
+                loadedModels.add(modelName);
+            }
+            catch (AlfrescoRuntimeException e)
+            {
+                // note: skip with warning - to allow server to start, and hence allow the possibility of fixing the broken model(s)
+                logger.warn("Failed to load model '" + modelName + "' : " + e);
+            }
         }        
     }
 

@@ -255,8 +255,8 @@ public class RepoAdminInterpreter extends BaseInterpreter
                 InputStream fileStream = file.getInputStream();
                 
                 String modelFileName = file.getFilename();
-                QName modelQName = repoAdminService.deployModel(fileStream, modelFileName);
-                out.println("Model deployed: " + modelFileName + " [" + modelQName + "]");
+                repoAdminService.deployModel(fileStream, modelFileName);
+                out.println("Model deployed: " + modelFileName);
             }
             
             else if (command[1].equals("messages"))
@@ -272,7 +272,7 @@ public class RepoAdminInterpreter extends BaseInterpreter
             }                    
         }
         
-        else if (command[0].equals("reload"))
+        else if (command[0].equals("activate"))
         {
             if (command.length != 3)
             {
@@ -282,15 +282,38 @@ public class RepoAdminInterpreter extends BaseInterpreter
             else if (command[1].equals("model"))
             {            
                 String modelFileName = command[2];
-                QName modelQName = repoAdminService.reloadModel(modelFileName);
-                out.println("Model (re-)loaded: " + modelFileName + " [" + modelQName + "]");
+                QName modelQName = repoAdminService.activateModel(modelFileName);
+                out.println("Model activated: " + modelFileName + " [" + modelQName + "]");
+            }
+        }
+        
+        else if (command[0].equals("deactivate"))
+        {
+            if (command.length != 3)
+            {
+                return "Syntax Error.\n";
+            }
+     
+            else if (command[1].equals("model"))
+            {            
+                String modelFileName = command[2];
+                QName modelQName = repoAdminService.deactivateModel(modelFileName);
+                out.println("Model deactivated: " + modelFileName + " [" + modelQName + "]");
+            }
+        }
+        
+        else if (command[0].equals("reload"))
+        {
+            if (command.length != 3)
+            {
+                return "Syntax Error.\n";
             }
             
             else if (command[1].equals("messages"))
             {            
                 String bundleBaseName = command[2];
                 repoAdminService.reloadMessageBundle(bundleBaseName);
-                out.println("Message resource bundle (re-)loaded: " + bundleBaseName);
+                out.println("Message resource bundle reloaded: " + bundleBaseName);
             }
 
             else 

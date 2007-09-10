@@ -614,24 +614,6 @@
         
     </bean>
 
-    <bean id="dictionaryModelType" class="org.alfresco.repo.dictionary.DictionaryModelType" init-method="init">
-        <property name="dictionaryDAO">
-            <ref bean="dictionaryDAO" />
-        </property>    
-        <property name="namespaceDAO">
-            <ref bean="namespaceDAO" />
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService"/>
-        </property>        
-        <property name="contentService">
-            <ref bean="contentService"/>
-        </property>
-        <property name="policyComponent">
-            <ref bean="policyComponent"/>
-        </property>
-    </bean>
-
     <bean id="dictionaryDAO" class="org.alfresco.repo.dictionary.DictionaryDAOImpl">
         <constructor-arg index="0">
             <ref bean="namespaceDAO" />

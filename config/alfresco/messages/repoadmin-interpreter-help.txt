@@ -49,22 +49,30 @@ ok> show models
 
 ok> deploy model <fileClassPath>
 
-    Upload model to repository and into runtime data dictionary. This will also
-    set the model as active.
+    Upload model to repository and load into runtime data dictionary. This will also
+    set the repository model as active. 
+    
+    If a model is already deployed then it will be updated and re-deployed.
 
     e.g. deploy model alfresco/extension/exampleModel.xml
 
 ok> undeploy model <modelFileName>
 
-    Permanently delete model from repository (all versions) and from runtime data dictionary.
+    Permanently delete model from repository (all versions) and unload from runtime data dictionary.
 
     e.g. undeploy model exampleModel.xml
 
-ok> reload model <modelFileName>
+ok> activate model <modelFileName>
 
-    Reload (or load for first time) from repository into runtime data dictionary. 
+    Set repository model to active and load into runtime data dictionary.
     
-    e.g. reload model exampleModel.xml
+    e.g. activate model exampleModel.xml
+    
+ok> deactivate model <modelFileName>
+
+    Set repository model to inactive and unload from runtime data dictionary. 
+    
+    e.g. deactivate model exampleModel.xml
     
 ##
 ##  Message Admin Commands

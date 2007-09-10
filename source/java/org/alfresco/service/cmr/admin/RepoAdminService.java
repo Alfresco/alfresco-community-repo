@@ -64,7 +64,7 @@ public interface RepoAdminService
      * 
      */
     @Auditable(parameters = {"modelStream, modelFileName"})
-    public QName deployModel(InputStream modelStream, String modelFileName);
+    public void deployModel(InputStream modelStream, String modelFileName);
 
     /**
      * Undeploy custom model
@@ -78,10 +78,16 @@ public interface RepoAdminService
     public QName undeployModel(String modelFileName);
 
     /**
-     * Reload custom model
+     * Activate custom model
      */
     @Auditable(parameters = {"modelFileName"})
-    public QName reloadModel(String modelFileName);
+    public QName activateModel(String modelFileName);
+    
+    /**
+     * Deactivate custom model
+     */
+    @Auditable(parameters = {"modelFileName"})
+    public QName deactivateModel(String modelFileName);
 
     //
     // Custom Message Management

@@ -28,10 +28,6 @@ import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.GrantedAuthorityImpl;
 import net.sf.acegisecurity.UserDetails;
-import net.sf.acegisecurity.context.Context;
-import net.sf.acegisecurity.context.ContextHolder;
-import net.sf.acegisecurity.context.security.SecureContext;
-import net.sf.acegisecurity.context.security.SecureContextImpl;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.User;
 
@@ -46,11 +42,9 @@ import org.alfresco.service.cmr.security.PermissionService;
  */
 public abstract class AbstractAuthenticationComponent implements AuthenticationComponent
 {
-
-    // Name of the system user
-
-    static final String SYSTEM_USER_NAME = "System";
-
+    /**
+     * The abstract class keeps track of support for guest login
+     */
     private Boolean allowGuestLogin = null;
 
     public AbstractAuthenticationComponent()
@@ -58,6 +52,11 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         super();
     }
 
+    /**
+     * Set if guest login is supported.
+     * 
+     * @param allowGuestLogin
+     */
     public void setAllowGuestLogin(Boolean allowGuestLogin)
     {
         this.allowGuestLogin = allowGuestLogin;
@@ -65,6 +64,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 
     public void authenticate(String userName, char[] password) throws AuthenticationException
     {
+        // Support guest login from the login screen
         if ((userName != null) && (userName.equalsIgnoreCase(PermissionService.GUEST_AUTHORITY)))
         {
             setGuestUserAsCurrentUser();
@@ -75,6 +75,14 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         }
     }
 
+    /**
+     * Default unsupported authentication implementation 
+     *  - as of 2.1 this is the best way to implement your own authentication component as it will support guest login
+     *  - prior to this direct over ride for authenticate(String , char[]) was used. This will still work.
+     * 
+     * @param userName
+     * @param password
+     */
     protected void authenticateImpl(String userName, char[] password)
     {
         throw new UnsupportedOperationException();
@@ -97,11 +105,11 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         try
         {
             UserDetails ud = null;
-            if (userName.equals(SYSTEM_USER_NAME))
+            if (userName.equals(AuthenticationUtil.SYSTEM_USER_NAME))
             {
                 GrantedAuthority[] gas = new GrantedAuthority[1];
                 gas[0] = new GrantedAuthorityImpl("ROLE_SYSTEM");
-                ud = new User(SYSTEM_USER_NAME, "", true, true, true, true, gas);
+                ud = new User(AuthenticationUtil.SYSTEM_USER_NAME, "", true, true, true, true, gas);
             }
             else if (userName.equalsIgnoreCase(PermissionService.GUEST_AUTHORITY))
             {
@@ -174,35 +182,13 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     }
 
     /**
-     * Get the current user name
-     * 
-     * @param authentication
-     *            Authentication
-     * @return String
-     */
-    private String getUserName(Authentication authentication)
-    {
-        String username;
-        if (authentication.getPrincipal() instanceof UserDetails)
-        {
-            username = ((UserDetails) authentication.getPrincipal()).getUsername();
-        }
-        else
-        {
-            username = authentication.getPrincipal().toString();
-        }
-
-        return username;
-    }
-
-    /**
      * Set the system user as the current user.
      * 
      * @return Authentication
      */
     public Authentication setSystemUserAsCurrentUser()
     {
-        return setCurrentUser(SYSTEM_USER_NAME);
+        return setCurrentUser(AuthenticationUtil.SYSTEM_USER_NAME);
     }
 
     /**
@@ -212,7 +198,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public String getSystemUserName()
     {
-        return SYSTEM_USER_NAME;
+        return AuthenticationUtil.SYSTEM_USER_NAME;
     }
 
     /**

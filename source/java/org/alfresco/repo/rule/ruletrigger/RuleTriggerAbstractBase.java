@@ -30,12 +30,13 @@ import java.util.Set;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleType;
 
 /**
- * Rule trigger abstract base
+ * Rule trigger abstract base 
  * 
  * @author Roy Wetherall
  */
@@ -55,6 +56,11 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
      * The node service
      */
     protected NodeService nodeService;
+    
+    /**
+     * The content service
+     */
+    protected ContentService contentService;
 
     /**
      * The authentication Component
@@ -91,6 +97,16 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
     {
         this.nodeService = nodeService;
     }
+    
+    /**
+     * Set the content service
+     * 
+     * @param contentService	the content service
+     */
+    public void setContentService(ContentService contentService) 
+    {
+		this.contentService = contentService;
+	}
 
     /**
      * Set the authenticationComponent
@@ -123,6 +139,7 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
     
     /**
      * Registration of an interested rule type
+     * 
      */
     public void registerRuleType(RuleType ruleType)
     {
@@ -131,7 +148,7 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
 
     /**
      * Trigger the rules that relate to any interested rule types for the node
-     * references passed.
+     * references passed. 
      * 
      * @param nodeRef
      *            the node reference who rules are to be triggered

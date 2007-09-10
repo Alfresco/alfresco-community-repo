@@ -120,7 +120,7 @@ public class AuditServiceTest extends BaseSpringTest
         authorityService = (AuthorityService) applicationContext.getBean("authorityService");
 
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-        authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("alfDaoImpl");
+        authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
 
         auditService = (AuditService) applicationContext.getBean("AuditService");
         auditEntry = (AuditEntry) applicationContext.getBean("auditModel");

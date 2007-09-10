@@ -76,7 +76,7 @@ public class TestData
             public Object execute() throws Exception
             {
                 // Bootstrap Users
-                MutableAuthenticationDao authDAO = (MutableAuthenticationDao) applicationContext.getBean("alfDaoImpl");
+                MutableAuthenticationDao authDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
                 if (authDAO.userExists("superuser") == false)
                 {
                     authDAO.createUser("superuser", "".toCharArray());

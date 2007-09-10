@@ -177,7 +177,7 @@ public class AVMSubmitPackageHandler
            Map<String, AVMNodeDescriptor> list = fAVMService.getDirectoryListing(desc, true);
            for (AVMNodeDescriptor child : list.values())
            {
-               recursivelyRemoveLocks(webProject, child.getVersionID(), child.getPath());
+               recursivelyRemoveLocks(webProject, version, child.getPath());
            }
         }
     }

@@ -5,9 +5,9 @@
     
    
     
-    <!-- Chaining -->
+    <!-- Chaining of both the services and components -->
     
-    <bean id="authenticationServiceImpl" class="org.alfresco.repo.security.authentication.ChainingAuthenticationServiceImpl">
+    <bean id="authenticationService" class="org.alfresco.repo.security.authentication.ChainingAuthenticationServiceImpl">
         <property name="authenticationServices">
             <list>
                 <ref bean="authenticationServiceImplJAAS"/>
@@ -17,6 +17,17 @@
             <ref bean="authenticationServiceImplAlfresco"/>
         </property>
     </bean>
+    
+    <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.ChainingAuthenticationComponentImpl">
+		<property name="authenticationComponentss">
+            <list>
+                <ref bean="authenticationComponentImplJAAS"/>
+            </list>
+        </property>
+        <property name="mutableAuthenticationComponent">
+            <ref bean="authenticationComponentImplAlfresco"/>
+        </property>
+	</bean>
     
     <!-- Alfresco Auth -->
     

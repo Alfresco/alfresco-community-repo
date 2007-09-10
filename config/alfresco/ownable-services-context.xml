@@ -7,10 +7,13 @@
             <ref bean="nodeService"/>
         </property>
         <property name="authenticationService">
-            <ref bean="authenticationServiceImpl"/>
+            <ref bean="authenticationService"/>
         </property>
         <property name="nodeOwnerCache">
             <ref bean="nodeOwnerCache"/>
         </property>
+		<property name="policyComponent">
+			<ref bean="policyComponent" />
+		</property>
     </bean>
 </beans>

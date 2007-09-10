@@ -72,7 +72,7 @@ public class SimpleAuthorityServiceTest extends TestCase
         authorityService = (AuthorityService) ctx.getBean("authorityService");
         pubAuthorityService = (AuthorityService) ctx.getBean("AuthorityService");
         personService = (PersonService) ctx.getBean("personService");
-        authenticationDAO = (MutableAuthenticationDao) ctx.getBean("alfDaoImpl");
+        authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
 
         this.authenticationComponent.setSystemUserAsCurrentUser();
 

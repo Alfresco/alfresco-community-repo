@@ -98,7 +98,7 @@ public class SearchServiceTest extends TestCase
         nodeService = (NodeService) ctx.getBean("dbNodeService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         authenticationService = (AuthenticationService) ctx.getBean("authenticationService");
-        authenticationDAO = (MutableAuthenticationDao) ctx.getBean("alfDaoImpl");
+        authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
         pubSearchService = (SearchService) ctx.getBean("SearchService");
         pubPermissionService = (PermissionService) ctx.getBean("PermissionService");
 

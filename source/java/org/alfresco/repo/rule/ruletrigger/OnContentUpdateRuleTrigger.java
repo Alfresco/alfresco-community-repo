@@ -26,9 +26,12 @@ package org.alfresco.repo.rule.ruletrigger;
 
 import java.util.List;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -87,9 +90,24 @@ public class OnContentUpdateRuleTrigger extends RuleTriggerAbstractBase
      */
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
-        if (newContent == this.onNewContent)
+    	
+    	// Check the new content and make sure that we do indeed want to trigger the rule
+    	boolean fail = false;
+    	if (newContent == true)
+    	{
+    		ContentReader contentReader = this.contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+    		if (contentReader == null || 
+    			contentReader.exists() == false || 
+    			isZeroLengthOfficeDoc(contentReader) == true)
+    		{
+				fail = true;
+    		}
+    	}
+    	
+    	// Trigger the rules in the appropriate way
+        if (fail == false && newContent == this.onNewContent)
         {
-            if (triggerParentRules == true)
+        	if (triggerParentRules == true)
             {
                 if (logger.isDebugEnabled() == true)
                 {
@@ -107,6 +125,25 @@ public class OnContentUpdateRuleTrigger extends RuleTriggerAbstractBase
                 triggerRules(nodeRef, nodeRef);
             }
         }
+    }
+    
+    /**
+     * Indicates whether we are dealing with a zero length office document or not
+     * 
+     * @param contentReader		the content reader
+     * @return boolean			true if zero length office document, false otherwise					
+     */
+    private boolean isZeroLengthOfficeDoc(ContentReader contentReader)
+    {
+    	boolean result = false;
+    	if (contentReader.getSize() == 0 &&
+    		(MimetypeMap.MIMETYPE_WORD.equals(contentReader.getMimetype()) == true ||
+    		 MimetypeMap.MIMETYPE_EXCEL.equals(contentReader.getMimetype()) == true ||
+    		 MimetypeMap.MIMETYPE_PPT.equals(contentReader.getMimetype()) == true))
+    	{
+    		result = true;
+    	}
+    	return result;
     }
 
 }

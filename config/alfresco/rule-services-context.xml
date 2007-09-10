@@ -101,6 +101,9 @@
       <property name="nodeService">
          <ref bean="nodeService"/>
       </property>
+      <property name="contentService">
+         <ref bean="contentService"/>
+      </property>
       <property name="authenticationComponent">
          <ref bean="authenticationComponent"/>
       </property>
@@ -166,7 +169,7 @@
       </property>
    </bean>
    
-   <bean id="on-content-update-trigger" class="org.alfresco.repo.rule.ruletrigger.OnContentUpdateRuleTrigger" parent="rule-trigger-base">
+   <bean id="on-content-update-trigger" class="org.alfresco.repo.rule.ruletrigger.OnContentUpdateRuleTrigger" parent="rule-trigger-base">      
       <property name="onNewContent">
          <value>false</value>
       </property>

@@ -231,7 +231,6 @@ public abstract class AuthenticationUtil
     private static String getUserName(Authentication authentication)
     {
         String username;
-
         if (authentication.getPrincipal() instanceof UserDetails)
         {
             username = ((UserDetails) authentication.getPrincipal()).getUsername();

@@ -74,7 +74,6 @@
     <!-- The authroity DAO implements an interface extended from the Acegi  -->
     <!-- DAO that supports CRUD.                                            -->
 
-    <alias name="authenticationDao" alias="alfDaoImpl"/>  <!-- TODO: Remove -->
     <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">
        <property name="nodeService">
            <ref bean="nodeService" />
@@ -118,7 +117,6 @@
     <!-- The permissions service is required so that permissions can be     -->
     <!-- cleaned up when a user is deleted.                                 -->
     
-    <alias name="authenticationService" alias="authenticationServiceImpl"/>  <!-- TODO: Remove -->
     <bean id="authenticationService" class="org.alfresco.repo.security.authentication.AuthenticationServiceImpl">
         <property name="authenticationDao">
             <ref bean="authenticationDao" />

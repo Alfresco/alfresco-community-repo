@@ -135,7 +135,7 @@ public class AuthenticationTest extends TestCase
         // ctx.getBean("permissionService");
         ticketsCache = (SimpleCache<String, Ticket>) ctx.getBean("ticketsCache");
 
-        dao = (MutableAuthenticationDao) ctx.getBean("alfDaoImpl");
+        dao = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
         authenticationManager = (AuthenticationManager) ctx.getBean("authenticationManager");
         saltSource = (SaltSource) ctx.getBean("saltSource");
 

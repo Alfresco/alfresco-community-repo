@@ -24,6 +24,9 @@
  */
 package org.alfresco.repo.ownable.impl;
 
+import java.io.Serializable;
+import java.util.HashMap;
+
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -40,6 +43,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
@@ -85,7 +89,7 @@ public class OwnableServiceTest extends TestCase
         permissionService = (PermissionService) ctx.getBean("permissionService");
     
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-        authenticationDAO = (MutableAuthenticationDao) ctx.getBean("alfDaoImpl");
+        authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
         
         
         TransactionService transactionService = (TransactionService) ctx.getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
@@ -147,6 +151,14 @@ public class OwnableServiceTest extends TestCase
         assertFalse(nodeService.hasAspect(testNode, ContentModel.ASPECT_OWNABLE));
         assertTrue(dynamicAuthority.hasAuthority(testNode, "andy"));
         
+        assertEquals("andy", ownableService.getOwner(testNode));
+        
+        nodeService.setProperty(testNode, ContentModel.PROP_CREATOR, "woof");
+        assertEquals("woof", ownableService.getOwner(testNode));
+        
+        nodeService.setProperty(testNode, ContentModel.PROP_CREATOR, "andy");
+        assertEquals("andy", ownableService.getOwner(testNode));
+        
         permissionService.setInheritParentPermissions(testNode, false);
         
         
@@ -188,6 +200,16 @@ public class OwnableServiceTest extends TestCase
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rootNodeRef, PermissionService.SET_OWNER));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.TAKE_OWNERSHIP));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.SET_OWNER));
+        
+        nodeService.setProperty(testNode, ContentModel.PROP_OWNER, "muppet");
+        assertEquals("muppet", ownableService.getOwner(testNode));
+        nodeService.removeAspect(testNode, ContentModel.ASPECT_OWNABLE);
+        assertEquals("andy", ownableService.getOwner(testNode));
+        
+        HashMap<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>();
+        aspectProperties.put(ContentModel.PROP_OWNER, "muppet");
+        nodeService.addAspect(testNode, ContentModel.ASPECT_OWNABLE, aspectProperties);
+        assertEquals("muppet", ownableService.getOwner(testNode));
         
        
     }

@@ -219,6 +219,7 @@
                   <mandatory>false</mandatory>
                   <many>true</many>
                </target>
+			   <duplicate>false</duplicate>
             </child-association>
          </associations>
       </type>

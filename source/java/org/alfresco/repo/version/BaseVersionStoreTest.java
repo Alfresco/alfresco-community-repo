@@ -149,7 +149,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         this.authenticationService = (AuthenticationService)applicationContext.getBean("authenticationService");
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
         this.txnHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
-        this.authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("alfDaoImpl");
+        this.authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
         this.nodeArchiveService = (NodeArchiveService) applicationContext.getBean("nodeArchiveService");
         this.nodeService = (NodeService)applicationContext.getBean("nodeService");
         

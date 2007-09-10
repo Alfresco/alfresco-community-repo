@@ -90,7 +90,7 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         lockService = (LockService) ctx.getBean("lockService");
         permissionService = (PermissionService) ctx.getBean("permissionService");
-        authenticationDAO = (MutableAuthenticationDao) ctx.getBean("alfDaoImpl");
+        authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
 
         checkOutCheckInService = (CheckOutCheckInService) ctx.getBean("checkOutCheckInService");
         ownableService = (OwnableService) ctx.getBean("ownableService");

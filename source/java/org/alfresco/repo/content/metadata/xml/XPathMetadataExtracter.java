@@ -57,6 +57,8 @@ import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * An extracter that pulls values from XML documents using configurable XPath
@@ -248,7 +250,30 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
             String documentProperty = element.getKey();
             XPathExpression xpathExpression = element.getValue();
             // Execute it
-            String value = (String) xpathExpression.evaluate(document, XPathConstants.STRING);
+            NodeList nodeList = (NodeList) xpathExpression.evaluate(document, XPathConstants.NODESET);
+            // Convert the value
+            Serializable value = null;
+            int nodeCount = nodeList.getLength();
+            if (nodeCount == 0)
+            {
+                // No result
+            }
+            else if (nodeCount == 1)
+            {
+                Node node = nodeList.item(0);
+                // Get the string value
+                value = node.getTextContent();
+            }
+            else
+            {
+                // Make a collection of the values
+                ArrayList<String> stringValues = new ArrayList<String>(5);
+                for (int i = 0; i < nodeCount; i++)
+                {
+                    stringValues.add(nodeList.item(i).getTextContent());
+                }
+                value = stringValues;
+            }
             // Put the value
             rawProperties.put(documentProperty, value);
         }
@@ -305,7 +330,7 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
             xpathExpressionMapping.put(documentProperty, xpathExpression);
             if (logger.isDebugEnabled())
             {
-                logger.debug("Added mapping from " + documentProperty + " to " + xpathExpression);
+                logger.debug("Added mapping from " + documentProperty + " to " + xpathStr);
             }
         }
         // Done

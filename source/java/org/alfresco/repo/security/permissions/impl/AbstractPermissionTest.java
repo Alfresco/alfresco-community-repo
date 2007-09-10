@@ -102,7 +102,7 @@ public class AbstractPermissionTest extends BaseSpringTest
         authorityService = (AuthorityService) applicationContext.getBean("authorityService");
         
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-        authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("alfDaoImpl");
+        authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
         
         
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.nanoTime());

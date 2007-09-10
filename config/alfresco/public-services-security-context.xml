@@ -204,7 +204,7 @@
             <ref bean="nodeService"></ref>
         </property>
         <property name="authenticationService">
-             <ref bean="authenticationServiceImpl" />
+             <ref bean="authenticationService" />
         </property>
         <property name="maxPermissionCheckTimeMillis">
             <value>${system.acl.maxPermissionCheckTimeMillis}</value>

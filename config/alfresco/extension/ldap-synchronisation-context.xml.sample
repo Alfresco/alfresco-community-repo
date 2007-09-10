@@ -1,0 +1,377 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+	
+	<bean name="ldapSynchronisationPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	    <property name="ignoreUnresolvablePlaceholders">
+            <value>true</value>
+        </property>  
+        <property name="locations">
+            <value>classpath:alfresco/extension/ldap-synchronisation.properties</value>
+        </property>
+    </bean>
+    
+    <!-- 
+		Wire up the same context as used for LDAP authentication. You could use another context: just replace this
+		 alias with the bean definition 
+    -->
+    
+    <alias alias="ldapSyncInitialDirContextFactory" name="ldapInitialDirContextFactory"/>
+    
+    <!-- Ldap Syncronisation support -->
+    
+    <!-- 
+        
+    There can be more than one stack of beans that import users or groups. For example, it may be easier
+    to have a version of ldapPeopleExportSource, and associated beans, for each sub-tree of your ldap directory
+    from which you want to import users. You could then limit users to be imported from two or more sub tress and ignore 
+    users found else where. The same applies to the import of groups. 
+         
+    The defaults shown below are for OpenLDAP.    
+        
+    -->
+        
+   
+    <!-- Extract user information from LDAP and transform this to XML -->
+     
+    <bean id="ldapPeopleExportSource" class="org.alfresco.repo.security.authentication.ldap.LDAPPersonExportSource">
+        <!-- 
+        The query to select objects that represent the users to import.
+        
+        For Open LDAP, using a basic schema, the following is probably what you want:
+        (objectclass=inetOrgPerson)
+        
+        For Active Directory:
+        (objectclass=user)
+        -->
+        <property name="personQuery">
+            <value>${ldap.synchronisation.personQuery}</value>
+        </property>
+        
+        <!--
+        The seach base restricts the LDAP query to a sub section of tree on the LDAP server.
+        -->
+        <property name="searchBase">
+            <value>${ldap.synchronisation.personSearchBase}</value>
+        </property>
+        
+        <!--
+        The unique identifier for the user.
+        
+        THIS MUST MATCH WHAT THE USER TYPES IN AT THE LOGIN PROMPT    
+        
+        For simple LDAP authentication this is likely to be "cn" or, less friendly, "distinguishedName"
+        
+        In OpenLDAP, using other authentication mechanisms "uid", but this depends on how you map
+        from the id in the LDAP authentication request to search for the inetOrgPerson against which
+        to authenticate.
+        
+        In Active Directory this is most likely to be "sAMAccountName" 
+        
+        This property is mandatory and must appear on all users found by the query defined above.
+        
+        -->
+        <property name="userIdAttributeName">
+            <value>${ldap.synchronisation.userIdAttributeName]</value>
+        </property>
+        
+        <!-- Services -->
+        <property name="LDAPInitialDirContextFactory">
+            <ref bean="ldapSyncInitialDirContextFactory"/>
+        </property>
+        <property name="personService">
+            <ref bean="personService"></ref>
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService"/>
+        </property>
+        
+        <!--
+        This property defines a mapping between attributes held on LDAP user objects and
+        the properties of user objects held in the repository. The key is the QName of an attribute in
+        the repository, the value is the attribute name from the user/inetOrgPerson/.. object in the
+        LDAP repository.     
+        -->
+        <property name="attributeMapping">
+            <map>
+                <entry key="cm:userName">
+                    <!-- Must match the same attribute as userIdAttributeName -->
+                    <value>${ldap.synchronisation.userIdAttributeName}</value>
+                </entry>
+                <entry key="cm:firstName">
+                    <!-- OpenLDAP: "givenName" -->
+                    <!-- Active Directory: "givenName" -->
+                    <value>${ldap.synchronisation.userFirstNameAttributeName}</value>
+                </entry>
+                <entry key="cm:lastName">
+                    <!-- OpenLDAP: "sn" -->
+                    <!-- Active Directory: "sn" -->
+                    <value>${ldap.synchronisation.userLastNameAttributeName}</value>
+                </entry>
+                <entry key="cm:email">
+                    <!-- OpenLDAP: "mail" -->
+                    <!-- Active Directory: "???" -->
+                    <value>${ldap.synchronisation.userEmailAttributeName}</value>
+                </entry>
+                <entry key="cm:organizationId">
+                    <!-- OpenLDAP: "o" -->
+                    <!-- Active Directory: "???" -->
+                    <value>${ldap.synchronisation.userOrganizationalIdAttributeName}</value>
+                </entry>
+                <!-- Always use the default -->
+                <entry key="cm:homeFolderProvider">
+                    <null/>
+                </entry>
+            </map>
+        </property>
+        <!-- Set a default home folder provider -->
+        <!-- Defaults only apply for values above -->
+        <property name="attributeDefaults">
+            <map>
+                <entry key="cm:homeFolderProvider">
+                    <value>${ldap.synchronisation.defaultHomeFolderProvider}</value>
+                </entry>
+            </map>
+        </property>
+    </bean>
+    
+    <!-- Extract group information from LDAP and transform this to XML -->
+    
+    <bean id="ldapGroupExportSource" class="org.alfresco.repo.security.authentication.ldap.LDAPGroupExportSource">
+        <!--
+        The query to select objects that represent the groups to import.
+        
+        For Open LDAP, using a basic schema, the following is probably what you want:
+        (objectclass=groupOfNames)
+        
+        For Active Directory:
+        (objectclass=group)
+        -->
+        <property name="groupQuery">
+            <value>${ldap.synchronisation.groupQuery}</value>
+        </property>
+        
+        <!--
+        The seach base restricts the LDAP query to a sub section of tree on the LDAP server.
+        -->
+        <property name="searchBase">
+            <value>${ldap.synchronisation.groupSearchBase}</value>
+        </property>
+        
+        <!--
+        The unique identifier for the user. This must match the userIdAttributeName on the ldapPeopleExportSource bean above.
+        -->
+        <property name="userIdAttributeName">
+            <value>${ldap.synchronisation.userIdAttributeName}</value>
+        </property>
+        
+        <!--
+        An attribute that is a unique identifier for each group found. 
+        This is also the name of the group with the current group implementation.
+        This is mandatory for any groups found.
+        
+        OpenLDAP: "cn" as it is mandatory on groupOfNames
+        Active Directory: "cn"
+        
+        -->
+        <property name="groupIdAttributeName">
+            <value>${ldap.synchronisation.groupIdAttributeName}</value>
+        </property>
+        
+        <!-- 
+        The objectClass attribute for group members.
+        For each member of a group, the distinguished name is given.
+        The object is looked up by its DN. If the object is of this class it is treated as a group. 
+        -->
+        <property name="groupType">
+            <value>${ldap.synchronisation.groupType}</value>
+        </property>
+        
+        <!-- 
+        The objectClass attribute for person members.
+        For each member of a group, the distinguished name is given.
+        The object is looked up by its DN. If the object is of this class it is treated as a person. 
+        -->
+        <property name="personType">
+            <value>${ldap.synchronisation.personType}</value>
+        </property>
+        <property name="LDAPInitialDirContextFactory">
+            <ref bean="ldapSyncInitialDirContextFactory"/>
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService"/>
+        </property>
+        
+        <!--
+        The repeating attribute on group objects (found by query or as sub groups)
+        used to define membership of the group. This is assumed to hold distinguished names of
+        other groups or users/people; the above types are used to determine this.
+        
+        OpenLDAP: "member" as it is mandatory on groupOfNames
+        Active Directory: "member"
+        
+        -->
+        <property name="memberAttribute">
+            <value>${ldap.synchronisation.groupMemberAttributeName}</value>
+        </property>
+        
+        <property name="authorityDAO">
+            <ref bean="authorityDAO"/>
+        </property>
+    </bean>
+    
+    <!-- Job definitions to import LDAP people and groups -->
+    <!-- The triggers register themselves with the scheduler -->
+    <!-- You may comment in the default scheduler to enable these triggers -->
+    <!-- If a cron base trigger is what you want seee scheduled-jobs-context.xml for examples. -->
+    
+    <!-- Trigger to load poeple -->
+    <!-- Note you can have more than one initial (context, trigger, import job and export source) set -->
+    <!-- This would allow you to load people from more than one ldap store -->
+    
+    <bean id="ldapPeopleTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <bean id="ldapPeopleJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.importer.ImporterJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="bean">
+                            <ref bean="ldapPeopleImport"/>
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <property name="cronExpression">
+			<value>${ldap.synchronisation.import.person.cron}</value>
+		</property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+    </bean>
+    
+    <bean id="ldapGroupTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <bean id="ldapGroupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.importer.ImporterJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="bean">
+                            <ref bean="ldapGroupImport"/>
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <property name="cronExpression">
+			<value>${ldap.synchronisation.import.group.cron}</value>
+		</property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+    </bean>
+    
+    <!-- The bean that imports xml describing people -->
+    
+    <bean id="ldapPeopleImport" class="org.alfresco.repo.importer.ExportSourceImporter">
+        <property name="importerService">
+            <ref bean="importerComponentWithBehaviour"/>
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionComponent"/>
+        </property>
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponent"/>
+        </property>
+        <property name="exportSource">
+            <ref bean="ldapPeopleExportSource"/>
+        </property>
+
+        <!-- The store that contains people - this should not be changed -->
+        <property name="storeRef">
+            <value>${spaces.store}</value>
+        </property>
+        
+        <!-- The location of people nodes within the store defined above - this should not be changed -->
+        <property name="path">
+            <value>/${system.system_container.childname}/${system.people_container.childname}</value>
+        </property>
+        
+        <!-- If true, clear all existing people before import, if false update/add people from the xml -->
+        <property name="clearAllChildren">
+            <value>false</value>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="searchService">
+            <ref bean="searchService"/>
+        </property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService"/>
+        </property>
+        
+        
+        <property name="caches">
+            <set>
+                <ref bean="permissionsAccessCache"/>
+            </set>
+        </property>
+    </bean>
+    
+    <!-- The bean that imports xml descibing groups -->
+    
+    <bean id="ldapGroupImport" class="org.alfresco.repo.importer.ExportSourceImporter">
+        <property name="importerService">
+            <ref bean="importerComponentWithBehaviour"/>
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionComponent"/>
+        </property>
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponent"/>
+        </property>
+        <property name="exportSource">
+            <ref bean="ldapGroupExportSource"/>
+        </property>
+        <!-- The store that contains group information - this should not be changed -->
+        <property name="storeRef">
+            <value>${alfresco_user_store.store}</value>
+        </property>
+        
+        <!-- The location of group information in the store above - this should not be changed -->
+        <property name="path">
+            <value>/${alfresco_user_store.system_container.childname}/${alfresco_user_store.authorities_container.childname}</value>
+        </property>
+        
+        <!-- If true, clear all existing groups before import, if false update/add groups from the xml -->
+        <property name="clearAllChildren">
+            <value>${ldap.synchronisation.import.group.clearAllChildren}</value>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="searchService">
+            <ref bean="searchService"/>
+        </property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService"/>
+        </property>
+        
+        <!-- caches to clear on import of groups -->
+        <property name="caches">
+            <set>
+                <ref bean="userToAuthorityCache"/>
+                <ref bean="permissionsAccessCache"/>
+            </set>
+        </property>
+        
+        <!-- userToAuthorityCache -->
+    </bean>
+    
+</beans>

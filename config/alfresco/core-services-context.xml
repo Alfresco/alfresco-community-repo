@@ -519,7 +519,7 @@
             <ref bean="policyComponent" />
         </property>
         <property name="authenticationService">
-            <ref bean="authenticationServiceImpl"></ref>
+            <ref bean="authenticationService"></ref>
         </property>
         <property name="ownableService">
             <ref bean="ownableService"></ref>

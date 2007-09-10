@@ -25,6 +25,7 @@
         <submission-handler scheme="mailto" class="org.chiba.connectors.smtp.SMTPSubmissionHandler"/>
         <submission-handler scheme="xmlrpc" class="org.chiba.connectors.xmlrpc.XMLRPCSubmissionHandler"/>
         <submission-handler scheme="echo" class="org.chiba.xml.xforms.connector.echo.EchoSubmissionHandler"/>
+        <submission-handler scheme="alfresco" class="org.alfresco.web.forms.xforms.XFormsBean$AlfrescoSubmissionHandler"/>
     </connectors>
     <extension-functions>
         <!--

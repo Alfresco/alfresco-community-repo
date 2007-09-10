@@ -19,7 +19,8 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's
  * FLOSS exception.  You should have recieved a copy of the text describing
  * the FLOSS exception, and it is also available here:
- * http://www.alfresco.com/legal/licensing" */
+ * http://www.alfresco.com/legal/licensing" 
+ */
 package org.alfresco.web.forms.xforms;
 
 import java.io.File;
@@ -273,23 +274,27 @@ public class Schema2XForms
                                                 schema,
                                                 rootElementDecl,
                                                 "/" + this.getElementName(rootElementDecl, xformsDocument),
-                                                new SchemaUtil.Occurance(1, 1),
+                                                new SchemaUtil.Occurrence(1, 1),
                                                 resourceBundle);
       if (rootGroup.getNodeName() != NamespaceConstants.XFORMS_PREFIX + ":group")
       {
-         throw new FormBuilderException("Expected root form element to be a group.  Generated a " + 
-                                        rootGroup.getNodeName() + " instead");
+         throw new FormBuilderException("Expected root form element to be a " + NamespaceConstants.XFORMS_PREFIX + 
+                                        ":group, not a " + rootGroup.getNodeName() + 
+                                        ".  Ensure that " + this.getElementName(rootElementDecl, xformsDocument) +
+                                        " is a concrete type that has no extensions.  " +
+                                        "Types with extensions are not supported for " +
+                                        "the root element of a form.");
       }
       this.setXFormsId(rootGroup, "alfresco-xforms-root-group");
 
       if (importedInstanceDocumentElement != null)
       {
-         this.insertUpdatedNodes(importedInstanceDocumentElement,
-                                 defaultInstanceDocumentElement,
-                                 schemaNamespacesMap);
-         this.insertPrototypeNodes(importedInstanceDocumentElement,
-                                   defaultInstanceDocumentElement,
-                                   schemaNamespacesMap);
+         Schema2XForms.insertUpdatedNodes(importedInstanceDocumentElement,
+                                          defaultInstanceDocumentElement,
+                                          schemaNamespacesMap);
+         Schema2XForms.insertPrototypeNodes(importedInstanceDocumentElement,
+                                            defaultInstanceDocumentElement,
+                                            schemaNamespacesMap);
          
       }
 
@@ -324,9 +329,9 @@ public class Schema2XForms
     * @param schemaNamespaces the namespaces used by the instance document needed for
     * initializing the xpath context.
     */
-   private void insertUpdatedNodes(final Element instanceDocumentElement,
-                                   final Element prototypeDocumentElement,
-                                   final HashMap<String, String> schemaNamespaces)
+   public static void insertUpdatedNodes(final Element instanceDocumentElement,
+                                         final Element prototypeDocumentElement,
+                                         final HashMap<String, String> schemaNamespaces)
    {
       LOGGER.debug("updating imported instance document");
       final JXPathContext prototypeContext =
@@ -434,9 +439,9 @@ public class Schema2XForms
     * @param schemaNamespaces the namespaces used by the instance document needed for
     * initializing the xpath context.
     */
-   private void insertPrototypeNodes(final Element instanceDocumentElement,
-                                     final Element prototypeDocumentElement,
-                                     final HashMap<String, String> schemaNamespaces)
+   public static void insertPrototypeNodes(final Element instanceDocumentElement,
+                                           final Element prototypeDocumentElement,
+                                           final HashMap<String, String> schemaNamespaces)
    {
       final JXPathContext prototypeContext =
          JXPathContext.newContext(prototypeDocumentElement);
@@ -605,7 +610,7 @@ public class Schema2XForms
       }
    }
 
-   public void removePrototypeNodes(final Element instanceDocumentElement)
+   public static void removePrototypeNodes(final Node instanceDocumentElement)
    {
       final Map<String, LinkedList<Element>> prototypes =
          new HashMap<String, LinkedList<Element>>();
@@ -641,7 +646,7 @@ public class Schema2XForms
             }
             if (e.getParentNode() != null)
             {
-               this.removePrototypeNodes(e);
+               Schema2XForms.removePrototypeNodes(e);
             }
          }
       }
@@ -953,7 +958,7 @@ public class Schema2XForms
                                   final XSComplexTypeDefinition controlType,
                                   final XSElementDeclaration owner,
                                   String pathToRoot,
-                                  final SchemaUtil.Occurance occurs,
+                                  final SchemaUtil.Occurrence occurs,
                                   boolean relative,
                                   final boolean checkIfExtension,
                                   final ResourceBundle resourceBundle)
@@ -981,7 +986,7 @@ public class Schema2XForms
                                                     formSection,
                                                     owner,
                                                     resourceBundle);
-//      final SchemaUtil.Occurance o = SchemaUtil.getOccurance(owner);
+//      final SchemaUtil.Occurrence o = SchemaUtil.getOccurrence(owner);
       final Element repeatSection = this.addRepeatIfNecessary(xformsDocument,
                                                               modelSection,
                                                               groupElement,
@@ -1000,7 +1005,7 @@ public class Schema2XForms
 
       if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("addComplexTypeChildren for " + controlType.getName() +
+         LOGGER.debug("addComplexType for " + controlType.getName() + "(" + pathToRoot + ")" +
                       " owner = " + (owner == null ? "null" : owner.getName()));
       }
 
@@ -1081,6 +1086,26 @@ public class Schema2XForms
 
          if (term instanceof XSModelGroup)
          {
+
+            switch (((XSModelGroup)term).getCompositor())
+            {
+            case XSModelGroup.COMPOSITOR_CHOICE:
+               LOGGER.warn("term " + term.getName() + " of particle " + particle.getName() +
+                           " of type " + controlType.getName() + " in " + owner.getName() +
+                           " describes a " + NamespaceConstants.XMLSCHEMA_PREFIX + 
+                           ":choice which is not yet supported, adding it as a " +
+                           NamespaceConstants.XMLSCHEMA_PREFIX + ":sequence");
+               break;
+            case XSModelGroup.COMPOSITOR_ALL:
+               LOGGER.warn("term " + term.getName() + " of particle " + particle.getName() +
+                           " of type " + controlType.getName() + " in " + owner.getName() +
+                           " describes a " + NamespaceConstants.XMLSCHEMA_PREFIX + 
+                           ":all which is not yet supported, adding it as a " +
+                           NamespaceConstants.XMLSCHEMA_PREFIX + ":sequence");
+               break;
+            case XSModelGroup.COMPOSITOR_SEQUENCE:
+               break;
+            }
             //call addGroup on this group
             this.addGroup(xformsDocument,
                           modelSection,
@@ -1091,7 +1116,7 @@ public class Schema2XForms
                           controlType,
                           owner,
                           pathToRoot,
-                          new SchemaUtil.Occurance(particle),
+                          new SchemaUtil.Occurrence(particle),
                           checkIfExtension,
                           resourceBundle);
          }
@@ -1115,7 +1140,7 @@ public class Schema2XForms
                               final XSModel schema,
                               final XSElementDeclaration elementDecl,
                               final String pathToRoot,
-                              final SchemaUtil.Occurance occurs,
+                              final SchemaUtil.Occurrence occurs,
                               final ResourceBundle resourceBundle)
       throws FormBuilderException
    {
@@ -1229,7 +1254,7 @@ public class Schema2XForms
       }
       else
       {
-//         final SchemaUtil.Occurance occurs = SchemaUtil.getOccurance(elementDecl);
+//         final SchemaUtil.Occurrence occurs = SchemaUtil.getOccurrence(elementDecl);
          //create the bind in case it is a repeat
          LOGGER.debug("Adding empty bind for control " + controlType +
                       " type " + typeName + 
@@ -1331,7 +1356,7 @@ public class Schema2XForms
                                                                (XSComplexTypeDefinition)controlType,
                                                                elementDecl,
                                                                pathToRoot,
-                                                               SchemaUtil.getOccurance(elementDecl),
+                                                               SchemaUtil.getOccurrence(elementDecl),
                                                                true,
                                                                false,
                                                                resourceBundle);
@@ -1379,7 +1404,7 @@ public class Schema2XForms
                                                           (XSComplexTypeDefinition) type,
                                                           elementDecl,
                                                           pathToRoot,
-                                                          SchemaUtil.getOccurance(elementDecl),
+                                                          SchemaUtil.getOccurrence(elementDecl),
                                                           true,
                                                           true,
                                                           resourceBundle);
@@ -1454,7 +1479,7 @@ public class Schema2XForms
                          final XSComplexTypeDefinition controlType,
                          final XSElementDeclaration owner,
                          final String pathToRoot,
-                         final SchemaUtil.Occurance occurs,
+                         final SchemaUtil.Occurrence occurs,
                          final boolean checkIfExtension,
                          final ResourceBundle resourceBundle)
       throws FormBuilderException
@@ -1482,7 +1507,7 @@ public class Schema2XForms
       {
          final XSParticle currentNode = (XSParticle)particles.item(counter);
          XSTerm term = currentNode.getTerm();
-         final SchemaUtil.Occurance childOccurs = new SchemaUtil.Occurance(currentNode);
+         final SchemaUtil.Occurrence childOccurs = new SchemaUtil.Occurrence(currentNode);
          if (LOGGER.isDebugEnabled())
          {
             LOGGER.debug("	: next term = " + term.getName() +
@@ -1625,16 +1650,16 @@ public class Schema2XForms
                                   final XSModel schema,
                                   final XSElementDeclaration element,
                                   final String pathToRoot,
-                                  final SchemaUtil.Occurance occurs,
+                                  final SchemaUtil.Occurrence occurs,
                                   final ResourceBundle resourceBundle)
       throws FormBuilderException   
    {
-      LOGGER.debug("addElement to group " + element + " at "  + pathToRoot);
       //add it normally
       final String elementName = this.getElementName(element, xformsDocument);
       final String path = (pathToRoot.length() == 0
                            ? elementName
                            : pathToRoot + "/" + elementName);
+      LOGGER.debug("addElement to group " + elementName + " at "  + path);
 
       final Element newDefaultInstanceElement = xformsDocument.createElement(elementName);
       if (element.getConstraintType() != XSConstants.VC_NONE)
@@ -1653,7 +1678,7 @@ public class Schema2XForms
                       occurs,
                       resourceBundle);
 
-//      final SchemaUtil.Occurance occurs = SchemaUtil.getOccurance(element);
+//      final SchemaUtil.Occurrence occurs = SchemaUtil.getOccurrence(element);
       LOGGER.debug("adding " + (occurs.maximum == 1
                                 ? 1
                                 : occurs.minimum + 1) +
@@ -1699,7 +1724,7 @@ public class Schema2XForms
                                         final Element formSection,
                                         final XSTypeDefinition controlType,
                                         final String pathToRoot,
-                                        final SchemaUtil.Occurance o)
+                                        final SchemaUtil.Occurrence o)
    {
 
       // add xforms:repeat section if this element re-occurs
@@ -1783,7 +1808,7 @@ public class Schema2XForms
                                  final String owningElementName,
                                  final XSObject owner,
                                  final String pathToRoot,
-                                 final SchemaUtil.Occurance occurs,
+                                 final SchemaUtil.Occurrence occurs,
                                  final ResourceBundle resourceBundle)
    {
       if (LOGGER.isDebugEnabled())
@@ -1887,7 +1912,7 @@ public class Schema2XForms
                                 owningAttribute.getAttrDeclaration().getName(),
                                 owningAttribute,
                                 pathToRoot,
-                                new SchemaUtil.Occurance(owningAttribute.getRequired() ? 1 : 0, 1),
+                                new SchemaUtil.Occurrence(owningAttribute.getRequired() ? 1 : 0, 1),
                                 resourceBundle);
    }
 
@@ -1898,7 +1923,7 @@ public class Schema2XForms
                                      final XSObject owner,
                                      final String bindId,
                                      final Element bindElement,
-                                     final SchemaUtil.Occurance o,
+                                     final SchemaUtil.Occurrence o,
                                      final ResourceBundle resourceBundle)
    {
       Element formControl = null;
@@ -2123,6 +2148,10 @@ public class Schema2XForms
       formSection.appendChild(result);
       result.appendChild(this.createLabel(xformsDocument,
                                           this.createCaption(owner, resourceBundle)));
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("created group " + XMLUtil.toString(result));
+      }
       return result;
    }
 
@@ -2718,7 +2747,7 @@ public class Schema2XForms
                                    final XSModel schema,
                                    final XSTypeDefinition controlType,
                                    final XSObject owner,
-                                   final SchemaUtil.Occurance o)
+                                   final SchemaUtil.Occurrence o)
    {
       // START WORKAROUND
       // Due to a Chiba bug, anyType is not a recognized type name.

@@ -39,6 +39,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.forms.Form;
+import org.alfresco.web.forms.FormNotFoundException;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.RenderingEngineTemplate;
 
@@ -95,9 +96,9 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
          NodeRef formRef = ref.getChildRef();
          
          String name = (String)this.nodeService.getProperty(formRef, WCMAppModel.PROP_FORMNAME);
-         Form formImpl = FormsService.getInstance().getForm(name);
-         if (formImpl != null)
+         try
          {
+            final Form formImpl = FormsService.getInstance().getForm(name);
             FormWrapper form = new FormWrapper(formImpl);
             form.setTitle((String)this.nodeService.getProperty(formRef, ContentModel.PROP_TITLE));
             form.setDescription((String)this.nodeService.getProperty(formRef, ContentModel.PROP_DESCRIPTION));
@@ -142,6 +143,10 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
             }
             
             this.forms.add(form);
+         }
+         catch (FormNotFoundException fnfe)
+         {
+            //ignore
          }
       }
       

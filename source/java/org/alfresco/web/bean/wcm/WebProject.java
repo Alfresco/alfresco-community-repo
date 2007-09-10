@@ -57,6 +57,7 @@ import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormImpl;
+import org.alfresco.web.forms.FormNotFoundException;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.forms.RenderingEngineTemplateImpl;
@@ -182,15 +183,33 @@ public class WebProject
 
    public WebProject(final NodeRef nodeRef)
    {
+      if (nodeRef == null)
+      {
+         throw new NullPointerException();
+      }
+
+      final ServiceRegistry serviceRegistry = this.getServiceRegistry();
+      final NodeService nodeService = serviceRegistry.getNodeService();
+      if (!WCMAppModel.TYPE_AVMWEBFOLDER.equals(nodeService.getType(nodeRef)))
+      {
+         throw new IllegalArgumentException(nodeRef + " is not a " + WCMAppModel.TYPE_AVMWEBFOLDER);
+      }
+
       this.nodeRef = nodeRef;
    }
 
    public WebProject(final String avmPath)
    {
-      String stagingStore = AVMUtil.buildStagingStoreName(AVMUtil.getStoreId(AVMUtil.getStoreName(avmPath)));
+      if (avmPath == null)
+      {
+         throw new NullPointerException();
+      }
+      
+      final String stagingStore = AVMUtil.buildStagingStoreName(AVMUtil.getStoreId(AVMUtil.getStoreName(avmPath)));
       final AVMService avmService = this.getServiceRegistry().getAVMService();
-      this.nodeRef = (NodeRef)avmService.getStoreProperty(stagingStore, 
-               SandboxConstants.PROP_WEB_PROJECT_NODE_REF).getValue(DataTypeDefinition.NODE_REF);
+      this.nodeRef = (NodeRef)
+         avmService.getStoreProperty(stagingStore, 
+                                     SandboxConstants.PROP_WEB_PROJECT_NODE_REF).getValue(DataTypeDefinition.NODE_REF);
    }
 
    /**
@@ -282,12 +301,18 @@ public class WebProject
     * @exception NullPointerException if the name is <tt>null</tt>.
     */
    public Form getForm(final String name)
+      throws FormNotFoundException
    {
       if (name == null)
       {
          throw new NullPointerException();
       }
-      return this.getFormsImpl().get(name);
+      final Form result = this.getFormsImpl().get(name);
+      if (result == null)
+      {
+         throw new FormNotFoundException(name, this);
+      }
+      return result;
    }
 
    /**
@@ -395,6 +420,7 @@ public class WebProject
    {
       final ServiceRegistry serviceRegistry = this.getServiceRegistry();
       final NodeService nodeService = serviceRegistry.getNodeService();
+      final FormsService formsService = FormsService.getInstance();
       final List<ChildAssociationRef> formRefs = 
          nodeService.getChildAssocs(this.nodeRef,
                                     WCMAppModel.ASSOC_WEBFORM,
@@ -404,8 +430,15 @@ public class WebProject
       {
          final String formName = (String)
             nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_FORMNAME);
-         final Form baseForm = FormsService.getInstance().getForm(formName);
-         result.put(formName, new FormWrapper(baseForm, ref.getChildRef()));
+         try
+         {
+            final Form baseForm = formsService.getForm(formName);
+            result.put(formName, new FormWrapper(baseForm, ref.getChildRef()));
+         }
+         catch (FormNotFoundException fnfe)
+         {
+            LOGGER.debug(fnfe);
+         }
       }
       return result;
    }

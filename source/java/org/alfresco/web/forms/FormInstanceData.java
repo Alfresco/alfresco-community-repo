@@ -19,7 +19,8 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's
  * FLOSS exception.  You should have recieved a copy of the text describing
  * the FLOSS exception, and it is also available here:
- * http://www.alfresco.com/legal/licensing" */
+ * http://www.alfresco.com/legal/licensing" 
+ */
 package org.alfresco.web.forms;
 
 import java.io.IOException;
@@ -82,7 +83,8 @@ public interface FormInstanceData
    /////////////////////////////////////////////////////////////////////////////
 
    /** the form generate this form instance data */
-   public Form getForm();
+   public Form getForm()
+      throws FormNotFoundException;
 
    /** the name of this instance data */
    public String getName();
@@ -104,7 +106,8 @@ public interface FormInstanceData
       throws IOException, SAXException;
 
    /** Regenerates all renditions of this form instance data */
-   public List<RegenerateResult> regenerateRenditions();
+   public List<RegenerateResult> regenerateRenditions()
+      throws FormNotFoundException;
 
    /** returns all renditions of this form instance data */
    public List<Rendition> getRenditions();

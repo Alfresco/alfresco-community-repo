@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:alf="http://www.alfresco.org"
+           xmlns:qh="http://www.qualityhealth.com/alfresco/content/types"
+           targetNamespace="http://www.qualityhealth.com/alfresco/content/types"
+           elementFormDefault="qualified">
+
+  <!-- Simple types -->
+  <xs:simpleType name="ContentTypeType">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1" />
+      <xs:enumeration value="Content Type A" />
+      <xs:enumeration value="Content Type B" />
+      <xs:enumeration value="Content Type C" />
+    </xs:restriction>
+  </xs:simpleType>
+
+
+  <!-- Complex types -->
+  <xs:complexType abstract="true" name="UniversalPropertiesType">
+    <xs:sequence>
+      <xs:element name="Body"        type="xs:string"          minOccurs="0" maxOccurs="1"         nillable="false" />
+      <xs:element name="ContentType" type="qh:ContentTypeType" minOccurs="1" maxOccurs="1"         nillable="false" />
+      <xs:element name="Category"    type="xs:anyURI"          minOccurs="0" maxOccurs="unbounded" nillable="false" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ArticleType">
+    <xs:complexContent>
+      <xs:extension base="qh:UniversalPropertiesType">
+        <xs:sequence>
+          <xs:element name="URLTitle" type="xs:normalizedString" minOccurs="1" maxOccurs="1" nillable="false" />
+          <xs:element name="Headline" type="xs:normalizedString" minOccurs="1" maxOccurs="1" nillable="false" />
+          <xs:element name="Blurb"    type="xs:string"           minOccurs="0" maxOccurs="1" nillable="false" />
+          <xs:element name="Byline"   type="xs:normalizedString" minOccurs="0" maxOccurs="1" nillable="false" />
+          <xs:element name="Author"   type="xs:normalizedString" minOccurs="1" maxOccurs="1" nillable="false" />
+          <xs:element name="Image"    type="xs:anyURI"           minOccurs="0" maxOccurs="1" nillable="false" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="NewsType">
+    <xs:complexContent>
+      <xs:extension base="qh:ArticleType">
+        <xs:sequence>
+          <xs:element name="Copyright" type="xs:normalizedString" minOccurs="1" maxOccurs="1" nillable="false" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+  <!-- Root Elements -->
+  <xs:element name="Article" type="qh:ArticleType" />
+  <xs:element name="News"    type="qh:NewsType" />
+
+</xs:schema>

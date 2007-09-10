@@ -101,12 +101,17 @@ public class FormInstanceDataImpl
    }
 
    public Form getForm()
+      throws FormNotFoundException
    {
-      final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      final String parentFormName = (String)
-         nodeService.getProperty(this.nodeRef, 
-                                 WCMAppModel.PROP_PARENT_FORM_NAME);
-      return FormsService.getInstance().getForm(parentFormName);
+      final String parentFormName = this.getParentFormName();
+      try
+      {
+         return FormsService.getInstance().getForm(parentFormName);
+      }
+      catch (FormNotFoundException fnfe)
+      {
+         throw new FormNotFoundException(parentFormName, this);
+      }
    }
 
    /** the node ref containing the contents of this rendition */
@@ -121,8 +126,8 @@ public class FormInstanceDataImpl
    }
 
    public List<FormInstanceData.RegenerateResult> regenerateRenditions()
+      throws FormNotFoundException
    {
-
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("regenerating renditions of " + this);
       String originalParentAvmPath = (String)
@@ -211,12 +216,28 @@ public class FormInstanceDataImpl
 
    public int hashCode()
    {
-      return this.getPath().hashCode() ^ this.getForm().hashCode();
+      return this.getPath().hashCode();
    }
 
    public String toString()
    {
-      return (this.getClass().getName() + "{path : " + this.getPath() +
-              ", form : " + this.getForm().getName() + "}");
+      try
+      {
+         return (this.getClass().getName() + "{path : " + this.getPath() +
+                 ", form : " + this.getForm().getName() + "}");
+      }
+      catch (FormNotFoundException fnfe)
+      {
+         return (this.getClass().getName() + "{path : " + this.getPath() +
+                 ", form : " + this.getParentFormName() + " NOT_FOUND!  }");
+
+      }
+   }
+
+   protected String getParentFormName()
+   {
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
+      return (String) nodeService.getProperty(this.nodeRef, 
+                                              WCMAppModel.PROP_PARENT_FORM_NAME);
    }
 }

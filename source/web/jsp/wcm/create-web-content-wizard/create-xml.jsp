@@ -1,4 +1,4 @@
-<%--
+<!--
  * Copyright (C) 2005-2007 Alfresco Software Limited.
  
  * This program is free software; you can redistribute it and/or
@@ -20,27 +20,27 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
---%>
-<%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
-<%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
-<%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
-<%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
-<%@ taglib uri="/WEB-INF/wcm.tld" prefix="wcm" %>
+ * http://www.alfresco.com/legal/licensing
+-->
+<jsp:root version="1.2"
+          xmlns:jsp="http://java.sun.com/JSP/Page"
+          xmlns:wcm="urn:jsptld:/WEB-INF/wcm.tld"
+          xmlns:f="http://java.sun.com/jsf/core">
+  <script type="text/javascript">
+    function _xforms_getSubmitButtons()
+    {
+      return [ document.getElementById("wizard:next-button"),
+               document.getElementById("wizard:finish-button") ];
+    }
 
-<script type="text/javascript">
-function _xforms_getSubmitButtons()
-{
-  return [ document.getElementById("wizard:next-button"),
-           document.getElementById("wizard:finish-button") ];
-}
-function _xforms_getSaveDraftButtons()
-{
-  return [ document.getElementById("wizard:back-button") ];
-}
-</script>
-<wcm:formProcessor id="form-data-renderer"
-		   formProcessorSession="#{WizardManager.bean.formProcessorSession}" 
-		   formInstanceData="#{WizardManager.bean.instanceDataDocument}" 
-		   formInstanceDataName="#{WizardManager.bean.fileName}" 
-		   form="#{WizardManager.bean.form}"/>
+    function _xforms_getSaveDraftButtons()
+    {
+      return [ document.getElementById("wizard:back-button") ];
+    }
+  </script>
+  <wcm:formProcessor id="form-data-renderer"
+		     formProcessorSession="#{WizardManager.bean.formProcessorSession}" 
+		     formInstanceData="#{WizardManager.bean.instanceDataDocument}" 
+		     formInstanceDataName="#{WizardManager.bean.fileName}" 
+		     form="#{WizardManager.bean.form}"/>
+</jsp:root>

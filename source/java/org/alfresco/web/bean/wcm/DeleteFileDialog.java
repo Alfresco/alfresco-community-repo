@@ -24,14 +24,19 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.io.FileNotFoundException;
+import java.util.List;
 import java.text.MessageFormat;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.model.WCMAppModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.forms.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -69,20 +74,48 @@ public class DeleteFileDialog extends BaseDialogBean
    // Dialog implementation
    
    @Override
-   protected String finishImpl(FacesContext context, String outcome)
-         throws Exception
+   protected String finishImpl(final FacesContext context, final String outcome)
+      throws Exception
    {
       // get the content to delete
-      AVMNode node = this.avmBrowseBean.getAvmActionNode();
+      final AVMNode node = this.avmBrowseBean.getAvmActionNode();
       if (node != null)
       {
          if (logger.isDebugEnabled())
             logger.debug("Trying to delete AVM node: " + node.getPath());
-         
-         // delete the node
-         this.avmService.removeNode(
-               node.getPath().substring(0, node.getPath().lastIndexOf('/')),
-               node.getPath().substring(node.getPath().lastIndexOf('/') + 1));         
+         FormInstanceData fid = null;
+         if (node.hasAspect(WCMAppModel.ASPECT_RENDITION))
+         {
+            try
+            {
+               fid = new RenditionImpl(node.getNodeRef()).getPrimaryFormInstanceData();
+            }
+            catch (FileNotFoundException fnfe)
+            {
+               //ignore
+            }
+         }
+         else if (node.hasAspect(WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+         {
+            fid = new FormInstanceDataImpl(node.getNodeRef());
+         }
+         if (fid != null)
+         {
+            final List<Rendition> renditions = fid.getRenditions();
+            for (final Rendition r : renditions)
+            {
+               this.avmService.removeNode(AVMNodeConverter.SplitBase(r.getPath())[0],
+                                          AVMNodeConverter.SplitBase(r.getPath())[1]);
+            }
+            this.avmService.removeNode(AVMNodeConverter.SplitBase(fid.getPath())[0],
+                                       AVMNodeConverter.SplitBase(fid.getPath())[1]);
+         }
+         else
+         {
+            // delete the node
+            this.avmService.removeNode(AVMNodeConverter.SplitBase(node.getPath())[0],
+                                       AVMNodeConverter.SplitBase(node.getPath())[1]);
+         }
       }
       else
       {
@@ -93,7 +126,8 @@ public class DeleteFileDialog extends BaseDialogBean
    }
       
    @Override
-   protected String doPostCommitProcessing(FacesContext context, String outcome)
+   protected String doPostCommitProcessing(final FacesContext context, 
+                                           final String outcome)
    {
       return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
    }
@@ -121,10 +155,35 @@ public class DeleteFileDialog extends BaseDialogBean
     */
    public String getConfirmMessage()
    {
-      String fileConfirmMsg = Application.getMessage(FacesContext.getCurrentInstance(), 
-               "delete_avm_file_confirm");
-      
-      return MessageFormat.format(fileConfirmMsg, 
-            new Object[] {this.avmBrowseBean.getAvmActionNode().getName()});
+      final AVMNode node = this.avmBrowseBean.getAvmActionNode();
+      if (node.hasAspect(WCMAppModel.ASPECT_RENDITION))
+      {
+         try
+         {
+            final FormInstanceData fid = new RenditionImpl(node.getNodeRef()).getPrimaryFormInstanceData();
+            return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), 
+                                                               "delete_rendition_confirm"), 
+                                        node.getName(),
+                                        fid.getName(),
+                                        fid.getRenditions().size() - 1);
+
+         }
+         catch (FileNotFoundException fnfe)
+         {
+            //ignore
+         }
+      }
+      else if (node.hasAspect(WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+      {
+         final FormInstanceData fid = new FormInstanceDataImpl(node.getNodeRef());
+         return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), 
+                                                            "delete_form_instance_data_confirm"), 
+                                     fid.getName(),
+                                     fid.getRenditions().size());
+
+      }
+      return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), 
+                                                         "delete_avm_file_confirm"), 
+                                  node.getName());
    }
 }

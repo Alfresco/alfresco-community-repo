@@ -30,7 +30,6 @@
 // Initiliaze dojo requirements, tinymce, and add a hook to load the xform.
 ////////////////////////////////////////////////////////////////////////////////
 
-djConfig.bindEncoding = "UTF-8";
 djConfig.parseWidgets = false;
 dojo.require("dojo.date.common");
 dojo.require("dojo.debug.console");
@@ -286,15 +285,15 @@ dojo.declare("alfresco.xforms.Widget",
                },
 
                /** Commits the changed value to the server */
-               _commitValueChange: function()
+               _commitValueChange: function(value)
                {
                  if (this._compositeParent)
                  {
-                   this._compositeParent._commitValueChange();
+                   this._compositeParent._commitValueChange(value);
                  }
                  else
                  {
-                   this.xform.setXFormsValue(this.id, this.getValue());
+                   this.xform.setXFormsValue(this.id, value || this.getValue());
                  }
                },
 
@@ -514,8 +513,10 @@ dojo.declare("alfresco.xforms.Widget",
 /** The file picker widget which handles xforms widget xf:upload. */
 dojo.declare("alfresco.xforms.FilePicker",
              alfresco.xforms.Widget,
-             function(xform, xformsNode)
+             function(xform, xformsNode, params)
              {
+               this._selectableTypes = "selectable_types" in params ? params["selectable_types"].split(",") : null;
+               this._filterMimetypes = "filter_mimetypes" in params ? params["filter_mimetypes"].split(",") : [];
              },
              {
 
@@ -533,7 +534,9 @@ dojo.declare("alfresco.xforms.FilePicker",
                                                              this.getInitialValue(), 
                                                              false,
                                                              this._filePicker_changeHandler,
-                                                             this._filePicker_resizeHandler);
+                                                             this._filePicker_resizeHandler,
+                                                             this._selectableTypes,
+                                                             this._filterMimetypes);
                  this.widget.render();
                },
 
@@ -815,10 +818,7 @@ dojo.declare("alfresco.xforms.RichTextEditor",
              {
                this._focused = false;
                this._params = params;
-               if (!this.statics.tinyMCEInitialized)
-               {
-                 this.statics.tinyMCEInitialized = true;
-               }
+               this._oldValue = null;
              },
              {
 
@@ -826,12 +826,17 @@ dojo.declare("alfresco.xforms.RichTextEditor",
                // methods & properties
                /////////////////////////////////////////////////////////////////
                
-               statics: { currentInstance: null, tinyMCEInitialized: false },
+               statics: { currentInstance: null },
 
                _removeTinyMCE: function()
                {
-                 var value = tinyMCE.getContent(this.id);
-                 this._commitValueChange();
+                 var value = this.getValue(); //tinyMCE.getContent(this.id);
+                 if (value != this._oldValue)
+                 {
+                   dojo.debug("commitValueChange from _removeTinyMCE [" + value + "]");
+                   this._commitValueChange(value);
+                   this._oldValue = value;
+                 }
                  tinyMCE.removeMCEControl(this.id);
                  this._focused = false;
                },
@@ -846,15 +851,26 @@ dojo.declare("alfresco.xforms.RichTextEditor",
 
                  this.statics.currentInstance = this;
 
-                 tinyMCE.settings.theme_advanced_buttons1 = this._params["theme_advanced_buttons1"] || "";
-                 tinyMCE.settings.theme_advanced_buttons2 = this._params["theme_advanced_buttons2"] || "";
-                 tinyMCE.settings.theme_advanced_buttons3 = this._params["theme_advanced_buttons3"] || "";
-                 if (this._params["height"])
+                 for (var i in alfresco.constants.TINY_MCE_DEFAULT_SETTINGS)
                  {
-                   tinyMCE.settings.height = parseInt(this._params["height"]);
+                   if (!(i in this._params))
+                   {
+                     this._params[i] = alfresco.constants.TINY_MCE_DEFAULT_SETTINGS[i];
+                   }
                  }
+                 for (var i in this._params)
+                 {
+                   if (i in tinyMCE.settings)
+                   {
+                     dojo.debug("setting tinyMCE.settings[" + i + "] = " + this._params[i]);
+                     tinyMCE.settings[i] = this._params[i];
+                   }
+                 }
+                 tinyMCE.settings.height = this._params["height"] ? parseInt(this._params["height"]) : -1;
+                 tinyMCE.settings.auto_focus = this.id;
                  tinyMCE.addMCEControl(this.widget, this.id);
                  
+                 tinyMCE.getInstanceById(this.id).getWin().focus();
                  var editorDocument = tinyMCE.getInstanceById(this.id).getDoc();
                  editorDocument.widget = this;
 
@@ -885,7 +901,8 @@ dojo.declare("alfresco.xforms.RichTextEditor",
                  }
                  this.widget.style.border = "1px solid black";
                  this.widget.style.overflow = "auto";
-                 this.widget.innerHTML = this.getInitialValue() || "";
+                 this._oldValue = this.getInitialValue() || "";
+                 this.widget.innerHTML = this._oldValue;
                  var images = this.widget.getElementsByTagName("img");
                  for (var i = 0; i < images.length; i++)
                  {
@@ -906,25 +923,29 @@ dojo.declare("alfresco.xforms.RichTextEditor",
                  }
                },
 
-               setValue: function(value)
+               setValue: function(value, forceCommit)
                {
-                 if (this.statics.currentInstance == this)
+                 if (value != this._oldValue || forceCommit)
                  {
-                   tinyMCE.selectedInstance = tinyMCE.getInstanceById(this.id);
-                   try
+                   if (this.statics.currentInstance == this)
                    {
-                     tinyMCE.setContent(value);
+                     tinyMCE.selectedInstance = tinyMCE.getInstanceById(this.id);
+                     try
+                     {
+                       tinyMCE.setContent(value);
+                     }
+                     catch (e)
+                     {
+                       //XXXarielb figure this out - getting intermittent errors in IE.
+                       dojo.debug(e);
+                     }
                    }
-                   catch (e)
+                   else
                    {
-                     //XXXarielb figure this out - getting intermittent errors in IE.
-                     dojo.debug(e);
+                     this.widget.innerHTML = value;
                    }
                  }
-                 else
-                 {
-                   this.widget.innerHTML = value;
-                 }
+                 alfresco.xforms.RichTextEditor.superclass.setValue.call(this, value, forceCommit);
                },
 
                getValue: function()
@@ -964,15 +985,21 @@ dojo.declare("alfresco.xforms.RichTextEditor",
                    event.target = event.srcElement.ownerDocument;
                  }
                  var widget = event.target.widget;
-                 widget._commitValueChange();
-                 this._focused = false;
+                 var value = widget.getValue();
+                 if (value != widget._oldValue)
+                 {
+                   dojo.debug("commitValueChange from _tinyMCE_blurHandler [" + value + "]");
+                   widget._commitValueChange(value);
+                   widget._oldValue = value;
+                 }
+                 widget._focused = false;
                },
 
                _tinyMCE_focusHandler: function(event)
                {
                  var widget = event.target.widget;
                  var repeatIndices = widget.getRepeatIndices();
-                 if (repeatIndices.length != 0 && !this._focused)
+                 if (repeatIndices.length != 0 && !widget._focused)
                  {
                    var r = repeatIndices[repeatIndices.length - 1].repeat;
                    var p = widget;
@@ -991,7 +1018,7 @@ dojo.declare("alfresco.xforms.RichTextEditor",
                    }
                    repeatIndices[repeatIndices.length - 1].repeat.setFocusedChild(p);
                  }
-                 this._focused = true;
+                 widget._focused = true;
                },
 
                _div_mouseoverHandler: function(event)
@@ -4206,7 +4233,7 @@ dojo.declare("alfresco.xforms.XForm",
                  dojo.debug("setting value " + id + " = " + value);
                  var req = alfresco.AjaxHelper.createRequest(this,
                                                              "XFormsBean.setXFormsValue",
-                                                             { id: id, value: value },
+                                                             { id: id, value: new String(value) },
                                                              function(type, data, evt)
                                                              {
                                                                this.target._handleEventLog(data.documentElement);
@@ -4626,10 +4653,13 @@ dojo.html.toCamelCase = function(str)
 // tiny mce integration
 ////////////////////////////////////////////////////////////////////////////////
 
-tinyMCE.init({
+alfresco.constants.TINY_MCE_DEFAULT_SETTINGS = 
+{
   theme: "advanced",
   mode: "exact",
+  plugins: "table",
   width: -1,
+  height: -1,
   auto_resize: false,
   force_p_newlines: false,
   encoding: "UTF-8",
@@ -4643,4 +4673,6 @@ tinyMCE.init({
   theme_advanced_buttons2: "",
   theme_advanced_buttons3: "",
   urlconverter_callback: "alfresco_TinyMCE_urlconverter_callback"
-});
+};
+
+tinyMCE.init(dojo.lang.mixin(new Object(), alfresco.constants.TINY_MCE_DEFAULT_SETTINGS));

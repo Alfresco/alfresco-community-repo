@@ -24,6 +24,7 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.*;
+import java.util.regex.Pattern;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -35,6 +36,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.PropertyValue;
@@ -43,6 +45,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.app.Application;
@@ -58,6 +61,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.FileCopyUtils;
@@ -80,6 +84,7 @@ public class FilePickerBean
 
    private AVMBrowseBean avmBrowseBean;
    private AVMService avmService;
+   private NamespaceService namespaceService;
 
    public FilePickerBean()
    {
@@ -112,6 +117,14 @@ public class FilePickerBean
    }
 
    /**
+    * @param namespaceService the namespaceService to set.
+    */
+   public void setNamespaceService(final NamespaceService namespaceService)
+   {
+      this.namespaceService = namespaceService;
+   }
+
+   /**
     * Provides data for a file picker widget.
     */
    @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_XML)
@@ -121,8 +134,7 @@ public class FilePickerBean
       final FacesContext facesContext = FacesContext.getCurrentInstance();
       final ExternalContext externalContext = facesContext.getExternalContext();
 
-      final Map requestParameters = externalContext.getRequestParameterMap();
-      String currentPath = (String)requestParameters.get("currentPath");
+      String currentPath = (String)externalContext.getRequestParameterMap().get("currentPath");
       if (currentPath == null)
       {
          currentPath = this.getCurrentAVMPath();
@@ -135,7 +147,18 @@ public class FilePickerBean
                                          currentPath,
                                          AVMUtil.PathRelation.WEBAPP_RELATIVE);
       }
-      LOGGER.debug(this + ".getFilePickerData(" + currentPath + ")");
+ 
+      final QName[] selectableTypes = 
+         this.getSelectableTypes((String[])externalContext.getRequestParameterValuesMap().get("selectableTypes"));
+      final Pattern[] filterMimetypes = 
+         this.getFilterMimetypes((String[])externalContext.getRequestParameterValuesMap().get("filterMimetypes"));
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug(this + ".getFilePickerData(path = " + currentPath + 
+                      ", selectableTypes = [" + StringUtils.join(selectableTypes, ",") +
+                      "], filterMimetypes = [" + StringUtils.join(filterMimetypes, ",") +
+                      "])");
+      }
 
       final Document result = XMLUtil.newDocument();
       final Element filePickerDataElement = result.createElement("file-picker-data");
@@ -149,8 +172,11 @@ public class FilePickerBean
          
          filePickerDataElement.setAttribute("error", 
                                             MessageFormat.format(Application.getMessage(facesContext, "error_not_found"),
-                                                                 currentPath.substring(currentPath.lastIndexOf("/") + 1, currentPath.length()),
-                                                                 currentPath.lastIndexOf("/") == 0 ? "/" : currentPath.substring(0, currentPath.lastIndexOf("/"))));
+                                                                 currentPath.substring(currentPath.lastIndexOf("/") + 1, 
+                                                                                       currentPath.length()),
+                                                                 (currentPath.lastIndexOf("/") == 0 
+                                                                  ? "/" 
+                                                                  : currentPath.substring(0, currentPath.lastIndexOf("/")))));
          currentPath = this.getCurrentAVMPath();
       }
       else if (! currentNode.isDirectory())
@@ -166,9 +192,30 @@ public class FilePickerBean
       e.setAttribute("image", "/images/icons/space_small.gif");
       filePickerDataElement.appendChild(e);
 
-      for (Map.Entry<String, AVMNodeDescriptor> entry : 
+      for (final Map.Entry<String, AVMNodeDescriptor> entry : 
               this.avmService.getDirectoryListing(-1, currentPath).entrySet())
       {
+         if (!entry.getValue().isDirectory() && filterMimetypes.length != 0)
+         {
+            final String contentMimetype = this.avmService.getContentDataForRead(entry.getValue()).getMimetype();
+            boolean matched = false;
+            for (final Pattern p : filterMimetypes)
+            {
+               matched = p.matcher(contentMimetype).matches();
+               if (LOGGER.isDebugEnabled())
+               {
+                  LOGGER.debug(p + ".matches(" + contentMimetype + ") = " + matched);
+               }
+               if (matched)
+               {
+                  break;
+               }
+            }
+            if (!matched)
+            {
+               continue;
+            }
+         }
          e = result.createElement("child-node");
          e.setAttribute("avmPath", entry.getValue().getPath());
          e.setAttribute("webappRelativePath", 
@@ -179,6 +226,18 @@ public class FilePickerBean
                                   : Utils.getFileTypeImage(facesContext, 
                                                            entry.getValue().getName(),
                                                            true)));
+
+         boolean selectable = false;
+         // faking this for now since i can't figure out how to efficiently get the type
+         // qname from the avmservice
+         for (final QName typeQName : selectableTypes)
+         {
+            selectable = selectable || (WCMModel.TYPE_AVM_FOLDER.equals(typeQName) && 
+                                        entry.getValue().isDirectory());
+            selectable = selectable || (WCMModel.TYPE_AVM_CONTENT.equals(typeQName) && 
+                                        !entry.getValue().isDirectory());
+         }
+         e.setAttribute("selectable", Boolean.toString(selectable));
          filePickerDataElement.appendChild(e);
       }
 
@@ -208,16 +267,25 @@ public class FilePickerBean
       InputStream fileInputStream = null;
       for (FileItem item : fileItems)
       {
-         LOGGER.debug("item = " + item);
+         if (LOGGER.isDebugEnabled())
+         {
+            LOGGER.debug("item = " + item);
+         }
          if (item.isFormField() && item.getFieldName().equals("upload-id"))
          {
             uploadId = item.getString();
-            LOGGER.debug("uploadId is " + uploadId);
+            if (LOGGER.isDebugEnabled())
+            {
+               LOGGER.debug("uploadId is " + uploadId);
+            }
          }
          if (item.isFormField() && item.getFieldName().equals("return-page"))
          {
             returnPage = item.getString();
-            LOGGER.debug("returnPage is " + returnPage);
+            if (LOGGER.isDebugEnabled())
+            {
+               LOGGER.debug("returnPage is " + returnPage);
+            }
          }
          else if (item.isFormField() && item.getFieldName().equals("currentPath"))
          {
@@ -226,17 +294,27 @@ public class FilePickerBean
             currentPath = AVMUtil.buildPath(previewStorePath,
                                                  item.getString(),
                                                  AVMUtil.PathRelation.WEBAPP_RELATIVE);
-            LOGGER.debug("currentPath is " + currentPath);
+            if (LOGGER.isDebugEnabled())
+            {
+               LOGGER.debug("currentPath is " + currentPath);
+            }
          }
          else
          {
             filename = FilenameUtils.getName(item.getName());
             fileInputStream = item.getInputStream();
-            LOGGER.debug("uploading file " + filename);
+
+            if (LOGGER.isDebugEnabled())
+            {
+               LOGGER.debug("uploading file " + filename);
+            }
          }
       }
 
-      LOGGER.debug("saving file " + filename + " to " + currentPath);
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("saving file " + filename + " to " + currentPath);
+      }
       
       try
       {
@@ -279,7 +357,7 @@ public class FilePickerBean
 
    private String getCurrentAVMPath()
    {
-      AVMNode node = this.avmBrowseBean.getAvmActionNode();
+      final AVMNode node = this.avmBrowseBean.getAvmActionNode();
       if (node == null)
       {
          return this.avmBrowseBean.getCurrentPath();
@@ -287,5 +365,34 @@ public class FilePickerBean
 
       final String result = node.getPath();
       return node.isDirectory() ? result : AVMNodeConverter.SplitBase(result)[0];
+   }
+
+   private QName[] getSelectableTypes(final String[] selectableTypes)
+   {
+      final QName[] result = (selectableTypes == null 
+                              ? new QName[] { WCMModel.TYPE_AVM_CONTENT, WCMModel.TYPE_AVM_FOLDER } 
+                              : new QName[selectableTypes.length]);
+
+      if (selectableTypes != null)
+      {
+         for (int i = 0; i < selectableTypes.length; i++)
+         {
+            result[i] = QName.resolveToQName(this.namespaceService, selectableTypes[i]);
+         }
+      }
+      return result;
+   }
+
+   private Pattern[] getFilterMimetypes(final String[] filterMimetypes)
+   {
+      final Pattern[] result = filterMimetypes == null ? new Pattern[0] : new Pattern[filterMimetypes.length];
+      if (filterMimetypes != null)
+      {
+         for (int i = 0; i < filterMimetypes.length; i++)
+         {
+            result[i] = Pattern.compile(filterMimetypes[i].replaceAll("\\*", "\\.*").replaceAll("\\/", "\\\\/"));
+         }
+      }
+      return result;
    }
 }

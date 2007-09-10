@@ -590,6 +590,10 @@ public class CreateFormWizard
       LOGGER.debug("removing uploaded rendering engine template file " + 
                    this.getRenderingEngineTemplateFileName());
       this.clearUpload(FILE_SCHEMA);
+      this.formName = null;
+      this.formTitle = null;
+      this.formDescription = null;
+      this.outputPathPatternForFormInstanceData = null;
       this.schemaRootElementNameChoices = null;
       this.schema = null;
       this.schemaFileName = null;
@@ -607,6 +611,11 @@ public class CreateFormWizard
                    this.getRenderingEngineTemplateFileName());
       this.clearUpload(FILE_RENDERING_ENGINE_TEMPLATE);
       this.renderingEngineTemplateFileName = null;
+      this.renderingEngineTemplateName = null;
+      this.renderingEngineTemplateTitle = null;
+      this.renderingEngineTemplateDescription = null;
+      this.outputPathPatternForRendition = null;
+      this.mimetypeForRendition = null;
       assert this.getRenderingEngineTemplateFileName() == null;
       // refresh the current page
       return null;

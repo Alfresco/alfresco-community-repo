@@ -34,6 +34,7 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMBrowseBean;
+import org.alfresco.web.bean.wcm.WebProject;
 
 /**
  * Evaluator to return if a item is accessable due to a WCM user level lock.
@@ -45,15 +46,22 @@ public class WCMLockEvaluator implements ActionEvaluator
    /**
     * @return true if the item is not locked by another user
     */
-   public boolean evaluate(Node node)
+   public boolean evaluate(final Node node)
    {
-      FacesContext fc = FacesContext.getCurrentInstance();
-      AVMLockingService avmLockService = Repository.getServiceRegistry(fc).getAVMLockingService();
-      AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(fc, AVMBrowseBean.BEAN_NAME);
+      final FacesContext fc = FacesContext.getCurrentInstance();
+      final AVMLockingService avmLockService = Repository.getServiceRegistry(fc).getAVMLockingService();
+      final AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(fc, AVMBrowseBean.BEAN_NAME);
       
-      String path = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef()).getSecond();
-      String username = Application.getCurrentUser(fc).getUserName();
+      final String path = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef()).getSecond();
+      final String username = Application.getCurrentUser(fc).getUserName();
       
-      return avmLockService.hasAccess(avmBrowseBean.getWebProject().getNodeRef(), path, username);
+      WebProject webProject = avmBrowseBean.getWebProject();
+      if (webProject == null)
+      {
+         // when in a workflow context, the WebProject may not be accurate on the browsebean
+         // so get the web project associated with the path
+         webProject = new WebProject(path);
+      }
+      return avmLockService.hasAccess(webProject.getNodeRef(), path, username);
    }
 }

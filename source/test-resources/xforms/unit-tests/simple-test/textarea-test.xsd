@@ -20,6 +20,13 @@
             </xs:appinfo>
           </xs:annotation>
         </xs:element>
+        <xs:element name="rich_text_stringType_custom" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <alf:appearance>custom</alf:appearance>
+            </xs:appinfo>
+          </xs:annotation>
+        </xs:element>
         <xs:element name="repeating-textarea" type="xs:anyType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
       <xs:attribute name="plain_text_attribute" type="xs:string" use="required">

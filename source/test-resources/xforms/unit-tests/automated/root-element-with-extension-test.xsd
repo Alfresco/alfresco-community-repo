@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+  <!-- Complex types -->
+  <xs:complexType abstract="true" name="abstract-type">
+    <xs:sequence>
+      <xs:element name="from-abstract-type" type="xs:normalizedString"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="type-with-extension">
+    <xs:complexContent>
+      <xs:extension base="abstract-type">
+        <xs:sequence>
+          <xs:element name="from-type-with-extension" type="xs:normalizedString"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="type-without-extension">
+    <xs:complexContent>
+      <xs:extension base="type-with-extension">
+        <xs:sequence>
+          <xs:element name="from-type-no-extension" type="xs:normalizedString"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+  <!-- Root Elements -->
+  <xs:element name="with-extension-test" type="type-with-extension" />
+  <xs:element name="without-extension-test" type="type-without-extension" />
+
+</xs:schema>

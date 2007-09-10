@@ -73,6 +73,7 @@ import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormInstanceDataImpl;
+import org.alfresco.web.forms.FormNotFoundException;
 import org.alfresco.web.forms.FormProcessor;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.RenderingEngineTemplate;
@@ -101,7 +102,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected List<Rendition> renditions = null;
    protected FormInstanceData formInstanceData = null;
    protected FormProcessor.Session formProcessorSession = null;
-   private Document instanceDataDocument = null;
+   protected Document instanceDataDocument = null;
    protected boolean formSelectDisabled = false;
    protected boolean startWorkflow = false;
 
@@ -204,11 +205,18 @@ public class CreateWebContentWizard extends BaseContentWizard
       {
          // it is used to init the dialog to a specific template
          final String formName = parameters.get(UIUserSandboxes.PARAM_FORM_NAME);
-         final Form form = this.avmBrowseBean.getWebProject().getForm(formName);
-         if (form != null)
+         try
          {
-            this.formName = form.getName();
-            this.formSelectDisabled = true;
+            final Form form = this.avmBrowseBean.getWebProject().getForm(formName);
+            if (form != null)
+            {
+               this.formName = form.getName();
+               this.formSelectDisabled = true;
+            }
+         }
+         catch (FormNotFoundException fnfe)
+         {
+            Utils.addErrorMessage(fnfe.getMessage(), fnfe);
          }
       }
       
@@ -224,8 +232,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    @Override
    public String next()
    {
-      final int step = Application.getWizardManager().getCurrentStep();
-      if (step == 3)
+      if ("summary".equals(Application.getWizardManager().getCurrentStepName()))
       {
          // if rendering a form, then save the content now to generate the renditions
          if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType))
@@ -236,7 +243,7 @@ public class CreateWebContentWizard extends BaseContentWizard
             }
             catch (Exception e)
             {
-               Application.getWizardManager().getState().setCurrentStep(step - 1);
+               Application.getWizardManager().getState().setCurrentStep(Application.getWizardManager().getCurrentStep() - 1);
                Utils.addErrorMessage(e.getMessage(), e);
             }
          }
@@ -247,13 +254,12 @@ public class CreateWebContentWizard extends BaseContentWizard
    @Override
    public String back()
    {
-      final int step = Application.getWizardManager().getCurrentStep();
-      if (step == 2)
+      if ("content".equals(Application.getWizardManager().getCurrentStepName()))
       {
-         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("clearing form instance data");
          if (this.formInstanceData != null)
          {
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug("clearing form instance data: " + this.formInstanceData.getPath());
             this.avmService.removeNode(this.formInstanceData.getPath());
          }
          if (this.renditions != null)
@@ -444,7 +450,7 @@ public class CreateWebContentWizard extends BaseContentWizard
 
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
       {
-         this.formInstanceData = new FormInstanceDataImpl(AVMNodeConverter.ToNodeRef(-1, this.createdPath));
+         this.formInstanceData = new FormInstanceDataImpl(-1, this.createdPath);
          this.renditions = this.formInstanceData.getRenditions();
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("reset form instance data " + this.formInstanceData.getName() + 
@@ -461,8 +467,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       //       checking step numbers
       
       boolean disabled = false;
-      int step = Application.getWizardManager().getCurrentStep();
-      if (step == 1)
+      if ("details".equals(Application.getWizardManager().getCurrentStepName()))
       {
          disabled = (this.fileName == null || this.fileName.length() == 0);
       }
@@ -675,6 +680,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    }
    
    public Form getForm()
+      throws FormNotFoundException
    {
       return (this.getFormName() != null 
               ? this.avmBrowseBean.getWebProject().getForm(this.getFormName())
@@ -802,6 +808,11 @@ public class CreateWebContentWizard extends BaseContentWizard
       return this.startWorkflow;
    }
 
+   public boolean getSubmittable()
+   {
+      return true;
+   }
+
    /**
     * Provides the url to the preview sandbox containing the asset currently
     * being edited.
@@ -809,7 +820,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    public String getPreviewSandboxUrl()
    {
       return AVMUtil.buildWebappUrl(AVMUtil.getCorrespondingPreviewStoreName(this.avmBrowseBean.getSandbox()), 
-                                         this.avmBrowseBean.getWebapp());
+                                    this.avmBrowseBean.getWebapp());
    }
    
    public String getSummary()
@@ -830,6 +841,11 @@ public class CreateWebContentWizard extends BaseContentWizard
                this.getSummaryObjectType(), 
                this.getSummaryMimeType(this.mimeType)
             });
+   }
+
+   public boolean getEditMode()
+   {
+      return false;
    }
    
    // ------------------------------------------------------------------------------

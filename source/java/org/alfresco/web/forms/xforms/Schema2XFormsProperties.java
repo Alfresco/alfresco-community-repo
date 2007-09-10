@@ -35,7 +35,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.forms.Form;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -198,7 +198,8 @@ public class Schema2XFormsProperties
    public String toString()
    {
       return (this.getClass().getName() + "{" +
-              StringUtils.arrayToCommaDelimitedString(this.locations) +
+              StringUtils.join(this.locations, ",") +
               "}");
    }
 }
+

@@ -69,10 +69,12 @@ import org.chiba.xml.events.XFormsEventNames;
 import org.chiba.xml.events.XMLEvent;
 import org.chiba.xml.xforms.ChibaBean;
 import org.chiba.xml.xforms.XFormsElement;
-import org.chiba.xml.xforms.connector.http.AbstractHTTPConnector;
+import org.chiba.xml.xforms.connector.SubmissionHandler;
+import org.chiba.xml.xforms.connector.AbstractConnector;
 import org.chiba.xml.xforms.core.Instance;
 import org.chiba.xml.xforms.core.ModelItem;
 import org.chiba.xml.xforms.core.Model;
+import org.chiba.xml.xforms.core.Submission;
 import org.chiba.xml.xforms.core.UpdateHandler;
 import org.chiba.xml.xforms.core.impl.DefaultValidatorMode;
 import org.chiba.xml.xforms.exception.XFormsException;
@@ -95,6 +97,30 @@ import org.xml.sax.SAXException;
  */
 public class XFormsBean
 {
+
+   /////////////////////////////////////////////////////////////////////////////
+
+   public static class AlfrescoSubmissionHandler
+      extends AbstractConnector
+      implements SubmissionHandler
+   {
+
+      public Map submit(final Submission submission, 
+                        final Node instance)
+         throws XFormsException
+      {
+         if (XFormsBean.LOGGER.isDebugEnabled())
+         {
+            XFormsBean.LOGGER.debug(this.getClass().getName() + 
+                                    " recieved submission " + XMLUtil.toString(instance, true));
+         }
+         final FacesContext fc = FacesContext.getCurrentInstance();
+         //make the XFormsBean available for this session
+         final XFormsBean xforms = (XFormsBean)FacesHelper.getManagedBean(fc, "XFormsBean");
+         xforms.handleSubmit(instance);
+         return Collections.EMPTY_MAP;
+      }
+   }
 
    /////////////////////////////////////////////////////////////////////////////
    
@@ -120,9 +146,9 @@ public class XFormsBean
          this.formInstanceData = formInstanceData;
          this.formInstanceDataName = formInstanceDataName;
          this.form = form;
-         this.schema2XForms = new Schema2XForms("/ajax/invoke/XFormsBean.handleAction",
+         this.schema2XForms = new Schema2XForms(/* "/ajax/invoke/XFormsBean.handleAction" */ null,
                                                 Schema2XForms.SubmitMethod.POST,
-                                                baseUrl);
+                                                /* baseUrl */ "alfresco:" + XFormsBean.class.getName());
       }
 
       public void destroy()
@@ -206,7 +232,7 @@ public class XFormsBean
       
       final ChibaBean chibaBean = new ChibaBean();
       chibaBean.setConfig(servletContext.getRealPath("/WEB-INF/chiba.xml"));
-      XFormsBean.storeCookies(request.getCookies(), chibaBean);
+//      XFormsBean.storeCookies(request.getCookies(), chibaBean);
       chibaBean.setXMLContainer(this.getXFormsDocument());
 
       final EventTarget et = (EventTarget)
@@ -380,18 +406,8 @@ public class XFormsBean
          final HttpServletRequest request = (HttpServletRequest)
             context.getExternalContext().getRequest();
          final Document result = XMLUtil.parse(request.getInputStream());
+         this.handleSubmit(result);
          final Document instanceData = this.xformsSession.getFormInstanceData();
-         Element documentElement = instanceData.getDocumentElement();
-         if (documentElement != null)
-         {
-            instanceData.removeChild(documentElement);
-         }
-
-         documentElement = result.getDocumentElement();
-         this.xformsSession.schema2XForms.removePrototypeNodes(documentElement);
-         documentElement = (Element)instanceData.importNode(documentElement, true);
-         instanceData.appendChild(documentElement);
-         instanceData.normalizeDocument();
          final ResponseWriter out = context.getResponseWriter();
          XMLUtil.print(instanceData, out, false);
          out.close();
@@ -400,6 +416,24 @@ public class XFormsBean
       {
          LOGGER.error(t.getMessage(), t);
       }
+   }
+
+   public void handleSubmit(Node result)
+   {
+      final Document instanceData = this.xformsSession.getFormInstanceData();
+      Element documentElement = instanceData.getDocumentElement();
+      if (documentElement != null)
+      {
+         instanceData.removeChild(documentElement);
+      }
+      if (result instanceof Document)
+      {
+         result = ((Document)result).getDocumentElement();
+      }
+      documentElement = (Element)instanceData.importNode(result.cloneNode(true), true);
+      Schema2XForms.removePrototypeNodes(documentElement);
+      instanceData.appendChild(documentElement);
+      instanceData.normalizeDocument();
    }
 
    /**
@@ -608,25 +642,25 @@ public class XFormsBean
     * HTTPConnectors. Instance loading and submission then uses these cookies. Important for
     * applications using auth.
     */
-   @SuppressWarnings("unchecked")
-   private static void storeCookies(final javax.servlet.http.Cookie[] cookiesIn,
-                                    final ChibaBean chibaBean){
-      if (cookiesIn != null) {
-         org.apache.commons.httpclient.Cookie[] commonsCookies = 
-            new org.apache.commons.httpclient.Cookie[cookiesIn.length];
-         for (int i = 0; i < cookiesIn.length; i += 1) {
-            commonsCookies[i] =
-               new org.apache.commons.httpclient.Cookie(cookiesIn[i].getDomain(),
-                                                        cookiesIn[i].getName(),
-                                                        cookiesIn[i].getValue(),
-                                                        cookiesIn[i].getPath(),
-                                                        cookiesIn[i].getMaxAge(),
-                                                        cookiesIn[i].getSecure());
-         }
-         chibaBean.getContext().put(AbstractHTTPConnector.REQUEST_COOKIE,
-                                    commonsCookies);
-      }
-   }
+//   @SuppressWarnings("unchecked")
+//   private static void storeCookies(final javax.servlet.http.Cookie[] cookiesIn,
+//                                    final ChibaBean chibaBean){
+//      if (cookiesIn != null) {
+//         org.apache.commons.httpclient.Cookie[] commonsCookies = 
+//            new org.apache.commons.httpclient.Cookie[cookiesIn.length];
+//         for (int i = 0; i < cookiesIn.length; i += 1) {
+//            commonsCookies[i] =
+//               new org.apache.commons.httpclient.Cookie(cookiesIn[i].getDomain(),
+//                                                        cookiesIn[i].getName(),
+//                                                        cookiesIn[i].getValue(),
+//                                                        cookiesIn[i].getPath(),
+//                                                        cookiesIn[i].getMaxAge(),
+//                                                        cookiesIn[i].getSecure());
+//         }
+//         chibaBean.getContext().put(AbstractHTTPConnector.REQUEST_COOKIE,
+//                                    commonsCookies);
+//      }
+//   }
    
    private Document getXFormsDocument()
       throws FormBuilderException

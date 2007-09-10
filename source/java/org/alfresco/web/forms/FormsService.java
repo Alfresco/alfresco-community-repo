@@ -211,6 +211,7 @@ public final class FormsService
     * @return the form by name or <tt>null</tt> if not found 
     */
    public Form getForm(final String name)
+      throws FormNotFoundException
    {
       final SearchParameters sp = new SearchParameters();
       sp.addStore(Repository.getStoreRef());
@@ -230,9 +231,11 @@ public final class FormsService
             break;
          }
       }
-      if (result == null && LOGGER.isDebugEnabled())
-         LOGGER.debug("unable to find template type " + name);
-      return result != null ? this.getForm(result) : null;
+      if (result == null)
+      {
+         throw new FormNotFoundException(name);
+      }
+      return this.getForm(result);
    }
 
    /**
@@ -244,11 +247,13 @@ public final class FormsService
     */
    public Form getForm(final NodeRef nodeRef)
    {
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("loading form for " + nodeRef);
+      if (!this.nodeService.hasAspect(nodeRef, WCMAppModel.ASPECT_FORM))
+      {
+         throw new IllegalArgumentException("node " + nodeRef + " is not a form");
+      }
       final Form result = new FormImpl(nodeRef);
       if (LOGGER.isDebugEnabled())
-         LOGGER.debug("loaded form " + result);
+         LOGGER.debug("loaded form " + result + " for noderef " + nodeRef);
       return result;
    }
 }

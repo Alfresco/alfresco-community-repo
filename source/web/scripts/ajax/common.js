@@ -435,6 +435,7 @@ if (!Array.prototype.peek)
    }
 }
 
+// this is an exact copy of ../upload_helper.js - needs refactoring
 var _fileUploads = [];
 
 function handleUploadHelper(fileInputElement,

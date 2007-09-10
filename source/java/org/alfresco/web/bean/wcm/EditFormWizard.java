@@ -74,9 +74,6 @@ public class EditFormWizard
    {
       super.init(parameters);
       
-      // the editMode flag is used to disabled some wizard fields
-      //      this.editMode = true;
-      
       final NodeRef formNodeRef = this.browseBean.getActionSpace().getNodeRef();
       if (formNodeRef == null)
       {

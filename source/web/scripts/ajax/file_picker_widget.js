@@ -42,7 +42,14 @@ if (typeof alfresco.resources == "undefined")
 /**
  * The file picker widget.
  */
-alfresco.FilePickerWidget = function(uploadId, node, value, readonly, change_callback, resize_callback)
+alfresco.FilePickerWidget = function(uploadId, 
+                                     node, 
+                                     value, 
+                                     readonly, 
+                                     change_callback, 
+                                     resize_callback,
+                                     selectableTypes,
+                                     filterMimetypes)
 {
   this.uploadId = uploadId;
   this.node = node;
@@ -50,6 +57,8 @@ alfresco.FilePickerWidget = function(uploadId, node, value, readonly, change_cal
   this.readonly =  readonly || false;
   this.change_callback = change_callback;
   this.resize_callback = resize_callback;
+  this.selectableTypes = selectableTypes;
+  this.filterMimetypes = filterMimetypes;
 }
 
 // static methods and properties
@@ -234,6 +243,14 @@ _navigateToNode: function(path)
                                                 this.target._showPicker(data.documentElement);
                                               });
   req.content.currentPath = path;
+  if (this.selectableTypes)
+  {
+    req.content.selectableTypes = this.selectableTypes;
+  }
+  if (this.filterMimetypes)
+  {
+    req.content.filterMimetypes = this.filterMimetypes;
+  }
   alfresco.AjaxHelper.sendRequest(req);
 },
 
@@ -423,6 +440,7 @@ _showPicker: function(data)
     var row = this._createRow(fileName,
                               webappRelativePath,
                               childNodes[i].getAttribute("type") == "directory",
+                              eval(childNodes[i].getAttribute("selectable")),
                               childNodes[i].getAttribute("image"),
                               "xformsRow" + (i % 2 ? "Even" : "Odd"));
     this.contentDiv.appendChild(row);
@@ -434,7 +452,7 @@ _showPicker: function(data)
   }
 },
 
-_createRow: function(fileName, webappRelativePath,  isDirectory, fileTypeImage, rowClass)
+_createRow: function(fileName, webappRelativePath,  isDirectory, isSelectable, fileTypeImage, rowClass)
 {
   var d = this.contentDiv.ownerDocument;
   var result = d.createElement("div");
@@ -492,23 +510,25 @@ _createRow: function(fileName, webappRelativePath,  isDirectory, fileTypeImage, 
   {
     result.appendChild(d.createTextNode(fileName));
   }
-
-  e = d.createElement("input");
-  e.filePickerWidget = this;
-  e.type = "button";
-  e.name = webappRelativePath;
-  e.value = "Select";
-  result.appendChild(e);
-    
-  e.style.position = "absolute";
-  e.style.right = "10px";
-  e.style.top = (.5 * result.offsetHeight) - (.5 * e.offsetHeight) + "px";
-  dojo.event.connect(e, "onclick", function(event)
-                     {
-                       var w = event.target.filePickerWidget;
-                       w.setValue(event.target.name);
-                       w._showSelectedValue();
-                     });
+  if (isSelectable)
+  {
+    e = d.createElement("input");
+    e.filePickerWidget = this;
+    e.type = "button";
+    e.name = webappRelativePath;
+    e.value = "Select";
+    result.appendChild(e);
+      
+    e.style.position = "absolute";
+    e.style.right = "10px";
+    e.style.top = (.5 * result.offsetHeight) - (.5 * e.offsetHeight) + "px";
+    dojo.event.connect(e, "onclick", function(event)
+                       {
+                         var w = event.target.filePickerWidget;
+                         w.setValue(event.target.name);
+                         w._showSelectedValue();
+                       });
+  }
   return result;
 },
 

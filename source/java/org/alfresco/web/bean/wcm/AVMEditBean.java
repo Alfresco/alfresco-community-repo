@@ -37,7 +37,6 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
@@ -47,6 +46,7 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormInstanceDataImpl;
+import org.alfresco.web.forms.FormNotFoundException;
 import org.alfresco.web.forms.FormProcessor;
 import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.forms.Rendition;
@@ -79,8 +79,6 @@ public class AVMEditBean
    
    private File file = null;
    private String fileName = null;
-   protected FormProcessor.Session formProcessorSession = null;
-   private Form form = null;
 
    /** AVM service bean reference */
    protected AVMService avmService;
@@ -90,13 +88,6 @@ public class AVMEditBean
    
    /** AVM Browse Bean reference */
    protected AVMBrowseBean avmBrowseBean;
-   
-   /** The ContentService bean reference */
-   protected ContentService contentService;
-   
-   /** The FilePickerBean reference */
-   protected FilePickerBean filePickerBean;
-   
    
    // ------------------------------------------------------------------------------
    // Bean property getters and setters 
@@ -125,22 +116,6 @@ public class AVMEditBean
       this.avmBrowseBean = avmBrowseBean;
    }
 
-   /**
-    * @param filePickerBean    The FilePickerBean to set.
-    */
-   public void setFilePickerBean(final FilePickerBean filePickerBean)
-   {
-      this.filePickerBean = filePickerBean;
-   }
-
-   /**
-    * @param contentService   The ContentService to set.
-    */
-   public void setContentService(final ContentService contentService)
-   {
-      this.contentService = contentService;
-   }
-   
    /**
     * @return Returns the current AVM node context.
     */
@@ -213,9 +188,9 @@ public class AVMEditBean
    {
       // try and retrieve the file and filename from the file upload bean
       // representing the file we previously uploaded.
-      FacesContext ctx = FacesContext.getCurrentInstance();
-      FileUploadBean fileBean = (FileUploadBean)ctx.getExternalContext().getSessionMap().
-         get(FileUploadBean.FILE_UPLOAD_BEAN_NAME);
+      final FacesContext ctx = FacesContext.getCurrentInstance();
+      final FileUploadBean fileBean = (FileUploadBean)
+         ctx.getExternalContext().getSessionMap().get(FileUploadBean.FILE_UPLOAD_BEAN_NAME);
       if (fileBean != null)
       {
          this.file = fileBean.getFile();
@@ -230,86 +205,8 @@ public class AVMEditBean
     */
    public String getFileUploadSuccessMsg()
    {
-      String msg = Application.getMessage(FacesContext.getCurrentInstance(), MSG_UPLOAD_SUCCESS);
-      return MessageFormat.format(msg, new Object[] {getFileName()});
-   }
-   
-   /**
-    * @return Returns the form when in the context of editing an xml asset.
-    */
-   public Form getForm()
-   {
-      if (this.form == null)
-      {
-         final PropertyValue pv = 
-            this.avmService.getNodeProperty(-1, 
-                                            this.getAvmNode().getPath(), 
-                                            WCMAppModel.PROP_PARENT_FORM_NAME);
-         
-         final String formName = (String)pv.getValue(DataTypeDefinition.TEXT);
-         final WebProject wp = new WebProject(this.getAvmNode().getPath());
-         this.form = wp.getForm(formName);
-
-         if (LOGGER.isDebugEnabled())
-             LOGGER.debug("loaded form " + this.form + 
-                          ", form name " + formName +
-                          ", for " + this.getAvmNode().getPath());
-      }
-      return this.form;
-   }
-
-   /**
-    * @return Returns the wrapper instance data for feeding the xml
-    * content to the form processor.
-    */
-   public Document getInstanceDataDocument()
-   {
-      if (this.instanceDataDocument == null)
-      {
-         final String content = this.getEditorOutput();
-         try
-         {
-            this.instanceDataDocument = (content != null 
-                                         ? XMLUtil.parse(content) 
-                                         : XMLUtil.newDocument());
-         }
-         catch (Exception e)
-         {
-            Utils.addErrorMessage("error parsing document", e);
-            return XMLUtil.newDocument();
-         }
-      }
-      return this.instanceDataDocument;
-   }
-
-   /**
-    * Returns the name of the form instance data for display purposes.
-    */
-   public String getFormInstanceDataName()
-   {
-      final FormInstanceData fid = new FormInstanceDataImpl(-1, this.getAvmNode().getPath());
-      return fid.getName().replaceAll("(.+)\\..*", "$1");
-   }
-
-   /**
-    * Returns the form processor session.
-    */
-   public FormProcessor.Session getFormProcessorSession()
-   {
-      return this.formProcessorSession;
-   }
-
-   /**
-    * Sets the form processor session.
-    */
-   public void setFormProcessorSession(final FormProcessor.Session formProcessorSession)
-   {
-      if (this.formProcessorSession != null &&
-          this.formProcessorSession != formProcessorSession)
-      {
-         this.formProcessorSession.destroy();
-      }
-      this.formProcessorSession = formProcessorSession;
+      final String msg = Application.getMessage(FacesContext.getCurrentInstance(), MSG_UPLOAD_SUCCESS);
+      return MessageFormat.format(msg, new Object[] { this.getFileName() });
    }
 
    // ------------------------------------------------------------------------------
@@ -319,12 +216,11 @@ public class AVMEditBean
     * Action handler called to calculate which editing screen to display based on the mimetype
     * of a document. If appropriate, the in-line editing screen will be shown.
     */
-   public void setupEditAction(ActionEvent event)
+   public void setupEditAction(final ActionEvent event)
    {
-      UIActionLink link = (UIActionLink)event.getComponent();
-      Map<String, String> params = link.getParameterMap();
-      String path = params.get("id");
-      setupEditAction(path);
+      final UIActionLink link = (UIActionLink)event.getComponent();
+      final Map<String, String> params = link.getParameterMap();
+      this.setupEditAction(params.get("id"));
    }
    
    /**
@@ -374,8 +270,6 @@ public class AVMEditBean
          this.avmSyncService.resetLayer(rootPath);
       }
 
-      this.filePickerBean.clearUploadedFiles();
-
       if (LOGGER.isDebugEnabled())
           LOGGER.debug("Editing AVM node: " + avmPath);
 
@@ -390,12 +284,9 @@ public class AVMEditBean
          {
             // make content available to the editing screen
             this.setEditorOutput(reader.getContentString());
-            this.setFormProcessorSession(null);
-            this.instanceDataDocument = null;
-            this.form = null;
             
             // navigate to appropriate screen
-            outcome = "dialog:editXmlInline";
+            outcome = "wizard:editWebContent";
          }
          else
          {
@@ -447,12 +338,11 @@ public class AVMEditBean
             tx.begin();
             
             // get an updating writer that we can use to modify the content on the current node
-            ContentWriter writer = this.contentService.getWriter(node.getNodeRef(), ContentModel.PROP_CONTENT, true);
+            final ContentWriter writer = this.avmService.getContentWriter(node.getPath());
             
             // also update the mime type in case a different type of file is uploaded
             String mimeType = Repository.getMimeTypeForFileName(context, this.fileName);
             writer.setMimetype(mimeType);
-            
             writer.putContent(this.file);            
             
             // commit the transaction
@@ -487,21 +377,17 @@ public class AVMEditBean
    public String cancel()
    {
       // reset the state
-      resetState();
+      this.resetState();
       
       return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
    }
    
-   /*package*/ void resetState()
+   private void resetState()
    {
       // clean up and clear action context
       clearUpload();
       setDocumentContent(null);
       setEditorOutput(null);
-      this.setFormProcessorSession(null);
-      this.instanceDataDocument = null;
-      this.form = null;
-      this.filePickerBean.clearUploadedFiles();
    }
    
    /**
@@ -523,13 +409,27 @@ public class AVMEditBean
       ctx.getExternalContext().getSessionMap().remove(FileUploadBean.FILE_UPLOAD_BEAN_NAME);
    }
 
-   /*package*/ void regenerateRenditions()
+   private void regenerateRenditions()
+      throws FormNotFoundException
    {
       final String avmPath = this.getAvmNode().getPath();
-      final FormInstanceData fid = new FormInstanceDataImpl(AVMNodeConverter.ToNodeRef(-1, avmPath))
+      final FormInstanceData fid = new FormInstanceDataImpl(-1, avmPath)
       {
          @Override
-         public Form getForm() { return AVMEditBean.this.getForm(); }
+         public Form getForm() 
+            throws FormNotFoundException
+         {
+            final WebProject wp = new WebProject(this.getPath());
+            Form f = super.getForm();
+            try
+            {
+               return wp.getForm(f.getName());
+            }
+            catch (FormNotFoundException fnfe)
+            {
+               throw new FormNotFoundException(f, wp, this);
+            }
+         }
       };
       final List<FormInstanceData.RegenerateResult> result = fid.regenerateRenditions();
       for (FormInstanceData.RegenerateResult rr : result)

@@ -42,26 +42,26 @@ public class SchemaUtil
 
    ////////////////////////////////////////////////////////////////////////////
 
-   public static class Occurance
+   public static class Occurrence
    {
       public final static int UNBOUNDED = -1;
 	
       public final int minimum;
       public final int maximum;
 
-      public Occurance(final XSParticle particle)
+      public Occurrence(final XSParticle particle)
       {
          this(particle.getMinOccurs(), (particle.getMaxOccursUnbounded()
-                                        ? Occurance.UNBOUNDED
+                                        ? Occurrence.UNBOUNDED
                                         : particle.getMaxOccurs()));
       }
 
-      public Occurance(final int minimum)
+      public Occurrence(final int minimum)
       {
-         this(minimum, Occurance.UNBOUNDED);
+         this(minimum, Occurrence.UNBOUNDED);
       }
 
-      public Occurance(final int minimum, final int maximum)
+      public Occurrence(final int minimum, final int maximum)
       {
          this.minimum = minimum;
          this.maximum = maximum;
@@ -723,15 +723,15 @@ public class SchemaUtil
     *
     * @return a table containing minOccurs and MaxOccurs
     */
-   public static Occurance getOccurance(final XSElementDeclaration elDecl) 
+   public static Occurrence getOccurrence(final XSElementDeclaration elDecl) 
    {
       //get occurance on encosing element declaration
       final XSParticle particle =
          SchemaUtil.findCorrespondingParticleInComplexType(elDecl);
-      final Occurance result = particle == null ? new Occurance(1, 1) : new Occurance(particle);
+      final Occurrence result = particle == null ? new Occurrence(1, 1) : new Occurrence(particle);
       if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("getOccurance for " + elDecl.getName() + 
+         LOGGER.debug("getOccurrence for " + elDecl.getName() + 
                       ", " + result);
       }
       return result;

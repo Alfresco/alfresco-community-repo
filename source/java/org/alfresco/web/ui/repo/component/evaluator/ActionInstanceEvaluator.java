@@ -51,16 +51,17 @@ public class ActionInstanceEvaluator extends BaseEvaluator
       
       try
       {
-         Object obj = getValue();
+         final Object obj = this.getValue();
          if (obj instanceof Node)
          {
-            result = getEvaluator().evaluate((Node)obj);
+            result = this.getEvaluator().evaluate((Node)obj);
          }
       }
       catch (Exception err)
       {
          // return default value on error
-         s_logger.debug("Error during ActionInstanceEvaluator evaluation: " + err.getMessage());
+         s_logger.warn("Error during ActionInstanceEvaluator evaluation of " + this.getEvaluator() +
+                       ": " + err.getMessage());
       }
       
       return result;
@@ -83,12 +84,12 @@ public class ActionInstanceEvaluator extends BaseEvaluator
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[] {
+      return new Object[] {
          // standard component attributes are saved by the super class
          super.saveState(context),
          this.evaluator,
-         this.evaluatorClassName };
-      return (values);
+         this.evaluatorClassName 
+      };
    }
    
    /** 

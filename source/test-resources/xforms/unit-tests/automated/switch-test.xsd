@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+  <xs:element name="switch-test">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="string" type="xs:normalizedString"/>
+        <xs:element name="choice-with-2-options">
+          <xs:complexType>
+            <xs:choice>
+              <xs:element name="choice-string" type="xs:normalizedString"/>
+              <xs:element name="choice-number" type="xs:decimal"/>
+            </xs:choice>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="choice-with-1-option">
+          <xs:complexType>
+            <xs:choice>
+              <xs:element name="the-only-choice" type="xs:normalizedString"/>
+            </xs:choice>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="no-choices">
+          <xs:complexType>
+            <xs:choice/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="sequence-with-2-elements">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="sequence-string" type="xs:normalizedString"/>
+              <xs:element name="sequence-number" type="xs:decimal"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="sequence-with-choice">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="outside-choice-string" type="xs:normalizedString"/>
+              <xs:choice>
+                <xs:element name="inside-choice-string" type="xs:normalizedString"/>
+                <xs:element name="inside-choice-number" type="xs:decimal"/>
+              </xs:choice>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

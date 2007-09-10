@@ -91,7 +91,14 @@
           {
             document.getElementById("src").value = picker.getValue();
           };
-          alfFilePickerWidgetInstance = new alfresco.FilePickerWidget("alfFilePicker", d, "", false, changeHandler, resizeHandler)
+          alfFilePickerWidgetInstance = new alfresco.FilePickerWidget("alfFilePicker", 
+                                                                      d, 
+                                                                      "", 
+                                                                      false, 
+                                                                      changeHandler, 
+                                                                      resizeHandler,
+                                                                      ["wcm:avmcontent"],
+                                                                      ["image/*"]);
           alfFilePickerWidgetInstance.setValue(document.getElementById("src").value);
           alfFilePickerWidgetInstance.render();
         }

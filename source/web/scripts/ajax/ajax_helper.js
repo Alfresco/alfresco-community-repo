@@ -28,6 +28,8 @@
 // AJAX helper
 ////////////////////////////////////////////////////////////////////////////////
 
+djConfig.bindEncoding = "UTF-8";
+
 alfresco = typeof alfresco == "undefined" ? {} : alfresco;
 alfresco.constants = typeof alfresco.constants == "undefined" ? {} : alfresco.constants;
 alfresco.constants.AJAX_LOADER_DIV_ID = "alfresco-ajax-loader";
@@ -39,15 +41,25 @@ alfresco.AjaxHelper = function()
 /** All pending ajax requests. */
 alfresco.AjaxHelper._requests = [];
 
+/** A counter for numbering requests - for debugging */
+alfresco.AjaxHelper._requestCounter = 0;
+
 /** Creates an ajax request object. */
 alfresco.AjaxHelper.createRequest = function(target, serverMethod, methodArgs, load, error)
 {
   var result = new dojo.io.Request(alfresco.constants.WEBAPP_CONTEXT + 
                                    "/ajax/invoke/" + serverMethod, 
                                    "text/xml");
+  dojo.io.XMLHTTPTransport.useCache = false;
+  dojo.io.XMLHTTPTransport.preventCache = true;
   result.target = target;
+  methodArgs._alfresco_AjaxHelper_request_counter = alfresco.AjaxHelper._requestCounter++;
+
   result.content = methodArgs;
   result.method = "POST";
+  result.encoding = "UTF-8";
+  result.preventCache = true;
+  result.useCache = false;
   result._baseLoadHandler = load;
   result.load = function(type, data, event, kwArgs) 
   { 
@@ -60,14 +72,24 @@ alfresco.AjaxHelper.createRequest = function(target, serverMethod, methodArgs, l
                      });
   result.error = error || function(type, e, impl)
     {
-      dojo.debug("error [" + type + "] " + e.message);
+      dojo.debug("error [type:" + type + 
+                 ", number: " + e.number +
+                 ", status: " + impl.status +
+                 ", responseText: " + impl.responseText +
+                 ", readyState : " + impl.readyState +
+                 ", message: '" + e.message + 
+                 "'] while invoking [url: " + this.url + 
+                 ", content: " + methodArgs + "]");
       if (impl.status == 401)
       {
         document.getElementById("logout").onclick();
       }
       else
       {
-        _show_error(document.createTextNode(e.message));
+        if (impl.status != 0)
+        {
+          _show_error(document.createTextNode(e.message));
+        }
         alfresco.AjaxHelper._loadHandler(this);
       }
     };
@@ -78,7 +100,6 @@ alfresco.AjaxHelper.createRequest = function(target, serverMethod, methodArgs, l
 alfresco.AjaxHelper.sendRequest = function(req)
 {
   alfresco.AjaxHelper._sendHandler(req);
-  req.encoding = "utf-8";
   dojo.io.queueBind(req);
 }
 

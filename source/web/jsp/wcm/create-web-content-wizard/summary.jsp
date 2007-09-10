@@ -142,7 +142,8 @@
   </h:panelGrid>
 
   <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
-               width="100%">
+               width="100%"
+               rendered="#{WizardManager.bean.submittable}">
     <h:column>
       <h:selectBooleanCheckbox id="startWorkflow"
 			       value="#{WizardManager.bean.startWorkflow}"/>

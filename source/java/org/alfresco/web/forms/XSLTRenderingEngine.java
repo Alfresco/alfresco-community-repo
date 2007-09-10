@@ -46,13 +46,14 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.forms.XMLUtil;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xalan.extensions.ExpressionContext;
 import org.apache.xpath.objects.XObject;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
 import org.apache.xml.utils.Constants;
-import org.springframework.util.StringUtils;
+
 //import org.apache.xml.utils.QName;
 import org.w3c.dom.*;
 import org.w3c.dom.traversal.NodeFilter;
@@ -318,7 +319,7 @@ public class XSLTRenderingEngine
          compEl.appendChild(scriptEl);
       }
       docEl.setAttribute("exclude-result-prefixes",
-                         StringUtils.arrayToDelimitedString(excludePrefixes.toArray(new String[excludePrefixes.size()]), " "));
+                         StringUtils.join(excludePrefixes.toArray(new String[excludePrefixes.size()]), " "));
       return result;
    }
 

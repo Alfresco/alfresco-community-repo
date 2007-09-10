@@ -74,6 +74,7 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.wizard.WizardManager;
+import org.alfresco.web.forms.*;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -85,6 +86,7 @@ import org.alfresco.web.ui.wcm.component.UISandboxSnapshots;
 import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Bean backing up the AVM specific browse screens
@@ -601,7 +603,9 @@ public class AVMBrowseBean implements IContextListener
    public Node getWebsite()
    {
       // check to see if the website we are browsing has changed since the last time
-      if (!this.navigator.getCurrentNodeId().equals(this.lastWebsiteId))
+      final Node currentNode = this.navigator.getCurrentNode();
+      if (!this.navigator.getCurrentNodeId().equals(this.lastWebsiteId) ||
+          !WCMAppModel.TYPE_AVMWEBFOLDER.equals(currentNode.getType()))
       {
          // clear context when we are browsing a new website
          this.lastWebsiteId = this.navigator.getCurrentNodeId();
@@ -609,7 +613,7 @@ public class AVMBrowseBean implements IContextListener
          this.webapps = null;
          this.webProject = null;
       }
-      return this.navigator.getCurrentNode();
+      return WCMAppModel.TYPE_AVMWEBFOLDER.equals(currentNode.getType()) ? currentNode : null;
    }
 
    /**
@@ -617,9 +621,10 @@ public class AVMBrowseBean implements IContextListener
     */
    public WebProject getWebProject()
    {
-      if (this.webProject == null)
+      Node website = this.getWebsite();
+      if (this.webProject == null && website != null)
       {
-         this.webProject = new WebProject(this.getWebsite().getNodeRef());
+         this.webProject = new WebProject(website.getNodeRef());
       }
       return this.webProject;
    }
@@ -882,14 +887,11 @@ public class AVMBrowseBean implements IContextListener
    /**
     * Setup the context for a sandbox browse action
     */
-   public void setupSandboxAction(ActionEvent event)
+   public void setupSandboxAction(final ActionEvent event)
    {
-      UIActionLink link = (UIActionLink)event.getComponent();
-      Map<String, String> params = link.getParameterMap();
-      String store = params.get("store");
-      String username = params.get("username");
-      
-      setupSandboxActionImpl(store, username, true);
+      final UIActionLink link = (UIActionLink)event.getComponent();
+      final Map<String, String> params = link.getParameterMap();
+      this.setupSandboxAction(params.get("store"), params.get("username"));
    }
    
    /**
@@ -900,7 +902,7 @@ public class AVMBrowseBean implements IContextListener
     */
    public void setupSandboxAction(String store, String username)
    {
-      setupSandboxActionImpl(store, username, true);
+      this.setupSandboxActionImpl(store, null, username, true);
    }
 
    /**
@@ -910,20 +912,21 @@ public class AVMBrowseBean implements IContextListener
     * @param username   The authority pertinent to the action (null for staging store actions)
     * @param reset      True to reset the current path and AVM action node context
     */
-   private void setupSandboxActionImpl(String store, String username, boolean reset)
+   private void setupSandboxActionImpl(final String store,
+                                       final String webapp,
+                                       final String username, 
+                                       final boolean reset)
    {
       // can be null if it's the staging store - i.e. not a user specific store
       setUsername(username);
       
       // the store can be either a user store or the staging store if this is null
-      if (store != null)
+      // get the staging store from the current website node
+      this.setSandbox(store != null ? store : this.getStagingStore());
+
+      if (webapp != null)
       {
-         setSandbox(store);
-      }
-      else
-      {
-         // get the staging store from the current website node
-         setSandbox(this.getStagingStore());
+         this.setWebapp(webapp);
       }
       
       // update UI state ready for return to the previous screen
@@ -944,12 +947,11 @@ public class AVMBrowseBean implements IContextListener
     * 
     * @param event   ActionEvent
     */
-   public void setupContentAction(ActionEvent event)
+   public void setupContentAction(final ActionEvent event)
    {
-      UIActionLink link = (UIActionLink)event.getComponent();
-      Map<String, String> params = link.getParameterMap();
-      String path = params.get("id");
-      setupContentAction(path, true);
+      final UIActionLink link = (UIActionLink)event.getComponent();
+      final Map<String, String> params = link.getParameterMap();
+      this.setupContentAction(params.get("id"), true);
    }
    
    /*package*/ void setupContentAction(final String path, final boolean refresh)
@@ -966,24 +968,30 @@ public class AVMBrowseBean implements IContextListener
          // calculate username and store name from specified path
          String storeName = AVMUtil.getStoreName(path);
          final String storeId = AVMUtil.getStoreId(storeName);
+         final String webapp = AVMUtil.getWebapp(path);
          final String username = AVMUtil.getUserName(storeName);
          if (username == null)
          {
             storeName = (AVMUtil.isPreviewStore(storeName)
                          ? AVMUtil.buildStagingPreviewStoreName(storeId)
                          : AVMUtil.buildStagingStoreName(storeId));
-            setupSandboxActionImpl(storeName, null, false);
+            this.setupSandboxActionImpl(storeName, webapp, null, false);
          }
          else
          {
             storeName = (AVMUtil.isPreviewStore(storeName)
                          ? AVMUtil.buildUserPreviewStoreName(storeId, username)
                          : AVMUtil.buildUserMainStoreName(storeId, username));
-            setupSandboxActionImpl(storeName, username, false);
+            this.setupSandboxActionImpl(storeName, webapp, username, false);
+         }
+
+         if (this.webProject == null)
+         {
+            this.webProject = new WebProject(path);
          }
          
          // setup the action node
-         setAVMActionNodeDescriptor(avmService.lookup(-1, path, true));
+         this.setAVMActionNodeDescriptor(avmService.lookup(-1, path, true));
       }
       
       // update UI state ready for return after dialog close
@@ -1026,21 +1034,44 @@ public class AVMBrowseBean implements IContextListener
     */
    public void revertNode(ActionEvent event)
    {
-      String path = getPathFromEventArgs(event);
-      
+      final String path = getPathFromEventArgs(event);
+      final List<String> namesForDisplayMsg = new LinkedList<String>();
       UserTransaction tx = null;
+      final FacesContext context = FacesContext.getCurrentInstance();
       try
       {
-         FacesContext context = FacesContext.getCurrentInstance();
          tx = Repository.getUserTransaction(context, false);
          tx.begin();
          
          AVMNodeDescriptor node = this.avmService.lookup(-1, path, true);
          if (node != null)
          {
-            Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
+            FormInstanceData fid = null;
+            if (this.avmService.hasAspect(-1, path, WCMAppModel.ASPECT_RENDITION))
+            {
+               fid = new RenditionImpl(-1, path).getPrimaryFormInstanceData();
+            }
+            else if (this.avmService.hasAspect(-1, path, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+            {
+               fid = new FormInstanceDataImpl(-1, path);
+            }
             List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
-            versionPaths.add(new Pair<Integer, String>(-1, path));
+            if (fid != null)
+            {
+               versionPaths.add(new Pair<Integer, String>(-1, fid.getPath()));
+               namesForDisplayMsg.add(fid.getName());
+               for (Rendition r : fid.getRenditions())
+               {
+                  versionPaths.add(new Pair<Integer, String>(-1, r.getPath()));
+                  namesForDisplayMsg.add(r.getName());
+               }
+            }
+            else
+            {
+               versionPaths.add(new Pair<Integer, String>(-1, path));
+               namesForDisplayMsg.add(node.getName());
+            }
+            final Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
             args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
             Action action = this.actionService.createAction(AVMUndoSandboxListAction.NAME, args);
             this.actionService.executeAction(action, null); // dummy action ref
@@ -1051,22 +1082,23 @@ public class AVMBrowseBean implements IContextListener
 
          // possibly update webapp after commit
 
-         if ( VirtServerUtils.requiresUpdateNotification( path ) )
+         if (VirtServerUtils.requiresUpdateNotification(path))
          {
              AVMUtil.updateVServerWebapp(path, true);
          }
-
          
          // if we get here, all was well - output friendly status message to the user
-         String msg = MessageFormat.format(Application.getMessage(
-               context, MSG_REVERT_SUCCESS), node.getName());
-         displayStatusMessage(context, msg);
+         this.displayStatusMessage(context,
+                                   MessageFormat.format(Application.getMessage(context, MSG_REVERT_SUCCESS), 
+                                                        StringUtils.join(namesForDisplayMsg.toArray(), ", "),
+                                                        namesForDisplayMsg.size()));
       }
       catch (Throwable err)
       {
          err.printStackTrace(System.err);
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(context, Repository.ERROR_GENERIC), 
+                                                    err.getMessage()), 
+                               err);
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
       }
    }
@@ -1116,9 +1148,10 @@ public class AVMBrowseBean implements IContextListener
             }
             
             // if we get here, all was well - output friendly status message to the user
-            String msg = MessageFormat.format(Application.getMessage(
-                  context, MSG_REVERT_SANDBOX), sandbox, strVersion);
-            displayStatusMessage(context, msg);
+            this.displayStatusMessage(context, 
+                                      MessageFormat.format(Application.getMessage(context, MSG_REVERT_SANDBOX), 
+                                                           sandbox, 
+                                                           strVersion));
          }
          catch (Throwable err)
          {

@@ -35,6 +35,8 @@ import org.apache.commons.jxpath.Pointer;
 import org.chiba.xml.ns.NamespaceConstants;
 import org.w3c.dom.*;
 import org.xml.sax.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * JUnit tests to exercise the the schema to xforms converter
@@ -44,6 +46,8 @@ import org.xml.sax.*;
 public class Schema2XFormsTest 
    extends BaseTest
 {
+
+   private final static Log LOGGER = LogFactory.getLog(Schema2XFormsTest.class);
 
    public void testOneStringTestWithEmptyInstanceDocument()
       throws Exception
@@ -88,61 +92,96 @@ public class Schema2XFormsTest
       final Document xformsDocument = this.buildXForm(null, schemaDocument, "repeat-constraints-test");
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/one-to-inf", 
-                                  new SchemaUtil.Occurance(1, SchemaUtil.Occurance.UNBOUNDED));
+                                  new SchemaUtil.Occurrence(1, SchemaUtil.Occurrence.UNBOUNDED));
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/zero-to-inf", 
-                                  new SchemaUtil.Occurance(0, SchemaUtil.Occurance.UNBOUNDED));
+                                  new SchemaUtil.Occurrence(0, SchemaUtil.Occurrence.UNBOUNDED));
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/one-to-five", 
-                                  new SchemaUtil.Occurance(1, 5));
+                                  new SchemaUtil.Occurrence(1, 5));
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/three-to-five", 
-                                  new SchemaUtil.Occurance(3, 5));
+                                  new SchemaUtil.Occurrence(3, 5));
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/zero-to-five", 
-                                  new SchemaUtil.Occurance(0, 5));
+                                  new SchemaUtil.Occurrence(0, 5));
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/referenced-string", 
-                                  new SchemaUtil.Occurance(1, SchemaUtil.Occurance.UNBOUNDED));
+                                  new SchemaUtil.Occurrence(1, SchemaUtil.Occurrence.UNBOUNDED));
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/nested-outer-zero-to-inf", 
-                                  new SchemaUtil.Occurance(0, SchemaUtil.Occurance.UNBOUNDED));
+                                  new SchemaUtil.Occurrence(0, SchemaUtil.Occurrence.UNBOUNDED));
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/nested-outer-zero-to-inf/nested-zero-to-inf-inner-zero-to-inf", 
-                                  new SchemaUtil.Occurance(0, SchemaUtil.Occurance.UNBOUNDED));
+                                  new SchemaUtil.Occurrence(0, SchemaUtil.Occurrence.UNBOUNDED));
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/nested-outer-zero-to-inf/nested-zero-to-inf-inner-one-to-inf", 
-                                  new SchemaUtil.Occurance(1, SchemaUtil.Occurance.UNBOUNDED));
+                                  new SchemaUtil.Occurrence(1, SchemaUtil.Occurrence.UNBOUNDED));
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/nested-outer-one-to-inf", 
-                                  new SchemaUtil.Occurance(1, SchemaUtil.Occurance.UNBOUNDED));
+                                  new SchemaUtil.Occurrence(1, SchemaUtil.Occurrence.UNBOUNDED));
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/nested-outer-one-to-inf/nested-one-to-inf-inner-zero-to-inf", 
-                                  new SchemaUtil.Occurance(0, SchemaUtil.Occurance.UNBOUNDED));
+                                  new SchemaUtil.Occurrence(0, SchemaUtil.Occurrence.UNBOUNDED));
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/nested-outer-one-to-inf/nested-one-to-inf-inner-one-to-inf", 
-                                  new SchemaUtil.Occurance(1, SchemaUtil.Occurance.UNBOUNDED));
+                                  new SchemaUtil.Occurrence(1, SchemaUtil.Occurrence.UNBOUNDED));
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/nested-outer-three-to-five", 
-                                  new SchemaUtil.Occurance(3, 5));
+                                  new SchemaUtil.Occurrence(3, 5));
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/nested-outer-three-to-five/nested-three-to-five-inner-zero-to-inf", 
-                                  new SchemaUtil.Occurance(0, SchemaUtil.Occurance.UNBOUNDED));
+                                  new SchemaUtil.Occurrence(0, SchemaUtil.Occurrence.UNBOUNDED));
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/nested-outer-three-to-five/nested-three-to-five-inner-one-to-inf", 
-                                  new SchemaUtil.Occurance(1, SchemaUtil.Occurance.UNBOUNDED));
+                                  new SchemaUtil.Occurrence(1, SchemaUtil.Occurrence.UNBOUNDED));
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/nested-outer-outer-three-to-inf",
-                                  new SchemaUtil.Occurance(3, SchemaUtil.Occurance.UNBOUNDED));
+                                  new SchemaUtil.Occurrence(3, SchemaUtil.Occurrence.UNBOUNDED));
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/nested-outer-outer-three-to-inf/nested-outer-inner-five-to-inf",
-                                  new SchemaUtil.Occurance(5, SchemaUtil.Occurance.UNBOUNDED));
+                                  new SchemaUtil.Occurrence(5, SchemaUtil.Occurrence.UNBOUNDED));
       this.assertRepeatProperties(xformsDocument, 
                                   "/repeat-constraints-test/nested-outer-outer-three-to-inf/nested-outer-inner-five-to-inf/nested-inner-inner-seven-to-inf",
-                                  new SchemaUtil.Occurance(7, SchemaUtil.Occurance.UNBOUNDED));
+                                  new SchemaUtil.Occurrence(7, SchemaUtil.Occurrence.UNBOUNDED));
    }
 
-   private void assertRepeatProperties(final Document xformsDocument, final String nodeset, final SchemaUtil.Occurance o)
+   public void testRootElementWithExtension()
+      throws Exception
+   {
+      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/root-element-with-extension-test.xsd");
+      Document xformsDocument = this.buildXForm(null, schemaDocument, "without-extension-test");
+      assertEquals(3, xformsDocument.getElementsByTagNameNS(NamespaceConstants.XFORMS_NS, "input").getLength());
+      
+      try
+      {
+         xformsDocument = this.buildXForm(null, schemaDocument, "with-extension-test");
+         fail("expected failure creating xform with root element with-extension-test in schema " + XMLUtil.toString(schemaDocument));
+      }
+      catch (FormBuilderException fbe)
+      {
+      }
+   }
+
+   public void testSwitch()
+      throws Exception
+   {
+      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/switch-test.xsd");
+      final Document xformsDocument = this.buildXForm(null, schemaDocument, "switch-test");
+      LOGGER.debug("generated xforms " + XMLUtil.toString(xformsDocument));
+//      assertEquals(3, xformsDocument.getElementsByTagNameNS(NamespaceConstants.XFORMS_NS, "input").getLength());
+//      
+//      try
+//      {
+//         xformsDocument = this.buildXForm(null, schemaDocument, "with-extension-test");
+//         fail("expected failure creating xform with root element with-extension-test in schema " + XMLUtil.toString(schemaDocument));
+//      }
+//      catch (FormBuilderException fbe)
+//      {
+//      }
+   }
+
+   private void assertRepeatProperties(final Document xformsDocument, final String nodeset, final SchemaUtil.Occurrence o)
    {
       final Element[] bindElements = this.resolveBind(xformsDocument, nodeset);
       assertNotNull("unable to resolve bind for nodeset " + nodeset, bindElements);
@@ -182,7 +221,7 @@ public class Schema2XFormsTest
       int nestingFactor = 1;
       for (int i = 0; i < bindElements.length - 1; i++)
       {
-         final SchemaUtil.Occurance parentO = this.occuranceFromBind(bindElements[i]);
+         final SchemaUtil.Occurrence parentO = this.occuranceFromBind(bindElements[i]);
          if (parentO.isRepeated())
          {
             nestingFactor = nestingFactor * (1 + parentO.minimum);
@@ -283,15 +322,15 @@ public class Schema2XFormsTest
    }
 
 
-   private SchemaUtil.Occurance occuranceFromBind(final Element bindElement)
+   private SchemaUtil.Occurrence occuranceFromBind(final Element bindElement)
    {
-      return new SchemaUtil.Occurance(bindElement.hasAttributeNS(NamespaceConstants.XFORMS_NS, "minOccurs")
-                                      ? Integer.parseInt(bindElement.getAttributeNS(NamespaceConstants.XFORMS_NS, "minOccurs"))
-                                      : 1,
-                                      bindElement.hasAttributeNS(NamespaceConstants.XFORMS_NS, "maxOccurs")
-                                      ? ("unbounded".equals(bindElement.getAttributeNS(NamespaceConstants.XFORMS_NS, "maxOccurs"))
-                                         ? SchemaUtil.Occurance.UNBOUNDED
-                                         : Integer.parseInt(bindElement.getAttributeNS(NamespaceConstants.XFORMS_NS, "maxOccurs")))
-                                      : 1);
+      return new SchemaUtil.Occurrence(bindElement.hasAttributeNS(NamespaceConstants.XFORMS_NS, "minOccurs")
+                                       ? Integer.parseInt(bindElement.getAttributeNS(NamespaceConstants.XFORMS_NS, "minOccurs"))
+                                       : 1,
+                                       bindElement.hasAttributeNS(NamespaceConstants.XFORMS_NS, "maxOccurs")
+                                       ? ("unbounded".equals(bindElement.getAttributeNS(NamespaceConstants.XFORMS_NS, "maxOccurs"))
+                                          ? SchemaUtil.Occurrence.UNBOUNDED
+                                          : Integer.parseInt(bindElement.getAttributeNS(NamespaceConstants.XFORMS_NS, "maxOccurs")))
+                                       : 1);
    }
 }

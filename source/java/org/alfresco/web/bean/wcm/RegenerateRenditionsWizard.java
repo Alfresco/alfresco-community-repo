@@ -67,9 +67,9 @@ import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.WebResources;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 
 /**
@@ -119,12 +119,12 @@ public class RegenerateRenditionsWizard
          if (this.regenerateScope.equals(REGENERATE_SCOPE_FORM))
          {
             description = MessageFormat.format("regenerate_renditions_snapshot_description_scope_form",
-                                               StringUtils.arrayToDelimitedString(this.selectedForms, ", "));
+                                               StringUtils.join(this.selectedForms, ", "));
          }
          else if (this.regenerateScope.equals(REGENERATE_SCOPE_RENDERING_ENGINE_TEMPLATE))
          {
             description = MessageFormat.format("regenerate_renditions_snapshot_description_scope_rendering_engine_template",
-                                               StringUtils.arrayToDelimitedString(this.selectedRenderingEngineTemplates, ", "));
+                                               StringUtils.join(this.selectedRenderingEngineTemplates, ", "));
          }
          else
          {
@@ -422,8 +422,17 @@ public class RegenerateRenditionsWizard
          {
             @Override
             public Form getForm()
+               throws FormNotFoundException
             {
-               return RegenerateRenditionsWizard.this.selectedWebProject.getForm(super.getForm().getName());
+               final Form f = super.getForm();
+               try
+               {
+                  return RegenerateRenditionsWizard.this.selectedWebProject.getForm(f.getName());
+               }
+               catch (FormNotFoundException fnfe)
+               {
+                  throw new FormNotFoundException(f, RegenerateRenditionsWizard.this.selectedWebProject, this);
+               }
             }
          };
          result.add(fid);
@@ -497,14 +506,21 @@ public class RegenerateRenditionsWizard
          query.append(" +(");
          for (int i = 0; i < this.selectedRenderingEngineTemplates.length; i++)
          {
-            
-            final Form f = this.selectedWebProject.getForm(this.selectedRenderingEngineTemplates[i].split(":")[0]);
-            final RenderingEngineTemplate ret = f.getRenderingEngineTemplate((String)this.selectedRenderingEngineTemplates[i].split(":")[1]);
-            query.append("@" + Repository.escapeQName(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE) + 
-                         ":\"" + ((RenderingEngineTemplateImpl)ret).getNodeRef() + "\"");
-            if (i != this.selectedRenderingEngineTemplates.length - 1)
+            try
             {
-               query.append(" OR ");
+               final String formName = this.selectedRenderingEngineTemplates[i].split(":")[0];
+               final Form f = this.selectedWebProject.getForm(formName);
+               final RenderingEngineTemplate ret = f.getRenderingEngineTemplate((String)this.selectedRenderingEngineTemplates[i].split(":")[1]);
+               query.append("@" + Repository.escapeQName(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE) + 
+                            ":\"" + ((RenderingEngineTemplateImpl)ret).getNodeRef() + "\"");
+               if (i != this.selectedRenderingEngineTemplates.length - 1)
+               {
+                  query.append(" OR ");
+               }
+            }
+            catch (FormNotFoundException fnfe)
+            {
+               LOGGER.debug(fnfe);
             }
          }
          query.append(") ");
@@ -528,24 +544,40 @@ public class RegenerateRenditionsWizard
             {
                @Override
                public Form getForm()
+                  throws FormNotFoundException
                {
-                  return RegenerateRenditionsWizard.this.selectedWebProject.getForm(super.getForm().getName());
+                  final Form f = super.getForm();
+                  try
+                  {
+                     return RegenerateRenditionsWizard.this.selectedWebProject.getForm(f.getName());
+                  }
+                  catch (FormNotFoundException fnfe)
+                  {
+                     throw new FormNotFoundException(f, RegenerateRenditionsWizard.this.selectedWebProject, this);
+                  }
                }
             };
-            
-            final List<FormInstanceData.RegenerateResult> regenResults = fid.regenerateRenditions();
-            for (final FormInstanceData.RegenerateResult rr : regenResults)
+
+            try
             {
-               if (rr.getException() != null)
+               final List<FormInstanceData.RegenerateResult> regenResults = fid.regenerateRenditions();
+               for (final FormInstanceData.RegenerateResult rr : regenResults)
                {
-                  Utils.addErrorMessage("error regenerating rendition using " + rr.getRenderingEngineTemplate().getName() + 
-                                        ": " + rr.getException().getMessage(),
-                                        rr.getException());
+                  if (rr.getException() != null)
+                  {
+                     Utils.addErrorMessage("error regenerating rendition using " + rr.getRenderingEngineTemplate().getName() + 
+                                           ": " + rr.getException().getMessage(),
+                                           rr.getException());
+                  }
+                  else
+                  {
+                     result.add(rr.getRendition());
+                  }
                }
-               else
-               {
-                  result.add(rr.getRendition());
-               }
+            }
+            catch (FormNotFoundException fnfe)
+            {
+               Utils.addErrorMessage("error regenerating renditions of " + fid.getPath() + ": " + fnfe.getMessage(), fnfe);
             }
          }
          else

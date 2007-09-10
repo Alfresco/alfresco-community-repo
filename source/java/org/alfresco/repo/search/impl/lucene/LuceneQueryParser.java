@@ -29,10 +29,13 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.Vector;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.search.MLAnalysisMode;
@@ -55,11 +58,17 @@ import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.MultiPhraseQuery;
+import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.RangeQuery;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.WildcardQuery;
+import org.apache.lucene.search.WildcardTermEnum;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.saxpath.SAXPathException;
 
@@ -79,6 +88,8 @@ public class LuceneQueryParser extends QueryParser
 
     private LuceneConfig config;
 
+    private IndexReader indexReader;
+
     /**
      * Parses a query string, returning a {@link org.apache.lucene.search.Query}.
      * 
@@ -94,7 +105,7 @@ public class LuceneQueryParser extends QueryParser
      */
     static public Query parse(String query, String field, Analyzer analyzer,
             NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService, TenantService tenantService,
-            Operator defaultOperator, SearchParameters searchParameters, LuceneConfig config) throws ParseException
+            Operator defaultOperator, SearchParameters searchParameters, LuceneConfig config, IndexReader indexReader) throws ParseException
     {
         if (s_logger.isDebugEnabled())
         {
@@ -107,6 +118,7 @@ public class LuceneQueryParser extends QueryParser
         parser.setTenantService(tenantService);
         parser.setSearchParameters(searchParameters);
         parser.setLuceneConfig(config);
+        parser.setIndexReader(indexReader);
         // TODO: Apply locale contstraints at the top level if required for the non ML doc types.
         Query result = parser.parse(query);
         if (s_logger.isDebugEnabled())
@@ -119,6 +131,11 @@ public class LuceneQueryParser extends QueryParser
     private void setLuceneConfig(LuceneConfig config)
     {
         this.config = config;
+    }
+
+    private void setIndexReader(IndexReader indexReader)
+    {
+        this.indexReader = indexReader;
     }
 
     private void setSearchParameters(SearchParameters searchParameters)
@@ -184,8 +201,7 @@ public class LuceneQueryParser extends QueryParser
                 Set<String> text = searchParameters.getTextAttributes();
                 if ((text == null) || (text.size() == 0))
                 {
-                    Collection<QName> contentAttributes = dictionaryService
-                            .getAllProperties(DataTypeDefinition.CONTENT);
+                    Collection<QName> contentAttributes = dictionaryService.getAllProperties(DataTypeDefinition.CONTENT);
                     BooleanQuery query = new BooleanQuery();
                     for (QName qname : contentAttributes)
                     {
@@ -294,14 +310,12 @@ public class LuceneQueryParser extends QueryParser
                     if (colonPosition == -1)
                     {
                         // use the default namespace
-                        target = dictionaryService.getType(QName.createQName(namespacePrefixResolver
-                                .getNamespaceURI(""), queryText));
+                        target = dictionaryService.getType(QName.createQName(namespacePrefixResolver.getNamespaceURI(""), queryText));
                     }
                     else
                     {
                         // find the prefix
-                        target = dictionaryService.getType(QName.createQName(namespacePrefixResolver
-                                .getNamespaceURI(queryText.substring(0, colonPosition)), queryText
+                        target = dictionaryService.getType(QName.createQName(namespacePrefixResolver.getNamespaceURI(queryText.substring(0, colonPosition)), queryText
                                 .substring(colonPosition + 1)));
                     }
                 }
@@ -316,8 +330,7 @@ public class LuceneQueryParser extends QueryParser
                     TypeDefinition current = dictionaryService.getType(classRef);
                     while ((current != null) && !current.getName().equals(targetQName))
                     {
-                        current = (current.getParentName() == null) ? null : dictionaryService.getType(current
-                                .getParentName());
+                        current = (current.getParentName() == null) ? null : dictionaryService.getType(current.getParentName());
                     }
                     if (current != null)
                     {
@@ -348,14 +361,12 @@ public class LuceneQueryParser extends QueryParser
                     if (colonPosition == -1)
                     {
                         // use the default namespace
-                        target = dictionaryService.getType(QName.createQName(namespacePrefixResolver
-                                .getNamespaceURI(""), queryText));
+                        target = dictionaryService.getType(QName.createQName(namespacePrefixResolver.getNamespaceURI(""), queryText));
                     }
                     else
                     {
                         // find the prefix
-                        target = dictionaryService.getType(QName.createQName(namespacePrefixResolver
-                                .getNamespaceURI(queryText.substring(0, colonPosition)), queryText
+                        target = dictionaryService.getType(QName.createQName(namespacePrefixResolver.getNamespaceURI(queryText.substring(0, colonPosition)), queryText
                                 .substring(colonPosition + 1)));
                     }
                 }
@@ -381,14 +392,12 @@ public class LuceneQueryParser extends QueryParser
                     if (colonPosition == -1)
                     {
                         // use the default namespace
-                        target = dictionaryService.getAspect(QName.createQName(namespacePrefixResolver
-                                .getNamespaceURI(""), queryText));
+                        target = dictionaryService.getAspect(QName.createQName(namespacePrefixResolver.getNamespaceURI(""), queryText));
                     }
                     else
                     {
                         // find the prefix
-                        target = dictionaryService.getAspect(QName.createQName(namespacePrefixResolver
-                                .getNamespaceURI(queryText.substring(0, colonPosition)), queryText
+                        target = dictionaryService.getAspect(QName.createQName(namespacePrefixResolver.getNamespaceURI(queryText.substring(0, colonPosition)), queryText
                                 .substring(colonPosition + 1)));
                     }
                 }
@@ -400,8 +409,7 @@ public class LuceneQueryParser extends QueryParser
                     AspectDefinition current = dictionaryService.getAspect(classRef);
                     while ((current != null) && !current.getName().equals(targetQName))
                     {
-                        current = (current.getParentName() == null) ? null : dictionaryService.getAspect(current
-                                .getParentName());
+                        current = (current.getParentName() == null) ? null : dictionaryService.getAspect(current.getParentName());
                     }
                     if (current != null)
                     {
@@ -433,14 +441,12 @@ public class LuceneQueryParser extends QueryParser
                     if (colonPosition == -1)
                     {
                         // use the default namespace
-                        target = dictionaryService.getAspect(QName.createQName(namespacePrefixResolver
-                                .getNamespaceURI(""), queryText));
+                        target = dictionaryService.getAspect(QName.createQName(namespacePrefixResolver.getNamespaceURI(""), queryText));
                     }
                     else
                     {
                         // find the prefix
-                        target = dictionaryService.getAspect(QName.createQName(namespacePrefixResolver
-                                .getNamespaceURI(queryText.substring(0, colonPosition)), queryText
+                        target = dictionaryService.getAspect(QName.createQName(namespacePrefixResolver.getNamespaceURI(queryText.substring(0, colonPosition)), queryText
                                 .substring(colonPosition + 1)));
                     }
                 }
@@ -516,7 +522,7 @@ public class LuceneQueryParser extends QueryParser
                 }
                 else
                 {
-                    return super.getFieldQuery(field, queryText);
+                    return getFieldQueryImpl(field, queryText);
                 }
 
             }
@@ -540,14 +546,13 @@ public class LuceneQueryParser extends QueryParser
                 }
                 else
                 {
-                    return super.getFieldQuery(field, queryText);
+                    return getFieldQueryImpl(field, queryText);
                 }
 
             }
             else if (dictionaryService.getDataType(QName.createQName(expandFieldName(field))) != null)
             {
-                Collection<QName> contentAttributes = dictionaryService.getAllProperties(dictionaryService.getDataType(
-                        QName.createQName(expandFieldName(field))).getName());
+                Collection<QName> contentAttributes = dictionaryService.getAllProperties(dictionaryService.getDataType(QName.createQName(expandFieldName(field))).getName());
                 BooleanQuery query = new BooleanQuery();
                 for (QName qname : contentAttributes)
                 {
@@ -566,7 +571,7 @@ public class LuceneQueryParser extends QueryParser
             }
             else
             {
-                return super.getFieldQuery(field, queryText);
+                return getFieldQueryImpl(field, queryText);
             }
 
         }
@@ -575,6 +580,542 @@ public class LuceneQueryParser extends QueryParser
             throw new ParseException("Failed to parse XPath...\n" + e.getMessage());
         }
 
+    }
+
+    private Query getFieldQueryImpl(String field, String queryText) throws ParseException
+    {
+        // Use the analyzer to get all the tokens, and then build a TermQuery,
+        // PhraseQuery, or nothing based on the term count
+
+        boolean isMlText = false;
+        String testText = queryText;
+        String localeString = null;
+        if (field.startsWith("@"))
+        {
+            String expandedFieldName = expandAttributeFieldName(field);
+            QName propertyQName = QName.createQName(expandedFieldName.substring(1));
+            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT)))
+            {
+                int position = queryText.indexOf("\u0000", 1);
+                testText = queryText.substring(position + 1);
+                isMlText = true;
+                localeString = queryText.substring(1, position);
+            }
+        }
+
+        TokenStream source = analyzer.tokenStream(field, new StringReader(queryText));
+        ArrayList<org.apache.lucene.analysis.Token> v = new ArrayList<org.apache.lucene.analysis.Token>();
+        org.apache.lucene.analysis.Token t;
+        int positionCount = 0;
+        boolean severalTokensAtSamePosition = false;
+
+        while (true)
+        {
+            try
+            {
+                t = source.next();
+            }
+            catch (IOException e)
+            {
+                t = null;
+            }
+            if (t == null)
+                break;
+            v.add(t);
+            if (t.getPositionIncrement() != 0)
+                positionCount += t.getPositionIncrement();
+            else
+                severalTokensAtSamePosition = true;
+        }
+        try
+        {
+            source.close();
+        }
+        catch (IOException e)
+        {
+            // ignore
+        }
+
+        // add any alpha numeric wildcards that have been missed
+        // Fixes most stop word and wild card issues
+
+        for (int index = 0; index < testText.length(); index++)
+        {
+            char current = testText.charAt(index);
+            if ((current == '*') || (current == '?'))
+            {
+                StringBuilder pre = new StringBuilder(10);
+                if (index > 0)
+                {
+                    for (int i = index - 1; i >= 0; i--)
+                    {
+                        char c = testText.charAt(i);
+                        if (Character.isLetterOrDigit(c))
+                        {
+                            boolean found = false;
+                            for (int j = 0; j < v.size(); j++)
+                            {
+                                org.apache.lucene.analysis.Token test = v.get(j);
+                                if ((test.startOffset() <= i) && (i < test.endOffset()))
+                                {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (found)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                pre.insert(0, c);
+                            }
+                        }
+                    }
+                    if (pre.length() > 0)
+                    {
+                        // Add new token followed by * not given by the tokeniser
+                        org.apache.lucene.analysis.Token newToken = new org.apache.lucene.analysis.Token(pre.toString(), index - pre.length(), index, "ALPHANUM");
+                        if (isMlText)
+                        {
+                            Locale locale = I18NUtil.parseLocale(localeString);
+                            MLAnalysisMode analysisMode = searchParameters.getMlAnalaysisMode() == null ? config.getDefaultMLSearchAnalysisMode() : searchParameters
+                                    .getMlAnalaysisMode();
+                            MLTokenDuplicator duplicator = new MLTokenDuplicator(locale, analysisMode);
+                            Iterator<org.apache.lucene.analysis.Token> it = duplicator.buildIterator(newToken);
+                            if (it != null)
+                            {
+                                int count = 0;
+                                while (it.hasNext())
+                                {
+                                    v.add(it.next());
+                                    count++;
+                                    if(count > 1)
+                                    {
+                                        severalTokensAtSamePosition = true;
+                                    }
+                                }
+                            }
+                        }
+                        // content
+                        else
+                        {
+                            v.add(newToken);
+                        }
+                    }
+                }
+
+                StringBuilder post = new StringBuilder(10);
+                if (index > 0)
+                {
+                    for (int i = index + 1; i < testText.length(); i++)
+                    {
+                        char c = testText.charAt(i);
+                        if (Character.isLetterOrDigit(c))
+                        {
+                            boolean found = false;
+                            for (int j = 0; j < v.size(); j++)
+                            {
+                                org.apache.lucene.analysis.Token test = v.get(j);
+                                if ((test.startOffset() <= i) && (i < test.endOffset()))
+                                {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (found)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                post.append(c);
+                            }
+                        }
+                    }
+                    if (post.length() > 0)
+                    {
+                        // Add new token followed by * not given by the tokeniser
+                        org.apache.lucene.analysis.Token newToken = new org.apache.lucene.analysis.Token(post.toString(), index - post.length(), index, "ALPHANUM");
+                        if (isMlText)
+                        {
+                            Locale locale = I18NUtil.parseLocale(localeString);
+                            MLAnalysisMode analysisMode = searchParameters.getMlAnalaysisMode() == null ? config.getDefaultMLSearchAnalysisMode() : searchParameters
+                                    .getMlAnalaysisMode();
+                            MLTokenDuplicator duplicator = new MLTokenDuplicator(locale, analysisMode);
+                            Iterator<org.apache.lucene.analysis.Token> it = duplicator.buildIterator(newToken);
+                            if (it != null)
+                            {
+                                int count = 0;
+                                while (it.hasNext())
+                                {
+                                    v.add(it.next());
+                                    count++;
+                                    if(count > 1)
+                                    {
+                                        severalTokensAtSamePosition = true;
+                                    }
+                                }
+                            }
+                        }
+                        // content
+                        else
+                        {
+                            v.add(newToken);
+                        }
+                    }
+                }
+
+            }
+        }
+
+        Collections.sort(v, new Comparator<org.apache.lucene.analysis.Token>()
+        {
+
+            public int compare(Token o1, Token o2)
+            {
+                int dif = o1.startOffset() - o2.startOffset();
+                if (dif != 0)
+                {
+                    return dif;
+                }
+                else
+                {
+                    return o2.getPositionIncrement() - o1.getPositionIncrement();
+                }
+            }
+        });
+
+        // Combined * and ? based strings - should redo the tokeniser
+
+        // Assue we only string together tokens for the same postion
+
+        int max = 0;
+        int current = 0;
+        for (org.apache.lucene.analysis.Token c : v)
+        {
+            if (c.getPositionIncrement() == 0)
+            {
+                current++;
+            }
+            else
+            {
+                if (current > max)
+                {
+                    max = current;
+                }
+                current = 0;
+            }
+        }
+        if (current > max)
+        {
+            max = current;
+        }
+
+        ArrayList<org.apache.lucene.analysis.Token> fixed = new ArrayList<org.apache.lucene.analysis.Token>();
+        for (int repeat = 0; repeat <= max; repeat++)
+        {
+            org.apache.lucene.analysis.Token replace = null;
+            current = 0;
+            for (org.apache.lucene.analysis.Token c : v)
+            {
+                if (c.getPositionIncrement() == 0)
+                {
+                    current++;
+                }
+                else
+                {
+                    current = 0;
+                }
+
+                if (current == repeat)
+                {
+
+                    if (replace == null)
+                    {
+                        StringBuilder prefix = new StringBuilder();
+                        for (int i = c.startOffset() - 1; i >= 0; i--)
+                        {
+                            char test = testText.charAt(i);
+                            if ((test == '*') || (test == '?'))
+                            {
+                                prefix.insert(0, test);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                        String pre = prefix.toString();
+                        if (isMlText)
+                        {
+                            int position = c.termText().indexOf("}");
+                            String language = c.termText().substring(0, position + 1);
+                            String token = c.termText().substring(position + 1);
+                            replace = new org.apache.lucene.analysis.Token(language + pre + token, c.startOffset() - pre.length(), c.endOffset(), c.type());
+                            replace.setPositionIncrement(c.getPositionIncrement());
+                        }
+                        else
+                        {
+                            replace = new org.apache.lucene.analysis.Token(pre + c.termText(), c.startOffset() - pre.length(), c.endOffset(), c.type());
+                            replace.setPositionIncrement(c.getPositionIncrement());
+                        }
+                    }
+                    else
+                    {
+                        StringBuilder prefix = new StringBuilder();
+                        StringBuilder postfix = new StringBuilder();
+                        StringBuilder builder = prefix;
+                        for (int i = c.startOffset() - 1; i >= replace.endOffset(); i--)
+                        {
+                            char test = testText.charAt(i);
+                            if ((test == '*') || (test == '?'))
+                            {
+                                builder.insert(0, test);
+                            }
+                            else
+                            {
+                                builder = postfix;
+                                postfix.setLength(0);
+                            }
+                        }
+                        String pre = prefix.toString();
+                        String post = postfix.toString();
+
+                        // Does it bridge?
+                        if ((pre.length() > 0) && (replace.endOffset() + pre.length()) == c.startOffset())
+                        {
+                            if (isMlText)
+                            {
+                                int position = c.termText().indexOf("}");
+                                String language = c.termText().substring(0, position + 1);
+                                String token = c.termText().substring(position + 1);
+                                int oldPositionIncrement = replace.getPositionIncrement();
+                                replace = new org.apache.lucene.analysis.Token(replace.termText() + pre + token, replace.startOffset(), c.endOffset(), replace.type());
+                                replace.setPositionIncrement(oldPositionIncrement);
+                            }
+                            else
+                            {
+                                int oldPositionIncrement = replace.getPositionIncrement();
+                                replace = new org.apache.lucene.analysis.Token(replace.termText() + pre + c.termText(), replace.startOffset(), c.endOffset(), replace.type());
+                                replace.setPositionIncrement(oldPositionIncrement);
+                            }
+                        }
+                        else
+                        {
+                            if (isMlText)
+                            {
+                                int position = c.termText().indexOf("}");
+                                String language = c.termText().substring(0, position + 1);
+                                String token = c.termText().substring(position + 1);
+                                org.apache.lucene.analysis.Token last = new org.apache.lucene.analysis.Token(replace.termText() + post, replace.startOffset(), replace.endOffset()
+                                        + post.length(), replace.type());
+                                last.setPositionIncrement(replace.getPositionIncrement());
+                                fixed.add(last);
+                                replace = new org.apache.lucene.analysis.Token(language + pre + token, c.startOffset() - pre.length(), c.endOffset(), c.type());
+                                replace.setPositionIncrement(c.getPositionIncrement());
+                            }
+                            else
+                            {
+                                org.apache.lucene.analysis.Token last = new org.apache.lucene.analysis.Token(replace.termText() + post, replace.startOffset(), replace.endOffset()
+                                        + post.length(), replace.type());
+                                last.setPositionIncrement(replace.getPositionIncrement());
+                                fixed.add(last);
+                                replace = new org.apache.lucene.analysis.Token(pre + c.termText(), c.startOffset() - pre.length(), c.endOffset(), c.type());
+                                replace.setPositionIncrement(c.getPositionIncrement());
+                            }
+                        }
+                    }
+                }
+            }
+            // finish last
+            if (replace != null)
+            {
+                StringBuilder postfix = new StringBuilder();
+                for (int i = replace.endOffset(); i < testText.length(); i++)
+                {
+                    char test = testText.charAt(i);
+                    if ((test == '*') || (test == '?'))
+                    {
+                        postfix.append(test);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                String post = postfix.toString();
+                int oldPositionIncrement = replace.getPositionIncrement();
+                replace = new org.apache.lucene.analysis.Token(replace.termText() + post, replace.startOffset(), replace.endOffset() + post.length(), replace.type());
+                replace.setPositionIncrement(oldPositionIncrement);
+                fixed.add(replace);
+
+            }
+        }
+
+        // Add in any missing words containsing * and ?
+
+        // reorder by start position and increment
+
+        Collections.sort(fixed, new Comparator<org.apache.lucene.analysis.Token>()
+        {
+
+            public int compare(Token o1, Token o2)
+            {
+                int dif = o1.startOffset() - o2.startOffset();
+                if (dif != 0)
+                {
+                    return dif;
+                }
+                else
+                {
+                    return o2.getPositionIncrement() - o1.getPositionIncrement();
+                }
+            }
+        });
+
+        v = fixed;
+
+        if (v.size() == 0)
+            return null;
+        else if (v.size() == 1)
+        {
+            t = (org.apache.lucene.analysis.Token) v.get(0);
+            if (t.termText().contains("*") || t.termText().contains("?"))
+            {
+                return new org.apache.lucene.search.WildcardQuery(new Term(field, t.termText()));
+            }
+            else
+            {
+                return new TermQuery(new Term(field, t.termText()));
+            }
+        }
+        else
+        {
+            if (severalTokensAtSamePosition)
+            {
+                if (positionCount == 1)
+                {
+                    // no phrase query:
+                    BooleanQuery q = new BooleanQuery(true);
+                    for (int i = 0; i < v.size(); i++)
+                    {
+                        t = (org.apache.lucene.analysis.Token) v.get(i);
+                        if (t.termText().contains("*") || t.termText().contains("?"))
+                        {
+                            org.apache.lucene.search.WildcardQuery currentQuery = new org.apache.lucene.search.WildcardQuery(new Term(field, t.termText()));
+                            q.add(currentQuery, BooleanClause.Occur.SHOULD);
+                        }
+                        else
+                        {
+                            TermQuery currentQuery = new TermQuery(new Term(field, t.termText()));
+                            q.add(currentQuery, BooleanClause.Occur.SHOULD);
+                        }
+                    }
+                    return q;
+                }
+                else
+                {
+                    // phrase query:
+                    MultiPhraseQuery mpq = new MultiPhraseQuery();
+                    mpq.setSlop(phraseSlop);
+                    ArrayList<Term> multiTerms = new ArrayList<Term>();
+                    for (int i = 0; i < v.size(); i++)
+                    {
+                        t = (org.apache.lucene.analysis.Token) v.get(i);
+                        if (t.getPositionIncrement() == 1 && multiTerms.size() > 0)
+                        {
+                            mpq.add((Term[]) multiTerms.toArray(new Term[0]));
+                            multiTerms.clear();
+                        }
+                        Term term = new Term(field, t.termText());
+                        if ((t.termText() != null) && (t.termText().contains("*") || t.termText().contains("?")))
+                        {
+                            addWildcardTerms(multiTerms, term);
+                        }
+                        else
+                        {
+                            multiTerms.add(term);
+                        }
+                    }
+                    if (multiTerms.size() > 0)
+                    {
+                        mpq.add((Term[]) multiTerms.toArray(new Term[0]));
+                    }
+                    else
+                    {
+                        mpq.add(new Term[] { new Term(field, "\u0000") });
+                    }
+                    return mpq;
+                }
+            }
+            else
+            {
+                MultiPhraseQuery q = new MultiPhraseQuery();
+                q.setSlop(phraseSlop);
+                for (int i = 0; i < v.size(); i++)
+                {
+                    t = (org.apache.lucene.analysis.Token) v.get(i);
+                    Term term = new Term(field, t.termText());
+                    if ((t.termText() != null) && (t.termText().contains("*") || t.termText().contains("?")))
+                    {
+                        q.add(getMatchingTerms(field, term));
+                    }
+                    else
+                    {
+                        q.add(term);
+                    }
+                }
+                return q;
+            }
+        }
+    }
+
+    private Term[] getMatchingTerms(String field, Term term) throws ParseException
+    {
+        ArrayList<Term> terms = new ArrayList<Term>();
+        addWildcardTerms(terms, term);
+        if (terms.size() == 0)
+        {
+            return new Term[] { new Term(field, "\u0000") };
+        }
+        else
+        {
+            return terms.toArray(new Term[0]);
+        }
+
+    }
+
+    private void addWildcardTerms(ArrayList<Term> terms, Term term) throws ParseException
+    {
+        try
+        {
+            WildcardTermEnum wcte = new WildcardTermEnum(indexReader, term);
+
+            while (!wcte.endEnum())
+            {
+                Term current = wcte.term();
+                if((current.text() != null) && (current.text().length() > 0) && (current.text().charAt(0) == '{'))
+                {
+                    if((term != null) && (term.text().length() > 0) && (term.text().charAt(0) == '{'))
+                    {
+                        terms.add(current);
+                    }
+                    // If not, we cod not add so wildcards do not match the locale prefix
+                }
+                else
+                {
+                    terms.add(current);
+                }
+               
+                wcte.next();
+            }
+        }
+        catch (IOException e)
+        {
+            throw new ParseException("IO error generating phares wildcards " + e.getMessage());
+        }
     }
 
     /**
@@ -586,8 +1127,7 @@ public class LuceneQueryParser extends QueryParser
         if (field.startsWith("@"))
         {
             String fieldName = expandAttributeFieldName(field);
-            return new RangeQuery(new Term(fieldName, getToken(fieldName, part1)), new Term(fieldName, getToken(
-                    fieldName, part2)), inclusive);
+            return new RangeQuery(new Term(fieldName, getToken(fieldName, part1)), new Term(fieldName, getToken(fieldName, part2)), inclusive);
 
         }
         else
@@ -612,9 +1152,7 @@ public class LuceneQueryParser extends QueryParser
             else
             {
                 // find the prefix
-                fieldName = "@{"
-                        + namespacePrefixResolver.getNamespaceURI(field.substring(1, colonPosition)) + "}"
-                        + field.substring(colonPosition + 1);
+                fieldName = "@{" + namespacePrefixResolver.getNamespaceURI(field.substring(1, colonPosition)) + "}" + field.substring(colonPosition + 1);
             }
         }
         return fieldName;
@@ -635,9 +1173,7 @@ public class LuceneQueryParser extends QueryParser
             else
             {
                 // find the prefix
-                fieldName = "{"
-                        + namespacePrefixResolver.getNamespaceURI(field.substring(0, colonPosition)) + "}"
-                        + field.substring(colonPosition + 1);
+                fieldName = "{" + namespacePrefixResolver.getNamespaceURI(field.substring(0, colonPosition)) + "}" + field.substring(colonPosition + 1);
             }
         }
         return fieldName;
@@ -780,7 +1316,7 @@ public class LuceneQueryParser extends QueryParser
 
     public Query getSuperFieldQuery(String field, String queryText) throws ParseException
     {
-        return super.getFieldQuery(field, queryText);
+        return getFieldQueryImpl(field, queryText);
     }
 
     public Query getSuperFuzzyQuery(String field, String termStr, float minSimilarity) throws ParseException
@@ -892,11 +1428,10 @@ public class LuceneQueryParser extends QueryParser
             // cross language matching for each entry
             BooleanQuery booleanQuery = new BooleanQuery();
             List<Locale> locales = searchParameters.getLocales();
-            for (Locale locale : (((locales == null) || (locales.size() == 0)) ? Collections.singletonList(I18NUtil
-                    .getLocale()) : locales))
+            for (Locale locale : (((locales == null) || (locales.size() == 0)) ? Collections.singletonList(I18NUtil.getLocale()) : locales))
             {
-                
-                if(isAnalysed)
+
+                if (isAnalysed)
                 {
                     StringBuilder builder = new StringBuilder(queryText.length() + 10);
                     builder.append("\u0000").append(locale.toString()).append("\u0000").append(queryText);
@@ -913,15 +1448,14 @@ public class LuceneQueryParser extends QueryParser
                 else
                 {
                     // analyse ml text
-                    MLAnalysisMode analysisMode = searchParameters.getMlAnalaysisMode() == null ? config
-                            .getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode();
+                    MLAnalysisMode analysisMode = searchParameters.getMlAnalaysisMode() == null ? config.getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode();
                     // Do the analysis here
-                    VerbatimAnalyser vba = new VerbatimAnalyser(false);        
+                    VerbatimAnalyser vba = new VerbatimAnalyser(false);
                     MLTokenDuplicator duplicator = new MLTokenDuplicator(vba.tokenStream(field, new StringReader(queryText)), locale, null, analysisMode);
                     Token t;
                     try
                     {
-                        while( (t = duplicator.next()) != null)
+                        while ((t = duplicator.next()) != null)
                         {
                             Query subQuery = subQueryBuilder.getQuery(expandedFieldName, t.termText());
                             booleanQuery.add(subQuery, Occur.SHOULD);
@@ -929,15 +1463,15 @@ public class LuceneQueryParser extends QueryParser
                     }
                     catch (IOException e)
                     {
-                       
+
                     }
-                    if(booleanQuery.getClauses().length == 0)
+                    if (booleanQuery.getClauses().length == 0)
                     {
                         booleanQuery.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
                     }
-                    
+
                 }
-                
+
             }
             return booleanQuery;
         }
@@ -947,8 +1481,7 @@ public class LuceneQueryParser extends QueryParser
             // Build a sub query for each locale and or the results together -
             // - add an explicit condition for the locale
 
-            MLAnalysisMode analysisMode = searchParameters.getMlAnalaysisMode() == null ? config
-                    .getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode();
+            MLAnalysisMode analysisMode = searchParameters.getMlAnalaysisMode() == null ? config.getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode();
 
             if (analysisMode.includesAll())
             {
@@ -957,8 +1490,7 @@ public class LuceneQueryParser extends QueryParser
 
             List<Locale> locales = searchParameters.getLocales();
             List<Locale> expandedLocales = new ArrayList<Locale>();
-            for (Locale locale : (((locales == null) || (locales.size() == 0)) ? Collections.singletonList(I18NUtil
-                    .getLocale()) : locales))
+            for (Locale locale : (((locales == null) || (locales.size() == 0)) ? Collections.singletonList(I18NUtil.getLocale()) : locales))
             {
                 expandedLocales.addAll(MLAnalysisMode.getLocales(analysisMode, locale, true));
             }
@@ -1008,7 +1540,7 @@ public class LuceneQueryParser extends QueryParser
             else
             {
                 Query query = subQueryBuilder.getQuery(expandedFieldName, queryText);
-                if(query != null)
+                if (query != null)
                 {
                     return query;
                 }
@@ -1022,7 +1554,7 @@ public class LuceneQueryParser extends QueryParser
         else
         {
             Query query = subQueryBuilder.getQuery(expandedFieldName, queryText);
-            if(query != null)
+            if (query != null)
             {
                 return query;
             }

@@ -36,6 +36,7 @@ import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.util.VirtServerUtils;
 import org.springframework.context.ApplicationContext;
+import org.apache.log4j.Logger;
 
 /**
 *  Gets callbacks at critical moments within a transaction
@@ -44,8 +45,10 @@ import org.springframework.context.ApplicationContext;
 */
 public class AVMSubmitTransactionListener extends TransactionListenerAdapter
 {
+    private static Logger log = 
+        Logger.getLogger(AVMSubmitTransactionListener.class);
+
     public AVMSubmitTransactionListener() { }
-   
 
     /**
     *  Notify virtualization server that webapps in workflow sandbox
@@ -104,22 +107,31 @@ public class AVMSubmitTransactionListener extends TransactionListenerAdapter
                                               requiresUpdate.getDestinationPath(),
                                               true
                                              );
+            if (log.isDebugEnabled())
+                log.debug("JMX update to virt server called after commit");
         }
 
-        // Remove virtual weapps from workflow sandbox
-
-        if ( ! stagingDiffs.isEmpty() )
-        {
-            // All the files are from the same workflow sandbox;
-            // so to remove all the webapps, you just need to
-            // look at the 1st difference
-
-            AVMDifference d = stagingDiffs.iterator().next();
-            vServerRegistry.removeAllWebapps( d.getSourceVersion(), d.getSourcePath(), true );
-        }
-
+        // Remove virtual webapps from workflow sandbox prior to 
+        // AVMRemoveWFStoreHandler in the "process-end" clause.
+        // This way, even if the workflow is aborted, the JMX message
+        // to the virt server is still sent.  Therefore, no longer 
+        // doing this here:
+        //
+        //  if ( ! stagingDiffs.isEmpty() )
+        //  {
+        //      // All the files are from the same workflow sandbox;
+        //      // so to remove all the webapps, you just need to
+        //      // look at the 1st difference
+        //
+        //      AVMDifference d = stagingDiffs.iterator().next();
+        //      vServerRegistry.removeAllWebapps( d.getSourceVersion(), 
+        //                                        d.getSourcePath(), true );
+        //  }
 
         AlfrescoTransactionSupport.unbindResource("staging_diffs");
+
+        if (log.isDebugEnabled())
+            log.debug("staging_diff resource unbound after commit");
     }
 
 
@@ -130,5 +142,8 @@ public class AVMSubmitTransactionListener extends TransactionListenerAdapter
     public void afterRollback()
     {
         AlfrescoTransactionSupport.unbindResource("staging_diffs");
+
+        if (log.isDebugEnabled())
+            log.debug("staging_diff resource unbound after rollback");
     }
 }

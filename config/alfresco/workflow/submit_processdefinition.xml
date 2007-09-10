@@ -234,6 +234,7 @@
     
     <event type="process-end">
         <action class="org.alfresco.repo.avm.wf.AVMClearSubmittedHandler"/>
+        <action class="org.alfresco.repo.avm.wf.AVMRemoveAllWebappsHandler"/>
         <action class="org.alfresco.repo.avm.wf.AVMRemoveWFStoreHandler"/>
     </event>
 

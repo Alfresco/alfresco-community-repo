@@ -57,7 +57,7 @@ public class AlfrescoStandardAnalyser extends Analyzer
     {
         stopSet = StopFilter.makeStopSet(stopWords);
     }
-
+    
     /**
      * Constructs a {@link StandardTokenizer} filtered by a {@link StandardFilter}, a {@link LowerCaseFilter} and a {@link StopFilter}.
      */

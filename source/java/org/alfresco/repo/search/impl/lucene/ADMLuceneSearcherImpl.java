@@ -58,6 +58,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.SearchLanguageConversion;
+import org.apache.log4j.Logger;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
@@ -71,12 +72,14 @@ import org.saxpath.SAXPathException;
 import com.werken.saxpath.XPathReader;
 
 /**
- * The Lucene implementation of Searcher At the moment we support only lucene based queries. TODO: Support for other query languages
+ * The Lucene implementation of Searcher At the moment we support only lucene based queries. TODO: Support for other
+ * query languages
  * 
  * @author andyh
  */
 public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneSearcher
 {
+    static Logger s_logger = Logger.getLogger(ADMLuceneSearcherImpl.class);
 
     /**
      * Default field name
@@ -100,11 +103,12 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
      */
 
     /**
-     * Get an initialised searcher for the store and transaction Normally we do not search against a a store and delta. Currently only gets the searcher against the main index.
+     * Get an initialised searcher for the store and transaction Normally we do not search against a a store and delta.
+     * Currently only gets the searcher against the main index.
      * 
      * @param storeRef
-     * @param indexer 
-     * @param config 
+     * @param indexer
+     * @param config
      * @return - the searcher implementation
      */
     public static ADMLuceneSearcherImpl getSearcher(StoreRef storeRef, LuceneIndexer indexer, LuceneConfig config)
@@ -127,7 +131,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
      * Get an intialised searcher for the store. No transactional ammendsmends are searched.
      * 
      * @param storeRef
-     * @param config 
+     * @param config
      * @return the searcher
      */
     public static ADMLuceneSearcherImpl getSearcher(StoreRef storeRef, LuceneConfig config)
@@ -163,6 +167,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
 
     /**
      * Set the query register
+     * 
      * @param queryRegister
      */
     public void setQueryRegister(QueryRegisterComponent queryRegister)
@@ -170,8 +175,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
         this.queryRegister = queryRegister;
     }
 
-    public ResultSet query(StoreRef store, String language, String queryString, Path[] queryOptions,
-            QueryParameterDefinition[] queryParameterDefinitions) throws SearcherException
+    public ResultSet query(StoreRef store, String language, String queryString, Path[] queryOptions, QueryParameterDefinition[] queryParameterDefinitions) throws SearcherException
     {
     	store = tenantService.getName(store);
         
@@ -240,11 +244,23 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                     defaultOperator = LuceneQueryParser.OR_OPERATOR;
                 }
 
-                Query query = LuceneQueryParser.parse(parameterisedQueryString, DEFAULT_FIELD, 
-                        new LuceneAnalyser(dictionaryService, searchParameters.getMlAnalaysisMode() == null ? getLuceneConfig().getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode()), 
-                        namespacePrefixResolver, dictionaryService, tenantService, defaultOperator, searchParameters, getLuceneConfig());
-                
                 ClosingIndexSearcher searcher = getSearcher(indexer);
+                Query query = LuceneQueryParser.parse(
+                        parameterisedQueryString, DEFAULT_FIELD,
+                        new LuceneAnalyser(
+                                dictionaryService,
+                                searchParameters.getMlAnalaysisMode() == null ? getLuceneConfig().getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode()),
+                        namespacePrefixResolver,
+                        dictionaryService,
+                        tenantService,
+                        defaultOperator,
+                        searchParameters,
+                        getLuceneConfig(),
+                        searcher.getIndexReader());
+                if (s_logger.isDebugEnabled())
+                {
+                    s_logger.debug("Query is " + query.toString());
+                }
                 if (searcher == null)
                 {
                     // no index return an empty result set
@@ -288,6 +304,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                 }
 
                 Path[] paths = searchParameters.getAttributePaths().toArray(new Path[0]);
+<<<<<<< .working
                 return new LuceneResultSet(
                         hits,
                         searcher,
@@ -295,6 +312,9 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                         tenantService,
                         paths,
                         searchParameters);
+=======
+                return new LuceneResultSet(hits, searcher, nodeService, paths, searchParameters);
+>>>>>>> .merge-right.r6367
 
             }
             catch (ParseException e)
@@ -328,8 +348,12 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                     return new EmptyResultSet();
                 }
                 Hits hits = searcher.search(query);
+<<<<<<< .working
                 return new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters.getAttributePaths().toArray(
                         new Path[0]), searchParameters);
+=======
+                return new LuceneResultSet(hits, searcher, nodeService, searchParameters.getAttributePaths().toArray(new Path[0]), searchParameters);
+>>>>>>> .merge-right.r6367
             }
             catch (SAXPathException e)
             {
@@ -380,8 +404,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
         return query(store, language, query, null, null);
     }
 
-    public ResultSet query(StoreRef store, String language, String query,
-            QueryParameterDefinition[] queryParameterDefintions)
+    public ResultSet query(StoreRef store, String language, String query, QueryParameterDefinition[] queryParameterDefintions)
     {
         return query(store, language, query, null, queryParameterDefintions);
     }
@@ -407,8 +430,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
 
         checkParameters(definition, queryParameters);
 
-        String queryString = parameterise(definition.getQuery(), definition.getQueryParameterMap(), queryParameters,
-                definition.getNamespacePrefixResolver());
+        String queryString = parameterise(definition.getQuery(), definition.getQueryParameterMap(), queryParameters, definition.getNamespacePrefixResolver());
 
         return query(store, definition.getLanguage(), queryString, null, null);
     }
@@ -420,8 +442,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
      * @param queryParameters
      * @throws QueryParameterisationException
      */
-    private void checkParameters(CannedQueryDef definition, QueryParameter[] queryParameters)
-            throws QueryParameterisationException
+    private void checkParameters(CannedQueryDef definition, QueryParameter[] queryParameters) throws QueryParameterisationException
     {
         List<QName> missing = new ArrayList<QName>();
 
@@ -461,12 +482,13 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     }
 
     /*
-     * Parameterise the query string - not sure if it is required to escape lucence spacials chars The parameters could be used to build the query - the contents of parameters
-     * should alread have been escaped if required. ... mush better to provide the parameters and work out what to do TODO: conditional query escapement - may be we should have a
-     * parameter type that is not escaped
+     * Parameterise the query string - not sure if it is required to escape lucence spacials chars The parameters could
+     * be used to build the query - the contents of parameters should alread have been escaped if required. ... mush
+     * better to provide the parameters and work out what to do TODO: conditional query escapement - may be we should
+     * have a parameter type that is not escaped
      */
-    private String parameterise(String unparameterised, Map<QName, QueryParameterDefinition> map,
-            QueryParameter[] queryParameters, NamespacePrefixResolver nspr) throws QueryParameterisationException
+    private String parameterise(String unparameterised, Map<QName, QueryParameterDefinition> map, QueryParameter[] queryParameters, NamespacePrefixResolver nspr)
+            throws QueryParameterisationException
     {
 
         Map<QName, List<Serializable>> valueMap = new HashMap<QName, List<Serializable>>();
@@ -547,28 +569,29 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     /**
      * @see org.alfresco.repo.search.impl.NodeSearcher
      */
-    public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters,
-            NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks, String language)
-            throws InvalidNodeRefException, XPathException
+    public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
+            boolean followAllParentLinks, String language) throws InvalidNodeRefException, XPathException
     {
         NodeSearcher nodeSearcher = new NodeSearcher(nodeService, dictionaryService, this);
+<<<<<<< .working
         
         contextNodeRef = tenantService.getName(contextNodeRef);
         
         return nodeSearcher.selectNodes(contextNodeRef, xpath, parameters, namespacePrefixResolver,
                 followAllParentLinks, language);
+=======
+        return nodeSearcher.selectNodes(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, language);
+>>>>>>> .merge-right.r6367
     }
 
     /**
      * @see org.alfresco.repo.search.impl.NodeSearcher
      */
-    public List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath,
-            QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
+    public List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
             boolean followAllParentLinks, String language) throws InvalidNodeRefException, XPathException
     {
         NodeSearcher nodeSearcher = new NodeSearcher(nodeService, dictionaryService, this);
-        return nodeSearcher.selectProperties(contextNodeRef, xpath, parameters, namespacePrefixResolver,
-                followAllParentLinks, language);
+        return nodeSearcher.selectProperties(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, language);
     }
 
     /**
@@ -582,30 +605,24 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     /**
      * @return Returns true if the pattern is present, otherwise false.
      */
-    public boolean contains(NodeRef nodeRef, QName propertyQName, String googleLikePattern,
-            SearchParameters.Operator defaultOperator)
+    public boolean contains(NodeRef nodeRef, QName propertyQName, String googleLikePattern, SearchParameters.Operator defaultOperator)
     {
         ResultSet resultSet = null;
         try
         {
             // build Lucene search string specific to the node
             StringBuilder sb = new StringBuilder();
-            sb.append("+ID:\"").append(nodeRef.toString()).append("\" +(TEXT:(")
-                    .append(googleLikePattern.toLowerCase()).append(") ");
+            sb.append("+ID:\"").append(nodeRef.toString()).append("\" +(TEXT:(").append(googleLikePattern.toLowerCase()).append(") ");
             if (propertyQName != null)
             {
-                sb.append(" OR @").append(
-                        LuceneQueryParser.escape(QName.createQName(propertyQName.getNamespaceURI(),
-                                ISO9075.encode(propertyQName.getLocalName())).toString()));
+                sb.append(" OR @").append(LuceneQueryParser.escape(QName.createQName(propertyQName.getNamespaceURI(), ISO9075.encode(propertyQName.getLocalName())).toString()));
                 sb.append(":(").append(googleLikePattern.toLowerCase()).append(")");
             }
             else
             {
                 for (QName key : nodeService.getProperties(nodeRef).keySet())
                 {
-                    sb.append(" OR @").append(
-                            LuceneQueryParser.escape(QName.createQName(key.getNamespaceURI(),
-                                    ISO9075.encode(key.getLocalName())).toString()));
+                    sb.append(" OR @").append(LuceneQueryParser.escape(QName.createQName(key.getNamespaceURI(), ISO9075.encode(key.getLocalName())).toString()));
                     sb.append(":(").append(googleLikePattern.toLowerCase()).append(")");
                 }
             }
@@ -657,10 +674,8 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
             }
             if (propertyQName != null)
             {
-                sb.append(" @").append(
-                        LuceneQueryParser.escape(QName.createQName(propertyQName.getNamespaceURI(),
-                                ISO9075.encode(propertyQName.getLocalName())).toString())).append(":(").append(pattern)
-                        .append(")");
+                sb.append(" @").append(LuceneQueryParser.escape(QName.createQName(propertyQName.getNamespaceURI(), ISO9075.encode(propertyQName.getLocalName())).toString()))
+                        .append(":(").append(pattern).append(")");
             }
             sb.append(")");
 
@@ -691,26 +706,21 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
             }
             else
             {
-                String propertyString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
-                        nodeRef, propertyQName));
+                String propertyString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, propertyQName));
                 return propertyString.toLowerCase().matches(pattern);
             }
         }
     }
 
-    public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters,
-            NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks)
-            throws InvalidNodeRefException, XPathException
-    {
-        return selectNodes(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks,
-                SearchService.LANGUAGE_XPATH);
-    }
-
-    public List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath,
-            QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
+    public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
             boolean followAllParentLinks) throws InvalidNodeRefException, XPathException
     {
-        return selectProperties(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks,
-                SearchService.LANGUAGE_XPATH);
+        return selectNodes(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, SearchService.LANGUAGE_XPATH);
+    }
+
+    public List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
+            boolean followAllParentLinks) throws InvalidNodeRefException, XPathException
+    {
+        return selectProperties(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, SearchService.LANGUAGE_XPATH);
     }
 }

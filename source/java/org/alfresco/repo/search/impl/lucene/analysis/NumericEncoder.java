@@ -122,6 +122,12 @@ public class NumericEncoder
         return decodeFromHex(hex) ^ LONG_SIGN_MASK;
     }
     
+    
+    public static int decodeInt(String hex)
+    {
+        return decodeIntFromHex(hex) ^ INTEGER_SIGN_MASK;
+    }
+    
     /**
      * Encode a float into a string that orders correctly according to string
      * comparison. Note that there is no negative NaN but there are codings that
@@ -208,6 +214,19 @@ public class NumericEncoder
         return l;
     }
 
+    private static int decodeIntFromHex(String hex)
+    {
+        int l = 0;
+        int factor = 1;
+        for(int i = 7; i >= 0; i--, factor <<= 4)
+        {
+            int digit = Character.digit(hex.charAt(i), 16);
+            l += digit*factor;
+        }
+        return l;
+    }
+
+    
     private static final char[] DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
             'f' };
 

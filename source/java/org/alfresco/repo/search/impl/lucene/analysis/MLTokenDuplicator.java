@@ -61,6 +61,11 @@ public class MLTokenDuplicator extends Tokenizer
         }
 
     }
+    
+    public MLTokenDuplicator(Locale locale, MLAnalysisMode mlAnalaysisMode)
+    {
+        this(null, locale, null, mlAnalaysisMode);
+    }
 
     @Override
     public Token next() throws IOException
@@ -87,6 +92,13 @@ public class MLTokenDuplicator extends Tokenizer
     private Iterator<Token> buildIterator() throws IOException
     {
         Token token = source.next();
+        return buildIterator(token);
+
+    }
+
+
+    public Iterator<Token> buildIterator(Token token)
+    {
         if (token == null)
         {
             return null;
@@ -110,4 +122,5 @@ public class MLTokenDuplicator extends Tokenizer
 
     }
 
+    
 }

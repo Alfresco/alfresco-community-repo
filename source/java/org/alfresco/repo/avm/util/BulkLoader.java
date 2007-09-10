@@ -28,9 +28,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * This takes a filesystem directory path and a repository path and name
@@ -40,6 +44,8 @@ import org.alfresco.service.cmr.avm.AVMService;
 public class BulkLoader
 {
     private AVMService fService;
+    
+    private int fPropertyCount = 0;
     
     /**
      * Create a new one.
@@ -57,6 +63,11 @@ public class BulkLoader
         fService = service;
     }
     
+    public void setPropertyCount(int propCount)
+    {
+        fPropertyCount = propCount;
+    }
+    
     /**
      * Recursively load content.
      * @param fsPath The path in the filesystem.
@@ -64,6 +75,11 @@ public class BulkLoader
      */
     public void recursiveLoad(String fsPath, String repPath)
     {
+        Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>();
+        for (int i = 0; i < fPropertyCount; i++)
+        {
+            props.put(QName.createQName("silly", "prop" + i), new PropertyValue(null, "I am property " + i));
+        }
         File file = new File(fsPath);
         String name = file.getName();
         if (file.isDirectory())
@@ -71,6 +87,7 @@ public class BulkLoader
             fService.createDirectory(repPath, name);
             String[] children = file.list();
             String baseName = repPath.endsWith("/") ? repPath + name : repPath + "/" + name;
+            fService.setNodeProperties(baseName, props);
             for (String child : children)
             {
                 recursiveLoad(fsPath + "/" + child, baseName);
@@ -82,6 +99,7 @@ public class BulkLoader
             {
                 InputStream in = new FileInputStream(file);
                 OutputStream out = fService.createFile(repPath, name);
+                fService.setNodeProperties(repPath + "/" + name, props);
                 byte[] buff = new byte[8192];
                 int read = 0;
                 while ((read = in.read(buff)) != -1)

@@ -31,9 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.transaction.UserTransaction;
-
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.webservice.AbstractWebService;
 import org.alfresco.repo.webservice.CMLUtil;
 import org.alfresco.repo.webservice.Utils;
@@ -108,7 +107,7 @@ public class RepositoryWebService extends AbstractWebService implements
     }
     
     /**
-     * @see org.alfresco.repo.webservice.repository.RepositoryServiceSoapPort#createStore(org.alfresco.repo.webservice.types.StoreEnum, java.lang.String)
+     * {@inheritDoc}
      */
     public Store createStore(String scheme, String address) throws RemoteException, RepositoryFault
     {
@@ -117,63 +116,50 @@ public class RepositoryWebService extends AbstractWebService implements
     }
 
     /**
-     * @see org.alfresco.repo.webservice.repository.RepositoryServiceSoapPort#getStores()
+     * {@inheritDoc}
      */
     public Store[] getStores() throws RemoteException, RepositoryFault
     {
-        UserTransaction tx = null;
-
         try
         {
-            tx = Utils.getUserTransaction(MessageContext.getCurrentContext());
-            tx.begin();
-
-            List<StoreRef> stores = this.nodeService.getStores();
-            Store[] returnStores = new Store[stores.size()];
-            for (int x = 0; x < stores.size(); x++)
+            RetryingTransactionCallback<Store[]> callback = new RetryingTransactionCallback<Store[]>()
             {
-                StoreRef storeRef = stores.get(x);
-                
-                if (logger.isDebugEnabled() == true)
+                public Store[] execute() throws Throwable
                 {
-                    logger.debug("Store protocol :" + storeRef.getProtocol());
+                    List<StoreRef> stores = nodeService.getStores();
+                    Store[] returnStores = new Store[stores.size()];
+                    for (int x = 0; x < stores.size(); x++)
+                    {
+                        StoreRef storeRef = stores.get(x);
+                        
+                        if (logger.isDebugEnabled() == true)
+                        {
+                            logger.debug("Store protocol :" + storeRef.getProtocol());
+                        }
+                        
+                        Store store = Utils.convertToStore(storeRef);
+                        returnStores[x] = store;
+                    }
+
+                    return returnStores;
                 }
-                
-                Store store = Utils.convertToStore(storeRef);
-                returnStores[x] = store;
-            }
-
-            // commit the transaction
-            tx.commit();
-
-            return returnStores;
-        } catch (Throwable e)
+            };
+            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
+        }
+        catch (Throwable e)
         {
-            // rollback the transaction
-            try
-            {
-                if (tx != null)
-                {
-                    tx.rollback();
-                }
-            } catch (Exception ex)
-            {
-            }
-
             if (logger.isDebugEnabled())
             {
                 logger.error("Unexpected error occurred", e);
             }
-
             throw new RepositoryFault(0, e.toString());
         }
     }
 
     /**
-     * @see org.alfresco.repo.webservice.repository.RepositoryServiceSoapPort#query(org.alfresco.repo.webservice.types.Store,
-     *      org.alfresco.repo.webservice.types.Query, boolean)
+     * {@inheritDoc}
      */
-    public QueryResult query(Store store, Query query, boolean includeMetaData)
+    public QueryResult query(final Store store, final Query query, final boolean includeMetaData)
             throws RemoteException, RepositoryFault
     {
         String language = query.getLanguage();
@@ -184,387 +170,283 @@ public class RepositoryWebService extends AbstractWebService implements
                     + "' queries are currently supported!");
         }
 
-        UserTransaction tx = null;
-        MessageContext msgContext = MessageContext.getCurrentContext();
-
+        final MessageContext msgContext = MessageContext.getCurrentContext();
         try
         {
-            tx = Utils.getUserTransaction(msgContext);
-            tx.begin();
-
-            // setup a query session and get the first batch of results
-            QuerySession querySession = new ResultSetQuerySession(Utils
-                    .getBatchSize(msgContext), store, query, includeMetaData);
-            QueryResult queryResult = querySession
-                    .getNextResultsBatch(this.searchService, this.nodeService,
-                            this.namespaceService, this.dictionaryService);
-
-            // add the session to the cache if there are more results to come
-            if (queryResult.getQuerySession() != null)
+            RetryingTransactionCallback<QueryResult> callback = new RetryingTransactionCallback<QueryResult>()
             {
-                // this.querySessionCache.putQuerySession(querySession);
-                this.querySessionCache.put(queryResult.getQuerySession(),
-                        querySession);
-            }
-
-            // commit the transaction
-            tx.commit();
-
-            return queryResult;
-        } catch (Throwable e)
-        {
-            // rollback the transaction
-            try
-            {
-                if (tx != null)
+                public QueryResult execute() throws Throwable
                 {
-                    tx.rollback();
-                }
-            } catch (Exception ex)
-            {
-            }
+                    // setup a query session and get the first batch of results
+                    QuerySession querySession = new ResultSetQuerySession(Utils
+                            .getBatchSize(msgContext), store, query, includeMetaData);
+                    QueryResult queryResult = querySession
+                            .getNextResultsBatch(searchService, nodeService, namespaceService, dictionaryService);
 
+                    // add the session to the cache if there are more results to come
+                    if (queryResult.getQuerySession() != null)
+                    {
+                        // this.querySessionCache.putQuerySession(querySession);
+                        querySessionCache.put(queryResult.getQuerySession(), querySession);
+                    }
+
+                    return queryResult;
+                }
+            };
+            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
+        }
+        catch (Throwable e)
+        {
             if (logger.isDebugEnabled())
             {
                 logger.error("Unexpected error occurred", e);
             }
-
             e.printStackTrace();
-
             throw new RepositoryFault(0, e.toString());
         }
     }
 
     /**
-     * @see org.alfresco.repo.webservice.repository.RepositoryServiceSoapPort#queryChildren(org.alfresco.repo.webservice.types.Reference)
+     * {@inheritDoc}
      */
-    public QueryResult queryChildren(Reference node) throws RemoteException,
+    public QueryResult queryChildren(final Reference node) throws RemoteException,
             RepositoryFault
     {
-        UserTransaction tx = null;
-
         try
         {
-            tx = Utils.getUserTransaction(MessageContext.getCurrentContext());
-            tx.begin();
-
-            // setup a query session and get the first batch of results
-            QuerySession querySession = new ChildrenQuerySession(Utils
-                    .getBatchSize(MessageContext.getCurrentContext()), node);
-            QueryResult queryResult = querySession
-                    .getNextResultsBatch(this.searchService, this.nodeService,
-                            this.namespaceService, this.dictionaryService);
-
-            // add the session to the cache if there are more results to come
-            if (queryResult.getQuerySession() != null)
+            RetryingTransactionCallback<QueryResult> callback = new RetryingTransactionCallback<QueryResult>()
             {
-                // this.querySessionCache.putQuerySession(querySession);
-                this.querySessionCache.put(queryResult.getQuerySession(),
-                        querySession);
-            }
-            
-            if (logger.isDebugEnabled() == true)
-            {
-                logger.debug("Method end ... queryChildren");
-            }
+                public QueryResult execute() throws Throwable
+                {
+                    // setup a query session and get the first batch of results
+                    QuerySession querySession = new ChildrenQuerySession(Utils
+                            .getBatchSize(MessageContext.getCurrentContext()), node);
+                    QueryResult queryResult = querySession
+                            .getNextResultsBatch(searchService, nodeService, namespaceService, dictionaryService);
 
-            // commit the transaction
-            tx.commit();
+                    // add the session to the cache if there are more results to come
+                    if (queryResult.getQuerySession() != null)
+                    {
+                        querySessionCache.put(queryResult.getQuerySession(), querySession);
+                    }
+                    
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Method end ... queryChildren");
+                    }
 
-            return queryResult;
-        } catch (Throwable e)
+                    return queryResult;
+                }
+            };
+            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
+        }
+        catch (Throwable e)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", e);
+            }
             e.printStackTrace();
-            
-            // rollback the transaction
-            try
-            {
-                if (tx != null)
-                {
-                    tx.rollback();
-                }
-            } catch (Exception ex)
-            {
-            }
-
-            if (logger.isDebugEnabled())
-            {
-                logger.error("Unexpected error occurred", e);
-            }
-
             throw new RepositoryFault(0, e.toString());
         }
     }
 
     /**
-     * @see org.alfresco.repo.webservice.repository.RepositoryServiceSoapPort#queryParents(org.alfresco.repo.webservice.types.Reference)
+     * {@inheritDoc}
      */
-    public QueryResult queryParents(Reference node) throws RemoteException,
-            RepositoryFault
+    public QueryResult queryParents(final Reference node) throws RemoteException, RepositoryFault
     {
-        UserTransaction tx = null;
-
         try
         {
-            tx = Utils.getUserTransaction(MessageContext.getCurrentContext());
-            tx.begin();
-
-            // setup a query session and get the first batch of results
-            QuerySession querySession = new ParentsQuerySession(Utils
-                    .getBatchSize(MessageContext.getCurrentContext()), node);
-            QueryResult queryResult = querySession
-                    .getNextResultsBatch(this.searchService, this.nodeService,
-                            this.namespaceService, this.dictionaryService);
-
-            // add the session to the cache if there are more results to come
-            if (queryResult.getQuerySession() != null)
+            RetryingTransactionCallback<QueryResult> callback = new RetryingTransactionCallback<QueryResult>()
             {
-                // this.querySessionCache.putQuerySession(querySession);
-                this.querySessionCache.put(queryResult.getQuerySession(),
-                        querySession);
-            }
-
-            // commit the transaction
-            tx.commit();
-
-            return queryResult;
-        } catch (Throwable e)
-        {
-            // rollback the transaction
-            try
-            {
-                if (tx != null)
+                public QueryResult execute() throws Throwable
                 {
-                    tx.rollback();
-                }
-            } catch (Exception ex)
-            {
-            }
+                    // setup a query session and get the first batch of results
+                    QuerySession querySession = new ParentsQuerySession(Utils
+                            .getBatchSize(MessageContext.getCurrentContext()), node);
+                    QueryResult queryResult = querySession.getNextResultsBatch(
+                            searchService, nodeService, namespaceService, dictionaryService);
 
+                    // add the session to the cache if there are more results to come
+                    if (queryResult.getQuerySession() != null)
+                    {
+                        // this.querySessionCache.putQuerySession(querySession);
+                        querySessionCache.put(queryResult.getQuerySession(), querySession);
+                    }
+
+                    return queryResult;
+                }
+            };
+            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
+
+        }
+        catch (Throwable e)
+        {
             if (logger.isDebugEnabled())
             {
                 logger.error("Unexpected error occurred", e);
             }
-
             throw new RepositoryFault(0, e.toString());
         }
     }
 
     /**
-     * @see org.alfresco.repo.webservice.repository.RepositoryServiceSoapPort#queryAssociated(org.alfresco.repo.webservice.types.Reference,
-     *      org.alfresco.repo.webservice.repository.Association[])
+     * {@inheritDoc}
      */
-    public QueryResult queryAssociated(Reference node, Association association)
+    public QueryResult queryAssociated(final Reference node, final Association association)
             throws RemoteException, RepositoryFault
     {
-        UserTransaction tx = null;
-
         try
         {
-            tx = Utils.getUserTransaction(MessageContext.getCurrentContext());
-            tx.begin();
-
-            // setup a query session and get the first batch of results
-            QuerySession querySession = new AssociatedQuerySession(Utils.getBatchSize(MessageContext.getCurrentContext()), node, association);
-            QueryResult queryResult = querySession
-                    .getNextResultsBatch(this.searchService, this.nodeService,
-                            this.namespaceService, this.dictionaryService);
-
-            // add the session to the cache if there are more results to come
-            if (queryResult.getQuerySession() != null)
+            RetryingTransactionCallback<QueryResult> callback = new RetryingTransactionCallback<QueryResult>()
             {
-                // this.querySessionCache.putQuerySession(querySession);
-                this.querySessionCache.put(queryResult.getQuerySession(),
-                        querySession);
-            }
+                public QueryResult execute() throws Throwable
+                {
+                    // setup a query session and get the first batch of results
+                    QuerySession querySession = new AssociatedQuerySession(Utils.getBatchSize(MessageContext.getCurrentContext()), node, association);
+                    QueryResult queryResult = querySession.getNextResultsBatch(searchService, nodeService, namespaceService, dictionaryService);
 
-            // commit the transaction
-            tx.commit();
+                    // add the session to the cache if there are more results to come
+                    if (queryResult.getQuerySession() != null)
+                    {
+                        // this.querySessionCache.putQuerySession(querySession);
+                        querySessionCache.put(queryResult.getQuerySession(), querySession);
+                    }
 
-            return queryResult;
+                    return queryResult;
+                }
+            };
+            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
         } 
         catch (Throwable e)
         {
-            // rollback the transaction
-            try
-            {
-                if (tx != null)
-                {
-                    tx.rollback();
-                }
-            } catch (Exception ex)
-            {
-            }
-
             if (logger.isDebugEnabled())
             {
                 logger.error("Unexpected error occurred", e);
             }
-
             throw new RepositoryFault(0, e.toString());
         }
     }
 
     /**
-     * @see org.alfresco.repo.webservice.repository.RepositoryServiceSoapPort#fetchMore(java.lang.String)
+     * {@inheritDoc}
      */
-    public QueryResult fetchMore(String querySession) throws RemoteException,
-            RepositoryFault
+    public QueryResult fetchMore(final String querySession) throws RemoteException, RepositoryFault
     {
-        QueryResult queryResult = null;
-
-        UserTransaction tx = null;
-
         try
         {
-            tx = Utils.getUserTransaction(MessageContext.getCurrentContext());
-            tx.begin();
-
-            // try and get the QuerySession with the given id from the cache
-            QuerySession session = this.querySessionCache.get(querySession);
-
-            if (session == null)
+            RetryingTransactionCallback<QueryResult> callback = new RetryingTransactionCallback<QueryResult>()
             {
-                if (logger.isDebugEnabled())
-                    logger.debug("Invalid querySession id requested: "
-                            + querySession);
-
-                throw new RepositoryFault(4, "querySession with id '"
-                        + querySession + "' is invalid");
-            }
-
-            // get the next batch of results
-            queryResult = session.getNextResultsBatch(this.searchService,
-                    this.nodeService, this.namespaceService, this.dictionaryService);
-
-            // remove the QuerySession from the cache if there are no more
-            // results to come
-            if (queryResult.getQuerySession() == null)
-            {
-                this.querySessionCache.remove(querySession);
-            }
-
-            // commit the transaction
-            tx.commit();
-
-            return queryResult;
-        } catch (Throwable e)
-        {
-            // rollback the transaction
-            try
-            {
-                if (tx != null)
+                public QueryResult execute() throws Throwable
                 {
-                    tx.rollback();
-                }
-            } catch (Exception ex)
-            {
-            }
+                    // try and get the QuerySession with the given id from the cache
+                    QuerySession session = querySessionCache.get(querySession);
 
+                    if (session == null)
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Invalid querySession id requested: " + querySession);
+                        }
+
+                        throw new RepositoryFault(
+                                4,
+                                "querySession with id '" + querySession + "' is invalid");
+                    }
+
+                    // get the next batch of results
+                    QueryResult queryResult = session.getNextResultsBatch(
+                            searchService,
+                            nodeService,
+                            namespaceService,
+                            dictionaryService);
+
+                    // remove the QuerySession from the cache if there are no more
+                    // results to come
+                    if (queryResult.getQuerySession() == null)
+                    {
+                        querySessionCache.remove(querySession);
+                    }
+
+                    return queryResult;
+                }
+            };
+            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
+        }
+        catch (Throwable e)
+        {
             if (e instanceof RepositoryFault)
             {
                 throw (RepositoryFault) e;
-            } else
+            }
+            else
             {
                 if (logger.isDebugEnabled())
                 {
                     logger.error("Unexpected error occurred", e);
                 }
-
                 throw new RepositoryFault(0, e.toString());
             }
         }
     }
 
     /**
-     * @see org.alfresco.repo.webservice.repository.RepositoryServiceSoapPort#update(org.alfresco.repo.webservice.types.CML)
+     * {@inheritDoc}
      */
-    public UpdateResult[] update(CML statements) throws RemoteException,
-            RepositoryFault
+    public UpdateResult[] update(final CML statements) throws RemoteException, RepositoryFault
     {
-        UpdateResult[] result = null;
-        UserTransaction tx = null;
-
         try
         {
-            tx = Utils.getUserTransaction(MessageContext.getCurrentContext());
-            tx.begin();
-
-            result = this.cmlUtil.executeCML(statements);
-
-            // commit the transaction
-            tx.commit();
-
-            return result;
+            RetryingTransactionCallback<UpdateResult[]> callback = new RetryingTransactionCallback<UpdateResult[]>()
+            {
+                public UpdateResult[] execute() throws Throwable
+                {
+                    return cmlUtil.executeCML(statements);
+                }
+            };
+            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
         } 
         catch (Throwable e)
         {
-            // rollback the transaction
-            try
-            {
-                if (tx != null)
-                {
-                    tx.rollback();
-                }
-            } catch (Exception ex)
-            {
-            }
-
             if (logger.isDebugEnabled())
             {
                 logger.error("Unexpected error occurred", e);
             }
-
             throw new RepositoryFault(0, e.toString());
         }
     }
 
     /**
-     * @see org.alfresco.repo.webservice.repository.RepositoryServiceSoapPort#describe(org.alfresco.repo.webservice.types.Predicate)
+     * {@inheritDoc}
      */
-    public NodeDefinition[] describe(Predicate items) throws RemoteException,
-            RepositoryFault
+    public NodeDefinition[] describe(final Predicate items) throws RemoteException, RepositoryFault
     {
-        NodeDefinition[] nodeDefs = null;
-        UserTransaction tx = null;
-
         try
         {
-            tx = Utils.getUserTransaction(MessageContext.getCurrentContext());
-            tx.begin();
-
-            List<NodeRef> nodes = Utils
-                    .resolvePredicate(items, this.nodeService,
-                            this.searchService, this.namespaceService);
-            nodeDefs = new NodeDefinition[nodes.size()];
-
-            for (int x = 0; x < nodes.size(); x++)
+            RetryingTransactionCallback<NodeDefinition[]> callback = new RetryingTransactionCallback<NodeDefinition[]>()
             {
-                nodeDefs[x] = setupNodeDefObject(nodes.get(x));
-            }
-
-            // commit the transaction
-            tx.commit();
-
-            return nodeDefs;
-        } catch (Throwable e)
-        {
-            // rollback the transaction
-            try
-            {
-                if (tx != null)
+                public NodeDefinition[] execute() throws Throwable
                 {
-                    tx.rollback();
+                    List<NodeRef> nodes = Utils.resolvePredicate(items, nodeService, searchService, namespaceService);
+                    NodeDefinition[] nodeDefs = new NodeDefinition[nodes.size()];
+        
+                    for (int x = 0; x < nodes.size(); x++)
+                    {
+                        nodeDefs[x] = setupNodeDefObject(nodes.get(x));
+                    }
+        
+                    return nodeDefs;
                 }
-            } catch (Exception ex)
-            {
-            }
-
+            };
+            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
+        }
+        catch (Throwable e)
+        {
             if (logger.isDebugEnabled())
             {
                 logger.error("Unexpected error occurred", e);
             }
-
             throw new RepositoryFault(0, e.toString());
         }
     }
@@ -604,91 +486,75 @@ public class RepositoryWebService extends AbstractWebService implements
      * Gets the nodes associatiated with the predicate provided.  Usefull when the store and ids of the required
      * nodes are known.
      * 
-     * @see org.alfresco.repo.webservice.repository.RepositoryServiceSoapPort#get(org.alfresco.repo.webservice.types.Predicate)
+     * {@inheritDoc}
      */
-    public Node[] get(Predicate where) throws RemoteException, RepositoryFault
+    public Node[] get(final Predicate where) throws RemoteException, RepositoryFault
     {
-        Node[] nodes = null;
-        UserTransaction tx = null;
-
         try
         {
-            tx = Utils.getUserTransaction(MessageContext.getCurrentContext());
-            tx.begin();
-            
-            // Resolve the predicate to a list of node references
-            List<NodeRef> nodeRefs = Utils.resolvePredicate(where, this.nodeService, this.searchService, this.namespaceService);
-            List<Node> nodeList = new ArrayList<Node>();
-            for (NodeRef nodeRef : nodeRefs)
+            RetryingTransactionCallback<Node[]> callback = new RetryingTransactionCallback<Node[]>()
             {
-            	// search can return nodes that no longer exist, so we need to  ignore these
-            	if(nodeService.exists(nodeRef) == false) 
-            	{
-            		if(logger.isDebugEnabled())
-            		{
-            			logger.warn("Search returned node that doesn't exist: " + nodeRef);
-            		}
-            	}
-            	
-                // Get the nodes reference
-                Reference reference = Utils.convertToReference(this.nodeService, this.namespaceService, nodeRef);
-                
-                // Get the nodes type
-                String type = this.nodeService.getType(nodeRef).toString();
-                
-                // Get the nodes aspects
-                Set<QName> aspectQNames = this.nodeService.getAspects(nodeRef);
-                String[] aspects = new String[aspectQNames.size()];
-                int aspectIndex = 0;
-                for (QName aspectQName : aspectQNames)
+                public Node[] execute() throws Throwable
                 {
-                    aspects[aspectIndex] = aspectQName.toString();
-                    aspectIndex++;
+                    // Resolve the predicate to a list of node references
+                    List<NodeRef> nodeRefs = Utils.resolvePredicate(where, nodeService, searchService, namespaceService);
+                    List<Node> nodeList = new ArrayList<Node>();
+                    for (NodeRef nodeRef : nodeRefs)
+                    {
+                        // search can return nodes that no longer exist, so we need to  ignore these
+                        if(nodeService.exists(nodeRef) == false) 
+                        {
+                            if(logger.isDebugEnabled())
+                            {
+                                logger.warn("Search returned node that doesn't exist: " + nodeRef);
+                            }
+                        }
+                        
+                        // Get the nodes reference
+                        Reference reference = Utils.convertToReference(nodeService, namespaceService, nodeRef);
+                        
+                        // Get the nodes type
+                        String type = nodeService.getType(nodeRef).toString();
+                        
+                        // Get the nodes aspects
+                        Set<QName> aspectQNames = nodeService.getAspects(nodeRef);
+                        String[] aspects = new String[aspectQNames.size()];
+                        int aspectIndex = 0;
+                        for (QName aspectQName : aspectQNames)
+                        {
+                            aspects[aspectIndex] = aspectQName.toString();
+                            aspectIndex++;
+                        }
+                        
+                        // Get the nodes properties
+                        Map<QName, Serializable> propertyMap = nodeService.getProperties(nodeRef);
+                        NamedValue[] properties = new NamedValue[propertyMap.size()];
+                        int propertyIndex = 0;
+                        for (Map.Entry<QName, Serializable> entry : propertyMap.entrySet())
+                        { 
+                            properties[propertyIndex] = Utils.createNamedValue(dictionaryService, entry.getKey(), entry.getValue());
+                            propertyIndex++;
+                        }
+                        
+                        // Create the node and add to the array
+                        Node node = new Node(reference, type, aspects, properties);
+                        nodeList.add(node);
+                    }
+                    
+                    Node[] nodes = nodeList.toArray(new Node[nodeList.size()]);
+                    
+                    return nodes;
                 }
-                
-                // Get the nodes properties
-                Map<QName, Serializable> propertyMap = this.nodeService.getProperties(nodeRef);
-                NamedValue[] properties = new NamedValue[propertyMap.size()];
-                int propertyIndex = 0;
-                for (Map.Entry<QName, Serializable> entry : propertyMap.entrySet())
-                { 
-                    properties[propertyIndex] = Utils.createNamedValue(this.dictionaryService, entry.getKey(), entry.getValue());
-                    propertyIndex++;
-                }
-                
-                // Create the node and add to the array
-                Node node = new Node(reference, type, aspects, properties);
-                nodeList.add(node);
-            }
-            
-            nodes = nodeList.toArray(new Node[nodeList.size()]);
-            
-            // commit the transaction
-            tx.commit();
+            };
+            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
         } 
         catch (Throwable e)
         {
-            // rollback the transaction
-            try
-            {
-                if (tx != null)
-                {
-                    tx.rollback();
-                }
-            } 
-            catch (Exception ex)
-            {
-                // Ignore
-            }
-
             if (logger.isDebugEnabled())
             {
                 logger.error("Unexpected error occurred", e);
             }
-
             throw new RepositoryFault(0, e.toString());
         }
-        
-        return nodes;
     }    
 }

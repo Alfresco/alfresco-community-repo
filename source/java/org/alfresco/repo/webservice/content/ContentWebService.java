@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.webservice.AbstractWebService;
 import org.alfresco.repo.webservice.Utils;
 import org.alfresco.repo.webservice.types.ContentFormat;
@@ -67,49 +68,35 @@ public class ContentWebService extends AbstractWebService implements
     /**
      * @see org.alfresco.repo.webservice.content.ContentServiceSoapPort#read(org.alfresco.repo.webservice.types.Reference)
      */
-    public Content[] read(Predicate items, String property)
+    public Content[] read(final Predicate items, final String property)
             throws RemoteException, ContentFault
     {
-        UserTransaction tx = null;
-
         try
         {
-            tx = Utils.getUserTransaction(MessageContext.getCurrentContext());
-            tx.begin();
+            RetryingTransactionCallback<Content[]> callback = new RetryingTransactionCallback<Content[]>()
+            {
+                public Content[] execute() throws Throwable
+                {
+                    // resolve the predicates
+                    List<NodeRef> nodes = Utils.resolvePredicate(items, nodeService, searchService, namespaceService);
+                    List<Content> results = new ArrayList<Content>(nodes.size());
+                    for (NodeRef nodeRef : nodes)
+                    {   
+                        // Add content to the result
+                        results.add(createContent(nodeRef, property));
+                    }
 
-            // resolve the predicates
-            List<NodeRef> nodes = Utils.resolvePredicate(items, this.nodeService, this.searchService, this.namespaceService);
-            List<Content> results = new ArrayList<Content>(nodes.size());
-            for (NodeRef nodeRef : nodes)
-            {   
-                // Add content to the result
-                results.add(createContent(nodeRef, property));
-            }
-
-            // commit the transaction
-            tx.commit();
-
-            return results.toArray(new Content[results.size()]);
+                    return results.toArray(new Content[results.size()]);
+                }
+            };
+            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
         } 
         catch (Throwable e)
         {
-            // rollback the transaction
-            try
-            {
-                if (tx != null)
-                {
-                    tx.rollback();
-                }
-            } 
-            catch (Exception ex)
-            {
-            }
-
             if (logger.isDebugEnabled())
             {
                 logger.error("Unexpected error occurred", e);
             }
-
             throw new ContentFault(0, e.getMessage());
         }
     }
@@ -193,64 +180,50 @@ public class ContentWebService extends AbstractWebService implements
      * @see org.alfresco.repo.webservice.content.ContentServiceSoapPort#write(org.alfresco.repo.webservice.types.Reference,
      *      byte[])
      */
-    public Content write(Reference node, String property, byte[] content, ContentFormat format) 
+    public Content write(final Reference node, final String property, final byte[] content, final ContentFormat format) 
         throws RemoteException, ContentFault
     {
-        UserTransaction tx = null;
-
         try
         {
-            tx = Utils.getUserTransaction(MessageContext.getCurrentContext());
-            tx.begin();
-
-            // create a NodeRef from the parent reference
-            NodeRef nodeRef = Utils.convertToNodeRef(node, this.nodeService,
-                    this.searchService, this.namespaceService);
-
-            // Get the content writer
-            ContentWriter writer = this.contentService.getWriter(nodeRef, QName.createQName(property), true);
-            
-            // Set the content format details (if they have been specified)
-            if (format != null)
+            RetryingTransactionCallback<Content> callback = new RetryingTransactionCallback<Content>()
             {
-                writer.setEncoding(format.getEncoding());
-                writer.setMimetype(format.getMimetype());
-            }
-            
-            // Write the content 
-            InputStream is = new ByteArrayInputStream(content);
-            writer.putContent(is);
+                public Content execute() throws Throwable
+                {
+                    // create a NodeRef from the parent reference
+                    NodeRef nodeRef = Utils.convertToNodeRef(node, nodeService, searchService, namespaceService);
 
-            // Debug
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Updated content for node with id: " + nodeRef.getId());
-            }
+                    // Get the content writer
+                    ContentWriter writer = contentService.getWriter(nodeRef, QName.createQName(property), true);
+                    
+                    // Set the content format details (if they have been specified)
+                    if (format != null)
+                    {
+                        writer.setEncoding(format.getEncoding());
+                        writer.setMimetype(format.getMimetype());
+                    }
+                    
+                    // Write the content 
+                    InputStream is = new ByteArrayInputStream(content);
+                    writer.putContent(is);
 
-            // Commit the transaction
-            tx.commit();
-            
-            // Return the content object
-            return createContent(nodeRef, property);
+                    // Debug
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Updated content for node with id: " + nodeRef.getId());
+                    }
+
+                    // Return the content object
+                    return createContent(nodeRef, property);
+                }
+            };
+            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
         } 
         catch (Throwable e)
         {
-            // Rollback the transaction
-            try
-            {
-                if (tx != null)
-                {
-                    tx.rollback();
-                }
-            } catch (Exception ex)
-            {
-            }
-
             if (logger.isDebugEnabled())
             {
                 logger.error("Unexpected error occurred", e);
             }
-
             throw new ContentFault(0, e.getMessage());
         }
     }
@@ -259,58 +232,43 @@ public class ContentWebService extends AbstractWebService implements
      * @see org.alfresco.repo.webservice.content.ContentServiceSoapPort#clear(org.alfresco.repo.webservice.types.Predicate,
      *      java.lang.String)
      */
-    public Content[] clear(Predicate items, String property)
-            throws RemoteException, ContentFault
+    public Content[] clear(final Predicate items, final String property) throws RemoteException, ContentFault
     {
-        UserTransaction tx = null;
-
         try
         {
-            tx = Utils.getUserTransaction(MessageContext.getCurrentContext());
-            tx.begin();
-
-            List<NodeRef> nodes = Utils.resolvePredicate(items, this.nodeService,this.searchService, this.namespaceService);
-            Content[] contents = new Content[nodes.size()];
-
-            // delete each node in the predicate
-            for (int x = 0; x < nodes.size(); x++)
+            RetryingTransactionCallback<Content[]> callback = new RetryingTransactionCallback<Content[]>()
             {
-                NodeRef nodeRef = nodes.get(x);
-
-                // Clear the content
-                this.nodeService.setProperty(nodeRef, QName.createQName(property), null);
-
-                if (logger.isDebugEnabled())
+                public Content[] execute() throws Throwable
                 {
-                    logger.debug("Cleared content node with id: " + nodeRef.getId());
+                    List<NodeRef> nodes = Utils.resolvePredicate(items, nodeService, searchService, namespaceService);
+                    Content[] contents = new Content[nodes.size()];
+
+                    // delete each node in the predicate
+                    for (int x = 0; x < nodes.size(); x++)
+                    {
+                        NodeRef nodeRef = nodes.get(x);
+
+                        // Clear the content
+                        nodeService.setProperty(nodeRef, QName.createQName(property), null);
+
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Cleared content node with id: " + nodeRef.getId());
+                        }
+
+                        contents[x] = createContent(nodeRef, property);
+                    }
+                    return contents;
                 }
-
-                contents[x] = createContent(nodeRef, property);
-            }
-
-            // commit the transaction
-            tx.commit();
-
-            return contents;
+            };
+            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
         } 
         catch (Throwable e)
         {
-            // rollback the transaction
-            try
-            {
-                if (tx != null)
-                {
-                    tx.rollback();
-                }
-            } catch (Exception ex)
-            {
-            }
-
             if (logger.isDebugEnabled())
             {
                 logger.error("Unexpected error occurred", e);
             }
-
             throw new ContentFault(0, e.getMessage());
         }
     }

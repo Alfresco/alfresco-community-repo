@@ -38,6 +38,7 @@ import javax.servlet.http.HttpSession;
 import javax.transaction.UserTransaction;
 import javax.xml.rpc.server.ServletEndpointContext;
 
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.webservice.axis.QueryConfigHandler;
 import org.alfresco.repo.webservice.types.AssociationDefinition;
 import org.alfresco.repo.webservice.types.Cardinality;
@@ -511,8 +512,7 @@ public class Utils
      *            SOAP message context
      * @return The Spring WebApplicationContext
      */
-    public static WebApplicationContext getSpringContext(
-            MessageContext msgContext)
+    public static WebApplicationContext getSpringContext(MessageContext msgContext)
     {
         // get hold of the web application context via the message context
         HttpServletRequest req = (HttpServletRequest) msgContext
@@ -528,6 +528,8 @@ public class Utils
      * @param msgContext
      *            SOAP message context
      * @return a UserTransaction
+     * 
+     * @deprecated   Use {@link #getRetryingTransactionHelper(MessageContext)}
      */
     public static UserTransaction getUserTransaction(MessageContext msgContext)
     {   
@@ -537,6 +539,24 @@ public class Utils
 
         TransactionService transactionService = svcReg.getTransactionService();
         return transactionService.getUserTransaction();
+    }
+    
+    /**
+     * Get the executer to wrap transactional callbacks in for better transaction behaviour.
+     * 
+     * @param msgContext
+     *              SOAP message context
+     * @return
+     *              a transactional, retrying, callback executer
+     */
+    public static RetryingTransactionHelper getRetryingTransactionHelper(MessageContext msgContext)
+    {
+        // get the service regsistry
+        ServiceRegistry svcReg = (ServiceRegistry) getSpringContext(msgContext)
+                .getBean(ServiceRegistry.SERVICE_REGISTRY);
+
+        TransactionService transactionService = svcReg.getTransactionService();
+        return transactionService.getRetryingTransactionHelper();
     }
     
     /**

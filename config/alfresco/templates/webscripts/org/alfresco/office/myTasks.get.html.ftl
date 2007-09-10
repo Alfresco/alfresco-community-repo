@@ -1,6 +1,6 @@
 <#assign doc_actions="${url.serviceContext}/office/docActions">
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
-<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
+<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if><#assign extnx=extn+"x">
 <#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
 <#if docWorkflow?exists>
    <#assign d=docWorkflow>
@@ -82,7 +82,7 @@
 </#if>
 </div>
 
-<div class="header">Workflow</div>
+<div class="header">Task Details</div>
 
 <div class="containerBig">
    <div id="nonStatusText">

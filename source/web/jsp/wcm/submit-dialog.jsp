@@ -124,12 +124,12 @@
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top:6px;padding-bottom:4px;"
-      width="100%" rowClasses="wizardSectionHeading">
+      width="100%" rowClasses="wizardSectionHeading" rendered="#{DialogManager.bean.workflowListSize != 0}">
    <h:outputText value="&nbsp;#{msg.content_launch}" escape="false" />
 </h:panelGrid>
 
 <h:panelGrid columns="2" cellpadding="2" cellpadding="2" width="100%" style="margin-left:8px"
-             columnClasses="noBrColumn,rightHandColumn">
+             columnClasses="noBrColumn,rightHandColumn" rendered="#{DialogManager.bean.workflowListSize != 0}">
    <h:outputText value="#{msg.launch_date}:"/>
    <a:inputDatePicker id="launch-date" value="#{DialogManager.bean.launchDate}" 
                       initialiseIfNull="false" style="margin-right: 7px;" showTime="true" />

@@ -45,7 +45,7 @@
    <#list task.packageResources as res>
          <tr>
       <#if res.isDocument>
-         <#if child.name?ends_with(extn) || child.name?ends_with(extnx)>
+         <#if res.name?ends_with(extn) || res.name?ends_with(extnx)>
             <#assign relativePath = (res.displayPath?substring(companyhome.name?length+1) + '/' + res.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
             <td width="16"><a href="${url.context}${res.url}" target="new"><img src="${url.context}${res.icon16}" alt="${res.name}"></a></td>
             <td>

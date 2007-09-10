@@ -46,20 +46,20 @@ public class WCMWorkflowEvaluator extends WCMLockEvaluator
     */
    public boolean evaluate(final Node node)
    {
+      final Pair<Integer, String> p = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef());
+      final String path = p.getSecond();
+      
       boolean proceed = false;
-      if (super.evaluate(node))
+      if (AVMUtil.isWorkflowStore(AVMUtil.getStoreName(path)) || super.evaluate(node))
       {
           final FacesContext facesContext = FacesContext.getCurrentInstance();
           final AVMService avmService = Repository.getServiceRegistry(facesContext).getAVMService();
-          final Pair<Integer, String> p = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef());
-          final int version = p.getFirst();
-          final String path = p.getSecond();
           
           // evaluate to true if we are not deleted and within a workflow store (i.e. list of resources
           // in the task dialog) or not part of an already in-progress workflow
           proceed = ((AVMUtil.isWorkflowStore(AVMUtil.getStoreName(path)) ||
                       !((AVMNode)node).isWorkflowInFlight()) &&
-                      avmService.lookup(version, path) != null);
+                      avmService.lookup(p.getFirst(), path) != null);
       }
       return proceed;
    }

@@ -52,6 +52,7 @@ import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -109,8 +110,12 @@ public class EditWebContentWizard extends CreateWebContentWizard
       {
          throw new IllegalArgumentException("Edit Form wizard requires action node context.");
       }
-      LOGGER.debug("path is " + this.avmNode.getPath());
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("path is " + this.avmNode.getPath());
+      }
       this.createdPath = AVMUtil.getCorrespondingPathInPreviewStore(this.avmNode.getPath());
+
       this.formInstanceData = this.formsService.getFormInstanceData(-1, this.createdPath);
       final WebProject webProject = new WebProject(this.createdPath);
       try
@@ -122,6 +127,7 @@ public class EditWebContentWizard extends CreateWebContentWizard
       {
          Utils.addErrorMessage(fnfe.getMessage(), fnfe);
       }
+
       this.content = this.avmService.getContentReader(-1, this.createdPath).getContentString();
       this.fileName = this.formInstanceData.getName();
       this.mimeType = MimetypeMap.MIMETYPE_XML;
@@ -147,11 +153,50 @@ public class EditWebContentWizard extends CreateWebContentWizard
       {
          LOGGER.debug("saving " + this.createdPath);
       }
+      AVMLock lock = this.avmLockingService.getLock(AVMUtil.getStoreId(this.createdPath),
+                                                    AVMUtil.getStoreRelativePath(this.createdPath));
+      String previousStore = lock.getStore();
+      if (lock != null)
+      {
+         LOGGER.debug("transferring lock from " + lock.getStore() + 
+                      " to " + AVMUtil.getStoreName(this.createdPath));
+         this.avmLockingService.modifyLock(AVMUtil.getStoreId(this.createdPath),
+                                           AVMUtil.getStoreRelativePath(this.createdPath),
+                                           null,
+                                           AVMUtil.getStoreName(this.createdPath),
+                                           null,
+                                           null);
+      }
+
       final ContentWriter writer = this.avmService.getContentWriter(this.createdPath);
       this.content = XMLUtil.toString(this.instanceDataDocument, false);
       writer.putContent(this.content);
+
+      LOGGER.debug("transferring lock back to " + previousStore);
+      this.avmLockingService.modifyLock(AVMUtil.getStoreId(this.createdPath),
+                                        AVMUtil.getStoreRelativePath(this.createdPath),
+                                        null,
+                                        previousStore,
+                                        null,
+                                        null);
       // XXXarielb might not need to do this reload
       this.formInstanceData = this.formsService.getFormInstanceData(-1, this.createdPath);
+      for (final Rendition r : this.formInstanceData.getRenditions())
+      {
+         lock = this.avmLockingService.getLock(AVMUtil.getStoreId(r.getPath()),
+                                               AVMUtil.getStoreRelativePath(r.getPath()));
+         if (lock != null)
+         {
+            LOGGER.debug("transferring lock from " + lock.getStore() + 
+                         " to " + AVMUtil.getStoreName(r.getPath()));
+            this.avmLockingService.modifyLock(AVMUtil.getStoreId(r.getPath()),
+                                              AVMUtil.getStoreRelativePath(r.getPath()),
+                                              null,
+                                              AVMUtil.getStoreName(r.getPath()),
+                                              null,
+                                              null);
+         }
+      }
       final List<FormInstanceData.RegenerateResult> result = this.formInstanceData.regenerateRenditions();
       this.renditions = new LinkedList<Rendition>();
       for (FormInstanceData.RegenerateResult rr : result)
@@ -164,7 +209,16 @@ public class EditWebContentWizard extends CreateWebContentWizard
          }
          else
          {
-            this.renditions.add(rr.getRendition());
+            final Rendition r = rr.getRendition();
+            this.renditions.add(r);
+            LOGGER.debug("transferring lock for " + r.getPath() + " back to " + previousStore);
+            this.avmLockingService.modifyLock(AVMUtil.getStoreId(r.getPath()),
+                                              AVMUtil.getStoreRelativePath(r.getPath()),
+                                              null,
+                                              previousStore,
+                                              null,
+                                              null);
+
          }
       }
    }

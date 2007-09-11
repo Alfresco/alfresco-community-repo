@@ -81,6 +81,7 @@ public final class Repository
    public static final String ERROR_GENERIC = "error_generic";
    public static final String ERROR_NOHOME  = "error_homespace";
    public static final String ERROR_SEARCH  = "error_search";
+   public static final String ERROR_QUERY   = "error_search_query";
    public static final String ERROR_EXISTS  = "error_exists";
    
    private static final String METADATA_EXTACTER_REGISTRY = "metadataExtracterRegistry";  

@@ -43,6 +43,7 @@ import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.SearcherException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.lock.LockService;
@@ -1011,9 +1012,17 @@ public class BrowseBean implements IContextListener
          this.contentNodes = Collections.<Node>emptyList();
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
       }
+      catch (SearcherException serr)
+      {
+         logger.info("Search failed for: " + query, serr);
+         Utils.addErrorMessage(Application.getMessage(
+              FacesContext.getCurrentInstance(), Repository.ERROR_QUERY));
+         this.containerNodes = Collections.<Node>emptyList();
+         this.contentNodes = Collections.<Node>emptyList();
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
       catch (Throwable err)
       {
-         logger.info("Search failed for: " + query);
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_SEARCH), new Object[] {err.getMessage()}), err );
          this.containerNodes = Collections.<Node>emptyList();

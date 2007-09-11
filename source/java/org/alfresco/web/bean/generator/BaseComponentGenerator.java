@@ -500,10 +500,6 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
                // NOTE: This is dealt with at the component creation stage
                //       as a different component is usually required.
             }
-            else
-            {
-               logger.warn("Unrecognized constaint object: " + constraint.getClass().getName());
-            }
          }
       }
    }

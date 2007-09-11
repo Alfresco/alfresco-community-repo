@@ -224,6 +224,9 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
                     propertyName);        
         contentWriter1.putContent(modelOne);
         
+        // activate the model
+        nodeService.setProperty(model, ContentModel.PROP_MODEL_ACTIVE, new Boolean(true));
+        
         return model;
     }
     

@@ -353,7 +353,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                     {
                         public Object doWork()
                         {            
-                            // Find out whether the model is active (by default it is)
+                            // Find out whether the model is active
                             boolean isActive = false;
                             Boolean value = (Boolean)nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_ACTIVE);
                             if (value != null)

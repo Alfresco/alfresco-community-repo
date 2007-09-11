@@ -63,7 +63,8 @@ import org.alfresco.web.ui.common.component.UIBreadcrumb;
 import org.alfresco.web.ui.common.component.UIGenericPicker;
 import org.alfresco.web.ui.common.component.UIModeList;
 import org.alfresco.web.ui.common.component.data.UIRichList;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Backing Bean for the Groups Management pages.
@@ -80,7 +81,7 @@ public class GroupsBean implements IContextListener
    private static final String MSG_ERR_EXISTS = "groups_err_exists";
    private static final String MSG_GROUPS = "root_groups";
    
-   private static Logger logger = Logger.getLogger(GroupsBean.class);
+   private static Log    logger = LogFactory.getLog(GroupsBean.class);
    
    /** The NodeService to be used by the bean */
    private NodeService nodeService;

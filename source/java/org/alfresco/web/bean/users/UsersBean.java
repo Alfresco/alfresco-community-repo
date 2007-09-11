@@ -57,14 +57,15 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.data.UIRichList;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Kevin Roast
  */
 public class UsersBean implements IContextListener
 {
-   private static Logger logger = Logger.getLogger(UsersBean.class);
+   private static Log    logger = LogFactory.getLog(UsersBean.class);
 
    public static final String ERROR_PASSWORD_MATCH = "error_password_match";
    private static final String ERROR_DELETE = "error_delete_user";

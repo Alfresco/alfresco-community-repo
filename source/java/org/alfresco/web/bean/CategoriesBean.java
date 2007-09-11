@@ -60,7 +60,8 @@ import org.alfresco.web.ui.common.component.UIBreadcrumb;
 import org.alfresco.web.ui.common.component.UIModeList;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.alfresco.web.ui.repo.component.IRepoBreadcrumbHandler;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Backing Bean for the Category Management pages.
@@ -73,7 +74,7 @@ public class CategoriesBean implements IContextListener
 
    private static final String MSG_CATEGORIES = "categories";
 
-   private static Logger logger = Logger.getLogger(CategoriesBean.class);
+   private static Log    logger = LogFactory.getLog(CategoriesBean.class);
    
    /** The NodeService to be used by the bean */
    protected NodeService nodeService;

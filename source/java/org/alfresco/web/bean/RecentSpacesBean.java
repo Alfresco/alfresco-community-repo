@@ -41,7 +41,8 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.repo.component.shelf.UIRecentSpacesShelfItem;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This bean manages the real-time updated list of Recent Spaces in the Shelf component.
@@ -53,7 +54,7 @@ import org.apache.log4j.Logger;
  */
 public class RecentSpacesBean implements IContextListener
 {
-   private static Logger logger = Logger.getLogger(RecentSpacesBean.class);
+   private static Log    logger = LogFactory.getLog(RecentSpacesBean.class);
    
    /** The NavigationBean reference */
    protected NavigationBean navigator;

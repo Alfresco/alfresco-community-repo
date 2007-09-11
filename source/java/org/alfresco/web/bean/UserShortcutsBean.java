@@ -49,7 +49,8 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.repo.component.shelf.UIShortcutsShelfItem;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This bean manages the user defined list of Recent Spaces in the Shelf component.
@@ -58,7 +59,7 @@ import org.apache.log4j.Logger;
  */
 public class UserShortcutsBean
 {
-   private static Logger logger = Logger.getLogger(UserShortcutsBean.class);
+   private static Log    logger = LogFactory.getLog(UserShortcutsBean.class);
    
    /** The NodeService to be used by the bean */
    protected NodeService nodeService;

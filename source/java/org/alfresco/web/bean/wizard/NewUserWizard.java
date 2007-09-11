@@ -61,14 +61,15 @@ import org.alfresco.web.bean.users.UsersBean;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Kevin Roast
  */
 public class NewUserWizard extends AbstractWizardBean
 {
-   private static Logger logger = Logger.getLogger(NewUserWizard.class);
+   private static Log    logger = LogFactory.getLog(NewUserWizard.class);
 
    private static final String WIZARD_TITLE_NEW_ID = "new_user_title";
    private static final String WIZARD_DESC_NEW_ID = "new_user_desc";

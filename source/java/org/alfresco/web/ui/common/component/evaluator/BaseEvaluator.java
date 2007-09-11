@@ -29,7 +29,8 @@ import java.io.IOException;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 
@@ -137,7 +138,7 @@ public abstract class BaseEvaluator extends SelfRenderingComponent
    public abstract boolean evaluate();
    
    
-   protected static final Logger s_logger = Logger.getLogger(BaseEvaluator.class);
+   protected static final Log    s_logger = LogFactory.getLog(BaseEvaluator.class);
    
    /** the value to be evaluated against */
    private Object value;

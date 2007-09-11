@@ -35,7 +35,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Sort
@@ -471,6 +472,6 @@ public abstract class Sort
    /** config value whether to use strong collation Key string comparisons */
    private boolean strongStringCompare = false;
    
-   private static Logger s_logger = Logger.getLogger(IDataContainer.class);
+   private static Log    s_logger = LogFactory.getLog(IDataContainer.class);
    
 } // end class Sort

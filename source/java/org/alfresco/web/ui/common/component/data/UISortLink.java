@@ -37,7 +37,8 @@ import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.FacesEvent;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.ui.common.Utils;
@@ -336,7 +337,7 @@ public class UISortLink extends UICommand
    // ------------------------------------------------------------------------------
    // Constants
    
-   private static Logger s_logger = Logger.getLogger(IDataContainer.class);
+   private static Log    s_logger = LogFactory.getLog(IDataContainer.class);
    
    /** sorting mode */
    private String mode = IDataContainer.SORT_CASEINSENSITIVE;

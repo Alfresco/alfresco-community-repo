@@ -44,7 +44,8 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Component responsible for rendering the output of a FreeMarker template directly to the page.
@@ -58,7 +59,7 @@ import org.apache.log4j.Logger;
  */
 public class UITemplate extends SelfRenderingComponent
 {
-   private static Logger logger = Logger.getLogger(UITemplate.class);
+   private static Log    logger = LogFactory.getLog(UITemplate.class);
    
    /** Template name/classpath */
    private String template = null;

@@ -64,7 +64,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.ui.common.Utils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.jsf.FacesContextUtils;
 
@@ -86,7 +87,7 @@ public final class Repository
    
    private static final String METADATA_EXTACTER_REGISTRY = "metadataExtracterRegistry";  
 
-   private static Logger logger = Logger.getLogger(Repository.class);
+   private static Log logger = LogFactory.getLog(Repository.class);
    
    /** cache of client StoreRef */
    private static StoreRef storeRef = null;

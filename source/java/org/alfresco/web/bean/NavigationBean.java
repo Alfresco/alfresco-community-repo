@@ -67,7 +67,8 @@ import org.alfresco.web.ui.common.component.UIBreadcrumb;
 import org.alfresco.web.ui.common.component.UIModeList;
 import org.alfresco.web.ui.repo.component.IRepoBreadcrumbHandler;
 import org.alfresco.web.ui.repo.component.shelf.UIShelf;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.web.jsf.FacesContextUtils;
 
 /**
@@ -931,7 +932,7 @@ public class NavigationBean
    // ------------------------------------------------------------------------------
    // Private data
    
-   private static Logger s_logger = Logger.getLogger(NavigationBean.class);
+   private static Log    s_logger = LogFactory.getLog(NavigationBean.class);
    
    /** constant values used by the toolbar location modelist control */
    public static final String LOCATION_COMPANY    = "companyhome";

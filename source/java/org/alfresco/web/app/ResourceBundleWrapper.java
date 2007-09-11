@@ -38,9 +38,10 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.web.bean.repository.Repository;
-import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+
 
 /**
  * Wrapper around Alfresco Resource Bundle objects. Used to catch and handle missing
@@ -51,7 +52,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  */
 public final class ResourceBundleWrapper extends ResourceBundle
 {
-   private static Logger logger = Logger.getLogger(ResourceBundleWrapper.class);
+   private static Log    logger = LogFactory.getLog(ResourceBundleWrapper.class);
    
    private ResourceBundle delegate;
    private ResourceBundle delegateCustom;
@@ -147,7 +148,7 @@ public final class ResourceBundleWrapper extends ResourceBundle
          // if the key was not found return a default string 
          if (result == null)
          {
-            if (logger.isEnabledFor(Priority.WARN))
+            if (logger.isWarnEnabled())
                logger.warn("Failed to find I18N message string key: " + key);
          
             result = "$$" + key + "$$";

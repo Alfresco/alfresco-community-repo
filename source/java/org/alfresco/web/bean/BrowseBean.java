@@ -87,8 +87,9 @@ import org.alfresco.web.ui.repo.component.IRepoBreadcrumbHandler;
 import org.alfresco.web.ui.repo.component.UINodeDescendants;
 import org.alfresco.web.ui.repo.component.UINodePath;
 import org.alfresco.web.ui.repo.component.UISimpleSearch;
-import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 
 /**
  * Bean providing properties and behaviour for the main folder/document browse screen and
@@ -548,7 +549,7 @@ public class BrowseBean implements IContextListener
 	            }
 	            else
 	            {
-	               if (logger.isEnabledFor(Priority.WARN))
+	               if (logger.isWarnEnabled())
 	                  logger.warn("Found invalid object in database: id = " + nodeRef + ", type = " + type);
 	            }
 	         }
@@ -829,7 +830,7 @@ public class BrowseBean implements IContextListener
             }
             else
             {
-               if (logger.isEnabledFor(Priority.WARN))
+               if (logger.isWarnEnabled())
                   logger.warn("Found invalid object in database: id = " + nodeRef + ", type = " + type);
             }
          }
@@ -1010,13 +1011,13 @@ public class BrowseBean implements IContextListener
                   }
                   else
                   {
-                     if (logger.isEnabledFor(Priority.WARN))
+                     if (logger.isWarnEnabled())
                         logger.warn("Found invalid object in database: id = " + nodeRef + ", type = " + type);
                   }
                }
                else
                {
-                  if (logger.isEnabledFor(Priority.WARN))
+                  if (logger.isWarnEnabled())
                      logger.warn("Missing object returned from search indexes: id = " + nodeRef + " search query: " + query);
                }
             }
@@ -1975,7 +1976,7 @@ public class BrowseBean implements IContextListener
    private static final String MSG_DELETE_COMPANYROOT = "delete_companyroot_confirm";
    private static final String MSG_SEARCH_MINIMUM     = "search_minimum";
 
-   private static Logger logger = Logger.getLogger(BrowseBean.class);
+   private static Log    logger = LogFactory.getLog(BrowseBean.class);
 
    /** The NodeService to be used by the bean */
    protected NodeService nodeService;

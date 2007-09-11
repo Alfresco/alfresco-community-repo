@@ -21,8 +21,8 @@
             <a href="${url.context}${d.url}" target="new"><img class="docIconImage" alt="" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border=0></a>
          </div>
          <div style="display:none"><img class="docIconImage64" alt="" width="64" height="64" src="${url.context}${d.icon64}"></div>
-         <div class="docItem">
-            ${d.name?html}
+         <div>
+            <a class="docItem" href="${url.context}${d.url}" target="new">${d.name?html}</a>
             <span class="docInfo" onclick="event.cancelBubble=true; AlfNodeInfoMgr.toggle('${d.nodeRef}',this);">
                <img src="${url.context}/images/icons/popup.gif" class="popupImage" width="16" height="16" />
             </span>

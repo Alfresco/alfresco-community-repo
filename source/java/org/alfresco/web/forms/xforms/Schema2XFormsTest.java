@@ -41,6 +41,7 @@ import org.chiba.xml.ns.NamespaceConstants;
 import org.chiba.xml.events.XFormsEventNames;
 import org.chiba.xml.events.XMLEvent;
 import org.chiba.xml.xforms.ChibaBean;
+import org.chiba.xml.xforms.exception.XFormsException;
 import org.chiba.xml.xforms.XFormsElement;
 import org.chiba.xml.events.DOMEventNames;
 import org.w3c.dom.*;
@@ -94,6 +95,25 @@ public class Schema2XFormsTest
       pointer = xpathContext.getPointer("//" + NamespaceConstants.XFORMS_PREFIX + ":instance[@id='instance_0']/one-string-test/string");
       assertNotNull(pointer);
       assertEquals("test", ((Element)pointer.getNode()).getTextContent());
+   }
+
+   public void testNumbers()
+      throws Exception
+   {
+      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/number-test.xsd");
+      final Document xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "number-test");
+      System.err.println("generated xform " + XMLUtil.toString(xformsDocument));
+      final Element[] repeatedNumbers = Schema2XFormsTest.resolveXFormsControl(xformsDocument, "/number-test/repeated_numbers");
+      final ChibaBean chibaBean = this.runXForm(xformsDocument);
+      try
+      {
+         chibaBean.dispatch(repeatedNumbers[0].getAttribute("id") + "-insert_before", DOMEventNames.ACTIVATE); 
+         fail("expected to reproduce WCM-778");
+      }
+      catch (XFormsException bindingIssue)
+      {
+         // tracked as WCM-778
+      }
    }
 
    public void testRepeatConstraintsTest()

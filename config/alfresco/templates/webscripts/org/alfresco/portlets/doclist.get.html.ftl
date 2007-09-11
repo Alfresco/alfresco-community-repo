@@ -42,17 +42,17 @@
 
 <table border=0 cellspacing=0 cellpadding=0 class="docTable">
 <tr>
-   <td height="30" class="docHeader">
-      <table border="0" cellspacing="6" cellpadding="0" width="100%">
+   <td class="docHeader">
+      <table border="0" cellspacing="0" cellpadding="0" width="100%">
          <tr>
-            <th><a id="docFilter0" class="docfilterLink <#if filter=0>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(0); return false;">All Items</a></th>
-            <th><a id="docFilter1" class="docfilterLink <#if filter=1>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(1); return false;">Word Documents</a></th>
-            <th><a id="docFilter2" class="docfilterLink <#if filter=2>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(2); return false;">HTML Documents</a></th>
-            <th><a id="docFilter3" class="docfilterLink <#if filter=3>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(3); return false;">PDF Documents</a></th>
-            <th><a id="docFilter4" class="docfilterLink <#if filter=4>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(4); return false;">Recently Modified</a></th>
-            <td align=right>
+            <th><a id="docFilter0" class="docfilterLink <#if filter=0>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(0); return false;"><span>All Items</span></a></th>
+            <th><a id="docFilter1" class="docfilterLink <#if filter=1>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(1); return false;"><span>Word Documents</span></a></th>
+            <th><a id="docFilter2" class="docfilterLink <#if filter=2>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(2); return false;"><span>HTML Documents</span></a></th>
+            <th><a id="docFilter3" class="docfilterLink <#if filter=3>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(3); return false;"><span>PDF Documents</span></a></th>
+            <th><a id="docFilter4" class="docfilterLink <#if filter=4>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(4); return false;"><span>Recently Modified</span></a></th>
+            <th align=right>
                <a href="#" onclick="MyDocs.refreshList(); return false;" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px">Refresh</a>
-            </td>
+            </th>
          </tr>
       </table>
    </td>
@@ -75,6 +75,10 @@
             MyDocs.Query="${query?replace("\"","\\\"")}";
          </script>
       </div>
+      <div id="docMessagePanel">
+         <div class="docMessagePanelClose"><img id="docMessagePanelCloseImage" src="${url.context}/images/icons/close_portlet_static.gif" onclick="MyDocs.closeMessage();" /></div>
+         <div class="docMessagePanelLabel"></div>
+      </div>
    </td>
 </tr>
 <tr>
@@ -87,21 +91,29 @@
 </table>
 
 <style type="text/css">
-a.docfilterLink:link, a.docfilterLink:visited
+a.docfilterLink, a.docfilterLink:hover
 {
    color: #8EA1B3;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 12px;
    font-weight: bold;
    text-decoration: none;
-   padding-left: 4px;
-   padding-right: 4px;
+   padding: 8px 4px 16px;
+   outline: none;
+   display: block;
 }
 
-a.docfilterLink:hover
+a.docfilterLink:hover span
 {
    color: #168ECE;
    background-color: #EEF7FB;
+   text-decoration: none;
+}
+
+a.docfilterLinkSelected
+{
+   background: transparent url("${url.context}/images/parts/doclist_item_marker.png") no-repeat scroll center 29px !important;
+   padding-bottom: 16px;
 }
 
 a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
@@ -111,7 +123,7 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
 
 .docTable
 {
-   background-color: #F8FCFD;
+   background-color: #FFFFFF;
    border: 1px solid #CCD4DB;
 }
 
@@ -119,7 +131,7 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
 {
    height: 320px;
    width: 716px;
-   overflow: auto;
+   overflow: none;
    overflow-y: scroll;
    border-top: 1px solid #CCD4DB;
    border-bottom: 1px solid #CCD4DB;
@@ -170,6 +182,8 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
 .docHeader
 {
    background-image: url(${url.context}/images/parts/doclist_headerbg.png);
+   height: 40px;
+   vertical-align: top;
 }
 
 
@@ -193,12 +207,13 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
    margin-top: 8px;
 }
 
-.docItem
+a.docItem, a.docItem:hover
 {
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 14px;
    color: #515D6B;
-   padding: 0px 8px 6px 40px;
+   padding: 0px 8px 6px 8px;
+   text-decoration: none;
 }
 
 .docIcon
@@ -225,9 +240,14 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
 
 .docItemSelected
 {
-   background-color: #CCE7F3 !important;
+   background: #CCE7F3 url("${url.context}/images/parts/doclist_arrow_down.png") no-repeat right top;
    border-bottom: 1px solid #0092DD !important;
    border-top: 1px solid #0092DD !important;
+}
+
+.docItemSelectedOpen
+{
+   background-image: url("${url.context}/images/parts/doclist_arrow_up.png") !important;
 }
 
 .docResource
@@ -257,12 +277,14 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
 
 .docPreview
 {
+   background-color: #ddebf2;
    color: #515D6B;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    overflow: hidden;
-   height: 144px;
-   width: 410px;
-   border: 1px solid #0092dd;
+   height: 140px;
+   width: 406px;
+   border: 1px solid #75badd;
+   padding: 2px;
 }
 
 .docAction
@@ -344,6 +366,13 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
    overflow: hidden;
 }
 
+a.refreshViewLink
+{
+   padding: 8px 4px 0px 0px;
+   display: block;
+   outline: none;
+}
+
 a.refreshViewLink:link, a.refreshViewLink:visited, a.refreshViewLink:hover
 {
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
@@ -372,5 +401,41 @@ a.refreshViewLink:link, a.refreshViewLink:visited, a.refreshViewLink:hover
    padding: 2px;
    background-color: #F8FCFD;
    border: 1px solid #CCD4DB;
+}
+
+#docMessagePanel
+{
+   position: absolute;
+   border: 1px solid #65696C;
+   background-color: #eeeeee;
+   width: 250px;
+   height: 72px;
+   padding: 8px;
+   margin-left: 440px;
+   display: none;
+   z-index: 1;
+   -moz-border-radius: 7px;
+}
+
+.docMessagePanelClose
+{
+   margin: -4px -4px 2px 2px;
+   float:right;
+}
+
+#docMessagePanelCloseImage
+{
+   cursor: pointer;
+   display: block;
+   height: 23px;
+   width: 23px;
+}
+
+.docMessagePanelLabel
+{
+   color: #45494C;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 12px;
+   font-weight: bold;
 }
 </style>

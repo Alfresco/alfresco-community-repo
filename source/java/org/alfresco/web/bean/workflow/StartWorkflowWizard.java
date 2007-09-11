@@ -45,6 +45,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -86,7 +87,14 @@ public class StartWorkflowWizard extends BaseWizardBean
    protected boolean isItemBeingAdded = false;
    protected boolean nextButtonDisabled = false;
    
+   protected NodeService unprotectedNodeService;
+   
    private static final Log logger = LogFactory.getLog(StartWorkflowWizard.class);
+   
+   public void setUnprotectedNodeService(NodeService unprotectedNodeService)
+   {
+       this.unprotectedNodeService = unprotectedNodeService;
+   }
    
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -159,7 +167,7 @@ public class StartWorkflowWizard extends BaseWizardBean
       for (String addedItem : this.packageItemsToAdd)
       {
         NodeRef addedNodeRef = new NodeRef(addedItem);
-        this.nodeService.addChild(workflowPackage, addedNodeRef, 
+        this.unprotectedNodeService.addChild(workflowPackage, addedNodeRef, 
               ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
               QName.createValidLocalName((String)this.nodeService.getProperty(
                     addedNodeRef, ContentModel.PROP_NAME))));

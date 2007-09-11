@@ -416,7 +416,7 @@ public class SubmitDialog extends BaseDialogBean
          diffs.add(diff);
          
          // recursively remove locks from this item
-         recursivelyRemoveLocks(storeId, -1, srcPath);
+         recursivelyRemoveLocks(storeId, -1, this.avmService.lookup(-1, srcPath, true), srcPath);
          
          // If nothing has required notifying the virtualization server
          // so far, check to see if destPath forces a notification
@@ -635,9 +635,8 @@ public class SubmitDialog extends BaseDialogBean
     * Recursively remove locks from a path. Walking child folders looking for files
     * to remove locks from.
     */
-   private void recursivelyRemoveLocks(String webProject, int version, String path)
+   private void recursivelyRemoveLocks(String webProject, int version, AVMNodeDescriptor desc, String path)
    {
-      AVMNodeDescriptor desc = this.avmService.lookup(version, path, true);
       if (desc.isFile() || desc.isDeletedFile())
       {
          this.avmLockingService.removeLock(webProject, path.substring(path.indexOf(":") + 1));
@@ -655,10 +654,12 @@ public class SubmitDialog extends BaseDialogBean
             desc = history.get(1);
          }
          
-         Map<String, AVMNodeDescriptor> list = avmService.getDirectoryListing(desc, true);
-         for (AVMNodeDescriptor child : list.values())
+         Map<String, AVMNodeDescriptor> list = avmService.getDirectoryListingDirect(desc, true);
+         for (Map.Entry<String, AVMNodeDescriptor> child : list.entrySet())
          {
-            recursivelyRemoveLocks(webProject, version, child.getPath());
+            String name = child.getKey();
+            AVMNodeDescriptor childDesc = child.getValue();
+            recursivelyRemoveLocks(webProject, version, childDesc, path + "/" + name);
          }
       }
    }

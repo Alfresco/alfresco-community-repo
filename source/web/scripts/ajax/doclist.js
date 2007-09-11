@@ -2,7 +2,7 @@ var MyDocs = {
    IMG_SMALL: 16,
    IMG_LARGE: 64,
    ANIM_LENGTH: 300,
-   DETAIL_MARGIN: 56,
+   DETAIL_MARGIN: 8,
    TITLE_FONT_SIZE: 18,
    RESOURCE_PANEL_HEIGHT: 150,
    OVERLAY_OPACITY: 0.8,
@@ -20,6 +20,11 @@ var MyDocs = {
          // show AJAX loading overlay
          $('docPanelOverlayAjax').setStyle('visibility', 'visible');
          $('docPanel').setStyle('visibility', 'hidden');
+
+         var messagePanel = $('docMessagePanel');
+         messagePanel.setStyle('opacity', 0);
+         messagePanel.setStyle('display', 'block');
+
          // fire off the ajax request to populate the doc list - the 'doclistpanel' webscript
          // is responsible for rendering just the contents of the main panel div
          YAHOO.util.Connect.asyncRequest(
@@ -252,6 +257,8 @@ var MyDocs = {
 
             if (!doc.isOpen)
             {
+               doc.addClass("docItemSelectedOpen");
+
                if (!resource.isLoaded)
                {
                   // fire off the ajax request to get the resources for this task
@@ -333,6 +340,8 @@ var MyDocs = {
 
                      // reset selected class?
                      otherDoc.removeClass('docItemSelected');
+                     otherDoc.removeClass("docItemSelectedOpen");
+
                      // move the title back to the left?
                      var ml = otherItem.getStyle('margin-left').toInt();
                      if (ml != otherItem.defMarginLeft)
@@ -388,6 +397,8 @@ var MyDocs = {
                // close this document panel
                // flag this document as closed
                doc.isOpen = false;
+
+               doc.removeClass("docItemSelectedOpen");
                
                // reset resource panel back to it's default height
                animResource[i] = {
@@ -523,6 +534,7 @@ var MyDocs = {
                if (response.responseText.indexOf("OK:") == 0)
                {
                   MyDocs.refreshList();
+                  MyDocs.displayMessage("A working copy for the checked out item 'Working Copy of " + name + "' has been created.");
                }
                else
                {
@@ -557,6 +569,7 @@ var MyDocs = {
                if (response.responseText.indexOf("OK:") == 0)
                {
                   MyDocs.refreshList();
+                  MyDocs.displayMessage("Item 'Working Copy of " + name + "' has been checked in.");
                }
                else
                {
@@ -764,6 +777,71 @@ var MyDocs = {
    {
       // Refresh the inner panel
       MyDocs.refreshList(true);
+   },
+
+   /**
+    * Display a message bubble of helpful info to the user. Calling this function in quick 
+    * succession will cause previous message to be lost as the new ones are displayed.
+    * 
+    * @param message    Message text to display
+    */
+   displayMessage: function(message)
+   {
+      var panel = $("docMessagePanel");
+      if ($defined(panel.timeout))
+      {
+         clearTimeout(panel.timeout);
+         panel.timeout = null;
+      }
+      
+      panel.setStyle("opacity", 0);
+      panel.setStyle("margin-top", -60);
+      
+      panel.getChildren()[1].setHTML(message);
+      
+      // reset the close box animation by refreshing the image source
+      $("docMessagePanelCloseImage").src = getContextPath() + "/images/icons/close_portlet_animation.gif";
+      
+      panel.fxMessage = new Fx.Styles(panel, 
+      {
+         duration: 1000,
+         transition: Fx.Transitions.sineInOut
+      });
+      panel.fxMessage.start({'margin-top': -40, 'opacity': [0, 0.75]});
+
+      
+      panel.timeout = window.setTimeout(this.fadeOutMessage, 9000);
+   },
+   
+   /**
+    * Timer callback function to fade out the message panel
+    */
+   fadeOutMessage: function()
+   {
+      var panel = $("docMessagePanel");
+      panel.timeout = null;
+      
+      var fxMessage = new Fx.Styles(panel, 
+      {
+         duration: 1000,
+         transition: Fx.Transitions.sineInOut
+      });
+      fxMessage.start({'margin-top': -60, 'opacity': [0]});
+   },
+   
+   /**
+    * Close the message panel immediately when the user clicks the close icon
+    */
+   closeMessage: function()
+   {
+      var panel = $("docMessagePanel");
+      if ($defined(panel.timeout))
+      {
+         clearTimeout(panel.timeout);
+         panel.timeout = null;
+      }
+      panel.fxMessage.stop();
+      panel.setStyle("opacity", 0);
    }
 };
 

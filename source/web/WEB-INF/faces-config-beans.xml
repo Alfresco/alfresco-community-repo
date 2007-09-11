@@ -2175,6 +2175,10 @@
          <property-name>workflowService</property-name>
          <value>#{WorkflowService}</value>
       </managed-property>
+	  <managed-property>
+         <property-name>unprotectedNodeService</property-name>
+         <value>#{nodeService}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>

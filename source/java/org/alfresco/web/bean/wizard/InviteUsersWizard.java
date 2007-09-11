@@ -42,6 +42,8 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -301,16 +303,12 @@ public abstract class InviteUsersWizard extends BaseWizardBean
          {
             // build xpath to match available User/Person objects
             NodeRef peopleRef = personService.getPeopleContainer();
-            // NOTE: see SearcherComponentTest
-            String xpath = "*[like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "firstName, '%" + contains + "%', false)" +
-                    " or " + "like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "lastName, '%" + contains + "%', false)]";
             
-            List<NodeRef> nodes = searchService.selectNodes(
-                  peopleRef,
-                  xpath,
-                  null,
-                  this.namespaceService,
-                  false);
+            // Use lucene search to retrieve user details
+            String lucene = "@" + NamespaceService.CONTENT_MODEL_PREFIX + "\\:firstName:*" + contains + "* " +
+                            "@" + NamespaceService.CONTENT_MODEL_PREFIX + "\\:lastName:*" + contains + "* ";
+            ResultSet resultSet = searchService.query(peopleRef.getStoreRef(), SearchService.LANGUAGE_LUCENE, lucene);            
+            List<NodeRef> nodes = resultSet.getNodeRefs();            
             
             items = new SelectItem[nodes.size()];
             for (int index=0; index<nodes.size(); index++)

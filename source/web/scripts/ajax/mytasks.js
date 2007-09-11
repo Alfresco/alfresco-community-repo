@@ -1,6 +1,6 @@
 var MyTasks = {
    ANIM_LENGTH: 300,
-   DETAIL_PANEL_HEIGHT: 132,
+   DETAIL_PANEL_HEIGHT: 137,
    Filter: null,
    ServiceContext: null,
    
@@ -8,6 +8,10 @@ var MyTasks = {
    {
       if ($('taskPanel'))
       {
+         var messagePanel = $("taskMessagePanel");
+         messagePanel.setStyle('opacity', 0);
+         messagePanel.setStyle('display', 'block');
+
          // fire off the ajax request to populate the task panel - the 'mytaskspanel' webscript
          // is responsible for rendering just the contents of the main panel div
          YAHOO.util.Connect.asyncRequest(
@@ -45,6 +49,12 @@ var MyTasks = {
       // hide the ajax wait panel and show the main task panel
       $('taskPanelOverlay').setStyle('visibility', 'hidden');
       $('taskPanel').setStyle('visibility', 'visible');
+
+      if (MyTasks.postInit)
+      {
+         MyTasks.postInit();
+         MyTasks.postInit = null;
+      }
    },
 
    parseTaskPanels: function()
@@ -170,6 +180,8 @@ var MyTasks = {
                // open up this task
                // flag this task as open
                task.isOpen = true;
+               task.addClass("taskItemSelected");
+               task.addClass("taskItemSelectedOpen");
                
                if (task.loadingResources == false)
                {
@@ -212,6 +224,7 @@ var MyTasks = {
 
                      // unhighlight the item title
                      otherTask.removeClass('taskItemSelected');
+                     otherTask.removeClass("taskItemSelectedOpen");
 
                      // does this task detail panel need resetting back to it's default height?
                      var otherHeight = otherDetail.getStyle('height').toInt();
@@ -237,6 +250,7 @@ var MyTasks = {
                // close this task
                // flag this task as closed
                task.isOpen = false;
+               task.removeClass("taskItemSelectedOpen");
                
                // fade in info button
                animInfo[i] = {'opacity': [infoOpacity, 1]};
@@ -292,21 +306,39 @@ var MyTasks = {
       );
    },
    
-   displayMessage: function(message)
-   {
-      var footer = $('taskFooter');
-      if (footer.oldMessage == undefined)
-      {
-         footer.oldMessage = footer.innerHTML;
-      }
-      footer.innerHTML = message + ' ' + footer.oldMessage;
-   },
-   
    /**
     * Refresh the main data list contents within the taskPanel container
     */
-   refreshList: function()
+   refreshList: function(reopenActive)
    {
+      // do we want to remember which panel was open?
+      if (reopenActive)
+      {
+         // do we have an open panel?
+         var openPanel = $E('#taskPanel .taskItemSelected');
+         var openPanelId = null;
+         if (openPanel != null)
+         {
+            openPanelId = openPanel.id;
+            // Re-open the panel if the id still exists
+            MyTasks.postInit = function()
+            {
+               if ($(openPanelId))
+               {
+                  $(openPanelId).fireEvent("click");
+   
+                  // scroll the open panel into view               
+                  var fxScroll = new Fx.Scroll($('taskPanel'),
+                  {
+                     duration: MyTasks.ANIM_LENGTH,
+                     transition: Fx.Transitions.linear
+                  });
+                  fxScroll.toElement($(openPanelId));
+               }
+            }
+         }
+      }
+
       // empty the main panel div and restart by reloading the panel contents
       var taskPanel = $('taskPanel');
       taskPanel.setStyle('visibility', 'hidden');
@@ -322,15 +354,15 @@ var MyTasks = {
     */
    filter: function(filter)
    {
-      $$('.taskfilterLink').each(function(filterLink, i)
+      $$('#taskFilterBar li').each(function(filterLink, i)
       {
          if (i == filter)
          {
-            filterLink.addClass("taskfilterLinkSelected");
+            filterLink.addClass("taskCurrent");
          }
          else
          {
-            filterLink.removeClass("taskfilterLinkSelected");
+            filterLink.removeClass("taskCurrent");
          }
       });
       MyTasks.Filter = filter;
@@ -361,8 +393,81 @@ var MyTasks = {
       var x = a.dueDate;
       var y = b.dueDate;
       return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-   }
+   },
 
+   /**
+    * Called when the Manage Task dialog returns
+    */
+   manageTaskCallback: function()
+   {
+      // The manage task dialog window has closed
+      MyTasks.refreshList(true);
+   },
+   
+   /**
+    * Display a message bubble of helpful info to the user. Calling this function in quick 
+    * succession will cause previous message to be lost as the new ones are displayed.
+    * 
+    * @param message    Message text to display
+    */
+   displayMessage: function(message)
+   {
+      var panel = $("taskMessagePanel");
+      if ($defined(panel.timeout))
+      {
+         clearTimeout(panel.timeout);
+         panel.timeout = null;
+      }
+      
+      panel.setStyle("opacity", 0);
+      panel.setStyle("margin-top", -90);
+      
+      panel.getChildren()[1].setHTML(message);
+      
+      // reset the close box animation by refreshing the image source
+      $("taskMessagePanelCloseImage").src = getContextPath() + "/images/icons/close_portlet_animation.gif";
+      
+      panel.fxMessage = new Fx.Styles(panel, 
+      {
+         duration: 1000,
+         transition: Fx.Transitions.sineInOut
+      });
+      panel.fxMessage.start({'margin-top': -70, 'opacity': [0, 0.75]});
+
+      
+      panel.timeout = window.setTimeout(this.fadeOutMessage, 9000);
+   },
+   
+   /**
+    * Timer callback function to fade out the message panel
+    */
+   fadeOutMessage: function()
+   {
+      var panel = $("taskMessagePanel");
+      panel.timeout = null;
+      
+      var fxMessage = new Fx.Styles(panel, 
+      {
+         duration: 1000,
+         transition: Fx.Transitions.sineInOut
+      });
+      fxMessage.start({'margin-top': -90, 'opacity': [0]});
+   },
+   
+   /**
+    * Close the message panel immediately when the user clicks the close icon
+    */
+   closeMessage: function()
+   {
+      var panel = $("taskMessagePanel");
+      if ($defined(panel.timeout))
+      {
+         clearTimeout(panel.timeout);
+         panel.timeout = null;
+      }
+      panel.fxMessage.stop();
+      panel.setStyle("opacity", 0);
+   }   
 };
 
 window.addEvent('load', MyTasks.start);

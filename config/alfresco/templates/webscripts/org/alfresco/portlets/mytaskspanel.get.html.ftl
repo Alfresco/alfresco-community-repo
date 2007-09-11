@@ -43,37 +43,55 @@
          </div>
       </div>
       <div class="taskDetail">
+         <div class="taskDetailTopSpacer"></div>
          <table border="0" cellpadding="0" cellspacing="0" width="100%">
             <tr>
-               <td width="182">
+               <td width="190" class="taskDetailSeparator">
                   <table cellpadding="2" cellspacing="2" style="margin-left:24px; margin-top:4px">
                      <tr><td class="taskMetaprop">Status:</td><td class="taskMetadata">${t.properties["bpm:status"]}</td>
                      <tr><td class="taskMetaprop">Priority:</td><td class="taskMetadata">${t.properties["bpm:priority"]}</td>
                      <tr><td class="taskMetaprop">Start Date:</td><td class="taskMetadata">${t.startDate?date}</td></tr>
-      	            <tr><td class="taskMetaprop">Type:</td><td class="taskMetadata">${t.type?html}</td></tr>
                      <tr><td class="taskMetaprop">Complete:</td><td class="taskMetadata">${t.properties["bpm:percentComplete"]}%</td>
       	         </table>
       	      </td>
                <td width="8">&nbsp;</td>
-      	      <td width="360">
+      	      <td width="300">
                   <div class="taskResourceHeader">${t.name?html}:</div>
                   <div class="taskResources"></div>
-      	         <table border="0" class="taskActions">
-      	            <tr>
-      	               <#list t.transitions as wt>
-      	               <td style="text-align: left"><a class="taskAction" href="#" onclick="event.cancelBubble=true; MyTasks.transitionTask('/command/task/end/${t.id}<#if wt.id?exists>/${wt.id}</#if>', 'Workflow action \'${wt.label?html}\' completed.');">${wt.label?html}</a></td>
-      	               </#list>
-      	               <td width="70">&nbsp;</td>
-      	            </tr>
-      	         </table>
                </td>
-               <td width="16">&nbsp;</td>
-               <td>
-                  <div class="taskMetaprop" style="padding-bottom: 4px;">Manage Task</div>
-                  <a class="taskAction" style="display: block; width: 18px; padding: 4px; margin-left: 20px;" onclick="event.cancelBubble=true;" href="${url.context}/command/ui/managetask?id=${t.id}&type=${t.qnameType}&container=plain" target="new"><img src="${url.context}/images/icons/manage_workflow_task.gif" width="16" height="16" border="0" alt="Manage Task Details" title="Manage Task Details"></a>
-                  <br>
-                  <br>
+               <td width="8" class="taskDetailSeparator">&nbsp;</td>
+               <td align="center">
+                  <table cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                     <td>
+                        <div class="taskManage">
+                           <ul>
+                              <li><a href="#" onclick="event.cancelBubble=true; openWindowCallback('${url.context}/command/ui/managetask?id=${t.id}&amp;type=${t.qnameType}&amp;container=plain', MyTasks.manageTaskCallback);"><span><img src="${url.context}/images/icons/manage_workflow_task.gif" align="top" alt="" border="0"> Manage Task</span></a></li>
+                           </ul>
+                        </div>
+                     </td>
+                  </tr>
+                  </table>
                </td>
+            </tr>
+            <tr>
+               <td colspan="2">&nbsp;</td>
+               <td width="300" align="center">
+                  <table cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                     <td>
+                        <div class="taskAction">
+         	               <ul>
+      	                  <#list t.transitions as wt>
+         	                  <li><a href="#" onclick="event.cancelBubble=true; MyTasks.transitionTask('/command/task/end/${t.id}<#if wt.id?exists>/${wt.id}</#if>', 'Workflow action \'${wt.label?html}\' completed.');"><span>${wt.label?html}</span></a></li>
+      	                  </#list>
+         	               </ul>
+         	            </div>
+   	               </td>
+   	            </tr>
+   	            </table>
+               </td>
+               <td colspan="2">&nbsp;</td>
             </tr>
 	      </table>
       </div>

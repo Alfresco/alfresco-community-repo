@@ -26,13 +26,19 @@
                <td align=center height=40 style="border-left: 1px solid #EBE398;">
                   <table border="0" cellspacing="8" cellpadding="0" width="100%">
                      <tr>
-                        <th><a class="taskfilterLink <#if filter=0>taskfilterLinkSelected</#if>" href="#" onclick="MyTasks.filter(0); return false;">Tasks to do</a></th>
-                        <th><a class="taskfilterLink <#if filter=1>taskfilterLinkSelected</#if>" href="#" onclick="MyTasks.filter(1); return false;" style="color: #399DF7;">Due Today</a></th>
-                        <th><a class="taskfilterLink <#if filter=2>taskfilterLinkSelected</#if>" href="#" onclick="MyTasks.filter(2); return false;">Next 7 days</a></th>
-                        <th><a class="taskfilterLink <#if filter=3>taskfilterLinkSelected</#if>" href="#" onclick="MyTasks.filter(3); return false;">No due date</a></th>
-                        <th><a class="taskfilterLink <#if filter=4>taskfilterLinkSelected</#if>" href="#" onclick="MyTasks.filter(4); return false;" style="color: #DF3704;">Overdue</a></th>
-                        <td width="150" align="right">
-                           <a href="#" onclick="MyTasks.refreshList(); return false;" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px">Refresh</a>
+                        <td>
+                           <div id="taskFilterBar">
+                              <ul>
+                                 <li <#if filter=0>class="taskCurrent"</#if>><a href="#" onclick="MyTasks.filter(0); return false;"><span>Tasks to do</span></a></li>
+                                 <li <#if filter=1>class="taskCurrent"</#if>><a href="#" onclick="MyTasks.filter(1); return false;"><span style="color: #399DF7;">Due Today</span></a></li>
+                                 <li <#if filter=2>class="taskCurrent"</#if>><a href="#" onclick="MyTasks.filter(2); return false;"><span>Next 7 days</span></a></li>
+                                 <li <#if filter=3>class="taskCurrent"</#if>><a href="#" onclick="MyTasks.filter(3); return false;"><span>No due date</span></a></li>
+                                 <li <#if filter=4>class="taskCurrent"</#if>><a href="#" onclick="MyTasks.filter(4); return false;"><span style="color: #DF3704;">Overdue</span></a></li>
+                              </ul>
+                           </div>
+                        </td>
+                        <td width="150" align="right" style="padding: 5px 5px 0px 0px;">
+                           <a class="refreshViewLink" href="#" onclick="MyTasks.refreshList(); return false;"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px"><span>Refresh</span></a>
                         </td>
                      </tr>
                   </table>
@@ -52,7 +58,7 @@
                <td>
                   <div id="taskFooter">
                      <#-- the count value is retrieved and set dynamically from the AJAX webscript output above -->
-                     <span class="taskFooterText">Showing <span id="taskCount">0</span> <#if filter=4>overdue</#if> task(s)<#if filter=1> due today</#if><#if filter=2> due next week</#if><#if filter=3> with no due date set</#if></span>
+                     <span onclick="MyTasks.displayMessage('sljfsdfjlsdjifds lsdfj lsidjfoi jsdofij sodfj ');" class="taskFooterText">Showing <span id="taskCount">0</span> <#if filter=4>overdue</#if> task(s)<#if filter=1> due today</#if><#if filter=2> due next week</#if><#if filter=3> with no due date set</#if></span>
                   </div>
                </td>
             </tr>
@@ -61,6 +67,10 @@
       <td class="paperEdgeRight">&nbsp;</td>
    </tr>
 </table>
+<div id="taskMessagePanel">
+   <div class="taskMessagePanelClose"><img id="taskMessagePanelCloseImage" src="${url.context}/images/icons/close_portlet_static.gif" onclick="MyTasks.closeMessage();" /></div>
+   <div class="taskMessagePanelLabel"></div>
+</div>
 <div style="font-size: 3px;">
    <span class="paperLeftCorner"></span>
    <span class="paperBottomEdge"></span>
@@ -110,34 +120,74 @@
    overflow: hidden;
 }
 
-a.taskfilterLink:link, a.taskfilterLink:visited
+#taskFilterBar {
+   float: left;
+   width: 100%;
+}
+#taskFilterBar ul {
+   margin: 0px;
+   padding: 4px 10px 0px 4px;
+   list-style: none;
+}
+#taskFilterBar li {
+   display: inline;
+   margin: 0px;
+   padding: 0px;
+   height: 27px;
+}
+#taskFilterBar a {
+   background: none;
+   float:left;
+   margin: 0px;
+   padding: 0px 0px 0px 4px;
+   text-decoration: none;
+   outline: none;
+}
+#taskFilterBar a span {
+   background: none;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 13px;
+   font-weight: bold;
+   color: #5A5741;
+   display: block;
+   float: none;
+   padding: 5px 15px 4px 6px;
+}
+
+#taskFilterBar a:hover {
+   background: url("${url.context}/images/parts/marker_effect_left.png") no-repeat left top;
+}
+
+#taskFilterBar a:hover span {
+   background: url("${url.context}/images/parts/marker_effect_right.png") no-repeat right top;
+   color: #ffffff !important;
+}
+
+#taskFilterBar .taskCurrent a {
+   background: url("${url.context}/images/parts/marker_effect_left.png") no-repeat left top;
+}
+#taskFilterBar .taskCurrent a span {
+   background: url("${url.context}/images/parts/marker_effect_right.png") no-repeat right top;
+   color: #ffffff !important;
+}
+
+.refreshViewLink, .refreshViewLink
+{
+   text-decoration: none !important;
+}
+.refreshViewLink span
 {
    color: #5A5741;
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 13px;
    font-weight: bold;
-   text-decoration: none;
-   padding-left: 4px;
-   padding-right: 4px;
-}
-
-a.taskfilterLink:hover
-{
-   color: #FFFFFF !important;
-   background-color: #FDB64F;
-}
-
-a.taskfilterLinkSelected:link, a.taskfilterLinkSelected:visited
-{
-   color: #FFFFFF !important;
-   background-color: #FDB64F;
 }
 
 .taskRow
 {
    padding-top: 4px;
+   border-top: 1px solid transparent;
    border-bottom: 1px solid #EBE398;
-   border-top: 1px solid #FEF8BC;
 }
 
 #taskFooter
@@ -170,8 +220,8 @@ a.taskfilterLinkSelected:link, a.taskfilterLinkSelected:visited
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 14px;
    color: #5A5741;
-   margin: 0 0 0 24;
-   padding: 0px 8px 6px 8px;
+   margin: 0px 0px 0px 24px;
+   padding: 0px 8px 8px;
 }
 
 .taskItemOverdue
@@ -199,23 +249,38 @@ a.taskfilterLinkSelected:link, a.taskfilterLinkSelected:visited
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 12px;
    margin: 0px;
+   padding: 0px;
    display: none;
    overflow: hidden;
 }
 
+.taskDetailTopSpacer {
+   padding: 4px 0px 0px;
+}
+
+.taskDetailSeparator
+{
+   border-right: 1px solid #c1af05;
+}
+
 .taskItemSelected
 {
-   background-color: #FFE500 !important;
+   background: #FFE500 url("${url.context}/images/parts/mytasks_arrow_down.png") no-repeat right top;
    border-bottom: 1px solid #82770B !important;
    border-top: 1px solid #82770B !important;
+}
+
+.taskItemSelectedOpen
+{
+   background-image: url("${url.context}/images/parts/mytasks_arrow_up.png") !important;
 }
 
 .taskResources
 {
    border: 1px solid #FFE500;
-   background-color: #FEF8BC;
+   background-color: #fff;
    margin: 4px 0px 0px 0px;
-   width: 360px;
+   width: 300px;
    height: 80px;
    display: block;
    overflow: hidden;
@@ -227,7 +292,7 @@ a.taskfilterLinkSelected:link, a.taskfilterLinkSelected:visited
 
 .taskResourceOdd
 {
-   background-color: #F8FCFD;
+   background-color: #FEF8BC;
 }
 
 .taskResourceHeader
@@ -251,33 +316,90 @@ a.resourceLink:link, a.resourceLink:visited
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
 }
 
-.taskActions td
+.taskAction
 {
-   padding: 4px;
+   margin: 0px;
+   padding: 0px;
 }
 
-a.taskAction:link, a.taskAction:visited
-{
-   color: #5A5741;
-   font-size: 13px;
-   font-weight: bold;
-   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
-   border: 1px solid #F6F1BA;
-   padding-left: 4px;
-   padding-right: 4px;
+.taskAction ul {
+   margin: 0px;
+   padding: 0px;
+   list-style: none;
+   text-align: center;
+}
+.taskAction ul li {
+   display: inline;
+   margin: 0px;
+   padding: 0px;
+   list-style: none;
 }
 
-a.taskAction:hover
-{
-   font-size: 13px;
-   font-weight: bold;
-   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
-   border: 1px solid #F6F1BA;
-   padding-left: 4px;
-   padding-right: 4px;
-   color: #FFFFFF;
-   background-color: #FDB64F;
+.taskAction a {
+   background: url("${url.context}/images/parts/task_btn_normal_right.png") no-repeat 100% 0;
+   float: left;
+   margin: 4px;
+   padding: 0px;
    text-decoration: none;
+   cursor: pointer;
+}
+.taskAction a span {
+   background: url("${url.context}/images/parts/task_btn_normal_left.png") no-repeat;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   font-weight: bold;
+   color: #5A5741;
+   padding: 4px 1.5em;
+   float: left;
+}
+
+.taskAction a:hover {
+   background: url("${url.context}/images/parts/task_btn_rollover_right.png") no-repeat 100% 0;
+   text-decoration: none;
+}
+
+.taskAction a:hover span {
+   background: url("${url.context}/images/parts/task_btn_rollover_left.png") no-repeat;
+}
+
+.taskManage ul {
+   margin: 0px;
+   padding: 4px 0px 0px;
+   list-style: none;
+}
+.taskManage li {
+   display: inline;
+   margin: 0px;
+   padding: 0px;
+   height: 27px;
+}
+
+.taskManage a {
+   background: url("${url.context}/images/parts/task_btn_normal_left.png") no-repeat left top;
+   float:left;
+   margin: 0px;
+   padding: 0px 0px 0px 8px;
+   text-decoration: none;
+   cursor: pointer;
+}
+.taskManage a span {
+   background: url("${url.context}/images/parts/task_btn_normal_right.png") no-repeat right top;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   font-weight: bold;
+   color: #5A5741;
+   display: block;
+   float: none;
+   padding: 4px 15px 4px 6px;
+}
+
+.taskManage a:hover {
+   background: url("${url.context}/images/parts/task_btn_rollover_left.png") no-repeat left top;
+   text-decoration: none;
+}
+
+.taskManage a:hover span {
+   background: url("${url.context}/images/parts/task_btn_rollover_right.png") no-repeat right top;
 }
 
 .taskMetadata
@@ -321,4 +443,41 @@ a.taskAction:hover
    height: 6px;
    width: 4px;
 }
+
+#taskMessagePanel
+{
+   position: absolute;
+   border: 1px solid #65696C;
+   background-color: #eeeeee;
+   width: 250px;
+   height: 72px;
+   padding: 8px;
+   margin-left: 440px;
+   display: none;
+   z-index: 1;
+   -moz-border-radius: 7px;
+}
+
+.taskMessagePanelClose
+{
+   margin: -4px -4px 2px 2px;
+   float:right;
+}
+
+#taskMessagePanelCloseImage
+{
+   cursor: pointer;
+   display: block;
+   height: 23px;
+   width: 23px;
+}
+
+.taskMessagePanelLabel
+{
+   color: #45494C;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+   font-size: 12px;
+   font-weight: bold;
+}
+
 </style>

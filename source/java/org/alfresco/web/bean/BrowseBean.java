@@ -60,6 +60,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
@@ -787,24 +788,34 @@ public class BrowseBean implements IContextListener
                {
                   // create our File Link Node representation
                   node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
-                  node.addPropertyResolver("url", this.resolverLinkUrl);
-                  node.addPropertyResolver("webdavUrl", this.resolverLinkWebdavUrl);
-                  node.addPropertyResolver("cifsPath", this.resolverLinkCifsPath);
-                  node.addPropertyResolver("fileType16", this.resolverFileType16);
-                  node.addPropertyResolver("fileType32", this.resolverFileType32);
-                  node.addPropertyResolver("size", this.resolverSize);
-                  node.addPropertyResolver("lang", this.resolverLang);
-
-                  this.contentNodes.add(node);
+                  // only display the user has the permissions to navigate to the target of the link
+                  NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
+                  if (new Node(destRef).hasPermission(PermissionService.READ) == true)
+                  {
+                     node.addPropertyResolver("url", this.resolverLinkUrl);
+                     node.addPropertyResolver("webdavUrl", this.resolverLinkWebdavUrl);
+                     node.addPropertyResolver("cifsPath", this.resolverLinkCifsPath);
+                     node.addPropertyResolver("fileType16", this.resolverFileType16);
+                     node.addPropertyResolver("fileType32", this.resolverFileType32);
+                     node.addPropertyResolver("size", this.resolverSize);
+                     node.addPropertyResolver("lang", this.resolverLang);
+   
+                     this.contentNodes.add(node);
+                  }
                }
                else if (ApplicationModel.TYPE_FOLDERLINK.equals(type))
                {
                   // create our Folder Link Node representation
                   node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
-                  node.addPropertyResolver("icon", this.resolverSpaceIcon);
-                  node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
-
-                  this.containerNodes.add(node);
+                  // only display the user has the permissions to navigate to the target of the link
+                  NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
+                  if (new Node(destRef).hasPermission(PermissionService.READ) == true)
+                  {
+                     node.addPropertyResolver("icon", this.resolverSpaceIcon);
+                     node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
+   
+                     this.containerNodes.add(node);
+                  }
                }
 
                // inform any listeners that a Node wrapper has been created
@@ -954,28 +965,38 @@ public class BrowseBean implements IContextListener
                      {
                         // create our File Link Node representation
                         node = new MapNode(nodeRef, this.nodeService, false);
-                        node.addPropertyResolver("url", this.resolverLinkUrl);
-                        node.addPropertyResolver("webdavUrl", this.resolverLinkWebdavUrl);
-                        node.addPropertyResolver("cifsPath", this.resolverLinkCifsPath);
-                        node.addPropertyResolver("fileType16", this.resolverFileType16);
-                        node.addPropertyResolver("fileType32", this.resolverFileType32);
-                        node.addPropertyResolver("size", this.resolverSize);
-                        node.addPropertyResolver("lang", this.resolverLang);
-                        node.addPropertyResolver("path", this.resolverPath);
-                        node.addPropertyResolver("displayPath", this.resolverDisplayPath);
+                        // only display the user has the permissions to navigate to the target of the link
+                        NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
+                        if (new Node(destRef).hasPermission(PermissionService.READ) == true)
+                        {
+                           node.addPropertyResolver("url", this.resolverLinkUrl);
+                           node.addPropertyResolver("webdavUrl", this.resolverLinkWebdavUrl);
+                           node.addPropertyResolver("cifsPath", this.resolverLinkCifsPath);
+                           node.addPropertyResolver("fileType16", this.resolverFileType16);
+                           node.addPropertyResolver("fileType32", this.resolverFileType32);
+                           node.addPropertyResolver("size", this.resolverSize);
+                           node.addPropertyResolver("lang", this.resolverLang);
+                           node.addPropertyResolver("path", this.resolverPath);
+                           node.addPropertyResolver("displayPath", this.resolverDisplayPath);
 
-                        this.contentNodes.add(node);
+                           this.contentNodes.add(node);
+                        }
                      }
                      else if (ApplicationModel.TYPE_FOLDERLINK.equals(type))
                      {
                         // create our Folder Link Node representation
                         node = new MapNode(nodeRef, this.nodeService, false);
-                        node.addPropertyResolver("icon", this.resolverSpaceIcon);
-                        node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
-                        node.addPropertyResolver("path", this.resolverPath);
-                        node.addPropertyResolver("displayPath", this.resolverDisplayPath);
+                        // only display the user has the permissions to navigate to the target of the link
+                        NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
+                        if (new Node(destRef).hasPermission(PermissionService.READ) == true)
+                        {
+                           node.addPropertyResolver("icon", this.resolverSpaceIcon);
+                           node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
+                           node.addPropertyResolver("path", this.resolverPath);
+                           node.addPropertyResolver("displayPath", this.resolverDisplayPath);
 
-                        this.containerNodes.add(node);
+                           this.containerNodes.add(node);
+                        }
                      }
 
                      // inform any listeners that a Node wrapper has been created

@@ -34,7 +34,7 @@ var MyWebFiles = {
          var file = files[i];
          
          // animated elements defaults
-         file.maxHeight = file.getStyle('height').toInt();
+         file.maxHeight = Math.max(file.getStyle('height').toInt(), 1);
          file.defHeight = 1;
          file.setStyle('height', file.defHeight);
          file.setStyle('display', 'block');

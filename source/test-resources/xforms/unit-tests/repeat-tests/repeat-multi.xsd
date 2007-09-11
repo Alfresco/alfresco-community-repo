@@ -4,7 +4,7 @@
   <xs:complexType name="multi-input">
     <xs:sequence>
       <xs:element name="string" type="xs:normalizedString"/>
-      <xs:element name="int" type="xs:int"/>
+      <xs:element name="integer" type="xs:integer"/>
     </xs:sequence>
   </xs:complexType>
   <xs:element name="repeat-multi-simple">

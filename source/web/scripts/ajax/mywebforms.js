@@ -21,7 +21,7 @@ var MyWebForms = {
          var frm = frms[i];
 
          // animated elements defaults
-         frm.maxHeight = frm.getStyle('height').toInt();
+         frm.maxHeight = Math.max(frm.getStyle('height').toInt(), 1);
          frm.defHeight = 1;
          frm.setStyle('height', frm.defHeight);
          frm.setStyle('opacity', 0);

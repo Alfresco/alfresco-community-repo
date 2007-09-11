@@ -35,6 +35,15 @@
             </xs:restriction>
           </xs:simpleType>
         </xs:element>
+        <xs:element name="implicitly_bounded_int" type="xs:int"/>
+        <xs:element name="repeated_numbers" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="repeated_integer" type="xs:integer"/>
+              <xs:element name="repeated_int" type="xs:int"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

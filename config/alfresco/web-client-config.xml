@@ -321,8 +321,6 @@
          <aspect name="summarizable"/>
          <aspect name="versionable"/>
          <aspect name="templatable"/>
-         <aspect name="translatable"/>
-         <aspect name="localizable"/>
          <aspect name="emailed"/>
       </aspects>
       <!-- List of aspects to only show in the add features action -->

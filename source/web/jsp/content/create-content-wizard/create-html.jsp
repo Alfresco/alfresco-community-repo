@@ -35,9 +35,9 @@
    tinyMCE.init({
       theme : "advanced",
       mode : "exact",
+      relative_urls: false,
       elements : "editor",
       save_callback : "saveContent",
-      urlconverter_callback: "convertUrl",
       plugins : "table",
       theme_advanced_toolbar_location : "top",
       theme_advanced_toolbar_align : "left",
@@ -51,13 +51,6 @@
    function saveContent(id, content)
    {
       document.getElementById("wizard:wizard-body:editor-output").value = content;
-   }
-   
-   function convertUrl(href, element, onsave)
-   {
-      // just return the passed href, this is enough to stop TinyMCE
-      // from converting the URL to it's relative form
-      return href;
    }
    
    var isIE = (document.all);

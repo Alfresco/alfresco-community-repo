@@ -908,7 +908,6 @@
         </property>
     </bean>
 
-<<<<<<< .working
     <bean id="patch.customModels" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.customModels</value></property>
         <property name="description"><value>patch.customModels.description</value></property>

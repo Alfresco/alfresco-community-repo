@@ -38,6 +38,9 @@
       <property name="authenticationService">
          <ref bean="AuthenticationService"/>
       </property>
+      <property name="authenticationComponent">
+         <ref bean="authenticationComponent"/>
+      </property>
    </bean>
    
    <bean id="repositoryWebService" class="org.alfresco.repo.webservice.repository.RepositoryWebService">

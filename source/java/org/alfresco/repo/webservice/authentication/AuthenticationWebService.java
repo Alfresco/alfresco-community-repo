@@ -26,9 +26,12 @@ package org.alfresco.repo.webservice.authentication;
 
 import java.rmi.RemoteException;
 
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.webservice.Utils;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.apache.axis.MessageContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -44,6 +47,8 @@ public class AuthenticationWebService implements AuthenticationServiceSoapPort
     private static Log logger = LogFactory.getLog(AuthenticationWebService.class);
 
     private AuthenticationService authenticationService;
+    
+    private AuthenticationComponent authenticationComponent;
 
     /**
      * Sets the AuthenticationService instance to use
@@ -55,6 +60,16 @@ public class AuthenticationWebService implements AuthenticationServiceSoapPort
     {
         this.authenticationService = authenticationSvc;
     }
+    
+    /**
+     * Set the atuthentication component
+     * 
+     * @param authenticationComponent
+     */
+    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent) 
+    {
+		this.authenticationComponent = authenticationComponent;
+	}
 
     /**
      * @see org.alfresco.repo.webservice.authentication.AuthenticationServiceSoapPort#startSession(java.lang.String,
@@ -90,24 +105,33 @@ public class AuthenticationWebService implements AuthenticationServiceSoapPort
     /**
      * @see org.alfresco.repo.webservice.authentication.AuthenticationServiceSoapPort#endSession()
      */
-    public void endSession(String ticket) throws RemoteException, AuthenticationFault
+    public void endSession(final String ticket) throws RemoteException, AuthenticationFault
     {
         try
         {
             if (ticket != null)
             {
-                this.authenticationService.validate(ticket);
-                this.authenticationService.invalidateTicket(ticket);
-                this.authenticationService.clearCurrentSecurityContext();
-    
-                if (logger.isDebugEnabled())
+            	RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
                 {
-                    logger.debug("Session ended for ticket '" + ticket + "'");
-                }
+                    public Object execute() throws Throwable
+                    {
+                    	AuthenticationWebService.this.authenticationComponent.setSystemUserAsCurrentUser();
+                    	AuthenticationWebService.this.authenticationService.invalidateTicket(ticket);
+                    	AuthenticationWebService.this.authenticationService.clearCurrentSecurityContext();
+    
+		                if (logger.isDebugEnabled())
+		                {
+		                    logger.debug("Session ended for ticket '" + ticket + "'");
+		                }
+		                
+		                return null;
+                    }
+                };
+                Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
             }
         } 
         catch (Throwable e)
-        {            
+        {          
             throw new AuthenticationFault(0, e.getMessage());
         }
     }

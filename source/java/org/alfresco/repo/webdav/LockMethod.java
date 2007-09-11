@@ -189,12 +189,24 @@ public class LockMethod extends WebDAVMethod
                 throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
             
+            FileInfo dirInfo = null;
             List<String> dirPathElements = getDAVHelper().splitAllPaths(splitPath[0]);
-            FileInfo dirInfo = fileFolderService.makeFolders(rootNodeRef, dirPathElements, ContentModel.TYPE_FOLDER);
+            if (dirPathElements.size() == 0)
+            {
+               // if there are no path elements we are at the root so get the root node
+               dirInfo = fileFolderService.getFileInfo(getRootNodeRef());
+            }
+            else
+            {
+               // make sure folder structure is present
+               dirInfo = fileFolderService.makeFolders(rootNodeRef, dirPathElements, ContentModel.TYPE_FOLDER);
+            }
+            
             if (dirInfo == null)
             {
                 throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
+            
             // create the file
             lockNodeInfo = fileFolderService.create(dirInfo.getNodeRef(), splitPath[1], ContentModel.TYPE_CONTENT);
             

@@ -39,7 +39,8 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -53,8 +54,8 @@ public class AVMRemoveAllSrcWebappsHandler extends JBPMSpringActionHandler
 {
     static final long serialVersionUID = 3004374776252613278L;
 
-    private static Logger log = 
-        Logger.getLogger(AVMRemoveAllSrcWebappsHandler.class);
+    private static Log    log = 
+        LogFactory.getLog(AVMRemoveAllSrcWebappsHandler.class);
 
     /**
      * The AVMService instance.

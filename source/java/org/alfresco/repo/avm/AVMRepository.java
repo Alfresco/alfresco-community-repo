@@ -53,7 +53,8 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This or AVMStore are
@@ -63,7 +64,7 @@ import org.apache.log4j.Logger;
 public class AVMRepository
 {
     @SuppressWarnings("unused")
-    private static Logger fgLogger = Logger.getLogger(AVMRepository.class);
+    private static Log    fgLogger = LogFactory.getLog(AVMRepository.class);
     
     /**
      * The single instance of AVMRepository.

@@ -25,14 +25,15 @@
 package org.alfresco.repo.jscript;
 
 import org.alfresco.repo.processor.BaseProcessorExtension;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Kevin Roast
  */
 public final class ScriptLogger extends BaseProcessorExtension
 {
-    private static final Logger logger = Logger.getLogger(ScriptLogger.class);
+    private static final Log    logger = LogFactory.getLog(ScriptLogger.class);
     
     public boolean isLoggingEnabled()
     {

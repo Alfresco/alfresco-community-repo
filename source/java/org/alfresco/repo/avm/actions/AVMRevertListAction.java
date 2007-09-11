@@ -14,7 +14,8 @@ import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This action handles reverting a selected set of nodes to a particular version.
@@ -24,7 +25,7 @@ import org.apache.log4j.Logger;
 public class AVMRevertListAction extends ActionExecuterAbstractBase 
 {
     @SuppressWarnings("unused")
-    private static Logger fgLogger = Logger.getLogger(AVMRevertListAction.class);
+    private static Log    fgLogger = LogFactory.getLog(AVMRevertListAction.class);
     
     public static final String NAME = "avm-revert-list";
     // The version to revert to.

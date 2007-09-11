@@ -29,6 +29,8 @@ package org.alfresco.linkvalidation;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.commons.logging.Log;                                                                                                                                         
+import org.apache.commons.logging.LogFactory;    
 
 /**
 *  This class allows the progress of synchronous calls to
@@ -50,7 +52,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class HrefValidationProgress implements Serializable
 {
     private static final long serialVersionUID = 3031274879702889688L;
-   
+    private static Log   log = LogFactory.getLog(HrefValidationProgress.class );    
+
     AtomicInteger webapp_update_count_;
     AtomicInteger dir_update_count_;
     AtomicInteger file_update_count_;
@@ -94,6 +97,12 @@ public class HrefValidationProgress implements Serializable
     */
     public void abort()        
     { 
+        if(log.isDebugEnabled())
+        {
+            log.debug( "Validation request aborted via: " + 
+                       "HrefValidationProgress.abort()");
+        }
+
         is_aborted_.set( true ); 
         setDone( true );
     }

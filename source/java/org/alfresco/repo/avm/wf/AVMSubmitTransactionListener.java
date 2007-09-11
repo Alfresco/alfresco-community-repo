@@ -36,7 +36,8 @@ import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.util.VirtServerUtils;
 import org.springframework.context.ApplicationContext;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
 *  Gets callbacks at critical moments within a transaction
@@ -45,8 +46,8 @@ import org.apache.log4j.Logger;
 */
 public class AVMSubmitTransactionListener extends TransactionListenerAdapter
 {
-    private static Logger log = 
-        Logger.getLogger(AVMSubmitTransactionListener.class);
+    private static Log    log = 
+        LogFactory.getLog(AVMSubmitTransactionListener.class);
 
     public AVMSubmitTransactionListener() { }
 

@@ -67,7 +67,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.util.Pair;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * NodeService implementing facade over AVMService.
@@ -75,7 +76,7 @@ import org.apache.log4j.Logger;
  */
 public class AVMNodeService extends AbstractNodeServiceImpl implements NodeService
 {
-    private static Logger fgLogger = Logger.getLogger(AVMNodeService.class);
+    private static Log    fgLogger = LogFactory.getLog(AVMNodeService.class);
     
     /**
      * Flag for whether policy callbacks are made.

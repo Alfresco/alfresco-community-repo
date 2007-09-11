@@ -54,7 +54,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
@@ -76,7 +77,7 @@ import com.werken.saxpath.XPathReader;
 
 public class LuceneQueryParser extends QueryParser
 {
-    private static Logger s_logger = Logger.getLogger(LuceneQueryParser.class);
+    private static Log    s_logger = LogFactory.getLog(LuceneQueryParser.class);
 
     private NamespacePrefixResolver namespacePrefixResolver;
 

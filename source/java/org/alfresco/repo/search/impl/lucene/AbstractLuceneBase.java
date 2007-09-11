@@ -34,7 +34,8 @@ import org.alfresco.repo.search.impl.lucene.index.TransactionStatus;
 import org.alfresco.repo.search.impl.lucene.index.IndexInfo.LockWork;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.IndexSearcher;
@@ -65,7 +66,7 @@ import org.apache.lucene.search.IndexSearcher;
 
 public abstract class AbstractLuceneBase
 {
-    private static Logger s_logger = Logger.getLogger(AbstractLuceneBase.class);
+    private static Log    s_logger = LogFactory.getLog(AbstractLuceneBase.class);
 
     private IndexInfo indexInfo;
 

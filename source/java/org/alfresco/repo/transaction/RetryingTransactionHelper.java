@@ -36,7 +36,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.exception.LockAcquisitionException;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -54,7 +55,7 @@ import org.springframework.jdbc.UncategorizedSQLException;
 public class RetryingTransactionHelper
 {
     private static final String MSG_READ_ONLY = "permissions.err_read_only";
-    private static Logger logger = Logger.getLogger(RetryingTransactionHelper.class);
+    private static Log    logger = LogFactory.getLog(RetryingTransactionHelper.class);
     
     /**
      * Exceptions that trigger retries.

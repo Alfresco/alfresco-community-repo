@@ -29,7 +29,8 @@ import java.util.List;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 
@@ -78,7 +79,7 @@ public class OrphanReaper
         }
     }
 
-    private Logger fgLogger = Logger.getLogger(OrphanReaper.class);
+    private Log    fgLogger = LogFactory.getLog(OrphanReaper.class);
 
     /**
      * The Transaction Service

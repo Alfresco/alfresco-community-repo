@@ -61,8 +61,8 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.impl.Log4JLogger;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.util.FileCopyUtils;
 
@@ -320,13 +320,6 @@ public class ImporterBootstrap extends AbstractLifecycleBean
             throw new ImporterException("Store URL must be provided");
         }
 
-        // initialise log level
-        // note: only supported with Log4J
-        if (logEnabled && logger instanceof Log4JLogger)
-        {
-            Logger log4JLogger = ((Log4JLogger)logger).getLogger();
-            log4JLogger.setLevel(Level.DEBUG);
-        }
         
         UserTransaction userTransaction = transactionService.getUserTransaction();
         Authentication authentication = authenticationComponent.getCurrentAuthentication();

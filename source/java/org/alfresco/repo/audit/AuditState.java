@@ -34,7 +34,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * A class to encapsulate audit information supplied to the DAO layer.
@@ -45,7 +46,7 @@ import org.apache.log4j.Logger;
  */
 public class AuditState
 {
-    private static Logger s_logger = Logger.getLogger(AuditState.class);
+    private static Log    s_logger = LogFactory.getLog(AuditState.class);
     
     /**
      * The user identifier for the person who caused this audit entry

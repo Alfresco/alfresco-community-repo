@@ -15,7 +15,8 @@ import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Reverts a node and everything underneath it to a specified version.
@@ -24,7 +25,7 @@ import org.apache.log4j.Logger;
 public class AVMRevertStoreAction extends ActionExecuterAbstractBase 
 {
     @SuppressWarnings("unused")
-    private static Logger fgLogger = Logger.getLogger(AVMRevertStoreAction.class);
+    private static Log    fgLogger = LogFactory.getLog(AVMRevertStoreAction.class);
     
     public static final String NAME = "avm-revert-store";
     public static final String PARAM_VERSION = "version";

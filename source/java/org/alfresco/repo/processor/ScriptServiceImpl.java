@@ -37,7 +37,8 @@ import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Script service implementation
@@ -48,7 +49,7 @@ import org.apache.log4j.Logger;
 public class ScriptServiceImpl implements ScriptService
 {
     /** Logger */
-    private static final Logger logger = Logger.getLogger(ScriptServiceImpl.class);
+    private static final Log    logger = LogFactory.getLog(ScriptServiceImpl.class);
     
     /** The name of the default script processor */
     private String defaultScriptProcessor;    

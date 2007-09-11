@@ -40,7 +40,8 @@ import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
 import org.alfresco.service.cmr.repository.TemplateProcessorExtension;
 import org.alfresco.service.cmr.repository.TemplateService;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import freemarker.cache.MruCacheStorage;
 import freemarker.cache.StringTemplateLoader;
@@ -69,7 +70,7 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
     private final static String MSG_ERROR_TEMPLATE_FAIL = "error_template_fail";
     private final static String MSG_ERROR_TEMPLATE_IO   = "error_template_io";
     
-    private static final Logger logger = Logger.getLogger(FreeMarkerProcessor.class);
+    private static final Log    logger = LogFactory.getLog(FreeMarkerProcessor.class);
     
     /** Pseudo path to String based template */
     private static final String PATH = "string://fixed";

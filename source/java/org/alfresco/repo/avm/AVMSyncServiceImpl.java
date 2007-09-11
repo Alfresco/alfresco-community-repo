@@ -38,7 +38,8 @@ import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.util.NameMatcher;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This implements APIs that allow comparison and synchronization
@@ -48,7 +49,7 @@ import org.apache.log4j.Logger;
  */
 public class AVMSyncServiceImpl implements AVMSyncService
 {
-    private static Logger fgLogger = Logger.getLogger(AVMSyncServiceImpl.class);
+    private static Log    fgLogger = LogFactory.getLog(AVMSyncServiceImpl.class);
     
     /**
      * The AVMService.

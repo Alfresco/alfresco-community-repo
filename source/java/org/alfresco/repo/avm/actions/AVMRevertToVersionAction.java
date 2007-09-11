@@ -15,7 +15,8 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Revert a single path to a specified node. The path in head is passed
@@ -26,7 +27,7 @@ import org.apache.log4j.Logger;
 public class AVMRevertToVersionAction extends ActionExecuterAbstractBase 
 {
     @SuppressWarnings("unused")
-    private static Logger fgLogger = Logger.getLogger(AVMRevertToVersionAction.class);
+    private static Log    fgLogger = LogFactory.getLog(AVMRevertToVersionAction.class);
     
     public static final String NAME = "avm-revert-to-version";
     // The node to revert to. Passed as an AVMNodeDescriptor.

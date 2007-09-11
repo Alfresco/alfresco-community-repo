@@ -58,7 +58,8 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.SearchLanguageConversion;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
@@ -79,7 +80,7 @@ import com.werken.saxpath.XPathReader;
  */
 public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneSearcher
 {
-    static Logger s_logger = Logger.getLogger(ADMLuceneSearcherImpl.class);
+    static Log    s_logger = LogFactory.getLog(ADMLuceneSearcherImpl.class);
 
     /**
      * Default field name

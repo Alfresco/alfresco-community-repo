@@ -27,7 +27,8 @@ import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Utility for going back and forth between the AVM world and
@@ -36,7 +37,7 @@ import org.apache.log4j.Logger;
  */
 public class AVMNodeConverter
 {
-    private static Logger fgLogger = Logger.getLogger(AVMNodeConverter.class);
+    private static Log    fgLogger = LogFactory.getLog(AVMNodeConverter.class);
     
     /**
      * Get a NodeRef corresponding to the given path and version.

@@ -49,7 +49,8 @@ import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptProcessor;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
@@ -62,7 +63,7 @@ import org.springframework.util.FileCopyUtils;
  */
 public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcessor
 {
-    private static final Logger logger = Logger.getLogger(RhinoScriptProcessor.class);
+    private static final Log    logger = LogFactory.getLog(RhinoScriptProcessor.class);
     
     private static final String IMPORT_PREFIX = "<import";
     private static final String IMPORT_RESOURCE = "resource=\"";

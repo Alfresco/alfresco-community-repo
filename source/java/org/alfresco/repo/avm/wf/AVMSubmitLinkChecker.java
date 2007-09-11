@@ -40,7 +40,8 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
 
@@ -54,7 +55,7 @@ public class AVMSubmitLinkChecker extends JBPMSpringActionHandler
 {
     private static final long serialVersionUID = 1442635948148675461L;
 
-    private static Logger logger = Logger.getLogger(AVMSubmitLinkChecker.class);
+    private static Log    logger = LogFactory.getLog(AVMSubmitLinkChecker.class);
     
     /**
      * The AVMService.

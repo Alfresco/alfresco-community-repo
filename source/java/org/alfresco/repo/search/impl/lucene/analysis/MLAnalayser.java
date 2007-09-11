@@ -10,13 +10,14 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 
 public class MLAnalayser extends Analyzer
 {
-    private static Logger s_logger = Logger.getLogger(MLAnalayser.class);
+    private static Log    s_logger = LogFactory.getLog(MLAnalayser.class);
 
     private DictionaryService dictionaryService;
 

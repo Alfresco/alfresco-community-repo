@@ -30,7 +30,8 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.namespace.QName;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
 
@@ -43,7 +44,7 @@ public class AVMSubmitHandler extends JBPMSpringActionHandler
 {
     private static final long serialVersionUID = 7561005904505181493L;
 
-    private static Logger fgLogger = Logger.getLogger(AVMSubmitHandler.class);
+    private static Log    fgLogger = LogFactory.getLog(AVMSubmitHandler.class);
     
     /**
      * The AVMSyncService.

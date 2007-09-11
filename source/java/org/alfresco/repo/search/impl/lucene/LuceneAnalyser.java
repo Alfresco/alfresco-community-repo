@@ -39,7 +39,8 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.WhitespaceAnalyzer;
@@ -53,7 +54,7 @@ import org.apache.lucene.analysis.WhitespaceAnalyzer;
 
 public class LuceneAnalyser extends Analyzer
 {
-    private static Logger s_logger = Logger.getLogger(LuceneAnalyser.class);
+    private static Log    s_logger = LogFactory.getLog(LuceneAnalyser.class);
 
     // Dictinary service to look up analyser classes by data type and locale.
     private DictionaryService dictionaryService;

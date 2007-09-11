@@ -40,7 +40,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This action submits all the newer changes in the passed in NodeRef
@@ -49,7 +50,7 @@ import org.apache.log4j.Logger;
  */
 public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
 {
-    private static Logger fgLogger = Logger.getLogger(SimpleAVMSubmitAction.class);
+    private static Log    fgLogger = LogFactory.getLog(SimpleAVMSubmitAction.class);
     
     public static String NAME = "simple-avm-submit";
     

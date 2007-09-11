@@ -7,7 +7,8 @@ import java.util.Random;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.exception.LockAcquisitionException;
 import org.springframework.aop.framework.ReflectiveMethodInvocation;
@@ -23,7 +24,7 @@ import org.springframework.transaction.TransactionStatus;
  */
 public class RetryingTransactionAdvice implements MethodInterceptor 
 {
-    private static Logger fgLogger = Logger.getLogger(RetryingTransactionAdvice.class);
+    private static Log    fgLogger = LogFactory.getLog(RetryingTransactionAdvice.class);
     
     /**
      * The transaction manager instance.

@@ -19,7 +19,8 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Undos a list of changed nodes in a user sandbox. The set of nodes to undo is
@@ -30,7 +31,7 @@ import org.apache.log4j.Logger;
 public class AVMUndoSandboxListAction extends ActionExecuterAbstractBase 
 {
     @SuppressWarnings("unused")
-    private static Logger fgLogger = Logger.getLogger(AVMUndoSandboxListAction.class);
+    private static Log    fgLogger = LogFactory.getLog(AVMUndoSandboxListAction.class);
     
     public static final String NAME = "avm-undo-list";
     // The encoded list of nodes.

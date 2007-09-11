@@ -20,7 +20,8 @@ import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This action knows how to start an AVM specific workflow.
@@ -28,7 +29,7 @@ import org.apache.log4j.Logger;
  */
 public class StartAVMWorkflowAction extends ActionExecuterAbstractBase 
 {
-    private static Logger fgLogger = Logger.getLogger(StartAVMWorkflowAction.class);
+    private static Log    fgLogger = LogFactory.getLog(StartAVMWorkflowAction.class);
     
     public static final String NAME = "start-avm-workflow";
     public static final String PARAM_WORKFLOW_NAME = "workflow-name";

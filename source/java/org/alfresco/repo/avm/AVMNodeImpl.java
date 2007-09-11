@@ -35,7 +35,8 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMReadOnlyException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Base class for all repository file system like objects.
@@ -43,7 +44,7 @@ import org.apache.log4j.Logger;
  */
 public abstract class AVMNodeImpl implements AVMNode, Serializable
 {
-    private static Logger fgLogger = Logger.getLogger(AVMNodeImpl.class);
+    private static Log    fgLogger = LogFactory.getLog(AVMNodeImpl.class);
     
     protected static final boolean DEBUG = true;
     

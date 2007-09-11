@@ -30,7 +30,8 @@ import java.util.HashMap;
 import org.alfresco.util.EqualsHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
 
@@ -77,7 +78,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
 
     public static class ReferenceCountingReadOnlyIndexReader extends FilterIndexReader implements ReferenceCounting
     {
-        private static Logger s_logger = Logger.getLogger(ReferenceCountingReadOnlyIndexReader.class);
+        private static Log    s_logger = LogFactory.getLog(ReferenceCountingReadOnlyIndexReader.class);
 
         private static final long serialVersionUID = 7693185658022810428L;
 

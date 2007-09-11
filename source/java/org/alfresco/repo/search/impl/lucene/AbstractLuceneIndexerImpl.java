@@ -39,7 +39,8 @@ import javax.transaction.xa.XAResource;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.impl.lucene.index.TransactionStatus;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -159,7 +160,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
      * Logger
      */
     @SuppressWarnings("unused")
-    private static Logger s_logger = Logger.getLogger(AbstractLuceneIndexerImpl.class);
+    private static Log    s_logger = LogFactory.getLog(AbstractLuceneIndexerImpl.class);
 
     protected static Set<String> deletePrimary(Collection<String> nodeRefs, IndexReader reader, boolean delete)
             throws LuceneIndexException

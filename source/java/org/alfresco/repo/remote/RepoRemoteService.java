@@ -23,7 +23,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Server side implementation of RepoRemote.
@@ -31,7 +32,7 @@ import org.apache.log4j.Logger;
  */
 public class RepoRemoteService implements RepoRemote 
 {
-    private static Logger fgLogger = Logger.getLogger(RepoRemoteService.class);
+    private static Log    fgLogger = LogFactory.getLog(RepoRemoteService.class);
     
     /**
      * The NodeService instance.

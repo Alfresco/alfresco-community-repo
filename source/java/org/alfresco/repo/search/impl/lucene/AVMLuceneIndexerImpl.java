@@ -78,7 +78,8 @@ import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
@@ -103,7 +104,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
     private static String SNAP_SHOT_ID = "SnapShot";
 
-    static Logger s_logger = Logger.getLogger(AVMLuceneIndexerImpl.class);
+    static Log    s_logger = LogFactory.getLog(AVMLuceneIndexerImpl.class);
 
     private AVMService avmService;
 

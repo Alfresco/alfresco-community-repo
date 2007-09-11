@@ -9,7 +9,8 @@ import java.util.Iterator;
 import java.util.Locale;
 
 import org.alfresco.repo.search.MLAnalysisMode;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
@@ -23,7 +24,7 @@ import org.apache.lucene.analysis.Tokenizer;
  */
 public class MLTokenDuplicator extends Tokenizer
 {
-    private static Logger s_logger = Logger.getLogger(MLTokenDuplicator.class);
+    private static Log    s_logger = LogFactory.getLog(MLTokenDuplicator.class);
     
     TokenStream source;
 

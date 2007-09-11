@@ -71,7 +71,8 @@ import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ISO9075;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
@@ -92,7 +93,7 @@ import org.apache.lucene.search.BooleanClause.Occur;
  */
 public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> implements ADMLuceneIndexer
 {
-    static Logger s_logger = Logger.getLogger(ADMLuceneIndexerImpl.class);
+    static Log    s_logger = LogFactory.getLog(ADMLuceneIndexerImpl.class);
 
     /**
      * The node service we use to get information about nodes

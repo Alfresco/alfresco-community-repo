@@ -52,7 +52,8 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Implements the AVMService.
@@ -63,7 +64,7 @@ public class AVMServiceImpl implements AVMService
     public static final String SYSTEM = "system";
     
     @SuppressWarnings("unused")
-    private static Logger fgLogger = Logger.getLogger(AVMServiceImpl.class);
+    private static Log    fgLogger = LogFactory.getLog(AVMServiceImpl.class);
     
     /**
      * The AVMRepository for each service thread.

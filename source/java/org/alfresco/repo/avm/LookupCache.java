@@ -9,7 +9,8 @@ import java.util.List;
 import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.util.Pair;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * All lookup traffic goes through here.
@@ -17,7 +18,7 @@ import org.apache.log4j.Logger;
  */
 public class LookupCache 
 {
-    private static Logger fgLogger = Logger.getLogger(LookupCache.class);
+    private static Log    fgLogger = LogFactory.getLog(LookupCache.class);
     
     /**
      * The Map of of keys to lookups.

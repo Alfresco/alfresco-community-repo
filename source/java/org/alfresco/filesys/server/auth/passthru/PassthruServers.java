@@ -35,7 +35,8 @@ import org.alfresco.filesys.netbios.NetBIOSNameList;
 import org.alfresco.filesys.netbios.NetBIOSSession;
 import org.alfresco.filesys.smb.PCShare;
 import org.alfresco.filesys.util.IPAddress;
-import org.apache.log4j.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Passthru Servers Class
@@ -54,7 +55,7 @@ public class PassthruServers
 {
     // Debug logging
 
-    private static final Logger logger = Logger.getLogger("org.alfresco.smb.protocol.auth");
+    private static final Log    logger = LogFactory.getLog("org.alfresco.smb.protocol.auth");
 
     // Default timeout for setting up a new session
     

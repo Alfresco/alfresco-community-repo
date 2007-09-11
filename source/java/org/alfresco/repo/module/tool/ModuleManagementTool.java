@@ -768,16 +768,25 @@ public class ModuleManagementTool
                     }
                 }
             }
-                  
-            if (directory == false)
+            
+            try
             {
-                // Install the module
-                manager.installModule(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
+                if (directory == false)
+                {
+                    // Install the module
+                    manager.installModule(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
+                }
+                else
+                {
+                    // Install the modules from the directory
+                    manager.installModules(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
+                }
             }
-            else
+            catch (ModuleManagementToolException e)
             {
-                // Install the modules from the directory
-                manager.installModules(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
+                // These are user-friendly
+                manager.outputMessage(e.getMessage());
+                outputUsage();
             }
         }
         else if (OP_LIST.equals(operation) == true && args.length == 2)

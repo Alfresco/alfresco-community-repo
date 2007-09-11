@@ -26,8 +26,8 @@ package org.alfresco.repo.rule.ruletrigger;
 
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -39,40 +39,23 @@ import org.apache.commons.logging.LogFactory;
  * Policy names supported are:
  * <ul>
  *   <li>{@linkplain NodeServicePolicies.OnCreateChildAssociationPolicy}</li>
- *   <li>{@linkplain NodeServicePolicies.BeforeDeleteChildAssociationPolicy}</li>
  * </ul>
  * 
  * @author Roy Wetherall
  */
-public class SingleChildAssocRefPolicyRuleTrigger
+public class OnCreateChildAssociationRuleTrigger
         extends RuleTriggerAbstractBase
-        implements NodeServicePolicies.OnCreateChildAssociationPolicy,
-                   NodeServicePolicies.BeforeDeleteChildAssociationPolicy
-
+        implements NodeServicePolicies.OnCreateChildAssociationPolicy
 {
-	private static final String ERR_POLICY_NAME_NOT_SET = "Unable to register rule trigger since policy name has not been set.";
-	
     /**
      * The logger
      */
-    private static Log logger = LogFactory.getLog(SingleChildAssocRefPolicyRuleTrigger.class);
+    private static Log logger = LogFactory.getLog(OnCreateChildAssociationRuleTrigger.class);
+	
+	private static final String POLICY_NAME = "onCreateChildAssociation";
     
-	private String policyNamespace = NamespaceService.ALFRESCO_URI;
-	
-	private String policyName;
-	
-	private boolean isClassBehaviour = false;
-	
-	public void setPolicyNamespace(String policyNamespace)
-	{
-		this.policyNamespace = policyNamespace;
-	}
-	
-	public void setPolicyName(String policyName)
-	{
-		this.policyName = policyName;
-	}
-	
+    private boolean isClassBehaviour = false;
+		
 	public void setIsClassBehaviour(boolean isClassBehaviour)
 	{
 		this.isClassBehaviour = isClassBehaviour;
@@ -83,36 +66,21 @@ public class SingleChildAssocRefPolicyRuleTrigger
 	 */
 	public void registerRuleTrigger()
 	{
-		if (policyName == null)
-		{
-			throw new RuleServiceException(ERR_POLICY_NAME_NOT_SET);
-		}
-		
 		if (isClassBehaviour == true)
 		{
 			this.policyComponent.bindClassBehaviour(
-					QName.createQName(this.policyNamespace, this.policyName), 
+					QName.createQName(NamespaceService.ALFRESCO_URI, POLICY_NAME), 
 					this, 
-					new JavaBehaviour(this, policyName));
+					new JavaBehaviour(this, POLICY_NAME));
 		}
 		else
-		{
+		{		
 			this.policyComponent.bindAssociationBehaviour(
-					QName.createQName(this.policyNamespace, this.policyName), 
+					QName.createQName(NamespaceService.ALFRESCO_URI, POLICY_NAME), 
 					this, 
-					new JavaBehaviour(this, policyName));
+					new JavaBehaviour(this, POLICY_NAME));
 		}
 	}
-
-    public void beforeDeleteChildAssociation(ChildAssociationRef childAssocRef)
-    {
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug("Single child assoc trigger (policy = " + this.policyName + ") fired for parent node " + childAssocRef.getParentRef() + " and child node " + childAssocRef.getChildRef());
-        }
-        
-        triggerRules(childAssocRef.getParentRef(), childAssocRef.getChildRef());
-    }
 
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
@@ -122,9 +90,23 @@ public class SingleChildAssocRefPolicyRuleTrigger
         }
         if (logger.isDebugEnabled() == true)
         {
-            logger.debug("Single child assoc trigger (policy = " + this.policyName + ") fired for parent node " + childAssocRef.getParentRef() + " and child node " + childAssocRef.getChildRef());
+            logger.debug("Single child assoc trigger (policy = " + POLICY_NAME + ") fired for parent node " + childAssocRef.getParentRef() + " and child node " + childAssocRef.getChildRef());
         }
         
-        triggerRules(childAssocRef.getParentRef(), childAssocRef.getChildRef());
+        // NOTE:
+        //
+        // We check for the presence of this resource in the transaction to determine whether a rename has been issued.  If that is the case 
+        // then we don't want to trigger any associated rules.
+        //
+        // See http://issues.alfresco.com/browse/AR-1544
+        if (AlfrescoTransactionSupport.getResource(childAssocRef.getChildRef().toString()+"rename") == null)
+        {
+        	triggerRules(childAssocRef.getParentRef(), childAssocRef.getChildRef());
+        }
+        else
+        {
+        	// Remove the marker
+        	AlfrescoTransactionSupport.unbindResource(childAssocRef.getChildRef().toString()+"rename");
+        }
     }
 }

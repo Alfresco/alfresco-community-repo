@@ -70,6 +70,7 @@ import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -118,6 +119,7 @@ public class RuleServiceCoverageTest extends TestCase
     private ContentTransformerRegistry transformerRegistry;
     private CopyService copyService;
     private AuthenticationComponent authenticationComponent;
+    private FileFolderService fileFolderService;
     
     /**
      * Category related values
@@ -157,6 +159,7 @@ public class RuleServiceCoverageTest extends TestCase
         this.transactionService = serviceRegistry.getTransactionService();
         this.transformerRegistry = (ContentTransformerRegistry)applicationContext.getBean("contentTransformerRegistry");
         this.authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
+        this.fileFolderService = serviceRegistry.getFileFolderService();
         
         //authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
         //authenticationComponent.setSystemUserAsCurrentUser();
@@ -358,6 +361,48 @@ public class RuleServiceCoverageTest extends TestCase
         
         // System.out.println(NodeStoreInspector.dumpNodeStore(this.nodeService, this.testStoreRef));        
     }   
+    
+    public void testModifyNameTriggersInboundRule()
+    	throws Exception
+    {
+        //this.nodeService.addAspect(this.nodeRef, ContentModel.ASPECT_LOCKABLE, null);
+    	Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);
+    	folderProps.put(ContentModel.PROP_NAME, "myTestFolder");
+    	NodeRef folder = this.nodeService.createNode(
+                this.rootNodeRef,
+				ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_FOLDER,
+                folderProps).getChildRef();  
+    	
+        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+        params.put("aspect-name", ContentModel.ASPECT_VERSIONABLE);        
+        
+        Rule rule = createRule(
+        		RuleType.INBOUND, 
+        		AddFeaturesActionExecuter.NAME, 
+        		params, 
+        		NoConditionEvaluator.NAME, 
+        		null);
+        
+        this.ruleService.saveRule(folder, rule);
+
+        Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>(1);
+        contentProps.put(ContentModel.PROP_NAME, "myTestDocument.txt");
+        NodeRef newNodeRef = this.nodeService.createNode(
+                folder,
+                ContentModel.ASSOC_CONTAINS,                
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "myTestDocument.txt"),
+                ContentModel.TYPE_CONTENT,
+                contentProps).getChildRef();         
+        //addContentToNode(newNodeRef);
+        assertFalse(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));
+        
+        // Use the file folder to change the name of the node
+        this.fileFolderService.rename(newNodeRef, "myNewName.txt");
+        assertFalse(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));
+        
+    }
     
     public void testDisableIndividualRules()
     {

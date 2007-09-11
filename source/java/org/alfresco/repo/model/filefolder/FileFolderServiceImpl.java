@@ -36,6 +36,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -521,12 +522,20 @@ public class FileFolderServiceImpl implements FileFolderService
         // done
         return nodeRefs;
     }
-
+    
     /**
      * @see #move(NodeRef, NodeRef, String)
      */
     public FileInfo rename(NodeRef sourceNodeRef, String newName) throws FileExistsException, FileNotFoundException
     {
+    	// NOTE:  
+    	//
+    	// This information is placed in the transaction to indicate that a rename has taken place.  This information is
+    	// used by the rule trigger to ensure inbound rule is not triggered by a file rename
+    	//
+    	// See http://issues.alfresco.com/browse/AR-1544
+    	AlfrescoTransactionSupport.bindResource(sourceNodeRef.toString()+"rename", sourceNodeRef);
+    	
         return moveOrCopy(sourceNodeRef, null, newName, true);
     }
 
@@ -643,12 +652,12 @@ public class FileFolderServiceImpl implements FileFolderService
                 ContentData contentData = (ContentData)nodeService.getProperty(targetNodeRef, ContentModel.PROP_CONTENT);
                 if (contentData != null)
                 {
-                	String targetMimetype = contentData.getMimetype();
-                	String newMimetype = mimetypeService.guessMimetype(newName);
-                	if (!targetMimetype.equalsIgnoreCase(newMimetype))
+                    String targetMimetype = contentData.getMimetype();
+                    String newMimetype = mimetypeService.guessMimetype(newName);
+                    if (!targetMimetype.equalsIgnoreCase(newMimetype))
                 	{
-                		contentData = ContentData.setMimetype(contentData, newMimetype);
-                		nodeService.setProperty(targetNodeRef, ContentModel.PROP_CONTENT, contentData);
+                        contentData = ContentData.setMimetype(contentData, newMimetype);
+                        nodeService.setProperty(targetNodeRef, ContentModel.PROP_CONTENT, contentData);
                 	}
                 }
             }

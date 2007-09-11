@@ -173,7 +173,7 @@ public class HttpAlfrescoContentReader extends AbstractContentReader
             else
             {
                 // Check the return codes
-                if (statusCode == HttpServletResponse.SC_NOT_FOUND)
+                if (statusCode == HttpServletResponse.SC_NO_CONTENT)
                 {
                     // It doesn't exist, which is not an error.  The defaults are fine.
                 }

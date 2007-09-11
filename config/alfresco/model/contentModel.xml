@@ -364,18 +364,15 @@
       
       <aspect name="cm:complianceable">
          <title>Complianceable</title>
-         <parent>cm:auditable</parent>
-         <!-- TODO: Support mandatory-aspects on an aspect in the meta-model
-         <mandatory-aspects>
-            <aspect>cm:auditable</aspect>
-         </mandatory-aspects>
-         -->
          <properties>
             <property name="cm:removeAfter">
                <title>Remove After</title>
                <type>d:datetime</type>
             </property>
          </properties>
+         <mandatory-aspects>
+            <aspect>cm:auditable</aspect>
+         </mandatory-aspects>
       </aspect>
    
       <aspect name="cm:ownable">

@@ -1013,9 +1013,6 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         getSession().flush();
         getSession().clear();
         
-        // make sure that our integrity allows this
-        AlfrescoTransactionSupport.flush();
-        
         // now get them back
         Map<QName, Serializable> checkMap = nodeService.getProperties(nodeRef);
         assertNotNull("Properties were not set/retrieved", checkMap);
@@ -1717,14 +1714,12 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ASSOC_TYPE_QNAME_TEST_CONTAINS,
                 QName.createQName("pathB"),
                 ContentModel.TYPE_CONTENT);
-        AlfrescoTransactionSupport.flush();
         // there should be no issue with a duplicate association names any more
         ChildAssociationRef pathBDuplicateRef = nodeService.createNode(
                 parentRef,
                 ASSOC_TYPE_QNAME_TEST_CONTAINS,
                 QName.createQName("pathB"),
                 ContentModel.TYPE_CONTENT);
-        AlfrescoTransactionSupport.flush();
         // Now create nodes with duplicate cm:name properties
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(5);
         props.put(ContentModel.PROP_NAME, "ABC");
@@ -1734,7 +1729,6 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 QName.createQName("ABC"),
                 ContentModel.TYPE_CONTENT,
                 props);
-        AlfrescoTransactionSupport.flush();
         try
         {
             // now check that the duplicate is detected with attention to being case-insensitive
@@ -1774,7 +1768,6 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ContentModel.TYPE_CONTENT,
                 props);
         NodeRef abcRef = pathAbcRef.getChildRef();
-        AlfrescoTransactionSupport.flush();
         // delete ABC
         nodeService.deleteNode(abcRef);
         // create it again

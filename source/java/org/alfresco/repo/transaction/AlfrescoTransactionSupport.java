@@ -554,21 +554,7 @@ public abstract class AlfrescoTransactionSupport
          */
         public void flush()
         {
-            // check integrity
-            for (IntegrityChecker integrityChecker : integrityCheckers)
-            {
-                integrityChecker.checkIntegrity();
-            }
-            // flush listeners
-            for (TransactionListener listener : getListenersIterable())
-            {
-                listener.flush();
-            }
-            // flush changes
-            for (TransactionalDao daoService : getDaoServices())
-            {
-                daoService.flush();
-            }
+           throw new UnsupportedOperationException("Manual flush no longer supported.");
         }
         
         /**
@@ -627,8 +613,12 @@ public abstract class AlfrescoTransactionSupport
                 listener.beforeCommit(readOnly);
             }
 
-            // flush
-            flush();
+            // Check integrity
+            for (IntegrityChecker integrityChecker : integrityCheckers)
+            {
+                integrityChecker.checkIntegrity();
+            }
+            
             // prepare the indexes
             for (LuceneIndexerAndSearcher lucene : lucenes)
             {

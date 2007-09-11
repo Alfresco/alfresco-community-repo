@@ -488,10 +488,10 @@
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
-                    properties="replicatePuts = false,
+                    properties="replicatePuts = true,
                                 replicateUpdates = true,
                                 replicateRemovals = true,
-                                replicateUpdatesViaCopy = false,
+                                replicateUpdatesViaCopy = true,
                                 replicateAsynchronously = false"/>
     </cache>
 

@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -375,7 +376,15 @@ public class ExporterComponent
             Set<QName> aspects = nodeService.getAspects(nodeRef);
             for (QName aspect : aspects)
             {
-                if (!isExcludedURI(parameters.getExcludeNamespaceURIs(), aspect.getNamespaceURI()))                
+                if (isExcludedURI(parameters.getExcludeNamespaceURIs(), aspect.getNamespaceURI()))
+                {
+                    continue;
+                }
+                else if (isExcludeAspect(aspect))
+                {
+                    continue;
+                }
+                else
                 {
                     exporter.startAspect(nodeRef, aspect);
                     exporter.endAspect(nodeRef, aspect);
@@ -684,6 +693,25 @@ public class ExporterComponent
                 }
             }
             return false;
+        }
+        
+        /**
+         * Is the aspect unexportable?
+         * 
+         * @param aspectQName           the aspect name
+         * @return                      <tt>true</tt> if the aspect can't be exported
+         */
+        private boolean isExcludeAspect(QName aspectQName)
+        {
+            if (aspectQName.equals(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT) ||
+                    aspectQName.equals(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         
         /**

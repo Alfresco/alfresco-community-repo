@@ -47,6 +47,7 @@ alfresco.FilePickerWidget = function(uploadId,
                                      value, 
                                      readonly, 
                                      change_callback, 
+                                     cancel_callback,
                                      resize_callback,
                                      selectableTypes,
                                      filterMimetypes)
@@ -56,7 +57,8 @@ alfresco.FilePickerWidget = function(uploadId,
   this.value = value == null || value.length == 0 ? null : value;
   this.readonly =  readonly || false;
   this.change_callback = change_callback;
-  this.resize_callback = resize_callback;
+  this.cancel_callback = cancel_callback || function() {};
+  this.resize_callback = resize_callback || function() {};
   this.selectableTypes = selectableTypes;
   this.filterMimetypes = filterMimetypes;
 }
@@ -72,7 +74,6 @@ alfresco.FilePickerWidget._handleUpload = function(id, fileInput, webappRelative
     path: fileInput.value, 
     webappRelativePath: webappRelativePath
   };
-
   handle_upload_helper(fileInput, 
                        id,
                        alfresco.FilePickerWidget._upload_completeHandler,
@@ -121,6 +122,13 @@ setReadonly: function(r)
   {
     this._showSelectedValue();
   }
+},
+
+destroy: function()
+{
+  dojo.dom.removeChildren(this.node);
+  this.node.parentNode.removeChild(this.node);
+  this.node = null;
 },
 
 render: function()
@@ -181,6 +189,10 @@ _hideStatus: function()
 
 _showSelectedValue: function()
 {
+  if (this.node == null)
+  {
+    return;
+  }
   var d = this.node.ownerDocument;
   dojo.dom.removeChildren(this.node);
   this.statusDiv = null;
@@ -306,21 +318,21 @@ _showPicker: function(data)
                          event.currentTarget.style.borderStyle = "solid";
                        }
                      });
-  dojo.event.connect(this.headerMenuTriggerLink,
-                     "onclick",
-                     function(event)
-                     {
-                       var t = event.currentTarget;
-                       var w = t.filePickerWidget;
-                       if (w.parentPathMenu)
-                       {
-                         w._closeParentPathMenu();
-                       }
-                       else
-                       {
-                         w._openParentPathMenu(t, t.getAttribute("webappRelativePath"));
-                       }
-                     });
+  // can't use dojo's event handling since it screws up when opened in another window
+  var filePickerWidget = this;
+  var headerMenuTriggerLink = this.headerMenuTriggerLink;
+  this.headerMenuTriggerLink.onclick = function(event)
+  {
+    if (filePickerWidget.parentPathMenu)
+    {
+      filePickerWidget._closeParentPathMenu();
+    }
+    else
+    {
+      filePickerWidget._openParentPathMenu(headerMenuTriggerLink, 
+                                           headerMenuTriggerLink.getAttribute("webappRelativePath"));
+    }
+  };
 
   this.headerMenuTriggerLink.appendChild(d.createTextNode(currentPathName));
 
@@ -422,6 +434,7 @@ _showPicker: function(data)
   dojo.event.connect(cancelButton, "onclick", function(event)
                      {
                        var w = event.target.filePickerWidget;
+                       w.cancel_callback(this);
                        w._showSelectedValue();
                      });
   this.contentDiv.style.height = (this.node.offsetHeight -
@@ -457,33 +470,19 @@ _createRow: function(fileName, webappRelativePath,  isDirectory, isSelectable, f
   var d = this.contentDiv.ownerDocument;
   var result = d.createElement("div");
   result.setAttribute("id", fileName + "-row");
-
+  result.setAttribute("webappRelativePath", webappRelativePath); 
+  result.filePickerWidget = this;
   dojo.html.setClass(result, "xformsFilePickerRow " + rowClass);
-  dojo.event.browser.addListener(result,
-                                 "mouseover", 
-                                 function(event)
-                                 {
-                                   var prevHover = event.currentTarget.parentNode.hoverNode;
-                                   if (prevHover)
-                                   {
-                                     dojo.html.removeClass(prevHover, "xformsRowHover");
-                                   }
-                                   event.currentTarget.parentNode.hoverNode = event.currentTarget;
-                                   dojo.html.addClass(event.currentTarget, "xformsRowHover");
-                                 },
-                                 true);
-  dojo.event.browser.addListener(result,
-                                 "mouseout", 
-                                 function(event)
-                                 {
-                                   if (event.relatedTarget &&
-                                       event.relatedTarget.parentNode == event.currentTarget)
-                                   {
-                                     return true;
-                                   }
-                                   dojo.html.removeClass(event.currentTarget, "xformsRowHover");
-                                 },
-                                 true);
+  result.onmouseover = function()
+    {
+      var prevHover = result.parentNode.hoverNode;
+      if (prevHover)
+      {
+        dojo.html.removeClass(prevHover, "xformsRowHover");
+      }
+      result.parentNode.hoverNode = result;
+      dojo.html.addClass(result, "xformsRowHover");
+    };
   var e = d.createElement("img");
   e.align = "absmiddle";
   e.style.margin = "0px 4px 0px 4px";
@@ -493,16 +492,15 @@ _createRow: function(fileName, webappRelativePath,  isDirectory, isSelectable, f
   if (isDirectory)
   {
     e = d.createElement("a");
-    e.filePickerWidget = this;
     e.style.textDecoration = "none";
     e.setAttribute("href", "javascript:void(0)");
-    e.setAttribute("webappRelativePath", webappRelativePath); 
-    dojo.event.connect(e, "onclick", function(event)
-                       {
-                         var w = event.target.filePickerWidget;
-                         w._navigateToNode(event.target.getAttribute("webappRelativePath"));
-                         return true;
-                       });
+
+    e.onclick = function() 
+      {
+        var w = result.filePickerWidget;
+        w._navigateToNode(result.getAttribute("webappRelativePath"));
+        return true;
+      };
     e.appendChild(d.createTextNode(fileName));
     result.appendChild(e);
   }
@@ -513,7 +511,6 @@ _createRow: function(fileName, webappRelativePath,  isDirectory, isSelectable, f
   if (isSelectable)
   {
     e = d.createElement("input");
-    e.filePickerWidget = this;
     e.type = "button";
     e.name = webappRelativePath;
     e.value = "Select";
@@ -522,12 +519,12 @@ _createRow: function(fileName, webappRelativePath,  isDirectory, isSelectable, f
     e.style.position = "absolute";
     e.style.right = "10px";
     e.style.top = (.5 * result.offsetHeight) - (.5 * e.offsetHeight) + "px";
-    dojo.event.connect(e, "onclick", function(event)
-                       {
-                         var w = event.target.filePickerWidget;
-                         w.setValue(event.target.name);
-                         w._showSelectedValue();
-                       });
+    e.onclick = function()
+      {
+        var w = result.filePickerWidget;
+        w.setValue(result.getAttribute("webappRelativePath"));
+        w._showSelectedValue();
+      };
   }
   return result;
 },
@@ -578,33 +575,33 @@ _showAddContent: function(currentPath)
   fileInputDiv.style.right = "10px";
   fileInputDiv.style.top = (.5 * this.addContentDiv.offsetHeight) - (.5 * fileInputDiv.offsetHeight) + "px";
 
-  dojo.event.connect(fileInput, 
-                     "onchange", 
-                     function(event)
-                     {
-                       var w = event.target.widget;
-                       if (w.addContentDiv)
-                       {
-                         var d = w.addContentDiv.ownerDocument;
-                         dojo.dom.removeChildren(w.addContentDiv);
-
-                         var fileName = event.target.value.replace(/.*[\/\\]([^\/\\]+)/, "$1");
-                         w.addContentDiv.appendChild(d.createTextNode(alfresco.resources["upload"] + ": " + fileName));
-                         var img = d.createElement("img");
-                         img.setAttribute("src", alfresco.constants.WEBAPP_CONTEXT + 
-                                          "/images/icons/process_animation.gif");
-                         img.style.position = "absolute";
-                         img.style.right = "10px";
-                         img.style.height = (.5 * w.addContentDiv.offsetHeight)  + "px";
-                         img.style.top = (.25 * w.addContentDiv.offsetHeight) + "px";
-                         w.addContentDiv.appendChild(img);
-                       }
-
-                       alfresco.FilePickerWidget._handleUpload(w.uploadId, 
-                                                               event.target,
-                                                               event.target.getAttribute("webappRelativePath"),
-                                                               w);
-                     });
+  fileInput.onchange = function(event)
+    {
+      event = event || fileInput.ownerDocument.parentWindow.event;
+      var target = event.target || event.srcElement;
+      var w = target.widget;
+      if (w.addContentDiv)
+      {
+        var d = w.addContentDiv.ownerDocument;
+        dojo.dom.removeChildren(w.addContentDiv);
+        
+        var fileName = target.value.replace(/.*[\/\\]([^\/\\]+)/, "$1");
+        w.addContentDiv.appendChild(d.createTextNode(alfresco.resources["upload"] + ": " + fileName));
+        var img = d.createElement("img");
+        img.setAttribute("src", alfresco.constants.WEBAPP_CONTEXT + 
+                         "/images/icons/process_animation.gif");
+        img.style.position = "absolute";
+        img.style.right = "10px";
+        img.style.height = (.5 * w.addContentDiv.offsetHeight)  + "px";
+        img.style.top = (.25 * w.addContentDiv.offsetHeight) + "px";
+        w.addContentDiv.appendChild(img);
+      }
+      
+      alfresco.FilePickerWidget._handleUpload(w.uploadId, 
+                                              target,
+                                              target.getAttribute("webappRelativePath"),
+                                              w);
+    };
 },
 
 _upload_completeHandler: function(fileName, webappRelativePath, fileTypeImage, error)
@@ -626,6 +623,7 @@ _upload_completeHandler: function(fileName, webappRelativePath, fileTypeImage, e
     var row = this._createRow(fileName,
                               webappRelativePath == "/" ? "/" + fileName : webappRelativePath + "/" + fileName, 
                               false,
+                              true /* this is potentially inaccurate - need to add some checks in the backing bean to check selectable */,
                               fileTypeImage,
                               rowClass);
     this.contentDiv.replaceChild(row, this.addContentDiv);
@@ -655,11 +653,11 @@ _openParentPathMenu: function(target, path)
   // outside of the menu
   var parentPathMenu_documentClickHandler = function(event)
   {
-    var t = event.target;
-    var d = event.target.ownerDocument;
+    event = event || d.parentWindow.event;
+    var t = event.target || event.srcElement;
 
     // always remove - this handler only ever needs to handle a single click
-    d.removeEventListener("click", parentPathMenu_documentClickHandler, true);
+    dojo.event.browser.removeListener(d, "click", parentPathMenu_documentClickHandler, true, true);
     while (t && t != d)
     {
       if (t == d.currentParentPathMenu ||
@@ -672,7 +670,8 @@ _openParentPathMenu: function(target, path)
     }
     d.currentParentPathMenu.filePickerWidget._closeParentPathMenu();
   };
-  d.addEventListener("click", parentPathMenu_documentClickHandler, true);
+
+  dojo.event.browser.addListener(d, "click", parentPathMenu_documentClickHandler, true, true);
 
   dojo.html.setClass(this.parentPathMenu, "xformsFilePickerParentPathMenu");
 

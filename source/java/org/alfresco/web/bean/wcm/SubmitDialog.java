@@ -51,6 +51,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
@@ -414,6 +415,9 @@ public class SubmitDialog extends BaseDialogBean
          String destPath = stagingPath + wrapper.getPath();
          AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
          diffs.add(diff);
+
+         // process the expiration date (if any)
+         processExpirationDate(srcPath);
          
          // recursively remove locks from this item
          recursivelyRemoveLocks(storeId, -1, this.avmService.lookup(-1, srcPath, true), srcPath);
@@ -426,9 +430,6 @@ public class SubmitDialog extends BaseDialogBean
          {
             this.virtUpdatePath = destPath;
          }
-         
-         // process the expiration date (if any)
-         processExpirationDate(srcPath);
       }
       
       // write changes to layer so files are marked as modified
@@ -1033,8 +1034,12 @@ public class SubmitDialog extends BaseDialogBean
                         submittedPaths.add(renditionPath);
                      }
                   }
-                  this.workflows.add(new FormWorkflowWrapper(fid.getForm().getDefaultWorkflow().getName(),
-                                                             fid.getForm().getDefaultWorkflowParameters()));
+                  WorkflowDefinition defaultWfDef = fid.getForm().getDefaultWorkflow();
+                  if (defaultWfDef != null)
+                  {
+                     this.workflows.add(new FormWorkflowWrapper(defaultWfDef.getName(), 
+                              fid.getForm().getDefaultWorkflowParameters()));
+                  }
                }
             }
          }
@@ -1045,6 +1050,9 @@ public class SubmitDialog extends BaseDialogBean
       {
          // rollback the transaction on error
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+         
+         // rethrow the exception to highlight the problem
+         throw (RuntimeException)e;
       }
    }
    

@@ -7,7 +7,7 @@
 	         <table cellspacing='0' cellpadding='0' width='100%' style='cursor:move' id='dragable'>
 	            <tr>
 	               <td class='mainSubTitle'>${node.name?html}</td>
-	               <#if node.isDocument>
+	               <#if node.isDocument || node.isLinkToDocument>
 	                  <#assign navurl="/navigate/showDocDetails/">
 	               <#else>
 	                  <#assign navurl="/navigate/showSpaceDetails/">

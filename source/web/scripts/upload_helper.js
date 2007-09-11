@@ -9,14 +9,15 @@ function handle_upload_helper(fileInputElement,
 {
   var id = fileInputElement.getAttribute("name");
   var d = fileInputElement.ownerDocument;
+  var w = d.defaultView || d.parentWindow;
   var iframe = d.createElement("iframe");
   iframe.style.display = "none";
   iframe.name = id + "upload_frame";
   iframe.id = iframe.name;
-  document.body.appendChild(iframe);
+  d.body.appendChild(iframe);
 
   // makes it possible to target the frame properly in ie.
-  window.frames[iframe.name].name = iframe.name;
+  w.frames[iframe.name].name = iframe.name;
 
   _uploads[uploadId] = { path: fileInputElement.value, callback: callback };
 
@@ -33,7 +34,7 @@ function handle_upload_helper(fileInputElement,
   form.action = contextPath + actionUrl;
   form.appendChild(fileInputElement);
 
-  var id = document.createElement("input");
+  var id = d.createElement("input");
   id.type = "hidden";
   form.appendChild(id);
   id.name = "upload-id";
@@ -41,17 +42,22 @@ function handle_upload_helper(fileInputElement,
 
   for (var i in params)
   {
-    var p = document.createElement("input");
+    var p = d.createElement("input");
     p.type = "hidden";
     form.appendChild(p);
     id.name = i;
     id.value = params[i];
   }
 
-  var rp = document.createElement("input");
+  var rp = d.createElement("input");
   rp.type = "hidden";
   form.appendChild(rp);
   rp.name = "return-page";
+  if (w != window)
+  {
+    w.upload_complete_helper = window.upload_complete_helper;
+  }
+
   rp.value = "javascript:window.parent.upload_complete_helper('" + uploadId + 
     "',{error: '${_UPLOAD_ERROR}', fileTypeImage: '${_FILE_TYPE_IMAGE}'})";
 

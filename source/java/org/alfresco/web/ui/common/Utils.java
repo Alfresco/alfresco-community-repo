@@ -57,6 +57,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.CIFSServer;
 import org.alfresco.filesys.server.filesys.DiskSharedDevice;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.webdav.WebDAVServlet;
@@ -821,7 +822,8 @@ public final class Utils
             String outcome = ExternalAccessServlet.OUTCOME_DOCDETAILS;
             
             // if the node is a type of folder then make the outcome to show space details
-            if (dd.isSubClass(node.getType(), ContentModel.TYPE_FOLDER))
+            if ((dd.isSubClass(node.getType(), ContentModel.TYPE_FOLDER)) ||
+                  (dd.isSubClass(node.getType(), ApplicationModel.TYPE_FOLDERLINK)))
             {
                outcome = ExternalAccessServlet.OUTCOME_SPACEDETAILS;
             }

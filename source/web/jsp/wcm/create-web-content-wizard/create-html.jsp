@@ -40,10 +40,7 @@
           src="${pageContext.request.contextPath}/scripts/tiny_mce/tiny_mce.js">&#160;</script>
   <script language="javascript" 
           type="text/javascript" 
-          src="${pageContext.request.contextPath}/scripts/ajax/comon.js">&#160;</script>
-  <script language="javascript" 
-          type="text/javascript" 
-          src="${pageContext.request.contextPath}/scripts/ajax/tiny_mce_wcm_extensions.js">&#160;</script>
+          src="${pageContext.request.contextPath}/scripts/ajax/common.js">&#160;</script>
 
   <script language="javascript" type="text/javascript">
 
@@ -82,7 +79,7 @@
       theme_advanced_disable: "styleselect",
       extended_valid_elements : "a[href|target|name],font[face|size|color|style],span[class|align|style]",
       urlconverter_callback: "alfresco_TinyMCE_urlconverter_callback",
-      execcommand_callback: "alfresco_TinyMCE_execcommand_callback"
+      file_browser_callback: "alfresco_TinyMCE_file_browser_callback"
     });
     
     function saveContent(id, content)
@@ -90,6 +87,21 @@
       document.getElementById("wizard:wizard-body:editor-output").value = content;
     }
   </script>
+  <script language="javascript" 
+          type="text/javascript" 
+          src="${pageContext.request.contextPath}/scripts/ajax/dojo/dojo.js">&#160;</script>
+  <script language="javascript" 
+          type="text/javascript" 
+          src="${pageContext.request.contextPath}/scripts/ajax/tiny_mce_wcm_extensions.js">&#160;</script>
+  <script language="javascript" 
+          type="text/javascript" 
+          src="${pageContext.request.contextPath}/scripts/ajax/ajax_helper.js">&#160;</script>
+  <script language="javascript" 
+          type="text/javascript" 
+          src="${pageContext.request.contextPath}/scripts/ajax/file_picker_widget.js">&#160;</script>
+  <script language="javascript" 
+          type="text/javascript" 
+          src="${pageContext.request.contextPath}/scripts/upload_helper.js">&#160;</script>
 
   <div id='editor' style='width:100%; height:360px'>
     <h:outputText value="#{WizardManager.bean.content}" escape="false" />

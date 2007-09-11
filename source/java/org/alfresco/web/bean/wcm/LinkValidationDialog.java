@@ -176,6 +176,9 @@ public class LinkValidationDialog extends BaseDialogBean
       this.runningReport = true;
       executeReport();
       
+      // reset the isFinished flag so we can run the report again
+      this.isFinished = false;
+      
       return null;
    }
    

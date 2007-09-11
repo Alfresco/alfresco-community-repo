@@ -37,6 +37,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -201,8 +202,9 @@ public class FormImpl
                                             te);
       }
       result = AVMUtil.buildPath(parentAVMPath, 
-                                      result,
-                                      AVMUtil.PathRelation.SANDBOX_RELATIVE);
+                                 result,
+                                 AVMUtil.PathRelation.SANDBOX_RELATIVE);
+      result = AVMNodeConverter.NormalizePath(result);
       LOGGER.debug("processed pattern " + outputPathPattern + " as " + result);
       return result;
    }

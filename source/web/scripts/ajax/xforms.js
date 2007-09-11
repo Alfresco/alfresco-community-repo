@@ -534,6 +534,7 @@ dojo.declare("alfresco.xforms.FilePicker",
                                                              this.getInitialValue(), 
                                                              false,
                                                              this._filePicker_changeHandler,
+                                                             null /* cancel is ignored */,
                                                              this._filePicker_resizeHandler,
                                                              this._selectableTypes,
                                                              this._filterMimetypes);
@@ -4725,13 +4726,13 @@ alfresco.constants.TINY_MCE_DEFAULT_SETTINGS =
   entity_encoding: "raw",
   add_unload_trigger: false,
   add_form_submit_trigger: false,
-  execcommand_callback: "alfresco_TinyMCE_execcommand_callback",
   theme_advanced_toolbar_location: "top",
   theme_advanced_toolbar_align: "left",
   theme_advanced_buttons1: "",
   theme_advanced_buttons2: "",
   theme_advanced_buttons3: "",
-  urlconverter_callback: "alfresco_TinyMCE_urlconverter_callback"
+  urlconverter_callback: "alfresco_TinyMCE_urlconverter_callback",
+  file_browser_callback: "alfresco_TinyMCE_file_browser_callback"
 };
 
 tinyMCE.init(dojo.lang.mixin(new Object(), alfresco.constants.TINY_MCE_DEFAULT_SETTINGS));

@@ -92,42 +92,6 @@ public class HTTPRequestAuthenticationFilter extends AbstractAuthenticationFilte
 
     private Pattern authPattern = null;
 
-    /**
-     * Define the HTTP header that contains the user name
-     * 
-     * @param httpServletRequestAuthHeaderName
-     */
-    public HTTPRequestAuthenticationFilter(String httpServletRequestAuthHeaderName)
-    {
-        this(httpServletRequestAuthHeaderName, null);
-    }
-
-    /**
-     * Define the header that contains the user name and how to extract the user name.
-     * 
-     * @param httpServletRequestAuthHeaderName
-     * @param authPatternString
-     */
-    public HTTPRequestAuthenticationFilter(String httpServletRequestAuthHeaderName, String authPatternString)
-    {
-        super();
-        assert (httpServletRequestAuthHeaderName != null);
-        this.httpServletRequestAuthHeaderName = httpServletRequestAuthHeaderName;
-        this.authPatternString = authPatternString;
-        if (this.authPatternString != null)
-        {
-            try
-            {
-                authPattern = Pattern.compile(this.authPatternString);
-            }
-            catch (PatternSyntaxException e)
-            {
-                logger.warn("Invalid pattern: " + this.authPatternString, e);
-                authPattern = null;
-            }
-        }
-    }
-
     public void destroy()
     {
         // Nothing to do
@@ -341,27 +305,51 @@ public class HTTPRequestAuthenticationFilter extends AbstractAuthenticationFilte
         I18NUtil.setLocale(Application.getLanguage(httpSess));
     }
 
+    
     public void init(FilterConfig config) throws ServletException
     {
+        // Save the context
+
         this.context = config.getServletContext();
+
+        // Setup the authentication context
+
         WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
+
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        transactionService = serviceRegistry.getTransactionService();
         nodeService = serviceRegistry.getNodeService();
-
+        authService = serviceRegistry.getAuthenticationService();
+        transactionService = serviceRegistry.getTransactionService();
+        personService = (PersonService) ctx.getBean("PersonService"); // transactional and permission-checked
         authComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-        authService = (AuthenticationService) ctx.getBean("authenticationService");
-        personService = (PersonService) ctx.getBean("personService");
-
-        // Get a list of the available locales
-
+        
+        
         ConfigService configServiceService = (ConfigService) ctx.getBean("webClientConfigService");
         LanguagesConfigElement configElement = (LanguagesConfigElement) configServiceService.getConfig("Languages")
                 .getConfigElement(LanguagesConfigElement.CONFIG_ELEMENT_ID);
 
         m_languages = configElement.getLanguages();
 
-        authPattern = Pattern.compile(authPatternString);
+        
+        httpServletRequestAuthHeaderName = config.getInitParameter("httpServletRequestAuthHeaderName");
+        if(httpServletRequestAuthHeaderName == null)
+        {
+            httpServletRequestAuthHeaderName = "x-user";
+        }
+        this.authPatternString = config.getInitParameter("authPatternString");
+        if (this.authPatternString != null)
+        {
+            try
+            {
+                authPattern = Pattern.compile(this.authPatternString);
+            }
+            catch (PatternSyntaxException e)
+            {
+                logger.warn("Invalid pattern: " + this.authPatternString, e);
+                authPattern = null;
+            }
+        }
+        
     }
 
     /**

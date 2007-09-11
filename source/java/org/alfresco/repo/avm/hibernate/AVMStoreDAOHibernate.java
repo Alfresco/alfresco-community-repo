@@ -24,14 +24,13 @@
 package org.alfresco.repo.avm.hibernate;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.repo.avm.AVMNode;
 import org.alfresco.repo.avm.AVMStore;
 import org.alfresco.repo.avm.AVMStoreDAO;
 import org.alfresco.repo.avm.AVMStoreImpl;
+import org.alfresco.repo.cache.SimpleCache;
 import org.hibernate.Query;
 import org.hibernate.proxy.HibernateProxy;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -46,7 +45,7 @@ class AVMStoreDAOHibernate extends HibernateDaoSupport implements
     /**
      * An in memory cache of name to primary key mappings.
      */
-    private Map<String, Long> fNameCache;
+    private SimpleCache<String, Long> fNameCache;
     
     /**
      * Do nothing constructor.
@@ -54,7 +53,11 @@ class AVMStoreDAOHibernate extends HibernateDaoSupport implements
     public AVMStoreDAOHibernate()
     {
         super();
-        fNameCache = new HashMap<String, Long>();
+    }
+
+    public void setCache(SimpleCache<String, Long> cache)
+    {
+        fNameCache = cache;
     }
     
     /**
@@ -100,10 +103,7 @@ class AVMStoreDAOHibernate extends HibernateDaoSupport implements
     public AVMStore getByName(String name)
     {
         Long id = null;
-        synchronized (this)
-        {
-            id = fNameCache.get(name);
-        }
+        id = fNameCache.get(name);
         if (id != null)
         {
             return forceNonLazy((AVMStore)getSession().get(AVMStoreImpl.class, id));      
@@ -112,12 +112,9 @@ class AVMStoreDAOHibernate extends HibernateDaoSupport implements
                                                "where st.name = :name");
         query.setParameter("name", name);
         AVMStore result = (AVMStore)query.uniqueResult();
-        synchronized (this)
+        if (result != null)
         {
-            if (result != null)
-            {
-                fNameCache.put(name, result.getId());
-            }
+            fNameCache.put(name, result.getId());
         }
         return forceNonLazy(result);
     }

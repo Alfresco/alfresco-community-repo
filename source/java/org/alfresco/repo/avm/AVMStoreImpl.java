@@ -319,7 +319,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * @param path The path to the containing directory.
      * @param name The name of the new directory.
      */
-    public void createDirectory(String path, String name)
+    public void createDirectory(String path, String name, List<QName> aspects, Map<QName, PropertyValue> properties)
     {
         Lookup lPath = lookupDirectory(-1, path, true);
         if (lPath == null)
@@ -353,6 +353,14 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         dir.updateModTime();
         dir.putChild(name, newDir);
+        if (aspects != null)
+        {
+            newDir.getAspects().addAll(aspects);
+        }
+        if (properties != null)
+        {
+            newDir.getProperties().putAll(properties);
+        }
     }
 
     /**
@@ -442,7 +450,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * @param name The name to give the new file.
      * @param data The contents.
      */
-    public void createFile(String path, String name, File data)
+    public void createFile(String path, String name, File data, List<QName> aspects, Map<QName, PropertyValue> properties)
     {
         Lookup lPath = lookupDirectory(-1, path, true);
         if (lPath == null)
@@ -468,10 +476,19 @@ public class AVMStoreImpl implements AVMStore, Serializable
                 RawServices.Instance().getMimetypeService().guessMimetype(name),
                 -1,
                 "UTF-8"));
+        if (aspects != null)
+        {
+            file.getAspects().addAll(aspects);
+        }
+        if (properties != null)
+        {
+            file.getProperties().putAll(properties);
+        }
         // Yet another flush.
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         ContentWriter writer = createContentWriter(AVMNodeConverter.ExtendAVMPath(path, name));
         writer.putContent(data);
+        
     }
 
     /**

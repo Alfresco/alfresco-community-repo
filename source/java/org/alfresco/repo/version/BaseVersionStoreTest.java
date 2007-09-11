@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -42,6 +43,7 @@ import org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -107,6 +109,9 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
     protected static final String MULTI_VALUE_1 = "multi1";
     protected static final String MULTI_VALUE_2 = "multi2";
     
+    protected MLText mlText;
+    protected static final QName MLTEXT_PROP = QName.createQName(TEST_NAMESPACE, "propMl");
+    
     /**
      * Test content
      */
@@ -162,7 +167,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         this.versionProperties = new HashMap<String, Serializable>();
         versionProperties.put(VERSION_PROP_1, VALUE_1);
         versionProperties.put(VERSION_PROP_2, VALUE_2);
-        versionProperties.put(VERSION_PROP_3, VALUE_3);
+        versionProperties.put(VERSION_PROP_3, VALUE_3);        
         
         // Create the node properties
         this.nodeProperties = new HashMap<QName, Serializable>();
@@ -171,6 +176,11 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         this.nodeProperties.put(PROP_3, VALUE_3);
         this.nodeProperties.put(MULTI_PROP, (Serializable)multiValue);
         this.nodeProperties.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8"));
+        
+        // Add mlText property
+        this.mlText = new MLText(Locale.UK, "UK value");
+        this.mlText.addValue(Locale.US, "Y'all US value");        
+        this.nodeProperties.put(MLTEXT_PROP, this.mlText);
         
         // Create a workspace that contains the 'live' nodes
         this.testStoreRef = this.dbNodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());

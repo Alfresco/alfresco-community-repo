@@ -129,6 +129,9 @@
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>
+        <property name="nameMatcher">
+            <ref bean="globalPathExcluder"/>
+        </property>
     </bean>
     
     <bean id="crossCopyScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.CrossRepositoryCopy">

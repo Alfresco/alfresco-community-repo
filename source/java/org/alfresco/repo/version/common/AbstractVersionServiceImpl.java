@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.node.MLPropertyInterceptor;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
@@ -231,13 +232,21 @@ public abstract class AbstractVersionServiceImpl
 		ClassDefinition classDefinition = this.dictionaryService.getClass(classRef);	
 		if (classDefinition != null)
 		{			
-			// Copy the properties
-			Map<QName,PropertyDefinition> propertyDefinitions = classDefinition.getProperties();
-			for (QName propertyName : propertyDefinitions.keySet()) 
+			boolean wasMLAware = MLPropertyInterceptor.setMLAware(true);
+			try
 			{
-				Serializable propValue = this.nodeService.getProperty(nodeRef, propertyName);
-				nodeDetails.addProperty(classRef, propertyName, propValue);
-			}		
+				// Copy the properties
+				Map<QName,PropertyDefinition> propertyDefinitions = classDefinition.getProperties();
+				for (QName propertyName : propertyDefinitions.keySet()) 
+				{
+					Serializable propValue = this.nodeService.getProperty(nodeRef, propertyName);
+					nodeDetails.addProperty(classRef, propertyName, propValue);
+				}
+			}
+			finally
+			{
+				MLPropertyInterceptor.setMLAware(wasMLAware);
+			}
             
             // Version the associations (child and target)
             Map<QName, AssociationDefinition> assocDefs = classDefinition.getAssociations();

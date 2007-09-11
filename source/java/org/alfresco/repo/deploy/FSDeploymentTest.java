@@ -99,6 +99,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
             fService.removeNode("main:/d/e");
             fService.createDirectory("main:/d", "e");
             fService.createFile("main:/d/e", "Warren.txt").close();
+            fService.createFile("main:/d/e", "It's a silly name.txt").close();
             report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, null);
             count = 0;
             for (DeploymentEvent event : report)
@@ -106,7 +107,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
                 System.out.println(event);
                 count++;
             }
-            assertEquals(4, count);
+            assertEquals(5, count);
         }
         catch (Exception e)
         {

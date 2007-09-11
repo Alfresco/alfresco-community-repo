@@ -146,6 +146,9 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
                 PROP_1);
         assertEquals(VALUE_1, value1);
         
+        // Check the mlText property
+        // TODO
+        
         // Check the multi values property specifically
         Collection<String> multiValue = (Collection<String>)this.lightWeightVersionStoreNodeService.getProperty(version.getFrozenStateNodeRef(), MULTI_PROP);
         assertNotNull(multiValue);

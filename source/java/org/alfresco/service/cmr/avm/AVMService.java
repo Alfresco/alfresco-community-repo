@@ -324,8 +324,6 @@ public interface AVMService
      */
     public OutputStream createFile(String path, String name);
     
-
-
     /**
      * Create a new "plain" (non-layered) file.  
      * Guarantees that the entire contents of the
@@ -341,7 +339,24 @@ public interface AVMService
      */
     public void createFile(String path, String name, InputStream in);
     
-
+    
+    /**
+     * Create a new "plain" (non-layered) file.  
+     * Guarantees that the entire contents of the
+     * input stream will be loaded atomically.
+     * The directory identified by <code>path</code> must already exist.
+     *
+     * @param path The path of the directory containing the created file.
+     * @param name The name of the new file
+     * @param in   An input stream with data for the file.
+     * @param aspect A list of aspects to give the file.
+     * @param properties A map of properties to give the file.
+     * @throws     AVMNotFound
+     * @throws     AVMExists
+     * @throws     AVMWrongType
+     */
+    public void createFile(String path, String name, InputStream in, List<QName> aspects, Map<QName, PropertyValue> properties);
+    
     /**
      * Create a new directory. 
      * If <code>path</code> is within a layer, the new directory will be a layered directory;
@@ -355,6 +370,20 @@ public interface AVMService
      */  
     public void createDirectory(String path, String name);
     
+    /**
+     * Create a new directory. 
+     * If <code>path</code> is within a layer, the new directory will be a layered directory;
+     * otherwise, the new directory will be a plain directory.
+     *
+     * @param path The simple absolute path to the parent.
+     * @param name The name to give the directory.
+     * @param aspects A list of aspects to add.
+     * @param properties A Map of properties to add.
+     * @throws     AVMNotFound
+     * @throws     AVMExists
+     * @throws     AVMWrongType
+     */  
+    public void createDirectory(String path, String name, List<QName> aspects, Map<QName, PropertyValue> properties);
 
     /**
      * Create a new layered file. 

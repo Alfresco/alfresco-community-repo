@@ -318,7 +318,7 @@ public class JCRDocXMLHandler implements ImportContentHandler
         {
             // ensure context matches parse
             ElementContext context = (ElementContext)contextStack.pop();
-            QName elementName = QName.createQName(qName, importResolver);
+            QName elementName = decodeQName(QName.createQName(qName, importResolver));
             if (!context.getElementName().equals(elementName))
             {
                 throw new InvalidSerializedDataException("Expected element " + context.getElementName() + " but was " + elementName);

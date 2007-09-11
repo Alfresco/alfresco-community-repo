@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.Wrapper;
@@ -152,6 +153,31 @@ public final class ScriptAction implements Serializable, Scopeable
         
         // Reset the actioned upon node
         node.reset();
+    }
+    
+    /**
+     * Execute action
+     * 
+     * @param nodeRef
+     *            the node to execute action upon
+     */
+    @SuppressWarnings("synthetic-access")
+    public void execute(NodeRef nodeRef)
+    {
+        if (this.parameters != null && this.parameters.isModified())
+        {
+            Map<String, Serializable> actionParams = action.getParameterValues();
+            actionParams.clear();
+
+            for (Map.Entry<String, Serializable> entry : this.parameters.entrySet())
+            {
+                // perform the conversion from script wrapper object to repo serializable values
+                String name = entry.getKey();
+                Serializable value = converter.convertActionParamForRepo(name, entry.getValue());
+                actionParams.put(name, value);
+            }
+        }
+        services.getActionService().executeAction(action, nodeRef);
     }
 
     /**

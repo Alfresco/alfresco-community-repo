@@ -37,6 +37,11 @@
                <protected>false</protected>
                <default></default>
             </property>
+            <property name="test:propMl">
+               <type>d:mltext</type>
+               <protected>false</protected>
+               <default></default>
+            </property>
             <property name="test:multiProp">
                <type>d:text</type>             
                <multiple>true</multiple>

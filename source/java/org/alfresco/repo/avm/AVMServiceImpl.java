@@ -358,6 +358,14 @@ public class AVMServiceImpl implements AVMService
      */
     public void createFile(String path, String name, InputStream in)
     {
+        createFile(path, name, in, null, null);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#createFile(java.lang.String, java.lang.String, java.io.InputStream, java.util.List, java.util.Map)
+     */
+    public void createFile(String path, String name, InputStream in, List<QName> aspects, Map<QName, PropertyValue> properties)
+    {
         if (path == null || name == null || in == null || !FileNameValidator.IsValid(name))
         {
             throw new AVMBadArgumentException("Illegal argument.");
@@ -383,7 +391,7 @@ public class AVMServiceImpl implements AVMService
         }
         try
         {
-            fAVMRepository.createFile(path, name, temp);
+            fAVMRepository.createFile(path, name, temp, aspects, properties);
         }
         finally
         {
@@ -398,11 +406,19 @@ public class AVMServiceImpl implements AVMService
      */
     public void createDirectory(String path, String name)
     {
+        createDirectory(path, name, null, null);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#createDirectory(java.lang.String, java.lang.String, java.util.List, java.util.Map)
+     */
+    public void createDirectory(String path, String name, List<QName> aspects, Map<QName, PropertyValue> properties)
+    {
         if (path == null || name == null || !FileNameValidator.IsValid(name))
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
-        fAVMRepository.createDirectory(path, name);
+        fAVMRepository.createDirectory(path, name, aspects, properties);
     }
 
     /**

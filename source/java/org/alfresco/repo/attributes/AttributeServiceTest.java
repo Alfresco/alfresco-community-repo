@@ -280,7 +280,9 @@ public class AttributeServiceTest extends TestCase
             assertEquals(27, fService.getKeys("map/submap").size());
             fService.removeAttribute("map/submap/subsubmap", "b");
             assertEquals(25, fService.getKeys("map/submap/subsubmap").size());
+            System.out.println("Before-------------------------------------------------------------");
             fService.removeAttribute("map/submap", "subsubmap");
+            System.out.println("After--------------------------------------------------------------");
             assertEquals(26, fService.getKeys("map/submap").size());
             fService.removeEntries("map/submap", new AttrAndQuery(new AttrQueryGTE("a"),
                                                                   new AttrQueryLTE("d")));

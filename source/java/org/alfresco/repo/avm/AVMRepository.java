@@ -254,7 +254,7 @@ public class AVMRepository
      * @param name The name to give the file.
      * @param data The file contents.
      */
-    public void createFile(String path, String name, File data)
+    public void createFile(String path, String name, File data, List<QName> aspects, Map<QName, PropertyValue> properties)
     {
         fLookupCount.set(1);
         try
@@ -266,7 +266,7 @@ public class AVMRepository
                 throw new AVMNotFoundException("Store not found.");
             }
             fLookupCache.onWrite(pathParts[0]);
-            store.createFile(pathParts[1], name, data);
+            store.createFile(pathParts[1], name, data, aspects, properties);
         }
         finally
         {
@@ -279,7 +279,7 @@ public class AVMRepository
      * @param path The path to the containing directory.
      * @param name The name to give the directory.
      */
-    public void createDirectory(String path, String name)
+    public void createDirectory(String path, String name, List<QName> aspects, Map<QName, PropertyValue> properties)
     {
         fLookupCount.set(1);
         try
@@ -291,7 +291,7 @@ public class AVMRepository
                 throw new AVMNotFoundException("Store not found.");
             }
             fLookupCache.onWrite(pathParts[0]);
-            store.createDirectory(pathParts[1], name);
+            store.createDirectory(pathParts[1], name, aspects, properties);
         }
         finally
         {

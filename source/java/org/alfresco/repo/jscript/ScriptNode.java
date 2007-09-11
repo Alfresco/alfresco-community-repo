@@ -534,7 +534,9 @@ public class ScriptNode implements Serializable, Scopeable
         if (this.properties == null)
         {
             // this Map implements the Scriptable interface for native JS syntax property access
-            this.properties = new ScriptableQNameMap<String, Serializable>(this.services.getNamespaceService());
+            // this impl of the QNameMap is capable of creating ScriptContentData on demand for 'cm:content'
+            // properties that have not been initialised - see AR-1673.
+            this.properties = new ContentAwareScriptableQNameMap<String, Serializable>(this, this.services);
             
             Map<QName, Serializable> props = this.nodeService.getProperties(this.nodeRef);
             for (QName qname : props.keySet())
@@ -542,7 +544,6 @@ public class ScriptNode implements Serializable, Scopeable
                 Serializable propValue = props.get(qname);
                 
                 // perform the conversion to a script safe value and store
-                
                 this.properties.put(qname.toString(), getValueConverter().convertValueForScript(qname, propValue));
             }
         }
@@ -774,7 +775,7 @@ public class ScriptNode implements Serializable, Scopeable
     {
         String content = "";
         
-        ScriptContentData contentData = (ScriptContentData) getProperties().get(ContentModel.PROP_CONTENT);
+        ScriptContentData contentData = (ScriptContentData)getProperties().get(ContentModel.PROP_CONTENT);
         if (contentData != null)
         {
             content = contentData.getContent();
@@ -795,16 +796,11 @@ public class ScriptNode implements Serializable, Scopeable
      */
     public void setContent(String content)
     {
-        ScriptContentData contentData = (ScriptContentData) getProperties().get(ContentModel.PROP_CONTENT);
-        if (contentData == null)
+        ScriptContentData contentData = (ScriptContentData)getProperties().get(ContentModel.PROP_CONTENT);
+        if (contentData != null)
         {
-            // guess a mimetype based on the filename
-            String mimetype = this.services.getMimetypeService().guessMimetype(getName());
-            ContentData cdata = new ContentData(null, mimetype, 0L, "UTF-8");
-            contentData = new ScriptContentData(cdata, ContentModel.PROP_CONTENT);
-            getProperties().put(ContentModel.PROP_CONTENT.toString(), contentData);
+            contentData.setContent(content);
         }
-        contentData.setContent(content);
     }
     
     public void jsSet_content(String content)

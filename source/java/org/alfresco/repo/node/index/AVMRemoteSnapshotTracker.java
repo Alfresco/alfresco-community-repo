@@ -35,6 +35,9 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Track and update when snapshots are created and indexed in a cluster
+ * 
+ * @author Andy Hind
+ * @since 2.1.0
  */
 public class AVMRemoteSnapshotTracker extends AbstractReindexComponent
 {

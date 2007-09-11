@@ -87,7 +87,7 @@ public interface AVMStore
      * @param path The path to the parent directory.
      * @param name The name to give the new directory.
      */
-    public void createDirectory(String path, String name);
+    public void createDirectory(String path, String name, List<QName> aspects, Map<QName, PropertyValue> properties);
 
     /**
      * Create a new layered directory.
@@ -112,7 +112,7 @@ public interface AVMStore
      * @param name The name to give the file.
      * @param data The contents of the file.
      */
-    public void createFile(String path, String name, File data);
+    public void createFile(String path, String name, File data, List<QName> aspects, Map<QName, PropertyValue> properties);
 
     /**
      * Create a new layered file.

@@ -1001,4 +1001,21 @@
         </property>
     </bean>
 
+    <bean id="patch.webscripts3" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.webscripts3</value></property>
+        <property name="description"><value>patch.webscripts3.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>104</value></property>
+        <property name="targetSchema"><value>105</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/</prop>
+                <prop key="location">alfresco/bootstrap/webScriptsReadme2.xml</prop>
+            </props>
+        </property>
+    </bean>
+
 </beans>

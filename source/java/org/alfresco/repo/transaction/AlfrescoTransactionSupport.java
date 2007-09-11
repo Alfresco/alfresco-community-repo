@@ -589,10 +589,7 @@ public abstract class AlfrescoTransactionSupport
             }
 
             // These are still considered part of the transaction so are executed here
-            for (TransactionListener listener : getListenersIterable())
-            {
-                listener.beforeCommit(readOnly);
-            }
+            doBeforeCommit(readOnly);
 
             // Check integrity
             for (IntegrityChecker integrityChecker : integrityCheckers)
@@ -605,6 +602,39 @@ public abstract class AlfrescoTransactionSupport
             {
                 lucene.prepare();
             }
+        }
+        
+        /**
+         * Execute the beforeCommit event handlers for the registered listeners
+         * 
+         * @param readOnly	is read only
+         */
+        private void doBeforeCommit(boolean readOnly)
+        {
+        	doBeforeCommit(new HashSet<TransactionListener>(listeners.size()), readOnly);
+        }
+        
+        /**
+         * Executes the beforeCommit event handlers for the outstanding listeners
+         * 
+         * @param visitedListeners	a set containing the already visited listeners
+         * @param readOnly			is read only
+         */
+        private void doBeforeCommit(Set<TransactionListener> visitedListeners, boolean readOnly)
+        {
+        	Set<TransactionListener> pendingListeners = new HashSet<TransactionListener>(listeners);
+        	pendingListeners.removeAll(visitedListeners);
+        	
+        	if (pendingListeners.size() != 0)
+        	{
+	        	for (TransactionListener listener : pendingListeners) 
+	        	{
+	        		listener.beforeCommit(readOnly);
+	        		visitedListeners.add(listener);
+				}
+	        	
+	        	doBeforeCommit(visitedListeners, readOnly);
+        	}
         }
         
         @Override

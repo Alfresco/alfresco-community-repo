@@ -44,6 +44,9 @@
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
+		<property name="cache">
+			<ref bean="avmStoreLookupCache"/>
+		</property>
 	</bean>
 
 	<bean id="versionRootDAO" class="org.alfresco.repo.avm.hibernate.VersionRootDAOHibernate">

@@ -882,4 +882,21 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
             }
         }
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#createDirectory(java.lang.String, java.lang.String, java.util.List, java.util.Map)
+     */
+    public void createDirectory(String path, String name, List<QName> aspects, Map<QName, PropertyValue> properties)
+    {
+        fService.createDirectory(path, name, aspects, properties);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#createFile(java.lang.String, java.lang.String, java.io.InputStream, java.util.List, java.util.Map)
+     */
+    public void createFile(String path, String name, InputStream in, List<QName> aspects, Map<QName, PropertyValue> properties)
+    {
+        grabLock(path + '/' + name);
+        fService.createFile(path, name, in, aspects, properties);
+    }
 }

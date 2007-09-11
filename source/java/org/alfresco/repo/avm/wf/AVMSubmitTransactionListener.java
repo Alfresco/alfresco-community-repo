@@ -108,7 +108,9 @@ public class AVMSubmitTransactionListener extends TransactionListenerAdapter
                                               true
                                              );
             if (log.isDebugEnabled())
-                log.debug("JMX update to virt server called after commit");
+                log.debug("JMX update to virt server called after commit."     + 
+                          "  Version: " + requiresUpdate.getDestinationVersion() + 
+                          "  Path: "    + requiresUpdate.getDestinationPath());
         }
 
         // Remove virtual webapps from workflow sandbox prior to 

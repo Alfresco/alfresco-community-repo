@@ -282,6 +282,42 @@
    </bean>
    
    <!-- ===================================== -->
+   <!-- AVM Store lookup cache                -->
+   <!-- ===================================== -->
+   
+   <!-- The cross-transaction shared cache for AVM store lookups -->
+   
+   <bean name="avmStoreLookupSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+       <property name="cache">
+           <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+               <property name="cacheManager">
+                   <ref bean="internalEHCacheManager"/>
+               </property>
+               <property name="cacheName">
+                   <value>org.alfresco.repo.avm.storeLookupSharedCache</value>
+               </property>
+           </bean>
+       </property>
+   </bean>
+   
+   <!-- Transactional cache for AVM store lookups -->
+
+   <bean name="avmStoreLookupCache" class="org.alfresco.repo.cache.TransactionalCache">
+       <property name="sharedCache">
+           <ref bean="avmStoreLookupSharedCache"/>
+       </property>
+       <property name="cacheManager">
+           <ref bean="transactionalEHCacheManager"/>
+       </property>
+       <property name="name">
+           <value>org.alfresco.repo.avm.storeLookupTransactionalCache</value>
+       </property>
+       <property name="maxCacheSize">
+           <value>100</value>
+       </property>
+   </bean>
+   
+   <!-- ===================================== -->
    <!-- WebServices Query Session Cache       -->
    <!-- ===================================== -->
 

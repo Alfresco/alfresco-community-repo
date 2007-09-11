@@ -5043,6 +5043,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             AVMStoreDescriptor desc = fService.getStore("main");
             assertNotNull(desc);
             System.out.println(desc);
+            fService.purgeStore("main");
+            assertNull(fService.getStore("main"));
         }
         catch (Exception e)
         {

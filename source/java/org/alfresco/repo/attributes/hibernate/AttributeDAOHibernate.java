@@ -34,6 +34,7 @@ import org.alfresco.repo.attributes.AttrQueryHelperImpl;
 import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.repo.attributes.AttributeDAO;
 import org.alfresco.repo.attributes.ListAttribute;
+import org.alfresco.repo.attributes.ListEntry;
 import org.alfresco.repo.attributes.ListEntryDAO;
 import org.alfresco.repo.attributes.MapAttribute;
 import org.alfresco.repo.attributes.MapEntry;
@@ -78,24 +79,23 @@ public class AttributeDAOHibernate extends HibernateDaoSupport implements
         if (attr.getType() == Type.MAP)
         {
             MapAttribute map = (MapAttribute)attr;
-            Collection<Attribute> attrs = map.values();
-            fMapEntryDAO.delete(map);
-            for (Attribute subAttr : attrs)
+            List<MapEntry> mapEntries = fMapEntryDAO.get(map);
+            for (MapEntry entry : mapEntries)
             {
+                Attribute subAttr = entry.getAttribute();
+                fMapEntryDAO.delete(entry);
                 delete(subAttr);
             }
         }
         if (attr.getType() == Type.LIST)
         {
-            List<Attribute> children = new ArrayList<Attribute>();
-            for (Attribute child : attr)
+            ListAttribute list = (ListAttribute)attr;
+            List<ListEntry> listEntries = fListEntryDAO.get(list);
+            for (ListEntry entry : listEntries)
             {
-                children.add(child);
-            }
-            fListEntryDAO.delete((ListAttribute)attr);
-            for (Attribute child : children)
-            {
-                delete(child);
+                Attribute subAttr = entry.getAttribute();
+                fListEntryDAO.delete(entry);
+                delete(subAttr);
             }
         }
         getSession().delete(attr);

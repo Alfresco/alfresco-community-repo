@@ -381,6 +381,9 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
 	            if (logger.isDebugEnabled())
 	                logger.debug("Passthru sessId=" + authSess.getSessionId() + ", auth ctx=" + authCtx);
 	        }
+	        else if ( logger.isDebugEnabled())
+	        	logger.debug("No passthru server available for domain, " + domain);
+	        	
         }
         catch (Exception ex)
         {
@@ -454,7 +457,7 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
         //  Check that the received packet looks like a valid NT session setup andX request
 
         if (reqPkt.checkPacketIsValid(12, 0) == false)
-            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
 
         //  Check if the request is using security blobs or the older hashed password format
         
@@ -501,7 +504,7 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
             domain = reqPkt.unpackString(isUni);
             
             if (domain == null)
-                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
         }
 
         //  Extract the clients native operating system
@@ -515,7 +518,7 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
             clientOS = reqPkt.unpackString(isUni);
             
           if (clientOS == null)
-              throw new SMBSrvException( SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+              throw new SMBSrvException( SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
         }
 
         //  Store the client maximum buffer size, maximum multiplexed requests count and client capability flags
@@ -584,7 +587,7 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
             {
             	// Invalid blob type
             	
-                throw new SMBSrvException( SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+                throw new SMBSrvException( SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
             }
         }
         catch (SMBSrvException ex)
@@ -695,7 +698,7 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
             
         	  // Failed to allocate a UID
             
-        	  throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+        	  throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
           }
           else if ( logger.isDebugEnabled() && sess.hasDebug( SMBSrvSession.DBG_NEGOTIATE)) {
             
@@ -778,7 +781,7 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
 
             // Return a logon failure status
             
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
         
         // Check for a type 1 NTLMSSP message
@@ -844,7 +847,7 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
                 
                 //  Return a logon failure
 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
 
             //  Determine if the client sent us NTLMv1 or NTLMv2
@@ -858,7 +861,7 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
                 
                 //  Return a logon failure
 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
             else
             {
@@ -1021,14 +1024,9 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
             }
             catch (Exception ex)
             {
-
-                // Debug
-
-                logger.error(ex.getMessage());
-                
                 // Indicate logon failure
                 
-                throw new SMBSrvException( SMBStatus.NTErr, SMBStatus.NTLogonFailure);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
             finally
             {

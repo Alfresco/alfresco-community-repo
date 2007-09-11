@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformer;
@@ -137,6 +138,8 @@ public class ScriptNode implements Serializable, Scopeable
     private NodeService nodeService = null;
     private Boolean isDocument = null;
     private Boolean isContainer = null;
+    private Boolean isLinkToDocument = null;
+    private Boolean isLinkToContainer = null;
     private String displayPath = null;
     protected TemplateImageResolver imageResolver = null;
     protected ScriptNode parent = null;
@@ -593,6 +596,44 @@ public class ScriptNode implements Serializable, Scopeable
     public boolean jsGet_isDocument()
     {
         return getIsDocument();
+    }
+    
+    /**
+     * @return true if this Node is a Link to a Container (i.e. a folderlink)
+     */
+    public boolean getIsLinkToContainer()
+    {
+        if (isLinkToContainer == null)
+        {
+            DictionaryService dd = this.services.getDictionaryService();
+            isLinkToContainer = Boolean.valueOf(dd.isSubClass(getType(), ApplicationModel.TYPE_FOLDERLINK));
+        }
+        
+        return isLinkToContainer.booleanValue();
+    }
+
+    public boolean jsGet_isLinkToContainer()
+    {
+        return getIsLinkToContainer();
+    }
+    
+    /**
+     * @return true if this Node is a Link to a Document (i.e. a filelink)
+     */
+    public boolean getIsLinkToDocument()
+    {
+        if (isLinkToDocument == null)
+        {
+            DictionaryService dd = this.services.getDictionaryService();
+            isLinkToDocument = Boolean.valueOf(dd.isSubClass(getType(), ApplicationModel.TYPE_FILELINK));
+        }
+        
+        return isLinkToDocument.booleanValue();
+    }
+
+    public boolean jsGet_isLinkToDocument()
+    {
+        return getIsLinkToDocument();
     }
     
     /**

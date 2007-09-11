@@ -348,6 +348,8 @@ public abstract class CifsAuthenticator
         // Pack the negotiate response for NT/LanMan challenge/response authentication
 
         NTLanManAuthContext authCtx = (NTLanManAuthContext) getAuthContext( sess);
+        if ( authCtx == null)
+        	throw new AuthenticatorException("Failed to get authentication context");
         
         // Encryption key and primary domain string should be returned in the byte area
 
@@ -403,7 +405,7 @@ public abstract class CifsAuthenticator
 
         if (reqPkt.checkPacketIsValid(13, 0) == false)
         {
-            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
         }
 
         // Extract the session details
@@ -434,7 +436,7 @@ public abstract class CifsAuthenticator
 
         if (user == null)
         {
-            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
         }
 
         // Extract the clients primary domain name string
@@ -450,7 +452,7 @@ public abstract class CifsAuthenticator
 
             if (domain == null)
             {
-                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
             }
         }
 
@@ -467,7 +469,7 @@ public abstract class CifsAuthenticator
 
             if (clientOS == null)
             {
-                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
             }
         }
 
@@ -531,7 +533,7 @@ public abstract class CifsAuthenticator
 
             // Invalid user, reject the session setup request
 
-            throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
         else 
         {
@@ -562,7 +564,7 @@ public abstract class CifsAuthenticator
           
         	// Failed to allocate a UID
           
-        	throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+        	throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
         else if ( logger.isDebugEnabled() && sess.hasDebug( SMBSrvSession.DBG_NEGOTIATE)) {
           

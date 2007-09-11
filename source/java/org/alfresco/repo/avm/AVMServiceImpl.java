@@ -1414,9 +1414,14 @@ public class AVMServiceImpl implements AVMService
     private void recursiveCopy(int version, AVMNodeDescriptor desc, String path, String name)
     {
         String newPath = path + '/' + name;
+        AVMNodeDescriptor existing = lookup(-1, newPath);
         if (desc.isFile())
         {
             InputStream in = getFileInputStream(version, desc.getPath());
+            if (existing != null)
+            {
+                removeNode(newPath);   
+            }
             createFile(path, name, in);
             ContentData cd = getContentDataForRead(version, desc.getPath());
             setEncoding(newPath, cd.getEncoding());
@@ -1424,7 +1429,15 @@ public class AVMServiceImpl implements AVMService
         }
         else // desc is a directory.
         {
-            createDirectory(path, name);
+            if (existing != null && !existing.isDirectory())
+            {
+                removeNode(newPath);
+                existing = null;
+            }
+            if (existing == null)
+            {
+                createDirectory(path, name);
+            }
             Map<String, AVMNodeDescriptor> listing = getDirectoryListing(desc); 
             for (Map.Entry<String, AVMNodeDescriptor> entry : listing.entrySet())
             {

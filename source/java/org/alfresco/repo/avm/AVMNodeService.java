@@ -46,7 +46,6 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -319,13 +318,17 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         addDefaultPropertyValues(nodeTypeDef, properties);
         addDefaultAspects(nodeTypeDef, newAVMPath, properties);
         Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>();
-        for (QName qname : properties.keySet())
+        for (Map.Entry<QName, Serializable> entry : properties.entrySet())
         {
-            if (isBuiltInProperty(qname))
+            QName propertyQName = entry.getKey();
+            if (isBuiltInProperty(propertyQName))
             {
                 continue;
             }
-            props.put(qname, new PropertyValue(null, properties.get(qname)));
+            Serializable value = entry.getValue();
+            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+            PropertyValue propertyValue = makePropertyValue(propertyDef, value);
+            props.put(propertyQName, propertyValue);
         }
         fAVMService.setNodeProperties(newAVMPath, props);
         ChildAssociationRef ref = 
@@ -583,10 +586,15 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>();
             for (Map.Entry<QName, Serializable> entry : properties.entrySet())
             {
-                if (!isBuiltInProperty(entry.getKey()))
+                QName propertyQName = entry.getKey();
+                if (isBuiltInProperty(propertyQName))
                 {
-                    props.put(entry.getKey(), new PropertyValue(null, entry.getValue()));
+                    continue;
                 }
+                Serializable value = entry.getValue();
+                PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+                PropertyValue propertyValue = makePropertyValue(propertyDef, value);
+                props.put(propertyQName, propertyValue);
             }
             if (props.size() != 0)
             {
@@ -1176,12 +1184,14 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
 //            Map<QName, Serializable> oldProps = getProperties(nodeRef);
             fAVMService.deleteNodeProperties(avmVersionPath.getSecond());
             Map<QName, PropertyValue> values = new HashMap<QName, PropertyValue>();
-            for (QName qName : properties.keySet())
+            for (Map.Entry<QName, Serializable> entry : properties.entrySet())
             {
+                QName propertyQName = entry.getKey();
+                Serializable value = entry.getValue();
                 // For AVM nodes is in place.
-                if (isBuiltInProperty(qName))
+                if (isBuiltInProperty(propertyQName))
                 {
-                    if (qName.equals(ContentModel.PROP_CONTENT))
+                    if (propertyQName.equals(ContentModel.PROP_CONTENT))
                     {
                         AVMNodeDescriptor desc = fAVMService.lookup(-1, avmVersionPath.getSecond());
                         if (desc == null)
@@ -1191,16 +1201,13 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                         if (desc.isPlainFile())
                         {
                             fAVMService.setContentData(avmVersionPath.getSecond(), 
-                                    (ContentData)properties.get(qName));
+                                    (ContentData)properties.get(propertyQName));
                         }
                     }
                 }
-                DataTypeDefinition def = dictionaryService.getDataType(qName);
-                if (def == null)
-                {
-                    def = dictionaryService.getDataType(properties.get(qName).getClass());
-                }
-                values.put(qName, new PropertyValue(def.getName(), properties.get(qName)));
+                PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+                PropertyValue propertyValue = makePropertyValue(propertyDef, value);
+                values.put(propertyQName, propertyValue);
             }
             fAVMService.setNodeProperties(avmVersionPath.getSecond(), values);
             // Invoke policy behaviors.
@@ -1293,12 +1300,9 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         try
         {
             // Map<QName, Serializable> propsBefore = getProperties(nodeRef);
-            DataTypeDefinition def = dictionaryService.getDataType(qname);
-            if (def == null)
-            {
-                def = dictionaryService.getDataType(value.getClass());
-            }
-            fAVMService.setNodeProperty(avmVersionPath.getSecond(), qname, new PropertyValue(def.getName(), value));
+            PropertyDefinition propertyDef = dictionaryService.getProperty(qname);
+            PropertyValue propertyValue = makePropertyValue(propertyDef, value);
+            fAVMService.setNodeProperty(avmVersionPath.getSecond(), qname, propertyValue);
             // Map<QName, Serializable> propsAfter = getProperties(nodeRef);
             // Invoke policy behaviors.
             // invokeOnUpdateNode(nodeRef);

@@ -1360,7 +1360,14 @@ public class IndexInfo
                 // Do the deletions
                 if ((entry.getDocumentCount() + entry.getDeletions()) == 0)
                 {
+                    registerReferenceCountingIndexReader(id, tl.get());
                     indexEntries.remove(id);
+                    if (s_logger.isDebugEnabled())
+                    {
+                        s_logger.debug("Removed commit with no new docs and no deletions");
+                    }
+                    clearOldReaders();
+                    cleaner.schedule();
                 }
                 else
                 {
@@ -1429,9 +1436,12 @@ public class IndexInfo
 
     private class RolledBackTransition implements Transition
     {
+        ThreadLocal<IndexReader> tl = new ThreadLocal<IndexReader>();
+        
         public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
             closeDelta(id);
+            tl.set(buildReferenceCountingIndexReader(id));
         }
 
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
@@ -1446,6 +1456,15 @@ public class IndexInfo
             {
                 entry.setStatus(TransactionStatus.ROLLEDBACK);
                 writeStatus();
+                
+                registerReferenceCountingIndexReader(id, tl.get());
+                indexEntries.remove(id);
+                if (s_logger.isDebugEnabled())
+                {
+                    s_logger.debug("Removed rollback");
+                }
+                clearOldReaders();
+                cleaner.schedule();
             }
             else
             {
@@ -1477,9 +1496,9 @@ public class IndexInfo
             if (TransactionStatus.DELETABLE.follows(entry.getStatus()))
             {
                 indexEntries.remove(id);
-                cleaner.schedule();
                 writeStatus();
                 clearOldReaders();
+                cleaner.schedule();
             }
             else
             {
@@ -2094,62 +2113,34 @@ public class IndexInfo
 
         String indexLocation = args[0];
         IndexInfo ii = new IndexInfo(new File(indexLocation), null);
-        while (true)
+
+        ii.readWriteLock.writeLock().lock();
+        try
         {
-            ii.readWriteLock.writeLock().lock();
-            try
+            System.out.println("Entry List for " + indexLocation);
+            System.out.println("   Size = " + ii.indexEntries.size());
+            int i = 0;
+            for (IndexEntry entry : ii.indexEntries.values())
             {
-                System.out.println("Entry List for " + indexLocation);
-                System.out.println("   Size = " + ii.indexEntries.size());
-                int i = 0;
-                for (IndexEntry entry : ii.indexEntries.values())
-                {
-                    System.out.println("\t" + (i++) + "\t" + entry.toString());
-                }
+                System.out.println("\t" + (i++) + "\t" + entry.toString());
             }
-            finally
-            {
-                ii.releaseWriteLock();
-            }
-            IndexReader reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader();
-            TermEnum terms = reader.terms(new Term("@{archiweb.model}instance", ""));
-            while (terms.next() && terms.term().field().equals("@{archiweb.model}instance"))
-            {
-                System.out.println("F = " + terms.term().field() + "     V = " + terms.term().text() + "     F = " + terms.docFreq());
-            }
-            terms.close();
-            long start = System.currentTimeMillis();
-            TermDocs termDocs = reader.termDocs(new Term("@{archiweb.model}instance", "tfl"));
-            while (termDocs.next())
-            {
-                // System.out.println("Doc = " + termDocs.doc());
-                Document doc = reader.document(termDocs.doc());
-                doc.getField("ID");
-                // System.out.println("Ref = "+doc.getField("ID"));
-            }
-            termDocs.close();
-            System.out.println("Time = " + ((System.currentTimeMillis() - start) / 1000.0f));
-
-            terms = reader.terms(new Term("TYPE", ""));
-            while (terms.next() && terms.term().field().equals("TYPE"))
-            {
-                System.out.println("F = " + terms.term().field() + "     V = " + terms.term().text() + "     F = " + terms.docFreq());
-            }
-            terms.close();
-            start = System.currentTimeMillis();
-            termDocs = reader.termDocs(new Term("TYPE", "{archiweb.model}tfdoc"));
-            while (termDocs.next())
-            {
-                // System.out.println("Doc = " + termDocs.doc());
-                Document doc = reader.document(termDocs.doc());
-                doc.getField("ID");
-                // System.out.println("Ref = "+doc.getField("ID"));
-            }
-            termDocs.close();
-            System.out.println("Time = " + ((System.currentTimeMillis() - start) / 1000.0f));
-
-            // +@\{archiweb.model\}instance:TFL*
         }
+        finally
+        {
+            ii.releaseWriteLock();
+        }
+        IndexReader reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader();
+        TermEnum terms = reader.terms(new Term("@{http://www.alfresco.org/model/user/1.0}members", ""));
+        while (terms.next() && terms.term().field().equals("@{http://www.alfresco.org/model/user/1.0}members"))
+        {
+            System.out.println("F = " + terms.term().field() + "     V = " + terms.term().text() + "     F = " + terms.docFreq());
+            if (terms.term().text().equals("xirmsi"))
+            {
+                System.out.println("Matched");
+            }
+        }
+        terms.close();
+
     }
 
     /**

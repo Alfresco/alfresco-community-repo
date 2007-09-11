@@ -66,7 +66,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
                 builder
                         .append("Id = "
                                 + rc.getId() + " Invalid = " + rc.getReferenceCount() + " invalid = "
-                                + rc.getInvalidForReuse());
+                                + rc.getInvalidForReuse() + " closed="+rc.getClosed());
                 return builder.toString();
             }
 
@@ -158,6 +158,11 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             return invalidForReuse;
         }
 
+        public synchronized boolean getClosed()
+        {
+            return closed;
+        }
+        
         public synchronized void setInvalidForReuse() throws IOException
         {
             if(closed)

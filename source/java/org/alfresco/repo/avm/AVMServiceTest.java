@@ -1721,6 +1721,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             setupBasicTree();
             fService.createStore("layer");
             fService.createLayeredDirectory("main:/a", "layer:/", "layer");
+            fService.createFile("layer:/layer/b", "figs").close();
             assertEquals("main:/a", fService.getIndirectionPath(-1, "layer:/layer"));
             assertEquals("main:/a/b", fService.getIndirectionPath(-1, "layer:/layer/b"));
             assertEquals("main:/a/b/c", fService.getIndirectionPath(-1, "layer:/layer/b/c"));

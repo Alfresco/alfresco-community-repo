@@ -50,6 +50,9 @@ import org.alfresco.repo.content.transform.StringExtractingContentTransformerTes
 import org.alfresco.repo.content.transform.TextMiningContentTransformerTest;
 import org.alfresco.repo.content.transform.TextToPdfContentTransformerTest;
 
+// TODO:  This class is currently missing
+// import org.alfresco.repo.content.transform.TextToPdfContentTransformerTest;
+
 import junit.framework.Test;
 import junit.framework.TestSuite;
 

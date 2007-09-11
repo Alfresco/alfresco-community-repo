@@ -40,7 +40,9 @@ import org.apache.log4j.Logger;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.exception.LockAcquisitionException;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DeadlockLoserDataAccessException;
+import org.springframework.jdbc.UncategorizedSQLException;
 
 /**
  * A helper that runs a unit of work inside a UserTransaction, 
@@ -65,7 +67,8 @@ public class RetryingTransactionHelper
                 DeadlockLoserDataAccessException.class,
                 StaleObjectStateException.class,
                 LockAcquisitionException.class,
-                BatchUpdateException.class
+                BatchUpdateException.class,
+                DataIntegrityViolationException.class
                 };
     }
     
@@ -353,6 +356,33 @@ public class RetryingTransactionHelper
         else if (retryCause instanceof BatchUpdateException)
         {
             if (retryCause.getMessage().contains("Lock wait"))
+            {
+                // It is valid
+                return retryCause;
+            }
+            else
+            {
+                // Not valid
+                return null;
+            }
+        }
+        else if (retryCause instanceof DataIntegrityViolationException)
+        {
+            if (retryCause.getMessage().contains("ChildAssocImpl"))
+            {
+                // It is probably the duplicate name violation
+                return retryCause;
+            }
+            else
+            {
+                // Something else
+                return null;
+            }
+        }
+        else if (retryCause instanceof UncategorizedSQLException)
+        {
+            // Handle error that slips out of MSSQL
+            if (retryCause.getMessage().contains("deadlock"))
             {
                 // It is valid
                 return retryCause;

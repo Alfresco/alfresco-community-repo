@@ -401,13 +401,16 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         // remove the translations
         for(NodeRef translationToRemove : translations.values())
         {
-            // unmake the translation
-            this.unmakeTranslation(translationToRemove);
-
-            // remove it
             if(nodeService.exists(translationToRemove))
             {
-                nodeService.deleteNode(translationToRemove);
+                // unmake the translation
+                this.unmakeTranslation(translationToRemove);
+
+                // remove it
+                if(nodeService.exists(translationToRemove))
+                {
+                    nodeService.deleteNode(translationToRemove);
+                }
             }
         }
 

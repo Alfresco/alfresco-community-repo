@@ -360,7 +360,7 @@ public class PassthruServers
                 // Debug
                 
                 if ( logger.isDebugEnabled())
-                    logger.debug("Failed to connect to " + passthruServer + " : " + ex.getMessage());
+                    logger.debug("Failed to connect to " + passthruServer, ex);
                 
                 // Failed to connect to the current authentication server, mark the server as offline
                 
@@ -439,7 +439,7 @@ public class PassthruServers
         			passthruServer = curServer;
         			
         			// Move to the back of the list
-        			
+
         			m_onlineList.add( m_onlineList.remove( idx));
         		}
         		

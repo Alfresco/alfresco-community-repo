@@ -702,7 +702,7 @@
 
     <bean id="crossRepositoryCopyService" class="org.alfresco.repo.copy.CrossRepositoryCopyServiceImpl">
         <property name="avmService">
-            <ref bean="indexingAVMService"/>
+            <ref bean="avmLockingAwareService"/>
         </property>
         <property name="nodeService">
             <ref bean="nodeService"/>

@@ -252,7 +252,8 @@
             <ref bean="purgeStoreTxnListener"/>
         </property>
 
-        <!-- Poll interval to check getLatestSnapshotID (in milliseconds) -->
+        <!-- Poll interval to check getLatestSnapshotID (in milliseconds).  -->
+        <!-- Note:  If pollInterval is 0, link validation is disabled.      -->
         <property name="pollInterval"         value="5000"/>
 
         <!-- Timeouts  (in milliseconds) -->

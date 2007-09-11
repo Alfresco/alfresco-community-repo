@@ -1642,15 +1642,15 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
                     PseudoFileList searchList = fstate.getPseudoFileList();
 
+                    // Check if the pseudo file list is valid
+
+                    if (searchList == null)
+                        searchList = new PseudoFileList();
+
                     // Check if this is a single file or wildcard search
 
                     if (WildCard.containsWildcards(searchPath))
                     {
-                        // Check if the pseudo file list is valid
-
-                        if (searchList == null)
-                            searchList = new PseudoFileList();
-
                         // Create the search context, wildcard filter will take care of secondary filtering of the
                         // folder listing
 

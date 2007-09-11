@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -73,6 +74,8 @@ public abstract class BaseContentNode implements TemplateContent
     
     private Boolean isDocument = null;
     private Boolean isContainer = null;
+    private Boolean isLinkToDocument = null;
+    private Boolean isLinkToContainer = null;
     
     /**
      * @return true if this Node is a container (i.e. a folder)
@@ -102,7 +105,35 @@ public abstract class BaseContentNode implements TemplateContent
         
         return isDocument.booleanValue();
     }
-    
+
+    /**
+     * @return true if this Node is a Link to a Container (i.e. a folderlink)
+     */
+    public boolean getIsLinkToContainer()
+    {
+        if (isLinkToContainer == null)
+        {
+            DictionaryService dd = this.services.getDictionaryService();
+            isLinkToContainer = Boolean.valueOf(dd.isSubClass(getType(), ApplicationModel.TYPE_FOLDERLINK));
+        }
+        
+        return isLinkToContainer.booleanValue();
+    }
+
+    /**
+     * @return true if this Node is a Link to a Document (i.e. a filelink)
+     */
+    public boolean getIsLinkToDocument()
+    {
+        if (isLinkToDocument == null)
+        {
+            DictionaryService dd = this.services.getDictionaryService();
+            isLinkToDocument = Boolean.valueOf(dd.isSubClass(getType(), ApplicationModel.TYPE_FILELINK));
+        }
+        
+        return isLinkToDocument.booleanValue();
+    }
+
     /**
      * Override Object.toString() to provide useful debug output
      */

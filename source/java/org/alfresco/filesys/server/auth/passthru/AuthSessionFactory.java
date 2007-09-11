@@ -668,13 +668,13 @@ public final class AuthSessionFactory
                 // Get a list of NetBIOS names from the remote host
 
                 toAddr = toName;
-                NetBIOSNameList nameList = NetBIOSSession.FindNamesForAddress(toAddr);
+                NetBIOSNameList nameList = NetBIOSSession.FindNamesForAddress(toAddr, 3);
 
                 // Find the server service
 
                 nbName = nameList.findName(NetBIOSName.FileServer, false);
                 if (nbName == null)
-                    throw new IOException("Server service not running");
+                    throw new IOException("Failed to convert server address to NetBIOS name");
 
                 // Set the remote name
 
@@ -708,8 +708,7 @@ public final class AuthSessionFactory
 
                 // Get a list of NetBIOS names for the local system
 
-                NetBIOSNameList localList = NetBIOSSession.FindNamesForAddress(InetAddress.getLocalHost()
-                        .getHostAddress());
+                NetBIOSNameList localList = NetBIOSSession.FindNamesForAddress(InetAddress.getLocalHost().getHostAddress());
                 if (localList != null)
                 {
                     nbName = localList.findName(toName, NetBIOSName.FileServer, false);

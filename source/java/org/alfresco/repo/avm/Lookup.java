@@ -395,9 +395,9 @@ class Lookup implements Serializable
         int pos = fLowestLayerIndex;
         AVMNode node = fComponents.get(pos).getNode();
         LayeredDirectoryNode oNode = null;
-        while (pos >= fTopLayerIndex && node.getType() != AVMNodeType.LAYERED_DIRECTORY &&
-               ((oNode = (LayeredDirectoryNode)node).getLayerID() != fTopLayer.getLayerID() ||
-                !oNode.getPrimaryIndirection()))
+        while (pos >= fTopLayerIndex && (node.getType() != AVMNodeType.LAYERED_DIRECTORY ||
+               (oNode = (LayeredDirectoryNode)node).getLayerID() != fTopLayer.getLayerID() ||
+               !oNode.getPrimaryIndirection()))
         {
             pos--;
             node = fComponents.get(pos).getNode();

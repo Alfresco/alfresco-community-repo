@@ -823,6 +823,19 @@ public final class NetBIOSSession implements NetworkSession
      */
     public static NetBIOSNameList FindNamesForAddress(String ipAddr) throws UnknownHostException, SocketException
     {
+    	return FindNamesForAddress( ipAddr, 1);
+    }
+    
+    /**
+     * Get the NetBIOS name list for the specified IP address
+     * 
+     * @param ipAddr String
+     * @param retryCnt int
+     * @return NetBIOSNameList
+     */
+    public static NetBIOSNameList FindNamesForAddress(String ipAddr, int retryCnt)
+    	throws UnknownHostException, SocketException
+    {
 
         // Create a datagram socket
 
@@ -836,7 +849,7 @@ public final class NetBIOSSession implements NetworkSession
 
         // Set the datagram socket timeout, in milliseconds
 
-        m_dgramSock.setSoTimeout(2000);
+        m_dgramSock.setSoTimeout(5000);
 
         // Create a name lookup NetBIOS packet
 
@@ -875,43 +888,48 @@ public final class NetBIOSSession implements NetworkSession
 
         try
         {
-
-            // Send the name query datagram
-
-            m_dgramSock.send(dgram);
-
-            // Receive a datagram packet
-
-            m_dgramSock.receive(rxdgram);
-
-            // DEBUG
-
-            if (logger.isDebugEnabled() && m_debug)
-            {
-                logger.debug("NetBIOS: Rx Datagram");
-                rxpkt.DumpPacket(false);
-            }
-
-            // Check if this is a valid response datagram
-
-            if (rxpkt.isResponse() && rxpkt.getOpcode() == NetBIOSPacket.RESP_QUERY && rxpkt.getAnswerCount() >= 1)
-            {
-
-                // Get the received name list
-
-                nameList = rxpkt.getAdapterStatusNameList();
-                
-                // If the name list is valid update the names with the original address that was connected to
-                
-                if( nameList != null)
-                {
-                    for ( int i = 0; i < nameList.numberOfNames(); i++)
-                    {
-                        NetBIOSName nbName = nameList.getName(i);
-                        nbName.addIPAddress(destAddr.getAddress());
-                    }
-                }
-            }
+        	// Loop until we get a valid reply or the retry count is zero
+        	
+        	while ( retryCnt-- > 0 && nameList == null)
+        	{
+	            // Send the name query datagram
+	
+	            m_dgramSock.send(dgram);
+	
+	            // Receive a datagram packet
+	
+	            m_dgramSock.receive(rxdgram);
+	        	rxpkt.setLength( rxdgram.getLength());
+	
+	            // DEBUG
+	
+	            if (logger.isDebugEnabled() && m_debug)
+	            {
+	                logger.debug("NetBIOS: Rx Datagram");
+	                rxpkt.DumpPacket(false);
+	            }
+	
+	            // Check if this is a valid response datagram
+	
+	            if (rxpkt.isResponse() && rxpkt.getOpcode() == NetBIOSPacket.RESP_QUERY && rxpkt.getAnswerCount() >= 1)
+	            {
+	
+	                // Get the received name list
+	
+	                nameList = rxpkt.getAdapterStatusNameList();
+	                
+	                // If the name list is valid update the names with the original address that was connected to
+	                
+	                if( nameList != null)
+	                {
+	                    for ( int i = 0; i < nameList.numberOfNames(); i++)
+	                    {
+	                        NetBIOSName nbName = nameList.getName(i);
+	                        nbName.addIPAddress(destAddr.getAddress());
+	                    }
+	                }
+	            }
+        	}
         }
         catch (java.io.IOException ex)
         {

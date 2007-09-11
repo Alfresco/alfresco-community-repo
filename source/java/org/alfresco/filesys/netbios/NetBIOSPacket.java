@@ -396,7 +396,6 @@ public class NetBIOSPacket
         if (cnt == 0)
             return null;
 
-        NetBIOSNameList nameList = new NetBIOSNameList();
         int pos = NB_DATA;
 
         // Skip the initial name
@@ -409,9 +408,13 @@ public class NetBIOSPacket
         // Get the count of data bytes and name count
 
         int dataCnt = DataPacker.getShort(m_nbbuf, pos);
+        if ( dataCnt < 16)
+        	return null;
+        
         pos += 2;
 
         int nameCnt = (int) (m_nbbuf[pos++] & 0xFF);
+        NetBIOSNameList nameList = new NetBIOSNameList();
 
         while (nameCnt > 0 && dataCnt > 0)
         {

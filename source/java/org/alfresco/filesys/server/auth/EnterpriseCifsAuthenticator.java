@@ -510,7 +510,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
         //  Check that the received packet looks like a valid NT session setup andX request
 
         if (reqPkt.checkPacketIsValid(12, 0) == false)
-            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
 
         //  Check if the request is using security blobs or the older hashed password format
         
@@ -557,7 +557,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
             domain = reqPkt.unpackString(isUni);
             
             if (domain == null)
-                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
         }
 
         //  Extract the clients native operating system
@@ -571,7 +571,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
             clientOS = reqPkt.unpackString(isUni);
             
           if (clientOS == null)
-              throw new SMBSrvException( SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+              throw new SMBSrvException( SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
         }
 
         //  DEBUG
@@ -751,7 +751,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
             
         	  // Failed to allocate a UID
             
-        	  throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+        	  throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
           }
           else if ( logger.isDebugEnabled() && sess.hasDebug( SMBSrvSession.DBG_NEGOTIATE)) {
             
@@ -834,7 +834,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
 
             // Return a logon failure status
             
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
         
         // Check for a type 1 NTLMSSP message
@@ -903,7 +903,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                 
                 //  Return a logon failure
 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
 
             //  Determine if the client sent us NTLMv1 or NTLMv2
@@ -1004,7 +1004,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                 
                 // Return a logon failure status
                 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
 
             //  Get the second stage NTLMSSP blob
@@ -1046,7 +1046,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                 
                 // Return a logon failure status
                 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
     
             //  Determine the authentication mechanism the client is using and logon
@@ -1094,7 +1094,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                     
                 //  No valid authentication mechanism
                 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
         }
         else
@@ -1105,7 +1105,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
             
             // Return a logon failure status
             
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
         
         // Generate the NegTokenTarg blob
@@ -1127,7 +1127,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
 
             //  Failed to build response blob
             
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
         
         //  Return the SPNEGO response blob
@@ -1202,7 +1202,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
     
             // Return a logon failure status
             
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
     
         // Return the response SPNEGO blob
@@ -1231,7 +1231,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
             
             //  Return a logon failure
 
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
         
         //  Get the type 2 message that contains the challenge sent to the client
@@ -1301,7 +1301,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                     {
                         //  Return a logon failure
 
-                        throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                        throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
                     }
                 }
 
@@ -1326,7 +1326,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                 
                 //  Return a logon failure
 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
         }
         else
@@ -1337,7 +1337,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
             
             //  Return a logon failure
 
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
     }
 
@@ -1361,7 +1361,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
             
             //  Return a logon failure
 
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
         
     	// Start a transaction
@@ -1437,7 +1437,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                     {
                         //  Return a logon failure
 
-                        throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                        throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
                     }
                 }
 
@@ -1461,7 +1461,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                 
                 //  Return a logon failure
 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
         }
         else
@@ -1472,7 +1472,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
             
             //  Return a logon failure
 
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
     }
 
@@ -1552,7 +1552,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                         {
                             //  Return a logon failure
     
-                            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
                         }
                     }
     
@@ -1577,7 +1577,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                     
                     //  Return a logon failure
 
-                    throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                    throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
                 }
             }
             else
@@ -1588,7 +1588,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                 
                 //  Return a logon failure
 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
         }
         else
@@ -1599,7 +1599,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
             
             //  Return a logon failure
 
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
     }
     
@@ -1679,7 +1679,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                         {
                             //  Return a logon failure
     
-                            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
                         }
                     }
     
@@ -1703,7 +1703,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                     
                     //  Return a logon failure
 
-                    throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                    throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
                 }
             }
             else
@@ -1714,7 +1714,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                 
                 //  Return a logon failure
 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
         }
         else
@@ -1725,7 +1725,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
             
             //  Return a logon failure
 
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
     }
     
@@ -1846,7 +1846,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                     {
                         //  Return a logon failure
 
-                        throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                        throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
                     }
                 }
 
@@ -1871,7 +1871,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                
                 //  Return a logon failure
 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
         }
         else
@@ -1882,7 +1882,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
            
             //  Return a logon failure
 
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
     }
     
@@ -1901,7 +1901,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
 
         if (reqPkt.checkPacketIsValid(13, 0) == false)
         {
-            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
         }
 
         // Extract the session details
@@ -1932,7 +1932,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
 
         if (user == null)
         {
-            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
         }
 
         // Extract the clients primary domain name string
@@ -1948,7 +1948,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
 
             if (domain == null)
             {
-                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
             }
         }
 
@@ -1965,7 +1965,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
 
             if (clientOS == null)
             {
-                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
             }
         }
 
@@ -2064,7 +2064,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
           
         	// Failed to allocate a UID
           
-        	throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+        	throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
         else if ( logger.isDebugEnabled() && sess.hasDebug( SMBSrvSession.DBG_NEGOTIATE))
         {

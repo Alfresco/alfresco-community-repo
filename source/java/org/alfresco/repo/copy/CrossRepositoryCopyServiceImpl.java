@@ -15,7 +15,6 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -180,10 +179,23 @@ public class CrossRepositoryCopyServiceImpl implements CrossRepositoryCopyServic
     {
         Pair<Integer, String> versionPath = AVMNodeConverter.ToAVMVersionPath(src);
         AVMNodeDescriptor desc = fAVMService.lookup(versionPath.getFirst(), versionPath.getSecond());
+        NodeRef existing = fFileFolderService.searchSimple(dst, name);
         if (desc.isFile())
         {
-            FileInfo newChild = fFileFolderService.create(dst, name, ContentModel.TYPE_CONTENT);
-            NodeRef childRef = newChild.getNodeRef();
+            if (existing != null && !fNodeService.getType(existing).equals(ContentModel.TYPE_CONTENT))
+            {
+                fFileFolderService.delete(existing);
+                existing = null;
+            }
+            NodeRef childRef = null;
+            if (existing == null)
+            {
+                childRef = fFileFolderService.create(dst, name, ContentModel.TYPE_CONTENT).getNodeRef();
+            }
+            else
+            {
+                childRef = existing;
+            }
             InputStream in = fAVMService.getFileInputStream(desc);
             ContentData cd = fAVMService.getContentDataForRead(desc.getVersionID(), desc.getPath());
             ContentWriter writer = fContentService.getWriter(childRef, ContentModel.PROP_CONTENT, true);
@@ -195,8 +207,20 @@ public class CrossRepositoryCopyServiceImpl implements CrossRepositoryCopyServic
         }
         else
         {
-            FileInfo newChild = fFileFolderService.create(dst, name, ContentModel.TYPE_FOLDER);
-            NodeRef childRef = newChild.getNodeRef();
+            if (existing != null && !fNodeService.getType(existing).equals(ContentModel.TYPE_FOLDER))
+            {
+                fFileFolderService.delete(existing);
+                existing = null;
+            }
+            NodeRef childRef = null;
+            if (existing == null)
+            {
+                childRef = fFileFolderService.create(dst, name, ContentModel.TYPE_FOLDER).getNodeRef();
+            }
+            else
+            {
+                childRef = existing;
+            }
             copyPropsAndAspectsAVMToRepo(src, childRef);
             Map<String, AVMNodeDescriptor> listing = fAVMService.getDirectoryListing(desc);
             for (Map.Entry<String, AVMNodeDescriptor> entry : listing.entrySet())
@@ -256,13 +280,22 @@ public class CrossRepositoryCopyServiceImpl implements CrossRepositoryCopyServic
         {
             ContentReader reader = fContentService.getReader(src, ContentModel.PROP_CONTENT);
             InputStream in = reader.getContentInputStream();
-            try
+            AVMNodeDescriptor desc = fAVMService.lookup(-1, childPath);
+            if (desc != null && !desc.isFile())
             {
-                fAVMService.createFile(versionPath.getSecond(), name).close();
+                fAVMService.removeNode(childPath);
+                desc = null;
             }
-            catch (IOException e)
+            if (desc == null)
             {
-                throw new AlfrescoRuntimeException("I/O Error.", e);
+                try
+                {
+                    fAVMService.createFile(versionPath.getSecond(), name).close();
+                }
+                catch (IOException e)
+                {
+                    throw new AlfrescoRuntimeException("I/O Error.", e);
+                }
             }
             ContentWriter writer = fAVMService.getContentWriter(childPath);
             writer.setEncoding(reader.getEncoding());
@@ -274,7 +307,16 @@ public class CrossRepositoryCopyServiceImpl implements CrossRepositoryCopyServic
         }
         if (fDictionaryService.isSubClass(srcType, ContentModel.TYPE_FOLDER))
         {
-            fAVMService.createDirectory(versionPath.getSecond(), name);
+            AVMNodeDescriptor desc = fAVMService.lookup(-1, childPath);
+            if (desc != null && !desc.isDirectory())
+            {
+                fAVMService.removeNode(childPath);
+                desc = null;
+            }
+            if (desc == null)
+            {
+                fAVMService.createDirectory(versionPath.getSecond(), name);
+            }
             copyPropsAndAspectsRepoToAVM(src, childNodeRef, childPath);
             List<FileInfo> listing = fFileFolderService.list(src);
             for (FileInfo info : listing)

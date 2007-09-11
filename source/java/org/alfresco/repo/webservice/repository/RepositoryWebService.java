@@ -279,6 +279,12 @@ public class RepositoryWebService extends AbstractWebService implements
                     {
                         querySessionCache.remove(querySessionId);
                     }
+                    else
+                    {
+                        // We still need to update the cache with the latest session to
+                        // ensure that the instance gets replicated to other listening caches
+                        querySessionCache.put(querySessionId, session);
+                    }
 
                     // get the next batch of results
                     // TODO: http://issues.alfresco.com/browse/AR-1689

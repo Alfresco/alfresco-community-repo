@@ -241,6 +241,11 @@ public class AdministrationWebService extends AbstractWebService implements
             {
                 this.querySessionCache.remove(querySessionId);
             }
+            else
+            {
+                // Update the cache instance so that it can trigger replication as required
+                querySessionCache.put(querySessionId, session);
+            }
         }
         
         return queryResult;

@@ -95,19 +95,19 @@ public class AssociationQuery extends AbstractQuery<ResultSet>
         // create the node ref and get the children from the repository
         NodeRef nodeRef = Utils.convertToNodeRef(node, nodeService, searchService, namespaceService);
         List<AssociationRef> assocRefs = null;
-        if (association != null)
+        if (this.association == null)
         {
-            assocRefs = nodeService.getTargetAssocs(nodeRef, RegexQNamePattern.MATCH_ALL);
+        	assocRefs = nodeService.getTargetAssocs(nodeRef, RegexQNamePattern.MATCH_ALL);
         }
         else
         {
             QNamePattern name = RegexQNamePattern.MATCH_ALL;
-            String assocType = association.getAssociationType();
+            String assocType = this.association.getAssociationType();
             if (assocType != null)
             {
                 name = QName.createQName(assocType);
             }
-            if ("source".equals(association.getDirection()) == true)
+            if ("source".equals(this.association.getDirection()) == true)
             {
                 assocRefs = nodeService.getSourceAssocs(nodeRef, name);
             }

@@ -394,6 +394,10 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
                             throw new IOException("Document " + documentPath + " does not exist.");
                         }
                         ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+                        if (reader == null || !reader.exists())
+                        {
+                            throw new IOException("Failed to read content at " + documentPath + " (content reader does not exist)");
+                        }
                         return reader.getContentInputStream();
                     }
                 });

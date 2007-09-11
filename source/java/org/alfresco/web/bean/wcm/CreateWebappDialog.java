@@ -43,6 +43,8 @@ public class CreateWebappDialog extends CreateFolderDialog
    // ------------------------------------------------------------------------------
    // Dialog implementation
    
+   protected String path;
+
    /**
     * @see org.alfresco.web.bean.dialog.BaseDialogBean#finishImpl(javax.faces.context.FacesContext, java.lang.String)
     */
@@ -53,9 +55,9 @@ public class CreateWebappDialog extends CreateFolderDialog
       final String parent = AVMUtil.buildSandboxRootPath( stagingStore );
       this.avmService.createDirectory(parent, this.name);
       
-      final String path = AVMNodeConverter.ExtendAVMPath(parent, this.name);
-      this.avmService.addAspect(path, ApplicationModel.ASPECT_UIFACETS);
-      this.avmService.addAspect(path, WCMAppModel.ASPECT_WEBAPP);
+      this.path = AVMNodeConverter.ExtendAVMPath(parent, this.name);
+      this.avmService.addAspect(this.path, ApplicationModel.ASPECT_UIFACETS);
+      this.avmService.addAspect(this.path, WCMAppModel.ASPECT_WEBAPP);
       if (this.description != null && this.description.length() != 0)
       {
          this.avmService.setNodeProperty(path, 
@@ -65,8 +67,18 @@ public class CreateWebappDialog extends CreateFolderDialog
       }
 
       // Snapshot the store with the empty webapp
-      this.avmService.createSnapshot( stagingStore, null, null);
-      
+      this.avmService.createSnapshot(stagingStore, null, null);
+
+      return outcome;
+   }
+
+   @Override
+   protected String doPostCommitProcessing(FacesContext context, String outcome)
+   {
+      //  Tell the virtualization server about the new webapp.
+      //  e.g.:   this.path = "mysite:/www/avm_webapps/mywebapp"
+      AVMUtil.updateVServerWebapp(this.path, true);    
+
       return outcome;
    }
 }

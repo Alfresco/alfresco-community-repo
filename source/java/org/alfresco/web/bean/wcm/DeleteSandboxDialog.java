@@ -130,7 +130,7 @@ public class DeleteSandboxDialog extends BaseDialogBean
                //     dependent order, so clients don't have to worry about
                //     accessing a preview layer whose main layer has been torn
                //     out from under it.
-               AVMUtil.removeVServerWebapp(path, true);
+               AVMUtil.removeAllVServerWebapps(path, true);
                
                // TODO: Use the .sandbox-id.  property to delete all sandboxes,
                //       rather than assume a sandbox always had a single preview

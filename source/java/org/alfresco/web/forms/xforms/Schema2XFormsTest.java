@@ -25,18 +25,27 @@
 package org.alfresco.web.forms.xforms;
 
 import java.io.*;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.Vector;
+import java.util.ResourceBundle;
 import junit.framework.AssertionFailedError;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.web.forms.XMLUtil;
 import org.alfresco.util.BaseTest;
+import org.alfresco.web.forms.XMLUtil;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;
-import org.chiba.xml.ns.NamespaceConstants;
-import org.w3c.dom.*;
-import org.xml.sax.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.chiba.xml.ns.NamespaceConstants;
+import org.chiba.xml.events.XFormsEventNames;
+import org.chiba.xml.events.XMLEvent;
+import org.chiba.xml.xforms.ChibaBean;
+import org.chiba.xml.xforms.XFormsElement;
+import org.chiba.xml.events.DOMEventNames;
+import org.w3c.dom.*;
+import org.w3c.dom.events.*;
+import org.xml.sax.*;
 
 /**
  * JUnit tests to exercise the the schema to xforms converter
@@ -54,6 +63,7 @@ public class Schema2XFormsTest
    {
       final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/one-string-test.xsd");
       final Document xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "one-string-test");
+      this.runXForm(xformsDocument);
       final JXPathContext xpathContext = JXPathContext.newContext(xformsDocument);
       Pointer pointer = xpathContext.getPointer("//*[@id='input_0']");
       assertNotNull(pointer);
@@ -73,6 +83,7 @@ public class Schema2XFormsTest
       final Document instanceDocument = XMLUtil.parse("<one-string-test><string>test</string></one-string-test>");
       final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/one-string-test.xsd");
       final Document xformsDocument = Schema2XFormsTest.buildXForm(instanceDocument, schemaDocument, "one-string-test");
+      this.runXForm(xformsDocument);
       final JXPathContext xpathContext = JXPathContext.newContext(xformsDocument);
       Pointer pointer = xpathContext.getPointer("//*[@id='input_0']");
       assertNotNull(pointer);
@@ -144,6 +155,7 @@ public class Schema2XFormsTest
       Schema2XFormsTest.assertRepeatProperties(xformsDocument, 
                                                "/repeat-constraints-test/nested-outer-outer-three-to-inf/nested-outer-inner-five-to-inf/nested-inner-inner-seven-to-inf",
                                                new SchemaUtil.Occurrence(7, SchemaUtil.Occurrence.UNBOUNDED));
+      this.runXForm(xformsDocument);
    }
 
    public void testRootElementWithExtension()
@@ -151,6 +163,7 @@ public class Schema2XFormsTest
    {
       final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/root-element-with-extension-test.xsd");
       Document xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "without-extension-test");
+      this.runXForm(xformsDocument);
       assertEquals(3, xformsDocument.getElementsByTagNameNS(NamespaceConstants.XFORMS_NS, "input").getLength());
       
       try
@@ -169,7 +182,7 @@ public class Schema2XFormsTest
    {
       final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/switch-test.xsd");
       final Document xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "switch-test");
-      LOGGER.debug("generated xforms " + XMLUtil.toString(xformsDocument));
+      this.runXForm(xformsDocument);
 //      assertEquals(3, xformsDocument.getElementsByTagNameNS(NamespaceConstants.XFORMS_NS, "input").getLength());
 //      
 //      try
@@ -187,6 +200,7 @@ public class Schema2XFormsTest
    {
       final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/derived-type-test.xsd");
       final Document xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "derived-type-test");
+      this.runXForm(xformsDocument);
       LOGGER.debug("generated xforms " + XMLUtil.toString(xformsDocument));
       assertBindProperties(xformsDocument,
                            "/derived-type-test/raw-normalized-string", 
@@ -306,6 +320,7 @@ public class Schema2XFormsTest
    {
       final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/recursive-test.xsd");
       Document xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "non-recursive-test");
+      this.runXForm(xformsDocument);
       try
       {
          xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "recursive-test");
@@ -324,6 +339,87 @@ public class Schema2XFormsTest
       {
          LOGGER.debug("got expected exception " + fbe.getMessage());
       }
+   }
+
+   public void testConstraint()
+      throws Exception
+   {
+      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/constraint-test.xsd");
+      Document xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "constraint-test");
+      final ChibaBean chibaBean = this.runXForm(xformsDocument);
+      final LinkedList<XMLEvent> events = new LinkedList<XMLEvent>();
+      final EventListener el = new EventListener()
+      {
+         public void handleEvent(final Event e)
+         {
+            events.add((XMLEvent)e);
+         }
+      };
+      ((EventTarget)chibaBean.getXMLContainer().getDocumentElement()).addEventListener(XFormsEventNames.VALID, el, true);
+      ((EventTarget)chibaBean.getXMLContainer().getDocumentElement()).addEventListener(XFormsEventNames.INVALID, el, true);
+      ((EventTarget)chibaBean.getXMLContainer().getDocumentElement()).addEventListener(XFormsEventNames.SUBMIT_DONE, el, true);
+      ((EventTarget)chibaBean.getXMLContainer().getDocumentElement()).addEventListener(XFormsEventNames.SUBMIT_ERROR, el, true);
+
+      Element e = Schema2XFormsTest.resolveXFormsControl(xformsDocument, "/constraint-test/zip-pattern")[0];
+      chibaBean.updateControlValue(e.getAttribute("id"), "not a zip");
+      assertEquals(1, events.size());
+      assertEquals(XFormsEventNames.INVALID, events.get(0).getType());
+      events.clear();
+
+      chibaBean.updateControlValue(e.getAttribute("id"), "94110");
+      assertEquals(1, events.size());
+      assertEquals(XFormsEventNames.VALID, events.get(0).getType());
+      events.clear();
+
+      e = Schema2XFormsTest.resolveXFormsControl(xformsDocument, "/constraint-test/email-pattern")[0];
+      chibaBean.updateControlValue(e.getAttribute("id"), "iamnotanemailaddress");
+      assertEquals(1, events.size());
+      assertEquals(XFormsEventNames.INVALID, events.get(0).getType());
+      events.clear();
+
+      chibaBean.updateControlValue(e.getAttribute("id"), "ariel.backenroth@alfresco.org");
+      assertEquals(1, events.size());
+      assertEquals(XFormsEventNames.VALID, events.get(0).getType());
+      events.clear();
+
+      Element[] controls = Schema2XFormsTest.resolveXFormsControl(xformsDocument, "/constraint-test/repeated-zip-pattern/.");
+      assertEquals(3 /* 2 actual + prototype */, controls.length);
+      Element[] repeat = Schema2XFormsTest.resolveXFormsControl(xformsDocument, "/constraint-test/repeated-zip-pattern");
+      assertEquals(4 /* 1 repeat + 3 triggers */, repeat.length);
+      
+      final Element[] bindForRepeat = Schema2XFormsTest.resolveBind(xformsDocument, "/constraint-test/repeated-zip-pattern");
+      assertEquals(bindForRepeat[bindForRepeat.length - 1].getAttribute("id"), repeat[0].getAttributeNS(NamespaceConstants.XFORMS_NS, "bind"));
+      for (int i = 1; i <= Integer.parseInt(bindForRepeat[bindForRepeat.length - 1].getAttributeNS(NamespaceConstants.XFORMS_NS, "minOccurs")); i++)
+      {
+         chibaBean.updateRepeatIndex(repeat[0].getAttribute("id"), i);
+         chibaBean.updateControlValue(controls[controls.length - 1].getAttribute("id"), "notavalidzip");
+      }
+      //     assertEquals("unexpected events " + events, controls.length, events.size());
+      for (final Event event : events)
+      {
+         assertEquals(XFormsEventNames.INVALID, event.getType());
+      }
+      events.clear();
+
+      chibaBean.dispatch("submit", DOMEventNames.ACTIVATE);
+      assertEquals(1, events.size());
+      assertEquals(XFormsEventNames.SUBMIT_ERROR, events.get(0).getType());
+      events.clear();
+
+      for (final Element c : controls)
+      {
+         chibaBean.updateControlValue(c.getAttribute("id"), "07666");
+      }
+//      assertEquals("unexpected events " + events, controls.length, events.size());
+      for (final Event event : events)
+      {
+         assertEquals(XFormsEventNames.VALID, event.getType());
+      }
+      events.clear();
+
+      chibaBean.dispatch("submit", DOMEventNames.ACTIVATE);
+      assertEquals(1, events.size());
+      assertEquals(XFormsEventNames.SUBMIT_DONE, events.get(0).getType());
    }
 
    private static void assertRepeatProperties(final Document xformsDocument, 
@@ -478,6 +574,19 @@ public class Schema2XFormsTest
       return XMLUtil.parse(f);
    }
 
+   private ChibaBean runXForm(final Document xformsDocument)
+      throws Exception
+   {
+      final ChibaBean chibaBean = new ChibaBean();
+      chibaBean.setConfig(this.getResourcesDir() + File.separator +
+                          ".." + File.separator + 
+                          "web" + File.separator + 
+                          "WEB-INF" + File.separator + "chiba.xml");
+      chibaBean.setXMLContainer(xformsDocument);
+      chibaBean.init();
+      return chibaBean;
+   }
+
    private static Document buildXForm(final Document instanceDocument,
                                       final Document schemaDocument,
                                       final String rootElementName)
@@ -485,7 +594,7 @@ public class Schema2XFormsTest
    {
       final Schema2XForms s2xf = new Schema2XForms("/test_action",
                                                    Schema2XForms.SubmitMethod.POST,
-                                                   "http://fake.base.url");
+                                                   "echo://fake.base.url");
       return s2xf.buildXForm(instanceDocument, 
                              schemaDocument, 
                              rootElementName, 

@@ -60,6 +60,8 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
 {
    private static final String WORKSPACE_PASTE_VIEW_ID = "/jsp/browse/browse.jsp";
    private static final String AVM_PASTE_VIEW_ID = "/jsp/wcm/browse-sandbox.jsp";
+   private static final String FORUMS_PASTE_VIEW_ID = "/jsp/forums/forums.jsp";
+   private static final String FORUM_PASTE_VIEW_ID = "/jsp/forums/forum.jsp";
 
    private static final String MSG_LINK_TO = "link_to";
 
@@ -89,7 +91,8 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
     */
    public boolean canCopyToViewId(String viewId)
    {
-      return (WORKSPACE_PASTE_VIEW_ID.equals(viewId) || AVM_PASTE_VIEW_ID.equals(viewId));
+      return (WORKSPACE_PASTE_VIEW_ID.equals(viewId) || AVM_PASTE_VIEW_ID.equals(viewId) ||
+              FORUMS_PASTE_VIEW_ID.equals(viewId) || FORUM_PASTE_VIEW_ID.equals(viewId));
    }
 
    /**
@@ -97,7 +100,8 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
     */
    public boolean canMoveToViewId(String viewId)
    {
-      return (WORKSPACE_PASTE_VIEW_ID.equals(viewId));
+      return (WORKSPACE_PASTE_VIEW_ID.equals(viewId) || FORUMS_PASTE_VIEW_ID.equals(viewId) || 
+              FORUM_PASTE_VIEW_ID.equals(viewId));
    }
 
    /**
@@ -106,7 +110,8 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
    public boolean paste(FacesContext fc, String viewId, int action)
       throws Throwable
    {
-      if (WORKSPACE_PASTE_VIEW_ID.equals(viewId))
+      if (WORKSPACE_PASTE_VIEW_ID.equals(viewId) || FORUMS_PASTE_VIEW_ID.equals(viewId) || 
+          FORUM_PASTE_VIEW_ID.equals(viewId))
       {
          NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
          NodeRef destRef = new NodeRef(Repository.getStoreRef(), navigator.getCurrentNodeId());

@@ -1012,10 +1012,36 @@ public final class AVMUtil
             path = path.substring(0, webappIndex);
          }
          final VirtServerRegistry vServerRegistry = AVMUtil.getVirtServerRegistry();
-         vServerRegistry.updateAllWebapps(-1, path, true);
+         vServerRegistry.updateWebapp(-1, path, true);
       }
    }
    
+
+   /**
+    * Removal notification on all the virtualisation server webapp as required by the specified path
+    * 
+    * @param path    Path to match against
+    * @param force   True to force update of server even if path does not match
+    */
+   public static void removeAllVServerWebapps(String path, boolean force)
+   {
+      if (force || VirtServerUtils.requiresUpdateNotification(path))
+      {
+         final int webappIndex = path.indexOf('/', 
+                                              path.indexOf(JNDIConstants.DIR_DEFAULT_APPBASE) + 
+                                              JNDIConstants.DIR_DEFAULT_APPBASE.length() + 1);
+
+         if (webappIndex != -1)
+         {
+            path = path.substring(0, webappIndex);
+         }
+         final VirtServerRegistry vServerRegistry = AVMUtil.getVirtServerRegistry();
+         vServerRegistry.removeAllWebapps(-1, path, true);
+      }
+   }
+   
+
+
    /**
     * Removal notification on the virtualisation server webapp as required for the specified path
     * 
@@ -1035,7 +1061,7 @@ public final class AVMUtil
             path = path.substring(0, webappIndex);
          }
          final VirtServerRegistry vServerRegistry = AVMUtil.getVirtServerRegistry();
-         vServerRegistry.removeAllWebapps(-1, path, true);
+         vServerRegistry.removeWebapp(-1, path, true);
       }
    }
    

@@ -160,8 +160,8 @@ public class ErrorsRenderer extends BaseRenderer
    {
       // use the error class if the message is error level
       if (errorClass != null && 
-          fm.getSeverity() == FacesMessage.SEVERITY_ERROR ||
-          fm.getSeverity() == FacesMessage.SEVERITY_FATAL)
+          (fm.getSeverity() == FacesMessage.SEVERITY_ERROR ||
+          fm.getSeverity() == FacesMessage.SEVERITY_FATAL))
       {
          out.write(" class='");
          out.write(errorClass);
@@ -170,8 +170,8 @@ public class ErrorsRenderer extends BaseRenderer
       
       // use the info class if the message is info level
       if (infoClass != null && 
-          fm.getSeverity() == FacesMessage.SEVERITY_INFO ||
-          fm.getSeverity() == FacesMessage.SEVERITY_WARN)
+          (fm.getSeverity() == FacesMessage.SEVERITY_INFO ||
+          fm.getSeverity() == FacesMessage.SEVERITY_WARN))
       {
          out.write(" class='");
          out.write(infoClass);

@@ -97,7 +97,7 @@ public class DeleteWebsiteDialog extends DeleteSpaceDialog
             
             String sandbox = AVMUtil.buildStagingStoreName(storeRoot);
             String path    =  AVMUtil.buildStoreWebappPath(sandbox, "/ROOT");
-            AVMUtil.removeVServerWebapp(path, true);
+            AVMUtil.removeAllVServerWebapps(path, true);
             
             // get the list of users who have a sandbox in the website
             List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(

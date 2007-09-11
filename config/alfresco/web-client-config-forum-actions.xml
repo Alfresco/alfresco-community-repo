@@ -332,7 +332,6 @@
             <action idref="delete_topic" />
             <action idref="cut_node" />
             <action idref="copy_node" />
-            <action idref="paste_all" />
             <action idref="manage_space_users" />
          </action-group>
          

@@ -33,23 +33,31 @@
 
    <%-- Init the Tiny MCE in-line HTML editor --%>
    tinyMCE.init({
-   	theme : "advanced",
-   	mode : "exact",
-   	elements : "editor",
-   	save_callback : "saveContent",
-		plugins : "table",
-		theme_advanced_toolbar_location : "top",
-		theme_advanced_toolbar_align : "left",
-		theme_advanced_buttons1_add : "fontselect,fontsizeselect",
-		theme_advanced_buttons2_add : "separator,forecolor,backcolor",
-		theme_advanced_buttons3_add_before : "tablecontrols,separator",
-		theme_advanced_disable: "styleselect",
-		extended_valid_elements : "a[href|target|name],font[face|size|color|style],span[class|align|style]"
+      theme : "advanced",
+      mode : "exact",
+      elements : "editor",
+      save_callback : "saveContent",
+      urlconverter_callback: "convertUrl",
+      plugins : "table",
+      theme_advanced_toolbar_location : "top",
+      theme_advanced_toolbar_align : "left",
+      theme_advanced_buttons1_add : "fontselect,fontsizeselect",
+      theme_advanced_buttons2_add : "separator,forecolor,backcolor",
+      theme_advanced_buttons3_add_before : "tablecontrols,separator",
+      theme_advanced_disable: "styleselect",
+      extended_valid_elements : "a[href|target|name],font[face|size|color|style],span[class|align|style]"
    });
    
    function saveContent(id, content)
    {
       document.getElementById("wizard:wizard-body:editor-output").value = content;
+   }
+   
+   function convertUrl(href, element, onsave)
+   {
+      // just return the passed href, this is enough to stop TinyMCE
+      // from converting the URL to it's relative form
+      return href;
    }
    
    var isIE = (document.all);

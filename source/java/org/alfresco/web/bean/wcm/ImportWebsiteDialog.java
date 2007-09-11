@@ -30,6 +30,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
@@ -50,6 +54,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
@@ -334,8 +339,14 @@ public class ImportWebsiteDialog
                // Create a file in the AVM store
                String avmPath = AVMNodeConverter.ToAVMVersionPath(root).getSecond();
                String fileName = file.getName();
+               List<QName> aspects = new ArrayList<QName>();
+               aspects.add(ContentModel.ASPECT_TITLED);
+               Map<QName, PropertyValue> properties = new HashMap<QName, PropertyValue>();
+               properties.put(ContentModel.PROP_TITLE, 
+                              new PropertyValue(DataTypeDefinition.TEXT, fileName));
                this.avmService.createFile(
-                     avmPath, fileName,new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE));
+                     avmPath, fileName,new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE),
+                     aspects, properties);
                
                // TODO: restore this code once performance is acceptable
                // NodeRef fileRef = AVMNodeConverter.ToNodeRef(-1, filePath);
@@ -346,10 +357,10 @@ public class ImportWebsiteDialog
                // this.nodeService.addAspect(fileRef, ContentModel.ASPECT_TITLED, titledProps);
                
                // for now use the avm service directly
-               String filePath = avmPath + '/' + fileName;
-               this.avmService.addAspect(filePath, ContentModel.ASPECT_TITLED);
-               this.avmService.setNodeProperty(filePath, ContentModel.PROP_TITLE,
-                                               new PropertyValue(DataTypeDefinition.TEXT, fileName));
+               // String filePath = avmPath + '/' + fileName;
+               // this.avmService.addAspect(filePath, ContentModel.ASPECT_TITLED);
+               // this.avmService.setNodeProperty(filePath, ContentModel.PROP_TITLE,
+               //                                 new PropertyValue(DataTypeDefinition.TEXT, fileName));
                
                // create content node based on the filename
                /*FileInfo contentFile = fileFolderService.create(root, fileName, ContentModel.TYPE_AVM_PLAIN_CONTENT);
@@ -369,7 +380,9 @@ public class ImportWebsiteDialog
                
                // Create a directory in the AVM store 
                String avmPath = AVMNodeConverter.ToAVMVersionPath(root).getSecond();
-               this.avmService.createDirectory(avmPath, file.getName());
+               List<QName> aspects = new ArrayList<QName>();
+               aspects.add(ApplicationModel.ASPECT_UIFACETS);
+               this.avmService.createDirectory(avmPath, file.getName(), aspects, null);
                
                String folderPath = avmPath + '/' + file.getName();
                NodeRef folderRef = AVMNodeConverter.ToNodeRef(-1, folderPath);
@@ -379,9 +392,6 @@ public class ImportWebsiteDialog
                //       see AVMBrowseBean.setAVMNodeDescriptor
                // add the uifacets aspect for the read/edit properties screens
                // this.nodeService.addAspect(folderRef, ContentModel.ASPECT_UIFACETS, null);
-               
-               // for now use the AVM service directly
-               this.avmService.addAspect(folderPath, ApplicationModel.ASPECT_UIFACETS);
             }
          }
          catch (FileNotFoundException e)

@@ -34,6 +34,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.forms.XMLUtil;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xerces.xs.*;
@@ -2121,6 +2122,9 @@ public class Schema2XForms
       final Element modelElement = 
          xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
                                         NamespaceConstants.XFORMS_PREFIX + ":model");
+      modelElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                                  NamespaceConstants.XFORMS_PREFIX + ":functions",
+                                  NamespaceConstants.CHIBA_PREFIX + ":match");
       this.setXFormsId(modelElement);
       final Element modelWrapper =
          xformsDocument.createElementNS(NamespaceConstants.XHTML_NS,
@@ -2777,7 +2781,7 @@ public class Schema2XForms
       //
       // type.getName() may be 'null' for anonymous types, so compare against
       // static string (see bug #1172541 on sf.net)
-
+      final List<String> constraints = new LinkedList<String>();
       if (controlType instanceof XSSimpleTypeDefinition &&
           ((XSSimpleTypeDefinition)controlType).getBuiltInKind() != XSConstants.ANYSIMPLETYPE_DT)
       {
@@ -2797,6 +2801,11 @@ public class Schema2XForms
             bindElement.setAttributeNS(NamespaceService.ALFRESCO_URI,
                                        NamespaceService.ALFRESCO_PREFIX + ":builtInType",
                                        typeName);
+         }
+         final StringList lexicalPatterns = ((XSSimpleTypeDefinition)controlType).getLexicalPattern();
+         for (int i = 0; lexicalPatterns != null && i < lexicalPatterns.getLength(); i++)
+         {
+            constraints.add("chiba:match(., '" + lexicalPatterns.item(i) + "',null)");
          }
       }
 
@@ -2833,13 +2842,10 @@ public class Schema2XForms
       //count(.) <= maxOccurs && count(.) >= minOccurs
       final String nodeset = bindElement.getAttributeNS(NamespaceConstants.XFORMS_NS,
                                                         "nodeset");
-      String minConstraint = null;
-      String maxConstraint = null;
-
       if (o.minimum > 1)
       {
          //if 0 or 1 -> no constraint (managed by "required")
-         minConstraint = "count(../" + nodeset + ") >= " + o.minimum;
+         constraints.add("count(../" + nodeset + ") >= " + o.minimum);
       }
       bindElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
                                  NamespaceConstants.XFORMS_PREFIX + ":minOccurs",
@@ -2847,23 +2853,18 @@ public class Schema2XForms
       if (o.maximum > 1)
       {
          //if 1 or unbounded -> no constraint
-         maxConstraint = "count(../" + nodeset + ") <= " + o.maximum;
+         constraints.add("count(../" + nodeset + ") <= " + o.maximum);
       }
 
       bindElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
                                  NamespaceConstants.XFORMS_PREFIX + ":maxOccurs",
                                  o.isUnbounded() ? "unbounded" : String.valueOf(o.maximum));
 
-      final String constraint = (minConstraint != null && maxConstraint != null
-                                 ? minConstraint + " and " + maxConstraint
-                                 : (minConstraint != null
-                                    ? minConstraint
-                                    : maxConstraint));
-      if (constraint != null)
+      if (constraints.size() != 0)
       {
          bindElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
                                     NamespaceConstants.XFORMS_PREFIX + ":constraint",
-                                    constraint);
+                                    StringUtils.join((String[])constraints.toArray(new String[constraints.size()]), " and "));
       }
       return bindElement;
    }

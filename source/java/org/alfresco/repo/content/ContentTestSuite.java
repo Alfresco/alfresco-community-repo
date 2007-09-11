@@ -48,6 +48,7 @@ import org.alfresco.repo.content.transform.PoiHssfContentTransformerTest;
 import org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerTest;
 import org.alfresco.repo.content.transform.StringExtractingContentTransformerTest;
 import org.alfresco.repo.content.transform.TextMiningContentTransformerTest;
+import org.alfresco.repo.content.transform.TextToPdfContentTransformerTest;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -86,6 +87,7 @@ public class ContentTestSuite extends TestSuite
         suite.addTestSuite(RuntimeExecutableContentTransformerTest.class);
         suite.addTestSuite(StringExtractingContentTransformerTest.class);
         suite.addTestSuite(TextMiningContentTransformerTest.class);
+        suite.addTestSuite(TextToPdfContentTransformerTest.class);
         suite.addTestSuite(MailContentTransformerTest.class);
         suite.addTestSuite(ContentDataTest.class);
         suite.addTestSuite(MimetypeMapTest.class);

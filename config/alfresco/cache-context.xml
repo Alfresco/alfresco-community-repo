@@ -277,7 +277,7 @@
            <value>org.alfresco.repo.avm.lookupTransactionalCache</value>
        </property>
        <property name="maxCacheSize">
-           <value>50</value>
+           <value>100</value>
        </property>
    </bean>
    
@@ -313,7 +313,7 @@
            <value>org.alfresco.repo.avm.storeLookupTransactionalCache</value>
        </property>
        <property name="maxCacheSize">
-           <value>100</value>
+           <value>200</value>
        </property>
    </bean>
    

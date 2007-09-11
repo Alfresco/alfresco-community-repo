@@ -27,6 +27,7 @@ package org.alfresco.repo.node.index;
 import java.util.List;
 
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
+import org.alfresco.repo.search.IndexMode;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
@@ -64,9 +65,8 @@ public class AVMRemoteSnapshotTracker extends AbstractReindexComponent
     }
 
     /**
-     * Loop throught the avm stores and compare the latest snapshot to that in the index.
-     * Update the index if it has fallen behind.
-     *
+     * Loop throught the avm stores and compare the latest snapshot to that in the index. Update the index if it has
+     * fallen behind.
      */
     private void processStores()
     {
@@ -86,21 +86,25 @@ public class AVMRemoteSnapshotTracker extends AbstractReindexComponent
                 {
                     break;
                 }
-                int current = avmService.getLatestSnapshotID(store.getName());
-                int lastIndexed = avmSnapShotTriggeredIndexingMethodInterceptor.getLastIndexedSnapshot(store.getName());
 
-                if (lastIndexed < current)
+                if (avmSnapShotTriggeredIndexingMethodInterceptor.getIndexMode(store.getName()) != IndexMode.UNINDEXED)
                 {
-                    if(logger.isDebugEnabled())
+                    int current = avmService.getLatestSnapshotID(store.getName());
+                    int lastIndexed = avmSnapShotTriggeredIndexingMethodInterceptor.getLastIndexedSnapshot(store.getName());
+
+                    if (lastIndexed < current)
                     {
-                        logger.debug("Updating index for store "+store.getName()+" from snapshot "+lastIndexed+ " to "+current);
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Updating index for store " + store.getName() + " from snapshot " + lastIndexed + " to " + current);
+                        }
+                        recoverSnapShot(store.getName(), lastIndexed, current);
+                        upToDate = false;
                     }
-                    recoverSnapShot(store.getName(), lastIndexed, current);
-                    upToDate = false;
                 }
             }
         }
-        while(!upToDate);
+        while (!upToDate);
 
     }
 
@@ -118,7 +122,7 @@ public class AVMRemoteSnapshotTracker extends AbstractReindexComponent
         {
             public Object execute() throws Exception
             {
-                if(lastIndexed == -1)
+                if (lastIndexed == -1)
                 {
                     avmSnapShotTriggeredIndexingMethodInterceptor.createIndex(store);
                 }

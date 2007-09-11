@@ -258,7 +258,13 @@
     <!-- Internally used caches -->
     <cache 
         name="org.alfresco.repo.avm.lookupSharedCache"
-        maxElementsInMemory="10000"
+        maxElementsInMemory="50"
+        eternal="true"
+        overflowToDisk="false"
+        />
+    <cache 
+        name="org.alfresco.repo.avm.storeLookupSharedCache"
+        maxElementsInMemory="100"
         eternal="true"
         overflowToDisk="false"
         />

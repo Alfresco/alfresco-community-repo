@@ -1,25 +1,26 @@
-/*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
-
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
-
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- * As a special exception to the terms and conditions of version 2.0 of
- * the GPL, you may redistribute this Program in connection with Free/Libre
- * and Open Source Software ("FLOSS") applications as described in Alfresco's
- * FLOSS exception.  You should have recieved a copy of the text describing
- * the FLOSS exception, and it is also available here:
- * http://www.alfresco.com/legal/licensing" */
+/*-----------------------------------------------------------------------------
+*  Copyright 2005-2007 Alfresco Inc.
+*  
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License as published by
+*  the Free Software Foundation; either version 2 of the License, or
+*  (at your option) any later version.
+*  
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+*  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+*  for more details.
+*  
+*  You should have received a copy of the GNU General Public License along
+*  with this program; if not, write to the Free Software Foundation, Inc.,
+*  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  As a special
+*  exception to the terms and conditions of version 2.0 of the GPL, you may
+*  redistribute this Program in connection with Free/Libre and Open Source
+*  Software ("FLOSS") applications as described in Alfresco's FLOSS exception.
+*  You should have received a copy of the text describing the FLOSS exception,
+*  and it is also available here:   http://www.alfresco.com/legal/licensing
+*
+*----------------------------------------------------------------------------*/
 
 package org.alfresco.service.cmr.avm;
 
@@ -39,12 +40,15 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
 /**
- * This is the service interface for the 
- * Alfresco Versioning Model (AVM).
+ * Service interface for the Alfresco Versioning Model (AVM).<br>
+ * For the remote API, see: {@link org.alfresco.service.cmr.remote.AVMRemote AVMRemote}.
+ * <p>
  *
- * Because the AVM is a versioning repository, fully explicit 
- * references to the nodes within it consist of an absolute AVM path,
- * and a version ID.  Absolute AVM paths are of
+ * Because the AVM is a
+ * <a href="http://wiki.alfresco.com/wiki/Versioned_Directories">
+ * versioning repository</a>, 
+ * fully explicit references to the nodes within it consist of an 
+ * absolute AVM path, and a version ID.  Absolute AVM paths are of
  * the form:&nbsp;&nbsp;<em>&lt;store-name&gt;</em>:<em>&lt;store-relative-path&gt;</em>.  
  * <p>
  * For example:&nbsp;&nbsp;<code>mystore:/www/avm_webapps/ROOT/x/y/z.html</code>
@@ -70,11 +74,13 @@ import org.alfresco.util.Pair;
  * {@link #createSnapshot(String store, String tag, String description) createSnapshot},
  * or implicitly by various APIs in this interface and in
  * {@link org.alfresco.service.cmr.avmsync.AVMSyncService AVMSyncService}.
- * While a new snapshot of a store will have version a ID one higher 
+ * Although a new snapshot of a store will have version a ID one higher 
  * than the previous snapshot in that store, the history of an AMV store
  * does not necessarily contain a continuous range of version ID values,
  * because {@link #purgeVersion(int version, String name) purgeVersion}
- * may have been called. However, version ID values are never recycled 
+ * may have been called.  Regardless of whether 
+ * {@link #purgeVersion(int version, String name) purgeVersion}
+ * has been called, the AVM never recycles version ID values
  * within a store.
  *
  * @author britt
@@ -105,7 +111,6 @@ public interface AVMService
      */
     public InputStream getFileInputStream(AVMNodeDescriptor desc);
     
-
     /**
      * Get an output stream to write to a file 
      * identified by an AVM path.  This file must already exist.  
@@ -121,34 +126,6 @@ public interface AVMService
      * @throws      AVMWrongTypeException 
      */
     public OutputStream getFileOutputStream(String path);
-    
-
-    /**
-     * <em>Low-level internal function</em>:&nbsp;&nbsp; Fetch a content reader for a file node.
-     * 
-     * This function is similar to 
-     * {@link getFileInputStream(int version, String path) getFileInputStream};
-     * however, it can be used to fetch either InputStream or a 
-     * random-access nio channel.
-     *
-     * @param  version The version ID of the file.
-     * @param  path    The absolute AVM path to the file.
-     * @return         A ContentReader.
-     * @throws         AVMNotFoundException
-     * @throws         AVMWrongTypeException
-     */
-    public ContentReader getContentReader(int version, String path);
-
-    
-    /**
-     * <em>Low-level internal function</em>:&nbsp;&nbsp; Fetch a ContentWriter to a file node.
-     *
-     * @param path The path to the file.
-     * @return A ContentWriter.
-     * @throws AVMNotFoundException
-     * @throws AVMWrongTypeException
-     */
-    public ContentWriter getContentWriter(String path);   
 
 
     /**
@@ -164,26 +141,6 @@ public interface AVMService
      * @throws         AVMWrongTypeException
      */
     public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(int version, String path);
-
-
-    /**
-     * Get a non-recursive listing of a directory node identified by its
-     * version ID and path; optionally, deleted notes can be included in
-     * this listing.
-     * <p>
-     * If instead, you wish to obtain a list of <em>only</em> 
-     * the deleted nodes within a directory, see:
-     * {@link #getDeleted(int version, String path) getDeleted}.
-     *
-     * @param version        The version ID to look in.
-     * @param path           The absolute AVM path to the file.
-     * @param includeDeleted Whether to include deleted nodes
-     * @return               A Map of names to descriptors.
-     * @throws               AVMNotFoundException 
-     * @throws               AVMWrongTypeException
-     */
-    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(int version, String path,
-                                                                    boolean includeDeleted);
     
     /**
      * Get a non-recursive listing of nodes contained by a directory identified
@@ -200,106 +157,23 @@ public interface AVMService
      * @throws AVMNotFoundException
      * @throws AVMWrongTypeException 
      */
-    public SortedMap<String, AVMNodeDescriptor> 
+    public SortedMap<String, AVMNodeDescriptor>
         getDirectoryListingDirect(int version, String path);
-    
-    /**
-     * Get a non-recursive listing of nodes contained directly,
-     * but exclude all nodes that are only contained "indirectly"
-     * (i.e.: via layering).  This function is identical to 
-     * {@link #getDirectoryListingDirect(int version, String path) getDirectoryListingDirect}
-     * but it has the option of including deleted nodes in the listing.
-     * 
-     * @param version        The version to look up.
-     * @param path           The absolute AVM directory path to get a listing for.
-     * @param includeDeleted Whether to include deleted nodes.
-     * @return               A Map of names to descriptors.
-     * @throws               AVMNotFoundException
-     * @throws               AVMWrongTypeException 
-     */
-    public SortedMap<String, AVMNodeDescriptor>
-        getDirectoryListingDirect(int version, String path, boolean includeDeleted);
-
-
-    /**
-     * A convenience method to get a directory listing 
-     * as an Array of AVMNodeDescriptors; this function
-     * is otherwise equivalent to 
-     * {@link #getDirectoryListing(int version, String path, boolean includeDeleted) getDirectoryListing}
-     *
-     * @param version        The version to look under.
-     * @param path           The path to the directory to be listed.
-     * @param includeDeleted Whether to include deleted nodes
-     * @return               An array of AVMNodeDescriptors.
-     * @throws               AVMNotFoundException
-     * @throws               AVMWrongTypeException
-     */
-    public AVMNodeDescriptor [] getDirectoryListingArray(int version, String path,
-                                                         boolean includeDeleted);
-    
-    /**
-     * Get a non-recursive listing of all the nodes contained by a directory
-     * identified by an AVMNodeDescriptor, excluding those that are only 
-     * present "indirectly" via layering; optionally, deleted nodes that
-     * are directly contained can be included this listing.
-     *
-     * @param dir            The directory descriptor.
-     * @param includeDeleted Whether to include directly contained deleted nodes
-     * @return               A Map of Strings to descriptors.
-     * @throws               AVMNotFoundException
-     * @throws               AVMWrongTypeException
-     */
-    public SortedMap<String, AVMNodeDescriptor>
-        getDirectoryListingDirect(AVMNodeDescriptor dir, boolean includeDeleted);
-    
 
     /**
      * Get a non-recursive directory listing of a directory node
      * identified by a node descriptor.
      *
      * @param dir The directory node descriptor.
-     * @return A Map of names to node descriptors.
+     * @return A sorted Map of names to node descriptors.
      * @throws AVMNotFoundException
      * @throws AVMWrongTypeException
      */
     public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir);
-    
-    /**
-     * Get a non-recursive directory listing of a directory identified
-     * by a node descriptor;  optionally, deleted nodes can be included 
-     * in this listing.
-     *
-     * @param dir            The directory node descriptor.
-     * @param includeDeleted Whether to include deleted nodes.
-     * @return               A Map of names to node descriptors.
-     * @throws               AVMNotFoundException If the descriptor is stale.
-     * @throws               AVMWrongTypeException If the descriptor does not point at a directory.
-     */
-    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir,
-                                                                    boolean includeDeleted);
-    
-    /**
-     * A convenience method to get a non-recursive directory listing 
-     * as an Array from a directory identified by a node descriptor;  
-     * optionally, deleted nodes can be included in this listing.  
-     *
-     * This function is identical to 
-     * {@link getDirectoryListing(AVMNodeDescriptor dir,boolean includeDeleted)  getDirectoryListing}
-     * except that it returns an array.
-     *
-     * @param dir            The descriptor pointing at the directory to list.
-     * @param includeDeleted Whether include deleted nodes
-     * @return               An array of AVMNodeDescriptors.
-     * @throws               AVMNotFoundException 
-     * @throws               AVMWrongTypeException
-     */
-    public AVMNodeDescriptor [] getDirectoryListingArray(AVMNodeDescriptor dir,
-                                                         boolean includeDeleted);
-    
 
     /**
-     * Get the names of nodes that have been deleted in a directory
-     * identified by a version ID and a path.
+     * Non-recursively get the names of nodes that have been deleted in 
+     * a directory identified by a version ID and a path
      *
      * @param version The version to look under.
      * @param path    The path of the directory.
@@ -321,41 +195,9 @@ public interface AVMService
      * @throws     AVMNotFound 
      * @throws     AVMExists
      * @throws     AVMWrongType
+     * @return An opaque handle to a server side output stream.
      */
     public OutputStream createFile(String path, String name);
-    
-    /**
-     * Create a new "plain" (non-layered) file.  
-     * Guarantees that the entire contents of the
-     * input stream will be loaded atomically.
-     * The directory identified by <code>path</code> must already exist.
-     *
-     * @param path The path of the directory containing the created file.
-     * @param name The name of the new file
-     * @param in   An input stream with data for the file.
-     * @throws     AVMNotFound
-     * @throws     AVMExists
-     * @throws     AVMWrongType
-     */
-    public void createFile(String path, String name, InputStream in);
-    
-    
-    /**
-     * Create a new "plain" (non-layered) file.  
-     * Guarantees that the entire contents of the
-     * input stream will be loaded atomically.
-     * The directory identified by <code>path</code> must already exist.
-     *
-     * @param path The path of the directory containing the created file.
-     * @param name The name of the new file
-     * @param in   An input stream with data for the file.
-     * @param aspect A list of aspects to give the file.
-     * @param properties A map of properties to give the file.
-     * @throws     AVMNotFound
-     * @throws     AVMExists
-     * @throws     AVMWrongType
-     */
-    public void createFile(String path, String name, InputStream in, List<QName> aspects, Map<QName, PropertyValue> properties);
     
     /**
      * Create a new directory. 
@@ -369,21 +211,6 @@ public interface AVMService
      * @throws     AVMWrongType
      */  
     public void createDirectory(String path, String name);
-    
-    /**
-     * Create a new directory. 
-     * If <code>path</code> is within a layer, the new directory will be a layered directory;
-     * otherwise, the new directory will be a plain directory.
-     *
-     * @param path The simple absolute path to the parent.
-     * @param name The name to give the directory.
-     * @param aspects A list of aspects to add.
-     * @param properties A Map of properties to add.
-     * @throws     AVMNotFound
-     * @throws     AVMExists
-     * @throws     AVMWrongType
-     */  
-    public void createDirectory(String path, String name, List<QName> aspects, Map<QName, PropertyValue> properties);
 
     /**
      * Create a new layered file. 
@@ -449,7 +276,7 @@ public interface AVMService
      * name.  If a store is removed via 
      * {@link purgeStore(String name) purgeStore}, the name of
      * the deleted store can be reused in a later call to 
-     * @{link createStore(String name) createStore}.
+     * {@link createStore(String name) createStore}.
      * <p>
      * The store name must be non-null, cannot be the empty string,
      * and must not contain characters that are illegal in 
@@ -513,18 +340,7 @@ public interface AVMService
      * @throws       AVMWrongTypeException
      */
     public void removeNode(String parent, String name);
-    
 
-    /**
-     * A convenience method that removes a node specified by an AVM path.
-     * It merely parses an absolute path into a parent directory and a child
-     * name, then calls {@link #removeNode(parent, name) removeNode}.
-     *
-     * @param path The full path to the node to remove.
-     * @throws AVMNotFoundException
-     * @throws AVMWrongTypeException
-     */
-    public void removeNode(String path);
     
 
     /**
@@ -572,7 +388,7 @@ public interface AVMService
      * @throws          AVMExistsException 
      */
     public void rename(String srcParent, String srcName, String dstParent, String dstName);
-    
+
 
     /**
      * If a layered directory <code>dirPath</code> 
@@ -596,24 +412,6 @@ public interface AVMService
 
 
     /**
-     * Atomically delete <code>name</code> within <code>dirPath</code> 
-     * and {@link uncover(String dirPath, String name) uncover}
-     * it so whatever is underneath can be seen via transparency.
-     * If <code>name</code> corresponds to a deletion already,
-     * then the deletion step is skipped, and the "uncover"
-     * operation is performed.
-     *
-     * @param dirPath The path to the layered directory.
-     * @param name    The name of the item this method will 
-     *             {@link org.alfresco.service.cmr.avmsync.AVMSyncService#flatten(String layerPath, String underlyingPath) flatten}
-     *
-     * @throws AVMNotFoundException
-     * @throws AVMWrongTypeException
-     */
-    public void makeTransparent(String dirPath, String name);
-    
-
-    /**
      * Gets the ID that the next snapshotted version of a store 
      * will have.
      *
@@ -627,7 +425,7 @@ public interface AVMService
      * @throws          AVMNotFoundException
      */
     public int getNextVersionID(String storeName);
-    
+
 
     /**
      * Get the latest snapshot ID of a store. 
@@ -725,18 +523,6 @@ public interface AVMService
      * @return A List of all AVMStores.
      */
     public List<AVMStoreDescriptor> getStores();
-
-
-
-    /**
-     * <em>Low-level internal function</em>:&nbsp;&nbsp;
-     * Retrieve the reserved "system" store.  
-     * This method isn't currently used,
-     * but may be in some future release.
-     *
-     * @return The descriptor.
-     */
-    public AVMStoreDescriptor getSystemStore();
     
 
     /**
@@ -745,7 +531,7 @@ public interface AVMService
      * @return     A Descriptor, or null if not found.
      */
     public AVMStoreDescriptor getStore(String name);
-    
+
 
     /**
      * A convenience method for getting the specified 
@@ -758,7 +544,7 @@ public interface AVMService
      */
     public AVMNodeDescriptor getStoreRoot(int version, String name);
 
-        
+
     /**
      * Lookup a node identified by version ID and path.
      *
@@ -767,7 +553,7 @@ public interface AVMService
      * @return An AVMNodeDescriptor, or null if the node does not exist.
      */
     public AVMNodeDescriptor lookup(int version, String path);
-    
+
     /**
      * Lookup a node identified by version ID and path; optionally,
      * if the node is deleted, its descriptor can still
@@ -789,7 +575,8 @@ public interface AVMService
      * @throws     AVMWrongTypeException If <code>dir</code> does not refer to a directory.
      */
     public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name);
-    
+
+
     /**
      * Lookup a node identified by the directory that contains it, and its name;
      * optionally, the lookup can retrive the descriptor of a node even if 
@@ -803,73 +590,16 @@ public interface AVMService
      * @throws               AVMWrongTypeException
      */
     public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name, boolean includeDeleted);
-    
-
-    /**
-     * Get a list of all paths that a given node has.  
-     * This can be an extremely expensive operation due to the large number
-     * of paths to an AVMNodeDescriptor that can be generated
-     * via branching and versioning.  For example, if an asset
-     * is present in the initial version of a store, and
-     * that store has been versioned 10,000 times, 
-     * there are a minimum of 10,000 paths that lead to it.
-     * The effect of branching is multiplicative.
-     * <p>
-     * Note:  paths that only access <code>desc</code>
-     * via transparency are not returned by this function;
-     * only "direct" containment relationships are considered.
-     * <p>
-     * For those concerned with records management applications,
-     * it's worth noting that once every path to an asset has
-     * been deleted, the system will purge it entirely in an
-     * asynchronous manner.
-     *
-     * @param desc The node descriptor to get paths for.
-     * @return     A List of version, path Pairs.
-     * @throws     AVMNotFoundException
-     */
-    public List<Pair<Integer, String>> getPaths(AVMNodeDescriptor desc);
-    
 
     /**
      * Get a single valid path to a given node.
-     * @param desc The node descriptor to get a path for.
-     * @return AVMNotFoundException
+     * @param desc The descriptor of the node to which a version and path will be fetched.
+     * @return version and path.
+     * @throws AVMNotFoundException
      */
     public Pair<Integer, String> getAPath(AVMNodeDescriptor desc);
-    
-    /**
-     * Get all paths that a given node has that are in the 
-     * <strong><code>HEAD</code></strong> version (<strong><code> -1 </code></strong>).
-     * This can be an expensive operation but less so than getPaths().
-     *
-     * @param desc The node descriptor to get paths for.
-     * @return     A List of version, path Pairs.
-     * @throws     AVMNotFoundException
-     */
-    public List<Pair<Integer, String>> getHeadPaths(AVMNodeDescriptor desc);
-    
-    /**
-     * Get all paths to a node starting at the 
-     * <strong><code>HEAD</code></strong> version (<strong><code> -1 </code></strong>)
-     * of a store.  This can be an expensive operation but less so than getHeadPaths().
-     *
-     * @param desc The node descriptor.
-     * @param      store The store.
-     * @return     A List of all paths meeting the criteria.
-     * @throws     AVMNotFoundException
-     */
-    public List<Pair<Integer, String>> getPathsInStoreHead(AVMNodeDescriptor desc, String store);
-    
-    /**
-     * Get all paths to a given node in a single store in a single non-head version.
-     * @param desc The node descriptor.
-     * @param store The name of the store.
-     * @param version The version.
-     * @return A List of AVM paths.
-     */
-    public List<String> getPathsInStoreVersion(AVMNodeDescriptor desc, String store, int version);
-    
+
+
     /**
      * Get the indirection path for a node in a layered context
      * whether that indirection path is primary or non-primary
@@ -896,7 +626,8 @@ public interface AVMService
      * @throws        AVMWrongTypeException
      */
     public String getIndirectionPath(int version, String path);
-    
+
+
     /**
      * Purge an AVMStore.  
      * This completely removes an AVMStore.
@@ -1030,17 +761,12 @@ public interface AVMService
      * @throws        AVMNotFoundException
      */
     public Map<QName, PropertyValue> getNodeProperties(int version, String path);
-    
-    /**
-     * Get all the properties associated with a node identified by a descriptor.
-     * @param desc The node descriptor
-     * @return A Map of the properties.
-     * @throws AVMNotFoundException
-     */
-    public Map<QName, PropertyValue> getNodeProperties(AVMNodeDescriptor desc);
-    
+
+
     /**
      * Delete a property.
+     * <p>
+     * Note: to remove an apsect, see: {@link #removeAspect(String path, QName aspectName) removeAspect}
      *
      * @param path The path to the node.
      * @param name The QName of the property to delete.
@@ -1050,6 +776,8 @@ public interface AVMService
     
     /**
      * Delete all the properties attached to an AVM node.
+     * <p>
+     * Note: to remove an apsect, see: {@link #removeAspect(String path, QName aspectName) removeAspect}
      *
      * @param path The path to the node.
      * @throws AVMNotFoundException
@@ -1084,7 +812,7 @@ public interface AVMService
      * @throws      AVMNotFoundException
      */
     public PropertyValue getStoreProperty(String store, QName name);
-    
+
     /**
      * Get all the properties associated with a store.
      *
@@ -1103,78 +831,17 @@ public interface AVMService
      */
     public Map<QName, PropertyValue> queryStorePropertyKey(String store, QName keyPattern);
     
-    /**
-     * Queries all AVM stores for properties with keys that match a given pattern. 
-     *
-     * @param keyPattern The sql 'like' pattern, inserted into a QName.
-     * @return           A Map of store names to Maps of property key value pairs that match
-     * the pattern.
-     */
-    public Map<String, Map<QName, PropertyValue>>
-        queryStoresPropertyKeys(QName keyPattern);
     
     /**
      * Delete a property on a store by name.
+     * <p>
+     * Note: to remove an apsect, see: {@link #removeAspect(String path, QName aspectName) removeAspect}
      *
      * @param store The name of the store.
      * @param name  The name of the property to delete.
      * @throws      AVMNotFoundException
      */
     public void deleteStoreProperty(String store, QName name);
-    
-
-    /**
-     * <em>Low-level internal function</em>:&nbsp;&nbsp; Get the ContentData for 
-     * a node in a read context.  Only applies to a file.
-     *
-     * @param version The version to look under.
-     * @param path The path to the node.
-     * @return The ContentData object.
-     * @throws AVMNotFoundException
-     * @throws AVMWrongTypeException
-     */
-    public ContentData getContentDataForRead(int version, String path);
-    
-    /**
-     * Get ContentData using only a node descriptor.
-     * @param desc The node descriptor.
-     * @return The ContentData
-     * @throws AVMNotFoundException
-     */
-    public ContentData getContentDataForRead(AVMNodeDescriptor desc);
-    
-
-    /**
-     * <em>Low-level internal function</em>:&nbsp;&nbsp; Get the ContentData for 
-     * a node in a write context.
-     *
-     * @param path The path to the node.
-     * @return The ContentData object.
-     * @throws AVMNotFoundException
-     * @throws AVMWrongTypeException
-     */
-    public ContentData getContentDataForWrite(String path);
-    
-
-    /**
-     * <em>Low-level internal function</em>:&nbsp;&nbsp; Set the content data on a file. 
-     *
-     * @param path The path to the file.
-     * @param data The ContentData to set.
-     * @throws     AVMNotFoundException
-     * @throws     AVMWrongTypeException
-     */
-    public void setContentData(String path, ContentData data);
-    
-
-    /**
-     * Set all metadata on a node from another node. Aspects, properties, ACLs.
-     *
-     * @param path The path to the node to set.
-     * @param from The descriptor for the node to get metadata from.
-     * @throws     AVMNotFoundException
-     */
-    public void setMetaDataFrom(String path, AVMNodeDescriptor from);
     
 
     /**
@@ -1186,7 +853,7 @@ public interface AVMService
      * @throws           AVMExistsException
      */
     public void addAspect(String path, QName aspectName);
-    
+
     /**
      * Get all the aspects on an AVM node.
      *
@@ -1197,13 +864,7 @@ public interface AVMService
      */
     public Set<QName> getAspects(int version, String path);
     
-    /**
-     * Get all the aspects from a node descriptor.
-     * @param desc The node descriptor.
-     * @return The Set of Aspects.
-     */
-    public Set<QName> getAspects(AVMNodeDescriptor desc);
-    
+
     /**
      * Remove an aspect and its properties from a node.
      *
@@ -1223,8 +884,265 @@ public interface AVMService
      * @throws           AVMNotFoundException
      */
     public boolean hasAspect(int version, String path, QName aspectName);
+
+
+    /**
+     * Rename a store.
+     *
+     * @param sourceName The original name.
+     * @param destName   The new name.
+     * @throws           AVMNotFoundException
+     * @throws           AVMExistsException
+     */
+    public void renameStore(String sourceName, String destName);
+    
+    /**
+     * Revert a <strong><code>HEAD</code></strong> path to a given version. 
+     * This works by cloning the version to revert to, and then linking 
+     * that new version into <strong><code>HEAD</code></strong>.
+     * The reverted version will have the previous 
+     * <strong><code>HEAD</code></strong> version as ancestor.
+     *
+     * @param path       The path to the node to revert.
+     * @param toRevertTo The descriptor of the version to revert to.
+     * @throws            AVMNotFoundException
+     */
+    public void revert(String path, AVMNodeDescriptor toRevertTo);
+
+
+    /**
+     * Set the GUID on a node. The GUID of a node uniquely identifies 
+     * the state of a node, i.e. its content, metadata, and aspects.
+     * @param path The path to the node.
+     * @param guid The GUID to set.
+     */
+    public void setGuid(String path, String guid);
+
+    /**
+     * Set the mime type.
+     * @param path The path of the file.
+     * @param mimeType The mime type.
+     */
+    public void setMimeType(String path, String mimeType);
+    
+    /**
+     * Set the encoding.
+     * @param path The path of the file.
+     * @param encoding The encoding.
+     */
+    public void setEncoding(String path, String encoding);
+
+    /**
+     * Queries all AVM stores for properties with keys that match a given pattern. 
+     *
+     * @param keyPattern The sql 'like' pattern, inserted into a QName.
+     * @return           A Map of store names to Maps of property key value pairs that match
+     * the pattern.
+     */
+    public Map<String, Map<QName, PropertyValue>>
+        queryStoresPropertyKeys(QName keyPattern);
+
+    //-------------------------------------------------------------------------
+    // NOTE:    The functions below should probably be included in AVMRemote
+    //          but currently are not:
+    //-------------------------------------------------------------------------
+
+    /**
+     * Create a new directory with aspects and properties.
+     * If <code>path</code> is within a layer, the new directory will be a layered directory;
+     * otherwise, the new directory will be a plain directory.
+     *
+     * @param path The simple absolute path to the parent.
+     * @param name The name to give the directory.
+     * @param aspects A list of aspects to add.
+     * @param properties A Map of properties to add.
+     * @throws     AVMNotFound
+     * @throws     AVMExists
+     * @throws     AVMWrongType
+     */  
+
+    public void createDirectory(String path, String name, List<QName> aspects, Map<QName, PropertyValue> properties);
+    /**
+     * Create a new "plain" (non-layered) file.  
+     * Guarantees that the entire contents of the
+     * input stream will be loaded atomically.
+     * The directory identified by <code>path</code> must already exist.
+     *
+     * @param path The path of the directory containing the created file.
+     * @param name The name of the new file
+     * @param in   An input stream with data for the file.
+     * @throws     AVMNotFound
+     * @throws     AVMExists
+     * @throws     AVMWrongType
+     */
+    public void createFile(String path, String name, InputStream in);
+    
+    
+    /**
+     * Create a new "plain" (non-layered) file with aspects and properties.
+     * Guarantees that the entire contents of the
+     * input stream will be loaded atomically.
+     * The directory identified by <code>path</code> must already exist.
+     *
+     * @param path The path of the directory containing the created file.
+     * @param name The name of the new file
+     * @param in   An input stream with data for the file.
+     * @param aspect A list of aspects to give the file.
+     * @param properties A map of properties to give the file.
+     * @throws     AVMNotFound
+     * @throws     AVMExists
+     * @throws     AVMWrongType
+     */
+    public void createFile(String path, String name, InputStream in, List<QName> aspects, Map<QName, PropertyValue> properties);
+
+    /**
+     * Get a non-recursive directory listing of a directory identified
+     * by a node descriptor;  optionally, deleted nodes can be included 
+     * in this listing.
+     *
+     * @param dir            The directory node descriptor.
+     * @param includeDeleted Whether to include deleted nodes.
+     * @return               A Map of names to node descriptors.
+     * @throws               AVMNotFoundException If the descriptor is stale.
+     * @throws               AVMWrongTypeException If the descriptor does not point at a directory.
+     */
+    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir,
+                                                                    boolean includeDeleted);
+    
+    /**
+     * A convenience method to get a non-recursive directory listing 
+     * as an Array from a directory identified by a node descriptor;  
+     * optionally, deleted nodes can be included in this listing.  
+     *
+     * This function is identical to 
+     * {@link getDirectoryListing(AVMNodeDescriptor dir,boolean includeDeleted)  getDirectoryListing}
+     * except that it returns an array.
+     *
+     * @param dir            The descriptor pointing at the directory to list.
+     * @param includeDeleted Whether include deleted nodes
+     * @return               An array of AVMNodeDescriptors.
+     * @throws               AVMNotFoundException 
+     * @throws               AVMWrongTypeException
+     */
+    public AVMNodeDescriptor [] getDirectoryListingArray(AVMNodeDescriptor dir,
+                                                         boolean includeDeleted);
+    
+    /**
+     * Get a non-recursive listing of nodes contained directly,
+     * but exclude all nodes that are only contained "indirectly"
+     * (i.e.: via layering).  This function is identical to 
+     * {@link #getDirectoryListingDirect(int version, String path) getDirectoryListingDirect}
+     * but it has the option of including deleted nodes in the listing.
+     * 
+     * @param version        The version to look up.
+     * @param path           The absolute AVM directory path to get a listing for.
+     * @param includeDeleted Whether to include deleted nodes.
+     * @return               A Map of names to descriptors.
+     * @throws               AVMNotFoundException
+     * @throws               AVMWrongTypeException 
+     */
+    public SortedMap<String, AVMNodeDescriptor>
+        getDirectoryListingDirect(int version, String path, boolean includeDeleted);
+
+
+    /**
+     * A convenience method to get a directory listing 
+     * as an Array of AVMNodeDescriptors; this function
+     * is otherwise equivalent to 
+     * {@link #getDirectoryListing(int version, String path, boolean includeDeleted) getDirectoryListing}
+     *
+     * @param version        The version to look under.
+     * @param path           The path to the directory to be listed.
+     * @param includeDeleted Whether to include deleted nodes
+     * @return               An array of AVMNodeDescriptors.
+     * @throws               AVMNotFoundException
+     * @throws               AVMWrongTypeException
+     */
+    public AVMNodeDescriptor [] getDirectoryListingArray(int version, String path,
+                                                         boolean includeDeleted);
+    
+    /**
+     * Get a non-recursive listing of all the nodes contained by a directory
+     * identified by an AVMNodeDescriptor, excluding those that are only 
+     * present "indirectly" via layering; optionally, deleted nodes that
+     * are directly contained can be included this listing.
+     *
+     * @param dir            The directory descriptor.
+     * @param includeDeleted Whether to include directly contained deleted nodes
+     * @return               A Map of Strings to descriptors.
+     * @throws               AVMNotFoundException
+     * @throws               AVMWrongTypeException
+     */
+    public SortedMap<String, AVMNodeDescriptor>
+        getDirectoryListingDirect(AVMNodeDescriptor dir, boolean includeDeleted);
     
 
+    /**
+     * Get a non-recursive listing of a directory node identified by its
+     * version ID and path; optionally, deleted notes can be included in
+     * this listing.
+     * <p>
+     * If instead, you wish to obtain a list of <em>only</em> 
+     * the deleted nodes within a directory, see:
+     * {@link #getDeleted(int version, String path) getDeleted}.
+     *
+     * @param version        The version ID to look in.
+     * @param path           The absolute AVM path to the file.
+     * @param includeDeleted Whether to include deleted nodes
+     * @return               A Map of names to descriptors.
+     * @throws               AVMNotFoundException 
+     * @throws               AVMWrongTypeException
+     */
+    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(int version, String path,
+                                                                    boolean includeDeleted);
+
+    /**
+     * A convenience method that removes a node specified by an AVM path.
+     * It merely parses an absolute path into a parent directory and a child
+     * name, then calls {@link #removeNode(parent, name) removeNode}.
+     *
+     * @param path The full path to the node to remove.
+     * @throws AVMNotFoundException
+     * @throws AVMWrongTypeException
+     */
+    public void removeNode(String path);
+
+    /**
+     * Atomically delete <code>name</code> within <code>dirPath</code> 
+     * and {@link uncover(String dirPath, String name) uncover}
+     * it so whatever is underneath can be seen via transparency.
+     * If <code>name</code> corresponds to a deletion already,
+     * then the deletion step is skipped, and the "uncover"
+     * operation is performed.
+     *
+     * @param dirPath The path to the layered directory.
+     * @param name    The name of the item this method will 
+     *             {@link org.alfresco.service.cmr.avmsync.AVMSyncService#flatten(String layerPath, String underlyingPath) flatten}
+     *
+     * @throws AVMNotFoundException
+     * @throws AVMWrongTypeException
+     */
+    public void makeTransparent(String dirPath, String name);
+
+    /**
+     * <em>Low-level internal function</em>:&nbsp;&nbsp;
+     * Retrieve the reserved "system" store.  
+     * This method isn't currently used,
+     * but may be in some future release.
+     *
+     * @return The descriptor.
+     */
+    public AVMStoreDescriptor getSystemStore();
+    
+    /**
+     * Set all metadata on a node from another node. Aspects, properties, ACLs.
+     *
+     * @param path The path to the node to set.
+     * @param from The descriptor for the node to get metadata from.
+     * @throws     AVMNotFoundException
+     */
+    public void setMetaDataFrom(String path, AVMNodeDescriptor from);
+    
     /**
      * <em>Low-level internal function</em>:&nbsp;&nbsp; Insert a node 
      * into a parent directly.  Caution: this is not something 
@@ -1265,47 +1183,151 @@ public interface AVMService
     
 
     /**
-     * Rename a store.
+     * Get a list of all paths that a given node has.  
+     * This can be an extremely expensive operation due to the large number
+     * of paths to an AVMNodeDescriptor that can be generated
+     * via branching and versioning.  For example, if an asset
+     * is present in the initial version of a store, and
+     * that store has been versioned 10,000 times, 
+     * there are a minimum of 10,000 paths that lead to it.
+     * The effect of branching is multiplicative.
+     * <p>
+     * Note:  paths that only access <code>desc</code>
+     * via transparency are not returned by this function;
+     * only "direct" containment relationships are considered.
+     * <p>
+     * For those concerned with records management applications,
+     * it's worth noting that once every path to an asset has
+     * been deleted, the system will purge it entirely in an
+     * asynchronous manner.
      *
-     * @param sourceName The original name.
-     * @param destName   The new name.
-     * @throws           AVMNotFoundException
-     * @throws           AVMExistsException
+     * @param desc The node descriptor to get paths for.
+     * @return     A List of version, path Pairs.
+     * @throws     AVMNotFoundException
      */
-    public void renameStore(String sourceName, String destName);
+    public List<Pair<Integer, String>> getPaths(AVMNodeDescriptor desc);
     
     /**
-     * Revert a <strong><code>HEAD</code></strong> path to a given version. 
-     * This works by cloning the version to revert to, and then linking 
-     * that new version into <strong><code>HEAD</code></strong>.
-     * The reverted version will have the previous 
-     * <strong><code>HEAD</code></strong> version as ancestor.
+     * Get all paths that a given node has that are in the 
+     * <strong><code>HEAD</code></strong> version (<strong><code> -1 </code></strong>).
+     * This can be an expensive operation but less so than getPaths().
      *
-     * @param path       The path to the node to revert.
-     * @param toRevertTo The descriptor of the version to revert to.
-     * @throws            AVMNotFoundException
+     * @param desc The node descriptor to get paths for.
+     * @return     A List of version, path Pairs.
+     * @throws     AVMNotFoundException
      */
-    public void revert(String path, AVMNodeDescriptor toRevertTo);
+    public List<Pair<Integer, String>> getHeadPaths(AVMNodeDescriptor desc);
     
     /**
-     * Set the GUID on a node. The GUID of a node uniquely identifies 
-     * the state of a node, i.e. its content, metadata, and aspects.
+     * Get all paths to a node starting at the 
+     * <strong><code>HEAD</code></strong> version (<strong><code> -1 </code></strong>)
+     * of a store.  This can be an expensive operation but less so than getHeadPaths().
+     *
+     * @param desc The node descriptor.
+     * @param      store The store.
+     * @return     A List of all paths meeting the criteria.
+     * @throws     AVMNotFoundException
+     */
+    public List<Pair<Integer, String>> getPathsInStoreHead(AVMNodeDescriptor desc, String store);
+    
+    /**
+     * Get all paths to a given node in a single store in a single non-head version.
+     * @param desc The node descriptor.
+     * @param store The name of the store.
+     * @param version The version.
+     * @return A List of AVM paths.
+     */
+    public List<String> getPathsInStoreVersion(AVMNodeDescriptor desc, String store, int version);
+    
+    /**
+     * Get all the properties associated with a node identified by a descriptor.
+     * @param desc The node descriptor
+     * @return A Map of the properties.
+     * @throws AVMNotFoundException
+     */
+    public Map<QName, PropertyValue> getNodeProperties(AVMNodeDescriptor desc);
+    
+    /**
+     * Get all the aspects from a node descriptor.
+     * @param desc The node descriptor.
+     * @return The Set of Aspects.
+     */
+    public Set<QName> getAspects(AVMNodeDescriptor desc);
+    
+
+
+
+
+    //-------------------------------------------------------------------------
+    // NOTE:    The functions from here down will never be part of AVMRemote
+    //-------------------------------------------------------------------------
+
+    /**
+     * <em>Low-level internal function</em>:&nbsp;&nbsp; Fetch a content reader for a file node.
+     * 
+     * This function is similar to 
+     * {@link getFileInputStream(int version, String path) getFileInputStream};
+     * however, it can be used to fetch either InputStream or a 
+     * random-access nio channel.
+     *
+     * @param  version The version ID of the file.
+     * @param  path    The absolute AVM path to the file.
+     * @return         A ContentReader.
+     * @throws         AVMNotFoundException
+     * @throws         AVMWrongTypeException
+     */
+    public ContentReader getContentReader(int version, String path);
+
+    /**
+     * <em>Low-level internal function</em>:&nbsp;&nbsp; Fetch a ContentWriter to a file node.
+     *
+     * @param path The path to the file.
+     * @return A ContentWriter.
+     * @throws AVMNotFoundException
+     * @throws AVMWrongTypeException
+     */
+    public ContentWriter getContentWriter(String path);   
+
+    /**
+     * <em>Low-level internal function</em>:&nbsp;&nbsp; Get the ContentData for 
+     * a node in a read context.  Only applies to a file.
+     *
+     * @param version The version to look under.
      * @param path The path to the node.
-     * @param guid The GUID to set.
+     * @return The ContentData object.
+     * @throws AVMNotFoundException
+     * @throws AVMWrongTypeException
      */
-    public void setGuid(String path, String guid);
+    public ContentData getContentDataForRead(int version, String path);
     
     /**
-     * Set the mime type.
-     * @param path The path of the file.
-     * @param mimeType The mime type.
+     * Get ContentData using only a node descriptor.
+     * @param desc The node descriptor.
+     * @return The ContentData
+     * @throws AVMNotFoundException
      */
-    public void setMimeType(String path, String mimeType);
+    public ContentData getContentDataForRead(AVMNodeDescriptor desc);
     
+
     /**
-     * Set the encoding.
-     * @param path The path of the file.
-     * @param encoding The encoding.
+     * <em>Low-level internal function</em>:&nbsp;&nbsp; Get the ContentData for 
+     * a node in a write context.
+     *
+     * @param path The path to the node.
+     * @return The ContentData object.
+     * @throws AVMNotFoundException
+     * @throws AVMWrongTypeException
      */
-    public void setEncoding(String path, String encoding);
+    public ContentData getContentDataForWrite(String path);
+
+    /**
+     * <em>Low-level internal function</em>:&nbsp;&nbsp; Set the content data on a file. 
+     *
+     * @param path The path to the file.
+     * @param data The ContentData to set.
+     * @throws     AVMNotFoundException
+     * @throws     AVMWrongTypeException
+     */
+    public void setContentData(String path, ContentData data);
+
 }

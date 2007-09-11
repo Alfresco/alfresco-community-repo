@@ -1713,6 +1713,19 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // move each node into the archive store
         for (NodeStatus oldNodeStatus : nodeStatusesById.values())
         {
+            // Check if the target node (node in the store) is already there
+            NodeRef targetStoreNodeRef = new NodeRef(store.getStoreRef(), oldNodeStatus.getKey().getGuid());
+            if (exists(targetStoreNodeRef))
+            {
+                // It is there already.  It must be an archive of an earlier version, so just wipe it out
+                Node archivedNode = getNodeNotNull(targetStoreNodeRef);
+                nodeDaoService.deleteNode(archivedNode, true);
+                // We need to flush here as the node deletion may not take effect before the node creation
+                // is done.  As this will only occur during a clash, it is not going to add extra overhead
+                // to the general system performance.
+                nodeDaoService.flush();
+            }
+            
             Node nodeToMove = oldNodeStatus.getNode();
             NodeRef oldNodeRef = nodeToMove.getNodeRef();
             nodeToMove.setStore(store);

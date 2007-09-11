@@ -100,6 +100,7 @@
       <property name="serviceRegistry" ref="ServiceRegistry"/>
       <property name="companyHomeStore"><value>${spaces.store}</value></property>
       <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>
+	  <property name="unprotectedSearchService" ref="searchService"/>
    </bean>
 
    <!-- Workflow Patch Deployer -->

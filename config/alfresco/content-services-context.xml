@@ -190,6 +190,19 @@
       </property>
    </bean>
 
+   <bean id="transformer.PdfBox.TextToPdf"
+         class="org.alfresco.repo.content.transform.TextToPdfContentTransformer"
+         parent="baseContentTransformer" >
+      <property name="explicitTransformations">
+         <list>
+            <bean class="org.alfresco.repo.content.transform.ContentTransformerRegistry$TransformationKey" >
+                <constructor-arg><value>text/plain</value></constructor-arg>
+                <constructor-arg><value>application/pdf</value></constructor-arg>
+            </bean>
+         </list>
+      </property>
+   </bean>
+
    <bean id="transformer.Poi"
          class="org.alfresco.repo.content.transform.PoiHssfContentTransformer"
          parent="baseContentTransformer" />

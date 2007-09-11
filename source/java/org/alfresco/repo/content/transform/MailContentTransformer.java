@@ -72,9 +72,10 @@ public class MailContentTransformer extends AbstractContentTransformer
      * @see org.alfresco.repo.content.transform.AbstractContentTransformer#transformInternal(org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ContentWriter, java.util.Map)
      */
     @Override
-    protected void transformInternal(final ContentReader reader, final ContentWriter writer, Map<String, Object> options)
+    protected void transformInternal(final ContentReader reader, ContentWriter writer, Map<String, Object> options)
         throws Exception
     {
+        final StringBuilder sb = new StringBuilder();
         POIFSReaderListener readerListener = new POIFSReaderListener()
         {
             public void processPOIFSReaderEvent(final POIFSReaderEvent event)
@@ -87,7 +88,7 @@ public class MailContentTransformer extends AbstractContentTransformer
                         String result = handler.process();
                         if (result != null)
                         {
-                            writer.putContent(result);
+                            sb.append(result);
                         }
                     }
                 }
@@ -113,7 +114,12 @@ public class MailContentTransformer extends AbstractContentTransformer
             {
                 // probably not an Outlook format MSG - ignore for now
                 if (logger.isWarnEnabled())
-                    logger.warn("Unable to extract meta-data from message: " + err.getMessage());
+                    logger.warn("Unable to extract text from message: " + err.getMessage());
+            }
+            finally
+            {
+                // Append the text to the writer
+                writer.putContent(sb.toString());
             }
         }
         finally

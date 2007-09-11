@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -136,6 +137,7 @@ public class JBPMEngine extends BPMEngine
     protected PersonService personService;
     protected AuthorityDAO authorityDAO;
     protected JbpmTemplate jbpmTemplate;
+    protected SearchService unprotectedSearchService;
     
     // Company Home
     protected StoreRef companyHomeStore;
@@ -278,6 +280,17 @@ public class JBPMEngine extends BPMEngine
         this.companyHomeStore = new StoreRef(companyHomeStore);
     }
 
+    /**
+     * Set the unprotected search service - so we can find the node ref for company home when folk do not have read access to company home
+     * TODO: review use with DC
+     * 
+     * @param unprotectedSearchService
+     */
+    public void setUnprotectedSearchService(SearchService unprotectedSearchService)
+    {
+        this.unprotectedSearchService = unprotectedSearchService;
+    }
+    
     
     //
     // Workflow Definition...
@@ -2600,7 +2613,7 @@ public class JBPMEngine extends BPMEngine
         }
         else
         {
-            List<NodeRef> refs = serviceRegistry.getSearchService().selectNodes(nodeService.getRootNode(companyHomeStore), companyHomePath, null, namespaceService, false);
+            List<NodeRef> refs = unprotectedSearchService.selectNodes(nodeService.getRootNode(companyHomeStore), companyHomePath, null, namespaceService, false);
             if (refs.size() != 1)
             {
                 throw new IllegalStateException("Invalid company home path: " + companyHomePath + " - found: " + refs.size());

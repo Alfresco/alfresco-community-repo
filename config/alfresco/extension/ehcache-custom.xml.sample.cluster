@@ -376,7 +376,22 @@
     
     <cache 
         name="org.alfresco.repo.avm.lookupSharedCache"
-        maxElementsInMemory="10000"
+        maxElementsInMemory="50"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+
+    <cache 
+        name="org.alfresco.repo.avm.storeLookupSharedCache"
+        maxElementsInMemory="100"
         eternal="true"
         overflowToDisk="false">
 

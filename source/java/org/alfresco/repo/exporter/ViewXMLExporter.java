@@ -569,7 +569,12 @@ import org.xml.sax.helpers.AttributesImpl;
             String strValue = (String)DefaultTypeConverter.INSTANCE.convert(String.class, value);
             if (strValue != null)
             {
-                contentHandler.characters(strValue.toCharArray(), 0, strValue.length());
+            	for (int i = 0; i < strValue.length(); i++) 
+            	{
+            		char[] temp = new char[]{strValue.charAt(i)};
+            		contentHandler.characters(temp, 0, 1); 
+            	}
+                          	
             }
 
             // output value wrapper if property data type is any

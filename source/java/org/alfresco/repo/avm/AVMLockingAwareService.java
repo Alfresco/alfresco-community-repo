@@ -676,6 +676,8 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     {
         grabLock(parent + '/' + name);
         fService.removeNode(parent, name);
+        String[] storePath = parent.split(":");
+        fService.createSnapshot(storePath[0], null, null);
     }
 
     /* (non-Javadoc)
@@ -685,6 +687,8 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     {
         grabLock(path);
         fService.removeNode(path);
+        String[] storePath = path.split(":");
+        fService.createSnapshot(storePath[0], null, null);
     }
 
     /* (non-Javadoc)

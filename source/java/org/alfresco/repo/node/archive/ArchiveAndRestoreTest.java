@@ -39,7 +39,6 @@ import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -622,8 +621,6 @@ public class ArchiveAndRestoreTest extends TestCase
      */
     public void testPermissionsForRestore() throws Exception
     {
-       
-        
         // user A deletes 'a'
         authenticationService.authenticate(USER_A, USER_A.toCharArray());
         nodeService.deleteNode(a);
@@ -652,5 +649,54 @@ public class ArchiveAndRestoreTest extends TestCase
         authenticationService.authenticate(USER_B, USER_B.toCharArray());
         RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(b_);
         assertEquals("Expected permission denied status", RestoreStatus.FAILURE_PERMISSION, report.getStatus());
+    }
+    
+    /**
+     * Check that the existence of the node in the archive store doesn't prevent archival.
+     * It is possible to restore a node to the SpacesStore from some other source.  When
+     * that node is archived, the currently archived node must be overwritten.
+     * @throws Exception
+     */
+    public void testAR1519ArchiveCleansDuplicateUuid() throws Exception
+    {
+        // Delete the child node
+        nodeService.deleteNode(b);
+        verifyNodeExistence(b_, true);
+        // Delete the original parent node
+        nodeService.deleteNode(a);
+        verifyNodeExistence(a_, true);
+        // Now recreate a and b (they have been separated in the archive store)
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+        props.put(ContentModel.PROP_NODE_UUID, a.getId());
+        NodeRef aRecreated = nodeService.createNode(
+                workStoreRootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                ContentModel.ASSOC_CHILDREN, 
+                ContentModel.TYPE_CONTENT, 
+                props).getChildRef();
+        assertEquals("NodeRef for recreated node should be the same as the original", a, aRecreated);
+        props.put(ContentModel.PROP_NODE_UUID, b.getId());
+        NodeRef bRecreated = nodeService.createNode(
+                a, 
+                ContentModel.ASSOC_CHILDREN, 
+                ContentModel.ASSOC_CHILDREN, 
+                ContentModel.TYPE_CONTENT, 
+                props).getChildRef();
+        assertEquals("NodeRef for recreated node should be the same as the original", b, bRecreated);
+        
+        // Check existence
+        verifyNodeExistence(a, true);
+        verifyNodeExistence(b, true);
+        verifyNodeExistence(a_, true);
+        verifyNodeExistence(b_, true);
+        
+        // Now check that the parent a can be deleted and the conflict is handled
+        nodeService.deleteNode(a);
+        
+        // Check existence
+        verifyNodeExistence(a, false);
+        verifyNodeExistence(b, false);
+        verifyNodeExistence(a_, true);
+        verifyNodeExistence(b_, true);
     }
 }

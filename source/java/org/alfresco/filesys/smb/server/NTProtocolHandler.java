@@ -4354,6 +4354,10 @@ public class NTProtocolHandler extends CoreProtocolHandler
                     return;
                 }
 
+                // Get the current file size from the open file
+                
+                fileInfo.setFileSize( netFile.getFileSize());
+                
                 // Pack the file information into the return data packet
 
                 dataLen = QueryInfoPacker.packInfo(fileInfo, replyBuf, infoLevl, true);

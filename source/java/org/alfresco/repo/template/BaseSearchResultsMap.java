@@ -32,6 +32,7 @@ import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
@@ -76,11 +77,13 @@ public abstract class BaseSearchResultsMap extends BaseTemplateMap
 
                 if (results.length() != 0)
                 {
+                    NodeService nodeService = this.services.getNodeService();
+                    
                     nodes = new ArrayList<TemplateNode>(results.length());
                     for (ResultSetRow row : results)
                     {
                         NodeRef nodeRef = row.getNodeRef();
-                        if (!nodeRefs.contains(nodeRef))
+                        if (!nodeRefs.contains(nodeRef) && (nodeService.exists(nodeRef)))
                         {
                             nodes.add(new TemplateNode(nodeRef, services, this.parent.getImageResolver()));
                             nodeRefs.add(nodeRef);

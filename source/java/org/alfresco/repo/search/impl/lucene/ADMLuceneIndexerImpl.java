@@ -836,10 +836,17 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             writer.setEncoding("UTF-8");
                             try
                             {
-
                                 transformer.transform(reader, writer);
                                 // point the reader to the new-written content
                                 reader = writer.getReader();
+                                // Check that the reader is a view onto something concrete
+                                if (!reader.exists())
+                                {
+                                    throw new ContentIOException(
+                                            "The transformation did not write any content, yet: \n" +
+                                            "   transformer:     " + transformer + "\n" +
+                                            "   temp writer:     " + writer);
+                                }
                             }
                             catch (ContentIOException e)
                             {
@@ -850,10 +857,6 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                                 }
                                 // don't index from the reader
                                 readerReady = false;
-                                // not indexed: transformation
-                                // failed
-                                // doc.add(new Field("TEXT", NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO,
-                                // Field.Index.TOKENIZED, Field.TermVector.NO));
                                 doc.add(new Field(attributeName, NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
                             }
                         }

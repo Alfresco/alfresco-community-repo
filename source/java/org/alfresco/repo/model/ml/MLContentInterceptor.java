@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -84,7 +85,8 @@ public class MLContentInterceptor implements MethodInterceptor
             NodeRef nodeRef = (NodeRef) args[0];
             
             // Shortcut it if the node is not an empty translation
-            if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+            if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM) || 
+                !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
             {
                 return invocation.proceed();
             }

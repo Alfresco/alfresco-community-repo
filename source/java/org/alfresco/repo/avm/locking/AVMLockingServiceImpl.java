@@ -264,7 +264,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
         keys.add(lock.getWebProject());
         String digest = MD5.Digest(lock.getPath().getBytes());
         keys.add(digest);
-        if (fAttributeService.getAttribute(keys) != null)
+        if (fAttributeService.exists(keys))
         {
             throw new AVMExistsException("Lock Exists: " + keys);
         }
@@ -316,8 +316,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
         keys.add(WEB_PROJECTS);
         keys.add(webProject);
         keys.add(pathKey);
-        Attribute lockData = fAttributeService.getAttribute(keys);
-        if (lockData == null)
+        if (!fAttributeService.exists(keys))
         {
             return;
         }

@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.util.Pair;
 
 /**
  * The interface for Directory Nodes.
@@ -54,7 +55,7 @@ public interface DirectoryNode extends AVMNode
      * @param name The name of the child to lookup.
      * @param includeDeleted Include deleted nodes or not.
      */
-    public AVMNode lookupChild(Lookup lPath, String name, boolean includeDeleted);
+    public Pair<AVMNode, Boolean> lookupChild(Lookup lPath, String name, boolean includeDeleted);
     
     /**
      * Lookup a child node using an AVMNodeDescriptor as context.

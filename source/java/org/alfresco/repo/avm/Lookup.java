@@ -218,7 +218,7 @@ class Lookup implements Serializable
      * @param write Whether this is in the context of 
      * a write operation.
      */
-    public void add(AVMNode node, String name, boolean write)
+    public void add(AVMNode node, String name, boolean directlyContained, boolean write)
     {
         LookupComponent comp = new LookupComponent();
         comp.setName(name);
@@ -226,7 +226,11 @@ class Lookup implements Serializable
         if (fPosition >= 0 && fDirectlyContained && 
                 fComponents.get(fPosition).getNode().getType() == AVMNodeType.LAYERED_DIRECTORY)
         {
-            fDirectlyContained = ((DirectoryNode)fComponents.get(fPosition).getNode()).directlyContains(node);
+//            if (directlyContained != ((DirectoryNode)fComponents.get(fPosition).getNode()).directlyContains(node))
+//            {
+//                System.err.println("Bloody Murder!");
+//            }
+            fDirectlyContained = directlyContained;
         }
         if (!write)
         {

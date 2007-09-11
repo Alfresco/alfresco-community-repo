@@ -29,7 +29,6 @@ import java.lang.reflect.Method;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionResourceInterceptor;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -53,7 +52,7 @@ public class SessionSizeManagementTest extends BaseNodeServiceTest
     {
         try
         {
-            Class clazz = SessionSizeManagementTest.class;
+            Class<SessionSizeManagementTest> clazz = SessionSizeManagementTest.class;
             createNodesMethod = clazz.getMethod(
                     "createNodes",
                     new Class[] {NodeService.class, Integer.TYPE, Boolean.TYPE});
@@ -118,9 +117,6 @@ public class SessionSizeManagementTest extends BaseNodeServiceTest
         NodeService nodeService = getNodeService();
         createNodes(nodeService, LOAD_COUNT, false);
         // We can't check the session size as this is dependent on machine speed
-        
-        // Now flush integrity to be sure things are not broken
-        AlfrescoTransactionSupport.flush();
     }
     
     /**
@@ -136,8 +132,5 @@ public class SessionSizeManagementTest extends BaseNodeServiceTest
         }
         
         createNodes(nodeService, LOAD_COUNT, true);
-        
-        // Now flush integrity to be sure things are not broken
-        AlfrescoTransactionSupport.flush();
     }
 }

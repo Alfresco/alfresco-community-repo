@@ -30,7 +30,7 @@ import java.io.Serializable;
  * Hold a single version root.
  * @author britt
  */
-class VersionRootImpl implements VersionRoot, Serializable
+public class VersionRootImpl implements VersionRoot, Serializable
 {
     static final long serialVersionUID = 8826954538210455917L;
     
@@ -126,7 +126,7 @@ class VersionRootImpl implements VersionRoot, Serializable
         fCreator = creator;
     }
 
-    public long getId()
+    public Long getId()
     {
         return fID;
     }

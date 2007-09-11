@@ -249,36 +249,73 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
         {
             String documentProperty = element.getKey();
             XPathExpression xpathExpression = element.getValue();
-            // Execute it
-            NodeList nodeList = (NodeList) xpathExpression.evaluate(document, XPathConstants.NODESET);
-            // Convert the value
+            // Get the value, assuming it is a nodeset
             Serializable value = null;
-            int nodeCount = nodeList.getLength();
-            if (nodeCount == 0)
+            try
             {
-                // No result
+                value = getNodeSetValue(document, xpathExpression);
             }
-            else if (nodeCount == 1)
+            catch (XPathExpressionException e)
             {
-                Node node = nodeList.item(0);
-                // Get the string value
-                value = node.getTextContent();
-            }
-            else
-            {
-                // Make a collection of the values
-                ArrayList<String> stringValues = new ArrayList<String>(5);
-                for (int i = 0; i < nodeCount; i++)
-                {
-                    stringValues.add(nodeList.item(i).getTextContent());
-                }
-                value = stringValues;
+                // That didn't work, so give it a try as a STRING
+                value = getStringValue(document, xpathExpression);
             }
             // Put the value
             rawProperties.put(documentProperty, value);
         }
         // Done
         return rawProperties;
+    }
+    
+    private Serializable getStringValue(Document document, XPathExpression xpathExpression) throws XPathExpressionException
+    {
+        String value = (String) xpathExpression.evaluate(document, XPathConstants.STRING);
+        // Done
+        return value;
+    }
+    
+    private Serializable getNodeSetValue(Document document, XPathExpression xpathExpression) throws XPathExpressionException
+    {
+        // Execute it
+        NodeList nodeList = null;
+        try
+        {
+            nodeList = (NodeList) xpathExpression.evaluate(document, XPathConstants.NODESET);
+        }
+        catch (XPathExpressionException e)
+        {
+            // Expression didn't evaluate to a nodelist
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Unable to evaluate expression and return a NODESET: " + xpathExpression);
+            }
+            throw e;
+        }
+        // Convert the value
+        Serializable value = null;
+        int nodeCount = nodeList.getLength();
+        if (nodeCount == 0)
+        {
+            // No result
+        }
+        else if (nodeCount == 1)
+        {
+            Node node = nodeList.item(0);
+            // Get the string value
+            value = node.getTextContent();
+        }
+        else
+        {
+            // Make a collection of the values
+            ArrayList<String> stringValues = new ArrayList<String>(5);
+            for (int i = 0; i < nodeCount; i++)
+            {
+                stringValues.add(nodeList.item(i).getTextContent());
+            }
+            value = stringValues;
+        }
+        // Done
+        return value;
     }
     
     /**

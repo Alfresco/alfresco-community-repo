@@ -355,7 +355,7 @@ public class ArchiveAndRestoreTest extends TestCase
         verifyNodeExistence(bb_, true);
         
         // flush
-        AlfrescoTransactionSupport.flush();
+        //AlfrescoTransactionSupport.flush();
         
         // check that the required properties are present and correct
         Map<QName, Serializable> bb_Properties = nodeService.getProperties(bb_);
@@ -383,7 +383,7 @@ public class ArchiveAndRestoreTest extends TestCase
         verifyChildAssocExistence(childAssocBtoBB_, true);
         
         // flush
-        AlfrescoTransactionSupport.flush();
+        //AlfrescoTransactionSupport.flush();
         
         // restore the node
         nodeService.restoreNode(b_, null, null, null);
@@ -398,7 +398,7 @@ public class ArchiveAndRestoreTest extends TestCase
         nodeService.deleteNode(a);
 
         // flush
-        AlfrescoTransactionSupport.flush();
+        //AlfrescoTransactionSupport.flush();
         
         // restore in reverse order
         nodeService.restoreNode(a_, null, null, null);
@@ -414,7 +414,7 @@ public class ArchiveAndRestoreTest extends TestCase
         nodeService.deleteNode(b);
 
         // flush
-        AlfrescoTransactionSupport.flush();
+        //AlfrescoTransactionSupport.flush();
         
         // restore in reverse order
         nodeService.restoreNode(b_, null, null, null);
@@ -430,7 +430,7 @@ public class ArchiveAndRestoreTest extends TestCase
         nodeService.deleteNode(b);
 
         // flush
-        AlfrescoTransactionSupport.flush();
+        //AlfrescoTransactionSupport.flush();
         
         // in restoring 'a' first, there will be some associations that won't be recreated
         nodeService.restoreNode(a_, null, null, null);
@@ -486,7 +486,7 @@ public class ArchiveAndRestoreTest extends TestCase
             cumulatedArchiveTimeNs += (end - start);
 
             // flush
-            AlfrescoTransactionSupport.flush();
+            //AlfrescoTransactionSupport.flush();
             
             // now restore
             start = System.nanoTime();

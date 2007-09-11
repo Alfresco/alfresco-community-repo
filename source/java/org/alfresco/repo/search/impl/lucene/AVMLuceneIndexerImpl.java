@@ -1545,16 +1545,30 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         }
     }
 
+    
     public boolean hasIndexBeenCreated(String store)
     {
-        IndexReader mainReader = null;
+        return hasIndexBeenCreatedimpl(store, IndexChannel.MAIN) || hasIndexBeenCreatedimpl(store, IndexChannel.DELTA);
+    }
+    
+    public boolean hasIndexBeenCreatedimpl(String store, IndexChannel channel)
+    {
+        IndexReader reader = null;
         try
         {
-            mainReader = getReader();
+            if (channel == IndexChannel.DELTA)
+            {
+                flushPending();
+                reader = getDeltaReader();
+            }
+            else
+            {
+                reader = getReader();
+            }
             TermDocs termDocs = null;
             try
             {
-                termDocs = mainReader.termDocs(new Term("ISROOT", "T"));
+                termDocs = reader.termDocs(new Term("ISROOT", "T"));
                 return termDocs.next();
             }
             finally
@@ -1573,9 +1587,17 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         {
             try
             {
-                if (mainReader != null)
+
+                if (reader != null)
                 {
-                    mainReader.close();
+                    if (channel == IndexChannel.DELTA)
+                    {
+                        closeDeltaReader();
+                    }
+                    else
+                    {
+                        reader.close();
+                    }
                 }
             }
             catch (IOException e)

@@ -51,7 +51,7 @@ public interface VersionRoot
     /**
      * @return the id
      */
-    public long getId();
+    public Long getId();
 
     /**
      * @param id the id to set

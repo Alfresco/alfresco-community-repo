@@ -737,7 +737,15 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             return true;
         }
-//        layer = fAVMService.forceCopy(layer.getPath());
+        List<AVMDifference> diffs = compare(-1, layer.getPath(), -1, underlying.getPath(), null);
+        if (diffs.size() == 0)
+        {
+            for (String name : layerListing.keySet())
+            {
+                fAVMRepository.flatten(layer.getPath(), name);
+            }
+            return true;
+        }
         // Grab the listing 
         Map<String, AVMNodeDescriptor> underListing =
             fAVMService.getDirectoryListing(underlying, true);

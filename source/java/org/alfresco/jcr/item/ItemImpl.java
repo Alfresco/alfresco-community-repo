@@ -38,7 +38,6 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.version.VersionException;
 
 import org.alfresco.jcr.session.SessionImpl;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 
 
 /**
@@ -107,7 +106,6 @@ public abstract class ItemImpl implements Item
      */
     public void save() throws AccessDeniedException, ItemExistsException, ConstraintViolationException, InvalidItemStateException, ReferentialIntegrityException, VersionException, LockException, NoSuchNodeTypeException, RepositoryException
     {
-        AlfrescoTransactionSupport.flush();
     }
 
     /* (non-Javadoc)

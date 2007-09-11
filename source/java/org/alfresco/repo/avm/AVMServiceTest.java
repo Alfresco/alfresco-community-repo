@@ -254,13 +254,13 @@ public class AVMServiceTest extends AVMServiceTestBase
             
             props = new HashMap<QName, PropertyValue>();
             QName n1 = QName.createQName("silly.uri", "Prop1");
-            PropertyValue p1 = new PropertyValue(null, new Date(System.currentTimeMillis()));
+            PropertyValue p1 = new PropertyValue(DataTypeDefinition.DATETIME, new Date(System.currentTimeMillis()));
             props.put(n1, p1);
             QName n2 = QName.createQName("silly.uri", "Prop2");
-            PropertyValue p2 = new PropertyValue(null, "A String Property.");
+            PropertyValue p2 = new PropertyValue(DataTypeDefinition.TEXT, "A String Property.");
             props.put(n2, p2);
             QName n3 = QName.createQName("silly.uri", "Prop3");
-            PropertyValue p3 = new PropertyValue(null, 42);
+            PropertyValue p3 = new PropertyValue(DataTypeDefinition.INT, 42);
             props.put(n3, p3);
             fService.setNodeProperties("main:/a/b/c/bar", props);
             fService.createSnapshot("main", null, null);
@@ -5187,11 +5187,11 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.addAspect("main:/a/b/c/foo", ContentModel.ASPECT_TITLED);
             fService.addAspect("main:/a/b/c/foo", ContentModel.ASPECT_AUDITABLE);
             Map<QName, PropertyValue> properties = new HashMap<QName, PropertyValue>();
-            properties.put(ContentModel.PROP_ACCESSED, new PropertyValue(null, new Date(System.currentTimeMillis())));
-            properties.put(ContentModel.PROP_CREATED, new PropertyValue(null, new Date(System.currentTimeMillis())));
-            properties.put(ContentModel.PROP_MODIFIED, new PropertyValue(null, new Date(System.currentTimeMillis())));
-            properties.put(ContentModel.PROP_CREATOR, new PropertyValue(null, "Giles"));
-            properties.put(ContentModel.PROP_MODIFIER, new PropertyValue(null, "Quentin"));
+            properties.put(ContentModel.PROP_ACCESSED, new PropertyValue(DataTypeDefinition.DATETIME, new Date(System.currentTimeMillis())));
+            properties.put(ContentModel.PROP_CREATED, new PropertyValue(DataTypeDefinition.DATETIME, new Date(System.currentTimeMillis())));
+            properties.put(ContentModel.PROP_MODIFIED, new PropertyValue(DataTypeDefinition.DATETIME, new Date(System.currentTimeMillis())));
+            properties.put(ContentModel.PROP_CREATOR, new PropertyValue(DataTypeDefinition.TEXT, "Giles"));
+            properties.put(ContentModel.PROP_MODIFIER, new PropertyValue(DataTypeDefinition.TEXT, "Quentin"));
             fService.setNodeProperties("main:/a/b/c/foo", properties);
             fService.createSnapshot("main", null, null);
             

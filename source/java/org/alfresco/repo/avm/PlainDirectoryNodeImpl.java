@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
+import org.alfresco.util.Pair;
 
 /**
  * A plain directory.  No monkey tricks except for possiblyCopy.
@@ -185,7 +186,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      * @return The child or null.
      */
     @SuppressWarnings("unchecked")
-    public AVMNode lookupChild(Lookup lPath, String name, boolean includeDeleted)
+    public Pair<AVMNode, Boolean> lookupChild(Lookup lPath, String name, boolean includeDeleted)
     {
         ChildKey key = new ChildKey(this, name);
         ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
@@ -196,7 +197,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         }
         // We're doing the hand unrolling of the proxy because
         // Hibernate/CGLIB proxies are broken.
-        return AVMNodeUnwrapper.Unwrap(entry.getChild());
+        return new Pair<AVMNode, Boolean>(AVMNodeUnwrapper.Unwrap(entry.getChild()), true);
     }
 
     /**

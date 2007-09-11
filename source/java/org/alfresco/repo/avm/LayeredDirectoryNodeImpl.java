@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
+import org.alfresco.util.Pair;
 
 /**
  * A layered directory node.  A layered directory node points at
@@ -507,7 +508,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @return The child or null if not found.
      */
     @SuppressWarnings("unchecked")
-    public AVMNode lookupChild(Lookup lPath, String name, boolean includeDeleted)
+    public Pair<AVMNode, Boolean> lookupChild(Lookup lPath, String name, boolean includeDeleted)
     {
         ChildKey key = new ChildKey(this, name);
         ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
@@ -517,7 +518,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             {
                 return null;
             }
-            return AVMNodeUnwrapper.Unwrap(entry.getChild());
+            return new Pair<AVMNode, Boolean>(AVMNodeUnwrapper.Unwrap(entry.getChild()), true);
         }
         // Don't check our underlying directory if we are opaque.
         if (fOpacity)
@@ -529,7 +530,11 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         if (lookup != null)
         {
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
-            AVMNode retVal = dir.lookupChild(lookup, name, includeDeleted);
+            Pair<AVMNode, Boolean> retVal = dir.lookupChild(lookup, name, includeDeleted);
+            if (retVal != null)
+            {
+                retVal.setSecond(false);
+            }
             lPath.setFinalStore(lookup.getFinalStore());
             return retVal;
         }
@@ -573,12 +578,12 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         if (lookup != null)
         {
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
-            AVMNode child = dir.lookupChild(lookup, name, includeDeleted);
+            Pair<AVMNode, Boolean> child = dir.lookupChild(lookup, name, includeDeleted);
             if (child == null)
             {
                 return null;
             }
-            return child.getDescriptor(lookup);
+            return child.getFirst().getDescriptor(lookup);
         }
         else
         {
@@ -613,7 +618,15 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
         else
         {
-            child = lookupChild(lPath, name, false);
+            Pair<AVMNode, Boolean> temp = lookupChild(lPath, name, false);
+            if (temp == null)
+            {
+                child = null;
+            }
+            else
+            {
+                child = temp.getFirst();
+            }
             indirect = true;            
         }
         if (child != null && (indirect || child.getStoreNew() == null || child.getAncestor() != null))
@@ -893,7 +906,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             throw new AVMBadArgumentException("Non primary layered directories cannot be linked.");
         }
         // Look for an existing child of that name.
-        AVMNode existing = lookupChild(lPath, name, true);
+        Pair<AVMNode, Boolean> temp = lookupChild(lPath, name, true);
+        AVMNode existing = (temp == null) ? null : temp.getFirst();
         ChildKey key = new ChildKey(this, name);
         if (existing != null)
         {

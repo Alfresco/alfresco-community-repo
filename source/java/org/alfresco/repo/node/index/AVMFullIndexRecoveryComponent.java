@@ -1,5 +1,6 @@
 package org.alfresco.repo.node.index;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.alfresco.repo.node.index.FullIndexRecoveryComponent.RecoveryMode;
@@ -50,15 +51,13 @@ public class AVMFullIndexRecoveryComponent extends AbstractReindexComponent
     {
         this.lockServer = lockServer;
     }
-    
 
     public void setAvmService(AVMService avmService)
     {
         this.avmService = avmService;
     }
 
-    public void setAvmSnapShotTriggeredIndexingMethodInterceptor(
-            AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor)
+    public void setAvmSnapShotTriggeredIndexingMethodInterceptor(AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor)
     {
         this.avmSnapShotTriggeredIndexingMethodInterceptor = avmSnapShotTriggeredIndexingMethodInterceptor;
     }
@@ -72,76 +71,179 @@ public class AVMFullIndexRecoveryComponent extends AbstractReindexComponent
     private void processStores()
     {
         List<AVMStoreDescriptor> stores = avmService.getStores();
-        if(stores.size() == 0)
+        LinkedHashMap<String, RecoveryMode> actions = new LinkedHashMap<String, RecoveryMode>();
+        if (stores.size() == 0)
         {
             return;
         }
-        int count = 0;
-        int tracker = -1;
-        logger.info("Checking indexes for AVM Stores");
-        for (AVMStoreDescriptor store : stores)
+        switch (recoveryMode)
         {
-            if (isShuttingDown())
+        case AUTO:
+        case VALIDATE:
+            int count = 0;
+            int tracker = -1;
+            if (logger.isDebugEnabled())
             {
-                return;
+                logger.debug("Checking indexes for AVM Stores: " + recoveryMode);
             }
-            processStore(store.getName());
-            count++;
-            if (count*10l/stores.size() > tracker)
-            {   
-                tracker = (int)(count*10l/stores.size());
-                logger.info(" Stores   "+(tracker*10)+"% complete");
+            for (AVMStoreDescriptor store : stores)
+            {
+                if (isShuttingDown())
+                {
+                    return;
+                }
+                actions.put(store.getName(), checkStore(store.getName()));
+                count++;
+                if (count * 10l / stores.size() > tracker)
+                {
+                    tracker = (int) (count * 10l / stores.size());
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("  Store check   " + (tracker * 10) + "% complete");
+                    }
+                }
+            }
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Finished checking indexes for AVM Stores");
+            }
+            break;
+        case FULL:
+        case NONE:
+            for (AVMStoreDescriptor store : stores)
+            {
+                if (isShuttingDown())
+                {
+                    return;
+                }
+                actions.put(store.getName(), checkStore(store.getName()));
+            }
+            break;
+        default:
+        }
+
+        int full = 0;
+        int auto = 0;
+        int invalid = 0;
+        for (String store : actions.keySet())
+        {
+            RecoveryMode mode = actions.get(store);
+            switch (mode)
+            {
+            case AUTO:
+                auto++;
+                break;
+            case FULL:
+                full++;
+                break;
+            case VALIDATE:
+                invalid++;
+                break;
+            case NONE:
+            default:
             }
         }
-        logger.info("Finished checking indexes for AVM Stores");
+
+        if (recoveryMode != RecoveryMode.NONE)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Invalid indexes: " + invalid);
+                logger.debug("Indexes for full rebuild: " + full);
+                logger.debug("Indexes for auto update: " + auto);
+            }
+        }
+
+        int count = 0;
+        int tracker = -1;
+        int total = full + auto;
+        if (total > 0)
+        {
+            logger.info("Rebuilding indexes for " + total + " AVM Stores");
+            for (String store : actions.keySet())
+            {
+                RecoveryMode mode = actions.get(store);
+                if (isShuttingDown())
+                {
+                    return;
+                }
+                if ((mode == RecoveryMode.FULL) || (mode == RecoveryMode.AUTO))
+                {
+                    processStore(store, mode);
+                    count++;
+                }
+                if (count * 10l / total > tracker)
+                {
+                    tracker = (int) (count * 10l / total);
+                    logger.info("  Reindex   " + (tracker * 10) + "% complete");
+                }
+            }
+            logger.info("Finished rebuilding indexes for AVM Stores");
+        }
+
     }
 
-    private void processStore(String store)
+    private RecoveryMode checkStore(String store)
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("Performing AVM index recovery for type: " + recoveryMode + " on store " + store);
+            logger.debug("Checking AVM store for index recovery: " + recoveryMode + " on store " + store);
         }
 
         // do we just ignore
         if (recoveryMode == RecoveryMode.NONE)
         {
-            return;
+            return RecoveryMode.NONE;
         }
-        // check the level of cover required
-        boolean fullRecoveryRequired = false;
+
+        // Nothing to do for unindexed stores
+        if (avmSnapShotTriggeredIndexingMethodInterceptor.getIndexMode(store) == IndexMode.UNINDEXED)
+        {
+
+            if (!avmSnapShotTriggeredIndexingMethodInterceptor.hasIndexBeenCreated(store))
+            {
+                logger.warn("    Index for avm store " + store + " is out of date");
+                return recoveryMode;
+            }
+            else
+            {
+                return RecoveryMode.NONE;
+            }
+        }
+
         if (recoveryMode == RecoveryMode.FULL) // no validate required
         {
-            fullRecoveryRequired = true;
+            return RecoveryMode.FULL;
         }
         else
         // validate first
         {
-            if(avmSnapShotTriggeredIndexingMethodInterceptor.getIndexMode(store) == IndexMode.UNINDEXED)
+            if (!avmSnapShotTriggeredIndexingMethodInterceptor.hasIndexBeenCreated(store))
             {
-                return;
+                logger.warn("    Index for avm store " + store + " is out of date");
+                return recoveryMode;
             }
-                
             int lastActualSnapshotId = avmService.getLatestSnapshotID(store);
             if (lastActualSnapshotId <= 0)
             {
-                return;
+                return RecoveryMode.NONE;
             }
             int lastIndexedSnapshotId = avmSnapShotTriggeredIndexingMethodInterceptor.getLastIndexedSnapshot(store);
             if (lastActualSnapshotId != lastIndexedSnapshotId)
             {
-                logger.warn("Index for avm store " + store + " is out of date");
-                // this store isn't up to date
-                if (recoveryMode == RecoveryMode.VALIDATE)
-                {
-                    // the store is out of date - validation failed
-                }
-                else if (recoveryMode == RecoveryMode.AUTO)
-                {
-                    fullRecoveryRequired = true;
-                }
+                logger.warn("    Index for avm store " + store + " is out of date");
+                return recoveryMode;
+            }
+            else
+            {
+                return recoveryMode.NONE;
             }
         }
+
+    }
+
+    private void processStore(String store, RecoveryMode mode)
+    {
 
         // put the server into read-only mode for the duration
         boolean allowWrite = !transactionService.isReadOnly();
@@ -153,11 +255,8 @@ public class AVMFullIndexRecoveryComponent extends AbstractReindexComponent
                 transactionService.setAllowWrite(false);
             }
 
-            // do we need to perform a full recovery
-            if (fullRecoveryRequired)
-            {
-                recoverStore(store);
-            }
+            recoverStore(store, mode);
+
         }
         finally
         {
@@ -167,56 +266,97 @@ public class AVMFullIndexRecoveryComponent extends AbstractReindexComponent
 
     }
 
-    private void recoverStore(String store)
+    private void recoverStore(String store, RecoveryMode mode)
     {
         int tracker = -1;
-        int latest = avmService.getLatestSnapshotID(store);
-        if(latest <= 0)
+
+        if (mode == RecoveryMode.AUTO)
         {
-            return;
+            logger.info("    Auto recovering index for " + store);
         }
-        logger.info("Recovery for "+store);
-        
-        if(!avmSnapShotTriggeredIndexingMethodInterceptor.hasIndexBeenCreated(store))
+        else if (mode == RecoveryMode.FULL)
+        {
+            logger.info("    Rebuilding index for " + store);
+        }
+
+        if (!avmSnapShotTriggeredIndexingMethodInterceptor.hasIndexBeenCreated(store))
         {
             avmSnapShotTriggeredIndexingMethodInterceptor.createIndex(store);
         }
-        for (int i = 0; i <= latest; i++)
+
+        int latest = avmService.getLatestSnapshotID(store);
+        if (latest <= 0)
         {
-            if (isShuttingDown())
+            return;
+        }
+
+        boolean wasRecovered = false;
+
+        if (avmSnapShotTriggeredIndexingMethodInterceptor.getIndexMode(store) != IndexMode.UNINDEXED)
+        {
+            for (int i = 0; i <= latest; i++)
             {
-                return;
-            }
-            recoverSnapShot(store, i);
-            if (i*10l/latest > tracker)
-            {   
-                tracker = (int)(i*10l/latest);
-                logger.info("    Store "+store +" "+(tracker*10)+"% complete");
+                if (isShuttingDown())
+                {
+                    return;
+                }
+                wasRecovered = recoverSnapShot(store, i, mode, wasRecovered);
+                if (i * 10l / latest > tracker)
+                {
+                    tracker = (int) (i * 10l / latest);
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("      Store " + store + " " + (tracker * 10) + "% complete");
+                    }
+                }
             }
         }
-        logger.info("Recovery for "+store+" done");
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("    Index updated for " + store);
+        }
     }
 
-    private void recoverSnapShot(final String store, final int id)
+    private boolean recoverSnapShot(final String store, final int id, final RecoveryMode mode, final boolean wasRecovered)
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("Reindexing avm store: " + store + " snapshot id " + id);
+            logger.debug("        Reindexing avm store: " + store + " snapshot id " + id);
         }
 
-        RetryingTransactionCallback<Object> reindexWork = new RetryingTransactionCallback<Object>()
+        RetryingTransactionCallback<Boolean> reindexWork = new RetryingTransactionCallback<Boolean>()
         {
-            public Object execute() throws Exception
+            public Boolean execute() throws Exception
             {
-                if (!avmSnapShotTriggeredIndexingMethodInterceptor.isSnapshotIndexed(store, id))
+                if (wasRecovered)
                 {
                     avmSnapShotTriggeredIndexingMethodInterceptor.indexSnapshot(store, id - 1, id);
+                    return true;
                 }
-                // done
-                return null;
+                else
+                {
+                    if (mode == RecoveryMode.AUTO)
+                    {
+                        if (!avmSnapShotTriggeredIndexingMethodInterceptor.isSnapshotIndexed(store, id))
+                        {
+                            avmSnapShotTriggeredIndexingMethodInterceptor.indexSnapshot(store, id - 1, id);
+                            return true;
+                        }
+                        else
+                        {
+                            return wasRecovered;
+                        }
+                    }
+                    else
+                    {
+                        avmSnapShotTriggeredIndexingMethodInterceptor.indexSnapshot(store, id - 1, id);
+                        return true;
+                    }
+                }
+
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork, true, true);
+        return transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork, true, true);
         // done
     }
 

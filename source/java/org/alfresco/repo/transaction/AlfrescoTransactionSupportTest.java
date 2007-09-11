@@ -157,10 +157,6 @@ public class AlfrescoTransactionSupportTest extends TestCase
         // register it
         AlfrescoTransactionSupport.bindListener(listener);
 
-        // test flush
-        AlfrescoTransactionSupport.flush();
-        assertTrue("flush not called on listener", strings.contains("flush"));
-        
         // test commit
         txn.commit();
         assertTrue("beforeCommit not called on listener", strings.contains("beforeCommit"));

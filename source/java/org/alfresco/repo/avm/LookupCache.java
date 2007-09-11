@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.util.Pair;
 import org.apache.log4j.Logger;
 
 /**
@@ -104,14 +105,16 @@ public class LookupCache
         }
         else
         {
-            dir = fAVMNodeDAO.getAVMStoreRoot(store, version);
+            VersionRoot vRoot = AVMDAOs.Instance().fVersionRootDAO.getByVersionID(store, version);
+            dir = vRoot.getRoot();
+//            dir = fAVMNodeDAO.getAVMStoreRoot(store, version);
         }
         if (dir == null)
         {
             return null;
         }
         // Add an entry for the root.
-        result.add(dir, "", write);
+        result.add(dir, "", true, write);
         dir = (DirectoryNode)result.getCurrentNode();
         if (path.size() == 1 && path.get(0).equals(""))
         {
@@ -122,28 +125,28 @@ public class LookupCache
         // before the end.
         for (int i = 0; i < path.size() - 1; i++)
         {
-            AVMNode child = dir.lookupChild(result, path.get(i), includeDeleted);
+            Pair<AVMNode, Boolean> child = dir.lookupChild(result, path.get(i), includeDeleted);
             if (child == null)
             {
                 return null;
             }
             // Every element that is not the last needs to be a directory.
-            if (child.getType() != AVMNodeType.PLAIN_DIRECTORY &&
-                child.getType() != AVMNodeType.LAYERED_DIRECTORY)
+            if (child.getFirst().getType() != AVMNodeType.PLAIN_DIRECTORY &&
+                child.getFirst().getType() != AVMNodeType.LAYERED_DIRECTORY)
             {
                 return null;
             }
-            result.add(child, path.get(i), write);
+            result.add(child.getFirst(), path.get(i), child.getSecond(), write);
             dir = (DirectoryNode)result.getCurrentNode();
         }
         // Now look up the last element.
-        AVMNode child = dir.lookupChild(result, path.get(path.size() - 1),
+        Pair<AVMNode, Boolean> child = dir.lookupChild(result, path.get(path.size() - 1),
                                         includeDeleted);
         if (child == null)
         {
             return null;
         }
-        result.add(child, path.get(path.size() - 1), write);
+        result.add(child.getFirst(), path.get(path.size() - 1), child.getSecond(), write);
         fCache.put(key, result);
         return result;        
     }

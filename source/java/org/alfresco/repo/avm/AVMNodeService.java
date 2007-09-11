@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -1194,7 +1195,12 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                         }
                     }
                 }
-                values.put(qName, new PropertyValue(null, properties.get(qName)));
+                DataTypeDefinition def = dictionaryService.getDataType(qName);
+                if (def == null)
+                {
+                    def = dictionaryService.getDataType(properties.get(qName).getClass());
+                }
+                values.put(qName, new PropertyValue(def.getName(), properties.get(qName)));
             }
             fAVMService.setNodeProperties(avmVersionPath.getSecond(), values);
             // Invoke policy behaviors.
@@ -1287,7 +1293,12 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         try
         {
             // Map<QName, Serializable> propsBefore = getProperties(nodeRef);
-            fAVMService.setNodeProperty(avmVersionPath.getSecond(), qname, new PropertyValue(null, value));
+            DataTypeDefinition def = dictionaryService.getDataType(qname);
+            if (def == null)
+            {
+                def = dictionaryService.getDataType(value.getClass());
+            }
+            fAVMService.setNodeProperty(avmVersionPath.getSecond(), qname, new PropertyValue(def.getName(), value));
             // Map<QName, Serializable> propsAfter = getProperties(nodeRef);
             // Invoke policy behaviors.
             // invokeOnUpdateNode(nodeRef);

@@ -24,12 +24,16 @@
 package org.alfresco.repo.avm.hibernate;
 
 import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.alfresco.repo.avm.AVMNode;
 import org.alfresco.repo.avm.AVMStore;
 import org.alfresco.repo.avm.VersionRoot;
+import org.alfresco.repo.avm.VersionRootImpl;
 import org.alfresco.repo.avm.VersionRootDAO;
+import org.alfresco.util.Pair;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -40,12 +44,15 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 class VersionRootDAOHibernate extends HibernateDaoSupport implements
         VersionRootDAO
 {
+    private LinkedHashMap<Pair<Long, Integer>, Long> fCache;
+    
     /**
      * Do nothing constructor.
      */
     public VersionRootDAOHibernate()
     {
         super();
+        fCache = new LinkedHashMap<Pair<Long, Integer>, Long>();
     }
     
     /**
@@ -128,12 +135,37 @@ class VersionRootDAOHibernate extends HibernateDaoSupport implements
      * @param id The version id.
      * @return The VersionRoot or null if not found.
      */
-    public VersionRoot getByVersionID(AVMStore store, int id)
+    public synchronized VersionRoot getByVersionID(AVMStore store, int id)
     {
+        Long vID = fCache.get(new Pair<Long, Integer>(store.getId(), id));
+        if (vID != null)
+        {
+            VersionRoot root = (VersionRoot)getSession().get(VersionRootImpl.class, vID);            
+            if (root != null)
+            {
+                return root;
+            }
+            fCache.remove(new Pair<Long, Integer>(store.getId(), id));
+        }
         Query query = getSession().getNamedQuery("VersionRoot.VersionByID");
         query.setEntity("store", store);
         query.setInteger("version", id);
-        return (VersionRoot)query.uniqueResult();
+        VersionRoot root = (VersionRoot)query.uniqueResult();
+        if (root != null)
+        {
+            vID = root.getId();
+            if (vID != null)
+            {
+                if (fCache.size() >= 10)
+                {
+                    Iterator<Pair<Long, Integer>> iter = fCache.keySet().iterator();
+                    iter.next();
+                    iter.remove();
+                }
+                fCache.put(new Pair<Long, Integer>(store.getId(), id), vID);
+            }
+        }
+        return root;
     }
 
     /**

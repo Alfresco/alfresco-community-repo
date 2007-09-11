@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 
 /**
  * A Repository contains a current root directory and a list of
@@ -326,7 +327,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        AVMNode child = dir.lookupChild(lPath, name, true);
+        Pair<AVMNode, Boolean> temp = dir.lookupChild(lPath, name, true);
+        AVMNode child = (temp == null) ? null : temp.getFirst();
         if (child != null && child.getType() != AVMNodeType.DELETED_NODE)
         {
             throw new AVMExistsException("Child exists: " + name);
@@ -368,7 +370,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + dstPath + " not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        AVMNode child = dir.lookupChild(lPath, name, true);
+        Pair<AVMNode, Boolean> temp = dir.lookupChild(lPath, name, true);
+        AVMNode child = (temp == null) ? null : temp.getFirst();
         if (child != null && child.getType() != AVMNodeType.DELETED_NODE)
         {
             throw new AVMExistsException("Child exists: " +  name);
@@ -411,7 +414,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        AVMNode child = dir.lookupChild(lPath, name, true);
+        Pair<AVMNode, Boolean> temp = dir.lookupChild(lPath, name, true);
+        AVMNode child = (temp == null) ? null : temp.getFirst();
         if (child != null && child.getType() != AVMNodeType.DELETED_NODE)
         {
             throw new AVMExistsException("Child exists: " + name);
@@ -446,7 +450,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        AVMNode child = dir.lookupChild(lPath, name, true);
+        Pair<AVMNode, Boolean> temp = dir.lookupChild(lPath, name, true);
+        AVMNode child = (temp == null) ? null : temp.getFirst();
         if (child != null && child.getType() != AVMNodeType.DELETED_NODE)
         {
             throw new AVMExistsException("Child exists: " + name);
@@ -483,7 +488,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + dstPath + " not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        AVMNode child = dir.lookupChild(lPath, name, true);
+        Pair<AVMNode, Boolean> temp = dir.lookupChild(lPath, name, true);
+        AVMNode child = (temp == null) ? null : temp.getFirst();
         if (child != null && child.getType() != AVMNodeType.DELETED_NODE)
         {
             throw new AVMExistsException("Child exists: " + name);
@@ -1431,7 +1437,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        AVMNode child = dir.lookupChild(lPath, name, true);
+        Pair<AVMNode, Boolean> temp = dir.lookupChild(lPath, name, true);
+        AVMNode child = (temp == null) ? null : temp.getFirst();
         if (child == null)
         {
             throw new AVMNotFoundException("Node not found: " + name);

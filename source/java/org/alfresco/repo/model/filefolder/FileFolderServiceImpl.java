@@ -600,6 +600,23 @@ public class FileFolderServiceImpl implements FileFolderService
                 NamespaceService.CONTENT_MODEL_1_0_URI,
                 QName.createValidLocalName(newName));
         
+        QName targetParentType = nodeService.getType(targetParentRef);
+        
+        // Fix AWC-1517
+        QName assocTypeQname = null;
+        if (dictionaryService.isSubClass(targetParentType, ContentModel.TYPE_FOLDER))
+        {
+        	assocTypeQname = ContentModel.ASSOC_CONTAINS; // cm:folder -> cm:contains
+        }
+        else if (dictionaryService.isSubClass(targetParentType, ContentModel.TYPE_CONTAINER))
+        {
+        	assocTypeQname = ContentModel.ASSOC_CHILDREN; // sys:container -> sys:children
+        }
+        else
+        {
+        	throw new InvalidTypeException("Unexpected type (" + targetParentType + ") for target parent: " + targetParentRef);
+        }
+               
         // move or copy
         NodeRef targetNodeRef = null;
         if (move)
@@ -611,7 +628,7 @@ public class FileFolderServiceImpl implements FileFolderService
                 ChildAssociationRef newAssocRef = nodeService.moveNode(
                         sourceNodeRef,
                         targetParentRef,
-                        assocRef.getTypeQName(),
+                        assocTypeQname,
                         qname);
                 targetNodeRef = newAssocRef.getChildRef();
             }
@@ -629,7 +646,7 @@ public class FileFolderServiceImpl implements FileFolderService
                 targetNodeRef = copyService.copy(
                         sourceNodeRef,
                         targetParentRef,
-                        assocRef.getTypeQName(),
+                        assocTypeQname,
                         qname,
                         true);
             }

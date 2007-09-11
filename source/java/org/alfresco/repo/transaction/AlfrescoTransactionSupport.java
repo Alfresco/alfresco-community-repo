@@ -35,7 +35,6 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcher;
-import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -352,22 +351,13 @@ public abstract class AlfrescoTransactionSupport
     }
     
     /**
-     * Flush in-transaction resources.  A transaction must be active.
-     * <p>
-     * The flush may include:
-     * <ul>
-     *   <li>{@link TransactionalDao#flush()}</li>
-     *   <li>{@link RuleService#executePendingRules()}</li>
-     *   <li>{@link IntegrityChecker#checkIntegrity()}</li>
-     * </ul>
-     *
+     * No-op
+     * 
+     * @deprecated      No longer does anything
      */
     public static void flush()
     {
-        // get transaction-local synchronization
-        TransactionSynchronizationImpl synch = getSynchronization();
-        // flush
-        synch.flush();
+        // No-op
     }
 
     /**
@@ -549,15 +539,6 @@ public abstract class AlfrescoTransactionSupport
         }
 
         /**
-         * Performs the in-transaction flushing.  Typically done during a transaction or
-         * before commit.
-         */
-        public void flush()
-        {
-           throw new UnsupportedOperationException("Manual flush no longer supported.");
-        }
-        
-        /**
          * @see AlfrescoTransactionSupport#SESSION_SYNCHRONIZATION_ORDER
          */
         @Override
@@ -589,7 +570,7 @@ public abstract class AlfrescoTransactionSupport
         /**
          * Pre-commit cleanup.
          * <p>
-         * Ensures that the session resources are {@link #flush() flushed}.
+         * Ensures that the session transaction listeners are property executed.
          * The Lucene indexes are then prepared.
          */
         @Override

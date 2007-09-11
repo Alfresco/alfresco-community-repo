@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
@@ -251,7 +252,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
      */
     private NodeRef getPivotNodeRef(NodeRef nodeRef)
     {
-       if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+       if (!nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM) && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
        {
           return multilingualContentService.getPivotTranslation(nodeRef);
        }

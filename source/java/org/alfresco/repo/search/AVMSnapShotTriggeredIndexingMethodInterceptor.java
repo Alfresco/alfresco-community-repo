@@ -469,6 +469,7 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
         if (indexer instanceof AVMLuceneIndexer)
         {
             AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
+            avmIndexer.flushPending();
             return avmIndexer.hasIndexBeenCreated(store);
         }
         return false;

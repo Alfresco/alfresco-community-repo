@@ -34,6 +34,7 @@ import java.util.Map;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -78,7 +79,7 @@ public class BulkLoader
         Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>();
         for (int i = 0; i < fPropertyCount; i++)
         {
-            props.put(QName.createQName("silly", "prop" + i), new PropertyValue(null, "I am property " + i));
+            props.put(QName.createQName("silly", "prop" + i), new PropertyValue(DataTypeDefinition.TEXT, "I am property " + i));
         }
         File file = new File(fsPath);
         String name = file.getName();

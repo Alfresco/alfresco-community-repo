@@ -51,14 +51,12 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.DNSNameMangler;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.alfresco.web.bean.wizard.InviteUsersWizard.UserGroupRole;
 import org.alfresco.web.forms.Form;
@@ -86,7 +84,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
 
    private static final String WEBAPP_DEFAULT = "ROOT";
 
-   protected final static Log LOGGER = LogFactory.getLog(CreateWebsiteWizard.class);
+   protected final static Log logger = LogFactory.getLog(CreateWebsiteWizard.class);
    
    protected boolean editMode = false;
    protected String dnsName;
@@ -171,8 +169,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
             WCMAppModel.TYPE_AVMWEBFOLDER);
       NodeRef nodeRef = fileInfo.getNodeRef();
       
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("Created website folder node with name: " + this.name);
+      if (logger.isDebugEnabled())
+         logger.debug("Created website folder node with name: " + this.name);
       
       // TODO: check that this dns is unique by querying existing store properties for a match
       String avmStore = DNSNameMangler.MakeDNSName(this.dnsName);
@@ -193,7 +191,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       
       // call a delegate wizard bean to provide invite user functionality
       InviteWebsiteUsersWizard wiz = getInviteUsersWizard();
-      wiz.init(null);
+      wiz.reset();
       wiz.setNode(new Node(nodeRef));
       wiz.setAvmStore(avmStore);
       wiz.setStandalone(false);

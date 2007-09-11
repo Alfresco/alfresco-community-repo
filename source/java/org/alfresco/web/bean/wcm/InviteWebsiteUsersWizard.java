@@ -59,9 +59,6 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
    /** the node representing the website */
    private Node website;
    
-   /** list of authorities with the Content Manager role */
-   private List<String> managers;
-   
    /** root AVM store the users are invited into */
    private String avmStore;
    
@@ -93,11 +90,19 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
       // only allow one selection per authority
       this.allowDuplicateAuthorities = false;
       this.website = null;
-      this.managers = null;
       this.avmStore = null;
       this.standalone = true;
    }
-
+   
+   public void reset()
+   {
+      this.isFinished = false;
+      this.allowDuplicateAuthorities = false;
+      this.website = null;
+      this.avmStore = null;
+      this.standalone = true;
+   }
+   
    /**
     * @see org.alfresco.web.bean.wizard.InviteUsersWizard#finishImpl(javax.faces.context.FacesContext, java.lang.String)
     */
@@ -108,7 +113,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
       
       // create a sandbox for each user appropriately with permissions based on role
       // build a list of managers who will have full permissions on ALL staging areas
-      this.managers = new ArrayList<String>(4);
+      List<String> managers = new ArrayList<String>(4);
       Set<String> existingUsers = new HashSet(8);
       if (isStandalone() == false)
       {
@@ -127,7 +132,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
                }
                if (AVMUtil.ROLE_CONTENT_MANAGER.equals(userRole.getRole()))
                {
-                  this.managers.add(userAuth);
+                  managers.add(userAuth);
                }
             }
          }
@@ -135,7 +140,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
          if (foundCurrentUser == false)
          {
             this.userGroupRoles.add(new UserGroupRole(currentUser, AVMUtil.ROLE_CONTENT_MANAGER, null));
-            this.managers.add(currentUser);
+            managers.add(currentUser);
          }
       }
       else
@@ -148,7 +153,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
             {
                if (AVMUtil.ROLE_CONTENT_MANAGER.equals(userRole.getRole()))
                {
-                  this.managers.add(userAuth);
+                  managers.add(userAuth);
                }
             }
          }
@@ -162,9 +167,9 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
             String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
             
             if (AVMUtil.ROLE_CONTENT_MANAGER.equals(userrole) &&
-                this.managers.contains(username) == false)
+                managers.contains(username) == false)
             {
-               this.managers.add(username);
+               managers.add(username);
             }
             
             // add each existing user to the exclude this - we cannot add them more than once!
@@ -185,7 +190,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
             if (existingUsers.contains(userAuth) == false)
             {
                SandboxInfo info = SandboxFactory.createUserSandbox(
-                     getAvmStore(), this.managers, userAuth, userRole.getRole());
+                     getAvmStore(), managers, userAuth, userRole.getRole());
                
                this.sandboxInfoList.add(info);
                
@@ -218,7 +223,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
             if (existingUsers.contains(username))
             {
                // only need to modify the sandboxes we haven't just created
-               SandboxFactory.updateSandboxManagers(getAvmStore(), this.managers, username);
+               SandboxFactory.updateSandboxManagers(getAvmStore(), managers, username);
             }
          }
       }
@@ -350,14 +355,6 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
       {
          return this.browseBean.getActionSpace();
       }
-   }
-
-   /**
-    * @return List of authorities with the Content Manager role
-    */
-   public List<String> getManagers()
-   {
-      return this.managers;
    }
 
    /**

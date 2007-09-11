@@ -2182,7 +2182,7 @@ dojo.declare("alfresco.xforms.MonthPicker",
                {
                  var result = [];
                  result.push({id: "month_empty", label: "", value: "", valid: false});
-                 for (var i = 0; i <= 12; i++)
+                 for (var i = 0; i < 12; i++)
                  {
                    var d = new Date();
                    d.setMonth(i);

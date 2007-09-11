@@ -339,6 +339,18 @@
             <action-listener>#{ClipboardBean.pasteAll}</action-listener>
          </action>
 
+         <!-- Add content -->
+
+        <action id="add_adm_content">
+           <permissions>
+               <permission allow="true">CreateChildren</permission>
+           </permissions>
+           <label-id>add_content</label-id>
+           <image>/images/icons/add.gif</image>
+           <action>dialog:addContent</action>
+           <action-listener>#{AddContentDialog.start}</action-listener>
+         </action>
+         
          <!-- Create content -->
          <action id="create_content">
             <permissions>
@@ -649,6 +661,12 @@
          <!-- the component is responsible for making the context Node object available with name
               of 'actionContext' so the actions can access it directly to get properties -->
 
+         <!-- Action for adding content - quick upload -->
+         <action-group id="add_content_menu">
+             <style>white-space:nowrap</style>
+             <action idref="add_adm_content" />
+         </action-group>
+         
          <!-- Actions for a document in the Browse screen -->
          <action-group id="document_browse">
             <show-link>false</show-link>

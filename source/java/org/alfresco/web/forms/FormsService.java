@@ -38,11 +38,16 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.Behaviour;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.search.impl.lucene.QueryParser;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -96,12 +101,23 @@ public final class FormsService
    public FormsService(final ContentService contentService,
                        final NodeService nodeService,
                        final NamespaceService namespaceService,
-                       final SearchService searchService)
+                       final SearchService searchService,
+                       final PolicyComponent policyComponent)
    {
       this.contentService = contentService;
       this.nodeService = nodeService;
       this.namespaceService = namespaceService;
       this.searchService = searchService;
+      policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"), 
+                                         WCMAppModel.TYPE_FORMFOLDER, 
+                                         new JavaBehaviour(this, 
+                                                           "handleMoveFormFolder", 
+                                                           Behaviour.NotificationFrequency.FIRST_EVENT));
+      policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"), 
+                                         WCMAppModel.TYPE_FORMFOLDER, 
+                                         new JavaBehaviour(this, 
+                                                           "handleDeleteFormFolder", 
+                                                           Behaviour.NotificationFrequency.FIRST_EVENT));
    }
    
    /**
@@ -174,18 +190,16 @@ public final class FormsService
     */
    public Collection<Form> getForms()
    {
-      final SearchParameters sp = new SearchParameters();
-      sp.addStore(Repository.getStoreRef());
-      sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-      sp.setQuery("+ASPECT:\"" + WCMAppModel.ASPECT_FORM + 
-                  "\" +PARENT:\"" + this.getContentFormsNodeRef() + "\"");
+      final String query =
+         "+ASPECT:\"" + WCMAppModel.ASPECT_FORM + 
+         "\" +PARENT:\"" + this.getContentFormsNodeRef() + "\"";
+      final ResultSet rs = this.searchService.query(Repository.getStoreRef(),
+                                                    SearchService.LANGUAGE_LUCENE,
+                                                    query);
       if (LOGGER.isDebugEnabled())
-         LOGGER.debug("running query [" + sp.getQuery() + "]");
-      final ResultSet rs = this.searchService.query(sp);
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("received " + rs.length() + " results");
+          LOGGER.debug("found " + rs.length() + " form definitions");
       final Collection<Form> result = new ArrayList<Form>(rs.length());
-      for (ResultSetRow row : rs)
+      for (final ResultSetRow row : rs)
       {
          result.add(this.getForm(row.getNodeRef()));
       }
@@ -268,5 +282,88 @@ public final class FormsService
    public Rendition getRendition(final NodeRef nodeRef)
    {
       return new RenditionImpl(nodeRef, this);
+   }
+
+   public List<WebProject> getAssociatedWebProjects(final Form form)
+   {
+      final List<NodeRef> formConfigurations = this.getFormConfigurations(form.getName());
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("found " + formConfigurations.size() + 
+                      " web projects configured with " + form.getName());
+      }
+      final List<WebProject> result = new ArrayList<WebProject>(formConfigurations.size());
+      for (final NodeRef ref : formConfigurations)
+      {
+         final List<ChildAssociationRef> parents = this.nodeService.getParentAssocs(ref);
+         assert parents.size() != 1 : ("expected only one parent for " + ref +
+                                       " got " + parents.size());
+         result.add(new WebProject(parents.get(0).getParentRef()));
+      }
+      return result;
+   }
+
+   // event handlers
+
+   public void handleMoveFormFolder(final ChildAssociationRef oldChild, final ChildAssociationRef newChild)
+   {
+      final String oldName = oldChild.getQName().getLocalName();
+      final String newName = newChild.getQName().getLocalName();
+      final List<NodeRef> formConfigurations = this.getFormConfigurations(oldName);
+      // find all webprojects that used the old name
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("handling rename (" + oldName +
+                      " => " + newName + 
+                      ") for " + formConfigurations.size());
+      }
+      for (final NodeRef ref : formConfigurations)
+      {
+         this.nodeService.setProperty(ref, 
+                                      WCMAppModel.PROP_FORMNAME, 
+                                      newName);
+      }
+   }
+
+   public void handleDeleteFormFolder(final ChildAssociationRef childRef,
+                                      final boolean isArchivedNode)
+   {
+      final String formName = childRef.getQName().getLocalName();
+      final List<NodeRef> formConfigurations = this.getFormConfigurations(formName);
+      for (final NodeRef ref : formConfigurations)
+      {
+         final List<ChildAssociationRef> parents = this.nodeService.getParentAssocs(ref);
+         assert parents.size() != 1 : ("expected only one parent for " + ref +
+                                       " got " + parents.size());
+         final NodeRef parentRef = parents.get(0).getParentRef();
+         if (LOGGER.isDebugEnabled())
+         {
+
+            LOGGER.debug("removing configuration for " + formName +
+                         " from web project " + this.nodeService.getProperty(parentRef, ContentModel.PROP_NAME));
+         }
+         this.nodeService.removeChild(parentRef, ref);
+      }
+   }
+
+   private List<NodeRef> getFormConfigurations(final String formName)
+   {
+      final String query = 
+         "+TYPE:\"" + WCMAppModel.TYPE_WEBFORM + 
+         "\" +@" + Repository.escapeQName(WCMAppModel.PROP_FORMNAME) + 
+         ":\"" + QueryParser.escape(formName) + "\"";
+      final ResultSet rs = this.searchService.query(Repository.getStoreRef(),
+                                                    SearchService.LANGUAGE_LUCENE,
+                                                    query);
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("query " + query + " returned " + rs.length() + " results");
+      }
+      final List<NodeRef> result = new ArrayList<NodeRef>(rs.length());
+      for (final ResultSetRow row : rs)
+      {
+         result.add(row.getNodeRef());
+      }
+      return result;
    }
 }

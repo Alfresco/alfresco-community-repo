@@ -25,7 +25,6 @@
 package org.alfresco.web.ui.repo.component.property;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,11 +34,13 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
@@ -56,6 +57,8 @@ import org.apache.commons.logging.LogFactory;
 public class UIAssociationEditor extends BaseAssociationEditor
 {
    private static final Log logger = LogFactory.getLog(UIAssociationEditor.class);
+   
+   public static final String MSG_WARN_CANNOT_VIEW_TARGET_DETAILS = "warn_cannot_view_target_details";
 
    // ------------------------------------------------------------------------------
    // Component implementation
@@ -180,9 +183,19 @@ public class UIAssociationEditor extends BaseAssociationEditor
             else
             {
                // use the standard cm:name property
-               out.write(Repository.getDisplayPath(nodeService.getPath(targetNode)));
-               out.write("/");
-               out.write(Repository.getNameForNode(nodeService, targetNode));
+            	
+               // Fix AWC-1301
+               String displayString = null;
+               try
+               {
+            	   displayString = Repository.getDisplayPath(nodeService.getPath(targetNode)) + "/" + Repository.getNameForNode(nodeService, targetNode);
+               }
+               catch (AccessDeniedException ade)
+               {
+            	   displayString = Application.getMessage(context, MSG_WARN_CANNOT_VIEW_TARGET_DETAILS);
+               }
+            
+               out.write(displayString);
             }
             out.write("</td></tr>");
          }

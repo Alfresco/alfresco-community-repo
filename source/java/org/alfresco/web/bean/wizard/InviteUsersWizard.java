@@ -319,7 +319,7 @@ public abstract class InviteUsersWizard extends BaseWizardBean
                String firstName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
                String lastName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
                String username = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
-               SelectItem item = new SortableSelectItem(username, firstName + " " + lastName, lastName);
+               SelectItem item = new SortableSelectItem(username, firstName + " " + lastName + " [" + username + "]", lastName);
                items[index] = item;
             }
          }

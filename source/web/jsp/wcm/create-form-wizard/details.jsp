@@ -95,6 +95,18 @@
 	       immediate="true"
 	       style="display:none;"
 	       valueChangeListener="#{WizardManager.bean.schemaFileValueChanged}"/>
+  <h:panelGrid rendered="#{!empty WizardManager.bean.associatedWebProjects}" 
+               width="100%"
+               styleClass="infoText">
+    <h:outputText value="#{msg.create_form_form_details_associated_web_projects}"/>
+    <f:verbatim>
+      <ul>
+        <c:forEach items="${WizardManager.bean.associatedWebProjects}" var="wp">
+          <li>${wp.name}</li>
+        </c:forEach>
+      </ul>
+    </f:verbatim>
+  </h:panelGrid>
 
   <h:panelGrid id="panel_grid_1"
                columns="1" cellpadding="2" 
@@ -109,7 +121,6 @@
     <h:outputText id="step-1-text" 
 		  value="1. #{msg.create_form_form_details_step1_desc}" 
 		  escape="false" />
-    
     <h:panelGrid id="schema_panel_grid"
                  columns="4" 
 	         cellpadding="3" 

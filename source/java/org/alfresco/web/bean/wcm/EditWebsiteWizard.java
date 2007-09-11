@@ -147,7 +147,7 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
          catch (FormNotFoundException fnfe)
          {
             //ignore
-            LOGGER.debug(fnfe.getMessage(), fnfe);
+            logger.debug(fnfe.getMessage(), fnfe);
          }
       }
       

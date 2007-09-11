@@ -63,6 +63,7 @@ public class EditFormWizard
    private final static Log LOGGER = LogFactory.getLog(EditFormWizard.class);
 
    private List<RenderingEngineTemplateData> removedRenderingEngineTemplates;
+   private List<WebProject> associatedWebProjects;
 
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -136,6 +137,7 @@ public class EditFormWizard
          this.renderingEngineTemplates.add(data);
       }
       this.removedRenderingEngineTemplates = null;
+      this.associatedWebProjects = this.formsService.getAssociatedWebProjects(form);
    }
    
    /**
@@ -149,7 +151,11 @@ public class EditFormWizard
       final NodeRef formNodeRef = this.browseBean.getActionSpace().getNodeRef();
       
       // apply the name, title and description props
-      this.nodeService.setProperty(formNodeRef, ContentModel.PROP_NAME, this.getFormName());
+      if (!this.getFormName().equals(this.nodeService.getProperty(formNodeRef, ContentModel.PROP_NAME)))
+      {
+         this.fileFolderService.rename(formNodeRef, this.getFormName());
+      }
+
       this.nodeService.setProperty(formNodeRef, ContentModel.PROP_TITLE, this.getFormTitle());
       this.nodeService.setProperty(formNodeRef, ContentModel.PROP_DESCRIPTION, this.getFormDescription());
       this.nodeService.setProperty(formNodeRef, 
@@ -252,8 +258,15 @@ public class EditFormWizard
 
 
    /** Indicates whether or not the wizard is currently in edit mode */
+   @Override
    public boolean getEditMode()
    {
       return true;
+   }
+
+   @Override
+   public List<WebProject> getAssociatedWebProjects()
+   {
+      return this.associatedWebProjects;
    }
 }

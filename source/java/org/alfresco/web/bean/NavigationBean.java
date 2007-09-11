@@ -35,6 +35,7 @@ import javax.faces.event.ActionEvent;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.CIFSServer;
+import org.alfresco.filesys.server.config.ServerConfiguration;
 import org.alfresco.filesys.server.filesys.DiskSharedDevice;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
 import org.alfresco.filesys.smb.server.repo.ContentDiskInterface;
@@ -67,6 +68,7 @@ import org.alfresco.web.ui.common.component.UIModeList;
 import org.alfresco.web.ui.repo.component.IRepoBreadcrumbHandler;
 import org.alfresco.web.ui.repo.component.shelf.UIShelf;
 import org.apache.log4j.Logger;
+import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Bean providing access and management of the various global navigation mechanisms
@@ -587,23 +589,27 @@ public class NavigationBean
          Path path = node.getNodePath();
          
          // resolve CIFS network folder location for this node
-         DiskSharedDevice diskShare = cifsServer.getConfiguration().getPrimaryFilesystem();
-         
-         if (diskShare != null && diskShare.getContext() instanceof ContentContext)
+         ServerConfiguration fileServiceConfig = (ServerConfiguration)FacesContextUtils.getRequiredWebApplicationContext(
+               FacesContext.getCurrentInstance()).getBean("fileServerConfiguration");
+         if (fileServiceConfig.isSMBServerEnabled())
          {
-            ContentContext contentCtx = (ContentContext) diskShare.getContext();
-            NodeRef rootNode = contentCtx.getRootNode();
-            try
+            DiskSharedDevice diskShare = cifsServer.getConfiguration().getPrimaryFilesystem();
+            if (diskShare != null && diskShare.getContext() instanceof ContentContext)
             {
-               String cifsPath = Repository.getNamePath(this.nodeService, path, rootNode, "\\", "file:///" + getCIFSServerPath(diskShare));
-               
-               node.getProperties().put("cifsPath", cifsPath);
-               node.getProperties().put("cifsPathLabel", cifsPath.substring(8));  // strip file:/// part
-            }
-            catch(AccessDeniedException ade)
-            {
-               node.getProperties().put("cifsPath", "");
-               node.getProperties().put("cifsPathLabel","");  // strip file:/// part
+               ContentContext contentCtx = (ContentContext) diskShare.getContext();
+               NodeRef rootNode = contentCtx.getRootNode();
+               try
+               {
+                  String cifsPath = Repository.getNamePath(this.nodeService, path, rootNode, "\\", "file:///" + getCIFSServerPath(diskShare));
+                  
+                  node.getProperties().put("cifsPath", cifsPath);
+                  node.getProperties().put("cifsPathLabel", cifsPath.substring(8));  // strip file:/// part
+               }
+               catch(AccessDeniedException ade)
+               {
+                  node.getProperties().put("cifsPath", "");
+                  node.getProperties().put("cifsPathLabel","");  // strip file:/// part
+               }
             }
          }
          

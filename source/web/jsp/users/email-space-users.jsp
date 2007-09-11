@@ -58,6 +58,14 @@
 </script>
 </f:verbatim>
 
+<a:panel id="no-message-recipients-panel" rendered="#{empty DialogManager.bean.usersGroups}">
+
+<h:outputText value="#{msg.email_space_users_no_recipients}" />
+
+</a:panel>
+
+<a:panel id="message-recipients-panel" rendered="#{not empty DialogManager.bean.usersGroups}">
+
 <h:outputText styleClass="mainSubTitle" value="#{msg.message_recipients}" />
 <f:verbatim><div style='padding:2px'></div></f:verbatim>
 <r:userGroupPicker value="#{DialogManager.bean.usersGroups}" actionListener="#{DialogManager.bean.userGroupSelectorAction}" />
@@ -85,3 +93,5 @@
    <h:outputText value="#{msg.message}:"/>
    <h:inputTextarea value="#{DialogManager.bean.mailHelper.body}" rows="4" cols="75" disabled="#{DialogManager.bean.mailHelper.usingTemplate != null}" />
 </h:panelGrid>
+
+</a:panel>

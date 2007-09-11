@@ -133,11 +133,7 @@
                               <td class="separator" width=1><img src="<%=request.getContextPath()%>/images/parts/dotted_separator.gif" border=0 height=29 width=1></td>
                               <td style="padding-left:4px" align=right>
                                  <%-- Quick upload action --%>
-                                 <nobr>
-                                 <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval2">
-                                    <a:actionLink value="#{msg.add_content}" image="/images/icons/add.gif" padding="2" action="addContent" actionListener="#{AddContentDialog.start}" style="white-space:nowrap" id="link3" />
-                                 </r:permissionEvaluator>
-                                 </nobr>
+                                <r:actions id="acts_add_content" value="add_content_menu" context="#{NavigationBean.currentNode}" showLink="true" />
                               </td>
                               <td style="padding-left:4px" width=52>
                                  <%-- Create actions menu --%>

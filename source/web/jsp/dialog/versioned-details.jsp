@@ -240,7 +240,7 @@
                                  <a:richList id="versionHistoryList" viewMode="details" value="#{VersionedDocumentDetailsBean.versionHistory}"
                                              var="r" styleClass="recordSet" headerStyleClass="recordSetHeader"
                                              rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
-                                             pageSize="10" initialSortColumn="versionLabel" initialSortDescending="false">
+                                             pageSize="10" initialSortColumn="versionDate" initialSortDescending="true">
 
                                     <%-- Primary column for details view mode --%>
                                     <a:column id="col1" primary="true" width="100" style="padding:2px;text-align:left">

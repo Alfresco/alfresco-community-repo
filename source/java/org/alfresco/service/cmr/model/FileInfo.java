@@ -26,7 +26,6 @@ package org.alfresco.service.cmr.model;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.ContentData;
@@ -40,7 +39,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Derek Hulley
  */
-public interface FileInfo
+public interface FileInfo extends Serializable
 {
     /**
      * @return Returns a reference to the low-level node representing this file

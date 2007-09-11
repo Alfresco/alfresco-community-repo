@@ -42,6 +42,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class FileInfoImpl implements FileInfo
 {
+    private static final long serialVersionUID = 1915018521764853537L;
+
     private NodeRef nodeRef;
     private NodeRef linkNodeRef;
     private boolean isFolder;

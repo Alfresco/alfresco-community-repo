@@ -187,6 +187,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         finally
         {
             fService = oldService;
+            fLockingService.removeStoreLocks("main");
             fLockingService.removeWebProject("main");
             authService.authenticate("admin", "admin".toCharArray());
         }

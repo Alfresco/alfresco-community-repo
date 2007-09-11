@@ -546,16 +546,19 @@ public class AVMLockingServiceImpl implements AVMLockingService
         {
             return;
         }
+        List<String> toDelete = new ArrayList<String>();
         for (Map.Entry<String, Attribute>  entry: project.entrySet())
         {
             AVMLock lock = new AVMLock(entry.getValue());
             if (lock.getStore().equals(store))
             {
-                project.remove(entry.getKey());
+                toDelete.add(entry.getKey());
             }
         }
-        keys.remove(2);
-        fAttributeService.setAttribute(keys, webProject, project);
+        for (String name : toDelete)
+        {
+            fAttributeService.removeAttribute(keys, name);            
+        }
     }
 
     /* (non-Javadoc)

@@ -70,7 +70,7 @@ public class MessageServiceImplTest extends BaseSpringTest implements MessageDep
     	messageService = (MessageService)applicationContext.getBean("messageService");
         nodeService = (NodeService)applicationContext.getBean("nodeService");
         authenticationService = (AuthenticationService)applicationContext.getBean("authenticationService");
-        authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("alfDaoImpl");
+        authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
         contentService = (ContentService) applicationContext.getBean("contentService");
         
         // Re-set the current locale to be the default

@@ -49,7 +49,8 @@ public class CreateWebappDialog extends CreateFolderDialog
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      final String parent = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getStagingStore());
+      final String stagingStore = this.avmBrowseBean.getStagingStore();
+      final String parent = AVMUtil.buildSandboxRootPath( stagingStore );
       this.avmService.createDirectory(parent, this.name);
       
       final String path = AVMNodeConverter.ExtendAVMPath(parent, this.name);
@@ -62,6 +63,9 @@ public class CreateWebappDialog extends CreateFolderDialog
                                          new PropertyValue(DataTypeDefinition.TEXT,
                                                            this.description));
       }
+
+      // Snapshot the store with the empty webapp
+      this.avmService.createSnapshot( stagingStore, null, null);
       
       return outcome;
    }

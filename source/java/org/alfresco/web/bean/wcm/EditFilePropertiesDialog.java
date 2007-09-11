@@ -28,11 +28,13 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -48,6 +50,8 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.content.EditContentPropertiesDialog;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.forms.*;
+import org.alfresco.web.ui.common.Utils;
 
 /**
  * Backing bean for the Edit File Properties dialog.
@@ -58,6 +62,7 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
 {
    protected AVMBrowseBean avmBrowseBean;
    protected AVMService avmService;
+   protected FormsService formsService;
    
    
    // ------------------------------------------------------------------------------
@@ -77,6 +82,14 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
    public void setAvmService(AVMService avmService)
    {
       this.avmService = avmService;
+   }
+
+   /**
+    * @param formsService       The FormsService to set.
+    */
+   public void setFormsService(final FormsService formsService)
+   {
+      this.formsService = formsService;
    }
    
    
@@ -176,8 +189,47 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
       // perform the rename last as for an AVM it changes the NodeRef
       if (name != null)
       {
-         this.fileFolderService.rename(nodeRef, name);
+         if (this.nodeService.hasAspect(nodeRef, WCMAppModel.ASPECT_RENDITION))
+         {
+            throw new UnsupportedOperationException(this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME) +
+                                                    " is a " + WCMAppModel.ASPECT_RENDITION +
+                                                    " and cannot be renamed");
+         }
+
+         // need to find out if it's a form instance data before rename.  for whatever reason,
+         // afterwards it claims it is not
+         if (this.nodeService.hasAspect(nodeRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+         {
+            final FormInstanceData fid = this.formsService.getFormInstanceData(nodeRef);
+            // delete all existing renditions
+            for (final Rendition r : fid.getRenditions())
+            {
+               this.avmService.removeNode(r.getPath());
+            }
+            this.nodeService.removeProperty(nodeRef, WCMAppModel.PROP_RENDITIONS);
+         }
+
+         String path = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
+         final String parentPath = AVMNodeConverter.SplitBase(path)[0];
+         final String oldName = AVMNodeConverter.SplitBase(path)[1];
+         this.avmService.rename(parentPath, oldName, parentPath, name);
+         nodeRef = AVMNodeConverter.ToNodeRef(-1, AVMNodeConverter.ExtendAVMPath(parentPath, name));
          editedProps.put(ContentModel.PROP_NAME.toString(), name);
+
+         if (this.nodeService.hasAspect(nodeRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+         {
+            final FormInstanceData fid = this.formsService.getFormInstanceData(nodeRef);
+            for (final FormInstanceData.RegenerateResult rr : fid.regenerateRenditions())
+            {
+               if (rr.getException() != null)
+               {
+                  outcome = null;
+                  Utils.addErrorMessage("error regenerating rendition using " + rr.getRenderingEngineTemplate().getName() + 
+                                        ": " + rr.getException().getMessage(),
+                                        rr.getException());
+               }
+            }
+         }
       }
       
       return outcome;

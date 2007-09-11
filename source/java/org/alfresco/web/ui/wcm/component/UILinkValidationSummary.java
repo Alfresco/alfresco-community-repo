@@ -134,11 +134,15 @@ public class UILinkValidationSummary extends AbstractLinkValidationReportCompone
          // NOTE: Whenever latestVersion > baseVersion, link validation  is "behind".
          if (latestVersion > baseVersion)
          {
-            out.write("&nbsp;(<img src='");
+            pattern = bundle.getString("link_check_not_latest");
+            String latestVersionInfo = 
+                     MessageFormat.format(
+                       pattern, new Object[] { new Integer( latestVersion )});
+
+            out.write("&nbsp;<img src='");
             out.write(context.getExternalContext().getRequestContextPath());
             out.write("/images/icons/warning.gif' />&nbsp;");
-            out.write(bundle.getString("link_check_not_latest"));
-            out.write(")");
+            out.write( latestVersionInfo );
          }
          
          pattern = bundle.getString("link_check_items_found");

@@ -3233,6 +3233,10 @@
          <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
+         <property-name>formsService</property-name>
+         <value>#{FormsService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>fileFolderService</property-name>
          <value>#{FileFolderService}</value>
       </managed-property>

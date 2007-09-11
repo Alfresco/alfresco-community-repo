@@ -426,7 +426,8 @@ public class NewUserWizard extends AbstractWizardBean
                   
                   String oldHomeSpaceName = Repository.getNameForNode(nodeService, oldHomeFolderRef);
                   if (oldHomeSpaceName.equals(this.homeSpaceName) == false &&
-                      oldHomeFolderRef.equals(this.homeSpaceLocation) == false)
+                      oldHomeFolderRef.equals(this.homeSpaceLocation) == false &&
+                      oldHomeFolderRef.equals(this.defaultHomeSpaceRef) == false)
                   {
                      renameHomeSpace = true;
                   }

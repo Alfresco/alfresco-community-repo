@@ -47,6 +47,8 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.*;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -126,7 +128,8 @@ public class AVMWorkflowUtil extends WorkflowUtil
       // convert package to workflow package
       final AVMNodeDescriptor packageDesc = avmService.lookup(-1, packagesPath);
       final NodeRef packageNodeRef = workflowService.createPackage(AVMNodeConverter.ToNodeRef(-1, packageDesc.getPath()));
-      avmService.setNodeProperty(packagesPath, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, new PropertyValue(null, true));
+      
+      avmService.setNodeProperty(packagesPath, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, new PropertyValue(DataTypeDefinition.BOOLEAN, true));
 
       // apply global permission to workflow package
       // TODO: Determine appropriate permissions

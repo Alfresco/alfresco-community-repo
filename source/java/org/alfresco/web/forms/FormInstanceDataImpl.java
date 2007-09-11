@@ -207,18 +207,33 @@ import org.xml.sax.SAXException;
       final List<Rendition> result = new ArrayList<Rendition>(renditionPaths.size());
       for (Serializable path : renditionPaths)
       {
-         if (avmService.lookup(-1, storeName + ':' + (String)path) != null)
+         if (avmService.lookup(-1, storeName + ':' + (String)path) == null)
          {
-            final Rendition r = new RenditionImpl(AVMNodeConverter.ToNodeRef(-1, storeName + ':' + (String)path), 
+            LOGGER.debug("ignoring dangling rendition at " + storeName + ':' + (String)path);
+         }
+         else
+         {
+            final Rendition r = new RenditionImpl(-1, 
+                                                  storeName + ':' + (String)path, 
                                                   this.formsService);
+            try
+            {
+               if (!this.equals(r.getPrimaryFormInstanceData()))
+               {
+                  LOGGER.debug("rendition " + r + 
+                               " points at form instance data " + r.getPrimaryFormInstanceData() +
+                               " instead of " + this + ". Not including in renditions list.");
+                  continue;
+               }
+            }
+            catch (FileNotFoundException fnfe)
+            {
+               continue;
+            }
             if (r.getRenderingEngineTemplate() != null)
             {
                result.add(r);
             }
-         }
-         else
-         {
-            LOGGER.debug("ignoring dangling rendition at " + storeName + ':' + (String)path);
          }
       }
       return result;
@@ -248,6 +263,13 @@ import org.xml.sax.SAXException;
                  ", form : " + this.getParentFormName() + " NOT_FOUND!  }");
 
       }
+   }
+
+   public boolean equals(final Object other)
+   {
+      return (other instanceof FormInstanceDataImpl &&
+              this.getNodeRef().equals(((FormInstanceDataImpl)other).getNodeRef()));
+
    }
 
    protected String getParentFormName()

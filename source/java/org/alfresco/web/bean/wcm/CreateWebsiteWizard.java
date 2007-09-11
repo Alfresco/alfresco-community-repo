@@ -223,6 +223,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
          this.avmLockingService.addWebProject(avmStore);
          
          outcome = AlfrescoNavigationHandler.CLOSE_WIZARD_OUTCOME;
+
+         // Snapshot the store with the empty webapp
+         this.avmService.createSnapshot( avmStore, null, null);
       }
       return outcome;
    }

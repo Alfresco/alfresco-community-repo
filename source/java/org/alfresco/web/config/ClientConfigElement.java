@@ -67,7 +67,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private String initialLocation = "myalfresco";
    private ExpiringValueCache<String> wcmDomain = new ExpiringValueCache<String>(1000*10L);
    private ExpiringValueCache<String> wcmPort = new ExpiringValueCache<String>(1000*10L);
-   private String defaultHomeSpacePath = "/app:company_home";
+   private String defaultHomeSpacePath = "/app:company_home/app:user_homes";
    private boolean clipboardStatusVisible = true;
    private boolean pasteAllAndClear = true;
    private boolean allowGuestConfig = false;
@@ -148,6 +148,12 @@ public class ClientConfigElement extends ConfigElementAdapter
       }
       
       // override default values if they have changed
+      if (newElement.getDefaultHomeSpacePath() != null &&
+          newElement.getDefaultHomeSpacePath().equals(combinedElement.getDefaultHomeSpacePath()) == false)
+      {
+         combinedElement.setDefaultHomeSpacePath(newElement.getDefaultHomeSpacePath());
+      }
+      
       if (newElement.getRecentSpacesItems() != combinedElement.getRecentSpacesItems())
       {
          combinedElement.setRecentSpacesItems(newElement.getRecentSpacesItems());

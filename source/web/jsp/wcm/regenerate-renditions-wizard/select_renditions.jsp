@@ -51,7 +51,7 @@
                     value="#{msg.web_project}:"/>
       <h:selectOneMenu id="selectone-webproject" 
 		       style="width:100%;"
-                       onchange="this.form.submit()"
+                       onclick="this.form.submit()"
                        value="#{WizardManager.bean.selectedWebProject}">
         <f:selectItems id="selectitems-webproject"
 		       value="#{WizardManager.bean.webProjectChoices}"/>
@@ -62,7 +62,7 @@
 		  value="2. #{msg.regenerate_renditions_select_renditions_select_regenerate_scope}" 
 		  escape="false" />
     <h:selectOneRadio id="selectone-regenerate-mode"
-                      onchange="this.form.submit()"
+                      onclick="this.form.submit()"
                       disabled="#{empty WizardManager.bean.selectedWebProject}"
                       layout="pageDirection"
                       value="#{WizardManager.bean.regenerateScope}">

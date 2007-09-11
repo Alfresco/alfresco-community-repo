@@ -234,7 +234,13 @@ import org.xml.sax.SAXException;
 
    public int hashCode()
    {
-      return this.getPath().hashCode() ^ this.getRenderingEngineTemplate().hashCode();
+      return this.getPath().hashCode();
+   }
+
+   public boolean equals(final Object other)
+   {
+      return (other instanceof RenditionImpl &&
+              this.getNodeRef().equals(((RenditionImpl)other).getNodeRef()));
    }
 
    public String toString()

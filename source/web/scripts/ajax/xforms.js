@@ -888,7 +888,7 @@ dojo.declare("alfresco.xforms.RichTextEditor",
                {
                  attach_point.appendChild(this.domNode);
                  dojo.html.prependClass(this.domNode, "xformsTextArea");
-                 if (this._params["height"])
+                 if (this._params.height)
                  {
                    this.domNode.style.height = parseInt(this._params["height"]) + "px";
                  }
@@ -1032,7 +1032,11 @@ dojo.declare("alfresco.xforms.RichTextEditor",
                  if (this.hoverLayer.parentNode != this.widget)
                  {
                    this.widget.appendChild(this.hoverLayer);
+                   
+                   this.hoverLayer.style.border = "1px solid black";
                    this.hoverLayer.style.lineHeight = this.hoverLayer.offsetHeight + "px";
+                   this.hoverLayer.style.overflow = "hidden";
+                   dojo.html.setOpacity(this.hoverLayer, .8);
                    var me = this;
                    dojo.event.browser.addListener(this.hoverLayer, 
                                                   "onmouseout", 
@@ -1050,6 +1054,7 @@ dojo.declare("alfresco.xforms.RichTextEditor",
                {
                  if (this.hoverLayer.parentNode == this.widget)
                  {
+                   dojo.html.setOpacity(this.hoverLayer, 1);
                    this.widget.removeChild(this.hoverLayer);
                  }
                },
@@ -1058,11 +1063,47 @@ dojo.declare("alfresco.xforms.RichTextEditor",
                {
                  if (this.hoverLayer.parentNode == this.widget)
                  {
+                   dojo.html.setOpacity(this.hoverLayer, 1);
                    this.widget.removeChild(this.hoverLayer);
                    this._createTinyMCE();
                  }
                }
              });
+
+/** 
+ * Reads the widget configuration to determine which plugins will 
+ * be needed by tinymce.  All plugins must be loaded into tinymce at
+ * startup so they must be accumulated in advance.
+ */
+alfresco.xforms.RichTextEditor.determineNecessaryTinyMCEPlugins = function(config)
+{
+  var result = [];
+  for (var widget in config)
+  {
+    for (var schemaType in config[widget])
+    {
+      for (var appearance in config[widget][schemaType])
+      {
+        if (config[widget][schemaType][appearance].className == "alfresco.xforms.RichTextEditor" &&
+            config[widget][schemaType][appearance].params &&
+            config[widget][schemaType][appearance].params.plugins)
+        {
+          dojo.debug("found plugins definition " +  config[widget][schemaType][appearance].params.plugins +
+                     " for text editor at  config[" + widget + "][" + schemaType + "][" + appearance + "]");
+          var plugins = config[widget][schemaType][appearance].params.plugins.split(",");
+          for (var p = 0; p < plugins.length; p++)
+          {
+            if (result.indexOf(plugins[p]) < 0)
+            {
+              result.push(plugins[p]);
+            }
+          }
+        }
+      }
+    }
+  }
+  return result.join(",");
+}
 
 /** Base class for all select widgets. */
 dojo.declare("alfresco.xforms.AbstractSelectWidget",
@@ -4072,7 +4113,7 @@ dojo.declare("alfresco.xforms.XForm",
                                    " schemaType " + schemaType +
                                    " appearance " + appearance);
                  }
-                 var result = new cstr(this, xformsNode, x.params);
+                 var result = new cstr(this, xformsNode, dojo.lang.mixin(new Object(), x.params || {}));
                  if (result instanceof alfresco.xforms.Widget)
                  {
                    return result;
@@ -4668,11 +4709,14 @@ dojo.html.toCamelCase = function(str)
 // tiny mce integration
 ////////////////////////////////////////////////////////////////////////////////
 
+alfresco.constants.TINY_MCE_DEFAULT_PLUGINS = 
+  alfresco.xforms.RichTextEditor.determineNecessaryTinyMCEPlugins(alfresco.xforms.widgetConfig);
+
 alfresco.constants.TINY_MCE_DEFAULT_SETTINGS = 
 {
   theme: "advanced",
   mode: "exact",
-  plugins: "table",
+  plugins: alfresco.constants.TINY_MCE_DEFAULT_PLUGINS,
   width: -1,
   height: -1,
   auto_resize: false,

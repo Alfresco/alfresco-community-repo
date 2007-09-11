@@ -685,6 +685,9 @@
                 <value>org/alfresco/repo/rule/ruleModel.xml</value>
                 <value>org/alfresco/repo/version/version_model.xml</value>
                 
+                <!-- Email model -->
+                <value>alfresco/model/emailServerModel.xml</value>
+
                 <!-- Deprecated types -->
                 <value>alfresco/model/deprecated/deprecated_contentModel.xml</value>
             </list>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view 
+	xmlns:view="http://www.alfresco.org/view/repository/1.0"
+	xmlns:cm="http://www.alfresco.org/model/content/1.0"
+	xmlns:sys="http://www.alfresco.org/model/system/1.0"
+	xmlns:usr="http://www.alfresco.org/model/user/1.0"
+	xmlns:app="http://www.alfresco.org/model/application/1.0">
+
+	<usr:authorityContainer	view:childName="usr:GROUP_EMAIL_CONTRIBUTORS">
+		<view:aspects>
+			<sys:referenceable></sys:referenceable>
+		</view:aspects>
+		<view:properties>
+			<sys:store-protocol>user</sys:store-protocol>
+			<sys:store-identifier>alfrescoUserStore</sys:store-identifier>
+			<usr:members>
+				<view:values>
+					<view:value>admin</view:value>
+					<view:value view:isNull="true"></view:value>
+				</view:values>
+			</usr:members>
+			<cm:name>GROUP_EMAIL_CONTRIBUTORS</cm:name>
+			<sys:node-uuid>GROUP_EMAIL_CONTRIBUTORS</sys:node-uuid>
+			<usr:authorityName>GROUP_EMAIL_CONTRIBUTORS</usr:authorityName>
+		</view:properties>
+		<view:associations></view:associations>
+	</usr:authorityContainer>
+
+</view:view>

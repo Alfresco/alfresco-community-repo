@@ -117,6 +117,12 @@ public interface NamespaceService extends NamespacePrefixResolver
     
     /** WCM Application Model Prefix */
     static final String WCMAPP_MODEL_PREFIX = "wca";
+
+    /** Email Server Application Model URI */
+    static final String EMAILSERVER_MODEL_URI = "http://www.alfresco.org/model/emailserver/1.0";
+
+    /** Email Server Application Model Prefix */
+    static final String EMAILSERVER_MODEL_PREFIX = "emailserver";
     
     /** WCM Workflow Model Prefix */
     static final String WCMWF_MODEL = "wcmwf";

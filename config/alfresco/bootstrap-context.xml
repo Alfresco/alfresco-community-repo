@@ -429,5 +429,14 @@
     <bean id="workflowScheduler" class="org.alfresco.repo.workflow.jbpm.JBPMScheduler">
        <property name="JBPMTemplate" ref="jbpm_template" />
     </bean>
+
+    <!-- Email Server -->
+    <!--
+    <bean id="emailServer" class="org.alfresco.email.server.impl.subetha.SubethaEmailServer">
+        <constructor-arg>
+           <ref bean="emailServerConfiguration"/>
+        </constructor-arg>
+    </bean>
+    -->
    
 </beans>

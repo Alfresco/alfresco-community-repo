@@ -403,4 +403,13 @@ final class Column
    {
       return this.dashlets;
    }
+   
+   public void trimDashlets(int max)
+   {
+      if (max >= 0)
+      {
+         int maxTrim = Math.min(this.dashlets.size(), max);
+         this.dashlets = this.dashlets.subList(0, maxTrim);
+      }
+   }
 }

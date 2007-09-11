@@ -53,6 +53,12 @@
          <f:param value="#{WizardManager.bean.columnMax}" />
       </h:outputFormat>
    </h:panelGroup>
+
+   <h:panelGroup id="panel1b" rendered="#{WizardManager.bean.columnCount == 1}">
+      <h:outputFormat value="#{msg.single_column_max_components}">
+         <f:param value="#{WizardManager.bean.columnMax}" />
+      </h:outputFormat>
+   </h:panelGroup>
    
    <h:panelGrid id="panel2" columns="3" cellpadding="2" cellspacing="0" border="0" columnClasses="alignTop,alignMiddle">
       <h:panelGrid id="panel3" columns="1" cellpadding="2" border="0">
@@ -62,8 +68,8 @@
             <f:selectItems value="#{WizardManager.bean.allDashlets}" />
          </h:selectManyListbox>
       </h:panelGrid>
-      
-      <h:commandButton id="select-btn" value="#{msg.dashlet_btn_select} >>" actionListener="#{WizardManager.bean.addDashlets}" />
+
+      <h:commandButton id="select-btn" value="#{msg.dashlet_btn_select} >>" actionListener="#{WizardManager.bean.addDashlets}" disabled="#{WizardManager.bean.columnDashletCount >= WizardManager.bean.columnMax}"/>
       
       <h:panelGrid id="panel4" columns="1" cellpadding="2" border="0">
          <h:outputText value="#{msg.selected_dashlets}:" />
@@ -73,12 +79,12 @@
                <f:selectItems value="#{WizardManager.bean.columnDashlets}" />
             </h:selectOneListbox>
             <h:panelGroup id="panel6">
-               <h:commandButton value="+" style="width:24px" actionListener="#{WizardManager.bean.dashletUp}" />
+               <h:commandButton value="+" style="width:24px" actionListener="#{WizardManager.bean.dashletUp}" disabled="#{WizardManager.bean.columnDashletCount < 1}"/>
                <f:verbatim><br></f:verbatim>
-               <h:commandButton value="-" style="width:24px" actionListener="#{WizardManager.bean.dashletDown}"/>
+               <h:commandButton value="-" style="width:24px" actionListener="#{WizardManager.bean.dashletDown}" disabled="#{WizardManager.bean.columnDashletCount < 1}"/>
             </h:panelGroup>
          </h:panelGrid>
-         <h:commandButton id="remove-btn" value="#{msg.dashlet_btn_remove}" actionListener="#{WizardManager.bean.removeDashlet}" />
+         <h:commandButton id="remove-btn" value="#{msg.dashlet_btn_remove}" actionListener="#{WizardManager.bean.removeDashlet}" disabled="#{WizardManager.bean.columnDashletCount < 1}"/>
       </h:panelGrid>
    </h:panelGrid>
 </h:panelGrid>

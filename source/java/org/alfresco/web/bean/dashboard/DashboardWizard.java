@@ -264,6 +264,9 @@ public class DashboardWizard extends BaseWizardBean
       FacesContext fc = FacesContext.getCurrentInstance();
       
       Column column = this.editConfig.getCurrentPage().getColumns().get(this.column);
+      // trim the max number of dashlets for this column
+      LayoutDefinition layoutDef = this.editConfig.getCurrentPage().getLayoutDefinition();
+      column.trimDashlets(layoutDef.ColumnLength);
       List<SelectItem> dashlets = new ArrayList<SelectItem>(column.getDashlets().size());
       for (DashletDefinition dashletDef : column.getDashlets())
       {
@@ -276,7 +279,16 @@ public class DashboardWizard extends BaseWizardBean
       }
       return dashlets;
    }
-   
+
+   /**
+    * @return the number of dashlets currently displayed in the selected column
+    */
+   public int getColumnDashletCount()
+   {
+      Column column = this.editConfig.getCurrentPage().getColumns().get(this.column);
+      return column.getDashlets().size();
+   }
+
    /**
     * @return List of UIDescription objects for the available layouts
     */

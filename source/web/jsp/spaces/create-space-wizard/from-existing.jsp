@@ -28,6 +28,28 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
+<script type="text/javascript">
+   
+   window.onload = pageLoaded;
+     
+   function pageLoaded()
+   {
+      checkButtonState();
+   }
+   
+   function checkButtonState()
+   {
+      if (document.getElementById("wizard:wizard-body:space-selector_selected").value.length == 0)
+      {
+         document.getElementById("wizard:next-button").disabled = true;
+      }
+      else
+      {
+         document.getElementById("wizard:next-button").disabled = false;
+      }
+   }
+</script>
+
 <f:verbatim>
 <table cellpadding="3" cellspacing="0" border="0" width="100%">
    <tr>

@@ -79,7 +79,7 @@ public class RmiRemoteInputStreamServer extends AbstractRemoteInputStreamServer
                 }
                 catch (Throwable e)
                 {
-                    throw new IOException(e.getMessage(), e);
+                    throw new IOException(e.getMessage());
                 }
             }
         }

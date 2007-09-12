@@ -42,6 +42,7 @@
       <property name="authorityDAO" ref="authorityDAO"/>
       <property name="transactionService" ref="transactionService"/>
       <property name="fileFolderService" ref="FileFolderService"/>
+      <property name="tenantService" ref="tenantService"/>
    </bean>
 
    <bean id="workflowInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">

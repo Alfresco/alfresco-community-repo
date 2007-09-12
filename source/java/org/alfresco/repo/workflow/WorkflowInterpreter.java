@@ -41,6 +41,7 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.AuthorityDAO;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
@@ -86,7 +87,7 @@ public class WorkflowInterpreter extends BaseInterpreter
     private AVMSyncService avmSyncService;
     private PersonService personService;
     private FileFolderService fileFolderService;
-
+    private TenantService tenantService;
 
     /**
      * Current context
@@ -151,6 +152,14 @@ public class WorkflowInterpreter extends BaseInterpreter
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    /**
+     * @param tenantService The Tenant Service
+     */  
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
 
     /**
@@ -841,7 +850,11 @@ public class WorkflowInterpreter extends BaseInterpreter
         {
             if (command.length == 2)
             {
-            	setCurrentUserName(command[1]);
+                if (tenantService.isEnabled())
+                {
+                    tenantService.checkDomainUser(command[1]);
+                }
+                setCurrentUserName(command[1]);
             }
             out.println("using user " + getCurrentUserName());
         }

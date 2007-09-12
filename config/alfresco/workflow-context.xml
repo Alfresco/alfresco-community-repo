@@ -21,6 +21,8 @@
       <property name="authorityService" ref="authorityService"/>
       <property name="BPMEngineRegistry" ref="bpm_engineRegistry"/>
       <property name="workflowPackageComponent" ref="workflowPackageImpl"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="contentService" ref="contentService"/>
    </bean>
 
    <bean id="workflowPackageImpl" class="org.alfresco.repo.workflow.WorkflowPackageImpl">
@@ -106,5 +108,12 @@
 
    <!-- Workflow Patch Deployer -->
    <bean id="workflowPatchDeployer" parent="workflowDeployer" singleton="false"/>
-
+   
+   <!--  Workflow Definition Type (bpm:workflowDefinition) -->
+   <bean id="workflowDefinitionType" class="org.alfresco.repo.workflow.WorkflowDefinitionType" init-method="init">
+      <property name="nodeService" ref="NodeService"/> 
+      <property name="policyComponent" ref="policyComponent"/>
+      <property name="workflowService" ref="WorkflowService"/>
+   </bean>
+   
 </beans>

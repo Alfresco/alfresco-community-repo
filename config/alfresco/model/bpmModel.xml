@@ -269,6 +269,32 @@
             </overrides>
 
         </type>
+        
+        <!--                      -->
+        <!--  Workflow Definition -->
+        <!--                      -->
+        
+       <type name="bpm:workflowDefinition">
+          <title>Workflow Process Definition</title>
+          <parent>cm:content</parent>
+          <properties>
+             <property name="bpm:definitionName">
+                <title>Workflow Name</title>
+                <type>d:text</type>
+             </property>
+             <property name="bpm:engineId">
+                <title>Workflow Engine Id</title>
+                <type>d:text</type>
+                <mandatory>true</mandatory>
+                <default>jbpm</default>
+             </property>
+             <property name="bpm:definitionDeployed">
+                <title>Workflow Deployed</title>
+                <type>d:boolean</type>
+                <default>false</default>
+             </property>             
+          </properties>
+       </type>      
 
     </types>
 

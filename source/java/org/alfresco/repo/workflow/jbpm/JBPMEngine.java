@@ -321,7 +321,7 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to deploy workflow definition", e);
+            throw new WorkflowException("Failed to deploy workflow definition - " + e.getMessage(), e);
         }
     }
 
@@ -380,7 +380,7 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to undeploy workflow definition", e);
+            throw new WorkflowException("Failed to undeploy workflow definition - " + e.getMessage(), e);
         }
     }
 
@@ -1801,8 +1801,13 @@ public class JBPMEngine extends BPMEngine
                 throw new JbpmException("Failed to parse process definition from jBPM xml stream", e);
             }
         }
+        
+        else
+        {
+            throw new JbpmException("Failed to parse process definition - unsupported mime type '" + mimetype + "'");
+        }
                
-        if (tenantService.isEnabled()) 
+        if ((compiledDef != null) && tenantService.isEnabled()) 
         {
             compiledDef.def.setName(tenantService.getName(compiledDef.def.getName()));
         }       

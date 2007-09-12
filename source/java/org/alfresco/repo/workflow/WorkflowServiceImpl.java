@@ -32,7 +32,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -66,6 +70,8 @@ public class WorkflowServiceImpl implements WorkflowService
     private AuthorityService authorityService;
     private BPMEngineRegistry registry;
     private WorkflowPackageComponent workflowPackageComponent;
+    private NodeService nodeService;
+    private ContentService contentService;
 
     
     /**
@@ -96,6 +102,26 @@ public class WorkflowServiceImpl implements WorkflowService
     public void setWorkflowPackageComponent(WorkflowPackageComponent workflowPackageComponent)
     {
         this.workflowPackageComponent = workflowPackageComponent;
+    }
+    
+    /**
+     * Sets the Node Service
+     * 
+     * @param nodeService
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+    
+    /**
+     * Sets the Content Service
+     * 
+     * @param contentService
+     */
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
     }
     
     
@@ -132,8 +158,15 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public WorkflowDeployment deployDefinition(NodeRef definitionContent)
     {
-        // TODO
-        throw new UnsupportedOperationException();
+        if (! nodeService.getType(definitionContent).equals(WorkflowModel.TYPE_WORKFLOW_DEF))
+        {
+            throw new WorkflowException("Node " + definitionContent + " is not of type 'bpm:workflowDefinition'");
+        }
+        
+        String engineId = (String)nodeService.getProperty(definitionContent, WorkflowModel.PROP_WORKFLOW_DEF_ENGINE_ID);
+        ContentReader contentReader = contentService.getReader(definitionContent, ContentModel.PROP_CONTENT);
+
+        return deployDefinition(engineId, contentReader.getContentInputStream(), contentReader.getMimetype());
     }
 
     /* (non-Javadoc)

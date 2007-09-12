@@ -74,4 +74,10 @@ public interface WorkflowModel
     static final QName PROP_WORKFLOW_DEFINITION_NAME = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowDefinitionName");
     static final QName PROP_WORKFLOW_INSTANCE_ID = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowInstanceId");
      
+    // workflow definition
+    static final QName TYPE_WORKFLOW_DEF = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowDefinition");
+    static final QName PROP_WORKFLOW_DEF_ENGINE_ID = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "engineId");
+    static final QName PROP_WORKFLOW_DEF_NAME = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "definitionName");
+    static final QName PROP_WORKFLOW_DEF_DEPLOYED = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "definitionDeployed");
+
 }

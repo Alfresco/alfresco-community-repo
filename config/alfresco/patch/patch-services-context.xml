@@ -1017,4 +1017,25 @@
         </property>
     </bean>
 
+    <bean id="patch.customWorkflowDefs" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.customWorkflowDefs</value></property>
+        <property name="description"><value>patch.customWorkflowDefs.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>105</value></property>
+        <property name="targetSchema"><value>106</value></property>
+        <!-- bootstrap view -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/app:workflow_defs</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                <prop key="location">alfresco/bootstrap/customWorkflowDefsSpace.acp</prop>
+            </props>
+        </property>
+    </bean>
+    
 </beans>

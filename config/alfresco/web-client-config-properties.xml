@@ -54,6 +54,24 @@
         <show-property name="modelActive"/>
       </property-sheet>
    </config>
+   
+   <config evaluator="node-type" condition="bpm:workflowDefinition">
+      <property-sheet>
+         <show-property name="name" />
+         <show-property name="mimetype" display-label-id="content_type"
+                        component-generator="MimeTypeSelectorGenerator" />
+         <show-property name="encoding" display-label-id="encoding"
+                        component-generator="CharsetSelectorGenerator" />
+         <show-property name="title" />
+         <show-property name="description" />
+         <show-property name="size" display-label-id="size"
+                        converter="org.alfresco.faces.ByteSizeConverter"
+                        show-in-edit-mode="false" />
+        <show-property name="bpm:definitionDeployed" ignore-if-missing="false"/>
+        <show-property name="bpm:definitionName" read-only="true" ignore-if-missing="false"/>
+        <show-property name="bpm:engineId" ignore-if-missing="false"/>
+      </property-sheet>
+   </config>
 
    <config evaluator="aspect-name" condition="titled">
       <property-sheet>

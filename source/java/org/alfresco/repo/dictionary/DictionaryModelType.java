@@ -255,7 +255,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             pendingModelUpdates = new HashSet<NodeRef>();
             AlfrescoTransactionSupport.bindResource(KEY_PENDING_MODELS, pendingModelUpdates);
         }
-        pendingModelUpdates.add(nodeRef);
+        pendingModelUpdates.add(tenantService.getName(nodeRef));
         
         AlfrescoTransactionSupport.bindListener(this.transactionListener);
     }

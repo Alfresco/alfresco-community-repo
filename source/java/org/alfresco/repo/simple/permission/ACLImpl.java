@@ -37,154 +37,104 @@ import org.alfresco.service.simple.permission.ACL;
 import org.alfresco.service.simple.permission.CapabilityRegistry;
 
 /**
- * Basic implementation of an ACL
+ * Basic implementation of a simple ACL.
  * @author britt
  */
 public class ACLImpl implements ACL
 {
-    private static final long serialVersionUID = 5184311729355811095L;
+    private static final long serialVersionUID = -8720314753104805631L;
+    
+    /**
+     * Map of capabilities to authorities allowed.
+     */
+    private Map<String, Set<String>> fAllowed;
+    
+    /**
+     * Map of capabilities to authorities denied.
+     */
+    private Map<String, Set<String>> fDenied;
 
     /**
-     * The allowed entries for users.
-     */
-    private Map<String, Set<String>> fUserAllows;
-    
-    /**
-     * The allowed entries for groups.
-     */
-    private Map<String, Set<String>> fGroupAllows;
-    
-    /**
-     * The denied entries for users.
-     */
-    private Map<String, Set<String>> fUserDenies;
-
-    /**
-     * The denied entries for groups.
-     */
-    private Map<String, Set<String>> fGroupDenies;
-    
-    /**
-     * Bit indicating whether a child (however that is defined)
-     * should inherit these permissions.
+     * Should this ACL be inherited.
      */
     private boolean fInherit;
     
+    /**
+     * String (compact) representation of ACL.
+     */
+    private String fStringRep;
+    
+    /**
+     * Reference to the authority service.
+     */
     private transient AuthorityService fAuthorityService;
     
+    /**
+     * Reference to the capability registry.
+     */
     private transient CapabilityRegistry fCapabilityRegistry;
     
-    private transient String fStringRep;
-    
+    /**
+     * Initialize a brand new one.
+     * @param inherit Should this ACL be inherited.
+     */
     public ACLImpl(boolean inherit)
     {
+        fInherit = inherit;
         fAuthorityService = RawServices.Instance().getAuthorityService();
         fCapabilityRegistry = RawServices.Instance().getCapabilityRegistry();
-        fUserAllows = new HashMap<String, Set<String>>();
-        fGroupAllows = new HashMap<String, Set<String>>();
-        fUserDenies = new HashMap<String, Set<String>>();
-        fGroupDenies = new HashMap<String, Set<String>>();
-        fInherit = inherit;
+        fAllowed = new HashMap<String, Set<String>>();
+        fDenied = new HashMap<String, Set<String>>();
         fStringRep = null;
     }
     
-    public ACLImpl(String stringRep)
+    /**
+     * Initialize from an external string representation.
+     * @param rep
+     */
+    public ACLImpl(String rep)
     {
         this(true);
-        fStringRep = stringRep;
+        fStringRep = rep;
+    }
+    
+    public ACLImpl(ACL other)
+    {
+        this(true);
+        fStringRep = other.getStringRepresentation();
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.service.simple.permission.ACL#allow(java.lang.String, java.lang.String[])
      */
-    public void allow(String agent, String... capabilities)
+    public void allow(String capability, String... authorities)
     {
         digest();
-        AuthorityType type = AuthorityType.getAuthorityType(agent);
-        if (type == AuthorityType.ADMIN)
+        // First remove any explicit denies.
+        Set<String> denied = fDenied.get(capability);
+        if (denied != null)
         {
-            return;
-        }
-        Set<String> capDenied = null;
-        Set<String> capAllowed = null;
-        switch (type)
-        {
-            case EVERYONE :
-            case GROUP :
+            for (String authority : authorities)
             {
-                capDenied = fGroupDenies.get(agent);
-                capAllowed = fGroupAllows.get(agent);
-                if (capAllowed == null)
-                {
-                    capAllowed = new HashSet<String>();
-                    fGroupAllows.put(agent, capAllowed);
-                }
-                break;
-            }
-            case ADMIN :
-            case USER :
-            case OWNER :
-            {
-                capDenied = fUserDenies.get(agent);
-                capAllowed = fUserAllows.get(agent);
-                if (capAllowed == null)
-                {
-                    capAllowed = new HashSet<String>();
-                    fUserAllows.put(agent, capAllowed); 
-                }
-                break;
-            }
-            default :
-            {
-                // ignore.
-                return;
+                denied.remove(authority);
             }
         }
-        if (capDenied != null)
+        // Add the authorities to the allowed list.
+        Set<String> allowed = fAllowed.get(capability);
+        if (allowed == null)
         {
-            for (String cap : capabilities)
-            {
-                capDenied.remove(cap);
-                capAllowed.add(cap);
-            }
+            allowed = new HashSet<String>();
+            fAllowed.put(capability, allowed);
         }
-        else
+        for (String authority : authorities)
         {
-            for (String cap : capabilities)
-            {
-                capAllowed.add(cap);
-            }
+            allowed.add(authority);
         }
     }
 
-    private void digestMap(String mapRep, Map<String, Set<String>> map)
-    {
-        String[] segments = mapRep.split(":");
-        if (segments.length == 0 || segments[0].equals(""))
-        {
-            return;
-        }
-        for (String segment : segments)
-        {
-            String[] entrySeg = segment.split(";");
-            if (entrySeg.length == 0 || entrySeg[0].equals(""))
-            {
-                continue;
-            }
-            Set<String> caps = new HashSet<String>();
-            map.put(entrySeg[0], caps);
-            for (int i = 1; i < entrySeg.length; ++i)
-            {
-                String cap = fCapabilityRegistry.getCapabilityName(Integer.parseInt(entrySeg[i], 16));
-                if (cap == null)
-                {
-                    continue;
-                }
-                caps.add(cap);
-            }
-        }
-    }
-    
+    /**
+     * Helper to decode from the string representation.
+     */
     private void digest()
     {
         if (fStringRep == null)
@@ -192,186 +142,209 @@ public class ACLImpl implements ACL
             return;
         }
         String[] segments = fStringRep.split("\\|");
-        fInherit = segments[0].equals("i") ? true : false;
-        digestMap(segments[1], fUserAllows);
-        digestMap(segments[2], fUserDenies);
-        digestMap(segments[3], fGroupAllows);
-        digestMap(segments[4], fGroupDenies);
+        fInherit = segments[0].equals("i");
+        digestMap(segments[1], fAllowed);
+        digestMap(segments[2], fDenied);
         fStringRep = null;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.simple.permission.ACL#can(java.lang.String, java.lang.String)
+    /**
+     * Sub helper for decoding string representation.
+     * @param string The partial string representation.
+     * @param map The map to update.
      */
-    public boolean can(String agent, String capability)
+    private void digestMap(String rep, Map<String, Set<String>> map)
+    {
+        String[] segments = rep.split(":");
+        if (segments.length == 0 || segments[0].equals(""))
+        {
+            // This means there are no explicit entries.
+            return;
+        }
+        for (String entryRep : segments)
+        {
+            String[] entryRegs = entryRep.split(";");
+            String capability = fCapabilityRegistry.getCapabilityName(Integer.parseInt(entryRegs[0], 16));
+            Set<String> authorities = new HashSet<String>();
+            map.put(capability, authorities);
+            for (int i = 1; i < entryRegs.length; ++i)
+            {
+                authorities.add(entryRegs[i]);
+            }
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.simple.permission.ACL#can(java.lang.String, boolean, java.lang.String)
+     */
+    public boolean can(String authority, boolean isOwner, String capability)
     {
         digest();
-        AuthorityType type = AuthorityType.getAuthorityType(agent);
-        // Admin trumps all.
+        AuthorityType type = AuthorityType.getAuthorityType(authority);
+        // Admin trumps.
         if (type == AuthorityType.ADMIN)
         {
             return true;
         }
-        // Next check for denied entries that apply.
-        Set<String> denied = fUserDenies.get(agent);
-        if (denied == null)
+        // Look for denies first.
+        Set<String> denied = fDenied.get(capability);
+        if (denied != null)
         {
-            denied = new HashSet<String>();
-        }
-        Set<String> containing = fAuthorityService.getContainingAuthorities(null, agent, false);
-        Set<String> found = fGroupDenies.get(agent);
-        if (found != null)
-        {
-            denied.addAll(found);
-        }
-        for (String container : containing)
-        {
-            found = fGroupDenies.get(container);
-            if (found != null)
+            if (denied.contains(authority))
             {
-                denied.addAll(found);
+                return false;
+            }
+            for (String auth : denied)
+            {
+                if (fAuthorityService.getContainedAuthorities(null, auth, false).contains(authority))
+                {
+                    return false;
+                }
             }
         }
-        if (denied.contains(capability))
+        // Now look for allows.
+        Set<String> allowed = fAllowed.get(capability);
+        if (allowed != null)
         {
-            return false;
-        }
-        // Now go look for the alloweds.
-        Set<String> allowed = fUserAllows.get(agent);
-        if (allowed == null)
-        {
-            allowed = new HashSet<String>();
-        }
-        found = fGroupAllows.get(agent);
-        if (found != null)
-        {
-            allowed.addAll(found);
-        }
-        for (String container : containing)
-        {
-            found = fGroupAllows.get(container);
-            if (found != null)
+            if (allowed.contains(authority))
             {
-                allowed.addAll(found);
+                return true;
+            }
+            for (String auth : allowed)
+            {
+                if (fAuthorityService.getContainedAuthorities(null, auth, false).contains(authority))
+                {
+                    return true;
+                }
             }
         }
-        return allowed.contains(capability);
+        return false;
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.service.simple.permission.ACL#deny(java.lang.String, java.lang.String[])
      */
-    public void deny(String agent, String ... capabilities)
+    public void deny(String capability, String ... authorities)
     {
         digest();
-        AuthorityType type = AuthorityType.getAuthorityType(agent);
-        if (type == AuthorityType.ADMIN)
-        {
-            return;
-        }
-        Set<String> allowed = fUserAllows.get(agent);
+        // Remove corresponding explicit allows.
+        Set<String> allowed = fAllowed.get(capability);
         if (allowed != null)
         {
-            for (String cap : capabilities)
+            for (String authority : authorities)
             {
-                allowed.remove(cap);
+                allowed.remove(authority);
             }
         }
-        allowed = fGroupAllows.get(agent);
-        if (allowed != null)
+        // Now add denies.
+        Set<String> denied = fDenied.get(capability);
+        if (denied == null)
         {
-            for (String cap : capabilities)
-            {
-                allowed.remove(cap);
-            }
+            denied = new HashSet<String>();
+            fDenied.put(capability, denied);
         }
-        Set<String> denied = null;
-        switch (type)
+        for (String authority : authorities)
         {
-            case EVERYONE :
-            case GROUP :
+            if (AuthorityType.getAuthorityType(authority) == AuthorityType.ADMIN)
             {
-                denied = fGroupDenies.get(agent);
-                if (denied == null)
-                {
-                    denied = new HashSet<String>();
-                    fGroupDenies.put(agent, denied);
-                }
-                break;
+                continue;
             }
-            case OWNER :
-            case USER :
-            case GUEST :
-            {
-                denied = fUserDenies.get(agent);
-                if (denied == null)
-                {
-                    denied = new HashSet<String>();
-                    fUserDenies.put(agent, denied);
-                }
-                break;
-            }
-            default :
-            {
-                // Cop Out!
-                return;
-            }
-        }
-        for (String cap : capabilities)
-        {
-            denied.add(cap);
+            denied.add(authority);
         }
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.simple.permission.ACL#getCapabilities(java.lang.String)
+     * @see org.alfresco.service.simple.permission.ACL#getAllowed(java.lang.String)
      */
-    public Set<String> getCapabilities(String agent)
+    public Set<String> getAllowed(String capability)
     {
         digest();
-        AuthorityType type = AuthorityType.getAuthorityType(agent);
+        Set<String> allowed = new HashSet<String>();
+        allowed.add(AuthorityType.ADMIN.getFixedString());
+        // Add the explicitly allowed.
+        Set<String> expAllowed = fAllowed.get(capability);
+        if (expAllowed == null)
+        {
+            return allowed;
+        }
+        allowed.addAll(expAllowed);
+        for (String authority : expAllowed)
+        {
+            allowed.addAll(fAuthorityService.getContainedAuthorities(null, authority, false));
+        }
+        // Now remove based on denials.
+        Set<String> denied = fDenied.get(capability);
+        if (denied == null)
+        {
+            return allowed;
+        }
+        allowed.removeAll(denied);
+        // Now those that are indirectly denied.
+        for (String authority : denied)
+        {
+            allowed.removeAll(fAuthorityService.getContainedAuthorities(null, authority, false));
+        }
+        return allowed;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.simple.permission.ACL#getCapabilities(java.lang.String, boolean)
+     */
+    public Set<String> getCapabilities(String authority, boolean isOwner)
+    {
+        digest();
+        AuthorityType type = AuthorityType.getAuthorityType(authority);
         if (type == AuthorityType.ADMIN)
         {
             return fCapabilityRegistry.getAll();
         }
-        // First add in all the possible capabilities from the allow sets.
         Set<String> capabilities = new HashSet<String>();
-        Set<String> found = fUserAllows.get(agent);
-        if (found != null)
+        // First run through the allowed entries.
+        Set<String> containers = null;
+        for (Map.Entry<String, Set<String>> entry : fAllowed.entrySet())
         {
-            capabilities.addAll(found);
-        }
-        found = fGroupAllows.get(agent);
-        if (found != null)
-        {
-            capabilities.addAll(found);
-        }
-        Set<String> containers = fAuthorityService.getContainingAuthorities(null, agent, false);
-        for (String container : containers)
-        {
-            found = fGroupAllows.get(container);
-            if (found != null)
+            if (entry.getValue().contains(authority))
             {
-                capabilities.addAll(found);
+                capabilities.add(entry.getKey());
+                continue;
+            }
+            if (containers == null)
+            {
+                containers = fAuthorityService.getContainingAuthorities(null, authority, false);
+            }
+            for (String auth : containers)
+            {
+                if (entry.getValue().contains(auth))
+                {
+                    capabilities.add(entry.getKey());
+                    break;
+                }
             }
         }
-        // Now remove everything that's denied.
-        found = fUserDenies.get(agent);
-        if (found != null)
+        // Now go through the denials.
+        for (Map.Entry<String, Set<String>> entry : fDenied.entrySet())
         {
-            capabilities.removeAll(found);
-        }
-        found = fGroupDenies.get(agent);
-        if (found != null)
-        {
-            capabilities.removeAll(found);
-        }
-        for (String container : containers)
-        {
-            found = fGroupDenies.get(container);
-            if (found != null)
+            if (!capabilities.contains(entry.getKey()))
             {
-                capabilities.removeAll(found);
+                continue;
+            }
+            Set<String> denied = entry.getValue();
+            if (denied.contains(authority))
+            {
+                capabilities.remove(entry.getKey());
+                continue;
+            }
+            if (containers == null)
+            {
+                containers = fAuthorityService.getContainingAuthorities(null, authority, false);
+            }
+            for (String auth : containers)
+            {
+                if (denied.contains(auth))
+                {
+                    capabilities.remove(entry.getKey());
+                    break;
+                }
             }
         }
         return capabilities;
@@ -390,72 +363,30 @@ public class ACLImpl implements ACL
         builder.append(fInherit ? 'i' : 'n');
         builder.append('|');
         int count = 0;
-        for (Map.Entry<String, Set<String>> entry : fUserAllows.entrySet())
+        for (Map.Entry<String, Set<String>> entry : fAllowed.entrySet())
         {
-            builder.append(entry.getKey());
-            if (entry.getValue().size() != 0)
+            builder.append(Integer.toString(fCapabilityRegistry.getCapabilityID(entry.getKey()), 16));
+            for (String authority : entry.getValue())
             {
-                for (String cap : entry.getValue())
-                {
-                    builder.append(';');
-                    builder.append(Integer.toString(fCapabilityRegistry.getCapabilityID(cap), 16));
-                }
+                builder.append(';');
+                builder.append(authority);
             }
-            if (count++ < fUserAllows.size() - 1)
+            if (count++ < fAllowed.size() - 1)
             {
                 builder.append(':');
             }
         }
         builder.append('|');
         count = 0;
-        for (Map.Entry<String, Set<String>> entry : fUserDenies.entrySet())
+        for (Map.Entry<String, Set<String>> entry : fDenied.entrySet())
         {
-            builder.append(entry.getKey());
-            if (entry.getValue().size() != 0)
+            builder.append(Integer.toString(fCapabilityRegistry.getCapabilityID(entry.getKey()), 16));
+            for (String authority : entry.getValue())
             {
-                for (String cap : entry.getValue())
-                {
-                    builder.append(';');
-                    builder.append(Integer.toString(fCapabilityRegistry.getCapabilityID(cap), 16));
-                }
+                builder.append(';');
+                builder.append(authority);
             }
-            if (count++ < fUserDenies.size() - 1)
-            {
-                builder.append(':');
-            }
-        }
-        builder.append('|');
-        count = 0;
-        for (Map.Entry<String, Set<String>> entry : fGroupAllows.entrySet())
-        {
-            builder.append(entry.getKey());
-            if (entry.getValue().size() != 0)
-            {
-                for (String cap : entry.getValue())
-                {
-                    builder.append(';');
-                    builder.append(Integer.toString(fCapabilityRegistry.getCapabilityID(cap), 16));
-                }
-            }
-            if (count++ < fGroupAllows.size() - 1)
-            {
-                builder.append(':');
-            }
-        }
-        builder.append('|');
-        count = 0;
-        for (Map.Entry<String, Set<String>> entry : fGroupDenies.entrySet())
-        {
-            builder.append(entry.getKey());
-            if (entry.getValue().size() != 0)
-            {
-                for (String cap : entry.getValue())
-                {
-                    builder.append(';');
-                    builder.append(Integer.toString(fCapabilityRegistry.getCapabilityID(cap), 16));
-                }
-            }
-            if (count++ < fGroupDenies.size() - 1)
+            if (count++ < fDenied.size() - 1)
             {
                 builder.append(':');
             }
@@ -468,15 +399,7 @@ public class ACLImpl implements ACL
      */
     public boolean inherits()
     {
+        digest();
         return fInherit;
-    }
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString()
-    {
-        return "[" + getStringRepresentation() + "]";
     }
 }

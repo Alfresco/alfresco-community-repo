@@ -26,6 +26,7 @@
 package org.alfresco.repo.simple.permission;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,7 +62,7 @@ public class CapabilityRegistryImpl implements CapabilityRegistry
     /* (non-Javadoc)
      * @see org.alfresco.service.simple.permission.CapabilityRegistry#addCapability(java.lang.String)
      */
-    public void addCapability(String capability)
+    public synchronized void addCapability(String capability)
     {
         // TODO Make this do something in the future.
     }
@@ -69,15 +70,15 @@ public class CapabilityRegistryImpl implements CapabilityRegistry
     /* (non-Javadoc)
      * @see org.alfresco.service.simple.permission.CapabilityRegistry#getAll()
      */
-    public Set<String> getAll()
+    public synchronized Set<String> getAll()
     {
-        return fCapabilityToID.keySet();
+        return new HashSet<String>(fCapabilityToID.keySet());
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.service.simple.permission.CapabilityRegistry#getCapabilityID(java.lang.String)
      */
-    public int getCapabilityID(String capability)
+    public synchronized int getCapabilityID(String capability)
     {
         Integer id = fCapabilityToID.get(capability);
         if (id == null)
@@ -90,7 +91,7 @@ public class CapabilityRegistryImpl implements CapabilityRegistry
     /* (non-Javadoc)
      * @see org.alfresco.service.simple.permission.CapabilityRegistry#getCapabilityName(int)
      */
-    public String getCapabilityName(int id)
+    public synchronized String getCapabilityName(int id)
     {
         return fIDToCapability.get(id);
     }
@@ -98,7 +99,7 @@ public class CapabilityRegistryImpl implements CapabilityRegistry
     /* (non-Javadoc)
      * @see org.alfresco.service.simple.permission.CapabilityRegistry#removeCapability(java.lang.String)
      */
-    public void removeCapability(String capability)
+    public synchronized void removeCapability(String capability)
     {
         // TODO Make this persistent.
         Integer removed = fCapabilityToID.remove(capability);

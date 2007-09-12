@@ -26,12 +26,11 @@
 package org.alfresco.service.simple.permission;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Set;
 
 /**
  * Interface for ACLs. ACLs express the capabilities granted to 
- * different agents (users, groups, or roles (one hopes that roles can go away as they are 
+ * different authorities (users, groups, or roles (one hopes that roles can go away as they are 
  * operationally just another name for a group)).  ACLs contain explicit entries made of
  * a capability and a list of agents plus an indication of whether the entry denies or allows
  * the capability. Entries that deny override any entries that allow. 
@@ -40,35 +39,44 @@ import java.util.Set;
 public interface ACL extends Serializable
 {
     /**
-     * Insert an allow entry for the agent, capabilities combination.
-     * Removes a denials explicitly for the agent and capabilities given.
-     * @param agent The agent, (user, group, role)
-     * @param capabilities The capabilities being granted.
+     * Insert an allow entry.
+     * Removes any denials explicitly for the authorities and capability given.
+     * @param capability The capability to grant.
+     * @param authorities The authorities granted the capability.
      */
-    public void allow(String agent, String ... capabilities);
+    public void allow(String capability, String ... authorities);
     
     /**
-     * Insert a deny entry for the agent, capabilities combination.
-     * Removes an allow explicitly for the agent and capabilities given.
-     * @param agent The agent, (user, group, role)
-     * @param capabilities
+     * Insert a deny entry.
+     * Removes any allows explicitly for the authorities and capability given.
+     * @param capability The capability to deny.
+     * @param authorities The authorities to deny.
      */
-    public void deny(String agent, String ... capabilities);
+    public void deny(String capability, String ... authorities);
     
     /**
-     * Does the given agent have the given capability
-     * @param agent The agent (user)
+     * Does the given authority have the given capability
+     * @param authority The authority (user)
+     * @param isOwner Is the authority the owner of the controlled entity.
      * @param capability The capability.
-     * @return Whether the agent can.
+     * @return Whether the authority can.
      */
-    public boolean can(String agent, String capability);
+    public boolean can(String authority, boolean isOwner, String capability);
     
     /**
-     * Get the capabilities for the given agent.
-     * @param agent The agent.
+     * Get the capabilities for the given authority.
+     * @param authority The authority.
+     * @param isOwner is the authority the owner of the controlled entity.
      * @return A set of capabilities.
      */
-    public Set<String> getCapabilities(String agent);
+    public Set<String> getCapabilities(String authority, boolean isOwner);
+    
+    /**
+     * Get the authorities with the given capability.
+     * @param capability The capability under consideration.
+     * @return The set of authorities.
+     */
+    public Set<String> getAllowed(String capability);
     
     /**
      * Get a string representation of this ACL, suitable for persistence.

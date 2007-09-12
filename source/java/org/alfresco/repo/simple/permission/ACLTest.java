@@ -116,24 +116,25 @@ public class ACLTest extends TestCase
         {
             System.out.println(fCapabilityRegistry.getAll());
             ACL acl = new ACLImpl(true);
-            acl.allow("GROUP_Scoobies", "read", "write", "delete", "shimmy");
-            acl.deny("Xander", "delete");
-            acl.allow("Tara", "shake");
-            acl.allow("GROUP_vampires", "read", "write", "delete", "shimmy", "shake");
-            acl.deny("Spike", "shake");
-            acl.deny("GROUP_soulless", "delete");
-            System.out.println(acl.getCapabilities("Spike"));
-            System.out.println(acl.getCapabilities("Tara"));
-            System.out.println(acl.getCapabilities("Xander"));
-            System.out.println(acl.getCapabilities("Buffy"));
+            acl.allow("read", "GROUP_Scoobies", "GROUP_vampires");
+            acl.allow("write", "GROUP_Scoobies", "GROUP_vampires");
+            acl.allow("delete", "GROUP_Scoobies", "GROUP_vampires");
+            acl.allow("shimmy", "GROUP_Scoobies", "GROUP_vampires");
+            acl.allow("shake", "GROUP_vampires", "Tara");
+            acl.deny("delete", "Xander", "GROUP_soulless");
+            acl.deny("shake", "Spike");
+            System.out.println(acl.getCapabilities("Spike", false));
+            System.out.println(acl.getCapabilities("Tara", false));
+            System.out.println(acl.getCapabilities("Xander", false));
+            System.out.println(acl.getCapabilities("Buffy", false));
             String stringRep = acl.getStringRepresentation();
             System.out.println(stringRep);
             ACL acl2 = new ACLImpl(stringRep);
             System.out.println(acl2.getStringRepresentation());
-            System.out.println(acl2.getCapabilities("Spike"));
-            System.out.println(acl2.getCapabilities("Tara"));
-            System.out.println(acl2.getCapabilities("Xander"));
-            System.out.println(acl2.getCapabilities("Buffy"));
+            System.out.println(acl2.getCapabilities("Spike", false));
+            System.out.println(acl2.getCapabilities("Tara", false));
+            System.out.println(acl2.getCapabilities("Xander", false));
+            System.out.println(acl2.getCapabilities("Buffy", false));
             System.out.println(acl2.getStringRepresentation());
         }
         catch (Exception e)

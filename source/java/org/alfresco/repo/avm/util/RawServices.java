@@ -9,6 +9,8 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.simple.permission.CapabilityRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -57,6 +59,16 @@ public class RawServices implements ApplicationContextAware
      * The LookupCache.
      */
     private LookupCache fLookupCache;
+    
+    /**
+     * The Authority Service.
+     */
+    private AuthorityService fAuthorityService;
+    
+    /**
+     * The CapabilityRegistry.
+     */
+    private CapabilityRegistry fCapabilityRegistry;
     
     /**
      * Default constructor.
@@ -133,6 +145,25 @@ public class RawServices implements ApplicationContextAware
             fLookupCache = (LookupCache)fContext.getBean("lookupCache");
         }
         return fLookupCache;
+    }
+    
+    public AuthorityService getAuthorityService()
+    {
+        if (fAuthorityService == null)
+        {
+            // TODO change this back to the unwrapped bean before production.
+            fAuthorityService = (AuthorityService)fContext.getBean("AuthorityService");
+        }
+        return fAuthorityService;
+    }
+
+    public CapabilityRegistry getCapabilityRegistry()
+    {
+        if (fCapabilityRegistry == null)
+        {
+            fCapabilityRegistry = (CapabilityRegistry)fContext.getBean("capabilityRegistry");
+        }
+        return fCapabilityRegistry;
     }
     
     public ApplicationContext getContext()

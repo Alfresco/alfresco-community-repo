@@ -84,6 +84,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.RAMDirectory;
+import org.doomdark.uuid.UUID;
 
 /**
  * The information that makes up an index. IndexInfoVersion Repeated information of the form
@@ -584,6 +585,19 @@ public class IndexInfo
                 releaseWriteLock();
             }
         }
+        // Need to do with file lock - must share info about other readers to support this with shared indexer
+        // implementation
+
+        getWriteLock();
+        try
+        {
+            LockWork<Object> work = new DeleteUnknownGuidDirectories();
+            doWithFileLock(work);
+        }
+        finally
+        {
+            releaseWriteLock();
+        }
 
         // Run the cleaner around every 20 secods - this just makes the request to the thread pool
         timer.schedule(new TimerTask()
@@ -594,7 +608,39 @@ public class IndexInfo
                 cleaner.schedule();
             }
         }, 0, 20000);
+    }
 
+    private class DeleteUnknownGuidDirectories implements LockWork<Object>
+    {
+
+        public Object doWork() throws Exception
+        {
+            setStatusFromFile();
+
+            // If the index is not shared we can do some easy clean
+            // up
+            if (!indexIsShared)
+            {
+                // Safe to tidy up all files that look like guids that we do not know about
+                File[] files = indexDirectory.listFiles();
+                if (files != null)
+                {
+                    for (File file : files)
+                    {
+                        if (file.isDirectory())
+                        {
+                            String id = file.getName();
+                            if (!indexEntries.containsKey(id) && isGUID(id))
+                            {
+                                deleteQueue.add(id);
+                            }
+                        }
+                    }
+                }
+
+            }
+            return null;
+        }
     }
 
     /**
@@ -1437,7 +1483,7 @@ public class IndexInfo
     private class RolledBackTransition implements Transition
     {
         ThreadLocal<IndexReader> tl = new ThreadLocal<IndexReader>();
-        
+
         public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
             closeDelta(id);
@@ -1456,7 +1502,7 @@ public class IndexInfo
             {
                 entry.setStatus(TransactionStatus.ROLLEDBACK);
                 writeStatus();
-                
+
                 registerReferenceCountingIndexReader(id, tl.get());
                 indexEntries.remove(id);
                 if (s_logger.isDebugEnabled())
@@ -3285,6 +3331,21 @@ public class IndexInfo
     public void setWriterUseCompoundFile(boolean writerUseCompoundFile)
     {
         this.writerUseCompoundFile = writerUseCompoundFile;
+    }
+
+    private boolean isGUID(String guid)
+    {
+        try
+        {
+            UUID id = new UUID(guid);
+            // We have a valid guid.
+            return true;
+        }
+        catch (NumberFormatException e)
+        {
+            // Not a valid GUID
+        }
+        return false;
     }
 
     interface Schedulable

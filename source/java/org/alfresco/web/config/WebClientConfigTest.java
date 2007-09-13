@@ -26,7 +26,6 @@ package org.alfresco.web.config;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -70,7 +69,7 @@ public class WebClientConfigTest extends BaseTest
       // setup the config service
       String configFile = getResourcesDir() + "test-config.xml";
       XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFile));
-      svc.init();
+      svc.initConfig();
 
       // get hold of the property sheet config from the global section
       Config global = svc.getGlobalConfig();
@@ -133,7 +132,7 @@ public class WebClientConfigTest extends BaseTest
       // setup the config service
       String configFiles = getResourcesDir() + "test-config.xml";
       XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.init();
+      svc.initConfig();
       
       Config propViewConfig = svc.getConfig("Property Viewing");
       assertNotNull("Property Viewing section should not be null", propViewConfig);
@@ -174,7 +173,7 @@ public class WebClientConfigTest extends BaseTest
       // setup the config service
       String configFiles = getResourcesDir() + "test-config.xml";
       XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.init();
+      svc.initConfig();
       
       Config propEditConfig = svc.getConfig("Property Editing");
       assertNotNull("Property Editing section should not be null", propEditConfig);
@@ -220,7 +219,7 @@ public class WebClientConfigTest extends BaseTest
       configFiles.add(getResourcesDir() + "test-config.xml");
       configFiles.add(getResourcesDir() + "test-config-override.xml");
       XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.init();
+      svc.initConfig();
       
       // get the config for the size property in the space-aspect property sheet
       PropertySheetConfigElement propSheet = ((PropertySheetConfigElement)svc.getConfig("space-aspect").
@@ -298,7 +297,7 @@ public class WebClientConfigTest extends BaseTest
       // setup the config service
       String configFiles = getResourcesDir() + "test-config.xml";
       XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.init();
+      svc.initConfig();
       
       // get the global config and from that the client config
       ClientConfigElement clientConfig = (ClientConfigElement)svc.getGlobalConfig().
@@ -323,7 +322,7 @@ public class WebClientConfigTest extends BaseTest
       configFiles.add(getResourcesDir() + "test-config.xml");
       configFiles.add(getResourcesDir() + "test-config-override.xml");
       XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.init();
+      svc.initConfig();
         
       // try and get the global config section
       Config globalSection = svc.getGlobalConfig();
@@ -354,7 +353,7 @@ public class WebClientConfigTest extends BaseTest
       // setup the config service
       String configFiles = getResourcesDir() + "test-config.xml";
       XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.init();
+      svc.initConfig();
 
       // *** Test the returning of a view id override
       Config testCfg = svc.getConfig("viewid-navigation-result");
@@ -432,7 +431,7 @@ public class WebClientConfigTest extends BaseTest
       // setup the config service
       String configFiles = getResourcesDir() + "test-config.xml";
       XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.init();
+      svc.initConfig();
       
       // do a lookup using the generic config elements and make sure the correct
       // info comes out
@@ -483,7 +482,7 @@ public class WebClientConfigTest extends BaseTest
       configFiles.add(getResourcesDir() + "test-config.xml");
       configFiles.add(getResourcesDir() + "test-config-override.xml");
       XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.init();
+      svc.initConfig();
       
       LanguagesConfigElement config = (LanguagesConfigElement)svc.getConfig("Languages").
             getConfigElement(LanguagesConfigElement.CONFIG_ELEMENT_ID);
@@ -523,7 +522,7 @@ public class WebClientConfigTest extends BaseTest
       configFiles.add(getResourcesDir() + "test-config.xml");
       configFiles.add(getResourcesDir() + "test-config-override.xml");
       XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.init();
+      svc.initConfig();
       
       AdvancedSearchConfigElement config = (AdvancedSearchConfigElement)svc.getConfig("Advanced Search").
             getConfigElement(AdvancedSearchConfigElement.CONFIG_ELEMENT_ID);
@@ -571,7 +570,7 @@ public class WebClientConfigTest extends BaseTest
       configFiles.add(getResourcesDir() + "test-config.xml");
       configFiles.add(getResourcesDir() + "test-config-override.xml");
       XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.init();
+      svc.initConfig();
       
       ViewsConfigElement config = (ViewsConfigElement)svc.getConfig("Views").
             getConfigElement(ViewsConfigElement.CONFIG_ELEMENT_ID);
@@ -633,7 +632,7 @@ public class WebClientConfigTest extends BaseTest
       // setup the config service
       String configFiles = getResourcesDir() + "test-config-dialogs-wizards.xml";
       XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.init();
+      svc.initConfig();
       
       // get Dialogs config section
       Config dialogsConfig = svc.getConfig("Dialogs");
@@ -695,7 +694,7 @@ public class WebClientConfigTest extends BaseTest
       configFiles.add(getResourcesDir() + "test-config-dialogs-wizards.xml");
       configFiles.add(getResourcesDir() + "test-config-override.xml");
       XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.init();
+      svc.initConfig();
       
       // get the 'dialogs' element
       DialogsConfigElement dialogsElement = ((DialogsConfigElement)svc.getConfig("Dialogs").
@@ -720,7 +719,7 @@ public class WebClientConfigTest extends BaseTest
       // setup the config service
       String configFiles = getResourcesDir() + "test-config-dialogs-wizards.xml";
       XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.init();
+      svc.initConfig();
       
       // get Dialogs config section
       Config wizardsConfig = svc.getConfig("Wizards");
@@ -839,7 +838,7 @@ public class WebClientConfigTest extends BaseTest
       // setup the config service
       String configFile = getResourcesDir() + "test-config.xml";
       XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFile));
-      svc.init();
+      svc.initConfig();
       
       // get the "Actions" config
       Config cfg = svc.getGlobalConfig();
@@ -880,7 +879,7 @@ public class WebClientConfigTest extends BaseTest
       configFiles.add(getResourcesDir() + "test-config.xml");
       configFiles.add(getResourcesDir() + "test-config-override.xml");
       XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.init();
+      svc.initConfig();
       
       // get the "Actions" config
       Config cfg = svc.getConfig("Actions Override");

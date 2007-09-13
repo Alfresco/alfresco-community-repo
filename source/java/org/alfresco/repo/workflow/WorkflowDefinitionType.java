@@ -168,52 +168,60 @@ public class WorkflowDefinitionType implements ContentServicePolicies.OnContentU
     
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        // Ignore if the node is a working copy 
-        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
-        {
-            undeploy(nodeRef);
-        }
+        undeploy(nodeRef);
     }
     
     private void deploy(NodeRef nodeRef)
     {
-        // deploy / re-deploy
-        WorkflowDeployment deployment = workflowService.deployDefinition(nodeRef);
-        
-        if (deployment != null)
+        // Ignore if the node is a working copy 
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
         {
-            WorkflowDefinition def = deployment.definition;
-            
-            // Update the meta data for the model
-            Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-            
-            props.put(WorkflowModel.PROP_WORKFLOW_DEF_NAME, def.getName());
-            
-            // TODO - ability to return and handle deployment problems / warnings
-            if (deployment.problems.length > 0)
-            {
-                for (String problem : deployment.problems)
+            Boolean value = (Boolean)nodeService.getProperty(nodeRef, WorkflowModel.PROP_WORKFLOW_DEF_DEPLOYED);
+            if ((value != null) && (value.booleanValue() == true))
+            {            
+                // deploy / re-deploy
+                WorkflowDeployment deployment = workflowService.deployDefinition(nodeRef);
+                
+                if (deployment != null)
                 {
-                    logger.warn(problem);
+                    WorkflowDefinition def = deployment.definition;
+                    
+                    // Update the meta data for the model
+                    Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
+                    
+                    props.put(WorkflowModel.PROP_WORKFLOW_DEF_NAME, def.getName());
+                    
+                    // TODO - ability to return and handle deployment problems / warnings
+                    if (deployment.problems.length > 0)
+                    {
+                        for (String problem : deployment.problems)
+                        {
+                            logger.warn(problem);
+                        }
+                    }
+        
+                    nodeService.setProperties(nodeRef, props);
                 }
             }
-
-            nodeService.setProperties(nodeRef, props);
         }
     }
     
     private void undeploy(NodeRef nodeRef)
     {
-        String defName = (String)nodeService.getProperty(nodeRef, WorkflowModel.PROP_WORKFLOW_DEF_NAME);
-        if (defName != null)
+        // Ignore if the node is a working copy 
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
         {
-            // Undeploy the workflow definition - all versions in JBPM
-            List<WorkflowDefinition> defs = workflowService.getAllDefinitionsByName(defName);
-            for (WorkflowDefinition def: defs)
+            String defName = (String)nodeService.getProperty(nodeRef, WorkflowModel.PROP_WORKFLOW_DEF_NAME);
+            if (defName != null)
             {
-                logger.info("Undeploying workflow '" + defName + "' ...");
-                workflowService.undeployDefinition(def.getId());
-                logger.info("... undeployed '" + def.getId() + "' v" + def.getVersion());
+                // Undeploy the workflow definition - all versions in JBPM
+                List<WorkflowDefinition> defs = workflowService.getAllDefinitionsByName(defName);
+                for (WorkflowDefinition def: defs)
+                {
+                    logger.info("Undeploying workflow '" + defName + "' ...");
+                    workflowService.undeployDefinition(def.getId());
+                    logger.info("... undeployed '" + def.getId() + "' v" + def.getVersion());
+                }
             }
         }
     }

@@ -142,7 +142,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public void init()
     {
-        String tenantDomain = getTenantDomain();
+        String tenantDomain = tenantService.getCurrentUserDomain();
         
         // initialise empty dictionary & namespaces
         putCompiledModels(tenantDomain, new HashMap<QName,CompiledModel>());
@@ -164,7 +164,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public void destroy()
     {
-        String tenantDomain = getTenantDomain();
+        String tenantDomain = tenantService.getCurrentUserDomain();
         
         removeCompiledModels(tenantDomain);
         removeUriToModels(tenantDomain);                 
@@ -179,7 +179,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */      
     public void reset()
     {
-    	reset(getTenantDomain());
+    	reset(tenantService.getCurrentUserDomain());
     }
     
     private void reset(String tenantDomain)
@@ -221,23 +221,25 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public QName putModel(M2Model model)
     {
+        String tenantDomain = tenantService.getCurrentUserDomain();
+        
         // Compile model definition
         CompiledModel compiledModel = model.compile(this, namespaceDAO);
         QName modelName = compiledModel.getModelDefinition().getName();
 
         // Remove namespace definitions for previous model, if it exists
-        CompiledModel previousVersion = getCompiledModels().get(modelName);
+        CompiledModel previousVersion = getCompiledModels(tenantDomain).get(modelName);
         if (previousVersion != null)
         {
             for (M2Namespace namespace : previousVersion.getM2Model().getNamespaces())
             {
                 namespaceDAO.removePrefix(namespace.getPrefix());
                 namespaceDAO.removeURI(namespace.getUri());
-                unmapUriToModel(namespace.getUri(), previousVersion);
+                unmapUriToModel(namespace.getUri(), previousVersion, tenantDomain);
             }
             for (M2Namespace importNamespace : previousVersion.getM2Model().getImports())
             {
-            	unmapUriToModel(importNamespace.getUri(), previousVersion);
+            	unmapUriToModel(importNamespace.getUri(), previousVersion, tenantDomain);
             }
         }
         
@@ -246,15 +248,15 @@ public class DictionaryDAOImpl implements DictionaryDAO
         {
             namespaceDAO.addURI(namespace.getUri());
             namespaceDAO.addPrefix(namespace.getPrefix(), namespace.getUri());
-            mapUriToModel(namespace.getUri(), compiledModel);
+            mapUriToModel(namespace.getUri(), compiledModel, tenantDomain);
         }
         for (M2Namespace importNamespace : model.getImports())
         {
-        	mapUriToModel(importNamespace.getUri(), compiledModel);
+        	mapUriToModel(importNamespace.getUri(), compiledModel, tenantDomain);
         }
         
         // Publish new Model Definition
-        getCompiledModels().put(modelName, compiledModel);
+        getCompiledModels(tenantDomain).put(modelName, compiledModel);
 
         if (logger.isInfoEnabled())
         {
@@ -274,7 +276,9 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public void removeModel(QName modelName)
     {
-        CompiledModel compiledModel = getCompiledModels().get(modelName);
+        String tenantDomain = tenantService.getCurrentUserDomain();
+        
+        CompiledModel compiledModel = getCompiledModels(tenantDomain).get(modelName);
         if (compiledModel != null)
         {
             // Remove the namespaces from the namespace service
@@ -283,11 +287,11 @@ public class DictionaryDAOImpl implements DictionaryDAO
             {
                 namespaceDAO.removePrefix(namespace.getPrefix());
                 namespaceDAO.removeURI(namespace.getUri());
-                unmapUriToModel(namespace.getUri(), compiledModel);
+                unmapUriToModel(namespace.getUri(), compiledModel, tenantDomain);
             }
             
             // Remove the model from the list
-            getCompiledModels().remove(modelName);
+            getCompiledModels(tenantDomain).remove(modelName);
         }
     }
 
@@ -297,10 +301,11 @@ public class DictionaryDAOImpl implements DictionaryDAO
      * 
      * @param uri   namespace uri
      * @param model   model
+     * @param tenantDomain
      */
-    private void mapUriToModel(String uri, CompiledModel model)
+    private void mapUriToModel(String uri, CompiledModel model, String tenantDomain)
     {
-    	List<CompiledModel> models = getUriToModels().get(uri);
+    	List<CompiledModel> models = getUriToModels(tenantDomain).get(uri);
     	if (models == null)
     	{
     		models = new ArrayList<CompiledModel>();
@@ -318,10 +323,11 @@ public class DictionaryDAOImpl implements DictionaryDAO
      * 
      * @param uri  namespace uri
      * @param model   model
+     * @param tenantDomain
      */
-    private void unmapUriToModel(String uri, CompiledModel model)
+    private void unmapUriToModel(String uri, CompiledModel model, String tenantDomain)
     {
-    	List<CompiledModel> models = getUriToModels().get(uri);
+    	List<CompiledModel> models = getUriToModels(tenantDomain).get(uri);
     	if (models != null)
     	{
     		models.remove(model);
@@ -337,7 +343,8 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     private List<CompiledModel> getModelsForUri(String uri)
     {
-        if (tenantService.isEnabled())
+        String tenantDomain = tenantService.getCurrentUserDomain();
+        if (tenantDomain != "")
         {
             // note: special case, if running as System - e.g. addAuditAspect
             String currentUserName = AuthenticationUtil.getCurrentUserName();
@@ -347,14 +354,9 @@ public class DictionaryDAOImpl implements DictionaryDAO
 	        	if ((tenantService.isTenantUser(currentUserName)) ||
 	        	    (currentUserName.equals(AuthenticationUtil.getSystemUserName()) && tenantService.isTenantName(uri)))
 	            {
-		            String tenantDomain = null;
 		            if (currentUserName.equals(AuthenticationUtil.getSystemUserName()))
 		            {
 		                tenantDomain = tenantService.getDomain(uri);
-		            }
-		            else
-		            {
-		                tenantDomain = tenantService.getCurrentUserDomain();
 		            }
 		            uri = tenantService.getBaseName(uri, true);
 		            
@@ -413,10 +415,11 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     private CompiledModel getCompiledModel(QName modelName)
     {
-        if (tenantService.isTenantUser())
+        String tenantDomain = tenantService.getCurrentUserDomain();
+        if (tenantDomain != "")
         {
             // get tenant-specific model (if any)
-            CompiledModel model = getCompiledModels().get(modelName);
+            CompiledModel model = getCompiledModels(tenantDomain).get(modelName);
             if (model != null)
             {
                 return model;
@@ -458,10 +461,11 @@ public class DictionaryDAOImpl implements DictionaryDAO
     @SuppressWarnings("unchecked")
     public DataTypeDefinition getDataType(Class javaClass)
     {
-        if (tenantService.isTenantUser() == true)
+        String tenantDomain = tenantService.getCurrentUserDomain();
+        if (tenantDomain != "")
         {
             // get tenant models (if any)                
-            for (CompiledModel model : getCompiledModels().values())
+            for (CompiledModel model : getCompiledModels(tenantDomain).values())
             { 
                 DataTypeDefinition dataTypeDef = model.getDataType(javaClass);
                 if (dataTypeDef != null)
@@ -484,7 +488,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
         }
         else
         {
-            for (CompiledModel model : getCompiledModels().values())
+            for (CompiledModel model : getCompiledModels("").values())
             {    
                 DataTypeDefinition dataTypeDef = model.getDataType(javaClass);
                 if (dataTypeDef != null)
@@ -625,7 +629,8 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public Collection<QName> getModels()
     {
-        if (tenantService.isTenantUser())
+        String tenantDomain = tenantService.getCurrentUserDomain();
+        if (tenantDomain != "")
         {
             // return all tenant-specific models and all shared (non-overridden) models
             Collection<QName> filteredModels = new ArrayList<QName>();
@@ -633,7 +638,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
             Collection<QName> nontenantModels = new ArrayList<QName>();
 
             // get tenant models (if any)
-            for (QName key : getCompiledModels().keySet())
+            for (QName key : getCompiledModels(tenantDomain).keySet())
             {
                 tenantModels.add(key);
             }
@@ -666,14 +671,14 @@ public class DictionaryDAOImpl implements DictionaryDAO
         }
         else
         {
-            return getCompiledModels().keySet();
+            return getCompiledModels("").keySet();
         } 
     }
     
     // used for clean-up, e.g. when deleting a tenant
     protected Collection<QName> getNonSharedModels()
     {            
-        return getCompiledModels().keySet();    
+        return getCompiledModels(tenantService.getCurrentUserDomain()).keySet();
     }
 
     /* (non-Javadoc)
@@ -782,23 +787,13 @@ public class DictionaryDAOImpl implements DictionaryDAO
         
         return namespaces;
     }
-
-    /**
-     * Get compiledModels from the cache (in the context of the current user's tenant domain)
-     * 
-     * @param tenantDomain
-     */
-    /* package */ Map<QName,CompiledModel> getCompiledModels()
-    {
-        return getCompiledModels(getTenantDomain());
-    }
     
     /**
      * Get compiledModels from the cache (in the context of the given tenant domain)
      * 
      * @param tenantDomain
      */
-    private Map<QName,CompiledModel> getCompiledModels(String tenantDomain)
+    /* package */ Map<QName,CompiledModel> getCompiledModels(String tenantDomain)
     {
         Map<QName,CompiledModel> compiledModels = null;
         try 
@@ -883,7 +878,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     private Map<String, List<CompiledModel>> getUriToModels()
     {
-        return getUriToModels(getTenantDomain());
+        return getUriToModels(tenantService.getCurrentUserDomain());
     }
 
     /**
@@ -969,14 +964,6 @@ public class DictionaryDAOImpl implements DictionaryDAO
     } 
     
     /**
-     * Local helper - returns tenant domain (or empty string if default non-tenant)
-     */
-    private String getTenantDomain()
-    {
-        return tenantService.getCurrentUserDomain();
-    }
-    
-    /**
      * Return diffs between input model and model in the Dictionary.
      * 
      * If the input model does not exist in the Dictionary or is equivalent to the one in the Dictionary
@@ -991,7 +978,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
         CompiledModel compiledModel = model.compile(this, namespaceDAO);
         QName modelName = compiledModel.getModelDefinition().getName();
         
-        CompiledModel previousVersion = getCompiledModels().get(modelName);
+        CompiledModel previousVersion = getCompiledModels(tenantService.getCurrentUserDomain()).get(modelName);
         if (previousVersion == null)
         {
             return new ArrayList<M2ModelDiff>(0);

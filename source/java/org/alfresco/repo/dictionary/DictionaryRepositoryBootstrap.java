@@ -262,17 +262,22 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
     
                     for (NodeRef dictionaryModel : nodeRefs)
                     {                    	
-                        boolean isActive = ((Boolean)nodeService.getProperty(dictionaryModel, ContentModel.PROP_MODEL_ACTIVE)).booleanValue();         
-                        if (isActive)
-                        {             	
-	                        M2Model model = createM2Model(dictionaryModel);
-	                        if (model != null)
-	                        {
-	                            for (M2Namespace namespace : model.getNamespaces())
-	                            {
-	                                modelMap.put(namespace.getUri(), model);
-	                            }
-	                        }
+                        // Ignore if the node is a working copy or if its inactive
+                        if (nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_WORKING_COPY) == false)
+                        {
+                            Boolean isActive = (Boolean)nodeService.getProperty(dictionaryModel, ContentModel.PROP_MODEL_ACTIVE);
+           
+                            if ((isActive != null) && (isActive.booleanValue() == true))
+                            {             	
+    	                        M2Model model = createM2Model(dictionaryModel);
+    	                        if (model != null)
+    	                        {
+    	                            for (M2Namespace namespace : model.getNamespaces())
+    	                            {
+    	                                modelMap.put(namespace.getUri(), model);
+    	                            }
+    	                        }
+                            }
                         }
                     }
                 }

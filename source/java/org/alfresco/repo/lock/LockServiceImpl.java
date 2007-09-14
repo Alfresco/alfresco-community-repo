@@ -474,8 +474,8 @@ public class LockServiceImpl implements LockService,
         // Ensure we have found a node reference
         if (nodeRef != null && userName != null)
         {
-            // Check to see if should just ignore this node
-            if (!(this.ignoreNodeRefs.contains(nodeRef) || userName.equals(AuthenticationUtil.getSystemUserName())))
+            // Check to see if should just ignore this node - note: special MT System due to AuditableAspect
+            if (!(this.ignoreNodeRefs.contains(nodeRef) || tenantService.getBaseNameUser(userName).equals(AuthenticationUtil.getSystemUserName())))
             {
                 try
                 {

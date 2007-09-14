@@ -876,6 +876,9 @@
         <property name="authenticationService">
             <ref bean="authenticationService" />
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>       
     </bean>
 
     <!-- Multilingual Document-->

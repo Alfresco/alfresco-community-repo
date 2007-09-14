@@ -534,8 +534,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         {
             Set<QName> aspectQNames = getAspects(nodeRef);
             
-            // special case, e.g. when onAuditAspect runs as System
-            QName typeQName = getTypeInternal(nodeRef);
+            QName typeQName = getType(nodeRef);
             
             qnames = new HashSet<QName>(aspectQNames.size() + 1);
             qnames.addAll(aspectQNames);
@@ -547,12 +546,6 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         }
         // done
         return qnames;
-    }
-    
-    // default implementation, should be overridden to support MT
-    protected QName getTypeInternal(NodeRef nodeRef) 
-    {
-        return getType(nodeRef);
     }
 
     /**

@@ -35,6 +35,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -65,6 +66,7 @@ public class AuditableAspect
     private NodeService nodeService;
     private AuthenticationService authenticationService;
     private PolicyComponent policyComponent;
+    private TenantService tenantService;
 
     // Behaviours
     private Behaviour onCreateAudit;
@@ -95,6 +97,15 @@ public class AuditableAspect
     {
         this.authenticationService = authenticationService; 
     }
+    
+    /**
+     * @param tenantService  the tenant service
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
     
     /**
      * Initialise the Auditable Aspect
@@ -155,7 +166,9 @@ public class AuditableAspect
         {
             // Set the updated property values (but do not cascade to update audit behaviour)
             onUpdateAudit.disable();
-            AuthenticationUtil.runAs(new SetAuditProperties(nodeService, nodeRef, properties), AuthenticationUtil.getSystemUserName());
+            
+            // note: special MT case - need to run in context of user's domain ... although checkForLock requires System
+            AuthenticationUtil.runAs(new SetAuditProperties(nodeService, nodeRef, properties), tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantService.getCurrentUserDomain()));
         }
         finally
         {
@@ -187,7 +200,9 @@ public class AuditableAspect
             properties.put(ContentModel.PROP_MODIFIER, modifier);
             
             // Set the updated property values
-            AuthenticationUtil.runAs(new SetAuditProperties(nodeService, nodeRef, properties), AuthenticationUtil.getSystemUserName());
+            
+            // note: special MT case - need to run in context of user's domain ... although checkForLock requires System
+            AuthenticationUtil.runAs(new SetAuditProperties(nodeService, nodeRef, properties), tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantService.getCurrentUserDomain()));
             
             if (logger.isDebugEnabled())
                 logger.debug("Auditable node " + nodeRef + " updated [modified=" + now + ";modifier=" + modifier + "]");

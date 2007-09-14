@@ -567,15 +567,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return node.getTypeQName();
     }
     
-    @Override
-    protected QName getTypeInternal(NodeRef nodeRef) 
-    {
-        Node node = getNodeNotNull(nodeRef);
-        
-        // special case, e.g. when onAuditAspect runs as System
-        return tenantService.getName(nodeRef, node.getTypeQName());
-    }
-    
     /**
      * @see org.alfresco.service.cmr.repository.NodeService#setType(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */

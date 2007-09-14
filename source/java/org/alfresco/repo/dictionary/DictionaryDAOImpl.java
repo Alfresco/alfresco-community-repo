@@ -346,58 +346,42 @@ public class DictionaryDAOImpl implements DictionaryDAO
         String tenantDomain = tenantService.getCurrentUserDomain();
         if (tenantDomain != "")
         {
-            // note: special case, if running as System - e.g. addAuditAspect
-            String currentUserName = AuthenticationUtil.getCurrentUserName();
+            // get non-tenant models (if any)
+            List<CompiledModel> models = getUriToModels("").get(uri);
             
-            if (currentUserName != null)
+            List<CompiledModel> filteredModels = new ArrayList<CompiledModel>();
+            if (models != null)
             {
-	        	if ((tenantService.isTenantUser(currentUserName)) ||
-	        	    (currentUserName.equals(AuthenticationUtil.getSystemUserName()) && tenantService.isTenantName(uri)))
-	            {
-		            if (currentUserName.equals(AuthenticationUtil.getSystemUserName()))
-		            {
-		                tenantDomain = tenantService.getDomain(uri);
-		            }
-		            uri = tenantService.getBaseName(uri, true);
-		            
-		            // get non-tenant models (if any)
-		            List<CompiledModel> models = getUriToModels("").get(uri);
-		            
-		            List<CompiledModel> filteredModels = new ArrayList<CompiledModel>();
-		            if (models != null)
-		            {
-		                filteredModels.addAll(models);
-		            }
-		    
-		            // get tenant models (if any)
-		            List<CompiledModel> tenantModels = getUriToModels(tenantDomain).get(uri);
-		            if (tenantModels != null)
-		            {
-		                if (models != null)
-		                {
-		                    // check to see if tenant model overrides a non-tenant model
-		                    for (CompiledModel tenantModel : tenantModels)
-		                    {
-		                        for (CompiledModel model : models)
-		                        {
-		                            if (tenantModel.getM2Model().getName().equals(model.getM2Model().getName()))
-		                            {
-		                                filteredModels.remove(model);
-		                            }
-		                        }
-		                    }
-		                }
-		                filteredModels.addAll(tenantModels);
-		                models = filteredModels;
-		            }
-		    
-		            if (models == null)
-		            {
-		                models = Collections.emptyList();
-		            }
-		            return models;
-	            }
+                filteredModels.addAll(models);
             }
+    
+            // get tenant models (if any)
+            List<CompiledModel> tenantModels = getUriToModels(tenantDomain).get(uri);
+            if (tenantModels != null)
+            {
+                if (models != null)
+                {
+                    // check to see if tenant model overrides a non-tenant model
+                    for (CompiledModel tenantModel : tenantModels)
+                    {
+                        for (CompiledModel model : models)
+                        {
+                            if (tenantModel.getM2Model().getName().equals(model.getM2Model().getName()))
+                            {
+                                filteredModels.remove(model);
+                            }
+                        }
+                    }
+                }
+                filteredModels.addAll(tenantModels);
+                models = filteredModels;
+            }
+    
+            if (models == null)
+            {
+                models = Collections.emptyList();
+            }
+            return models;
         }
 
         List<CompiledModel> models = getUriToModels().get(uri);
@@ -553,10 +537,6 @@ public class DictionaryDAOImpl implements DictionaryDAO
     public ClassDefinition getClass(QName className)
     {
         List<CompiledModel> models = getModelsForUri(className.getNamespaceURI());
-   
-        // note: special case, if running as System - e.g. addAuditAspect
-        // now force, even for System user
-        className = tenantService.getBaseName(className, true);
 
         for (CompiledModel model : models)
         {

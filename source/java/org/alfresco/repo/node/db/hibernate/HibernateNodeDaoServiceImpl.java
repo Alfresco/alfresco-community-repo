@@ -105,6 +105,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_SOURCE_ASSOCS = "node.GetSourceAssocs";
     private static final String QUERY_GET_NODES_WITH_PROPERTY_VALUES_BY_ACTUAL_TYPE = "node.GetNodesWithPropertyValuesByActualType";
     private static final String QUERY_GET_SERVER_BY_IPADDRESS = "server.getServerByIpAddress";
+
+    private static final String QUERY_GET_NODE_COUNT = "node.GetNodeCount";
+    private static final String QUERY_GET_NODE_COUNT_FOR_STORE = "node.GetNodeCountForStore";
     
     private static final String QUERY_GET_NODE_STATUSES_FOR_STORE = "node.GetNodeStatusesForStore";
     private static final String QUERY_GET_CHILD_ASSOCS_FOR_STORE = "node.GetChildAssocsForStore";
@@ -367,6 +370,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
      * @param protocol  the store protocol
      * @param identifier  the store identifier
      */
+    @SuppressWarnings("unchecked")
     public void deleteStore(final String protocol, final String identifier)
     {
         // ensure that the store exists
@@ -1368,6 +1372,48 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         return convertedValues;
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    public int getNodeCount()
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_NODE_COUNT);
+                query.setMaxResults(1)
+                     .setReadOnly(true);
+                return query.uniqueResult();
+            }
+        };
+        Long count = (Long) getHibernateTemplate().execute(callback);
+        // done
+        return count.intValue();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public int getNodeCount(final StoreRef storeRef)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_NODE_COUNT_FOR_STORE);
+                query.setString("protocol", storeRef.getProtocol())
+                     .setString("identifier", storeRef.getIdentifier())
+                     .setMaxResults(1)
+                     .setReadOnly(true);
+                return query.uniqueResult();
+            }
+        };
+        Long count = (Long) getHibernateTemplate().execute(callback);
+        // done
+        return count.intValue();
+    }
+
     /*
      * Queries for transactions
      */

@@ -492,4 +492,21 @@
                         store.key.identifier = :storeIdentifier)
    </query>
    
+   <query name="node.GetNodeCount">
+      select
+         count(node.id)
+      from 
+         org.alfresco.repo.domain.hibernate.NodeImpl as node
+   </query>
+   
+   <query name="node.GetNodeCountForStore">
+      select
+         count(node.id)
+      from 
+         org.alfresco.repo.domain.hibernate.NodeImpl as node
+      where
+         node.store.key.protocol = :protocol and
+         node.store.key.identifier = :identifier
+   </query>
+   
 </hibernate-mapping>

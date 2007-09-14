@@ -284,6 +284,15 @@ public interface NodeDaoService
      */
     public List<Serializable> getPropertyValuesByActualType(DataTypeDefinition actualDataTypeDefinition);
     
+    /**
+     * @return      Returns the total number of nodes in the ADM repository
+     */
+    public int getNodeCount();
+    /**
+     * @return      Returns the total number of nodes in the ADM store
+     */
+    public int getNodeCount(final StoreRef storeRef);
+    
     public Transaction getTxnById(long txnId);
     public Transaction getLastTxn();
     public Transaction getLastRemoteTxn();

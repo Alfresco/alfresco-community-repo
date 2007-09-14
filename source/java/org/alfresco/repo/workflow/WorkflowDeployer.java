@@ -34,6 +34,9 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -71,6 +74,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     private List<Properties> workflowDefinitions;
     private List<String> models = new ArrayList<String>();
     private List<String> resourceBundles = new ArrayList<String>();
+    private TenantService tenantService;
 
     
     /**
@@ -124,6 +128,16 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     }
     
     /**
+     * Sets the tenant service
+     * 
+     * @param tenantService the tenant service
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
+    /**
      * Sets the Workflow Definitions
      * 
      * @param workflowDefinitions
@@ -144,7 +158,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     }
     
     /**
-     * Sets the initial list of Workflow reosurce bundles to bootstrap with
+     * Sets the initial list of Workflow resource bundles to bootstrap with
      * 
      * @param modelResources the model names
      */
@@ -152,11 +166,17 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     {
         this.resourceBundles = labels;
     }
+       
+    // used by TenantAdminService when creating a new tenant and bootstrapping the pre-defined workflows
+    public List<Properties> getWorkflowDefinitions()
+    {
+        return this.workflowDefinitions;
+    }
         
     /**
      * Deploy the Workflow Definitions
      */
-    public void deploy()
+    public void init()
     {
         if (transactionService == null)
         {
@@ -171,24 +191,30 @@ public class WorkflowDeployer extends AbstractLifecycleBean
             throw new ImporterException("Workflow Service must be provided");
         }
 
+        String currentUser = authenticationComponent.getCurrentUserName();
+        if (currentUser == null)
+        {
+            authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
+        }
+        
         UserTransaction userTransaction = transactionService.getUserTransaction();
-        authenticationComponent.setSystemUserAsCurrentUser();
 
         try
         {
             userTransaction.begin();
         
-            // bootstrap the workflow models and labels
+            // bootstrap the workflow models and static labels (from classpath)
             if (models != null && resourceBundles != null)
             {
             	DictionaryBootstrap dictionaryBootstrap = new DictionaryBootstrap();
             	dictionaryBootstrap.setDictionaryDAO(dictionaryDAO);
+                dictionaryBootstrap.setTenantService(tenantService);
             	dictionaryBootstrap.setModels(models);
             	dictionaryBootstrap.setLabels(resourceBundles);
-            	dictionaryBootstrap.bootstrap();
+            	dictionaryBootstrap.bootstrap(); // also registers with dictionary
             }
             
-            // bootstrap the workflow definitions
+            // bootstrap the workflow definitions (from classpath)
             if (workflowDefinitions != null)
             {
                 for (Properties workflowDefinition : workflowDefinitions)
@@ -239,19 +265,29 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         {
             // rollback the transaction
             try { if (userTransaction != null) {userTransaction.rollback();} } catch (Exception ex) {}
-            try {authenticationComponent.clearCurrentSecurityContext(); } catch (Exception ex) {}
             throw new AlfrescoRuntimeException("Workflow deployment failed", e);
         }
         finally
         {
-            authenticationComponent.clearCurrentSecurityContext();
+            if (currentUser == null)
+            {
+                authenticationComponent.clearCurrentSecurityContext();
+            }
         }
     }
 
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        deploy();
+        // run as System on bootstrap
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork()
+            {            
+                init();
+                return null;
+            }                               
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     @Override

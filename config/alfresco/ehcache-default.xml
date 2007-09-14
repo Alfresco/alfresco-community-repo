@@ -403,4 +403,22 @@
         overflowToDisk="false"
         />
         
+    <!-- Tenants Cache -->
+    
+    <cache 
+        name="org.alfresco.cache.tenantsCache" 
+        maxElementsInMemory="100"
+        eternal="true"
+        overflowToDisk="false"
+        />
+
+    <!-- Tenant-based Routing File Content Store -->
+    
+    <cache 
+        name="org.alfresco.cache.tenantFileStoresCache"
+        maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+        
 </ehcache>

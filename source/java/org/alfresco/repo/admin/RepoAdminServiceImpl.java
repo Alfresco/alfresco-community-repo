@@ -334,7 +334,13 @@ public class RepoAdminServiceImpl implements RepoAdminService
         
         NodeRef modelNodeRef = nodeRefs.get(0);
         
-        boolean isActive = ((Boolean)nodeService.getProperty(modelNodeRef, ContentModel.PROP_MODEL_ACTIVE)).booleanValue();
+        boolean isActive = false;
+        Boolean value = (Boolean)nodeService.getProperty(modelNodeRef, ContentModel.PROP_MODEL_ACTIVE);
+        if (value != null)
+        {
+            isActive = value.booleanValue();
+        }
+        
         QName modelQName = (QName)nodeService.getProperty(modelNodeRef, ContentModel.PROP_MODEL_NAME);
         
         ModelDefinition modelDef = null;
@@ -436,7 +442,13 @@ public class RepoAdminServiceImpl implements RepoAdminService
             
             NodeRef modelNodeRef = nodeRefs.get(0);
             
-            boolean isActive = ((Boolean)nodeService.getProperty(modelNodeRef, ContentModel.PROP_MODEL_ACTIVE)).booleanValue();
+            boolean isActive = false;
+            Boolean value = (Boolean)nodeService.getProperty(modelNodeRef, ContentModel.PROP_MODEL_ACTIVE);
+            if (value != null)
+            {
+                isActive = value.booleanValue();
+            }
+            
             modelQName = (QName)nodeService.getProperty(modelNodeRef, ContentModel.PROP_MODEL_NAME);
             
             ModelDefinition modelDef = null;

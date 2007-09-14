@@ -323,8 +323,12 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         
         UserTransaction userTransaction = transactionService.getUserTransaction();
         Authentication authentication = authenticationComponent.getCurrentAuthentication();
-        authenticationComponent.setSystemUserAsCurrentUser();
-
+        
+        if (authenticationComponent.getCurrentUserName() == null)
+        {
+            authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
+        }
+        
         try
         {
             userTransaction.begin();

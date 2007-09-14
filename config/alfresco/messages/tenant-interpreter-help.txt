@@ -1,0 +1,74 @@
+##
+##  Meta commands
+##
+
+ok> help
+
+    List this help.
+
+ok> r
+
+    Repeat last command.
+
+ok> quit | exit
+
+    Quit this console.
+
+
+##
+##  Tenant Commands - for administering tenants
+##
+
+
+ok> show tenants
+
+    List all tenants and show their details.
+    
+ok> show tenant <tenant domain>
+
+    Show tenant details - status (ie. whether enabled or disabled) and root contentstore directory.
+
+    Example:   show tenant yyy.zzz.com
+
+ok> create <tenant domain> <tenant admin password> [<root contentstore dir>]
+
+    Create tenant. By default the tenant will be enabled. It will have an admin
+    user called "admin@<tenant domain>" with supplied admin password. The root
+    of the contentstore directory can be optionally specified, otherwise it
+    will default to the repository default root contentstore (as specified by
+    the dir.contentstore property). The default workflows will also be bootstrapped.
+    
+    Examples:  create xxx.com h3ll0
+               create yyy.zzz.com g00dby3 C:/tenantstores/yyy.zzz
+               
+ok> createWithoutWorkflows <tenant domain> <tenant admin password> [<root contentstore dir>]
+
+    Same as create, except the default workflows will not be bootstrapped.
+    
+ok> bootstrapWorkflows <tenant domain>
+
+    Bootstrap the default workflows.
+    
+    Examples:  bootstrapWorkflows yyy.zzz.com
+    
+ok> changeAdminPassword <tenant domain> <tenant admin password>
+
+    Useful if the tenant's admin (admin@<tenant domain) has forgotten their password.
+    
+    Example:   changeAdminPassword yyy.zzz.com n3wpassw0rd
+
+ok> enable <tenant domain>
+
+    Enable tenant so that is active and available for new logins
+    
+    Example:   enable yyy.zzz.com
+
+ok> disable <tenant domain>
+
+    Disable tenant so that is inactive. Existing logins will fail on next usage.
+    
+    Example:   enable yyy.zzz.com
+
+##
+##  end
+##

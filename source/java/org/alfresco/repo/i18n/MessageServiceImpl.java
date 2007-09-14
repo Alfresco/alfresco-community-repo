@@ -175,8 +175,12 @@ public class MessageServiceImpl implements MessageService
         
         try
         {
-            writeLock.lock();      
-            tenantResourceBundleBaseNames.add(resBundlePath);
+            writeLock.lock();
+            
+            if (! tenantResourceBundleBaseNames.contains(resBundlePath))
+            {
+            	tenantResourceBundleBaseNames.add(resBundlePath);
+            }
 
             logger.info("Registered message bundle '" + resBundlePath + "'");
             
@@ -333,7 +337,10 @@ public class MessageServiceImpl implements MessageService
                 
                                 try
                                 {
-                                    resourcebundle = new PropertyResourceBundle(resBundleStream);
+                                    if (resBundleStream != null)
+                                    {
+                                        resourcebundle = new PropertyResourceBundle(resBundleStream);
+                                    }
                                 }
                                 catch (IOException ioe)
                                 {
@@ -346,12 +353,15 @@ public class MessageServiceImpl implements MessageService
                                 resourcebundle = ResourceBundle.getBundle(resBundlePath, locale);
                             }
                 
-                            // unload from the cached messages
-                            Enumeration<String> enumKeys = resourcebundle.getKeys();
-                            while (enumKeys.hasMoreElements() == true)
+                            if (resourcebundle != null)
                             {
-                                String key = enumKeys.nextElement();
-                                props.remove(key);
+                                // unload from the cached messages
+                                Enumeration<String> enumKeys = resourcebundle.getKeys();
+                                while (enumKeys.hasMoreElements() == true)
+                                {
+                                    String key = enumKeys.nextElement();
+                                    props.remove(key);
+                                }
                             }
                 
                             loadedBundles.remove(resBundlePath);
@@ -480,7 +490,10 @@ public class MessageServiceImpl implements MessageService
 
                             try
                             {
-                                resourcebundle = new PropertyResourceBundle(resBundleStream);
+                                if (resBundleStream != null)
+                                {
+                                    resourcebundle = new PropertyResourceBundle(resBundleStream);
+                                }
                             }
                             catch (IOException ioe)
                             {
@@ -493,15 +506,18 @@ public class MessageServiceImpl implements MessageService
                             resourcebundle = ResourceBundle.getBundle(resBundlePath, locale);
                         }
 
-                        Enumeration<String> enumKeys = resourcebundle.getKeys();
-                        while (enumKeys.hasMoreElements() == true)
+                        if (resourcebundle != null)
                         {
-                            String key = enumKeys.nextElement();
-                            props.put(key, resourcebundle.getString(key));
+                            Enumeration<String> enumKeys = resourcebundle.getKeys();
+                            while (enumKeys.hasMoreElements() == true)
+                            {
+                                String key = enumKeys.nextElement();
+                                props.put(key, resourcebundle.getString(key));
+                            }
+    
+                            loadedBundles.add(resBundlePath);
+                            count++;
                         }
-
-                        loadedBundles.add(resBundlePath);
-                        count++;
                     }
                 }
                 
@@ -543,7 +559,8 @@ public class MessageServiceImpl implements MessageService
            
             if ((nodeRefs == null) || (nodeRefs.size() == 0))
             {
-                throw new RuntimeException("Could not find message resource bundle " + storeRef + path);
+                logger.debug("Could not find message resource bundle " + storeRef + "/" + path);
+                return null;
             }
         }
         

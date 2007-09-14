@@ -35,7 +35,7 @@ import org.alfresco.service.namespace.QName;
 /**
  * Tenant Service interface.
  * <p>
- * This interface provides methods to support either Single-Tenant or Multi-Tenant implementations.
+ * This interface provides methods to support either ST or MT implementations.
  *
  */
 public interface TenantService
@@ -73,8 +73,6 @@ public interface TenantService
     public void checkDomain(String name);  
 
     public NodeRef getRootNode(NodeService nodeService, SearchService searchService, NamespaceService namespaceService, String rootPath, NodeRef rootNodeRef);
-
-    public NodeRef getCompanyHomeNode(NodeService nodeService, String username, StoreRef storeRef);
 
     public boolean isTenantUser();
     

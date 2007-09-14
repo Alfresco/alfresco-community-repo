@@ -21,8 +21,10 @@
          <ref bean="deletedContentStore" />
       </property>
    </bean>
+   
+   <!-- Abstract bean definition defining base definition for content store cleaner -->
    <!-- Performs the content cleanup -->
-   <bean id="contentStoreCleaner" class="org.alfresco.repo.content.cleanup.ContentStoreCleaner" >
+   <bean id="baseContentStoreCleaner" class="org.alfresco.repo.content.cleanup.ContentStoreCleaner" abstract="true">
       <property name="dictionaryService">
          <ref bean="dictionaryService" />
       </property>
@@ -38,11 +40,6 @@
       <property name="protectDays" >
          <value>14</value>
       </property>
-      <property name="stores" >
-         <list>
-            <ref bean="fileContentStore" />
-         </list>
-      </property>
       <property name="listeners" >
          <list>
             <ref bean="deletedContentBackupListener" />
@@ -50,7 +47,16 @@
       </property>
    </bean>
 
-   <bean id="contentService" class="org.alfresco.repo.content.RoutingContentService" init-method="init">
+   <bean id="contentStoreCleaner" parent="baseContentStoreCleaner">
+      <property name="stores" >
+         <list>
+            <ref bean="fileContentStore" />
+         </list>
+      </property>
+   </bean>
+   
+   <!-- Abstract bean definition defining base definition for content service -->
+   <bean id="baseContentService" class="org.alfresco.repo.content.RoutingContentService" abstract="true" init-method="init">
       <property name="transactionService">
           <ref bean="transactionService" />
       </property>
@@ -66,9 +72,6 @@
       <property name="transformerRegistry">
           <ref bean="contentTransformerRegistry" />
       </property>
-      <property name="store">
-          <ref bean="fileContentStore" />
-      </property>
       <property name="policyComponent">
           <ref bean="policyComponent" />
       </property>
@@ -77,6 +80,12 @@
       </property>
       <property name="imageMagickContentTransformer">
          <ref bean="transformer.ImageMagick" />
+      </property>
+   </bean>
+   
+   <bean id="contentService" parent="baseContentService">
+      <property name="store">
+          <ref bean="fileContentStore" />
       </property>
    </bean>
     

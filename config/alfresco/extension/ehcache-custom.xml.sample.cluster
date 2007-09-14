@@ -708,5 +708,42 @@
                                  replicateAsynchronously = false"/>
 
     </cache>
-                 
+             
+             
+    <!-- Tenants Cache -->
+    
+    <cache 
+        name="org.alfresco.cache.tenantsCache" 
+        maxElementsInMemory="100"
+        eternal="true"
+        overflowToDisk="false">
+        
+             <cacheEventListenerFactory
+                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                     properties="replicatePuts = false,
+                                 replicateUpdates = true,
+                                 replicateRemovals = true,
+                                 replicateUpdatesViaCopy = false,
+                                 replicateAsynchronously = false"/>
+
+    </cache>
+
+    <!-- Tenant-based Routing File Content Store -->
+    
+    <cache 
+        name="org.alfresco.cache.tenantFileStoresCache"
+        maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false">
+        
+             <cacheEventListenerFactory
+                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                     properties="replicatePuts = false,
+                                 replicateUpdates = true,
+                                 replicateRemovals = true,
+                                 replicateUpdatesViaCopy = false,
+                                 replicateAsynchronously = false"/>
+
+    </cache>
+            
 </ehcache>

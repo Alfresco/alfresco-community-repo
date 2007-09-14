@@ -112,11 +112,6 @@ public class SingleTServiceImpl implements TenantService
     {
         return rootNodeRef;
     }
-    
-    public NodeRef getCompanyHomeNode(NodeService nodeService, String username, StoreRef storeRef) 
-    {
-        return null;
-    }
 
     public boolean isTenantUser()
     {

@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- ======================================= -->
+   <!-- Tenant Routing File Content Store Cache -->
+   <!-- ======================================= -->
+   
+   <bean name="tenantFileStoresCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.tenantFileStoresCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!--                                   -->
+   <!-- Tenant Routing File Content Store -->
+   <!--                                   -->
+   
+   <bean id="tenantFileContentStore" class="org.alfresco.repo.content.TenantRoutingFileContentStore" init-method="init">
+      <property name="defaultRootDir">
+         <value>${dir.contentstore}</value>
+      </property>
+      <property name="tenantService">
+         <ref bean="tenantService" />
+      </property>
+      <property name="storesCache">
+         <ref bean="tenantFileStoresCache" />
+      </property>    
+   </bean>
+   
+   <!-- override content store cleaner to use tenant routing file content store -->
+   <!-- Performs the content cleanup -->
+   <bean id="contentStoreCleaner" class="org.alfresco.repo.content.cleanup.ContentStoreCleaner" >
+      <property name="dictionaryService">
+         <ref bean="dictionaryService" />
+      </property>
+      <property name="nodeDaoService" >
+         <ref bean="nodeDaoService" />
+      </property>
+      <property name="avmNodeDAO">
+            <ref bean="avmNodeDAO"/>
+      </property>
+      <property name="transactionService" >
+         <ref bean="transactionService" />
+      </property>
+      <property name="protectDays" >
+         <value>14</value>
+      </property>
+      <property name="stores" >
+         <list>
+            <ref bean="tenantFileContentStore" />
+         </list>
+      </property>
+      <property name="listeners" >
+         <list>
+            <ref bean="deletedContentBackupListener" />
+         </list>
+      </property>
+   </bean>
+
+   <!-- override content service to use tenant routing file content store -->
+   <bean id="contentService" parent="baseContentService">
+      <property name="store">
+          <ref bean="tenantFileContentStore" />
+      </property>
+   </bean>
+       
+</beans>

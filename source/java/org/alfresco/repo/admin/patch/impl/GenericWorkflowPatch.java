@@ -83,7 +83,7 @@ public class GenericWorkflowPatch extends AbstractPatch implements ApplicationCo
             props.put(WorkflowDeployer.REDEPLOY, "true");
         }
         deployer.setWorkflowDefinitions(workflowDefinitions);
-        deployer.deploy();
+        deployer.init();
         
         // done
         return I18NUtil.getMessage(MSG_DEPLOYED, workflowDefinitions.size());

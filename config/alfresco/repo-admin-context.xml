@@ -37,7 +37,7 @@
    
     
    <!-- Load any additional models/messages from repo into data dictionary -->    
-   <!-- note: needs to match import-export-context.xml locations -->
+   <!-- note: needs to match boostrap-context.xml locations (customModelsSpace.acp and customMessagesSpace.xml) -->
    
    <bean id="customModelsRepositoryLocation" class="org.alfresco.repo.dictionary.RepositoryLocation">
         <!-- other properties will be defaulted, but can be overriden here -->

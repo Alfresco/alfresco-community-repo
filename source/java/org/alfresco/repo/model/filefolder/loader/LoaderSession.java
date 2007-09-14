@@ -27,6 +27,7 @@ package org.alfresco.repo.model.filefolder.loader;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,8 +65,9 @@ public class LoaderSession
     private List<LoaderServerProxy> remoteServers;
     private List<NodeRef> workingRootNodeRefs;
     private File[] sourceFiles;
-    private OutputStream outStream;
-    private OutputStream errStream;
+    private OutputStream outVerbose;
+    private OutputStream outSummary;
+    private OutputStream outError;
     
     /**
      * 
@@ -153,19 +155,23 @@ public class LoaderSession
         
         // Construct output and error files
         long time = System.currentTimeMillis();
-        File outFile = new File("./LoaderSession-" + name + "-"+ time + "-out.txt");
-        File errFile = new File("./LoaderSession-" + name + "-"+ time + "-err.txt");
-        outStream = new BufferedOutputStream(new FileOutputStream(outFile));
-        errStream = new BufferedOutputStream(new FileOutputStream(errFile));
+        File fileVerbose = new File("./LoaderSession-" + name + "-"+ time + "-verbose.txt");
+        File fileSummary = new File("./LoaderSession-" + name + "-"+ time + "-summary.txt");
+        File fileError = new File("./LoaderSession-" + name + "-"+ time + "-error.txt");
+        outVerbose = new BufferedOutputStream(new FileOutputStream(fileVerbose));
+        outSummary = new BufferedOutputStream(new FileOutputStream(fileSummary));
+        outError = new BufferedOutputStream(new FileOutputStream(fileError));
     }
     
     public synchronized void close()
     {
-        try { outStream.close(); } catch (Throwable e) {}
-        try { errStream.close(); } catch (Throwable e) {}
+        try { outVerbose.close(); } catch (Throwable e) {}
+        try { outSummary.close(); } catch (Throwable e) {}
+        try { outError.close(); } catch (Throwable e) {}
         
-        outStream = null;
-        errStream = null;
+        outVerbose = null;
+        outSummary = null;
+        outError = null;
     }
     
     /**
@@ -337,50 +343,75 @@ public class LoaderSession
         }
     }
     
-    public void logVerbose(String msg)
+    private void writeLineEnding(OutputStream out) throws IOException
     {
-        if (!verbose)
+        if (File.separatorChar == '/')
         {
-            // Just ignore it
+            // It's unix
+            out.write('\n');
         }
-        logNormal(msg);
+        else
+        {
+            // Windows
+            out.write('\r');
+            out.write('\n');
+        }
     }
     
-    public synchronized void logNormal(String msg)
+    public synchronized void logVerbose(String msg)
     {
-        if (outStream == null)
+        if (!verbose || outVerbose == null)
         {
             return;
         }
         try
         {
             byte[] bytes = msg.getBytes("UTF-8");
-            outStream.write(bytes);
-            outStream.write('\n');
-            outStream.flush();
+            outVerbose.write(bytes);
+            writeLineEnding(outVerbose);
+            outVerbose.flush();
         }
         catch (Throwable e)
         {
-            System.err.println("Failed to write message to output file: " + e.getMessage());
+            System.err.println("Failed to write message to verbose file: " + e.getMessage());
+        }
+    }
+    
+    public synchronized void logSummary(String msg)
+    {
+        if (outSummary == null)
+        {
+            return;
+        }
+        try
+        {
+            byte[] bytes = msg.getBytes("UTF-8");
+            outSummary.write(bytes);
+            writeLineEnding(outSummary);
+            outSummary.flush();
+        }
+        catch (Throwable e)
+        {
+            System.err.println("Failed to write message to summary file: " + e.getMessage());
         }
     }
     
     public synchronized void logError(String msg)
     {
-        if (errStream == null)
+        if (outSummary == null)
         {
             return;
         }
         try
         {
             byte[] bytes = msg.getBytes("UTF-8");
-            errStream.write(bytes);
-            outStream.write('\n');
-            errStream.flush();
+            outSummary.write(bytes);
+            writeLineEnding(outError);
+            outSummary.flush();
         }
         catch (Throwable e)
         {
-            System.err.println("Failed to write message to output file: " + e.getMessage());
+            System.err.println("Failed to write message to error file: " + e.getMessage());
         }
     }
 }

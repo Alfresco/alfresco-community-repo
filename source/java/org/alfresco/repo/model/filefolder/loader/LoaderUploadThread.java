@@ -24,7 +24,14 @@
  */
 package org.alfresco.repo.model.filefolder.loader;
 
+import java.io.File;
+import java.util.List;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.GUID;
+import org.springframework.util.FileCopyUtils;
 
 /**
  * A description of what the remote loader should do.
@@ -44,14 +51,52 @@ public class LoaderUploadThread extends AbstractLoaderThread
     }
 
     @Override
-    protected void doLoading(LoaderServerProxy serverProxy, NodeRef workingRootNodeRef) throws Exception
+    protected String doLoading(LoaderServerProxy serverProxy, NodeRef workingRootNodeRef) throws Exception
     {
-        int totalNodeCount = serverProxy.loaderRemote.getNodeCount(
-                serverProxy.ticket);
-        int storeNodeCount = serverProxy.loaderRemote.getNodeCount(
+        // Get a random folder
+        List<String> folderPath = super.chooseFolderPath();
+        // Make sure the folder exists
+        FileInfo folderInfo = serverProxy.fileFolderRemote.makeFolders(
                 serverProxy.ticket,
-                workingRootNodeRef.getStoreRef());
-        session.logVerbose("Nodes: " + totalNodeCount + ".  Store Nodes: " + storeNodeCount);
+                workingRootNodeRef,
+                folderPath,
+                ContentModel.TYPE_FOLDER);
+
+        // Get a random file
+        File file = getFile();
+        byte[] bytes = FileCopyUtils.copyToByteArray(file);
+        // Get the extension
+        String filename = GUID.generate();
+        int index = file.getName().lastIndexOf('.');
+        if (index > 0)
+        {
+            String ext = file.getName().substring(index + 1, file.getName().length());
+            filename += ("." + ext);
+        }
+        
+        // Upload it
+        NodeRef folderNodeRef = folderInfo.getNodeRef();
+        
+        FileInfo fileInfo = serverProxy.fileFolderRemote.create(
+                serverProxy.ticket,
+                folderNodeRef,
+                filename,
+                ContentModel.TYPE_CONTENT);
+        NodeRef fileNodeRef = fileInfo.getNodeRef();
+        serverProxy.fileFolderRemote.putContent(serverProxy.ticket, fileNodeRef, bytes, filename);
+        
+        // Done
+        String msg = String.format("Uploaded %s to folder: %s", filename, folderPath.toString());
+        session.logVerbose(msg);
+        
+        return msg;
+        
+//        int totalNodeCount = serverProxy.loaderRemote.getNodeCount(
+//                serverProxy.ticket);
+//        int storeNodeCount = serverProxy.loaderRemote.getNodeCount(
+//                serverProxy.ticket,
+//                workingRootNodeRef.getStoreRef());
+//        session.logVerbose("Nodes: " + totalNodeCount + ".  Store Nodes: " + storeNodeCount);
     }
 
     @Override

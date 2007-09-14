@@ -109,7 +109,7 @@ public class FileFolderRemoteLoader
         for (AbstractLoaderThread thread : threads)
         {
             String summary = thread.getSummary();
-            session.logNormal(summary);
+            session.logSummary(summary);
         }
     }
 
@@ -177,6 +177,13 @@ public class FileFolderRemoteLoader
         for (int i = 0; i < folderProfiles.length; i++)
         {
             folderProfiles[i] = folderProfilesList.get(i);
+        }
+        if (folderProfiles.length == 0 || folderProfiles[0] != 1)
+        {
+            throw new LoaderClientException(
+                    "'" + PROP_SESSION_FOLDER_PROFILE + "' must always start with '1', " +
+                    "which represents the root of the hierarchy, and have at least one other value.  " +
+                    "E.g. '1, 3'");
         }
         
         // Construct
@@ -313,14 +320,29 @@ public class FileFolderRemoteLoader
             // Run
             app.start();
             
-            synchronized(app)
-            {
-                app.wait(1000L);
-            }
-//            System.out.println(""
+            // Now lower this threads priority
+            Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
             
+            // Wait for a quit signal
+            System.out.println("Running test " + app.session.getName() + ".  Enter 'q' to quit");
+            while (true)
+            {
+                int keyPress = System.in.read();
+                if (keyPress == 'Q' || keyPress == 'q')
+                {
+                    break;
+                }
+                else if (System.in.available() > 0)
+                {
+                    // Don't wait, just process
+                    continue;
+                }
+                // No more keypresses so just wait
+                Thread.yield();
+            }
             // Finish off
             app.stop();
+            System.out.println("The test is complete.");
         }
         catch (LoaderClientException e)
         {

@@ -24,6 +24,9 @@
  */
 package org.alfresco.repo.model.filefolder.loader;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -43,6 +46,7 @@ public abstract class AbstractLoaderThread extends Thread
     protected final int testLoadDepth;
     
     private AtomicBoolean mustStop;
+    Random random;
     
     public AbstractLoaderThread(
             LoaderSession session,
@@ -60,6 +64,7 @@ public abstract class AbstractLoaderThread extends Thread
         this.testLoadDepth = testLoadDepth;
         
         this.mustStop = new AtomicBoolean(false);
+        this.random = new Random();
     }
 
     /**
@@ -75,8 +80,6 @@ public abstract class AbstractLoaderThread extends Thread
     @Override
     public void run()
     {
-        Random random = new Random();
-        
         int testCount = 0;
         while (!mustStop.get())
         {
@@ -93,8 +96,10 @@ public abstract class AbstractLoaderThread extends Thread
                 NodeRef workingRootNodeRef = session.getWorkingRootNodeRefs().get(nodeIndex);
                 
                 long startTime = System.currentTimeMillis();
-                doLoading(serverProxy, workingRootNodeRef);
+                String msg = doLoading(serverProxy, workingRootNodeRef);
                 long endTime = System.currentTimeMillis();
+                
+                // Dump the specifics of the load
                 
                 // Have we done this enough?
                 testCount++;
@@ -121,12 +126,45 @@ public abstract class AbstractLoaderThread extends Thread
         }
     }
     
+    private void dumpLoadSpecifics(long startTime, long endTime, String msg)
+    {
+        
+    }
+    
     /**
      * @param serverProxy               the server to load
      * @param workingRootNodeRef        the root of the hierarchy to use
+     * @return                          a brief description of the loading
      * @throws Exception                any exception will be handled
      */
-    protected abstract void doLoading(
+    protected abstract String doLoading(
             LoaderServerProxy serverProxy,
             NodeRef workingRootNodeRef) throws Exception;
+    
+    protected List<String> chooseFolderPath()
+    {
+        int[] folderProfiles = session.getFolderProfiles();
+        // We work through these until we get the required depth.
+        // The root node is ignored as it acts as the search root
+        List<String> path = new ArrayList<String>(testLoadDepth);
+        for (int i = 1; i < folderProfiles.length; i++)
+        {
+            int folderProfile = folderProfiles[i];
+            int randomFolderId = random.nextInt(folderProfile);
+            String name = String.format("folder-%05d", randomFolderId);
+            path.add(name);
+        }
+        return path;
+    }
+    
+    protected File getFile() throws Exception
+    {
+        File[] files = session.getSourceFiles();
+        File file = files[random.nextInt(files.length)];
+        if (!file.exists() || file.isDirectory())
+        {
+            throw new LoaderClientException("Cannot find loading file: " + file);
+        }
+        return file;
+    }
 }

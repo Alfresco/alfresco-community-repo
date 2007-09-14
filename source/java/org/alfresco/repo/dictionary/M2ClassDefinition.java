@@ -468,7 +468,7 @@ import org.alfresco.service.namespace.QName;
      * - ignores changes in model title, description, author, published date, version
      * - ignores changes in default values
      * - checks properties for incremental updates, but does not include the diffs
-     * - checks assocs &Êchild assocs for incremental updates, but does not include the diffs
+     * - checks assocs & child assocs for incremental updates, but does not include the diffs
      * - does not check default values
      */
     /* package */ List<M2ModelDiff> diffClass(ClassDefinition classDef)

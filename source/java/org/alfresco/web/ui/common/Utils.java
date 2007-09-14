@@ -468,7 +468,7 @@ public final class Utils
                line = reader.readLine();
                if (line != null)
                {
-                  parsedContent.append("<br>");
+                  parsedContent.append("<br/>");
                }
             }
             
@@ -898,49 +898,54 @@ public final class Utils
     * @param height        Height in pixels
     * @param alt           Optional alt/title text
     * @param onclick       JavaScript onclick event handler code
-    * @param align         Optional HTML alignment value
+    * @param verticalAlign         Optional HTML alignment value
     * 
     * @return Populated <code>img</code> tag
     */
-   public static String buildImageTag(FacesContext context, String image, int width, int height,
-         String alt, String onclick, String align)
+   public static String buildImageTag(final FacesContext context, 
+                                      final String image, 
+                                      final int width, 
+                                      final int height,
+                                      String alt, 
+                                      final String onclick, 
+                                      final String verticalAlign)
    {
       StringBuilder buf = new StringBuilder(200);
-      
-      buf.append("<img src=\"")
+      StringBuilder style = new StringBuilder("border-width:0px;");
+      buf.append("<img src='")
          .append(context.getExternalContext().getRequestContextPath())
          .append(image)
-         .append("\" width=")
+         .append("' width='")
          .append(width)
-         .append(" height=")
+         .append("' height='")
          .append(height)
-         .append(" border=0");
+         .append("'");
       
       if (alt != null)
       {
          alt = Utils.encode(alt);
-         buf.append(" alt=\"")
+         buf.append(" alt='")
             .append(alt)
-            .append("\" title=\"")
+            .append("' title='")
             .append(alt)
-            .append('"');
+            .append("'");
       }
-      
-      if (align != null)
+      else
       {
-         buf.append(" align=")
-            .append(align);
+         buf.append(" alt=''");
+      }
+
+      if (verticalAlign != null)
+      {
+         style.append("vertical-align:").append(verticalAlign).append(";");
       }
       
       if (onclick != null)
       {
-         buf.append(" onclick=\"")
-            .append(onclick)
-            .append("\" style='cursor:pointer'");
+         buf.append(" onclick=\"").append(onclick).append('"');
+         style.append("cursor:pointer;");
       }
-      
-      buf.append('>');
-      
+      buf.append(" style='").append(style).append("'/>");
       return buf.toString();
    }
    
@@ -983,35 +988,42 @@ public final class Utils
     * @param context       FacesContext
     * @param image         The local image path from the web folder with leading slash '/'
     * @param alt           Optional alt/title text
-    * @param align         Optional HTML alignment value
+    * @param verticalAlign         Optional HTML alignment value
     * 
     * @return Populated <code>img</code> tag
     */
-   public static String buildImageTag(FacesContext context, String image, String alt, String align)
+   public static String buildImageTag(final FacesContext context, 
+                                      final String image, 
+                                      String alt, 
+                                      final String verticalAlign)
    {
-      StringBuilder buf = new StringBuilder(128);
-      
-      buf.append("<img src=\"")
+      final StringBuilder buf = new StringBuilder(128);
+      buf.append("<img src='")
          .append(context.getExternalContext().getRequestContextPath())
          .append(image)
-         .append("\" border=0");
-      
+         .append("' ");
+
+      final StringBuilder style = new StringBuilder("border-width:0px;");
       if (alt != null)
       {
          alt = Utils.encode(alt);
-         buf.append(" alt=\"")
+         buf.append(" alt='")
             .append(alt)
-            .append("\" title=\"")
+            .append("' title='")
             .append(alt)
-            .append('"');
+            .append("'");
       }
-      if (align != null)
+      else
       {
-         buf.append(" align=")
-            .append(align);
+         buf.append(" alt=''");
+      }
+
+      if (verticalAlign != null)
+      {
+         style.append("vertical-align:").append(verticalAlign).append(";");
       }
       
-      buf.append('>');
+      buf.append(" style='").append(style).append("'/>");
       
       return buf.toString();
    }

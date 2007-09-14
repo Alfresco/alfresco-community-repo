@@ -182,7 +182,7 @@ public class UISimpleSearch extends UICommand
       ResourceBundle bundle = (ResourceBundle)Application.getBundle(context);
       
       // script for dynamic simple search menu drop-down options
-      out.write("<script>");
+      out.write("<script type='text/javascript'>");
       out.write("function _noenter(event) {" +
                 "if (event && event.keyCode == 13) {" +
                 "   _searchSubmit();return false; }" +
@@ -194,49 +194,49 @@ public class UISimpleSearch extends UICommand
       out.write("</script>");
       
       // outer table containing search drop-down icon, text box and search Go image button
-      out.write("<table cellspacing=4 cellpadding=0>");
+      out.write("<table cellspacing='4' cellpadding='0'>");
       out.write("<tr><td style='padding-top:2px'>");
       
       String searchImage = Utils.buildImageTag(context, "/images/icons/search_icon.gif", 15, 15,
             bundle.getString(MSG_GO), "_searchSubmit();");
       
       out.write(Utils.buildImageTag(context, "/images/icons/search_controls.gif", 27, 13,
-            bundle.getString(MSG_OPTIONS), "javascript:_toggleMenu(event, '_alfsearch');"));
+            bundle.getString(MSG_OPTIONS), "javascript:_toggleMenu(event, 'alfsearch_menu');"));
       
       // dynamic DIV area containing search options
-      out.write("<br><div id='_alfsearch' style='position:absolute;display:none'>");
-      out.write("<table border=0 class='moreActionsMenu' cellspacing=4 cellpadding=0>");
+      out.write("<br><div id='alfsearch_menu' style='position:absolute;display:none'>");
+      out.write("<table border='0' class='moreActionsMenu' cellspacing='4' cellpadding='0'>");
       
       // output each option - setting the current one to CHECKED
       String optionFieldName = getClientId(context) + NamingContainer.SEPARATOR_CHAR + OPTION_PARAM;
-      String radioOption = "<tr><td class='userInputForm'><input type='radio' name='" + optionFieldName + "'";
+      String radioOption = "<tr><td class='userInputForm' style='white-space:nowrap;'><input type='radio' name='" + optionFieldName + "'";
       out.write(radioOption);
-      out.write(" VALUE='0'");
+      out.write(" value='0'");
       int searchMode = getSearchMode();
-      if (searchMode == 0) out.write(" CHECKED");
-      out.write("><nobr>" + bundle.getString(MSG_ALL_ITEMS) + "</nobr></td></tr>");
+      if (searchMode == 0) out.write(" checked='checked'");
+      out.write("/>" + bundle.getString(MSG_ALL_ITEMS) + "</td></tr>");
       out.write(radioOption);
-      out.write(" VALUE='1'");
-      if (searchMode == 1) out.write(" CHECKED");
-      out.write("><nobr>" + bundle.getString(MSG_FILE_NAMES_CONTENTS) + "</nobr></td></tr>");
+      out.write(" value='1'");
+      if (searchMode == 1) out.write(" checked='checked'");
+      out.write("/>" + bundle.getString(MSG_FILE_NAMES_CONTENTS) + "</td></tr>");
       out.write(radioOption);
-      out.write(" VALUE='2'");
-      if (searchMode == 2) out.write(" CHECKED");
-      out.write("><nobr>" + bundle.getString(MSG_FILE_NAMES_ONLY) + "</nobr></td></tr>");
+      out.write(" value='2'");
+      if (searchMode == 2) out.write(" checked='checked'");
+      out.write("/>" + bundle.getString(MSG_FILE_NAMES_ONLY) + "</td></tr>");
       out.write(radioOption);
-      out.write(" VALUE='3'");
-      if (searchMode == 3) out.write(" CHECKED");
-      out.write("><nobr>" + bundle.getString(MSG_SPACE_NAMES_ONLY) + "</nobr></td></tr>");
+      out.write(" value='3'");
+      if (searchMode == 3) out.write(" checked='checked'");
+      out.write("/>" + bundle.getString(MSG_SPACE_NAMES_ONLY) + "</td></tr>");
       
       // row with table containing advanced search link and Search Go button 
-      out.write("<tr><td><table width=100%><tr><td>");
+      out.write("<tr><td><table width='100%'><tr><td>");
       // generate a link that will cause an action event to navigate to the advanced search screen
       out.write("<a class='small' href='#' onclick=\"");
       out.write(Utils.generateFormSubmit(context, this, Utils.getActionHiddenFieldName(context, this), ADVSEARCH_PARAM));
       out.write("\">");
       out.write(bundle.getString(MSG_ADVANCED_SEARCH));
       out.write("</a>");
-      out.write("</td><td align=right>");
+      out.write("</td><td align='right'>");
       out.write(searchImage);
       out.write("</td></tr></table></td></tr>");
       out.write("</table></div>");
@@ -273,14 +273,7 @@ public class UISimpleSearch extends UICommand
     */
    public String getLastSearch()
    {
-      if (search != null)
-      {
-         return this.search.getText();
-      }
-      else
-      {
-         return "";
-      }
+      return this.search != null ? this.search.getText() : "";
    }
    
    /** 
@@ -288,21 +281,14 @@ public class UISimpleSearch extends UICommand
     */
    public int getSearchMode()
    {
-      if (search != null)
-      {
-         return this.search.getMode();
-      }
-      else
-      {
-         return SearchContext.SEARCH_ALL;
-      }
+      return this.search != null ? this.search.getMode() : SearchContext.SEARCH_ALL;
    }
    
    
    // ------------------------------------------------------------------------------
    // Private data
    
-   private static Log logger = LogFactory.getLog(UISimpleSearch.class);
+   private static final Log logger = LogFactory.getLog(UISimpleSearch.class);
    
    /** I18N message Ids */
    private static final String MSG_ADVANCED_SEARCH = "advanced_search";

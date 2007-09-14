@@ -20,7 +20,7 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
 --%>
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
@@ -32,7 +32,6 @@
 <%@ page isELIgnored="false" %>
 <%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
-
 <r:page title="<%=Application.getWizardManager().getTitle() %>">
 
 <f:view>
@@ -67,15 +66,15 @@
                
                <%-- Status and Actions --%>
                <tr>
-                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_4.gif)" width="4"></td>
-                  <td bgcolor="#dfe6ed">
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_4.gif); width:4px;"></td>
+                  <td style="background-color: #dfe6ed;">
                   
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
-                     <table cellspacing="4" cellpadding="0" width="100%">
+                     <table cellspacing="4" cellpadding="0" style="width:100%;">
                         <tr>
-                           <td width="32">
-                              <h:graphicImage id="wizard-logo" url="#{WizardManager.icon}" />
+                           <td style="width:32px;">
+                              <h:graphicImage id="wizard-logo" url="#{WizardManager.icon}" alt=""/>
                            </td>
                            <td>
                               <div class="mainTitle"><h:outputText value="#{WizardManager.title}" /></div>
@@ -85,38 +84,38 @@
                      </table>
                      
                   </td>
-                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_6.gif)" width="4"></td>
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_6.gif); width: 4px;"></td>
                </tr>
                
                <%-- separator row with gradient shadow --%>
                <tr>
-                  <td><img src="<%=request.getContextPath()%>/images/parts/statuspanel_7.gif" width="4" height="9"></td>
+                  <td><img src="<%=request.getContextPath()%>/images/parts/statuspanel_7.gif" width="4" height="9" alt=""/></td>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_8.gif)"></td>
-                  <td><img src="<%=request.getContextPath()%>/images/parts/statuspanel_9.gif" width="4" height="9"></td>
+                  <td><img src="<%=request.getContextPath()%>/images/parts/statuspanel_9.gif" width="4" height="9" alt=""/></td>
                </tr>
                
                <%-- Details --%>
                <tr valign=top>
-                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width="4"></td>
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif); width:4px;"></td>
                   <td>
-                     <table cellspacing="0" cellpadding="3" border="0" width="100%">
+                     <table cellspacing="0" cellpadding="3" border="0" style="width: 100%;">
                         <tr>
-                           <td width="20%" valign="top">
+                           <td style="width:20%;" valign="top">
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "greyround", "#F5F5F5"); %>
-                              <h:outputText styleClass="mainSubTitle" value="#{msg.steps}"/><br>
+                              <h:outputText styleClass="mainSubTitle" value="#{msg.steps}"/><br/>
                               <a:modeList itemSpacing="3" iconColumnWidth="2" selectedStyleClass="statusListHighlight"
-                                    value="#{WizardManager.currentStepAsString}" disabled="true">
-                                 <a:listItems value="#{WizardManager.stepItems}" />
+                                          value="#{WizardManager.currentStepAsString}" disabled="true">
+                                <a:listItems value="#{WizardManager.stepItems}" />
                               </a:modeList>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "greyround"); %>
                            </td>
                            
-                           <td width="100%" valign="top">
+                           <td style="width:100%;" valign="top">
                            
                               <a:errors message="#{WizardManager.errorMessage}" styleClass="errorMessage" />
                               
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
-                              <table cellpadding="2" cellspacing="2" border="0" width="100%">
+                              <table cellpadding="2" cellspacing="2" style="border-width: 0px; width: 100%;">
                                  <tr>
                                     <td class="mainSubTitle"><h:outputText value="#{WizardManager.stepTitle}" /></td>
                                  </tr>
@@ -125,10 +124,10 @@
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
-                                    <td width="100%" valign="top">
+                                    <td style="width: 100%;" valign="top">
                                        <f:subview id="wizard-body">
-                              				<jsp:include page="<%=Application.getWizardManager().getPage() %>" />
-                              			</f:subview>
+                              		 <jsp:include page="<%=Application.getWizardManager().getPage() %>" />
+                              	       </f:subview>
                                     </td>
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>
@@ -180,14 +179,14 @@
                         </tr>
                      </table>
                   </td>
-                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width="4"></td>
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif); width: 4px;"></td>
                </tr>
                
                <%-- separator row with bottom panel graphics --%>
                <tr>
-                  <td><img src="<%=request.getContextPath()%>/images/parts/whitepanel_7.gif" width="4" height="4"></td>
-                  <td width="100%" align="center" style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_8.gif)"></td>
-                  <td><img src="<%=request.getContextPath()%>/images/parts/whitepanel_9.gif" width="4" height="4"></td>
+                  <td><img src="<%=request.getContextPath()%>/images/parts/whitepanel_7.gif" width="4" height="4" alt=""/></td>
+                  <td align="center" style="width: 100%; background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_8.gif)"></td>
+                  <td><img src="<%=request.getContextPath()%>/images/parts/whitepanel_9.gif" width="4" height="4" alt=""/></td>
                </tr>
                
             </table>

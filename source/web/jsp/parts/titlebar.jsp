@@ -20,74 +20,104 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
 --%>
 <%-- Title bar area --%>
-<table cellspacing=0 cellpadding=2 width=100%>
+<table cellspacing="0" cellpadding="2" width="100%">
    <tr>
       <%-- Top level toolbar and company logo area --%>
-      <td width=100%>
-         <table cellspacing=0 cellpadding=0 width=100%>
+      <td style="width:100%;">
+         <table cellspacing="0" cellpadding="0" width="100%">
             <tr>
-               <td style="padding-right:4px;"><a:actionLink image="/images/logo/AlfrescoLogo32.png" value="Alfresco" tooltip="Alfresco" showLink="false" action="about" /></td>
-               <td><img src="<%=request.getContextPath()%>/images/parts/titlebar_begin.gif" width=10 height=31></td>
-               <td width=100% style="background-image: url(<%=request.getContextPath()%>/images/parts/titlebar_bg.gif); background-repeat:repeat-x">
+               <td style="padding-right:4px;"><a:actionLink id="about_alfresco" image="/images/logo/AlfrescoLogo32.png" value="Alfresco" tooltip="Alfresco" showLink="false" action="about" /></td>
+               <td><img src="<%=request.getContextPath()%>/images/parts/titlebar_begin.gif" width="10" height="31" alt=""/></td>
+               <td style="width: 100%; background-image: url(<%=request.getContextPath()%>/images/parts/titlebar_bg.gif); background-repeat:repeat-x">
                   <%-- Toolbar --%>
-                  <a:modeList itemSpacing="3" iconColumnWidth="0" horizontal="true"
-                        itemStyleClass="topToolbar" itemLinkStyleClass="topToolbarLink" selectedStyleClass="topToolbar" selectedLinkStyleClass="topToolbarLink"
-                        value="#{NavigationBean.toolbarLocation}" actionListener="#{NavigationBean.toolbarLocationChanged}">
+                  <a:modeList itemSpacing="3"
+                              iconColumnWidth="0" 
+                              horizontal="true"
+                              itemStyleClass="topToolbar" 
+                              itemLinkStyleClass="topToolbarLink" 
+                              selectedStyleClass="topToolbar" 
+                              selectedLinkStyleClass="topToolbarLink"
+                              value="#{NavigationBean.toolbarLocation}" 
+                              actionListener="#{NavigationBean.toolbarLocationChanged}">
                      <a:listItem value="companyhome" label="#{msg.company_home}" rendered="#{NavigationBean.companyHomeVisible}" />
                      <a:listItem value="userhome" label="#{msg.my_home}" />
-                     <a:listItem value="guesthome" label="#{msg.guest_home}" rendered="#{NavigationBean.isGuest == false && NavigationBean.guestHomeVisible}" />
+                     <a:listItem value="guesthome" 
+                                 label="#{msg.guest_home}"
+                                 rendered="#{!NavigationBean.isGuest && NavigationBean.guestHomeVisible}" />
                      <a:listItem value="myalfresco" label="#{msg.my_alfresco}" />
                   </a:modeList>
                </td>
-               <td><img src="<%=request.getContextPath()%>/images/parts/titlebar_end.gif" width=8 height=31></td>
+               <td><img src="<%=request.getContextPath()%>/images/parts/titlebar_end.gif" width="8" height="31" alt=""/></td>
             </tr>
          </table>
       </td>
       
       <%-- Help area --%>
       <td>
-         <table cellspacing=2 cellpadding=0 width=100%>
+         <table cellspacing="2" cellpadding="0" width="100%">
             <tr>
                <td>
                   <%-- admin user only actions --%>
-                  <a:booleanEvaluator value="#{NavigationBean.currentUser.admin == true}" id="evalA">
-                     <a:actionLink value="#{msg.admin_console}" image="/images/icons/admin_console.gif" showLink="false" action="dialog:adminConsole" id="link11_1" />
+                  <a:booleanEvaluator value="#{NavigationBean.currentUser.admin}" id="evalA">
+                     <a:actionLink value="#{msg.admin_console}" 
+                                   image="/images/icons/admin_console.gif"
+                                   showLink="false" 
+                                   action="dialog:adminConsole" 
+                                   id="alf_admin_console" />
                   </a:booleanEvaluator>
                </td>
-               <td width=12>&nbsp;</td>
+               <td style="width:12px;">&nbsp;</td>
                <td>
                   <%-- user preferences --%>
-                  <a:actionLink value="#{msg.user_console}" image="/images/icons/user_console.gif" showLink="false" action="dialog:userConsole" actionListener="#{UsersBean.setupUserAction}" id="link11_2">
+                  <a:actionLink value="#{msg.user_console}" 
+                                image="/images/icons/user_console.gif" 
+                                showLink="false" 
+                                action="dialog:userConsole" 
+                                actionListener="#{UsersBean.setupUserAction}" 
+                                id="alf_user_console">
                      <f:param name="id" value="#{NavigationBean.currentUser.person.id}" />
                   </a:actionLink>
                </td>
-               <td width=8>&nbsp;</td>
-               <td><a:actionLink value="#{msg.toggle_shelf}" image="/images/icons/shelf.gif" showLink="false" actionListener="#{NavigationBean.toggleShelf}" /></td>
-               <td width=8>&nbsp;</td>
-               <td><a:actionLink value="#{msg.help}" image="/images/icons/Help_icon.gif" showLink="false" href="#{NavigationBean.helpUrl}" target="help" /></td>
-               <td width=8>&nbsp;</td>
-               <td><nobr><a href="http://www.alfresco.com/services/support/issues/" target="new"><h:outputText value="#{msg.raise_issue}" /></a></nobr></td>
-               <td width=8>&nbsp;</td>
-               <td><nobr>
-                  <a:actionLink id="logout" image="/images/icons/logout.gif" value="#{msg.logout} (#{NavigationBean.currentUser.userName})" rendered="#{NavigationBean.isGuest == false}" action="#{LoginBean.logout}" immediate="true" />
-                  <a:actionLink id="login" image="/images/icons/login.gif" value="#{msg.login} (#{NavigationBean.currentUser.userName})" rendered="#{NavigationBean.isGuest == true}" action="#{LoginBean.logout}" />
-               </nobr></td>
+               <td style="width:8px;">&nbsp;</td>
+               <td>
+                 <a:actionLink id="alf_toggle_shelf" 
+                               value="#{msg.toggle_shelf}" 
+                               image="/images/icons/shelf.gif" 
+                               showLink="false" 
+                               actionListener="#{NavigationBean.toggleShelf}" />
+               </td>
+               <td style="width:8px;">&nbsp;</td>
+               <td>
+                 <a:actionLink id="alf_help" 
+                               value="#{msg.help}" 
+                               image="/images/icons/Help_icon.gif" 
+                               showLink="false" 
+                               href="#{NavigationBean.helpUrl}" 
+                               target="help" />
+               </td>
+               <td style="width:8px;">&nbsp;</td>
+               <td style="white-space:nowrap;"><a href="http://www.alfresco.com/services/support/issues/" target="new"><h:outputText value="#{msg.raise_issue}" /></a></td>
+               <td style="width:8px;">&nbsp;</td>
+               <td style="white-space:nowrap;">
+                  <a:actionLink id="logout" image="/images/icons/logout.gif" value="#{msg.logout} (#{NavigationBean.currentUser.userName})" rendered="#{!NavigationBean.isGuest}" action="#{LoginBean.logout}" immediate="true" />
+                  <a:actionLink id="login" image="/images/icons/login.gif" value="#{msg.login} (#{NavigationBean.currentUser.userName})" rendered="#{NavigationBean.isGuest}" action="#{LoginBean.logout}" />
+               </td>
             </tr>
          </table>
       </td>
       
       <%-- Search area --%>
       <td>
-         <table cellspacing=0 cellpadding=0 width=100%>
+         <table cellspacing="0" cellpadding="0" width="100%">
             <tr>
-               <td><img src="<%=request.getContextPath()%>/images/parts/searchbar_begin.gif" width=6 height=31></td>
-               <td width=100% style="background-image: url(<%=request.getContextPath()%>/images/parts/searchbar_bg.gif)">
+               <td><img src="<%=request.getContextPath()%>/images/parts/searchbar_begin.gif" width="6" height="31" alt=""/></td>
+               <td style="width:100%; background-image: url(<%=request.getContextPath()%>/images/parts/searchbar_bg.gif);">
                   <r:simpleSearch id="search" actionListener="#{BrowseBean.search}" />
                </td>
-               <td><img src="<%=request.getContextPath()%>/images/parts/searchbar_end.gif" width=6 height=31></td>
+               <td><img src="<%=request.getContextPath()%>/images/parts/searchbar_end.gif" width="6" height="31" alt=""/></td>
             </tr>
          </table>
       </td>

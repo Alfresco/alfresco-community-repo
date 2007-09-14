@@ -93,14 +93,14 @@ public class UIStatusMessage extends SelfRenderingComponent
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[5];
-      // standard component attributes are saved by the super class
-      values[0] = super.saveState(context);
-      values[1] = this.border;
-      values[2] = this.bgcolor;
-      values[3] = this.messages;
-      values[4] = Integer.valueOf(this.currentMessage);
-      return values;
+      return new Object[]
+      {
+         super.saveState(context),
+         this.border,
+         this.bgcolor,
+         this.messages,
+         Integer.valueOf(this.currentMessage)
+      };
    }
 
    /**
@@ -108,7 +108,7 @@ public class UIStatusMessage extends SelfRenderingComponent
     */
    public void encodeBegin(FacesContext context) throws IOException
    {
-      if (isRendered() == false)
+      if (!isRendered())
       {
          return;
       }
@@ -131,12 +131,12 @@ public class UIStatusMessage extends SelfRenderingComponent
       }
       
       // Previous Message icon image - clicking shows previous message
-      out.write("<table width=100% cellspacing=0 cellpadding=0><tr><td>");
+      out.write("<table style'width:100%;' cellspacing='0' cellpadding='0'><tr><td>");
       String field = getHiddenFieldName();
       String leftValue = getClientId(context) + NamingContainer.SEPARATOR_CHAR + Integer.toString(ACTION_PREVIOUS);
       String leftOnclick = Utils.generateFormSubmit(context, this, field, leftValue);
-      out.write(Utils.buildImageTag(context, WebResources.IMAGE_MOVELEFT, 12, 12, null, leftOnclick, "absmiddle"));
-      out.write("</td><td width=100% align=center>");
+      out.write(Utils.buildImageTag(context, WebResources.IMAGE_MOVELEFT, 12, 12, null, leftOnclick, "middle"));
+      out.write("</td><td style='width:100%;' align='center'>");
       
       // get messages for the component and crop the stack to the maximum history size
       Iterator<FacesMessage> msgIterator = context.getMessages(STATUS_MESSAGE);
@@ -166,7 +166,7 @@ public class UIStatusMessage extends SelfRenderingComponent
          style = CSS_WARNING;
       }
       
-      out.write(Utils.buildImageTag(context, icon, null, "absmiddle"));
+      out.write(Utils.buildImageTag(context, icon, null, "middle"));
       out.write("&nbsp;<span class='");
       out.write(style);
       out.write("'>");
@@ -179,14 +179,14 @@ public class UIStatusMessage extends SelfRenderingComponent
       // Next Message icon image - clicking shows next message
       String rightValue = getClientId(context) + NamingContainer.SEPARATOR_CHAR + Integer.toString(ACTION_NEXT);
       String rightOnclick = Utils.generateFormSubmit(context, this, field, rightValue);
-      out.write(Utils.buildImageTag(context, WebResources.IMAGE_MOVERIGHT, 12, 12, null, rightOnclick, "absmiddle"));
+      out.write(Utils.buildImageTag(context, WebResources.IMAGE_MOVERIGHT, 12, 12, null, rightOnclick, "middle"));
       out.write("</td></tr></table>");
       
       if (panel != null)
       {
          PanelGenerator.generatePanelEnd(out, 
-               context.getExternalContext().getRequestContextPath(),
-               panel);
+                                         context.getExternalContext().getRequestContextPath(),
+                                         panel);
       }
    }
    

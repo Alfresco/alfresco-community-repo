@@ -20,19 +20,19 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
 --%>
 <%-- Breadcrumb area --%>
 <%-- Designed to support a variable height breadcrumb --%>
 <tr>
-   <td><img src="<%=request.getContextPath()%>/images/parts/headbar_1.gif" width=4 height=7></td>
-   <td width=100% style="background-image: url(<%=request.getContextPath()%>/images/parts/headbar_2.gif)"></td>
-   <td><img src="<%=request.getContextPath()%>/images/parts/headbar_3.gif" width=4 height=7></td>
+   <td><img src="<%=request.getContextPath()%>/images/parts/headbar_1.gif" width="4" height="7" alt=""/></td>
+   <td style="width:100%; background-image: url(<%=request.getContextPath()%>/images/parts/headbar_2.gif)"></td>
+   <td><img src="<%=request.getContextPath()%>/images/parts/headbar_3.gif" width="4" height="7" alt=""/></td>
 </tr>
 
 <tr>
    <td style="background-image: url(<%=request.getContextPath()%>/images/parts/headbar_4.gif)"></td>
-   <td bgcolor="#dfe6ed">
+   <td style="background-color: #dfe6ed;">
       <%-- Breadcrumb component --%>
       <div style="padding-left:8px" class="headbarTitle">
          <a:breadcrumb value="#{NavigationBean.location}" styleClass="headbarLink" />
@@ -42,7 +42,7 @@
 </tr>
 
 <tr>
-   <td><img src="<%=request.getContextPath()%>/images/parts/headbar_7.gif" width=4 height=10></td>
-   <td width=100% style="background-image: url(<%=request.getContextPath()%>/images/parts/headbar_8.gif)"></td>
-   <td><img src="<%=request.getContextPath()%>/images/parts/headbar_9.gif" width=4 height=10></td>
+   <td><img src="<%=request.getContextPath()%>/images/parts/headbar_7.gif" width="4" height="10" alt=""/></td>
+   <td style="width: 100%; background-image: url(<%=request.getContextPath()%>/images/parts/headbar_8.gif)"></td>
+   <td><img src="<%=request.getContextPath()%>/images/parts/headbar_9.gif" width="4" height="10" alt=""/></td>
 </tr>

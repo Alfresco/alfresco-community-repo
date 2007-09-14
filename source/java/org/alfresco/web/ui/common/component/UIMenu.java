@@ -54,7 +54,7 @@ public class UIMenu extends SelfRenderingComponent
     */
    public void encodeBegin(FacesContext context) throws IOException
    {
-      if (isRendered() == false)
+      if (!isRendered())
       {
          return;
       }
@@ -81,7 +81,7 @@ public class UIMenu extends SelfRenderingComponent
       // output image
       if (getAttributes().get("image") != null)
       {
-         out.write(Utils.buildImageTag(context, (String)getAttributes().get("image"), null, "absmiddle"));
+         out.write(Utils.buildImageTag(context, (String)getAttributes().get("image"), null, "middle"));
       }
       
       out.write("</a>");
@@ -92,7 +92,7 @@ public class UIMenu extends SelfRenderingComponent
       // NOTE: the use of "*width:0px" is an IE6/7 specific hack to ensure that the CSS is processed
       //       only by IE (which needs the width value) and _not_ FireFox which doesn't...!
       out.write("' style=\"position:absolute;display:none;padding-left:2px;*width:0px\">");
-      out.write("<table border=0 cellpadding=0");
+      out.write("<table border='0' cellpadding='0'");
       outputAttribute(out, getAttributes().get("itemSpacing"), "cellspacing");
       outputAttribute(out, getAttributes().get("menuStyle"), "style");
       outputAttribute(out, getAttributes().get("menuStyleClass"), "class");
@@ -104,7 +104,7 @@ public class UIMenu extends SelfRenderingComponent
     */
    public void encodeEnd(FacesContext context) throws IOException
    {
-      if (isRendered() == false)
+      if (!isRendered())
       {
          return;
       }
@@ -132,12 +132,7 @@ public class UIMenu extends SelfRenderingComponent
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[3];
-      // standard component attributes are saved by the super class
-      values[0] = super.saveState(context);
-      values[1] = this.label;
-      values[2] = this.tooltip;
-      return values;
+      return new Object[] { super.saveState(context), this.label, this.tooltip };
    }
    
    

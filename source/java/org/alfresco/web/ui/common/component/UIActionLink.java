@@ -80,16 +80,17 @@ public class UIActionLink extends UICommand
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[7];
       // standard component attributes are saved by the super class
-      values[0] = super.saveState(context);
-      values[1] = this.padding;
-      values[2] = this.image;
-      values[3] = this.showLink;
-      values[4] = this.href;
-      values[5] = this.tooltip;
-      values[6] = this.target;
-      return (values);
+      return new Object[] 
+      {
+         super.saveState(context),
+         this.padding,
+         this.image,
+         this.showLink,
+         this.href,
+         this.tooltip,
+         this.target
+      };
    }
 
    
@@ -158,15 +159,7 @@ public class UIActionLink extends UICommand
          this.padding = (Integer)vb.getValue(getFacesContext());
       }
       
-      if (this.padding != null)
-      {
-         return this.padding.intValue();
-      }
-      else
-      {
-         // return default
-         return 0;
-      }
+      return this.padding != null ? this.padding.intValue() : 0;
    }
    
    /**

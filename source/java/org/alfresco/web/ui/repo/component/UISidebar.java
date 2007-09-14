@@ -78,11 +78,8 @@ public class UISidebar extends SelfRenderingComponent
    @Override
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[8];
       // standard component attributes are saved by the super class
-      values[0] = super.saveState(context);
-      values[1] = this.activePlugin;
-      return values;
+      return new Object[] { super.saveState(context), this.activePlugin };
    }
    
    @SuppressWarnings("unchecked")
@@ -93,20 +90,20 @@ public class UISidebar extends SelfRenderingComponent
       
       ResponseWriter out = context.getResponseWriter();
       
-      out.write("<div id=\"sidebar\" class=\"sidebar\">");
+      out.write("<div id='sidebar' class='sidebar'>");
       
       // render the start of the header panel
       String cxPath = context.getExternalContext().getRequestContextPath();
-      out.write("<table cellspacing=0 cellpadding=0 bgcolor='#ffffff'>" + 
-                "<tr><td style=\"background-image: url(");
+      out.write("<table cellspacing='0' cellpadding='0' style='background-color: #ffffff;'>" + 
+                "<tr><td style='width: 5px; background-image: url(");
       out.write(cxPath);
-      out.write("/images/parts/sidebar_top_grey_begin.gif)\" valign=\"top\" width=5>" +
+      out.write("/images/parts/sidebar_top_grey_begin.gif)' valign='top'>" +
                 "<img src=\"");
       out.write(cxPath);
-      out.write("/images/parts/sidebar_grey_01.gif\" width=5 height=5></td>" + 
-                "<td style=\"background-image: url(");
+      out.write("/images/parts/sidebar_grey_01.gif\" width='5' height='5' alt=''/></td>" + 
+                "<td style='height: 24px; background-image: url(");
       out.write(cxPath);
-      out.write("/images/parts/sidebar_top_grey_bg.gif)\" height=24>");
+      out.write("/images/parts/sidebar_top_grey_bg.gif)'>");
       
       // generate the required child components if not present
       if (this.getChildCount() == 1)
@@ -169,7 +166,7 @@ public class UISidebar extends SelfRenderingComponent
       {
          ResponseWriter out = context.getResponseWriter();
 
-         out.write("<table border='0' cellpadding='6' cellspacing='0' width='100%'><tr><td>");
+         out.write("<table border='0' cellpadding='6' cellspacing='0' style='width: 100%;'><tr><td>");
          
          // render the list
          UIModeList modeList = (UIModeList)getChildren().get(0);
@@ -185,12 +182,12 @@ public class UISidebar extends SelfRenderingComponent
          
          // render the end of the header panel
          String cxPath = context.getExternalContext().getRequestContextPath();
-         out.write("</td><td style=\"background-image: url(");
+         out.write("</td><td style='width: 5px; background-image: url(");
          out.write(cxPath);
-         out.write("/images/parts/sidebar_top_grey_end.gif)\" width=5 align=right valign=top>" +
-                   "<img src=\"");
+         out.write("/images/parts/sidebar_top_grey_end.gif)' align='right' valign='top'>" +
+                   "<img src='");
          out.write(cxPath);
-         out.write("/images/parts/sidebar_grey_03.gif\" width=5 height=5></td></tr>" +
+         out.write("/images/parts/sidebar_grey_03.gif' width='5' height='5' alt=''/></td></tr>" +
                    "<tr><td colspan='3'>");
          
          // render the plugin
@@ -210,18 +207,18 @@ public class UISidebar extends SelfRenderingComponent
       ResponseWriter out = context.getResponseWriter();
       String cxPath = context.getExternalContext().getRequestContextPath();
       out.write("</td></tr>" + 
-                "<tr><td height=12 width=5><img src=\"");
+                "<tr><td style='height: 12px; width: 5px;'><img src='");
       out.write(cxPath);
-      out.write("/images/parts/sidebar_bottom_grey_begin.gif\" width=5 height=12></td>" + 
-                "<td width=100% style=\"background-image: url(");
+      out.write("/images/parts/sidebar_bottom_grey_begin.gif' width='5' height='12' alt=''/></td>" + 
+                "<td style='width: 100%; background-image: url(");
       out.write(cxPath);
-      out.write("/images/parts/sidebar_bottom_grey_bg.gif)\">" +
-                "<img src=\"");
+      out.write("/images/parts/sidebar_bottom_grey_bg.gif)'>" +
+                "<img src='");
       out.write(cxPath);
-      out.write("/images/parts/sidebar_bottom_grey_bg.gif\" width=48 height=12></td>" +
-                "<td align=right width=5><img src=\"");
+      out.write("/images/parts/sidebar_bottom_grey_bg.gif' width='48' height='12' alt=''/></td>" +
+                "<td align='right' style='width: 5px;'><img src='");
       out.write(cxPath);
-      out.write("/images/parts/sidebar_bottom_grey_end.gif\" width=5 height=12></td></tr>" + 
+      out.write("/images/parts/sidebar_bottom_grey_end.gif' width='5' height='12' alt=''/></td></tr>" + 
                 "</table>" +
                 "</div>");
    }

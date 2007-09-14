@@ -599,15 +599,7 @@ public class UIActions extends SelfRenderingComponent
          this.showLink = (Boolean)vb.getValue(getFacesContext());
       }
       
-      if (this.showLink != null)
-      {
-         return this.showLink.booleanValue();
-      }
-      else
-      {
-         // return default
-         return true;
-      }
+      return this.showLink != null ? this.showLink.booleanValue() : true;
    }
    
    /**
@@ -631,14 +623,7 @@ public class UIActions extends SelfRenderingComponent
          this.verticalSpacing = (Integer)vb.getValue(getFacesContext());
       }
       
-      if (this.verticalSpacing != null)
-      {
-         return this.verticalSpacing;
-      }
-      else
-      {
-         return 0;
-      }
+      return this.verticalSpacing != null ? this.verticalSpacing : 0;
    }
 
    /**
@@ -667,7 +652,7 @@ public class UIActions extends SelfRenderingComponent
     */
    private static String createUniqueId()
    {
-      return "_id_" + Short.toString(++id);
+      return "id_" + Short.toString(++id);
    }
    
    // ------------------------------------------------------------------------------

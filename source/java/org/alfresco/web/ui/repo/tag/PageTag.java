@@ -46,15 +46,34 @@ public class PageTag extends TagSupport
    private static final long serialVersionUID = 8142765393181557228L;
    
    private final static String SCRIPTS_START = "<script type=\"text/javascript\" src=\"";
-   private final static String SCRIPTS_MENU = "/scripts/menu.js\"></script>";
-   private final static String SCRIPTS_WEBDAV = "/scripts/webdav.js\"></script>";
+   private final static String SCRIPTS_END = "\"></script>\n";
    private final static String STYLES_START  = "<link rel=\"stylesheet\" href=\"";
-   private final static String STYLES_MAIN  = "/css/main.css\" TYPE=\"text/css\">\n";
+   private final static String STYLES_MAIN  = "/css/main.css\" type=\"text/css\">\n";
+
+   private final static String[] SCRIPTS = 
+   {
+      // menu javascript
+      "/scripts/menu.js",
+      // webdav javascript
+      "/scripts/webdav.js",
+      // base yahoo file
+      "/scripts/ajax/yahoo/yahoo/yahoo-min.js",
+      // io handling (AJAX)
+      "/scripts/ajax/yahoo/connection/connection-min.js",
+      // event handling
+      "/scripts/ajax/yahoo/event/event-min.js",
+      // mootools
+      "/scripts/ajax/mootools.v1.11.js",
+      // common Alfresco util methods
+      "/scripts/ajax/common.js",
+      // pop-up panel helper objects
+      "/scripts/ajax/summary-info.js"
+   };
 
 /**
  * Please ensure you understand the terms of the license before changing the contents of this file.
  */
-
+   
    private final static String ALF_LOGO_HTTP  = "http://www.alfresco.com/images/alfresco_community_horiz21.gif";
    private final static String ALF_LOGO_HTTPS = "https://www.alfresco.com/images/alfresco_community_horiz21.gif";
    private final static String ALF_URL   = "http://www.alfresco.com";
@@ -131,7 +150,7 @@ public class PageTag extends TagSupport
          String reqPath = ((HttpServletRequest)pageContext.getRequest()).getContextPath();
          Writer out = pageContext.getOut();
          
-         if (Application.inPortalServer() == false)
+         if (!Application.inPortalServer())
          {
             out.write("<html><head><title>");
             if (this.titleId != null && this.titleId.length() != 0)
@@ -146,10 +165,10 @@ public class PageTag extends TagSupport
             {
                out.write("Alfresco Web Client");
             }
-            out.write("</title>");
-            out.write("<link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"" + reqPath + "/wcservice/api/search/keyword/description.xml\" title=\"Alfresco Keyword Search\"/>");
-            out.write("</head>");
-            out.write("<body>\n");
+            out.write("</title>\n");
+            out.write("<link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"" + reqPath + 
+                      "/wcservice/api/search/keyword/description.xml\" title=\"Alfresco Keyword Search\">\n");
+            out.write("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">\n");
          }
          
          // CSS style includes
@@ -157,51 +176,25 @@ public class PageTag extends TagSupport
          out.write(reqPath);
          out.write(STYLES_MAIN);
          
-         // menu javascript
-         out.write(SCRIPTS_START);
-         out.write(reqPath);
-         out.write(SCRIPTS_MENU);
-         
-         // webdav javascript
-         out.write(SCRIPTS_START);
-         out.write(reqPath);
-         out.write(SCRIPTS_WEBDAV);
-         
-         // base yahoo file
-         out.write("<script type=\"text/javascript\" src=\"");
-         out.write(reqPath);
-         out.write("/scripts/ajax/yahoo/yahoo/yahoo-min.js\"></script>");
-         
-         // io handling (AJAX)
-         out.write("<script type=\"text/javascript\" src=\"");
-         out.write(reqPath);
-         out.write("/scripts/ajax/yahoo/connection/connection-min.js\"></script>");
-         
-         // event handling
-         out.write("<script type=\"text/javascript\" src=\"");
-         out.write(reqPath);
-         out.write("/scripts/ajax/yahoo/event/event-min.js\"></script>");
-         
-         // mootools
-         out.write("<script type=\"text/javascript\" src=\"");
-         out.write(reqPath);
-         out.write("/scripts/ajax/mootools.v1.11.js\"></script>");
-         
-         // common Alfresco util methods
-         out.write("<script type=\"text/javascript\" src=\"");
-         out.write(reqPath);
-         out.write("/scripts/ajax/common.js\"></script>");
-         
-         // pop-up panel helper objects
-         out.write("<script type=\"text/javascript\" src=\"");
-         out.write(reqPath);
-         out.write("/scripts/ajax/summary-info.js\"></script>");
+         for (final String s : PageTag.SCRIPTS)
+         {
+            out.write(SCRIPTS_START);
+            out.write(reqPath);
+            out.write(s);
+            out.write(SCRIPTS_END);
+         }
          
          // set the context path used by some Alfresco script objects
          out.write("<script type=\"text/javascript\">");
          out.write("setContextPath('");
          out.write(reqPath);
          out.write("');</script>\n");
+
+         if (!Application.inPortalServer())
+         {
+            out.write("</head>");
+            out.write("<body>\n");
+         }
       }
       catch (IOException ioe)
       {
@@ -224,7 +217,7 @@ public class PageTag extends TagSupport
             pageContext.getOut().write(getAlfrescoButton());
          }
          
-         if (Application.inPortalServer() == false)
+         if (!Application.inPortalServer())
          {
             pageContext.getOut().write("\n</body></html>");
          }
@@ -259,20 +252,20 @@ public class PageTag extends TagSupport
 
    private String getAlfrescoButton()
    {
-      if (alfresco == null)
+      if (PageTag.alfresco == null)
       {
-         HttpServletRequest req = (HttpServletRequest)pageContext.getRequest();
-         alfresco = "<center><table><tr><td>" +
-                    "<a href='" + ALF_URL + "'>" +
-                    "<img border=0 alt='' title='" + ALF_TEXT + "' align=absmiddle src='" +
-                    ("http".equals(req.getScheme()) ? ALF_LOGO_HTTP : ALF_LOGO_HTTPS) + 
-                    "'>" +"</a></td><td align=center>" +
-                    "<span class=footer>" + ALF_COPY +
-                    "</span></td><td><a href='http://sourceforge.net/projects/alfresco'><img border=0 alt='' title='SourceForge' align=absmiddle src='" +
-                    req.getContextPath() + SF_LOGO + "'></a>" +
-                    "</td></tr></table></center>";
+         final HttpServletRequest req = (HttpServletRequest)pageContext.getRequest();
+         PageTag.alfresco = ("<center><table style='margin: 0px auto;'><tr><td>" +
+                             "<a href='" + ALF_URL + "'>" +
+                             "<img style='vertical-align:middle;border-width:0px;' alt='' title='" + ALF_TEXT + 
+                             "' src='" + ("http".equals(req.getScheme()) ? ALF_LOGO_HTTP : ALF_LOGO_HTTPS) + 
+                             "'>" +"</a></td><td align='center'>" +
+                             "<span class='footer'>" + ALF_COPY +
+                             "</span></td><td><a href='http://sourceforge.net/projects/alfresco'>" +
+                             "<img style='vertical-align:middle;border-width:0px' alt='' title='SourceForge' src='" +
+                             req.getContextPath() + SF_LOGO + "'></a>" +
+                             "</td></tr></table></center>");
       }
-      
-      return alfresco;
+      return PageTag.alfresco;
    }
 }

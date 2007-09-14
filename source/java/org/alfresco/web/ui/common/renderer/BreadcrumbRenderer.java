@@ -134,8 +134,9 @@ public class BreadcrumbRenderer extends BaseRenderer
       }
       if (bc.getAttributes().get("styleClass") != null)
       {
-         buf.append(" class=")
-            .append(bc.getAttributes().get("styleClass"));
+         buf.append(" class=\"")
+            .append(bc.getAttributes().get("styleClass"))
+            .append('"');
       }
       if (bc.getAttributes().get("tooltip") != null)
       {

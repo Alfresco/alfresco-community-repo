@@ -133,7 +133,7 @@ public class ActionLinkRenderer extends BaseRenderer
          if (padding != 0)
          {
             // TODO: make this width value a property!
-            out.write("<table cellspacing=0 cellpadding=0><tr><td width=16>");
+            out.write("<table cellspacing='0' cellpadding='0'><tr><td style='width:16px;'>");
          }
          
          // if we are not show the text link, then the image is the clickable element
@@ -142,7 +142,7 @@ public class ActionLinkRenderer extends BaseRenderer
             renderActionLinkAnchor(context, out, link); 
          }
          
-         out.write(Utils.buildImageTag(context, image, (String)link.getValue(), "absmiddle"));
+         out.write(Utils.buildImageTag(context, image, (String)link.getValue(), "middle"));
          
          if (link.getShowLink() == false)
          {
@@ -152,9 +152,9 @@ public class ActionLinkRenderer extends BaseRenderer
          {
             if (padding != 0)
             {
-               out.write("</td><td style=\"padding:");
+               out.write("</td><td style='padding:");
                out.write(Integer.toString(padding));
-               out.write("px\">");
+               out.write("px;'>");
             }
             
             // else the text is the clickable element
@@ -183,10 +183,12 @@ public class ActionLinkRenderer extends BaseRenderer
     * @param context
     * @param link
     */
-   private void renderActionLinkAnchor(FacesContext context, Writer out, UIActionLink link)
+   private void renderActionLinkAnchor(final FacesContext context, 
+                                       final Writer out, 
+                                       final UIActionLink link)
       throws IOException
    {
-      Map attrs = link.getAttributes();
+      final Map attrs = link.getAttributes();
       
       // generate the href link - output later in the process depending on various rendering options
       if (link.getHref() == null)
@@ -202,7 +204,11 @@ public class ActionLinkRenderer extends BaseRenderer
          {
             // generate JavaScript to set a hidden form field and submit
             // a form which request attributes that we can decode
-            out.write(Utils.generateFormSubmit(context, link, Utils.getActionHiddenFieldName(context, link), link.getClientId(context), getParameterComponents(link)));
+            out.write(Utils.generateFormSubmit(context, 
+                                               link, 
+                                               Utils.getActionHiddenFieldName(context, link), 
+                                               link.getClientId(context), 
+                                               getParameterComponents(link)));
          }
          
          out.write('"');
@@ -227,31 +233,32 @@ public class ActionLinkRenderer extends BaseRenderer
          // output href 'target' attribute if supplied
          if (link.getTarget() != null)
          {
-            out.write(" target=\"");
+            out.write(" target='");
             out.write(link.getTarget());
-            out.write("\"");
+            out.write("'");
          }
       }
       
       // common link attributes
       if (attrs.get("id") != null)
       {
-         out.write(" id=\"");
+         out.write(" id='");
          out.write((String)attrs.get("id"));
-         out.write("\"");
+         out.write("'");
       }
       boolean appliedStyle = false;
       if (attrs.get("style") != null)
       {
-         out.write(" style=\"");
+         out.write(" style='");
          out.write((String)attrs.get("style"));
-         out.write('"');
+         out.write("'");
          appliedStyle = true;
       }
       if (attrs.get("styleClass") != null)
       {
-         out.write(" class=");
+         out.write(" class='");
          out.write((String)attrs.get("styleClass"));
+         out.write("'");
          appliedStyle = true;
       }
       if (appliedStyle == false && link.getShowLink() == true && link.getImage() != null && link.getPadding() == 0)
@@ -261,9 +268,9 @@ public class ActionLinkRenderer extends BaseRenderer
       }
       if (link.getTooltip() != null)
       {
-         out.write(" title=\"");
+         out.write(" title='");
          out.write(Utils.encode(link.getTooltip()));
-         out.write('"');
+         out.write("'");
       }
       out.write('>');
    }
@@ -376,8 +383,9 @@ public class ActionLinkRenderer extends BaseRenderer
       }
       if (attrs.get("styleClass") != null)
       {
-         out.write(" class=");
+         out.write(" class=\"");
          out.write((String)attrs.get("styleClass"));
+         out.write('"');
       }
       out.write('>');
       out.write(Utils.encode(link.getValue().toString()));

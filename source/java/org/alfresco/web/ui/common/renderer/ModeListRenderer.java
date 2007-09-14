@@ -87,17 +87,17 @@ public class ModeListRenderer extends BaseRenderer
 
       Map attrs = list.getAttributes();
       
-      if (list.isMenu() == false)
+      if (!list.isMenu())
       {
          // start outer table container the list items
-         out.write("<table cellspacing=1 cellpadding=0");
+         out.write("<table cellspacing='1' cellpadding='0'");
          outputAttribute(out, attrs.get("styleClass"), "class");
          outputAttribute(out, attrs.get("style"), "style");
          outputAttribute(out, attrs.get("width"), "width");
          out.write('>');
          
          // horizontal rendering outputs a single row with each item as a column cell
-         if (list.isHorizontal() == true)
+         if (list.isHorizontal())
          {
             out.write("<tr>");
          }
@@ -107,21 +107,21 @@ public class ModeListRenderer extends BaseRenderer
          {
             // each row is an inner table with a single row and 2 columns
             // first column contains an icon if present, second column contains text
-            if (list.isHorizontal() == false)
+            if (!list.isHorizontal())
             {
                out.write("<tr>");
             }
             
-            out.write("<td><table cellpadding=0 width=100%");
+            out.write("<td><table cellpadding='0' style='width:100%;'");
             outputAttribute(out, attrs.get("itemSpacing"), "cellspacing");
             out.write("><tr>");
             
             // output icon column
             if (list.getIconColumnWidth() != 0)
             {
-               out.write("<td");
-               outputAttribute(out, list.getIconColumnWidth(), "width");
-               out.write("></td>");
+               out.write("<td  style='width:");
+               out.write(String.valueOf(list.getIconColumnWidth()));
+               out.write(";'></td>");
             }
             
             // output title label
@@ -132,7 +132,7 @@ public class ModeListRenderer extends BaseRenderer
             out.write(Utils.encode(list.getLabel()));
             out.write("</span></td></tr></table></td>");
             
-            if (list.isHorizontal() == false)
+            if (!list.isHorizontal())
             {
                out.write("</tr>");
             }
@@ -142,12 +142,12 @@ public class ModeListRenderer extends BaseRenderer
       {
          // render as a pop-up menu
          // TODO: show the image set for the individual item if available?
-         out.write("<table cellspacing=0 cellpadding=0 style='white-space:nowrap'><tr>");
+         out.write("<table cellspacing='0' cellpadding='0' style='white-space:nowrap'><tr>");
          String selectedImage = (String)attrs.get("selectedImage");
          if (selectedImage != null)
          {
             out.write("<td style='padding-right:4px'>");
-            out.write(Utils.buildImageTag(context, selectedImage, null, "absmiddle"));
+            out.write(Utils.buildImageTag(context, selectedImage, null, "middle"));
             out.write("</td>");
          }
          
@@ -177,7 +177,7 @@ public class ModeListRenderer extends BaseRenderer
                         UIListItem item = (UIListItem)iter.next();
                         
                         // if selected render as the label
-                        if (item.getValue().equals(list.getValue()) == true)
+                        if (item.getValue().equals(list.getValue()))
                         {
                            label = item.getLabel();
                            break;
@@ -185,13 +185,13 @@ public class ModeListRenderer extends BaseRenderer
                      }
                   }
                }
-               else if (child instanceof UIListItem && child.isRendered() == true)
+               else if (child instanceof UIListItem && child.isRendered())
                {
                   // found a valid UIListItem child to render
                   UIListItem item = (UIListItem)child;
                   
                   // if selected render as the label
-                  if (item.getValue().equals(list.getValue()) == true)
+                  if (item.getValue().equals(list.getValue()))
                   {
                      label = item.getLabel();
                      break;
@@ -214,7 +214,7 @@ public class ModeListRenderer extends BaseRenderer
          // output image
          if (list.getMenuImage() != null)
          {
-            out.write(Utils.buildImageTag(context, list.getMenuImage(), null, "absmiddle"));
+            out.write(Utils.buildImageTag(context, list.getMenuImage(), null, "middle"));
          }
          
          out.write("</a></td></tr></table>");
@@ -222,10 +222,10 @@ public class ModeListRenderer extends BaseRenderer
          // output the hidden DIV section to contain the menu item table
          out.write("<div id='");
          out.write(menuId);
-         out.write("' style=\"position:absolute;display:none;padding-left:2px;\">");
+         out.write("' style='position:absolute;display:none;padding-left:2px;'>");
          
          // start outer table container the list items
-         out.write("<table cellspacing=1 cellpadding=0");
+         out.write("<table cellspacing='1' cellpadding='0'");
          outputAttribute(out, attrs.get("styleClass"), "class");
          outputAttribute(out, attrs.get("style"), "style");
          outputAttribute(out, attrs.get("width"), "width");
@@ -238,7 +238,7 @@ public class ModeListRenderer extends BaseRenderer
     */
    public void encodeChildren(FacesContext context, UIComponent component) throws IOException
    {
-      if (component.isRendered() == false)
+      if (!component.isRendered())
       {
          return;
       }
@@ -268,11 +268,10 @@ public class ModeListRenderer extends BaseRenderer
                }
             }
          }
-         else if (child instanceof UIListItem && child.isRendered() == true)
+         else if (child instanceof UIListItem && child.isRendered())
          {
             // found a valid UIListItem child to render
-            UIListItem item = (UIListItem)child;
-            renderItem(context, out, list, item);
+            renderItem(context, out, list, (UIListItem)child);
          }
       }
    }
@@ -282,7 +281,7 @@ public class ModeListRenderer extends BaseRenderer
     */
    public void encodeEnd(FacesContext context, UIComponent component) throws IOException
    {
-      if (component.isRendered() == false)
+      if (!component.isRendered())
       {
          return;
       }
@@ -291,12 +290,12 @@ public class ModeListRenderer extends BaseRenderer
       
       // end outer table
       UIModeList list = (UIModeList)component;
-      if (list.isHorizontal() == true)
+      if (list.isHorizontal())
       {
          out.write("</tr>");
       }
       out.write("</table>");
-      if (list.isMenu() == true)
+      if (list.isMenu())
       {
          // close menu hidden div section
          out.write("</div>");
@@ -333,7 +332,7 @@ public class ModeListRenderer extends BaseRenderer
          out.write("<tr>");
       }
       
-      out.write("<td><table cellpadding=0 width=100%");
+      out.write("<td><table cellpadding='0' style='width:100%;'");
       outputAttribute(out, attrs.get("itemSpacing"), "cellspacing");
       
       // if selected value render different style for the item
@@ -353,9 +352,9 @@ public class ModeListRenderer extends BaseRenderer
       // output icon column
       if (list.getIconColumnWidth() != 0)
       {
-         out.write("<td");
-         outputAttribute(out, list.getIconColumnWidth(), "width");
-         out.write(">");
+         out.write("<td style='width:");
+         out.write(String.valueOf(list.getIconColumnWidth()));
+         out.write(";'>");
          
          // if the "selectedImage" property is set and this item is selected then show it
          if (selected == true && selectedImage != null)

@@ -26,7 +26,7 @@
    <ul>
       <li id="current"><a title="My Alfresco" href="${url.serviceContext}/office/myAlfresco?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
       <li><a title="Browse Spaces and Documents" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
-      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
+      <li><a title="Search Alfresco" href="${url.serviceContext}/office/search?p=${path?url}&amp;e=${extn}&amp;n=${nav}&amp;ticket=${session.ticket}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
       <li><a title="View Details" href="${url.serviceContext}/office/documentDetails?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
       <li><a title="My Tasks" href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
    </ul>

@@ -1,3 +1,4 @@
+<#assign doc_actions="${url.serviceContext}/office/docActions">
 <#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if><#assign extnx=extn+"x">
 <#if args.t?exists>
    <#assign taskid = args.t>
@@ -45,18 +46,30 @@
    <#list task.packageResources as res>
          <tr>
       <#if res.isDocument>
+         <#assign relativePath = (res.displayPath?substring(companyhome.name?length+1) + '/' + res.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
          <#if res.name?ends_with(extn) || res.name?ends_with(extnx)>
-            <#assign relativePath = (res.displayPath?substring(companyhome.name?length+1) + '/' + res.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
-            <td width="16"><a href="${url.context}${res.url}" target="new"><img src="${url.context}${res.icon16}" alt="${res.name}"></a></td>
+            <td width="16" valign="top"><a href="${url.context}${res.url}" target="new"><img src="${url.context}${res.icon16}" alt="${res.name}"></a></td>
             <td>
                <a href="#" onclick="window.external.openDocument('${relativePath}')" title="Open ${res.name}">${res.name}</a>
-            </td>
          <#else>
-            <td width="16"><a href="${url.context}${res.url}?ticket=${session.ticket}" target="_blank" title="Open ${res.name}"><img src="${url.context}${res.icon16}" alt="${res.name}"></a></td>
+            <td width="16" valign="top"><a href="${url.context}${res.url}?ticket=${session.ticket}" target="_blank" title="Open ${res.name}"><img src="${url.context}${res.icon16}" alt="${res.name}"></a></td>
             <td>
                <a href="${url.context}${res.url}?ticket=${session.ticket}" target="_blank">${res.name}</a>
-            </td>
          </#if>
+            <br />
+               Modified: ${res.properties.modified?datetime} (${(res.size / 1024)?int}Kb)<br />
+         <#if res.isLocked >
+               <img src="${url.context}/images/office/lock.gif" style="padding:3px 6px 2px 0px;" alt="Locked" />
+         <#elseif hasAspect(res, "cm:workingcopy") == 1>
+               <a href="#" onclick="OfficeMyTasks.runAction('${doc_actions}','checkin','${res.id}', '');"><img src="${url.context}/images/office/checkin.gif" style="padding:3px 6px 2px 0px;" alt="Check In" title="Check In" /></a>
+         <#else>
+               <a href="#" onclick="OfficeMyTasks.runAction('${doc_actions}','checkout','${res.id}', '');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="Check Out" title="Check Out" /></a>
+         </#if>
+               <a href="#" onclick="window.external.insertDocument('${relativePath}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="Insert File into Current Document" title="Insert File into Current Document" /></a>
+         <#if !res.name?ends_with(".pdf")>
+               <a href="#" onclick="OfficeMyTasks.runAction('${doc_actions}','makepdf','${res.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="Make PDF..." title="Make PDF" /></a>
+         </#if>
+            </td>
       <#else>
             <td width="16"><img src="${url.context}${res.icon16}" alt="${res.name}"></td>
             <td>

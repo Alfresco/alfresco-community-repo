@@ -228,6 +228,21 @@ var OfficeMyTasks =
       myAjax.request();
    },
    
+   /* AJAX call to perform server-side actions */
+   runAction: function(useTemplate, Action, Doc, Msg)
+   {
+      // Re-select a selected task after reload
+      var taskSel = $E('#taskList .taskItemSelected');
+      var extraParams = "";
+      if (taskSel != null)
+      {
+         var taskId = taskSel.id;
+         extraParams = "t=" + encodeURI(taskId);
+      }
+      
+      OfficeAddin.runAction(useTemplate, Action, Doc, Msg, extraParams);
+   },
+
    refreshPage: function()
    {
       // Remove any trailing hash

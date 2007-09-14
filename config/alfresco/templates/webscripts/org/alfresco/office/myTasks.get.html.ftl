@@ -120,9 +120,8 @@
             <div class="taskValue"><textarea id="wrkDescription" rows="4" style="height:54px;"></textarea></div>
             <div class="taskParam">&nbsp;</div>
             <div class="taskValue">
-               <a class="taskAction" href="#" onclick="OfficeMyTasks.startWorkflow('${url.serviceContext}/office/docActions', '${d.id}');">
-                  Submit
-               </a>
+               <a class="taskAction" href="#" onclick="OfficeMyTasks.startWorkflow('${url.serviceContext}/office/docActions', '${d.id}');">Submit</a>
+               <a class="taskAction" href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;e=${extn}&amp;n=${nav}">Cancel</a>
             </div>
 
          </div>

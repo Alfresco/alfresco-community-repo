@@ -91,7 +91,7 @@ var OfficeAddin =
    },
    
    /* AJAX call to perform server-side actions */
-   runAction: function(useTemplate, Action, Doc, Msg)
+   runAction: function(useTemplate, Action, Doc, Msg, extraParams)
    {
       if (Msg != "" && !confirm(Msg))
       {
@@ -114,6 +114,7 @@ var OfficeAddin =
             {
                href += (href.indexOf("?") == -1) ? "?" : "&";
                href += "st=" + encodeURI(textResponse);
+               href += "&" + extraParams;
             }
             window.location.href = href;
          }

@@ -200,8 +200,11 @@ public final class ResourceBundleWrapper extends ResourceBundle
           // Note: path here is XPath for selectNodes query
           path = PATH + "/cm:" + customName;
           InputStream is = messageService.getRepoResourceBundle(Repository.getStoreRef(), path, locale);
-          customBundle = new PropertyResourceBundle(is);
-          is.close();
+          if (is != null)
+          {
+              customBundle = new PropertyResourceBundle(is);
+              is.close();
+          }
       }
       catch (Throwable t)
       {

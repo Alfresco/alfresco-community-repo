@@ -2377,6 +2377,17 @@
    </managed-bean>
 
    <managed-bean>
+      <description>Backing bean used for the Tenant Admin Console</description>
+      <managed-bean-name>TenantAdminConsoleBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.repository.tenant.TenantAdminConsoleBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>tenantInterpreter</property-name>
+         <value>#{tenantInterpreter}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
       <description>
          The bean that backs up the Email Space Users Dialog
       </description>

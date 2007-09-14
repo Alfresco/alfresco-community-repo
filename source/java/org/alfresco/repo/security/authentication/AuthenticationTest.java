@@ -61,6 +61,7 @@ import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.simple.permission.AuthorityCapabilityRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
@@ -108,6 +109,8 @@ public class AuthenticationTest extends TestCase
 
     private AuthenticationComponent authenticationComponentImpl;
 
+    private AuthorityCapabilityRegistry authorityCapabilityRegistry;
+    
     public AuthenticationTest()
     {
         super();
@@ -131,6 +134,7 @@ public class AuthenticationTest extends TestCase
         pubAuthenticationService = (AuthenticationService) ctx.getBean("AuthenticationService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         authenticationComponentImpl = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        authorityCapabilityRegistry = (AuthorityCapabilityRegistry) ctx.getBean("authorityCapabilityRegistry");
         // permissionServiceSPI = (PermissionServiceSPI)
         // ctx.getBean("permissionService");
         ticketsCache = (SimpleCache<String, Ticket>) ctx.getBean("ticketsCache");
@@ -291,7 +295,7 @@ public class AuthenticationTest extends TestCase
         dao.setDictionaryService(dictionaryService);
         dao.setNamespaceService(getNamespacePrefixReolsver(""));
         dao.setPasswordEncoder(passwordEncoder);
-
+        dao.setAuthorityCapabilityRegistry(authorityCapabilityRegistry);
         dao.createUser("Andy", "cabbage".toCharArray());
         assertNotNull(dao.getUserOrNull("Andy"));
 

@@ -211,8 +211,9 @@ public class FileFolderRemoteLoader
     {
         ArrayList<AbstractLoaderThread> threads = new ArrayList<AbstractLoaderThread>(3);
         // Iterate over the properties and pick out the thread descriptors
-        for (String propertyName : properties.stringPropertyNames())
+        for (Object o : properties.keySet())
         {
+            String propertyName = (String)o;
             if (!propertyName.startsWith("test.load."))
             {
                 continue;

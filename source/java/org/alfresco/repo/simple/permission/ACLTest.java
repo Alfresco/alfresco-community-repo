@@ -25,13 +25,16 @@
 
 package org.alfresco.repo.simple.permission;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.simple.permission.ACL;
-import org.alfresco.service.simple.permission.CapabilityRegistry;
+import org.alfresco.service.simple.permission.AuthorityCapabilityRegistry;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import junit.framework.TestCase;
@@ -52,7 +55,7 @@ public class ACLTest extends TestCase
     
     private static AuthenticationComponent fAuthenticationComponent;
     
-    private static CapabilityRegistry fCapabilityRegistry;
+    private static AuthorityCapabilityRegistry fCapabilityRegistry;
     
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
@@ -67,7 +70,7 @@ public class ACLTest extends TestCase
             fAuthenticationService = (AuthenticationService)fContext.getBean("AuthenticationService");
             fAuthenticationComponent = (AuthenticationComponent)fContext.getBean("AuthenticationComponent");
             fAuthenticationComponent.setSystemUserAsCurrentUser();
-            fCapabilityRegistry = (CapabilityRegistry)fContext.getBean("capabilityRegistry");
+            fCapabilityRegistry = (AuthorityCapabilityRegistry)fContext.getBean("authorityCapabilityRegistry");
         }
         // Set up sample users groups and roles.
         fAuthenticationService.createAuthentication("Buffy", "Buffy".toCharArray());
@@ -114,7 +117,9 @@ public class ACLTest extends TestCase
     {
         try
         {
-            System.out.println(fCapabilityRegistry.getAll());
+            Set<String> allCaps = fCapabilityRegistry.getAllCapabilities();
+            System.out.println(allCaps);
+            System.out.println(fCapabilityRegistry.getAllAuthorities());
             ACL acl = new ACLImpl(true);
             acl.allow("read", "GROUP_Scoobies", "GROUP_vampires");
             acl.allow("write", "GROUP_Scoobies", "GROUP_vampires");
@@ -123,24 +128,40 @@ public class ACLTest extends TestCase
             acl.allow("shake", "GROUP_vampires", "Tara");
             acl.deny("delete", "Xander", "GROUP_soulless");
             acl.deny("shake", "Spike");
-            System.out.println(acl.getCapabilities("Spike", false));
-            System.out.println(acl.getCapabilities("Tara", false));
-            System.out.println(acl.getCapabilities("Xander", false));
-            System.out.println(acl.getCapabilities("Buffy", false));
+            checkEvaluation(allCaps, acl, "Spike");
+            checkEvaluation(allCaps, acl, "Tara");
+            checkEvaluation(allCaps, acl, "Xander");
+            checkEvaluation(allCaps, acl, "Buffy");
             String stringRep = acl.getStringRepresentation();
             System.out.println(stringRep);
             ACL acl2 = new ACLImpl(stringRep);
             System.out.println(acl2.getStringRepresentation());
-            System.out.println(acl2.getCapabilities("Spike", false));
-            System.out.println(acl2.getCapabilities("Tara", false));
-            System.out.println(acl2.getCapabilities("Xander", false));
-            System.out.println(acl2.getCapabilities("Buffy", false));
+            checkEvaluation(allCaps, acl2, "Spike");
+            checkEvaluation(allCaps, acl2, "Tara");
+            checkEvaluation(allCaps, acl2, "Xander");
+            checkEvaluation(allCaps, acl2, "Buffy");
             System.out.println(acl2.getStringRepresentation());
         }
         catch (Exception e)
         {
             e.printStackTrace();
             fail();
+        }
+    }
+
+    private void checkEvaluation(Set<String> allCaps, ACL acl, String authority)
+    {
+        Set<String> caps = acl.getCapabilities(authority, false);
+        System.out.println(caps);
+        for (String cap : caps)
+        {
+            assertTrue(acl.can(authority, false, cap));
+        }
+        Set<String> inverse = new HashSet<String>(allCaps);
+        inverse.removeAll(caps);
+        for (String cap : inverse)
+        {
+            assertFalse(acl.can(authority, false, cap));
         }
     }
 }

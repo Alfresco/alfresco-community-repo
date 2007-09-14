@@ -23,44 +23,25 @@
  * http://www.alfresco.com/legal/licensing
  */
 
-package org.alfresco.service.simple.permission;
+package org.alfresco.repo.simple.permission;
 
-import java.util.Set;
+import java.io.Serializable;
 
 /**
- * Interface for a registry of capabilities.
+ * Interface for a capability entry.
  * @author britt
  */
-public interface CapabilityRegistry
+public interface CapabilityEntry extends Serializable
 {
     /**
-     * Get all known capabilities.
-     * @return A list of all the capabilities.
-     */
-    public Set<String> getAll();
-    
-    /**
-     * Get the integer id corresponding to the given capability.
+     * Get the primary key.
      * @return The id.
      */
-    public int getCapabilityID(String capability);
+    public int getId();
     
     /**
-     * Get the name of a capability from it's unique id.
-     * @param id
-     * @return The capability name or null if the id is invalid.
+     * Get the name of the Capability.
+     * @return The name of the Capability.
      */
-    public String getCapabilityName(int id);
-    
-    /**
-     * Add a capability.
-     * @param capability
-     */
-    public void addCapability(String capability);
-    
-    /**
-     * Remove a capability from the system.
-     * @param capability
-     */
-    public void removeCapability(String capability);
+    public String getName();
 }

@@ -73,6 +73,9 @@
         <property name="userToAuthorityCache">
             <ref bean="userToAuthorityCache" />
         </property>
+        <property name="authorityCapabilityRegistry">
+        	<ref bean="authorityCapabilityRegistry"/>
+        </property>
     </bean>
     
 </beans>

@@ -10,7 +10,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.simple.permission.CapabilityRegistry;
+import org.alfresco.service.simple.permission.AuthorityCapabilityRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -68,7 +68,7 @@ public class RawServices implements ApplicationContextAware
     /**
      * The CapabilityRegistry.
      */
-    private CapabilityRegistry fCapabilityRegistry;
+    private AuthorityCapabilityRegistry fCapabilityRegistry;
     
     /**
      * Default constructor.
@@ -157,11 +157,11 @@ public class RawServices implements ApplicationContextAware
         return fAuthorityService;
     }
 
-    public CapabilityRegistry getCapabilityRegistry()
+    public AuthorityCapabilityRegistry getAuthorityCapabilityRegistry()
     {
         if (fCapabilityRegistry == null)
         {
-            fCapabilityRegistry = (CapabilityRegistry)fContext.getBean("capabilityRegistry");
+            fCapabilityRegistry = (AuthorityCapabilityRegistry)fContext.getBean("authorityCapabilityRegistry");
         }
         return fCapabilityRegistry;
     }

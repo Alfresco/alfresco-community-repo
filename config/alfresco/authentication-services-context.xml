@@ -96,6 +96,9 @@
        <property name="passwordEncoder">
            <ref bean="passwordEncoder" />
        </property>
+       <property name="authorityCapabilityRegistry">
+           <ref bean="authorityCapabilityRegistry"/>
+       </property>
     </bean>
 
     <!-- The DAO also acts as a salt provider.                              -->

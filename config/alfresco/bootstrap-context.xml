@@ -274,6 +274,13 @@
 		</property>
 	</bean>
 
+	<!-- Bootstrap for the authorityCapabilityRegistry -->    
+ 	<bean id="authorityCapabilityBootstrap" class="org.alfresco.repo.simple.permission.AuthorityCapabilityBootstrap">
+ 	    <property name="authorityCapabilityRegistry">
+ 	        <ref bean="authorityCapabilityRegistry"/>
+ 	    </property>
+ 	</bean>
+
     <!-- Bootstrap any extensions -->
     
     <import resource="classpath*:alfresco/extension/bootstrap/*-context.xml" />
@@ -300,7 +307,7 @@
            <ref bean="searchService"/>
        </property>
     </bean>
-    
+
     <!-- Perform index recovery before applying any patches -->
     <!-- rebuild the index if required - before we check that it is there -->
     

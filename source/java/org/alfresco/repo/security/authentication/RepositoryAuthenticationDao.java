@@ -53,6 +53,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.simple.permission.AuthorityCapabilityRegistry;
 import org.springframework.dao.DataAccessException;
 
 public class RepositoryAuthenticationDao implements MutableAuthenticationDao
@@ -70,6 +71,8 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     private SearchService searchService;
 
     private PasswordEncoder passwordEncoder;
+    
+    private AuthorityCapabilityRegistry authorityCapabilityRegistry;
 
     private boolean userNamesAreCaseSensitive;
 
@@ -111,6 +114,11 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
+    }
+    
+    public void setAuthorityCapabilityRegistry(AuthorityCapabilityRegistry registry)
+    {
+        this.authorityCapabilityRegistry = registry;
     }
 
     public UserDetails loadUserByUsername(String incomingUserName) throws UsernameNotFoundException,
@@ -244,7 +252,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         properties.put(ContentModel.PROP_ACCOUNT_LOCKED, Boolean.valueOf(false));
         nodeService.createNode(typesNode, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_USER, ContentModel.TYPE_USER,
                 properties);
-
+        authorityCapabilityRegistry.addAuthority(caseSensitiveUserName, null);
     }
 
     private NodeRef getUserFolderLocation(String caseSensitiveUserName)
@@ -304,6 +312,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
             throw new AuthenticationException("User name does not exist: " + userName);
         }
         nodeService.deleteNode(userRef);
+        authorityCapabilityRegistry.removeAuthority(userName);
     }
 
     public Object getSalt(UserDetails userDetails)

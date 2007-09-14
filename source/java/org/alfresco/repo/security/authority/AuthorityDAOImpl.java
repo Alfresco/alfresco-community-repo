@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.simple.permission.AuthorityCapabilityRegistry;
 import org.alfresco.util.ISO9075;
 
 public class AuthorityDAOImpl implements AuthorityDAO
@@ -70,6 +71,8 @@ public class AuthorityDAOImpl implements AuthorityDAO
     private DictionaryService dictionaryService;
 
     private SimpleCache<String, HashSet<String>> userToAuthorityCache;
+    
+    private AuthorityCapabilityRegistry authorityCapabilityRegistry;
 
     public AuthorityDAOImpl()
     {
@@ -103,6 +106,11 @@ public class AuthorityDAOImpl implements AuthorityDAO
         this.userToAuthorityCache = userToAuthorityCache;
     }
 
+    public void setAuthorityCapabilityRegistry(AuthorityCapabilityRegistry registry)
+    {
+        this.authorityCapabilityRegistry = registry;
+    }
+    
     public boolean authorityExists(String name)
     {
         NodeRef ref = getAuthorityOrNull(name);
@@ -142,7 +150,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
             throw new AlfrescoRuntimeException("Authorities of the type "
                     + AuthorityType.getAuthorityType(childName) + " may not be added to other authorities");
         }
-
+        authorityCapabilityRegistry.addAuthority(childName, parentName);
     }
 
     public void createAuthority(String parentName, String name)
@@ -165,6 +173,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
             nodeService.createNode(authorityContainerRef, ContentModel.ASSOC_CHILDREN, QName.createQName("usr", name,
                     namespacePrefixResolver), ContentModel.TYPE_AUTHORITY_CONTAINER, props);
         }
+        authorityCapabilityRegistry.addAuthority(name, parentName);   
     }
 
     public void deleteAuthority(String name)
@@ -176,6 +185,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
         }
         nodeService.deleteNode(nodeRef);
         userToAuthorityCache.clear();
+        authorityCapabilityRegistry.removeAuthority(name);
     }
 
     public Set<String> getAllRootAuthorities(AuthorityType type)
@@ -246,7 +256,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
             nodeService.removeChild(parentRef, childRef);
             userToAuthorityCache.clear();
         }
-
+        authorityCapabilityRegistry.removeAuthorityChild(parentName, childName);
     }
 
     public Set<String> getContainingAuthorities(AuthorityType type, String name, boolean immediate)

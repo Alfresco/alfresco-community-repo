@@ -31,10 +31,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.avm.util.RawServices;
-import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.simple.permission.ACL;
-import org.alfresco.service.simple.permission.CapabilityRegistry;
+import org.alfresco.service.simple.permission.AuthorityCapabilityRegistry;
 
 /**
  * Basic implementation of a simple ACL.
@@ -65,14 +64,9 @@ public class ACLImpl implements ACL
     private String fStringRep;
     
     /**
-     * Reference to the authority service.
-     */
-    private transient AuthorityService fAuthorityService;
-    
-    /**
      * Reference to the capability registry.
      */
-    private transient CapabilityRegistry fCapabilityRegistry;
+    private transient AuthorityCapabilityRegistry fCapabilityRegistry;
     
     /**
      * Initialize a brand new one.
@@ -81,8 +75,7 @@ public class ACLImpl implements ACL
     public ACLImpl(boolean inherit)
     {
         fInherit = inherit;
-        fAuthorityService = RawServices.Instance().getAuthorityService();
-        fCapabilityRegistry = RawServices.Instance().getCapabilityRegistry();
+        fCapabilityRegistry = RawServices.Instance().getAuthorityCapabilityRegistry();
         fAllowed = new HashMap<String, Set<String>>();
         fDenied = new HashMap<String, Set<String>>();
         fStringRep = null;
@@ -164,12 +157,21 @@ public class ACLImpl implements ACL
         for (String entryRep : segments)
         {
             String[] entryRegs = entryRep.split(";");
-            String capability = fCapabilityRegistry.getCapabilityName(Integer.parseInt(entryRegs[0], 16));
+            String capability = fCapabilityRegistry.getCapabilityName(Integer.parseInt(entryRegs[0], 32));
+            if (capability == null)
+            {
+                continue;
+            }
             Set<String> authorities = new HashSet<String>();
             map.put(capability, authorities);
             for (int i = 1; i < entryRegs.length; ++i)
             {
-                authorities.add(entryRegs[i]);
+                String authority = fCapabilityRegistry.getAuthorityName(Integer.parseInt(entryRegs[i], 32));
+                if (authority == null)
+                {
+                    continue;
+                }
+                authorities.add(authority);
             }
         }
     }
@@ -196,7 +198,7 @@ public class ACLImpl implements ACL
             }
             for (String auth : denied)
             {
-                if (fAuthorityService.getContainedAuthorities(null, auth, false).contains(authority))
+                if (fCapabilityRegistry.getContainedAuthorities(auth).contains(authority))
                 {
                     return false;
                 }
@@ -212,7 +214,7 @@ public class ACLImpl implements ACL
             }
             for (String auth : allowed)
             {
-                if (fAuthorityService.getContainedAuthorities(null, auth, false).contains(authority))
+                if (fCapabilityRegistry.getContainedAuthorities(auth).contains(authority))
                 {
                     return true;
                 }
@@ -270,7 +272,7 @@ public class ACLImpl implements ACL
         allowed.addAll(expAllowed);
         for (String authority : expAllowed)
         {
-            allowed.addAll(fAuthorityService.getContainedAuthorities(null, authority, false));
+            allowed.addAll(fCapabilityRegistry.getContainedAuthorities(authority));
         }
         // Now remove based on denials.
         Set<String> denied = fDenied.get(capability);
@@ -282,7 +284,7 @@ public class ACLImpl implements ACL
         // Now those that are indirectly denied.
         for (String authority : denied)
         {
-            allowed.removeAll(fAuthorityService.getContainedAuthorities(null, authority, false));
+            allowed.removeAll(fCapabilityRegistry.getContainedAuthorities(authority));
         }
         return allowed;
     }
@@ -296,7 +298,7 @@ public class ACLImpl implements ACL
         AuthorityType type = AuthorityType.getAuthorityType(authority);
         if (type == AuthorityType.ADMIN)
         {
-            return fCapabilityRegistry.getAll();
+            return fCapabilityRegistry.getAllCapabilities();
         }
         Set<String> capabilities = new HashSet<String>();
         // First run through the allowed entries.
@@ -310,7 +312,7 @@ public class ACLImpl implements ACL
             }
             if (containers == null)
             {
-                containers = fAuthorityService.getContainingAuthorities(null, authority, false);
+                containers = fCapabilityRegistry.getContainerAuthorities(authority);
             }
             for (String auth : containers)
             {
@@ -336,7 +338,7 @@ public class ACLImpl implements ACL
             }
             if (containers == null)
             {
-                containers = fAuthorityService.getContainingAuthorities(null, authority, false);
+                containers = fCapabilityRegistry.getContainerAuthorities(authority);
             }
             for (String auth : containers)
             {
@@ -365,11 +367,11 @@ public class ACLImpl implements ACL
         int count = 0;
         for (Map.Entry<String, Set<String>> entry : fAllowed.entrySet())
         {
-            builder.append(Integer.toString(fCapabilityRegistry.getCapabilityID(entry.getKey()), 16));
+            builder.append(Integer.toString(fCapabilityRegistry.getCapabilityID(entry.getKey()), 32));
             for (String authority : entry.getValue())
             {
                 builder.append(';');
-                builder.append(authority);
+                builder.append(Integer.toString(fCapabilityRegistry.getAuthorityID(authority), 32));
             }
             if (count++ < fAllowed.size() - 1)
             {
@@ -380,11 +382,11 @@ public class ACLImpl implements ACL
         count = 0;
         for (Map.Entry<String, Set<String>> entry : fDenied.entrySet())
         {
-            builder.append(Integer.toString(fCapabilityRegistry.getCapabilityID(entry.getKey()), 16));
+            builder.append(Integer.toString(fCapabilityRegistry.getCapabilityID(entry.getKey()), 32));
             for (String authority : entry.getValue())
             {
                 builder.append(';');
-                builder.append(authority);
+                builder.append(Integer.toString(fCapabilityRegistry.getAuthorityID(authority), 32));
             }
             if (count++ < fDenied.size() - 1)
             {

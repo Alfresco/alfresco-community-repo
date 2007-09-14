@@ -1,7 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd" >
 <beans>
-    <bean id="capabilityRegistry" class="org.alfresco.repo.simple.permission.CapabilityRegistryImpl">
+
+	<bean id="authorityEntryDAO" class="org.alfresco.repo.simple.permission.AuthorityEntryDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+
+	<bean id="capabilityEntryDAO" class="org.alfresco.repo.simple.permission.CapabilityEntryDAOHibernate">
+	    <property name="sessionFactory">
+	        <ref bean="sessionFactory"/>
+	    </property>
+	</bean>
+
+    <bean id="authorityCapabilityRegistry" class="org.alfresco.repo.simple.permission.AuthorityCapabilityRegistryImpl">
+    	<property name="authorityEntryDAO">
+    		<ref bean="authorityEntryDAO"/>
+    	</property>
+    	<property name="capabilityEntryDAO">
+    		<ref bean="capabilityEntryDAO"/>
+    	</property>
         <property name="capabilities">
             <set>
                 <value>read</value>
@@ -11,5 +30,12 @@
                 <value>shake</value>
             </set>
         </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="retryingTransactionHelper"/>
+        </property>
+        <property name="authorityService">
+            <ref bean="authorityService"/>
+        </property>
     </bean>
+    
 </beans>

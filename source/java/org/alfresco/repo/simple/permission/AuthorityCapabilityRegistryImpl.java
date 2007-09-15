@@ -36,6 +36,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.simple.permission.AuthorityCapabilityRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -124,11 +125,13 @@ public class AuthorityCapabilityRegistryImpl implements
         List<CapabilityEntry> entries = fCapabilityEntryDAO.getAll();
         for (CapabilityEntry entry : entries)
         {
-            fCapabilityToID.put(entry.getName(), entry.getId());
-            fIDToCapability.put(entry.getId(), entry.getName());
+            String capability = entry.getName().toLowerCase();
+            fCapabilityToID.put(capability, entry.getId());
+            fIDToCapability.put(entry.getId(), capability);
         }
         for (String entry : fInitialCapabilities)
         {
+            entry = entry.toLowerCase();
             if (!fCapabilityToID.containsKey(entry))
             {
                 CapabilityEntry newEntry = new CapabilityEntryImpl(entry);
@@ -140,13 +143,13 @@ public class AuthorityCapabilityRegistryImpl implements
         List<AuthorityEntry> authorities = fAuthorityEntryDAO.get();
         for (AuthorityEntry entry : authorities)
         {
-            String name = entry.getName();
+            String name = normalizeAuthority(entry.getName());
             Integer id = entry.getId();
             fAuthorityToID.put(name, id);
             fIDToAuthority.put(id, name);
             for (AuthorityEntry child : entry.getChildren())
             {
-                String childName = child.getName();
+                String childName = normalizeAuthority(child.getName());
                 Set<String> children = fAuthorityToChild.get(name);
                 if (children == null)
                 {
@@ -170,6 +173,7 @@ public class AuthorityCapabilityRegistryImpl implements
             Set<String> auths = fAuthorityService.getAllAuthorities(type);
             for (String auth : auths)
             {
+                auth = normalizeAuthority(auth);
                 if (fAuthorityToID.containsKey(auth))
                 {
                     continue;
@@ -191,6 +195,7 @@ public class AuthorityCapabilityRegistryImpl implements
                 {
                     continue;
                 }
+                auth = normalizeAuthority(auth);
                 Set<String> children = fAuthorityService.getContainedAuthorities(null, auth, true);
                 Set<String> found = fAuthorityToChild.get(auth);
                 if (found == null)
@@ -201,6 +206,7 @@ public class AuthorityCapabilityRegistryImpl implements
                 AuthorityEntry entry = fAuthorityEntryDAO.get(fAuthorityToID.get(auth));
                 for (String child : children)
                 {
+                    child = normalizeAuthority(child);
                     if (found.contains(child))
                     {
                         continue;
@@ -225,6 +231,8 @@ public class AuthorityCapabilityRegistryImpl implements
      */
     public synchronized void addAuthority(String authority, String parent)
     {
+        authority = normalizeAuthority(authority);
+        parent = normalizeAuthority(parent);
         AlfrescoTransactionSupport.bindListener(this);
         AuthorityEntry entry = null;
         if (!fAuthorityToID.containsKey(authority))
@@ -271,11 +279,56 @@ public class AuthorityCapabilityRegistryImpl implements
         }
     }
 
+    /**
+     * Get case normalized authority.
+     */
+    public String normalizeAuthority(String authority)
+    {
+        if (authority == null)
+        {
+            return null;
+        }
+        AuthorityType type = AuthorityType.getAuthorityType(authority);
+        switch (type)
+        {
+            case ADMIN :
+            {
+                return authority;
+            }
+            case EVERYONE :
+            {
+                return PermissionService.ALL_AUTHORITIES;   
+            }
+            case GROUP :
+            {
+                return PermissionService.GROUP_PREFIX + authority.substring(PermissionService.GROUP_PREFIX.length()).toLowerCase();
+            }
+            case USER :
+            case GUEST :
+            {
+                return authority.toLowerCase();
+            }
+            case OWNER :
+            {
+                return PermissionService.OWNER_AUTHORITY;
+            }
+            case ROLE :
+            {
+                return PermissionService.ROLE_PREFIX + authority.substring(PermissionService.ROLE_PREFIX.length()).toLowerCase();
+            }
+            default :
+            {
+                return null;
+            }
+        }
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.service.simple.permission.AuthorityCapabilityRegistry#removeAuthority(java.lang.String)
      */
     public synchronized void removeAuthority(String authority)
     {
+        authority = normalizeAuthority(authority);
         AlfrescoTransactionSupport.bindListener(this);
         Integer id = fAuthorityToID.get(authority);
         if (id == null)
@@ -312,6 +365,8 @@ public class AuthorityCapabilityRegistryImpl implements
      */
     public synchronized void removeAuthorityChild(String parent, String child)
     {
+        parent = normalizeAuthority(parent);
+        child = normalizeAuthority(child);
         AlfrescoTransactionSupport.bindListener(this);
         Integer id = fAuthorityToID.get(child);
         if (id == null)
@@ -335,6 +390,7 @@ public class AuthorityCapabilityRegistryImpl implements
      */
     public synchronized void addCapability(String capability)
     {
+        capability = capability.toLowerCase();
         AlfrescoTransactionSupport.bindListener(this);
         CapabilityEntry entry = fCapabilityEntryDAO.get(capability);
         if (entry != null)
@@ -369,6 +425,7 @@ public class AuthorityCapabilityRegistryImpl implements
      */
     public synchronized int getAuthorityID(String authority)
     {
+        authority = normalizeAuthority(authority);
         Integer id = fAuthorityToID.get(authority);
         if (id == null)
         {
@@ -390,6 +447,7 @@ public class AuthorityCapabilityRegistryImpl implements
      */
     public synchronized int getCapabilityID(String capability)
     {
+        capability = capability.toLowerCase();
         Integer id = fCapabilityToID.get(capability);
         if (id == null)
         {
@@ -411,6 +469,7 @@ public class AuthorityCapabilityRegistryImpl implements
      */
     public synchronized Set<String> getContainedAuthorities(String authority)
     {
+        authority = normalizeAuthority(authority);
         Set<String> contained = new HashSet<String>();
         contained.add(authority);
         int count = 1;
@@ -439,6 +498,7 @@ public class AuthorityCapabilityRegistryImpl implements
      */
     public Set<String> getContainerAuthorities(String authority)
     {
+        authority = normalizeAuthority(authority);
         Set<String> containers = new HashSet<String>();
         containers.add(authority);
         int count = 1;

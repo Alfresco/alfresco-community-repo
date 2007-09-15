@@ -25,8 +25,10 @@
 
 package org.alfresco.repo.simple.permission;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -102,12 +104,18 @@ public class ACLImpl implements ACL
      */
     public void allow(String capability, String... authorities)
     {
+        capability = capability.toLowerCase();
+        List<String> auths = new ArrayList<String>();
+        for (String auth : authorities)
+        {
+            auths.add(fCapabilityRegistry.normalizeAuthority(auth));
+        }
         digest();
         // First remove any explicit denies.
         Set<String> denied = fDenied.get(capability);
         if (denied != null)
         {
-            for (String authority : authorities)
+            for (String authority : auths)
             {
                 denied.remove(authority);
             }
@@ -119,7 +127,7 @@ public class ACLImpl implements ACL
             allowed = new HashSet<String>();
             fAllowed.put(capability, allowed);
         }
-        for (String authority : authorities)
+        for (String authority : auths)
         {
             allowed.add(authority);
         }
@@ -181,6 +189,8 @@ public class ACLImpl implements ACL
      */
     public boolean can(String authority, boolean isOwner, String capability)
     {
+        authority = fCapabilityRegistry.normalizeAuthority(authority);
+        capability = capability.toLowerCase();
         digest();
         AuthorityType type = AuthorityType.getAuthorityType(authority);
         // Admin trumps.
@@ -228,12 +238,18 @@ public class ACLImpl implements ACL
      */
     public void deny(String capability, String ... authorities)
     {
+        capability = capability.toLowerCase();
+        List<String> auths = new ArrayList<String>();
+        for (String auth : authorities)
+        {
+            auths.add(fCapabilityRegistry.normalizeAuthority(auth));
+        }
         digest();
         // Remove corresponding explicit allows.
         Set<String> allowed = fAllowed.get(capability);
         if (allowed != null)
         {
-            for (String authority : authorities)
+            for (String authority : auths)
             {
                 allowed.remove(authority);
             }
@@ -245,7 +261,7 @@ public class ACLImpl implements ACL
             denied = new HashSet<String>();
             fDenied.put(capability, denied);
         }
-        for (String authority : authorities)
+        for (String authority : auths)
         {
             if (AuthorityType.getAuthorityType(authority) == AuthorityType.ADMIN)
             {
@@ -260,6 +276,7 @@ public class ACLImpl implements ACL
      */
     public Set<String> getAllowed(String capability)
     {
+        capability = capability.toLowerCase();
         digest();
         Set<String> allowed = new HashSet<String>();
         allowed.add(AuthorityType.ADMIN.getFixedString());
@@ -294,6 +311,7 @@ public class ACLImpl implements ACL
      */
     public Set<String> getCapabilities(String authority, boolean isOwner)
     {
+        authority = fCapabilityRegistry.normalizeAuthority(authority);
         digest();
         AuthorityType type = AuthorityType.getAuthorityType(authority);
         if (type == AuthorityType.ADMIN)

@@ -111,4 +111,11 @@ public interface AuthorityCapabilityRegistry
      * @return The container authorities.
      */
     public Set<String> getContainerAuthorities(String authority);
+    
+    /**
+     * Get the case normalized version of authority.
+     * @param authority The authority.
+     * @return The case normalized version.
+     */
+    public String normalizeAuthority(String authority);
 }

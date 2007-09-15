@@ -46,7 +46,12 @@ public abstract class AbstractLoaderThread extends Thread
     protected final int testLoadDepth;
     
     private AtomicBoolean mustStop;
-    Random random;
+    private Random random;
+
+    // Statistics
+    private int statCount;
+    private double statTotalMs;
+    private double statAverageMs;
     
     public AbstractLoaderThread(
             LoaderSession session,
@@ -65,6 +70,10 @@ public abstract class AbstractLoaderThread extends Thread
         
         this.mustStop = new AtomicBoolean(false);
         this.random = new Random();
+        
+        this.statCount = 0;
+        this.statTotalMs = 0.0D;
+        this.statAverageMs = 0.0D;
     }
 
     /**
@@ -95,11 +104,15 @@ public abstract class AbstractLoaderThread extends Thread
                 int nodeIndex = random.nextInt(nodeCount);
                 NodeRef workingRootNodeRef = session.getWorkingRootNodeRefs().get(nodeIndex);
                 
-                long startTime = System.currentTimeMillis();
+                long startTime = System.nanoTime();
                 String msg = doLoading(serverProxy, workingRootNodeRef);
-                long endTime = System.currentTimeMillis();
+                long endTime = System.nanoTime();
+                
+                // Record stats
+                updateStats(startTime, endTime);
                 
                 // Dump the specifics of the load
+                logVerbose(startTime, endTime, msg);
                 
                 // Have we done this enough?
                 testCount++;
@@ -126,9 +139,25 @@ public abstract class AbstractLoaderThread extends Thread
         }
     }
     
-    private void dumpLoadSpecifics(long startTime, long endTime, String msg)
+    private synchronized void updateStats(long startTime, long endTime)
     {
+        statCount++;
+        // Calculate the delta in milliseconds
+        double delta = ((double)(endTime - startTime) / 1000.0);
+        // Now recalculate the average
+        statTotalMs += delta;
+        statAverageMs = (statTotalMs / (double)statCount);
+    }
+    
+    private void logVerbose(long startTime, long endTime, String msg)
+    {
+        double delta = ((double)(endTime - startTime) / 1000.0);
         
+        StringBuilder sb = new StringBuilder();
+        sb.append(loaderName).append(", ")
+          .append(String.format("%5.1d", (int)delta)).append(", ")
+          .append(msg);
+        session.logVerbose(sb.toString());
     }
     
     /**

@@ -309,7 +309,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
     	if (models == null)
     	{
     		models = new ArrayList<CompiledModel>();
-    		getUriToModels().put(uri, models);
+    		getUriToModels(tenantDomain).put(uri, models);
     	}
     	if (!models.contains(model))
     	{
@@ -384,7 +384,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
             return models;
         }
 
-        List<CompiledModel> models = getUriToModels().get(uri);
+        List<CompiledModel> models = getUriToModels("").get(uri);
         if (models == null)
         {
             models = Collections.emptyList(); 
@@ -849,16 +849,6 @@ public class DictionaryDAOImpl implements DictionaryDAO
         {
             writeLock.unlock();
         }        
-    }
-    
-    /**
-     * Get uriToModels from the cache (in the context of the current user's tenant domain)
-     * 
-     * @param tenantDomain
-     */
-    private Map<String, List<CompiledModel>> getUriToModels()
-    {
-        return getUriToModels(tenantService.getCurrentUserDomain());
     }
 
     /**

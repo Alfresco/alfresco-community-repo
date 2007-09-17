@@ -60,6 +60,8 @@ public class AlfrescoNavigationHandler extends NavigationHandler
    public final static String WIZARD_PREFIX = "wizard" + OUTCOME_SEPARATOR;
    public final static String CLOSE_DIALOG_OUTCOME = DIALOG_PREFIX + "close";
    public final static String CLOSE_WIZARD_OUTCOME = WIZARD_PREFIX + "close";
+   public final static String CLOSE_MULTIPLE_START = "[";
+   public final static String CLOSE_MULTIPLE_END = "]";
    public final static String EXTERNAL_CONTAINER_SESSION = "externalDialogContainer";
    
    protected String dialogContainer = null;
@@ -197,6 +199,35 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       }
       
       return closing;
+   }
+   
+   protected int getNumberToClose(String outcome)
+   {
+      int toClose = 1;
+      
+      int idxStart = outcome.indexOf(CLOSE_MULTIPLE_START);
+      if (outcome != null && idxStart != -1)
+      {
+         int idxEnd = outcome.indexOf(CLOSE_MULTIPLE_END);
+         if (idxEnd != -1)
+         {
+            String closeNum = outcome.substring(idxStart+1, idxEnd);
+            try
+            {
+               toClose = Integer.parseInt(closeNum);
+            }
+            catch (NumberFormatException nfe)
+            {
+               if (logger.isWarnEnabled())
+                  logger.warn("Could not determine number of containers to close, defaulting to 1");
+            }
+         }
+         
+         if (logger.isDebugEnabled())
+            logger.debug("Closing " + toClose + " levels of container");
+      }
+      
+      return toClose;
    }
    
    /**
@@ -670,21 +701,48 @@ public class AlfrescoNavigationHandler extends NavigationHandler
          {
             // there isn't an overidden outcome so go back to the previous view
             if (logger.isDebugEnabled())
-               logger.debug("Closing " + closingItem + ", going back to previous page");
+               logger.debug("Closing " + closingItem);
+
+            // determine how many levels of dialog we need to close
+            int numberToClose = getNumberToClose(outcome);
             
-            // if the top of the stack is not a dialog or wizard just get the
-            // view id and navigate back to it.
+            Object stackObject = null;
+            if (numberToClose == 1)
+            {
+               // just closing one dialog so get the item from the top of the stack
+               stackObject = getViewStack(context).pop();
+               
+               if (logger.isDebugEnabled())
+                  logger.debug("Popped item from the top of the view stack: " + stackObject);
+            }
+            else
+            {
+               // check there are enough items on the stack, if there
+               // isn't just get the last one (effectively going back
+               // to the beginning)
+               Stack viewStack = getViewStack(context);
+               int itemsOnStack = viewStack.size();
+               if (itemsOnStack < numberToClose)
+               {
+                  if (logger.isDebugEnabled())
+                     logger.debug("Returning to first item on the view stack as there aren't " +
+                              numberToClose + " containers to close!");
+                  
+                  numberToClose = itemsOnStack;
+               }
+               
+               // pop the right object from the stack
+               for (int x = 1; x <= numberToClose; x++)
+               {
+                  stackObject = viewStack.pop();
+               }
+               
+               if (logger.isDebugEnabled())
+                  logger.debug("Popped item from the stack: " + stackObject);
+            }
             
-            // if the top of the stack is a dialog or wizard retrieve the state
-            // and setup the appropriate manager with that state, then get the
-            // appropriate container page and navigate to it.
-            
-            Object topOfStack = getViewStack(context).pop();
-            
-            if (logger.isDebugEnabled())
-               logger.debug("Popped item from the top of the view stack: " + topOfStack);
-            
-            String newViewId = getViewIdFromStackObject(context, topOfStack);
+            // get the appropriate view id for the stack object
+            String newViewId = getViewIdFromStackObject(context, stackObject);
             
             // go to the appropraite page
             goToView(context, newViewId);
@@ -747,6 +805,13 @@ public class AlfrescoNavigationHandler extends NavigationHandler
    protected String getViewIdFromStackObject(FacesContext context, Object topOfStack)
    {
       String viewId = null;
+      
+      // if the top of the stack is not a dialog or wizard just get the
+      // view id and navigate back to it.
+      
+      // if the top of the stack is a dialog or wizard retrieve the state
+      // and setup the appropriate manager with that state, then get the
+      // appropriate container page and navigate to it.
       
       if (topOfStack instanceof String)
       {

@@ -47,44 +47,35 @@ public interface RepoAdminService
     //
 
     /**
-     * Get list of deployed custom models 
-     * 
-     * - those that are runtime/repo managed only
+     * Get list of deployed custom model.
      */  
     @Auditable
     public List<RepoModelDefinition> getModels();
 
     /**
-     * Deploy custom model
-     * 
-     * - allows creation of new models
-     * - allows update of existing models (*)
-     * 
-     * (*) TODO - currently no validation (or locking) so can break existing usages
+     * Deploy custom model (to the 'Models' space). 
+     * Allows creation of new models and incremental update of existing models.
      * 
      */
     @Auditable(parameters = {"modelStream, modelFileName"})
     public void deployModel(InputStream modelStream, String modelFileName);
 
     /**
-     * Undeploy custom model
-     * 
-     * - allows delete of existing models (*)
-     * - permanently removes definition from repository (all versions)
-     * 
-     * (*) TODO - currently no validation (or locking) so can break existing usages
+     * Undeploy custom model (from the 'Models' space). 
+     * Allows delete of existing models, if not used. 
+     * Permanently removes the model definition from the repository (all versions).
      */
     @Auditable(parameters = {"modelFileName"})
     public QName undeployModel(String modelFileName);
 
     /**
-     * Activate custom model
+     * Activate custom model.
      */
     @Auditable(parameters = {"modelFileName"})
     public QName activateModel(String modelFileName);
     
     /**
-     * Deactivate custom model
+     * Deactivate custom model.
      */
     @Auditable(parameters = {"modelFileName"})
     public QName deactivateModel(String modelFileName);
@@ -94,28 +85,26 @@ public interface RepoAdminService
     //
 
     /**
-     * Get deployed custom messages resource bundles
-     * 
-     * - those that are runtime/repo managed only
+     * Get deployed custom messages resource bundles.
      */
     @Auditable
     public List<String> getMessageBundles();
 
     /**
-     * Deploy custom message resource bundle
+     * Deploy custom message resource bundle (to the 'Messages' space).
      * 
      */
     @Auditable(parameters = {"resourceClasspath"})
     public String deployMessageBundle(String resourceClasspath);
 
     /**
-     * Undeploy custom message resource bundle
+     * Undeploy custom message resource bundle (from the 'Messages' space).
      */
     @Auditable(parameters = {"bundleBaseName"})
     public void undeployMessageBundle(String bundleBaseName);
  
     /**
-     * Reload custom message resource bundle
+     * Reload custom message resource bundle.
      */
     @Auditable(parameters = {"bundleBaseName"})
     public void reloadMessageBundle(String bundleBaseName);

@@ -397,7 +397,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
      * @param modelName  the model name
      * @return the compiled model of the given name
      */
-    private CompiledModel getCompiledModel(QName modelName)
+    /* package */ CompiledModel getCompiledModel(QName modelName)
     {
         String tenantDomain = tenantService.getCurrentUserDomain();
         if (tenantDomain != "")
@@ -773,7 +773,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
      * 
      * @param tenantDomain
      */
-    /* package */ Map<QName,CompiledModel> getCompiledModels(String tenantDomain)
+    private Map<QName,CompiledModel> getCompiledModels(String tenantDomain)
     {
         Map<QName,CompiledModel> compiledModels = null;
         try 
@@ -948,7 +948,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
         CompiledModel compiledModel = model.compile(this, namespaceDAO);
         QName modelName = compiledModel.getModelDefinition().getName();
         
-        CompiledModel previousVersion = getCompiledModels(tenantService.getCurrentUserDomain()).get(modelName);
+        CompiledModel previousVersion = getCompiledModel(modelName);
         if (previousVersion == null)
         {
             return new ArrayList<M2ModelDiff>(0);

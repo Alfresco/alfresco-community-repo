@@ -806,7 +806,7 @@ public class DiffModelTest extends TestCase
         M2Model model = M2Model.createModel(byteArrayInputStream);
         QName modelName = dictionaryDAO.putModel(model);
         
-        CompiledModel previousVersion = dictionaryDAO.getCompiledModels("").get(modelName);
+        CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, null);
         
@@ -839,7 +839,7 @@ public class DiffModelTest extends TestCase
         M2Model model = M2Model.createModel(byteArrayInputStream);
         QName modelName = dictionaryDAO.putModel(model);
         
-        CompiledModel compiledModel = dictionaryDAO.getCompiledModels("").get(modelName);
+        CompiledModel compiledModel = dictionaryDAO.getCompiledModel(modelName);
         
         try
         {
@@ -859,7 +859,7 @@ public class DiffModelTest extends TestCase
         M2Model model = M2Model.createModel(byteArrayInputStream);
         QName modelName = dictionaryDAO.putModel(model);
         
-        CompiledModel newVersion = dictionaryDAO.getCompiledModels("").get(modelName);
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(null, newVersion);
         
@@ -879,12 +879,12 @@ public class DiffModelTest extends TestCase
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(MODEL1_XML.getBytes());
         M2Model model = M2Model.createModel(byteArrayInputStream);
         QName modelName = dictionaryDAO.putModel(model);  
-        CompiledModel previousVersion = dictionaryDAO.getCompiledModels("").get(modelName);
+        CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
         
         byteArrayInputStream = new ByteArrayInputStream(MODEL1_UPDATE1_XML.getBytes());
         model = M2Model.createModel(byteArrayInputStream);
         modelName = dictionaryDAO.putModel(model);
-        CompiledModel newVersion = dictionaryDAO.getCompiledModels("").get(modelName);       
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);       
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
         
@@ -911,12 +911,12 @@ public class DiffModelTest extends TestCase
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(MODEL2_XML.getBytes());
         M2Model model = M2Model.createModel(byteArrayInputStream);
         QName modelName = dictionaryDAO.putModel(model);  
-        CompiledModel previousVersion = dictionaryDAO.getCompiledModels("").get(modelName);
+        CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
         
         byteArrayInputStream = new ByteArrayInputStream(MODEL2_EXTRA_PROPERTIES_XML.getBytes());
         model = M2Model.createModel(byteArrayInputStream);
         modelName = dictionaryDAO.putModel(model);
-        CompiledModel newVersion = dictionaryDAO.getCompiledModels("").get(modelName);       
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);       
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
         
@@ -936,12 +936,12 @@ public class DiffModelTest extends TestCase
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(MODEL3_XML.getBytes());
         M2Model model = M2Model.createModel(byteArrayInputStream);
         QName modelName = dictionaryDAO.putModel(model);  
-        CompiledModel previousVersion = dictionaryDAO.getCompiledModels("").get(modelName);
+        CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
         
         byteArrayInputStream = new ByteArrayInputStream(MODEL3_EXTRA_TYPES_AND_ASPECTS_XML.getBytes());
         model = M2Model.createModel(byteArrayInputStream);
         modelName = dictionaryDAO.putModel(model);
-        CompiledModel newVersion = dictionaryDAO.getCompiledModels("").get(modelName);       
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);       
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
         
@@ -964,12 +964,12 @@ public class DiffModelTest extends TestCase
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(MODEL5_XML.getBytes());
         M2Model model = M2Model.createModel(byteArrayInputStream);
         QName modelName = dictionaryDAO.putModel(model);  
-        CompiledModel previousVersion = dictionaryDAO.getCompiledModels("").get(modelName);
+        CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
         
         byteArrayInputStream = new ByteArrayInputStream(MODEL5_EXTRA_ASSOCIATIONS_XML.getBytes());
         model = M2Model.createModel(byteArrayInputStream);
         modelName = dictionaryDAO.putModel(model);
-        CompiledModel newVersion = dictionaryDAO.getCompiledModels("").get(modelName);       
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);       
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
         
@@ -993,12 +993,12 @@ public class DiffModelTest extends TestCase
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(MODEL2_EXTRA_PROPERTIES_XML.getBytes());
         M2Model model = M2Model.createModel(byteArrayInputStream);
         QName modelName = dictionaryDAO.putModel(model);  
-        CompiledModel previousVersion = dictionaryDAO.getCompiledModels("").get(modelName);
+        CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
         
         byteArrayInputStream = new ByteArrayInputStream(MODEL2_XML.getBytes());
         model = M2Model.createModel(byteArrayInputStream);
         modelName = dictionaryDAO.putModel(model);
-        CompiledModel newVersion = dictionaryDAO.getCompiledModels("").get(modelName);       
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);       
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
         
@@ -1018,12 +1018,12 @@ public class DiffModelTest extends TestCase
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(MODEL3_EXTRA_TYPES_AND_ASPECTS_XML.getBytes());
         M2Model model = M2Model.createModel(byteArrayInputStream);
         QName modelName = dictionaryDAO.putModel(model);  
-        CompiledModel previousVersion = dictionaryDAO.getCompiledModels("").get(modelName);
+        CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
         
         byteArrayInputStream = new ByteArrayInputStream(MODEL3_XML.getBytes());
         model = M2Model.createModel(byteArrayInputStream);
         modelName = dictionaryDAO.putModel(model);
-        CompiledModel newVersion = dictionaryDAO.getCompiledModels("").get(modelName);       
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);       
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
         
@@ -1046,12 +1046,12 @@ public class DiffModelTest extends TestCase
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(MODEL4_XML.getBytes());
         M2Model model = M2Model.createModel(byteArrayInputStream);
         QName modelName = dictionaryDAO.putModel(model);  
-        CompiledModel previousVersion = dictionaryDAO.getCompiledModels("").get(modelName);
+        CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
         
         byteArrayInputStream = new ByteArrayInputStream(MODEL4_EXTRA_DEFAULT_ASPECT_XML.getBytes());
         model = M2Model.createModel(byteArrayInputStream);
         modelName = dictionaryDAO.putModel(model);
-        CompiledModel newVersion = dictionaryDAO.getCompiledModels("").get(modelName);       
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);       
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
         
@@ -1071,12 +1071,12 @@ public class DiffModelTest extends TestCase
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(MODEL5_EXTRA_ASSOCIATIONS_XML.getBytes());
         M2Model model = M2Model.createModel(byteArrayInputStream);
         QName modelName = dictionaryDAO.putModel(model);  
-        CompiledModel previousVersion = dictionaryDAO.getCompiledModels("").get(modelName);
+        CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
         
         byteArrayInputStream = new ByteArrayInputStream(MODEL5_XML.getBytes());
         model = M2Model.createModel(byteArrayInputStream);
         modelName = dictionaryDAO.putModel(model);
-        CompiledModel newVersion = dictionaryDAO.getCompiledModels("").get(modelName);       
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);       
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
         

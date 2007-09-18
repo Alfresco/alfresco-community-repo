@@ -33,13 +33,15 @@ ok> show tenant <tenant domain>
 ok> create <tenant domain> <tenant admin password> [<root contentstore dir>]
 
     Create tenant. By default the tenant will be enabled. It will have an admin
-    user called "admin@<tenant domain>" with supplied admin password. The root
-    of the contentstore directory can be optionally specified, otherwise it
-    will default to the repository default root contentstore (as specified by
+    user called "admin@<tenant domain>" with supplied admin password. All users
+    that the admin creates, will login using "<username>@<tenant domain>". 
+    The root of the contentstore directory can be optionally specified, otherwise 
+    it will default to the repository default root contentstore (as specified by 
     the dir.contentstore property). The default workflows will also be bootstrapped.
     
-    Examples:  create xxx.com h3ll0
-               create yyy.zzz.com g00dby3 C:/tenantstores/yyy.zzz
+    Examples:  create zzz.com l3tm31n /usr/tenantstores/zzz
+               create yyy.zzz.com g00dby3 /usr/tenantstores/yyy.zzz
+               create myorg h3ll0
                
 ok> createWithoutWorkflows <tenant domain> <tenant admin password> [<root contentstore dir>]
 
@@ -53,7 +55,7 @@ ok> bootstrapWorkflows <tenant domain>
     
 ok> changeAdminPassword <tenant domain> <tenant admin password>
 
-    Useful if the tenant's admin (admin@<tenant domain) has forgotten their password.
+    Useful if the tenant's admin (admin@<tenant domain>) has forgotten their password.
     
     Example:   changeAdminPassword yyy.zzz.com n3wpassw0rd
 

@@ -274,7 +274,8 @@ public class RenderingEngineTemplateImpl
          avmService.addAspect(renditionAvmPath, WCMAppModel.ASPECT_RENDITION);
       }
 
-      final Rendition result = new RenditionImpl(AVMNodeConverter.ToNodeRef(-1, renditionAvmPath),
+      final Rendition result = new RenditionImpl(-1, 
+                                                 renditionAvmPath,
                                                  this.formsService);
       this.render(formInstanceData, result);
 

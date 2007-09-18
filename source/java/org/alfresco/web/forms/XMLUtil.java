@@ -33,6 +33,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -94,7 +95,7 @@ public class XMLUtil
          assert false : te.getMessage();
       }
    }
-   
+
    /** utility function for serializing a node */
    public static void print(final Node n, final File output)
       throws IOException
@@ -134,6 +135,16 @@ public class XMLUtil
          contentService.getReader(nodeRef, ContentModel.TYPE_CONTENT);
       final InputStream in = contentReader.getContentInputStream();
       return XMLUtil.parse(in);
+   }
+
+   /** utility function for parsing xml */
+   public static Document parse(final int version, 
+                                final String path,
+                                final AVMService avmService)
+      throws SAXException,
+      IOException
+   {
+      return XMLUtil.parse(avmService.getFileInputStream(version, path));
    }
    
    /** utility function for parsing xml */

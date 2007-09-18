@@ -68,8 +68,10 @@ import org.xml.sax.SAXException;
       {
          throw new NullPointerException();
       }
-      final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      if (!nodeService.hasAspect(nodeRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+      final AVMService avmService = this.getServiceRegistry().getAVMService();
+      if (!avmService.hasAspect(AVMNodeConverter.ToAVMVersionPath(nodeRef).getFirst(), 
+                                AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond(),
+                                WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
       {
          throw new IllegalArgumentException("node " + nodeRef +
                                             " does not have aspect " + WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
@@ -77,7 +79,7 @@ import org.xml.sax.SAXException;
       this.nodeRef = nodeRef;
       this.formsService = formsService;
    }
-
+   
    /* package */ FormInstanceDataImpl(final int version, 
                                       final String avmPath,
                                       final FormsService formsService)
@@ -88,9 +90,11 @@ import org.xml.sax.SAXException;
    /** the name of this rendition */
    public String getName()
    {
-      final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      return (String)
-         nodeService.getProperty(this.nodeRef, ContentModel.PROP_NAME);
+//      final AVMService avmService = this.getServiceRegistry().getAVMService();
+//      return avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
+//                                        AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
+//                                        ContentModel.PROP_NAME).getStringValue();
+      return AVMNodeConverter.SplitBase(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond())[1];
    }
 
    public String getWebappRelativePath()
@@ -111,8 +115,9 @@ import org.xml.sax.SAXException;
    public Document getDocument()
       throws IOException, SAXException
    {
-      return XMLUtil.parse(this.getNodeRef(), 
-                           this.getServiceRegistry().getContentService());
+      return XMLUtil.parse(AVMNodeConverter.ToAVMVersionPath(nodeRef).getFirst(),
+                           AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond(),
+                           this.getServiceRegistry().getAVMService());
    }
 
    public Form getForm()
@@ -145,9 +150,14 @@ import org.xml.sax.SAXException;
    {
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("regenerating renditions of " + this);
-      String originalParentAvmPath = (String)
-         this.getServiceRegistry().getNodeService().getProperty(this.getNodeRef(), 
-                                                                WCMAppModel.PROP_ORIGINAL_PARENT_PATH);
+
+
+      final AVMService avmService = this.getServiceRegistry().getAVMService();
+      String originalParentAvmPath = 
+         avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
+                                    AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
+                                    WCMAppModel.PROP_ORIGINAL_PARENT_PATH).getStringValue();
+
       if (originalParentAvmPath == null)
       {
          originalParentAvmPath = AVMNodeConverter.SplitBase(this.getPath())[0];
@@ -274,8 +284,9 @@ import org.xml.sax.SAXException;
 
    protected String getParentFormName()
    {
-      final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      return (String) nodeService.getProperty(this.nodeRef, 
-                                              WCMAppModel.PROP_PARENT_FORM_NAME);
+      final AVMService avmService = this.getServiceRegistry().getAVMService();
+      return avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
+                                        AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
+                                        WCMAppModel.PROP_PARENT_FORM_NAME).getStringValue();
    }
 }

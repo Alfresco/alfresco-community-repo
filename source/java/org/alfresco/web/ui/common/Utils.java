@@ -459,7 +459,7 @@ public final class Utils
       {
          try
          {
-            StringBuilder parsedContent = new StringBuilder();
+            StringBuilder parsedContent = new StringBuilder(str.length() + 32);
             BufferedReader reader = new BufferedReader(new StringReader(str));
             String line = reader.readLine();
             while (line != null)
@@ -468,7 +468,7 @@ public final class Utils
                line = reader.readLine();
                if (line != null)
                {
-                  parsedContent.append("<br/>");
+                  parsedContent.append("<br>");
                }
             }
             

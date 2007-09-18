@@ -361,6 +361,41 @@ public class Schema2XFormsTest
       }
    }
 
+   public void testAnnotation()
+      throws Exception
+   {
+      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/annotation-test.xsd");
+      Document xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "annotation-test");
+      this.runXForm(xformsDocument);
+      System.err.println("generated xform " + XMLUtil.toString(xformsDocument));
+      Element control = assertControlProperties(xformsDocument,
+                                                "/annotation-test/upload_in_root",
+                                                NamespaceConstants.XFORMS_PREFIX + ":upload");
+      assertEquals("upload_in_root", control.getAttributeNS(NamespaceConstants.XFORMS_NS, "appearance"));
+      control = assertControlProperties(xformsDocument,
+                                        "/annotation-test/string_in_root",
+                                        NamespaceConstants.XFORMS_PREFIX + ":textarea");
+      assertEquals("string_in_root", control.getAttributeNS(NamespaceConstants.XFORMS_NS, "appearance"));
+
+      control = assertControlProperties(xformsDocument,
+                                        "/annotation-test/struct_1/upload_in_base",
+                                        NamespaceConstants.XFORMS_PREFIX + ":upload");
+      assertEquals("upload_in_base", control.getAttributeNS(NamespaceConstants.XFORMS_NS, "appearance"));
+      control = assertControlProperties(xformsDocument,
+                                        "/annotation-test/struct_1/string_in_base",
+                                        NamespaceConstants.XFORMS_PREFIX + ":textarea");
+      assertEquals("string_in_base", control.getAttributeNS(NamespaceConstants.XFORMS_NS, "appearance"));
+
+      control = assertControlProperties(xformsDocument,
+                                        "/annotation-test/struct_1/upload_in_struct",
+                                        NamespaceConstants.XFORMS_PREFIX + ":upload");
+      assertEquals("upload_in_struct", control.getAttributeNS(NamespaceConstants.XFORMS_NS, "appearance"));
+      control = assertControlProperties(xformsDocument,
+                                        "/annotation-test/struct_1/string_in_struct",
+                                        NamespaceConstants.XFORMS_PREFIX + ":textarea");
+      assertEquals("string_in_struct", control.getAttributeNS(NamespaceConstants.XFORMS_NS, "appearance"));
+   }
+
    public void testConstraint()
       throws Exception
    {

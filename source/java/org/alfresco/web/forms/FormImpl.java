@@ -171,6 +171,7 @@ public class FormImpl
       final Map<String, Object> root = new HashMap<String, Object>();
       root.put("webapp", webappName);
       root.put("xml", NodeModel.wrap(formInstanceData));
+      root.put("extension", "xml");
       root.put("name", formInstanceDataName);
       root.put("date", new SimpleDate(new Date(), SimpleDate.DATETIME));
       root.put("cwd", AVMUtil.getWebappRelativePath(parentAVMPath));

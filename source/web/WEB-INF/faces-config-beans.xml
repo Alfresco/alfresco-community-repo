@@ -2602,6 +2602,10 @@
          <value>#{AVMLockingAwareService}</value>
       </managed-property>
       <managed-property>
+         <property-name>avmLockingService</property-name>
+         <value>#{AVMLockingService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>avmSyncService</property-name>
          <value>#{AVMSyncService}</value>
       </managed-property>

@@ -50,6 +50,7 @@ import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -85,6 +86,7 @@ public class RegenerateRenditionsWizard
 
    private final static Log LOGGER = LogFactory.getLog(RegenerateRenditionsWizard.class); 
 
+   private AVMLockingService avmLockingService;
    private AVMService avmService;
    private AVMSyncService avmSyncService;
    private ContentService contentService;
@@ -119,21 +121,22 @@ public class RegenerateRenditionsWizard
          final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
          if (this.regenerateScope.equals(REGENERATE_SCOPE_FORM))
          {
-            description = MessageFormat.format("regenerate_renditions_snapshot_description_scope_form",
+            description = MessageFormat.format(bundle.getString("regenerate_renditions_snapshot_description_scope_form"),
                                                StringUtils.join(this.selectedForms, ", "));
          }
          else if (this.regenerateScope.equals(REGENERATE_SCOPE_RENDERING_ENGINE_TEMPLATE))
          {
-            description = MessageFormat.format("regenerate_renditions_snapshot_description_scope_rendering_engine_template",
+            description = MessageFormat.format(bundle.getString("regenerate_renditions_snapshot_description_scope_rendering_engine_template"),
                                                StringUtils.join(this.selectedRenderingEngineTemplates, ", "));
          }
          else
          {
-            description = MessageFormat.format("regenerate_renditions_snapshot_description_scope_web_project",
+            description = MessageFormat.format(bundle.getString("regenerate_renditions_snapshot_description_scope_web_project"),
                                                this.selectedWebProject.getName());
          }
          this.avmService.createSnapshot(this.selectedWebProject.getStoreId(),
-                                        MessageFormat.format("regenerate_renditions_snapshot_short_description", diffList.size()),
+                                        MessageFormat.format(bundle.getString("regenerate_renditions_snapshot_short_description"), 
+                                                             diffList.size()),
                                         description);
       }
       return outcome;
@@ -386,6 +389,14 @@ public class RegenerateRenditionsWizard
    }
 
    /**
+    * @param avmLockingService       The AVMLockingService to set.
+    */
+   public void setAvmLockingService(final AVMLockingService avmLockingService)
+   {
+      this.avmLockingService = avmLockingService;
+   }
+
+   /**
     * @param avmSyncService       The AVMSyncService to set.
     */
    public void setAvmSyncService(final AVMSyncService avmSyncService)
@@ -506,7 +517,8 @@ public class RegenerateRenditionsWizard
             {
                final String formName = this.selectedRenderingEngineTemplates[i].split(":")[0];
                final Form f = this.selectedWebProject.getForm(formName);
-               final RenderingEngineTemplate ret = f.getRenderingEngineTemplate((String)this.selectedRenderingEngineTemplates[i].split(":")[1]);
+               final RenderingEngineTemplate ret = 
+                  f.getRenderingEngineTemplate((String)this.selectedRenderingEngineTemplates[i].split(":")[1]);
                query.append("@" + Repository.escapeQName(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE) + 
                             ":\"" + ((RenderingEngineTemplateImpl)ret).getNodeRef() + "\"");
                if (i != this.selectedRenderingEngineTemplates.length - 1)
@@ -544,7 +556,8 @@ public class RegenerateRenditionsWizard
                {
                   if (rr.getException() != null)
                   {
-                     Utils.addErrorMessage("error regenerating rendition using " + rr.getRenderingEngineTemplate().getName() + 
+                     Utils.addErrorMessage("error regenerating rendition using " + 
+                                           rr.getRenderingEngineTemplate().getName() + 
                                            ": " + rr.getException().getMessage(),
                                            rr.getException());
                   }
@@ -552,11 +565,18 @@ public class RegenerateRenditionsWizard
                   {
                      result.add(rr.getRendition());
                   }
+                  if (rr.getRendition() != null)
+                  {
+                     this.avmLockingService.removeLock(AVMUtil.getStoreId(rr.getRendition().getPath()),
+                                                       AVMUtil.getStoreRelativePath(rr.getRendition().getPath()));
+                  }
                }
             }
             catch (FormNotFoundException fnfe)
             {
-               Utils.addErrorMessage("error regenerating renditions of " + fid.getPath() + ": " + fnfe.getMessage(), fnfe);
+               Utils.addErrorMessage("error regenerating renditions of " + fid.getPath() + 
+                                     ": " + fnfe.getMessage(), 
+                                     fnfe);
             }
          }
          else
@@ -569,7 +589,8 @@ public class RegenerateRenditionsWizard
             }
             catch (Exception e)
             {
-               Utils.addErrorMessage("error regenerating rendition using " + r.getRenderingEngineTemplate().getName() + 
+               Utils.addErrorMessage("error regenerating rendition using " + 
+                                     r.getRenderingEngineTemplate().getName() + 
                                      ": " + e.getMessage(),
                                      e);
             }

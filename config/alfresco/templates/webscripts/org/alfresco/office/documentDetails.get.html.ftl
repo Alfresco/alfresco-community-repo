@@ -67,7 +67,7 @@
                   <tr><td>Size:</td><td>${d.size / 1024} Kb</td></tr>
                   <tr><td valign="top">Categories:</td>
                      <td>
-   <#if d.hasAspect("cm:generalclassifiable")>
+   <#if d.properties.categories?exists>
       <#list d.properties.categories as category>
                         ${companyhome.nodeByReference[category].name};
       </#list>

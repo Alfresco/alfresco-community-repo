@@ -252,23 +252,53 @@ public class FormsTest
                                    XMLUtil.parse("<foons:root_tag xmlns:foons='bar'><foons:name>foo</foons:name></foons:root_tag>"),
                                    "foo",
                                    "avmstore:/www/avm_webapps/webapp/dir",
-                                   "webapp")/*,
+                                   "webapp"),
          new OutputPathPatternTest("avmstore:/www/avm_webapps/webapp/dir/foo.xml",
+                                   "${xml[\"/*[name()='foons:root_tag']/*[name()='foons:name']\"]}.xml",
+                                   XMLUtil.parse("<foons:root_tag xmlns:foons='bar'><foons:name>foo</foons:name></foons:root_tag>"),
+                                   "foo",
+                                   "avmstore:/www/avm_webapps/webapp/dir",
+                                   "webapp"),
+         new OutputPathPatternTest("avmstore:/www/avm_webapps/webapp/dir/foo.xml",
+                                   "${xml['/foons:root_tag/foons:name']}.xml",
+                                   XMLUtil.parse("<foons:root_tag xmlns:foons='bar'><foons:name>foo</foons:name></foons:root_tag>"),
+                                   "foo",
+                                   "avmstore:/www/avm_webapps/webapp/dir",
+                                   "webapp"),
+         new OutputPathPatternTest(null,
                                    "${xml.root_tag.name}",
                                    XMLUtil.parse("<foons:root_tag xmlns:foons='bar'><foons:name>foo</foons:name></foons:root_tag>"),
                                    "foo",
                                    "avmstore:/www/avm_webapps/webapp/dir",
-                                   "webapp")*/
+                                   "webapp")
       };
       for (final OutputPathPatternTest oppt : opps)
       {
          this.mockForm.setOutputPathPattern(oppt.pattern);
-         assertEquals(oppt.pattern + " failed", 
-                      oppt.expected,
-                      this.mockForm.getOutputPathForFormInstanceData(oppt.xml,
-                                                                     oppt.name,
-                                                                     oppt.parentAVMPath,
-                                                                     oppt.webapp));
+         if (oppt.expected == null)
+         {
+            try
+            {
+               this.mockForm.getOutputPathForFormInstanceData(oppt.xml,
+                                                              oppt.name,
+                                                              oppt.parentAVMPath,
+                                                              oppt.webapp);
+               fail("expected pattern " + oppt.pattern + " to fail");
+            }
+            catch (Exception e)
+            {
+               // expected failure
+            }
+         }
+         else
+         {
+            assertEquals(oppt.pattern + " failed", 
+                         oppt.expected,
+                         this.mockForm.getOutputPathForFormInstanceData(oppt.xml,
+                                                                        oppt.name,
+                                                                        oppt.parentAVMPath,
+                                                                        oppt.webapp));
+         }
       }
    }
 }

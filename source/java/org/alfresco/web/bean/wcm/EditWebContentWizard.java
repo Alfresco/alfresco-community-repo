@@ -155,7 +155,6 @@ public class EditWebContentWizard extends CreateWebContentWizard
       }
       AVMLock lock = this.avmLockingService.getLock(AVMUtil.getStoreId(this.createdPath),
                                                     AVMUtil.getStoreRelativePath(this.createdPath));
-      String previousStore = lock.getStore();
       if (lock != null)
       {
          LOGGER.debug("transferring lock from " + lock.getStore() + 
@@ -172,13 +171,6 @@ public class EditWebContentWizard extends CreateWebContentWizard
       this.content = XMLUtil.toString(this.instanceDataDocument, false);
       writer.putContent(this.content);
 
-      LOGGER.debug("transferring lock back to " + previousStore);
-      this.avmLockingService.modifyLock(AVMUtil.getStoreId(this.createdPath),
-                                        AVMUtil.getStoreRelativePath(this.createdPath),
-                                        null,
-                                        previousStore,
-                                        null,
-                                        null);
       // XXXarielb might not need to do this reload
       this.formInstanceData = this.formsService.getFormInstanceData(-1, this.createdPath);
       for (final Rendition r : this.formInstanceData.getRenditions())
@@ -211,16 +203,25 @@ public class EditWebContentWizard extends CreateWebContentWizard
          {
             final Rendition r = rr.getRendition();
             this.renditions.add(r);
-            LOGGER.debug("transferring lock for " + r.getPath() + " back to " + previousStore);
+            LOGGER.debug("transferring lock for " + r.getPath() + 
+                         " back to " + AVMUtil.getCorrespondingMainStoreName(AVMUtil.getStoreName(r.getPath())));
             this.avmLockingService.modifyLock(AVMUtil.getStoreId(r.getPath()),
                                               AVMUtil.getStoreRelativePath(r.getPath()),
                                               null,
-                                              previousStore,
+                                              AVMUtil.getCorrespondingMainStoreName(AVMUtil.getStoreName(r.getPath())),
                                               null,
                                               null);
 
          }
       }
+      LOGGER.debug("transferring form instance data lock back to " + 
+                   AVMUtil.getCorrespondingMainStoreName(AVMUtil.getStoreName(this.createdPath)));
+      this.avmLockingService.modifyLock(AVMUtil.getStoreId(this.createdPath),
+                                        AVMUtil.getStoreRelativePath(this.createdPath),
+                                        null,
+                                        AVMUtil.getCorrespondingMainStoreName(AVMUtil.getStoreName(this.createdPath)),
+                                        null,
+                                        null);
    }
 
    /** Indicates whether or not the wizard is currently in edit mode */

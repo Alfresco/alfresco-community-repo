@@ -38,7 +38,7 @@
    
    function pageLoaded()
    {
-      document.getElementById("dialog:dialog-body:comment").focus();
+      document.getElementById("dialog:dialog-body:label").focus();
       noItems = document.getElementById("dialog:finish-button").disabled;
       document.getElementById("dialog:finish-button").onclick = showProgress;
       checkButtonState();

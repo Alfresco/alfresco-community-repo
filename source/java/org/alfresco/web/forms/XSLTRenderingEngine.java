@@ -39,7 +39,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;

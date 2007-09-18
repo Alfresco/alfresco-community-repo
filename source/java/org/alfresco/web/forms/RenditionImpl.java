@@ -37,7 +37,6 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.Pair;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
@@ -71,8 +70,10 @@ import org.xml.sax.SAXException;
       {
          throw new NullPointerException();
       }
-      final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      if (!nodeService.hasAspect(nodeRef, WCMAppModel.ASPECT_RENDITION))
+      final AVMService avmService = this.getServiceRegistry().getAVMService();
+      if (!avmService.hasAspect(AVMNodeConverter.ToAVMVersionPath(nodeRef).getFirst(),
+                                AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond(), 
+                                WCMAppModel.ASPECT_RENDITION))
       {
          throw new IllegalArgumentException("node " + nodeRef +
                                             " does not have aspect " + WCMAppModel.ASPECT_RENDITION);
@@ -91,17 +92,20 @@ import org.xml.sax.SAXException;
    /** the name of this rendition */
    public String getName()
    {
-      final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      return (String)
-         nodeService.getProperty(this.nodeRef, ContentModel.PROP_NAME);
+//      final AVMService avmService = this.getServiceRegistry().getAVMService();
+//      return avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
+//                                        AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
+//                                        ContentModel.PROP_NAME).getStringValue();
+      return AVMNodeConverter.SplitBase(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond())[1];
    }
 
    /** the description of this rendition */
    public String getDescription()
    {
-      final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      return (String)
-         nodeService.getProperty(this.nodeRef, ContentModel.PROP_DESCRIPTION);
+      final AVMService avmService = this.getServiceRegistry().getAVMService();
+      return avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
+                                        AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
+                                        ContentModel.PROP_DESCRIPTION).getStringValue();
    }
 
    public String getWebappRelativePath()

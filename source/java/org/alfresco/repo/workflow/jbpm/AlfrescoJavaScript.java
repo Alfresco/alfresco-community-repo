@@ -182,12 +182,41 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         {
             // recursively convert each value in the collection
             Collection<Object> collection = (Collection<Object>)value;
-            Collection<Object> converted = new ArrayList<Object>();
+            
+            // Note: this needs to be cleaned up - we need to create appropriate collection type based
+            //       on collection contents
+            boolean isNodeCollection = false;
             for (Object obj : collection)
             {
-                converted.add(convertForJBPM(obj, services));
+                if (obj instanceof NodeRef)
+                {
+                    isNodeCollection = true;
+                    break;
+                }
             }
-            value = converted;
+            
+            if (isNodeCollection)
+            {
+                JBPMNodeList converted = new JBPMNodeList();
+                for (Object obj : collection)
+                {
+                    if (!(obj instanceof NodeRef))
+                    {
+                        throw new WorkflowException("Unable to convert script collection to JBPM value - mixed node/non-node collection");
+                    }
+                    converted.add((JBPMNode)convertForJBPM(obj, services));
+                }
+                value = converted;
+            }
+            else
+            {
+                Collection<Object> converted = new ArrayList<Object>();
+                for (Object obj : collection)
+                {
+                    converted.add(convertForJBPM(obj, services));
+                }
+                value = converted;
+            }
         }
         return value;
     }

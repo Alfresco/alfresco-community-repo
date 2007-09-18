@@ -61,9 +61,9 @@ public class LoaderUploadThread extends AbstractLoaderThread
     public LoaderUploadThread(
             LoaderSession session,
             String loaderName,
-            int testPeriod,
-            int testTotal,
-            int testLoadDepth)
+            long testPeriod,
+            long testTotal,
+            long testLoadDepth)
     {
         super(session, loaderName, testPeriod, testTotal, testLoadDepth);
     }

@@ -263,7 +263,7 @@ public class FileFolderRemoteLoader
             String valuesStr = properties.getProperty(propertyName);
             FileFolderRemoteLoader.checkProperty(propertyName, valuesStr);
             // Parse it into the well-known values
-            int[] values = new int[] {1, 0, -1, 1};
+            long[] values = new long[] {1, 0, -1, 1};
             int index = 0;
             StringTokenizer tokenizer = new StringTokenizer(valuesStr, ",");
             while (tokenizer.hasMoreTokens())
@@ -276,10 +276,10 @@ public class FileFolderRemoteLoader
                     break;
                 }
             }
-            int testCount = values[0];
-            int testPeriod = values[1];
-            int testTotal = values[2];
-            int testDepth = values[3];
+            long testCount = values[0];
+            long testPeriod = values[1];
+            long testTotal = values[2];
+            long testDepth = values[3];
             
             // Construct
             for (int i = 0; i < testCount; i++)

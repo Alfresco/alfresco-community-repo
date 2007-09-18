@@ -38,9 +38,9 @@ public class LoaderTotalsThread extends AbstractLoaderThread
     public LoaderTotalsThread(
             LoaderSession session,
             String loaderName,
-            int testPeriod,
-            int testTotal,
-            int testLoadDepth)
+            long testPeriod,
+            long testTotal,
+            long testLoadDepth)
     {
         super(session, loaderName, testPeriod, testTotal, testLoadDepth);
     }

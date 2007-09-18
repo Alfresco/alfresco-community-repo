@@ -41,9 +41,9 @@ public abstract class AbstractLoaderThread extends Thread
 {
     protected final LoaderSession session;
     protected final String loaderName;
-    protected final int testPeriod;
-    protected final int testTotal;
-    protected final int testLoadDepth;
+    protected final long testPeriod;
+    protected final long testTotal;
+    protected final long testLoadDepth;
     
     private AtomicBoolean mustStop;
     private Random random;
@@ -56,9 +56,9 @@ public abstract class AbstractLoaderThread extends Thread
     public AbstractLoaderThread(
             LoaderSession session,
             String loaderName,
-            int testPeriod,
-            int testTotal,
-            int testLoadDepth)
+            long testPeriod,
+            long testTotal,
+            long testLoadDepth)
     {
         super(LoaderSession.THREAD_GROUP, "LoaderThread-" + loaderName);
         
@@ -138,7 +138,7 @@ public abstract class AbstractLoaderThread extends Thread
                 
                 // Do we wait or continue immediately
                 long duration = endTime - startTime;
-                long mustWait = (testPeriod * 1000L) - (long)(duration / 1000.0 / 1000.0);
+                long mustWait = testPeriod - (long)(duration / 1000.0 / 1000.0);
                 if (mustWait >= 5)
                 {
                     synchronized(this)
@@ -190,7 +190,7 @@ public abstract class AbstractLoaderThread extends Thread
         int[] folderProfiles = session.getFolderProfiles();
         // We work through these until we get the required depth.
         // The root node is ignored as it acts as the search root
-        List<String> path = new ArrayList<String>(testLoadDepth);
+        List<String> path = new ArrayList<String>((int)testLoadDepth);
         for (int i = 1; i < folderProfiles.length; i++)
         {
             int folderProfile = folderProfiles[i];

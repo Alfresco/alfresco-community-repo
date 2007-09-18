@@ -34,7 +34,6 @@ import java.util.List;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -54,13 +53,12 @@ public class RepoAdminInterpreter extends BaseInterpreter
         this.repoAdminService = repoAdminService;
     }
 
-    
     /**
-     * 
+     * Main entry point.
      */
-    public static BaseInterpreter getConsoleBean(ApplicationContext context)
+    public static void main(String[] args)
     {
-        return (RepoAdminInterpreter)context.getBean("repoAdminInterpreter");
+        runMain("repoAdminInterpreter");
     }
 
     protected boolean hasAuthority(String username)

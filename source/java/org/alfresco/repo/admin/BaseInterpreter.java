@@ -65,24 +65,25 @@ public abstract class BaseInterpreter extends AbstractLifecycleBean
      */
     protected String lastCommand = null;
     
-
-    /**
-     * Main entry point.
-     */
-    public static void main(String[] args)
+    
+    public static void runMain(String beanName)
     {
         ApplicationContext context = ApplicationContextHelper.getApplicationContext();
-        
-        BaseInterpreter console = getConsoleBean(context);
+        runMain(context, beanName);
+    }
+    
+    public static void runMain(ApplicationContext context, String beanName)
+    {
+        BaseInterpreter console = getConsoleBean(context, beanName);
 
         console.username = DEFAULT_ADMIN;
         console.rep();
         System.exit(0);
     }
     
-    public static BaseInterpreter getConsoleBean(ApplicationContext context)
+    public static BaseInterpreter getConsoleBean(ApplicationContext context, String beanName)
     {
-        return null;
+        return (BaseInterpreter)context.getBean(beanName);
     }
 
     /**

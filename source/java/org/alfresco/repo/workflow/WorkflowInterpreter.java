@@ -67,7 +67,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.core.io.ClassPathResource;
 
@@ -219,11 +218,11 @@ public class WorkflowInterpreter extends BaseInterpreter
     }
 
     /**
-     * 
+     * Main entry point.
      */
-    public static BaseInterpreter getConsoleBean(ApplicationContext context)
+    public static void main(String[] args)
     {
-        return (WorkflowInterpreter)context.getBean("workflowInterpreter");
+        runMain("workflowInterpreter");
     }
 
     protected boolean hasAuthority(String username)

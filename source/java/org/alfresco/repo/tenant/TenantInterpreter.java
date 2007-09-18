@@ -61,9 +61,12 @@ public class TenantInterpreter extends BaseInterpreter
         this.authenticationService = authenticationService;
     }
 
-    public static BaseInterpreter getConsoleBean(ApplicationContext context)
+    /**
+     * Main entry point.
+     */
+    public static void main(String[] args)
     {
-        return (TenantInterpreter)context.getBean("tenantInterpreter");
+        runMain("tenantInterpreter");
     }
     
     

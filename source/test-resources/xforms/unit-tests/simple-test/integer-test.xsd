@@ -3,16 +3,9 @@
 	   xmlns:alf="http://www.alfresco.org"
 	   elementFormDefault="qualified">
   <xs:simpleType name="restricted_integer">
-    <xs:restriction>
-      <xs:union>
-	<xs:simpleType base="xs:integer">
-	  <xs:maxInclusive value="10"/>
-	  <xs:minInclusive value="-10"/>
-	</xs:simpleType>
-	<xs:simpleType base="xs:string">
-	  <xs:length value="0"/>
-	</xs:simpleType>
-      </xs:union>
+    <xs:restriction base="xs:integer">
+      <xs:maxInclusive value="10"/>
+      <xs:minInclusive value="-10"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:element name="integer-test">
@@ -64,7 +57,7 @@
 		      <xs:complexType>
 			<xs:attribute name="has_default" 
 				      type="xs:integer"
-				      use="required"
+				      use="optional"
 				      default="11"/>
 			<xs:attribute name="no_default" 
 				      use="required"
@@ -139,7 +132,7 @@
 		      <xs:complexType>
 			<xs:attribute name="has_default" 
 				      type="restricted_integer"
-				      use="required"
+				      use="optional"
 				      default="5"/>
 			<xs:attribute name="no_default" 
 				      use="required"

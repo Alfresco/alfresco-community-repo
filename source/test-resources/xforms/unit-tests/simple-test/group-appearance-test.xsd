@@ -1,26 +1,27 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	   xmlns:alf="http://www.alfresco.org"
-	   elementFormDefault="qualified">
+           xmlns:alf="http://www.alfresco.org"
+           elementFormDefault="qualified">
+
+  <xs:simpleType name="one_char">
+    <xs:restriction base="xs:normalizedString">
+      <xs:length value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="five_digits">
+    <xs:restriction base="xs:integer">
+      <xs:totalDigits value="5"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="fields">
     <xs:sequence>
-      <xs:element name="unbounded_string" type="xs:normalizedString" default="unbounded string value"/>
-      <xs:element name="one_char" default="A">
-        <xs:simpleType>
-          <xs:restriction base="xs:normalizedString">
-            <xs:length value="1"/>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
-      <xs:element name="five_digits" default="12345">
-        <xs:simpleType>
-          <xs:restriction base="xs:integer">
-            <xs:totalDigits value="5"/>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
+      <xs:element name="unbounded_string" type="xs:normalizedString"/>
+      <xs:element name="one_char" type="one_char"/>
+      <xs:element name="five_digits" type="five_digits"/>
     </xs:sequence>
   </xs:complexType>
+
   <xs:element name="root_group">
     <xs:complexType>
       <xs:sequence>
@@ -30,8 +31,55 @@
         <xs:element name="compact_group" type="fields">
           <xs:annotation><xs:appinfo><alf:appearance>compact</alf:appearance></xs:appinfo></xs:annotation>
         </xs:element>
-        <xs:element name="minimal_group" type="fields">
+        <xs:element name="minimal_group_one_greedy_two_fixed" type="fields">
           <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+        </xs:element>
+        <xs:element name="minimal_group_two_fixed">
+          <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="fixed_1" type="five_digits"/>
+              <xs:element name="fixed_2" type="five_digits"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="minimal_group_three_fixed">
+          <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="fixed_1" type="five_digits"/>
+              <xs:element name="fixed_2" type="five_digits"/>
+              <xs:element name="fixed_3" type="five_digits"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="minimal_group_one_greedy">
+          <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="greedy" type="xs:normalizedString"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="minimal_group_fixed_greedy_fixed">
+          <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="fixed_1" type="five_digits"/>
+              <xs:element name="greedy" type="xs:normalizedString"/>
+              <xs:element name="fixed_2" type="five_digits"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="minimal_group_greedy_fixed_greedy">
+          <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="greedy_1" type="xs:normalizedString"/>
+              <xs:element name="fixed_1" type="five_digits"/>
+              <xs:element name="greedy_2" type="xs:normalizedString"/>
+            </xs:sequence>
+          </xs:complexType>
         </xs:element>
       </xs:sequence>
     </xs:complexType>

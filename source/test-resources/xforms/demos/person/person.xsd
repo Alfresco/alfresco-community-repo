@@ -1,22 +1,113 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            elementFormDefault="qualified">
+  <xs:simpleType name="name-prefix">
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="Mr"/>
+      <xs:enumeration value="Mrs"/>
+      <xs:enumeration value="Ms"/>
+      <xs:enumeration value="Miss"/>
+      <xs:enumeration value="Dr"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="us-state">
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="AL"/>
+      <xs:enumeration value="AK"/>
+      <xs:enumeration value="AZ"/>
+      <xs:enumeration value="AR"/>
+      <xs:enumeration value="CA"/>
+      <xs:enumeration value="CO"/>
+      <xs:enumeration value="CT"/>
+      <xs:enumeration value="DC"/>
+      <xs:enumeration value="DE"/>
+      <xs:enumeration value="FL"/>
+      <xs:enumeration value="GA"/>
+      <xs:enumeration value="HI"/>
+      <xs:enumeration value="ID"/>
+      <xs:enumeration value="IL"/>
+      <xs:enumeration value="IN"/>
+      <xs:enumeration value="IA"/>
+      <xs:enumeration value="KS"/>
+      <xs:enumeration value="KY"/>
+      <xs:enumeration value="LA"/>
+      <xs:enumeration value="ME"/>
+      <xs:enumeration value="MD"/>
+      <xs:enumeration value="MA"/>
+      <xs:enumeration value="MI"/>
+      <xs:enumeration value="MN"/>
+      <xs:enumeration value="MS"/>
+      <xs:enumeration value="MO"/>
+      <xs:enumeration value="MT"/>
+      <xs:enumeration value="NE"/>
+      <xs:enumeration value="NV"/>
+      <xs:enumeration value="NH"/>
+      <xs:enumeration value="NJ"/>
+      <xs:enumeration value="NM"/>
+      <xs:enumeration value="NY"/>
+      <xs:enumeration value="NC"/>
+      <xs:enumeration value="ND"/>
+      <xs:enumeration value="OH"/>
+      <xs:enumeration value="OK"/>
+      <xs:enumeration value="OR"/>
+      <xs:enumeration value="PA"/>
+      <xs:enumeration value="RI"/>
+      <xs:enumeration value="SC"/>
+      <xs:enumeration value="SD"/>
+      <xs:enumeration value="TN"/>
+      <xs:enumeration value="TX"/>
+      <xs:enumeration value="UT"/>
+      <xs:enumeration value="VT"/>
+      <xs:enumeration value="VA"/>
+      <xs:enumeration value="WA"/>
+      <xs:enumeration value="WV"/>
+      <xs:enumeration value="WI"/>
+      <xs:enumeration value="WY"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+
   <xs:element name="person">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="image" type="xs:anyURI"/>
-        <xs:element name="email" minOccurs="1" maxOccurs="1">
+        <xs:element name="picture" type="xs:anyURI"/>
+        <xs:element name="email" minOccurs="0" maxOccurs="5">
 	  <xs:simpleType>
-            <xs:restriction base="xs:string">
+            <xs:restriction base="xs:normalizedString">
               <xs:maxLength value="256"/>
-              <xs:pattern value="[A-Z0-9._]+@[A-Z0-9.\-]+\.[A-Z]{2,4}"/>
+              <xs:pattern value="[A-Za-z0-9._]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,4}"/>
             </xs:restriction>
           </xs:simpleType>
         </xs:element>
-        <xs:element name="bio" type="xs:anyType" minOccurs="1" maxOccurs="unbounded"/>
+        <xs:element name="bio" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
       </xs:sequence>
-      <xs:attribute name="name" type="xs:string"/>
-      <xs:attribute name="title" type="xs:string"/>
+      <xs:element name="name">          
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="prefix" type="name-prefix"/>
+            <xs:element name="first" type="xs:normalizedString"/>
+            <xs:element name="last" type="xs:normalizedString"/>							
+          </xs:sequence> 
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="address" minOccurs="1" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="street" type="xs:normalizedString" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="city" type="xs:normalizedString"/>
+            <xs:element name="state" type="us-state"/>
+            <xs:element name="zip">
+              <xs:simpleType>
+                <xs:restriction base="xs:normalizedString">
+                  <xs:maxLength value="5"/> 
+                  <xs:pattern value="[0-9][0-9][0-9][0-9][0-9]"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:attribute name="title" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
 </xs:schema>

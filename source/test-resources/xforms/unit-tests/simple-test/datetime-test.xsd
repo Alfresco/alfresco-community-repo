@@ -1,13 +1,18 @@
 <?xml version="1.0"?>
+<!--
+sample output path pattern: ${xml["datetime-test/date"]?date("yyyy-MM-dd")?string("MM")}/${name}.xml
+-->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	   xmlns:alf="http://www.alfresco.org"
-	   elementFormDefault="qualified" >
+	   elementFormDefault="qualified"
+           xmlns:mine="http://www.alfresco.org/fake/mine"
+           targetNamespace="http://www.alfresco.org/fake/mine">
   <xs:element name="datetime-test">
     <xs:complexType>
       <xs:sequence>
 	<xs:element name="datetime" type="xs:dateTime" minOccurs="1" maxOccurs="1"/>
 	<xs:element name="date" type="xs:date" minOccurs="1" maxOccurs="1"/>
-	<xs:element name="restricted_date_inclusive" minOccurs="1" maxOccurs="1">
+	<xs:element name="restricted_date_inclusive" minOccurs="1" maxOccurs="1" default="2005-05-06">
           <xs:simpleType>
             <xs:restriction base="xs:date">
               <xs:minInclusive value="2005-05-05"/>
@@ -15,7 +20,7 @@
             </xs:restriction>
           </xs:simpleType>
         </xs:element>
-        <xs:element name="restricted_date_exclusive" minOccurs="1" maxOccurs="1">
+        <xs:element name="restricted_date_exclusive" minOccurs="1" maxOccurs="1" default="2005-05-06">
           <xs:simpleType>
             <xs:restriction base="xs:date">
               <xs:minExclusive value="2005-05-04"/>

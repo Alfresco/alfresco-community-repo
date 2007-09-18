@@ -77,13 +77,18 @@
 	    </xs:appinfo>
 	  </xs:annotation>
 	</xs:element>
-	<xs:element name="optional_textfield" type="xs:normalizedString" minOccurs="0" maxOccurs="1">
+	<xs:element name="optional_textfield"  minOccurs="0" maxOccurs="1">
 	  <xs:annotation>
 	    <xs:appinfo>
 	      <alf:label>${components-test.optional_textfield.label}</alf:label>
 	      <alf:alert>${components-test.optional_textfield.alert}</alf:alert>
 	    </xs:appinfo>
 	  </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:normalizedString">
+              <xs:length value="5"/>
+            </xs:restriction>
+          </xs:simpleType>
 	</xs:element>
 	<xs:element name="prefilled_textfield" type="xs:normalizedString" minOccurs="0" maxOccurs="1" default="i am the default value"/>
 	<xs:element name="plain_textarea" type="xs:string">
@@ -141,11 +146,25 @@
 	<xs:element name="date_and_time" type="xs:dateTime"/>
 	<xs:element name="date" type="xs:date"/>
 	<xs:element name="time" type="xs:time"/>
-	<xs:element name="day" type="xs:gDay"/>
-	<xs:element name="month" type="xs:gMonth"/>
-	<xs:element name="year" type="xs:gYear"/>
-	<xs:element name="month_and_day" type="xs:gMonthDay"/>
-	<xs:element name="year_and_month" type="xs:gYearMonth"/>
+        <xs:element name="single_unit_pickers">
+          <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="day" type="xs:gDay"/>
+              <xs:element name="month" type="xs:gMonth"/>
+              <xs:element name="year" type="xs:gYear"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="combination_pickers">
+          <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="month_and_day" type="xs:gMonthDay"/>
+              <xs:element name="year_and_month" type="xs:gYearMonth"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

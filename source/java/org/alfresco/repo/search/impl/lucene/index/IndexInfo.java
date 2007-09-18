@@ -121,7 +121,7 @@ import org.doomdark.uuid.UUID;
  */
 public class IndexInfo
 {
-    private static Timer timer = new Timer();
+    private static Timer timer = new Timer(true);
 
     /**
      * The logger.

@@ -276,13 +276,25 @@ public class AuthenticationFilter implements Filter
         }
         else
         {
-            // Setup the authentication context
+            try
+            {
+               // Setup the authentication context
+               m_authService.validate(user.getTicket());
 
-            m_authService.validate(user.getTicket());
+               // Set the current locale
 
-            // Set the current locale
-
-            // I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
+               // I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
+            }
+            catch (Exception ex)
+            {
+               // No user/ticket, force the client to prompt for logon details
+               
+               httpResp.setHeader("WWW-Authenticate", "BASIC realm=\"Alfresco DAV Server\"");
+               httpResp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+   
+               httpResp.flushBuffer();
+               return;
+            }
         }
 
         // Chain other filters

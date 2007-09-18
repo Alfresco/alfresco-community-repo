@@ -667,11 +667,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
     public ModelDefinition getModel(QName name)
     {
         CompiledModel model = getCompiledModel(name);
-        if (model != null)
-        {
-            return model.getModelDefinition();
-        }
-        return null;
+        return model.getModelDefinition();
     }
 
 
@@ -948,7 +944,9 @@ public class DictionaryDAOImpl implements DictionaryDAO
         CompiledModel compiledModel = model.compile(this, namespaceDAO);
         QName modelName = compiledModel.getModelDefinition().getName();
         
-        CompiledModel previousVersion = getCompiledModel(modelName);
+        CompiledModel previousVersion = null;
+        try { previousVersion = getCompiledModel(modelName); } catch (DictionaryException e) {} // ignore missing model
+
         if (previousVersion == null)
         {
             return new ArrayList<M2ModelDiff>(0);

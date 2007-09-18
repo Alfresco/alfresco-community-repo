@@ -36,7 +36,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 
 /**

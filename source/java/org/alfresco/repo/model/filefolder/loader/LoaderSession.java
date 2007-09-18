@@ -27,13 +27,13 @@ package org.alfresco.repo.model.filefolder.loader;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.error.StackTraceUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.remote.FileFolderRemoteClient;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -155,9 +155,9 @@ public class LoaderSession
         
         // Construct output and error files
         long time = System.currentTimeMillis();
-        File fileVerbose = new File("./LoaderSession-" + name + "-"+ time + "-verbose.txt");
-        File fileSummary = new File("./LoaderSession-" + name + "-"+ time + "-summary.txt");
-        File fileError = new File("./LoaderSession-" + name + "-"+ time + "-error.txt");
+        File fileVerbose = new File("./LoaderSession-" + name + "-"+ time + "-verbose.tsv");
+        File fileSummary = new File("./LoaderSession-" + name + "-"+ time + "-summary.tsv");
+        File fileError = new File("./LoaderSession-" + name + "-"+ time + "-error.tsv");
         outVerbose = new BufferedOutputStream(new FileOutputStream(fileVerbose));
         outSummary = new BufferedOutputStream(new FileOutputStream(fileSummary));
         outError = new BufferedOutputStream(new FileOutputStream(fileError));
@@ -343,18 +343,23 @@ public class LoaderSession
         }
     }
     
-    private void writeLineEnding(OutputStream out) throws IOException
+    public static String getLineEnding()
     {
-        if (File.separatorChar == '/')
+        try
         {
-            // It's unix
-            out.write('\n');
+            if (File.separatorChar == '/')
+            {
+                // It's unix
+                return "\n";
+            }
+            else
+            {
+                return "\r\n";
+            }
         }
-        else
+        catch (Throwable e)
         {
-            // Windows
-            out.write('\r');
-            out.write('\n');
+            return "\n";
         }
     }
     
@@ -368,7 +373,7 @@ public class LoaderSession
         {
             byte[] bytes = msg.getBytes("UTF-8");
             outVerbose.write(bytes);
-            writeLineEnding(outVerbose);
+            outVerbose.write(getLineEnding().getBytes("UTF-8"));
             outVerbose.flush();
         }
         catch (Throwable e)
@@ -387,7 +392,7 @@ public class LoaderSession
         {
             byte[] bytes = msg.getBytes("UTF-8");
             outSummary.write(bytes);
-            writeLineEnding(outSummary);
+            outSummary.write(getLineEnding().getBytes("UTF-8"));
             outSummary.flush();
         }
         catch (Throwable e)
@@ -405,13 +410,50 @@ public class LoaderSession
         try
         {
             byte[] bytes = msg.getBytes("UTF-8");
-            outSummary.write(bytes);
-            writeLineEnding(outError);
-            outSummary.flush();
+            outError.write(bytes);
+            outError.write(getLineEnding().getBytes("UTF-8"));
+            outError.flush();
         }
         catch (Throwable e)
         {
             System.err.println("Failed to write message to error file: " + e.getMessage());
         }
+    }
+    
+    public synchronized void logError(String msg, Throwable e)
+    {
+        if (outSummary == null)
+        {
+            return;
+        }
+        try
+        {
+            StringBuilder sb = new StringBuilder(1024);
+            StackTraceUtil.buildStackTrace(msg, e.getStackTrace(), sb, 50);
+            byte[] bytes = sb.toString().getBytes("UTF-8");
+            outError.write(bytes);
+            outError.write(getLineEnding().getBytes("UTF-8"));
+            outError.flush();
+        }
+        catch (Throwable ee)
+        {
+            System.err.println("Failed to write message to error file: " + e.getMessage());
+        }
+    }
+    
+    public String getSummary()
+    {
+        List<Integer> folderProfilesAsList = new ArrayList<Integer>(10);
+        for (int folderProfile : folderProfiles)
+        {
+            folderProfilesAsList.add(Integer.valueOf(folderProfile));
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("Session name:     ").append(name).append(getLineEnding())
+          .append("RMI URLS:         ").append(rmiUrls).append(getLineEnding())
+          .append("Store References: ").append(storeRefs).append(getLineEnding())
+          .append("Verbose:          ").append(Boolean.toString(verbose)).append(getLineEnding())
+          .append("Folder Profiles:  ").append(folderProfilesAsList);
+        return sb.toString();
     }
 }

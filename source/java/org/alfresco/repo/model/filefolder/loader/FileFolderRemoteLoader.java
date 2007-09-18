@@ -74,6 +74,18 @@ public class FileFolderRemoteLoader
         }
         session = FileFolderRemoteLoader.makeSession(username, password, properties);
         threads = FileFolderRemoteLoader.makeThreads(session, properties);
+        
+        // Log the initial summaries
+        String summary = session.getSummary();
+        session.logVerbose(summary);
+        session.logSummary(summary);
+        session.logError(summary);
+        
+        // Header the outputs
+        session.logSummary(LoaderSession.getLineEnding());
+        session.logSummary("NAME\tTIME\tDESCRIPTION");
+        session.logVerbose(LoaderSession.getLineEnding());
+        session.logVerbose("NAME\tTIME\tDESCRIPTION");
     }
     
     public synchronized void start()
@@ -82,6 +94,7 @@ public class FileFolderRemoteLoader
         {
             throw new AlfrescoRuntimeException("Application not initialized");
         }
+        
         // Fire up the threads
         for (Thread thread : threads)
         {
@@ -99,17 +112,33 @@ public class FileFolderRemoteLoader
         // Now join each thread to make sure they all finish their current operation
         for (AbstractLoaderThread thread : threads)
         {
+            // Notify any waits
+            synchronized(thread)
+            {
+                thread.notifyAll();
+            }
             try
             {
                 thread.join();
             }
             catch (InterruptedException e) {}
         }
-        // Get each one's summary
+        // Log each thread's summary
         for (AbstractLoaderThread thread : threads)
         {
             String summary = thread.getSummary();
             session.logSummary(summary);
+        }
+    }
+    
+    public void dumpThreadSummaries()
+    {
+        System.out.println("");
+        // Dump each thread's summary
+        for (AbstractLoaderThread thread : threads)
+        {
+            String summary = thread.getSummary();
+            System.out.println(summary);
         }
     }
 
@@ -260,6 +289,14 @@ public class FileFolderRemoteLoader
                 {
                     thread = new LoaderUploadThread(session, name, testPeriod, testTotal, testDepth);
                 }
+                else if (type.equals("totals"))
+                {
+                    thread = new LoaderTotalsThread(session, name, testPeriod, testTotal, testDepth);
+                }
+                else if (type.equals("listFolders"))
+                {
+                    thread = new LoaderListFoldersThread(session, name, testPeriod, testTotal, testDepth);
+                }
                 else
                 {
                     throw new LoaderClientException("Unknown test type: " + name);
@@ -325,13 +362,19 @@ public class FileFolderRemoteLoader
             Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
             
             // Wait for a quit signal
-            System.out.println("Running test " + app.session.getName() + ".  Enter 'q' to quit");
+            System.out.println("Running test " + app.session.getName() + ".");
+            System.out.println("   Enter 'q' to quit.");
+            System.out.println("   Enter 's' to dump a thread summary.");
             while (true)
             {
                 int keyPress = System.in.read();
                 if (keyPress == 'Q' || keyPress == 'q')
                 {
                     break;
+                }
+                else if (keyPress == 'S' || keyPress == 's')
+                {
+                    app.dumpThreadSummaries();
                 }
                 else if (System.in.available() > 0)
                 {

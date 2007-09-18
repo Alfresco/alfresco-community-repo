@@ -25,21 +25,39 @@
 package org.alfresco.repo.model.filefolder.loader;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.CacheManager;
+
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cache.EhCacheAdapter;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
 import org.springframework.util.FileCopyUtils;
 
 /**
- * A description of what the remote loader should do.
+ * Loader thread that puts documents to the remote repository.
  * 
  * @author Derek Hulley
+ * @since 2.2
  */
 public class LoaderUploadThread extends AbstractLoaderThread
 {
+    private static EhCacheAdapter<String, NodeRef> pathCache;
+    
+    static
+    {
+        CacheManager cacheManager = new CacheManager();
+        Cache cache = new Cache("LoaderUploadThread-PathCache", 10000, false, false, 300, 300);
+        cacheManager.addCache(cache);
+        
+        pathCache = new EhCacheAdapter<String, NodeRef>();
+        pathCache.setCache(cache);
+    }
+    
     public LoaderUploadThread(
             LoaderSession session,
             String loaderName,
@@ -50,17 +68,52 @@ public class LoaderUploadThread extends AbstractLoaderThread
         super(session, loaderName, testPeriod, testTotal, testLoadDepth);
     }
 
+    /**
+     * Creates or find the folders based on caching.
+     */
+    private NodeRef makeFolders(
+            String ticket,
+            LoaderServerProxy serverProxy,
+            NodeRef workingRootNodeRef,
+            List<String> folderPath) throws Exception
+    {
+        // Iterate down the path, checking the cache and populating it as necessary
+        List<String> currentPath = new ArrayList<String>();
+        NodeRef currentParentNodeRef = workingRootNodeRef;
+        for (String pathElement : currentPath)
+        {
+            currentPath.add(pathElement);
+            String key = currentPath.toString();
+            // Is this there?
+            NodeRef nodeRef = pathCache.get(key);
+            if (nodeRef != null)
+            {
+                // Found it
+                currentParentNodeRef = nodeRef;
+                // Step into the next level
+                continue;
+            }
+            // It is not there, so create it
+            FileInfo folderInfo = serverProxy.fileFolderRemote.makeFolders(
+                    serverProxy.ticket,
+                    currentParentNodeRef,
+                    currentPath,
+                    ContentModel.TYPE_FOLDER);
+            currentParentNodeRef = folderInfo.getNodeRef();
+            // Cache the new node
+            pathCache.put(key, currentParentNodeRef);
+        }
+        // Done
+        return currentParentNodeRef;
+    }
+    
     @Override
     protected String doLoading(LoaderServerProxy serverProxy, NodeRef workingRootNodeRef) throws Exception
     {
         // Get a random folder
         List<String> folderPath = super.chooseFolderPath();
         // Make sure the folder exists
-        FileInfo folderInfo = serverProxy.fileFolderRemote.makeFolders(
-                serverProxy.ticket,
-                workingRootNodeRef,
-                folderPath,
-                ContentModel.TYPE_FOLDER);
+        NodeRef folderNodeRef = makeFolders(serverProxy.ticket, serverProxy, workingRootNodeRef, folderPath);
 
         // Get a random file
         File file = getFile();
@@ -75,8 +128,6 @@ public class LoaderUploadThread extends AbstractLoaderThread
         }
         
         // Upload it
-        NodeRef folderNodeRef = folderInfo.getNodeRef();
-        
         FileInfo fileInfo = serverProxy.fileFolderRemote.create(
                 serverProxy.ticket,
                 folderNodeRef,
@@ -87,21 +138,6 @@ public class LoaderUploadThread extends AbstractLoaderThread
         
         // Done
         String msg = String.format("Uploaded %s to folder: %s", filename, folderPath.toString());
-        session.logVerbose(msg);
-        
         return msg;
-        
-//        int totalNodeCount = serverProxy.loaderRemote.getNodeCount(
-//                serverProxy.ticket);
-//        int storeNodeCount = serverProxy.loaderRemote.getNodeCount(
-//                serverProxy.ticket,
-//                workingRootNodeRef.getStoreRef());
-//        session.logVerbose("Nodes: " + totalNodeCount + ".  Store Nodes: " + storeNodeCount);
-    }
-
-    @Override
-    public String getSummary()
-    {
-        return "Tanker";
     }
 }

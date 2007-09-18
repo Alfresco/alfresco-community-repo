@@ -65,7 +65,7 @@ public abstract class AbstractLoaderThread extends Thread
         this.session = session;
         this.loaderName = loaderName;
         this.testPeriod = testPeriod;
-        this.testTotal = testTotal;
+        this.testTotal = testTotal < 1 ? Integer.MAX_VALUE : testTotal;
         this.testLoadDepth = testLoadDepth;
         
         this.mustStop = new AtomicBoolean(false);
@@ -84,7 +84,22 @@ public abstract class AbstractLoaderThread extends Thread
         mustStop.set(true);
     }
     
-    public abstract String getSummary();
+    /**
+     * <pre>
+     * name, average, 
+     * </pre>
+     * 
+     * @return          Returns the summary of the results, in the same format as the verbose output
+     */
+    public String getSummary()
+    {
+        // Summarize the results
+        StringBuilder sb = new StringBuilder();
+        sb.append(loaderName).append("\t")
+          .append(String.format("%5.1f", statAverageMs)).append("\t")
+          .append("");
+        return sb.toString();
+    }
     
     @Override
     public void run()
@@ -123,7 +138,7 @@ public abstract class AbstractLoaderThread extends Thread
                 
                 // Do we wait or continue immediately
                 long duration = endTime - startTime;
-                long mustWait = (testPeriod * 1000L) - duration;
+                long mustWait = (testPeriod * 1000L) - (long)(duration / 1000.0 / 1000.0);
                 if (mustWait >= 5)
                 {
                     synchronized(this)
@@ -134,7 +149,7 @@ public abstract class AbstractLoaderThread extends Thread
             }
             catch (Throwable e)
             {
-                session.logError(e.getMessage());
+                session.logError("Loading error on '" + loaderName + "': " + e.getMessage(), e);
             }
         }
     }
@@ -143,7 +158,7 @@ public abstract class AbstractLoaderThread extends Thread
     {
         statCount++;
         // Calculate the delta in milliseconds
-        double delta = ((double)(endTime - startTime) / 1000.0);
+        double delta = ((double)(endTime - startTime) / 1000.0 / 1000.0);
         // Now recalculate the average
         statTotalMs += delta;
         statAverageMs = (statTotalMs / (double)statCount);
@@ -151,11 +166,11 @@ public abstract class AbstractLoaderThread extends Thread
     
     private void logVerbose(long startTime, long endTime, String msg)
     {
-        double delta = ((double)(endTime - startTime) / 1000.0);
+        double delta = ((double)(endTime - startTime) / 1000.0 / 1000.0 );
         
         StringBuilder sb = new StringBuilder();
-        sb.append(loaderName).append(", ")
-          .append(String.format("%5.1d", (int)delta)).append(", ")
+        sb.append(loaderName).append("\t")
+          .append(String.format("%5.1f", delta)).append("\t")
           .append(msg);
         session.logVerbose(sb.toString());
     }

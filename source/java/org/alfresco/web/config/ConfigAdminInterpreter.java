@@ -41,8 +41,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 
 /**
@@ -64,13 +66,13 @@ public class ConfigAdminInterpreter extends BaseInterpreter
         this.transactionService = transactionService;
     }
 
-
     /**
-     * 
+     * Main entry point.
      */
-    public static BaseInterpreter getConsoleBean(ApplicationContext context)
+    public static void main(String[] args)
     {
-        return (ConfigAdminInterpreter)context.getBean("webClientConfigAdminInterpreter");
+    	ApplicationContext context = new ClassPathXmlApplicationContext(new String[] {"classpath:alfresco/application-context.xml","classpath:alfresco/web-client-application-context.xml"});
+        runMain(context, "webClientConfigAdminInterpreter");
     }
     
     protected boolean hasAuthority(String username)

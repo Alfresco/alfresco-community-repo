@@ -44,6 +44,7 @@ public abstract class AbstractLoaderThread extends Thread
     protected final long testPeriod;
     protected final long testTotal;
     protected final long testLoadDepth;
+    protected final boolean verbose;
     
     private AtomicBoolean mustStop;
     private Random random;
@@ -51,14 +52,14 @@ public abstract class AbstractLoaderThread extends Thread
     // Statistics
     private int statCount;
     private double statTotalMs;
-    private double statAverageMs;
     
     public AbstractLoaderThread(
             LoaderSession session,
             String loaderName,
             long testPeriod,
             long testTotal,
-            long testLoadDepth)
+            long testLoadDepth,
+            boolean verbose)
     {
         super(LoaderSession.THREAD_GROUP, "LoaderThread-" + loaderName);
         
@@ -67,13 +68,13 @@ public abstract class AbstractLoaderThread extends Thread
         this.testPeriod = testPeriod;
         this.testTotal = testTotal < 1 ? Integer.MAX_VALUE : testTotal;
         this.testLoadDepth = testLoadDepth;
+        this.verbose = verbose;
         
         this.mustStop = new AtomicBoolean(false);
         this.random = new Random();
         
         this.statCount = 0;
         this.statTotalMs = 0.0D;
-        this.statAverageMs = 0.0D;
     }
 
     /**
@@ -82,23 +83,6 @@ public abstract class AbstractLoaderThread extends Thread
     public void setStop()
     {
         mustStop.set(true);
-    }
-    
-    /**
-     * <pre>
-     * name, average, 
-     * </pre>
-     * 
-     * @return          Returns the summary of the results, in the same format as the verbose output
-     */
-    public String getSummary()
-    {
-        // Summarize the results
-        StringBuilder sb = new StringBuilder();
-        sb.append(loaderName).append("\t")
-          .append(String.format("%5.1f", statAverageMs)).append("\t")
-          .append("");
-        return sb.toString();
     }
     
     @Override
@@ -161,18 +145,54 @@ public abstract class AbstractLoaderThread extends Thread
         double delta = ((double)(endTime - startTime) / 1000.0 / 1000.0);
         // Now recalculate the average
         statTotalMs += delta;
-        statAverageMs = (statTotalMs / (double)statCount);
     }
     
+    /**
+     * <pre>
+     * NAME+36\tCOUNT          \tTIME           \tAVERAGE TIME   \tPER SECOND     \tDESCRIPTION    
+     * </pre>
+     */
     private void logVerbose(long startTime, long endTime, String msg)
     {
-        double delta = ((double)(endTime - startTime) / 1000.0 / 1000.0 );
+        double delta = ((double)(endTime - startTime) / 1000.0 / 1000.0 / 1000.0);
         
+        double statTotalSec = statTotalMs / 1000.0;
+        double statPerSec = statCount / statTotalSec;
+        double statAveSec = statTotalSec / statCount;
+        // Summarize the results
         StringBuilder sb = new StringBuilder();
-        sb.append(loaderName).append("\t")
-          .append(String.format("%5.1f", delta)).append("\t")
-          .append(msg);
-        session.logVerbose(sb.toString());
+        sb
+        .append(String.format("%40s", loaderName)).append("\t")
+        .append(String.format("%15.0f", (float)statCount)).append("\t")
+        .append(String.format("%15.3f", delta)).append("\t")
+        .append(String.format("%15.3f", statPerSec)).append("\t")
+        .append(String.format("%15.3f", statAveSec)).append("\t")
+        .append(msg);
+        session.logVerbose(sb.toString(), verbose);
+    }
+    
+    /**
+     * <pre>
+     * NAME+36\tCOUNT          \tTOTAL TIME     \tAVERAGE TIME   \tPER SECOND     \tDESCRIPTION     
+     * </pre>
+     * 
+     * @return          Returns the summary of the results
+     */
+    public String getSummary()
+    {
+        double statTotalSec = statTotalMs / 1000.0;
+        double statPerSec = statCount / statTotalSec;
+        double statAveSec = statTotalSec / statCount;
+        // Summarize the results
+        StringBuilder sb = new StringBuilder();
+        sb
+          .append(String.format("%40s", loaderName)).append("\t")
+          .append(String.format("%15.0f", (float)statCount)).append("\t")
+          .append(String.format("%15.3f", statTotalSec)).append("\t")
+          .append(String.format("%15.3f", statPerSec)).append("\t")
+          .append(String.format("%15.3f", statAveSec)).append("\t")
+          .append("");
+        return sb.toString();
     }
     
     /**

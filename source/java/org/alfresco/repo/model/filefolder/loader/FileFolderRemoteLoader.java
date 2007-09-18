@@ -77,16 +77,23 @@ public class FileFolderRemoteLoader
         
         // Log the initial summaries
         String summary = session.getSummary();
-        session.logVerbose(summary);
+        session.logVerbose(summary, true);
         session.logSummary(summary);
         session.logError(summary);
         
         // Header the outputs
+        session.logVerbose(LoaderSession.getLineEnding(), true);
+        session.logVerbose(COLUMNS_VERBOSE, true);
         session.logSummary(LoaderSession.getLineEnding());
-        session.logSummary("NAME\tTIME\tDESCRIPTION");
-        session.logVerbose(LoaderSession.getLineEnding());
-        session.logVerbose("NAME\tTIME\tDESCRIPTION");
+        session.logSummary(COLUMNS_SUMMARY);
     }
+    
+    private static final String COLUMNS_VERBOSE =
+        String.format("%40s\t%15s\t%15s\t%15s\t%15s\t%15s",
+                "NAME", "COUNT", "TIME", "AVERAGE TIME", "PER SECOND", "DESCRIPTION");
+    private static final String COLUMNS_SUMMARY =
+        String.format("%40s\t%15s\t%15s\t%15s\t%15s\t%15s",
+                "NAME", "COUNT", "TOTAL TIME", "AVERAGE TIME", "PER SECOND", "DESCRIPTION");
     
     public synchronized void start()
     {
@@ -134,6 +141,7 @@ public class FileFolderRemoteLoader
     public void dumpThreadSummaries()
     {
         System.out.println("");
+        System.out.println(COLUMNS_SUMMARY);
         // Dump each thread's summary
         for (AbstractLoaderThread thread : threads)
         {
@@ -143,7 +151,6 @@ public class FileFolderRemoteLoader
     }
 
     public static final String PROP_SESSION_NAME = "session.name";
-    public static final String PROP_SESSION_VERBOSE = "session.verbose";
     public static final String PROP_SESSION_SOURCE_DIR = "session.sourceDir";
     public static final String PROP_SESSION_STORE_IDENTIFIERS = "session.storeIdentifiers";
     public static final String PROP_SESSION_RMI_URLS = "session.rmiUrls";
@@ -157,10 +164,6 @@ public class FileFolderRemoteLoader
         // Name
         String name = properties.getProperty(PROP_SESSION_NAME);
         FileFolderRemoteLoader.checkProperty(PROP_SESSION_STORE_IDENTIFIERS, name);
-        
-        // Verbose
-        String verboseStr = properties.getProperty(PROP_SESSION_VERBOSE);
-        boolean verbose = verboseStr == null ? false : Boolean.parseBoolean(verboseStr);
         
         // Source files
         String sourceDirStr = properties.getProperty(PROP_SESSION_SOURCE_DIR);
@@ -222,7 +225,6 @@ public class FileFolderRemoteLoader
                 name,
                 rmiUrls,
                 storeRefs,
-                verbose,
                 sourceDir,
                 folderProfiles);
         
@@ -263,23 +265,41 @@ public class FileFolderRemoteLoader
             String valuesStr = properties.getProperty(propertyName);
             FileFolderRemoteLoader.checkProperty(propertyName, valuesStr);
             // Parse it into the well-known values
-            long[] values = new long[] {1, 0, -1, 1};
+            String[] strValues = new String[] {"1", "0", "0", "1", "false"};
             int index = 0;
             StringTokenizer tokenizer = new StringTokenizer(valuesStr, ",");
             while (tokenizer.hasMoreTokens())
             {
                 String value = tokenizer.nextToken().trim();
-                values[index] = Integer.parseInt(value);
+                if (value.length() > 0)
+                {
+                    strValues[index] = value;
+                }
                 index++;
-                if (index >= values.length)
+                if (index >= strValues.length)
                 {
                     break;
                 }
             }
-            long testCount = values[0];
-            long testPeriod = values[1];
-            long testTotal = values[2];
-            long testDepth = values[3];
+            long testCount = 1L;
+            long testPeriod = 0L;
+            long testTotal = 0L;
+            long testDepth = 1L;
+            boolean testVerbose = false;
+            try
+            {
+                testCount = Long.parseLong(strValues[0]);
+                testPeriod = Long.parseLong(strValues[1]);
+                testTotal = Long.parseLong(strValues[2]);
+                testDepth = Long.parseLong(strValues[3]);
+                testVerbose = Boolean.parseBoolean(strValues[4]);
+            }
+            catch (Throwable e)
+            {
+                throw new LoaderClientException(
+                        "Unable to parse the loader configuration for '" + name + "'. " + LoaderSession.getLineEnding() +
+                        "The correct format is [threadCount], [period(ms)], [total], [folder depth], [verbose]");
+            }
             
             // Construct
             for (int i = 0; i < testCount; i++)
@@ -287,15 +307,15 @@ public class FileFolderRemoteLoader
                 AbstractLoaderThread thread = null;
                 if (type.equals("upload"))
                 {
-                    thread = new LoaderUploadThread(session, name, testPeriod, testTotal, testDepth);
+                    thread = new LoaderUploadThread(session, name, testPeriod, testTotal, testDepth, testVerbose);
                 }
                 else if (type.equals("totals"))
                 {
-                    thread = new LoaderTotalsThread(session, name, testPeriod, testTotal, testDepth);
+                    thread = new LoaderTotalsThread(session, name, testPeriod, testTotal, testDepth, testVerbose);
                 }
                 else if (type.equals("listFolders"))
                 {
-                    thread = new LoaderListFoldersThread(session, name, testPeriod, testTotal, testDepth);
+                    thread = new LoaderListFoldersThread(session, name, testPeriod, testTotal, testDepth, testVerbose);
                 }
                 else
                 {

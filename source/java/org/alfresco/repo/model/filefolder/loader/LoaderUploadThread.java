@@ -63,9 +63,10 @@ public class LoaderUploadThread extends AbstractLoaderThread
             String loaderName,
             long testPeriod,
             long testTotal,
-            long testLoadDepth)
+            long testLoadDepth,
+            boolean verbose)
     {
-        super(session, loaderName, testPeriod, testTotal, testLoadDepth);
+        super(session, loaderName, testPeriod, testTotal, testLoadDepth, verbose);
     }
 
     /**

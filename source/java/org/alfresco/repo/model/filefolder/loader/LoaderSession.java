@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -57,7 +58,6 @@ public class LoaderSession
     private String name;
     private Set<String> rmiUrls;
     private Set<StoreRef> storeRefs;
-    private boolean verbose;
     private File outputFile;
     private File sourceDir;
     private int[] folderProfiles;
@@ -68,6 +68,7 @@ public class LoaderSession
     private OutputStream outVerbose;
     private OutputStream outSummary;
     private OutputStream outError;
+    private long startTime;
     
     /**
      * 
@@ -78,7 +79,6 @@ public class LoaderSession
             String name,
             Set<String> rmiUrls,
             Set<StoreRef> storeRefs,
-            boolean verbose,
             File sourceDir,
             int[] folderProfiles)
     {
@@ -87,7 +87,6 @@ public class LoaderSession
         this.name = name;
         this.rmiUrls = rmiUrls;
         this.storeRefs = storeRefs;
-        this.verbose = verbose;
         this.sourceDir = sourceDir;
         this.folderProfiles = folderProfiles;
     }
@@ -161,6 +160,9 @@ public class LoaderSession
         outVerbose = new BufferedOutputStream(new FileOutputStream(fileVerbose));
         outSummary = new BufferedOutputStream(new FileOutputStream(fileSummary));
         outError = new BufferedOutputStream(new FileOutputStream(fileError));
+        
+        // Record the start time
+        startTime = System.currentTimeMillis();
     }
     
     public synchronized void close()
@@ -345,25 +347,10 @@ public class LoaderSession
     
     public static String getLineEnding()
     {
-        try
-        {
-            if (File.separatorChar == '/')
-            {
-                // It's unix
-                return "\n";
-            }
-            else
-            {
-                return "\r\n";
-            }
-        }
-        catch (Throwable e)
-        {
-            return "\n";
-        }
+        return System.getProperty("line.separator", "\n");
     }
     
-    public synchronized void logVerbose(String msg)
+    public synchronized void logVerbose(String msg, boolean verbose)
     {
         if (!verbose || outVerbose == null)
         {
@@ -452,8 +439,8 @@ public class LoaderSession
         sb.append("Session name:     ").append(name).append(getLineEnding())
           .append("RMI URLS:         ").append(rmiUrls).append(getLineEnding())
           .append("Store References: ").append(storeRefs).append(getLineEnding())
-          .append("Verbose:          ").append(Boolean.toString(verbose)).append(getLineEnding())
-          .append("Folder Profiles:  ").append(folderProfilesAsList);
+          .append("Folder Profiles:  ").append(folderProfilesAsList)
+          .append("Start Time:       ").append(new Date(startTime));
         return sb.toString();
     }
 }

@@ -122,8 +122,8 @@
                            
                            <td align=right style="white-space:nowrap">
                               <%-- Admin only global actions --%>
-                              <a:actionLink value="#{msg.recover_all_items}" image="/images/icons/recover_all.gif" action="dialog:recoverAllItems" actionListener="#{TrashcanBean.setupListAction}" rendered="#{NavigationBean.currentUser.admin == true}" />&nbsp;
-                              <a:actionLink value="#{msg.delete_all_items}" image="/images/icons/delete_all.gif" action="dialog:deleteAllItems" actionListener="#{TrashcanBean.setupListAction}" rendered="#{NavigationBean.currentUser.admin == true}" />
+<a:actionLink value="#{msg.recover_all_items}" image="/images/icons/recover_all.gif" action="dialog:recoverAllItems" actionListener="#{TrashcanRecoverAllItemsDialog.setupListAction}" rendered="#{NavigationBean.currentUser.admin == true}" />&nbsp;
+<a:actionLink value="#{msg.delete_all_items}" image="/images/icons/delete_all.gif" action="dialog:deleteAllItems" actionListener="#{TrashcanDeleteAllItemsDialog.setupListAction}" rendered="#{NavigationBean.currentUser.admin == true}" />
                            </td>
                         </tr>
                      </table>
@@ -147,7 +147,7 @@
                            <td width="100%" valign="top">
                               
                               <%-- Deleted Items List --%>
-                              <a:panel id="trashcan-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle" label="#{TrashcanBean.panelMessage}">
+<a:panel id="trashcan-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle" label="#{TrashcanDialog.panelMessage}">
                               
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
                               <table cellpadding="0" cellspacing="0" border="0" width="100%">
@@ -162,10 +162,10 @@
                               
                               <%-- Search controls --%>
                               <div style="padding: 4px;"></div>
-                              <h:inputText id="search-text" value="#{TrashcanBean.searchText}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;
-                              <h:commandButton id="search-btn1" value="#{msg.search_deleted_items_name}" actionListener="#{TrashcanBean.searchName}" disabled="true" />&nbsp;
-                              <h:commandButton id="search-btn2" value="#{msg.search_deleted_items_text}" actionListener="#{TrashcanBean.searchContent}" disabled="true" />&nbsp;
-                              <h:commandButton id="clear-btn" value="#{msg.show_all}" actionListener="#{TrashcanBean.clearSearch}" />
+<h:inputText id="search-text" value="#{TrashcanDialogProperty.searchText}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;
+<h:commandButton id="search-btn1" value="#{msg.search_deleted_items_name}" actionListener="#{TrashcanDialog.searchName}" disabled="true" />&nbsp;
+<h:commandButton id="search-btn2" value="#{msg.search_deleted_items_text}" actionListener="#{TrashcanDialog.searchContent}" disabled="true" />&nbsp;
+<h:commandButton id="clear-btn" value="#{msg.show_all}" actionListener="#{TrashcanDialog.clearSearch}" />
                               <div style="padding: 4px;"></div>
                               
                               <%-- Filter controls --%>
@@ -178,7 +178,7 @@
                                              <td style="padding-left:8px;width:120px"><nobr><h:outputText value="#{msg.date_filter_when}" />:</nobr></td>
                                              <td width=100%>
                                                 <a:modeList itemSpacing="2" iconColumnWidth="0" horizontal="true" selectedLinkStyle="font-weight:bold"
-                                                      value="#{TrashcanBean.dateFilter}" actionListener="#{TrashcanBean.dateFilterChanged}">
+value="#{TrashcanDialogProperty.dateFilter}" actionListener="#{TrashcanDialog.dateFilterChanged}">
                                                    <a:listItem value="all" label="#{msg.date_filter_all}" />
                                                    <a:listItem value="today" label="#{msg.date_filter_today}" />
                                                    <a:listItem value="week" label="#{msg.date_filter_week}" />
@@ -200,12 +200,12 @@
                                              <td width=100%>
                                                 <table cellspacing=0 cellpadding=0 border=0><tr><td>
                                                 <a:modeList id="user-filter" itemSpacing="2" iconColumnWidth="0" horizontal="true" selectedLinkStyle="font-weight:bold"
-                                                      value="#{TrashcanBean.userFilter}" actionListener="#{TrashcanBean.userFilterChanged}">
+value="#{TrashcanDialogProperty.userFilter}" actionListener="#{TrashcanDialog.userFilterChanged}">
                                                    <a:listItem value="all" label="#{msg.user_filter_all}" />
                                                    <a:listItem value="user" label="#{msg.user_filter_user}" />
                                                 </a:modeList>
                                                 </td><td>
-                                                <h:inputText id="user-search" value="#{TrashcanBean.userSearchText}" size="12" maxlength="100" style="font-size:10px" onkeyup="return userSearch(event);" />
+<h:inputText id="user-search" value="#{TrashcanDialogProperty.userSearchText}" size="12" maxlength="100" style="font-size:10px" onkeyup="return userSearch(event);" />
                                                 </td></tr></table>
                                              </td>
                                           </tr>
@@ -218,13 +218,13 @@
                               <div style="padding: 4px;"></div>
                               
                               <%-- Recover Listed Items actions --%>
-                              <a:actionLink value="#{msg.recover_listed_items}" image="/images/icons/recover_all.gif" action="dialog:recoverListedItems" actionListener="#{TrashcanBean.setupListAction}" />&nbsp;
-                              <a:actionLink value="#{msg.delete_listed_items}" image="/images/icons/delete_all.gif" action="dialog:deleteListedItems" actionListener="#{TrashcanBean.setupListAction}" />
+<a:actionLink value="#{msg.recover_listed_items}" image="/images/icons/recover_all.gif" action="dialog:recoverListedItems" actionListener="#{TrashcanRecoverListedItemsDialog.setupListAction}" />&nbsp;
+<a:actionLink value="#{msg.delete_listed_items}" image="/images/icons/delete_all.gif" action="dialog:deleteListedItems" actionListener="#{TrashcanDeleteListedItemsDialog.setupListAction}" />
                               <div style="padding: 4px;"></div>
                               
-                              <a:richList id="trashcan-list" binding="#{TrashcanBean.itemsRichList}" viewMode="details" pageSize="10"
+<a:richList id="trashcan-list" binding="#{TrashcanDialogProperty.itemsRichList}" viewMode="details" pageSize="10"
                                     styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
-                                    value="#{TrashcanBean.items}" var="r" initialSortColumn="deletedDate" initialSortDescending="true">
+value="#{TrashcanDialog.items}" var="r" initialSortColumn="deletedDate" initialSortDescending="true">
                                  
                                  <%-- Primary column showing item name --%>
                                  <a:column primary="true" width="150" style="padding:2px;text-align:left">
@@ -232,11 +232,11 @@
                                        <a:sortLink label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
                                     </f:facet>
                                     <f:facet name="small-icon">
-                                       <a:actionLink value="#{r.name}" action="dialog:itemDetails" actionListener="#{TrashcanBean.setupItemAction}" image="#{r.typeIcon}" showLink="false" styleClass="inlineAction">
+<a:actionLink value="#{r.name}" action="dialog:itemDetails" actionListener="#{TrashcanItemDetailsDialog.setupItemAction}" image="#{r.typeIcon}" showLink="false" styleClass="inlineAction">
                                          <f:param name="id" value="#{r.id}" />
                                        </a:actionLink>
                                     </f:facet>
-                                    <a:actionLink value="#{r.name}" action="dialog:itemDetails" actionListener="#{TrashcanBean.setupItemAction}">
+<a:actionLink value="#{r.name}" action="dialog:itemDetails" actionListener="#{TrashcanItemDetailsDialog.setupItemAction}">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
                                  </a:column>
@@ -272,10 +272,10 @@
                                     <f:facet name="header">
                                        <h:outputText value="#{msg.actions}"/>
                                     </f:facet>
-                                    <a:actionLink value="#{msg.recover}" image="/images/icons/recover.gif" showLink="false" action="dialog:recoverItem" actionListener="#{TrashcanBean.setupItemAction}">
+<a:actionLink value="#{msg.recover}" image="/images/icons/recover.gif" showLink="false" action="dialog:recoverItem" actionListener="#{TrashcanRecoverItemDialog.setupItemAction}">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
-                                    <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" showLink="false" action="dialog:deleteItem" actionListener="#{TrashcanBean.setupItemAction}">
+<a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" showLink="false" action="dialog:deleteItem" actionListener="#{TrashcanDeleteItemDialog.setupItemAction}">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
                                  </a:column>
@@ -294,7 +294,7 @@
                               <table cellpadding="0" cellspacing="0" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.close}" action="#{TrashcanBean.close}" styleClass="wizardButton" />
+<h:commandButton value="#{msg.close}" action="#{TrashcanDialog.close}" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>

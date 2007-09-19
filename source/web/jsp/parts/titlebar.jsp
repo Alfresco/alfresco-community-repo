@@ -76,7 +76,7 @@
                                 image="/images/icons/user_console.gif" 
                                 showLink="false" 
                                 action="dialog:userConsole" 
-                                actionListener="#{UsersBean.setupUserAction}" 
+                                actionListener="#{UsersDialog.setupUserAction}" 
                                 id="alf_user_console">
                      <f:param name="id" value="#{NavigationBean.currentUser.person.id}" />
                   </a:actionLink>

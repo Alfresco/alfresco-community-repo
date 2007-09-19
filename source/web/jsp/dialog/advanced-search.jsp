@@ -94,14 +94,14 @@
                            </td>
                            
                            <td align=right>
-                              <a:actionLink value="#{msg.resetall}" image="/images/icons/delete.gif" padding="2" actionListener="#{AdvancedSearchBean.reset}" style="white-space:nowrap" />
+                              <a:actionLink value="#{msg.resetall}" image="/images/icons/delete.gif" padding="2" actionListener="#{AdvancedSearchDialog.reset}" style="white-space:nowrap" />
                            </td>
                            <td class="separator" width=1><img src="<%=request.getContextPath()%>/images/parts/dotted_separator.gif" border=0 height=29 width=1></td>
                            <td width=128 style="padding-left:4px">
                               <%-- Available Saved Searches --%>
                               <div style="padding-top:4px" style="white-space:nowrap">
                                  <a:modeList itemSpacing="3" iconColumnWidth="20" style="text-align:right" selectedStyleClass="statusListHighlight" disabledStyleClass="statusListDisabled" selectedImage="/images/icons/filter.gif"
-                                       value="#{AdvancedSearchBean.savedSearchMode}" actionListener="#{AdvancedSearchBean.savedSearchModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu" label="#{msg.saved_searches}">
+                                       value="#{SearchProperties.savedSearchMode}" actionListener="#{AdvancedSearchDialog.savedSearchModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu" label="#{msg.saved_searches}">
                                     <a:listItem value="user" label="#{msg.user_searches}" />
                                     <a:listItem value="global" label="#{msg.global_searches}" />
                                  </a:modeList>
@@ -113,10 +113,10 @@
                                  <%-- uses a nasty hack to execute an ActionListener for the drop-down.
                                       tried using a valueChangedListener+formsubmit but the valueChangedListener
                                       is called too late in the lifecycle for the form controls to be modified --%>
-                                 <h:selectOneMenu id="searches" value="#{AdvancedSearchBean.savedSearch}" onchange="document.forms['advsearch']['advsearch:act'].value='advsearch:show-search'; document.forms['advsearch'].submit(); return true;">
-                                    <f:selectItems value="#{AdvancedSearchBean.savedSearches}" />
+                                 <h:selectOneMenu id="searches" value="#{SearchProperties.savedSearch}" onchange="document.forms['advsearch']['advsearch:act'].value='advsearch:show-search'; document.forms['advsearch'].submit(); return true;">
+                                    <f:selectItems value="#{AdvancedSearchDialog.savedSearches}" />
                                  </h:selectOneMenu>
-                                 <div style="display:none"><a:actionLink id="show-search" value="Select" actionListener="#{AdvancedSearchBean.selectSearch}" /></div>
+                                 <div style="display:none"><a:actionLink id="show-search" value="Select" actionListener="#{AdvancedSearchDialog.selectSearch}" /></div>
                               </div>
                            </td>
                         </tr>
@@ -147,18 +147,18 @@
                                  <tr>
                                     <td colspan=2>
                                        <h:outputText value="#{msg.look_for}" style="font-weight:bold" />:&nbsp;
-                                       <h:inputText id="search-text" value="#{AdvancedSearchBean.text}" size="48" maxlength="1024" />
+                                       <h:inputText id="search-text" value="#{SearchProperties.text}" size="48" maxlength="1024" />
                                     </td>
                                  </tr>
                                  
                                  <tr>
                                     <td valign="top">
                                        <a:panel label="#{msg.show_results_for}" id="restrict-panel" style="font-weight:bold" border="white" bgcolor="white" progressive="true"
-                                             expanded='#{AdvancedSearchBean.panels["restrict-panel"]}' expandedActionListener="#{AdvancedSearchBean.expandPanel}">
+                                             expanded='#{SearchProperties.panels["restrict-panel"]}' expandedActionListener="#{AdvancedSearchDialog.expandPanel}">
                                           <table cellpadding="2" cellspacing="2" border="0">
                                              <tr>
                                                 <td>
-                                                   <h:selectOneRadio value="#{AdvancedSearchBean.mode}" layout="pageDirection" id="radioMode" >
+                                                   <h:selectOneRadio value="#{SearchProperties.mode}" layout="pageDirection" id="radioMode" >
                                                       <f:selectItem itemValue="all" itemLabel="#{msg.all_items}" id="selectAll" />
                                                       <f:selectItem itemValue="files_text" itemLabel="#{msg.file_names_contents}" id="selectFilesText" />
                                                       <f:selectItem itemValue="files" itemLabel="#{msg.file_names}" id="selectFiles" />
@@ -172,11 +172,11 @@
                                        <div style="padding:3px"></div>
                                        
                                        <a:panel label="#{msg.look_in}" id="location-panel" style="font-weight:bold" border="white" bgcolor="white" progressive="true"
-                                             expanded='#{AdvancedSearchBean.panels["location-panel"]}' expandedActionListener="#{AdvancedSearchBean.expandPanel}">
+                                             expanded='#{SearchProperties.panels["location-panel"]}' expandedActionListener="#{AdvancedSearchDialog.expandPanel}">
                                           <table cellpadding="2" cellspacing="2" border="0">
                                              <tr>
                                                 <td>
-                                                   <h:selectOneRadio value="#{AdvancedSearchBean.lookin}" layout="pageDirection" id="radioLookin">
+                                                   <h:selectOneRadio value="#{SearchProperties.lookin}" layout="pageDirection" id="radioLookin">
                                                       <f:selectItem itemValue="all" itemLabel="#{msg.all_spaces}" id="spacesAll" />
                                                       <f:selectItem itemValue="other" itemLabel="#{msg.specify_space}:" id="spacesOther" />
                                                    </h:selectOneRadio>
@@ -184,12 +184,12 @@
                                              </tr>
                                              <tr>
                                                 <td style="padding-left:26px">
-                                                   <r:spaceSelector label="#{msg.select_space_prompt}" value="#{AdvancedSearchBean.location}" initialSelection="#{NavigationBean.currentNodeId}" styleClass="selector" id="spaceSelector" />
+                                                   <r:spaceSelector label="#{msg.select_space_prompt}" value="#{SearchProperties.location}" initialSelection="#{NavigationBean.currentNodeId}" styleClass="selector" id="spaceSelector" />
                                                 </td>
                                              </tr>
                                              <tr>
                                                 <td style="padding-left:22px">
-                                                   <h:selectBooleanCheckbox value="#{AdvancedSearchBean.locationChildren}" id="chkLocation" />
+                                                   <h:selectBooleanCheckbox value="#{SearchProperties.locationChildren}" id="chkLocation" />
                                                    <span style="vertical-align:20%"><h:outputText value="#{msg.include_child_spaces}" id="incchild" /></span>
                                                 </td>
                                              </tr>
@@ -199,7 +199,7 @@
                                        <div style="padding:3px"></div>
                                        
                                        <a:panel label="#{msg.show_results_categories}" id="categories-panel" style="font-weight:bold" border="white" bgcolor="white" progressive="true"
-                                             expanded='#{AdvancedSearchBean.panels["categories-panel"]}' expandedActionListener="#{AdvancedSearchBean.expandPanel}">
+                                             expanded='#{SearchProperties.panels["categories-panel"]}' expandedActionListener="#{AdvancedSearchDialog.expandPanel}">
                                           <table cellpadding="2" cellspacing="2" border="0">
                                              <tr>
                                                 <td style="padding-left:8px;padding-top:8px">
@@ -214,16 +214,16 @@
                                              </tr>
                                              <tr>
                                                 <td style="padding-left:4px">
-                                                   <h:commandButton id="btnAddCat" value="#{msg.add_to_list_button}" actionListener="#{AdvancedSearchBean.addCategory}" styleClass="wizardButton" />
+                                                   <h:commandButton id="btnAddCat" value="#{msg.add_to_list_button}" actionListener="#{AdvancedSearchDialog.addCategory}" styleClass="wizardButton" />
                                                 </td>
                                              </tr>
                                              <tr>
                                                 <td style="padding-left:4px">
-                                                   <h:dataTable value="#{AdvancedSearchBean.categoriesDataModel}" var="row" id="catTable"
+                                                   <h:dataTable value="#{AdvancedSearchDialog.categoriesDataModel}" var="row" id="catTable"
                                                                 rowClasses="selectedItemsRow,selectedItemsRowAlt"
                                                                 styleClass="selectedItems" headerClass="selectedItemsHeader"
                                                                 cellspacing="0" cellpadding="4" 
-                                                                rendered="#{AdvancedSearchBean.categoriesDataModel.rowCount != 0}">
+                                                                rendered="#{SearchProperties.categoriesDataModel.rowCount != 0}">
                                                       <h:column id="col1">
                                                          <f:facet name="header">
                                                             <h:outputText value="#{msg.category}" id="tblCatNameHead" />
@@ -239,12 +239,12 @@
                                                          </h:outputText>
                                                       </h:column>
                                                       <h:column id="col3">
-                                                         <a:actionLink actionListener="#{AdvancedSearchBean.removeCategory}" image="/images/icons/delete.gif"
+                                                         <a:actionLink actionListener="#{AdvancedSearchDialog.removeCategory}" image="/images/icons/delete.gif"
                                                                        value="#{msg.remove}" showLink="false" style="padding-left:6px" id="tblCatAdd" />
                                                       </h:column>
                                                    </h:dataTable>
                                                    
-                                                   <a:panel id="no-items" rendered="#{AdvancedSearchBean.categoriesDataModel.rowCount == 0}">
+                                                   <a:panel id="no-items" rendered="#{SearchProperties.categoriesDataModel.rowCount == 0}">
                                                       <table cellspacing='0' cellpadding='2' border='0' class='selectedItems'>
                                                          <tr>
                                                             <td colspan='2' class='selectedItemsHeader'><h:outputText id="no-items-category" value="#{msg.category}" /></td>
@@ -264,7 +264,7 @@
                                     <td valign="top">                                   
                                        
                                        <a:panel label="#{msg.also_search_results}" id="attrs-panel" style="font-weight:bold" border="white" bgcolor="white" progressive="true"
-                                             expanded='#{AdvancedSearchBean.panels["attrs-panel"]}' expandedActionListener="#{AdvancedSearchBean.expandPanel}">
+                                             expanded='#{SearchProperties.panels["attrs-panel"]}' expandedActionListener="#{AdvancedSearchDialog.expandPanel}">
                                           <table cellpadding="2" cellspacing="2" border="0">
                                              <tr>
                                                 <td>
@@ -272,63 +272,63 @@
                                                       <tr>
                                                          <td style="padding-left:8px"><h:outputText value="#{msg.folder_type}" id="folderType" />:</td>
                                                          <td>
-                                                            <h:selectOneMenu value="#{AdvancedSearchBean.folderType}" id="selectFolderType">
-                                                               <f:selectItems value="#{AdvancedSearchBean.folderTypes}" id="folderTypes" />
+                                                            <h:selectOneMenu value="#{SearchProperties.folderType}" id="selectFolderType">
+                                                               <f:selectItems value="#{AdvancedSearchDialog.folderTypes}" id="folderTypes" />
                                                             </h:selectOneMenu>
                                                          </td>
                                                       </tr>
                                                       <tr>
                                                          <td style="padding-left:8px"><h:outputText value="#{msg.content_type}" id="contentType" />:</td>
                                                          <td>
-                                                            <h:selectOneMenu value="#{AdvancedSearchBean.contentType}" id="selectContentType">
-                                                               <f:selectItems value="#{AdvancedSearchBean.contentTypes}" id="contentTypes" />
+                                                            <h:selectOneMenu value="#{SearchProperties.contentType}" id="selectContentType">
+                                                               <f:selectItems value="#{AdvancedSearchDialog.contentTypes}" id="contentTypes" />
                                                             </h:selectOneMenu>
                                                          </td>
                                                       </tr>
                                                       <tr>
                                                          <td style="padding-left:8px"><h:outputText value="#{msg.content_format}" id="contentFormat" />:</td>
                                                          <td>
-                                                            <h:selectOneMenu value="#{AdvancedSearchBean.contentFormat}" id="selectContentFormat">
-                                                               <f:selectItems value="#{AdvancedSearchBean.contentFormats}" id="contentFormats" />
+                                                            <h:selectOneMenu value="#{SearchProperties.contentFormat}" id="selectContentFormat">
+                                                               <f:selectItems value="#{AdvancedSearchDialog.contentFormats}" id="contentFormats" />
                                                             </h:selectOneMenu>
                                                          </td>
                                                       </tr>
                                                       <tr>
-                                                         <td style="padding-left:8px"><h:outputText value="#{msg.title}" id="title" />:</td><td><h:inputText value="#{AdvancedSearchBean.title}" size="#{TextFieldGenerator.size}" maxlength="1024" id="txtTitle" /></td>
+                                                         <td style="padding-left:8px"><h:outputText value="#{msg.title}" id="title" />:</td><td><h:inputText value="#{SearchProperties.title}" size="#{TextFieldGenerator.size}" maxlength="1024" id="txtTitle" /></td>
                                                       </tr>
                                                       <tr>
-                                                         <td style="padding-left:8px"><h:outputText value="#{msg.description}" id="desc" />:</td><td><h:inputText value="#{AdvancedSearchBean.description}" size="#{TextFieldGenerator.size}" maxlength="1024" id="txtDesc" /></td>
+                                                         <td style="padding-left:8px"><h:outputText value="#{msg.description}" id="desc" />:</td><td><h:inputText value="#{SearchProperties.description}" size="#{TextFieldGenerator.size}" maxlength="1024" id="txtDesc" /></td>
                                                       </tr>
                                                       <tr>
-                                                         <td style="padding-left:8px"><h:outputText value="#{msg.author}" id="author" />:</td><td><h:inputText value="#{AdvancedSearchBean.author}" size="#{TextFieldGenerator.size}" maxlength="1024" id="txtAuthor" /></td>
+                                                         <td style="padding-left:8px"><h:outputText value="#{msg.author}" id="author" />:</td><td><h:inputText value="#{SearchProperties.author}" size="#{TextFieldGenerator.size}" maxlength="1024" id="txtAuthor" /></td>
                                                       </tr>
                                                    </table>
                                                    <table cellpadding="1" cellspacing="0" border="0">
                                                       <tr><td colspan="2" class="paddingRow"></td></tr>
                                                       <tr>
-                                                         <td colspan="2"><h:selectBooleanCheckbox value="#{AdvancedSearchBean.modifiedDateChecked}" id="chkModDate" /><span style="vertical-align:20%"><h:outputText value="#{msg.modified_date}" id="modDate" />:</span></td>
+                                                         <td colspan="2"><h:selectBooleanCheckbox value="#{SearchProperties.modifiedDateChecked}" id="chkModDate" /><span style="vertical-align:20%"><h:outputText value="#{msg.modified_date}" id="modDate" />:</span></td>
                                                       </tr>
                                                       <tr>
-                                                         <td style="padding-left:8px"><h:outputText value="#{msg.from}" id="modDateFrom" />:</td><td><a:inputDatePicker value="#{AdvancedSearchBean.modifiedDateFrom}" yearCount="#{DatePickerGenerator.yearCount}" startYear="#{DatePickerGenerator.startYear}" id="dateModFrom" initialiseIfNull="true" /></td>
+                                                         <td style="padding-left:8px"><h:outputText value="#{msg.from}" id="modDateFrom" />:</td><td><a:inputDatePicker value="#{SearchProperties.modifiedDateFrom}" yearCount="#{DatePickerGenerator.yearCount}" startYear="#{DatePickerGenerator.startYear}" id="dateModFrom" initialiseIfNull="true" /></td>
                                                       </tr>
                                                       <tr>
-                                                         <td style="padding-left:8px"><h:outputText value="#{msg.to}" id="modDateTo" />:</td><td><a:inputDatePicker value="#{AdvancedSearchBean.modifiedDateTo}" yearCount="#{DatePickerGenerator.yearCount}" startYear="#{DatePickerGenerator.startYear}" id="dateModTo" initialiseIfNull="true" /></td>
+                                                         <td style="padding-left:8px"><h:outputText value="#{msg.to}" id="modDateTo" />:</td><td><a:inputDatePicker value="#{SearchProperties.modifiedDateTo}" yearCount="#{DatePickerGenerator.yearCount}" startYear="#{DatePickerGenerator.startYear}" id="dateModTo" initialiseIfNull="true" /></td>
                                                       </tr>
                                                       
                                                       <tr>
-                                                         <td colspan="2"><h:selectBooleanCheckbox value="#{AdvancedSearchBean.createdDateChecked}" id="chkCreateDate" /><span style="vertical-align:20%"><h:outputText value="#{msg.created_date}" id="createDate" />:</span></td>
+                                                         <td colspan="2"><h:selectBooleanCheckbox value="#{SearchProperties.createdDateChecked}" id="chkCreateDate" /><span style="vertical-align:20%"><h:outputText value="#{msg.created_date}" id="createDate" />:</span></td>
                                                       </tr>
                                                       <tr>
-                                                         <td style="padding-left:8px"><h:outputText value="#{msg.from}" id="createDateFrom" />:</td><td><a:inputDatePicker value="#{AdvancedSearchBean.createdDateFrom}" yearCount="#{DatePickerGenerator.yearCount}" startYear="#{DatePickerGenerator.startYear}" id="dateCreatedFrom" initialiseIfNull="true" /></td>
+                                                         <td style="padding-left:8px"><h:outputText value="#{msg.from}" id="createDateFrom" />:</td><td><a:inputDatePicker value="#{SearchProperties.createdDateFrom}" yearCount="#{DatePickerGenerator.yearCount}" startYear="#{DatePickerGenerator.startYear}" id="dateCreatedFrom" initialiseIfNull="true" /></td>
                                                       </tr>
                                                       <tr>
-                                                         <td style="padding-left:8px"><h:outputText value="#{msg.to}" id="createDateTo" />:</td><td><a:inputDatePicker value="#{AdvancedSearchBean.createdDateTo}" yearCount="#{DatePickerGenerator.yearCount}" startYear="#{DatePickerGenerator.startYear}" id="dateCreatedTo" initialiseIfNull="true" /></td>
+                                                         <td style="padding-left:8px"><h:outputText value="#{msg.to}" id="createDateTo" />:</td><td><a:inputDatePicker value="#{SearchProperties.createdDateTo}" yearCount="#{DatePickerGenerator.yearCount}" startYear="#{DatePickerGenerator.startYear}" id="dateCreatedTo" initialiseIfNull="true" /></td>
                                                       </tr>
                                                    </table>
                                                    <div style="padding:4px"></div>
                                                    <a:panel label="#{msg.additional_options}" id="custom-panel" style="font-weight:bold" progressive="true"
-                                                         expanded='#{AdvancedSearchBean.panels["custom-panel"]}' expandedActionListener="#{AdvancedSearchBean.expandPanel}">
-                                                      <r:searchCustomProperties id="customProps" bean="AdvancedSearchBean" var="customProperties" style="padding-left:12px;padding-top:4px" />
+                                                         expanded='#{SearchProperties.panels["custom-panel"]}' expandedActionListener="#{AdvancedSearchDialog.expandPanel}">
+                                                      <r:searchCustomProperties id="customProps" bean="AdvancedSearchDialog" var="customProperties" style="padding-left:12px;padding-top:4px" />
                                                    </a:panel>
                                                 </td>
                                              </tr>
@@ -347,7 +347,7 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton id="search-button" value="#{msg.search}" action="#{AdvancedSearchBean.search}" styleClass="wizardButton" />
+                                       <h:commandButton id="search-button" value="#{msg.search}" action="#{AdvancedSearchDialog.search}" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                                  <tr>

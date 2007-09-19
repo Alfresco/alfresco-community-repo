@@ -146,7 +146,7 @@
                               <h:panelGroup id="dashboard-panel-facets">
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write" id="evalChange">
-                                       <a:actionLink id="actModify" value="#{msg.modify}" action="dialog:applyTemplate" showLink="false" image="/images/icons/preview.gif" style="padding-right:8px" />
+                                       <a:actionLink id="actModify" value="#{msg.modify}" action="dialog:applyDocTemplate" showLink="false" image="/images/icons/preview.gif" style="padding-right:8px" />
                                        <a:actionLink id="actRemove" value="#{msg.remove}" actionListener="#{DocumentDetailsBean.removeTemplate}" showLink="false" image="/images/icons/delete.gif" />
                                     </r:permissionEvaluator>
                                  </f:facet>
@@ -158,7 +158,7 @@
                                     <tr>
                                        <td align=left>
                                           <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write" id="evalApply">
-                                             <a:actionLink id="actDashboard" value="#{msg.apply_template}" rendered="#{!DocumentDetailsBean.hasCustomView}" action="dialog:applyTemplate" />
+                                             <a:actionLink id="actDashboard" value="#{msg.apply_template}" rendered="#{!DocumentDetailsBean.hasCustomView}" action="dialog:applyDocTemplate" />
                                           </r:permissionEvaluator>
                                           <a:panel id="template-panel" rendered="#{DocumentDetailsBean.hasCustomView}">
                                              <div style="padding:4px;border: 1px dashed #cccccc">
@@ -388,7 +388,7 @@
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write">
                                        <a:actionLink id="titleLink2" value="#{msg.title_edit_simple_workflow}" showLink="false"
-                                                     image="/images/icons/Change_details.gif" action="editSimpleWorkflow"
+                                                     image="/images/icons/Change_details.gif" action="dialog:editSimpleWorkflow"
                                                      rendered="#{DocumentDetailsBean.approveStepName != null}" />
                                     </r:permissionEvaluator>
                                  </f:facet>
@@ -396,7 +396,7 @@
                               <a:panel label="#{msg.workflows}" id="workflow-panel" facetsId="workflow-panel-facets" progressive="true"
                                        border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
                                        expanded='#{DocumentDetailsBean.panels["workflow-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}">
-                                 <r:nodeWorkflowInfo id="workflow-info" value="#{DocumentDetailsBean.document}" />
+                                 <r:nodeWorkflowInfo id="workflow-info" value="#{EditSimpleWorkflowDialog.document}" />
                               </a:panel>
 
                               <div style="padding:4px"></div>
@@ -405,7 +405,7 @@
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write">
                                        <a:actionLink id="titleLink3" value="#{msg.change_category}" showLink="false" image="/images/icons/Change_details.gif"
-                                             action="editCategories" actionListener="#{DocumentDetailsBean.setupCategoriesForEdit}" />
+                                             action="dialog:editContentCategories" actionListener="#{DocumentDetailsBean.setupCategoriesForEdit}" />
                                     </r:permissionEvaluator>
                                  </f:facet>
                               </h:panelGroup>

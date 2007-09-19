@@ -101,7 +101,7 @@
             <evaluator>org.alfresco.web.action.evaluator.CheckinDocEvaluator</evaluator>
             <label-id>checkin</label-id>
             <image>/images/icons/CheckIn_icon.gif</image>
-            <action-listener>#{CheckinCheckoutBean.setupWorkflowContentAction}</action-listener>
+            <action-listener>#{CheckinCheckoutDialog.setupWorkflowContentAction}</action-listener>
             <action>dialog:checkinFile</action>
             <params>
                <param name="id">#{actionContext.id}</param>
@@ -114,7 +114,7 @@
             <evaluator>org.alfresco.web.action.evaluator.CheckoutDocEvaluator</evaluator>
             <label-id>checkout</label-id>
             <image>/images/icons/CheckOut_icon.gif</image>
-            <action-listener>#{CheckinCheckoutBean.setupWorkflowContentAction}</action-listener>
+            <action-listener>#{CheckinCheckoutDialog.setupWorkflowContentAction}</action-listener>
             <action>dialog:checkoutFile</action>
             <params>
                <param name="id">#{actionContext.id}</param>
@@ -127,7 +127,7 @@
             <evaluator>org.alfresco.web.action.evaluator.CancelCheckoutDocEvaluator</evaluator>
             <label-id>undocheckout</label-id>
             <image>/images/icons/undo_checkout.gif</image>
-            <action-listener>#{CheckinCheckoutBean.setupWorkflowContentAction}</action-listener>
+            <action-listener>#{CheckinCheckoutDialog.setupWorkflowContentAction}</action-listener>
             <action>dialog:undoCheckoutFile</action>
             <params>
                <param name="id">#{actionContext.id}</param>

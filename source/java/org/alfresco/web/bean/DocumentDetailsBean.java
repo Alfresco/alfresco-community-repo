@@ -60,19 +60,23 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
+import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.dialog.IDialogBean;
 import org.alfresco.web.bean.ml.MultilingualUtils;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.UIActionLink;
+
 /**
  * Backing bean providing access to the details of a document
  *
  * @author gavinc
  */
-public class DocumentDetailsBean extends BaseDetailsBean
+public class DocumentDetailsBean extends BaseDetailsBean implements IDialogBean 
 {
    private static final String OUTCOME_RETURN = "showDocDetails";
 
@@ -84,6 +88,7 @@ public class DocumentDetailsBean extends BaseDetailsBean
    private static final String MSG_ERROR_ASPECT_VERSIONING = "error_aspect_versioning";
    private static final String MSG_ERROR_ASPECT_CLASSIFY = "error_aspect_classify";
    private static final String MSG_ERROR_UPDATE_CATEGORY = "error_update_category";
+   private static final String MSG_MODIFY_CATEGORIES_OF = "modify_categories_of";
 
    private static final String ML_VERSION_PANEL_ID = "ml-versions-panel";
 
@@ -98,8 +103,18 @@ public class DocumentDetailsBean extends BaseDetailsBean
    private List categories;
 
    private Node translationDocument;
+   private BaseDialogBean baseDialogBean = new BaseDialogBeanImpl();
 
-
+   private class BaseDialogBeanImpl extends BaseDialogBean
+   {  
+      @Override
+      protected String finishImpl(FacesContext context, String outcome) throws Exception 
+      {
+         return saveCategories(context, outcome);
+      }
+ 
+   }
+   
    // ------------------------------------------------------------------------------
    // Construction
 
@@ -617,9 +632,9 @@ public class DocumentDetailsBean extends BaseDetailsBean
     *
     * @return The outcome
     */
-   public String saveCategories()
+   public String saveCategories(FacesContext newContext, String newOutcome)
    {
-      String outcome = "cancel";
+      String outcome = newOutcome;
 
       try
       {
@@ -628,13 +643,13 @@ public class DocumentDetailsBean extends BaseDetailsBean
          {
             public Object execute() throws Throwable
             {
-         // firstly retrieve all the properties for the current node
+               // firstly retrieve all the properties for the current node
                Map<QName, Serializable> updateProps = nodeService.getProperties(getDocument().getNodeRef());
 
-         // create a node ref representation of the selected id and set the new properties
+               // create a node ref representation of the selected id and set the new properties
                updateProps.put(ContentModel.PROP_CATEGORIES, (Serializable) categories);
 
-         // set the properties on the node
+                     // set the properties on the node
                nodeService.setProperties(getDocument().getNodeRef(), updateProps);
                return null;
             }
@@ -644,7 +659,6 @@ public class DocumentDetailsBean extends BaseDetailsBean
          // reset the state of the current document so it reflects the changes just made
          getDocument().reset();
 
-         outcome = "finish";
       }
       catch (Throwable e)
       {
@@ -667,7 +681,7 @@ public class DocumentDetailsBean extends BaseDetailsBean
          {
             public Object execute() throws Throwable
             {
-         // add the general classifiable aspect to the node
+               // add the general classifiable aspect to the node
                nodeService.addAspect(getDocument().getNodeRef(), ContentModel.ASPECT_GEN_CLASSIFIABLE, null);
                return null;
             }
@@ -1083,7 +1097,58 @@ public class DocumentDetailsBean extends BaseDetailsBean
    {
       this.editionService = editionService;
    }
+   
+   // ------------------------------------------------------------------------------
+   // IDialogBean implementation
+
+   public String cancel()
+   {
+      return baseDialogBean.cancel();
+   }
+   
+   public String finish()
+   {
+      return baseDialogBean.finish();
+   }
+
+   public List<DialogButtonConfig> getAdditionalButtons()
+   {
+      return baseDialogBean.getAdditionalButtons();
+   }
+
+   public String getCancelButtonLabel()
+   {
+      return baseDialogBean.getCancelButtonLabel();
+   }
+
+   public String getContainerDescription()
+   {
+      return baseDialogBean.getContainerDescription();
+   }
+
+   public String getContainerTitle()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_MODIFY_CATEGORIES_OF) + 
+            " '" + getDocument().getName() + "'";
+   }
+
+   public boolean getFinishButtonDisabled()
+   {
+      return false;
+   }
+
+   public String getFinishButtonLabel()
+   {
+      return baseDialogBean.getFinishButtonLabel();
+   }
+
+   public void init(Map<String, String> parameters)
+   {
+      baseDialogBean.init(parameters);
+   }
+
+   public void restored()
+   {
+      baseDialogBean.restored();
+   }
 }
-
-
-

@@ -32,7 +32,7 @@
 <%@ page isELIgnored="false" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 <%@ page import="org.alfresco.web.app.servlet.FacesHelper" %>
-<%@ page import="org.alfresco.web.bean.CheckinCheckoutBean" %>
+<%@ page import="org.alfresco.web.bean.CheckinCheckoutDialog" %>
 <%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="javax.faces.context.FacesContext" %>
 
@@ -82,7 +82,7 @@
                               <h:graphicImage id="wizard-logo" url="/images/icons/update_large.gif" />
                            </td>
                            <td>
-                              <div class="mainTitle"><h:outputText value="#{msg.update}" /> '<h:outputText value="#{CheckinCheckoutBean.document.name}" />'</div>
+                              <div class="mainTitle"><h:outputText value="#{msg.update}" /> '<h:outputText value="#{CCProperties.document.name}" />'</div>
                               <div class="mainSubText"><h:outputText value="#{msg.updatefile_description}" /></div>
                            </td>
                         </tr>
@@ -135,7 +135,7 @@
                                     </td>
                                  </tr>
                                  <%
-                                 CheckinCheckoutBean bean = (CheckinCheckoutBean)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "CheckinCheckoutBean");
+                                 CheckinCheckoutDialog bean = (CheckinCheckoutDialog)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "CheckinCheckoutDialog");
                                  if (bean != null && bean.getFileName() != null) {
                                  %>
                                     <tr>
@@ -157,13 +157,13 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.update}" action="#{CheckinCheckoutBean.updateFileOK}" disabled="#{CheckinCheckoutBean.fileName == null}" styleClass="dialogControls" />
+                                       <h:commandButton value="#{msg.update}" action="#{CheckinCheckoutDialog.updateFileOK}" disabled="#{CheckinCheckoutDialog.fileName == null}" styleClass="dialogControls" />
                                     </td>
                                  </tr>
                                  <tr><td class="dialogButtonSpacing"></td></tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.cancel}" action="#{CheckinCheckoutBean.cancel}" styleClass="dialogControls" />
+                                       <h:commandButton value="#{msg.cancel}" action="#{CheckinCheckoutDialog.cancel}" styleClass="dialogControls" />
                                     </td>
                                  </tr>
                               </table>

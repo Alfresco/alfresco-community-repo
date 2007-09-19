@@ -134,7 +134,7 @@
                               <h:panelGroup id="dashboard-panel-facets">
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write" id="evalChange">
-                                       <a:actionLink id="actModify" value="#{msg.modify}" action="dialog:applyTemplate" showLink="false" image="/images/icons/preview.gif" style="padding-right:8px" />
+                                       <a:actionLink id="actModify" value="#{msg.modify}" action="dialog:applySpaceTemplate" showLink="false" image="/images/icons/preview.gif" style="padding-right:8px" />
                                        <a:actionLink id="actRemove" value="#{msg.remove}" actionListener="#{SpaceDetailsBean.removeTemplate}" showLink="false" image="/images/icons/delete.gif" />
                                     </r:permissionEvaluator>
                                  </f:facet>
@@ -146,7 +146,7 @@
                                     <tr>
                                        <td align=left>
                                           <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write" id="evalApply">
-                                             <a:actionLink id="actDashboard" value="#{msg.apply_template}" rendered="#{!SpaceDetailsBean.hasCustomView}" action="dialog:applyTemplate" />
+                                             <a:actionLink id="actDashboard" value="#{msg.apply_template}" rendered="#{!SpaceDetailsBean.hasCustomView}" action="dialog:applySpaceTemplate" />
                                           </r:permissionEvaluator>
                                           <a:panel id="template-panel" rendered="#{SpaceDetailsBean.hasCustomView}">
                                              <div style="padding:4px;border: 1px dashed #cccccc">
@@ -236,7 +236,7 @@
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
                                        <a:actionLink id="titleLink4" value="#{msg.title_edit_simple_workflow}" showLink="false" 
-                                                     image="/images/icons/Change_details.gif" action="editSimpleWorkflow"
+                                                     image="/images/icons/Change_details.gif" action="dialog:editSpaceSimpleWorkflow"
                                                      rendered="#{SpaceDetailsBean.approveStepName != null}" />
                                     </r:permissionEvaluator>
                                  </f:facet>
@@ -253,7 +253,7 @@
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
                                        <a:actionLink id="titleLink3" value="#{msg.change_category}" showLink="false" image="/images/icons/Change_details.gif"
-                                             action="editCategories" actionListener="#{SpaceDetailsBean.setupCategoriesForEdit}" />
+                                             action="dialog:editSpaceCategories" actionListener="#{SpaceDetailsBean.setupCategoriesForEdit}" />
                                     </r:permissionEvaluator>
                                  </f:facet>
                               </h:panelGroup>
@@ -288,7 +288,7 @@
                               <a:panel label="#{msg.rules}" id="rules-panel" facetsId="rules-panel-facets" progressive="true"
                                        border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
                                        expanded='#{SpaceDetailsBean.panels["rules-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
-                                 <a:richList id="rulesList" viewMode="details" value="#{RulesBean.rules}" var="r"
+                                 <a:richList id="rulesList" viewMode="details" value="#{RulesDialog.rules}" var="r"
                                           styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" 
                                           altRowStyleClass="recordSetRowAlt" width="100%" pageSize="10"
                                           initialSortColumn="title" initialSortDescending="true">

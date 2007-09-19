@@ -32,7 +32,7 @@
 <%@ page isELIgnored="false" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 <%@ page import="org.alfresco.web.app.servlet.FacesHelper" %>
-<%@ page import="org.alfresco.web.bean.CheckinCheckoutBean" %>
+<%@ page import="org.alfresco.web.bean.CheckinCheckoutDialog" %>
 <%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="javax.faces.context.FacesContext" %>
 
@@ -82,7 +82,7 @@
                               <h:graphicImage id="wizard-logo" url="/images/icons/check_in_large.gif" />
                            </td>
                            <td>
-                              <div class="mainTitle"><h:outputText value="#{msg.check_in}" /> '<h:outputText value="#{CheckinCheckoutBean.document.name}" />'</div>
+                              <div class="mainTitle"><h:outputText value="#{msg.check_in}" /> '<h:outputText value="#{CCProperties.document.name}" />'</div>
                               <div class="mainSubText"><h:outputText value="#{msg.checkinfile_description}" /></div>
                            </td>
                         </tr>
@@ -113,13 +113,13 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.check_in}" action="#{CheckinCheckoutBean.checkinFileOK}" styleClass="dialogControls" />
+                                       <h:commandButton value="#{msg.check_in}" action="#{CheckinCheckoutDialog.checkinFileOK}" styleClass="dialogControls" />
                                     </td>
                                  </tr>
                                  <tr><td class="dialogButtonSpacing"></td></tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.cancel}" action="#{CheckinCheckoutBean.cancel}" styleClass="dialogControls" />
+                                       <h:commandButton value="#{msg.cancel}" action="#{CheckinCheckoutDialog.cancel}" styleClass="dialogControls" />
                                     </td>
                                  </tr>
                               </table>
@@ -135,19 +135,19 @@
                                  </tr>
                                  <tr>
                                     <td>
-                                       <h:outputText value="#{msg.version_notes}<br/>" escape="false" rendered="#{CheckinCheckoutBean.versionable}" />
-                                       <h:inputTextarea value="#{CheckinCheckoutBean.versionNotes}" rendered="#{CheckinCheckoutBean.versionable}" rows="2" cols="50" />
+                                       <h:outputText value="#{msg.version_notes}<br/>" escape="false" rendered="#{CheckinCheckoutDialog.versionable}" />
+                                       <h:inputTextarea value="#{CCProperties.versionNotes}" rendered="#{CheckinCheckoutDialog.versionable}" rows="2" cols="50" />
                                     </td>
                                  </tr>
                                  <tr>
                                     <td>
-                                       <h:selectBooleanCheckbox value="#{CheckinCheckoutBean.minorChange}" />
+                                       <h:selectBooleanCheckbox value="#{CCProperties.minorChange}" />
                                        <span style="vertical-align:20%"><h:outputText value="#{msg.minor_change}" /></span>
                                     </td>
                                  </tr>
                                  <tr>
                                     <td>
-                                       <h:selectBooleanCheckbox value="#{CheckinCheckoutBean.keepCheckedOut}" />
+                                       <h:selectBooleanCheckbox value="#{CCProperties.keepCheckedOut}" />
                                        <span style="vertical-align:20%"><h:outputText value="#{msg.checkin_changes_info}" /></span>
                                     </td>
                                  </tr>
@@ -163,8 +163,8 @@
                                  
                                  <tr>
                                     <td>
-                                       <h:selectOneRadio value="#{CheckinCheckoutBean.copyLocation}" layout="pageDirection">
-                                          <f:selectItem itemValue="current" itemDisabled="#{CheckinCheckoutBean.fileName != null}" itemLabel="#{msg.which_copy_current}" />
+                                       <h:selectOneRadio value="#{CCProperties.copyLocation}" layout="pageDirection">
+                                          <f:selectItem itemValue="current" itemDisabled="#{CCProperties.fileName != null}" itemLabel="#{msg.which_copy_current}" />
                                           <f:selectItem itemValue="other" itemLabel="#{msg.which_copy_other}" />
                                        </h:selectOneRadio>
                                     </td>
@@ -200,7 +200,7 @@
                                     </td>
                                  </tr>
                                  <%
-                                 CheckinCheckoutBean bean = (CheckinCheckoutBean)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "CheckinCheckoutBean");
+                                 CheckinCheckoutDialog bean = (CheckinCheckoutDialog)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "CheckinCheckoutDialog");
                                  if (bean != null && bean.getFileName() != null) {
                                  %>
                                     <tr><td class="paddingRow"></td></tr>

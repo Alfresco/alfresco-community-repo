@@ -172,9 +172,9 @@
                                  <%-- More Search actions --%>
                                  <a:menu id="searchMenu" itemSpacing="4" label="#{msg.more_actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
                                     <a:booleanEvaluator value="#{NavigationBean.isGuest == false}" id="eval0">
-                                       <a:actionLink value="#{msg.save_new_search}" image="/images/icons/save_search.gif" padding="4" action="#{AdvancedSearchBean.saveNewSearch}" id="link20_1" />
-                                       <a:booleanEvaluator value="#{AdvancedSearchBean.allowEdit == true}" id="eval0_1">
-                                          <a:actionLink value="#{msg.save_edit_search}" image="/images/icons/edit_search.gif" padding="4" action="#{AdvancedSearchBean.saveEditSearch}" id="link20_2" />
+                                       <a:actionLink value="#{msg.save_new_search}" image="/images/icons/save_search.gif" padding="4" action="#{AdvancedSearchDialog.saveNewSearch}" id="link20_1" />
+                                       <a:booleanEvaluator value="#{AdvancedSearchDialog.allowEdit == true}" id="eval0_1">
+                                          <a:actionLink value="#{msg.save_edit_search}" image="/images/icons/edit_search.gif" padding="4" action="#{AdvancedSearchDialog.saveEditSearch}" id="link20_2" />
                                        </a:booleanEvaluator>
                                     </a:booleanEvaluator>
                                  </a:menu>

@@ -48,6 +48,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.BrowseBean;
+import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
@@ -62,7 +63,7 @@ import org.apache.commons.logging.LogFactory;
  *  
  * @author gavinc
  */
-public class RulesBean implements IContextListener
+public class RulesDialog extends BaseDialogBean implements IContextListener
 {
    private static final String MSG_ERROR_DELETE_RULE = "error_delete_rule";
    private static final String MSG_REAPPLY_RULES_SUCCESS = "reapply_rules_success";
@@ -71,7 +72,11 @@ public class RulesBean implements IContextListener
    private static final String LOCAL = "local";
    private static final String INHERITED = "inherited";
    
-   private static Log logger = LogFactory.getLog(RulesBean.class);
+   private static final String MSG_DELETE_RULE = "delete_rule";
+   private static final String MSG_YES = "yes";
+   private static final String MSG_NO = "no";
+   
+   private static Log logger = LogFactory.getLog(RulesDialog.class);
    
    private String viewMode = INHERITED;
    protected BrowseBean browseBean;
@@ -82,11 +87,10 @@ public class RulesBean implements IContextListener
    private ActionService actionService;
    private NodeService nodeService;
    
-   
    /**
     * Default constructor
     */
-   public RulesBean()
+   public RulesDialog()
    {
       UIContextService.getInstance(FacesContext.getCurrentInstance()).registerBean(this);
    }
@@ -157,7 +161,6 @@ public class RulesBean implements IContextListener
             logger.debug("Rule clicked, it's id is: " + id);
          
          this.currentRule = this.ruleService.getRule(new NodeRef(id));
-               //getSpace().getNodeRef(), id);
          
          // refresh list
          contextUpdated();
@@ -186,7 +189,7 @@ public class RulesBean implements IContextListener
          boolean executeInherited = true;
          if (LOCAL.equals(this.getViewMode()) == true)
          {
-             executeInherited = false;
+            executeInherited = false;
          }
          action.setParameterValue(ExecuteAllRulesActionExecuter.PARAM_EXECUTE_INHERITED_RULES, executeInherited);
          
@@ -218,19 +221,19 @@ public class RulesBean implements IContextListener
     */
    public String getIgnoreInheritedRulesLabelId()
    {
-       FacesContext fc = FacesContext.getCurrentInstance();
-       String result = Application.getMessage(fc, MSG_IGNORE_INHERTIED_RULES);
-       
-       if (this.nodeService.hasAspect(this.getSpace().getNodeRef(), RuleModel.ASPECT_IGNORE_INHERITED_RULES) == true)
-       {
-           result = Application.getMessage(fc, MSG_INCLUDE_INHERITED_RULES);
-       }
-       return result;
+      FacesContext fc = FacesContext.getCurrentInstance();
+      String result = Application.getMessage(fc, MSG_IGNORE_INHERTIED_RULES);
+      
+      if (this.nodeService.hasAspect(this.getSpace().getNodeRef(), RuleModel.ASPECT_IGNORE_INHERITED_RULES) == true)
+      {
+         result = Application.getMessage(fc, MSG_INCLUDE_INHERITED_RULES);
+      }
+      return result;
    }
    
    public boolean getIgnoreInheritedRules()
    {
-       return this.nodeService.hasAspect(this.getSpace().getNodeRef(), RuleModel.ASPECT_IGNORE_INHERITED_RULES);
+      return this.nodeService.hasAspect(this.getSpace().getNodeRef(), RuleModel.ASPECT_IGNORE_INHERITED_RULES);
    }
    
    /**
@@ -240,21 +243,21 @@ public class RulesBean implements IContextListener
     */
    public void ignoreInheritedRules(ActionEvent event)
    {
-       NodeRef nodeRef = this.getSpace().getNodeRef();
-       if (this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == true)
-       {
-           this.nodeService.removeAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES);
-       }
-       else
-       {
-           this.nodeService.addAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
-       }
-       
-       // force the list to be re-queried when the page is refreshed
-       if (this.richList != null)
-       {
-          this.richList.setValue(null);
-       }
+      NodeRef nodeRef = this.getSpace().getNodeRef();
+      if (this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == true)
+      {
+         this.nodeService.removeAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES);
+      }
+      else
+      {
+         this.nodeService.addAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
+      }
+      
+      // force the list to be re-queried when the page is refreshed
+      if (this.richList != null)
+      {
+         this.richList.setValue(null);
+      }
    }
    
    /**
@@ -267,15 +270,9 @@ public class RulesBean implements IContextListener
       return this.currentRule;
    }
    
-   /**
-    * Handler called upon the completion of the Delete Rule page
-    * 
-    * @return outcome
-    */
-   public String deleteOK()
+    @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      String outcome = null;
-      
       if (this.currentRule != null)
       {
          try
@@ -287,9 +284,6 @@ public class RulesBean implements IContextListener
             
             // clear the current rule
             this.currentRule = null;
-            
-            // setting the outcome will show the browse view again
-            outcome = "manageRules";
             
             if (logger.isDebugEnabled())
                logger.debug("Deleted rule '" + ruleTitle + "'");
@@ -306,6 +300,30 @@ public class RulesBean implements IContextListener
       }
       
       return outcome;
+   }
+   
+   @Override
+   public String getContainerTitle()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DELETE_RULE) + " '" + currentRule.getTitle() + "'";
+   }
+   
+   @Override
+   public String getCancelButtonLabel()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_NO);
+   }
+   
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
+      return false;
+   }
+   
+   @Override
+   public String getFinishButtonLabel()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_YES);
    }
    
    /**
@@ -378,7 +396,7 @@ public class RulesBean implements IContextListener
     */
    public void setNodeService(NodeService nodeService)
    {
-       this.nodeService = nodeService;
+      this.nodeService = nodeService;
    }
 
    

@@ -28,7 +28,7 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,11 +41,9 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.cache.ExpiringValueCache;
-import org.alfresco.repo.content.MimetypeMap;
+
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -55,11 +53,9 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
+
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -69,6 +65,7 @@ import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.ISO9075;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.SearchContext.RangeProperties;
+import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -92,221 +89,25 @@ import org.alfresco.web.ui.repo.component.UISearchCustomProperties;
  * 
  * @author Kevin Roast
  */
-public class AdvancedSearchBean
+public class AdvancedSearchDialog extends BaseDialogBean
 {
    /**
     * Default constructor
     */
-   public AdvancedSearchBean()
+   public void init(java.util.Map<String, String> parameters)
    {
-      // initial state of progressive panels that don't use the default
-      panels.put(PANEL_CATEGORIES, false);
-      panels.put(PANEL_ATTRS, false);
-      panels.put(PANEL_CUSTOM, false);
+      super.init(parameters);
+      properties.getPanels().put(PANEL_CATEGORIES, false);
+      properties.getPanels().put(PANEL_ATTRS, false);
+      properties.getPanels().put(PANEL_CUSTOM, false);
    }
-   
    
    // ------------------------------------------------------------------------------
-   // Bean property getters and setters 
+   // Bean property getters and setters
    
-   /**
-    * @param navigator The NavigationBean to set.
-    */
-   public void setNavigator(NavigationBean navigator)
+   public void setProperties(SearchProperties properties)
    {
-      this.navigator = navigator;
-   }
-
-   /**
-    * @param nodeService The NodeService to set.
-    */
-   public void setNodeService(NodeService nodeService)
-   {
-      this.nodeService = nodeService;
-   }
-
-   /**
-    * @param namespaceService The NamespaceService to set.
-    */
-   public void setNamespaceService(NamespaceService namespaceService)
-   {
-      this.namespaceService = namespaceService;
-   }
-   
-   /**
-    * @param searchService      the search service
-    */
-   public void setSearchService(SearchService searchService)
-   {
-      this.searchService = searchService;
-   }
-   
-   /**
-    * @param permissionService      The PermissionService to set.
-    */
-   public void setPermissionService(PermissionService permissionService)
-   {
-      this.permissionService = permissionService;
-   }
-   
-   /**
-    * @return Returns the progressive panels expanded state map.
-    */
-   public Map<String, Boolean> getPanels()
-   {
-      return this.panels;
-   }
-
-   /**
-    * @param panels The progressive panels expanded state map.
-    */
-   public void setPanels(Map<String, Boolean> panels)
-   {
-      this.panels = panels;
-   }
-   
-   /**
-    * @return Returns the saved search Description.
-    */
-   public String getSearchDescription()
-   {
-      return this.searchDescription;
-   }
-
-   /**
-    * @param searchDescription The saved search Description to set.
-    */
-   public void setSearchDescription(String searchDescription)
-   {
-      this.searchDescription = searchDescription;
-   }
-
-   /**
-    * @return Returns the saved search Name.
-    */
-   public String getSearchName()
-   {
-      return this.searchName;
-   }
-
-   /**
-    * @param searchName The saved search Name to set.
-    */
-   public void setSearchName(String searchName)
-   {
-      this.searchName = searchName;
-   }
-
-   /**
-    * @return ID of the last saved search selected by the user
-    */
-   public String getSavedSearch()
-   {
-      return this.savedSearch;
-   }
-
-   /**
-    * @param savedSearch   ID of the saved search selected by the user
-    */
-   public void setSavedSearch(String savedSearch)
-   {
-      this.savedSearch = savedSearch;
-   }
-   
-   /**
-    * @return name of the saved search to edit
-    */
-   public String getEditSearchName()
-   {
-      return this.editSearchName;
-   }
-
-   /**
-    * @param editSearchName   name of the saved search to edit
-    */
-   public void setEditSearchName(String editSearchName)
-   {
-      this.editSearchName = editSearchName;
-   }
-   
-   /**
-    * @return Returns the searchSaveGlobal.
-    */
-   public boolean isSearchSaveGlobal()
-   {
-      return this.searchSaveGlobal;
-   }
-
-   /**
-    * @param searchSaveGlobal The searchSaveGlobal to set.
-    */
-   public void setSearchSaveGlobal(boolean searchSaveGlobal)
-   {
-      this.searchSaveGlobal = searchSaveGlobal;
-   }
-
-   /**
-    * @return Returns the folder to search, null for all.
-    */
-   public String getLookin()
-   {
-      return this.lookin;
-   }
-   
-   /**
-    * @param lookIn   The folder to search in or null for all.
-    */
-   public void setLookin(String lookIn)
-   {
-      this.lookin = lookIn;
-   }
-   
-   /**
-    * @return Returns the location.
-    */
-   public NodeRef getLocation()
-   {
-      return this.location;
-   }
-   
-   /**
-    * @param location The location to set.
-    */
-   public void setLocation(NodeRef location)
-   {
-      this.location = location;
-   }
-   
-   /**
-    * @return Returns the search mode.
-    */
-   public String getMode()
-   {
-      return this.mode;
-   }
-   
-   /**
-    * @param mode The search mode to set.
-    */
-   public void setMode(String mode)
-   {
-      this.mode = mode;
-   }
-   
-   /**
-    * @return Returns the savedSearchMode.
-    */
-   public String getSavedSearchMode()
-   {
-      return this.savedSearchMode;
-   }
-
-   /**
-    * @param savedSearchMode The savedSearchMode to set.
-    */
-   public void setSavedSearchMode(String savedSearchMode)
-   {
-      this.savedSearchMode = savedSearchMode;
+      this.properties = properties;
    }
    
    /**
@@ -314,11 +115,12 @@ public class AdvancedSearchBean
     */
    public boolean isAllowEdit()
    {
-      boolean allow = (this.savedSearch != null && NO_SELECTION.equals(this.savedSearch) == false);
-      if (allow)  
+      boolean allow = (properties.getSavedSearch() != null && NO_SELECTION.equals(properties.getSavedSearch()) == false);
+      if (allow)
       {
-         NodeRef savedSearchRef = new NodeRef(Repository.getStoreRef(), this.savedSearch);
-         allow = (permissionService.hasPermission(savedSearchRef, PermissionService.WRITE) == AccessStatus.ALLOWED);
+         NodeRef savedSearchRef = new NodeRef(Repository.getStoreRef(), properties.getSavedSearch());
+         allow = (properties.getPermissionService().hasPermission(savedSearchRef,
+                  PermissionService.WRITE) == AccessStatus.ALLOWED);
       }
       return allow;
    }
@@ -332,260 +134,20 @@ public class AdvancedSearchBean
    }
    
    /**
-    * @return Returns the text to search for.
-    */
-   public String getText()
-   {
-      return this.text;
-   }
-   
-   /**
-    * @param text The text to set.
-    */
-   public void setText(String text)
-   {
-      this.text = text;
-   }
-   
-   /**
     * Returns the properties for current categories JSF DataModel
     * 
     * @return JSF DataModel representing the current categories to search against
     */
    public DataModel getCategoriesDataModel()
    {
-      if (this.categoriesDataModel == null)
+      if (properties.getCategoriesDataModel() == null)
       {
-         this.categoriesDataModel = new ListDataModel();
+         properties.setCategoriesDataModel(new ListDataModel());
       }
       
-      this.categoriesDataModel.setWrappedData(this.categories);
+      properties.getCategoriesDataModel().setWrappedData(properties.getCategories());
       
-      return this.categoriesDataModel;
-   }
-   
-   /**
-    * @return Returns true to search location children, false for just the specified location.
-    */
-   public boolean getLocationChildren()
-   {
-      return this.locationChildren;
-   }
-   
-   /**
-    * @param locationChildren    True to search location children, false for just the specified location.
-    */
-   public void setLocationChildren(boolean locationChildren)
-   {
-      this.locationChildren = locationChildren;
-   }
-   
-   /**
-    * @return Returns the createdDateFrom.
-    */
-   public Date getCreatedDateFrom()
-   {
-      return this.createdDateFrom;
-   }
-
-   /**
-    * @param createdDate The createdDateFrom to set.
-    */
-   public void setCreatedDateFrom(Date createdDate)
-   {
-      this.createdDateFrom = createdDate;
-   }
-
-   /**
-    * @return Returns the description.
-    */
-   public String getDescription()
-   {
-      return this.description;
-   }
-
-   /**
-    * @param description The description to set.
-    */
-   public void setDescription(String description)
-   {
-      this.description = description;
-   }
-
-   /**
-    * @return Returns the modifiedDateFrom.
-    */
-   public Date getModifiedDateFrom()
-   {
-      return this.modifiedDateFrom;
-   }
-
-   /**
-    * @param modifiedDate The modifiedDate to set.
-    */
-   public void setModifiedDateFrom(Date modifiedDate)
-   {
-      this.modifiedDateFrom = modifiedDate;
-   }
-   
-   /**
-    * @return Returns the createdDateTo.
-    */
-   public Date getCreatedDateTo()
-   {
-      return this.createdDateTo;
-   }
-
-   /**
-    * @param createdDateTo The createdDateTo to set.
-    */
-   public void setCreatedDateTo(Date createdDateTo)
-   {
-      this.createdDateTo = createdDateTo;
-   }
-
-   /**
-    * @return Returns the modifiedDateTo.
-    */
-   public Date getModifiedDateTo()
-   {
-      return this.modifiedDateTo;
-   }
-
-   /**
-    * @param modifiedDateTo The modifiedDateTo to set.
-    */
-   public void setModifiedDateTo(Date modifiedDateTo)
-   {
-      this.modifiedDateTo = modifiedDateTo;
-   }
-
-   /**
-    * @return Returns the title.
-    */
-   public String getTitle()
-   {
-      return this.title;
-   }
-
-   /**
-    * @param title The title to set.
-    */
-   public void setTitle(String title)
-   {
-      this.title = title;
-   }
-   
-   /**
-    * @return Returns the author.
-    */
-   public String getAuthor()
-   {
-      return this.author;
-   }
-
-   /**
-    * @param author The author to set.
-    */
-   public void setAuthor(String author)
-   {
-      this.author = author;
-   }
-   
-   /**
-    * @return Returns the modifiedDateChecked.
-    */
-   public boolean isModifiedDateChecked()
-   {
-      return this.modifiedDateChecked;
-   }
-
-   /**
-    * @param modifiedDateChecked The modifiedDateChecked to set.
-    */
-   public void setModifiedDateChecked(boolean modifiedDateChecked)
-   {
-      this.modifiedDateChecked = modifiedDateChecked;
-   }
-
-   /**
-    * @return Returns the createdDateChecked.
-    */
-   public boolean isCreatedDateChecked()
-   {
-      return this.createdDateChecked;
-   }
-   
-   /**
-    * @return Returns the content type currenty selected
-    */
-   public String getContentType()
-   {
-      return this.contentType;
-   }
-
-   /**
-    * @param contentType Sets the currently selected content type
-    */
-   public void setContentType(String contentType)
-   {
-      this.contentType = contentType;
-   }
-   
-   /**
-    * @return Returns the folder type currenty selected
-    */
-   public String getFolderType()
-   {
-      return this.folderType;
-   }
-
-   /**
-    * @param folderType Sets the currently selected folder type
-    */
-   public void setFolderType(String folderType)
-   {
-      this.folderType = folderType;
-   }
-   
-   /**
-    * @return Returns the contentFormat.
-    */
-   public String getContentFormat()
-   {
-      return this.contentFormat;
-   }
-
-   /**
-    * @param contentFormat The contentFormat to set.
-    */
-   public void setContentFormat(String contentFormat)
-   {
-      this.contentFormat = contentFormat;
-   }
-   
-   /**
-    * @return Returns the custom properties Map.
-    */
-   public Map<String, Object> getCustomProperties()
-   {
-      return this.customProperties;
-   }
-
-   /**
-    * @param customProperties The custom properties Map to set.
-    */
-   public void setCustomProperties(Map<String, Object> customProperties)
-   {
-      this.customProperties = customProperties;
-   }
-
-   /**
-    * @param createdDateChecked The createdDateChecked to set.
-    */
-   public void setCreatedDateChecked(boolean createdDateChecked)
-   {
-      this.createdDateChecked = createdDateChecked;
+      return properties.getCategoriesDataModel();
    }
    
    /**
@@ -593,15 +155,15 @@ public class AdvancedSearchBean
     */
    public List<SelectItem> getContentTypes()
    {
-      if ((this.contentTypes == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
+      if ((properties.getContentTypes() == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          FacesContext context = FacesContext.getCurrentInstance();
          
          DictionaryService dictionaryService = Repository.getServiceRegistry(context).getDictionaryService();
          
          // add the well known cm:content object type by default
-         this.contentTypes = new ArrayList<SelectItem>(5);
-         this.contentTypes.add(new SelectItem(ContentModel.TYPE_CONTENT.toString(), 
+         properties.setContentTypes(new ArrayList<SelectItem>(5));
+         properties.getContentTypes().add(new SelectItem(ContentModel.TYPE_CONTENT.toString(), 
                dictionaryService.getType(ContentModel.TYPE_CONTENT).getTitle()));
          
          // add any configured content sub-types to the list
@@ -626,14 +188,14 @@ public class AdvancedSearchBean
                         label = idQName.getLocalName();
                      }
                      
-                     this.contentTypes.add(new SelectItem(idQName.toString(), label));
+                     properties.getContentTypes().add(new SelectItem(idQName.toString(), label));
                   }
                }
             }
          }
       }
       
-      return this.contentTypes;
+      return properties.getContentTypes();
    }
    
    /**
@@ -641,15 +203,15 @@ public class AdvancedSearchBean
     */
    public List<SelectItem> getFolderTypes()
    {
-      if ((this.folderTypes == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))     
+      if ((properties.getFolderTypes() == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          FacesContext context = FacesContext.getCurrentInstance();
          
          DictionaryService dictionaryService = Repository.getServiceRegistry(context).getDictionaryService();
          
          // add the well known cm:folder object type by default
-         this.folderTypes = new ArrayList<SelectItem>(5);
-         this.folderTypes.add(new SelectItem(ContentModel.TYPE_FOLDER.toString(), 
+         properties.setFolderTypes(new ArrayList<SelectItem>(5));
+         properties.getFolderTypes().add(new SelectItem(ContentModel.TYPE_FOLDER.toString(), 
                dictionaryService.getType(ContentModel.TYPE_FOLDER).getTitle()));
          
          // add any configured folder sub-types to the list
@@ -674,14 +236,14 @@ public class AdvancedSearchBean
                         label = idQName.getLocalName();
                      }
                      
-                     this.folderTypes.add(new SelectItem(idQName.toString(), label));
+                     properties.getFolderTypes().add(new SelectItem(idQName.toString(), label));
                   }
                }
             }
          }
       }
       
-      return this.folderTypes;
+      return properties.getFolderTypes();
    }
    
    /**
@@ -689,9 +251,9 @@ public class AdvancedSearchBean
     */
    public List<SelectItem> getContentFormats()
    {
-      if ((this.contentFormats == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
+      if ((properties.getContentFormats() == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
-         this.contentFormats = new ArrayList<SelectItem>(80);
+         properties.setContentFormats(new ArrayList<SelectItem>(80));
          ServiceRegistry registry = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
          MimetypeService mimetypeService = registry.getMimetypeService();
          
@@ -699,20 +261,19 @@ public class AdvancedSearchBean
          Map<String, String> mimeTypes = mimetypeService.getDisplaysByMimetype();
          for (String mimeType : mimeTypes.keySet())
          {
-            this.contentFormats.add(new SelectItem(mimeType, mimeTypes.get(mimeType)));
+            properties.getContentFormats().add(new SelectItem(mimeType, mimeTypes.get(mimeType)));
          }
          
          // make sure the list is sorted by the values
-         QuickSort sorter = new QuickSort(this.contentFormats, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+         QuickSort sorter = new QuickSort(properties.getContentFormats(), "label", true, IDataContainer.SORT_CASEINSENSITIVE);
          sorter.sort();
          
          // add the "All Formats" constant marker at the top of the list (default selection)
-         this.contentFormats.add(0, new SelectItem("", Application.getMessage(FacesContext.getCurrentInstance(), MSG_ALL_FORMATS)));
+         properties.getContentFormats().add(0, new SelectItem("", Application.getMessage(FacesContext.getCurrentInstance(), MSG_ALL_FORMATS)));
       }
       
-      return this.contentFormats;
+      return properties.getContentFormats();
    }
-   
    
    // ------------------------------------------------------------------------------
    // Action event handlers
@@ -723,30 +284,30 @@ public class AdvancedSearchBean
    public void reset(ActionEvent event)
    {
       resetFields();
-      this.savedSearch = null;
+      properties.setSavedSearch(null);
    }
    
    private void resetFields()
    {
-      this.text = "";
-      this.mode = MODE_ALL;
-      this.lookin = LOOKIN_ALL;
-      this.contentType = null;
-      this.contentFormat = null;
-      this.folderType = null;
-      this.location = null;
-      this.locationChildren = true;
-      this.categories = new ArrayList<Node>(2);
-      this.title = null;
-      this.description = null;
-      this.author = null;
-      this.createdDateFrom = null;
-      this.createdDateTo = null;
-      this.modifiedDateFrom = null;
-      this.modifiedDateTo = null;
-      this.createdDateChecked = false;
-      this.modifiedDateChecked = false;
-      this.customProperties.clear();
+      properties.setText("");
+      properties.setMode(MODE_ALL);
+      properties.setLookin(LOOKIN_ALL);
+      properties.setContentType(null);
+      properties.setContentFormat(null);
+      properties.setFolderType(null);
+      properties.setLocation(null);
+      properties.setLocationChildren(true);
+      properties.setCategories(new ArrayList<Node>(2));
+      properties.setTitle(null);
+      properties.setDescription(null);
+      properties.setAuthor(null);
+      properties.setCreatedDateFrom(null);
+      properties.setCreatedDateTo(null);
+      properties.setModifiedDateFrom(null);
+      properties.setModifiedDateTo(null);
+      properties.setCreatedDateChecked(false);
+      properties.setModifiedDateChecked(false);
+      properties.getCustomProperties().clear();
    }
    
    /**
@@ -759,67 +320,67 @@ public class AdvancedSearchBean
       SearchContext search = new SearchContext();
       
       // set the full-text/name field value 
-      search.setText(this.text);
+      search.setText(properties.getText());
       
       // set whether to force AND operation on text terms
       search.setForceAndTerms(Application.getClientConfig(FacesContext.getCurrentInstance()).getForceAndTerms());
       
-      if (this.mode.equals(MODE_ALL))
+      if (properties.getMode().equals(MODE_ALL))
       {
          search.setMode(SearchContext.SEARCH_ALL);
       }
-      else if (this.mode.equals(MODE_FILES_TEXT))
+      else if (properties.getMode().equals(MODE_FILES_TEXT))
       {
          search.setMode(SearchContext.SEARCH_FILE_NAMES_CONTENTS);
       }
-      else if (this.mode.equals(MODE_FILES))
+      else if (properties.getMode().equals(MODE_FILES))
       {
          search.setMode(SearchContext.SEARCH_FILE_NAMES);
       }
-      else if (this.mode.equals(MODE_FOLDERS))
+      else if (properties.getMode().equals(MODE_FOLDERS))
       {
          search.setMode(SearchContext.SEARCH_SPACE_NAMES);
       }
       
       // additional attributes search
-      if (this.description != null && this.description.length() != 0)
+      if (properties.getDescription() != null && properties.getDescription().length() != 0)
       {
-         search.addAttributeQuery(ContentModel.PROP_DESCRIPTION, this.description);
+         search.addAttributeQuery(ContentModel.PROP_DESCRIPTION, properties.getDescription());
       }
-      if (this.title != null && this.title.length() != 0)
+      if (properties.getTitle() != null && properties.getTitle().length() != 0)
       {
-         search.addAttributeQuery(ContentModel.PROP_TITLE, this.title);
+         search.addAttributeQuery(ContentModel.PROP_TITLE, properties.getTitle());
       }
-      if (this.author != null && this.author.length() != 0)
+      if (properties.getAuthor() != null && properties.getAuthor().length() != 0)
       {
-         search.addAttributeQuery(ContentModel.PROP_AUTHOR, this.author);
+         search.addAttributeQuery(ContentModel.PROP_AUTHOR, properties.getAuthor());
       }
-      if (this.contentFormat != null && this.contentFormat.length() != 0)
+      if (properties.getContentFormat() != null && properties.getContentFormat().length() != 0)
       {
-         search.setMimeType(this.contentFormat);
+         search.setMimeType(properties.getContentFormat());
       }
-      if (this.createdDateChecked == true)
+      if (properties.isCreatedDateChecked())
       {
          SimpleDateFormat df = CachingDateFormat.getDateFormat();
-         String strCreatedDate = df.format(this.createdDateFrom);
-         String strCreatedDateTo = df.format(this.createdDateTo);
+         String strCreatedDate = df.format(properties.getCreatedDateFrom());
+         String strCreatedDateTo = df.format(properties.getCreatedDateTo());
          search.addRangeQuery(ContentModel.PROP_CREATED, strCreatedDate, strCreatedDateTo, true);
       }
-      if (this.modifiedDateChecked == true)
+      if (properties.isModifiedDateChecked())
       {
          SimpleDateFormat df = CachingDateFormat.getDateFormat();
-         String strModifiedDate = df.format(this.modifiedDateFrom);
-         String strModifiedDateTo = df.format(this.modifiedDateTo);
+         String strModifiedDate = df.format(properties.getModifiedDateFrom());
+         String strModifiedDateTo = df.format(properties.getModifiedDateTo());
          search.addRangeQuery(ContentModel.PROP_MODIFIED, strModifiedDate, strModifiedDateTo, true);
       }
-      
+
       // in case of dynamic config, only lookup once
       Map<String, DataTypeDefinition> customPropertyLookup = getCustomPropertyLookup();
       
       // walk each of the custom properties add add them as additional attributes
-      for (String qname : this.customProperties.keySet())
+      for (String qname : properties.getCustomProperties().keySet())
       {
-         Object value = this.customProperties.get(qname);
+         Object value = properties.getCustomProperties().get(qname);
          DataTypeDefinition typeDef = customPropertyLookup.get(qname);
          if (typeDef != null)
          {
@@ -830,9 +391,9 @@ public class AdvancedSearchBean
                if (value != null && Boolean.valueOf(value.toString()) == true)
                {
                   SimpleDateFormat df = CachingDateFormat.getDateFormat();
-                  String strDateFrom = df.format(this.customProperties.get(
+                  String strDateFrom = df.format(properties.getCustomProperties().get(
                         UISearchCustomProperties.PREFIX_DATE_FROM + qname));
-                  String strDateTo = df.format(this.customProperties.get(
+                  String strDateTo = df.format(properties.getCustomProperties().get(
                         UISearchCustomProperties.PREFIX_DATE_TO + qname));
                   search.addRangeQuery(QName.createQName(qname), strDateFrom, strDateTo, true);
                }
@@ -862,7 +423,7 @@ public class AdvancedSearchBean
             }
             else if (value != null)
             {
-               Object item = this.customProperties.get(
+               Object item = properties.getCustomProperties().get(
                      UISearchCustomProperties.PREFIX_LOV_ITEM + qname);
                if (item != null)
                {
@@ -886,18 +447,18 @@ public class AdvancedSearchBean
       }
       
       // location path search
-      if (this.lookin.equals(LOOKIN_OTHER) && this.location != null)
+      if (properties.getLookin().equals(LOOKIN_OTHER) && properties.getLocation() != null)
       {
-         search.setLocation(SearchContext.getPathFromSpaceRef(this.location, this.locationChildren));
+         search.setLocation(SearchContext.getPathFromSpaceRef(properties.getLocation(), properties.isLocationChildren()));
       }
       
       // category path search
-      if (this.categories.size() != 0)
+      if (properties.getCategories().size() != 0)
       {
-         String[] paths = new String[this.categories.size()];
+         String[] paths = new String[properties.getCategories().size()];
          for (int i=0; i<paths.length; i++)
          {
-            Node category = this.categories.get(i);
+            Node category = properties.getCategories().get(i);
             boolean includeChildren = (Boolean)category.getProperties().get(INCLUDE_CHILDREN);
             paths[i] = SearchContext.getPathFromSpaceRef(category.getNodeRef(), includeChildren);
          }
@@ -905,15 +466,15 @@ public class AdvancedSearchBean
       }
       
       // content type restriction
-      if (this.contentType != null)
+      if (properties.getContentType() != null)
       {
-         search.setContentType(this.contentType);
+         search.setContentType(properties.getContentType());
       }
       
       // folder type restriction
-      if (this.folderType != null)
+      if (properties.getFolderType() != null)
       {
-         search.setFolderType(this.folderType);
+         search.setFolderType(properties.getFolderType());
       }
       
       // set the Search Context onto the top-level navigator bean
@@ -928,180 +489,55 @@ public class AdvancedSearchBean
     */
    public String saveNewSearch()
    {
-      this.searchDescription = null;
-      this.searchName = null;
-      this.searchSaveGlobal = false;
+      properties.setSearchDescription(null);
+      properties.setSearchName(null);
+      properties.setSearchSaveGlobal(false);
       
-      return "saveNewSearch";
+      return "dialog:saveSearch";
    }
-   
+
    /**
     * Action handler called to initiate the saved search screen for Edit
     */
    public String saveEditSearch()
    {
-      this.searchDescription = null;
-      this.searchName = null;
-      this.editSearchName = null;
-      
+      properties.setSearchDescription(null);
+      properties.setSearchName(null);
+      properties.setEditSearchName(null);
+
       // load previously selected search for overwrite
       try
       {
-         NodeRef searchRef = new NodeRef(Repository.getStoreRef(), this.savedSearch);
+         NodeRef searchRef = new NodeRef(Repository.getStoreRef(), properties.getSavedSearch());
          Node searchNode = new Node(searchRef);
          if (this.nodeService.exists(searchRef) && searchNode.hasPermission(PermissionService.WRITE))
          {
             Node node = new Node(searchRef);
-            this.searchName = node.getName();
-            this.editSearchName = this.searchName;
-            this.searchDescription = (String)node.getProperties().get(ContentModel.PROP_DESCRIPTION);
+            properties.setSearchName(node.getName());
+            properties.setEditSearchName(properties.getSearchName());
+            properties.setSearchDescription((String)node.getProperties().get(ContentModel.PROP_DESCRIPTION));
          }
          else
          {
             // unable to overwrite existing saved search
-            this.savedSearch = null;
+            properties.setSavedSearch(null);
          }
       }
       catch (Throwable err)
       {
          // unable to overwrite existing saved search for some other reason
-         this.savedSearch = null;
+         properties.setSavedSearch(null);
       }
       
-      return "saveEditSearch";
+      return "dialog:editSearch";
    }
-   
-   /**
-    * Action handler called to save a new search
-    */
-   public String saveNewSearchOK()
-   {
-      String outcome = OUTCOME_BROWSE;
-      
-      NodeRef searchesRef;
-      if (isSearchSaveGlobal() == true)
-      {
-         searchesRef = getGlobalSearchesRef();
-      }
-      else
-      {
-         searchesRef = getUserSearchesRef();
-      }
-      
-      final SearchContext search = this.navigator.getSearchContext();
-      if (searchesRef != null && search != null)
-      {
-         try
-         {
-            final FacesContext context = FacesContext.getCurrentInstance();
-            final NodeRef searchesRefFinal = searchesRef;
-            RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
-            RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
-            {
-               public Object execute() throws Throwable
-               {
-                  // create new content node as the saved search object
-                  Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-                  props.put(ContentModel.PROP_NAME, searchName);
-                  props.put(ContentModel.PROP_DESCRIPTION, searchDescription);
-                  ChildAssociationRef childRef = nodeService.createNode(
-                        searchesRefFinal,
-                        ContentModel.ASSOC_CONTAINS,
-                        QName.createQName(NamespaceService.ALFRESCO_URI, QName.createValidLocalName(searchName)),
-                        ContentModel.TYPE_CONTENT,
-                        props);
-                  
-                  ContentService contentService = Repository.getServiceRegistry(context).getContentService();
-                  ContentWriter writer = contentService.getWriter(childRef.getChildRef(), ContentModel.PROP_CONTENT, true);
-                  
-                  // get a writer to our new node ready for XML content
-                  writer.setMimetype(MimetypeMap.MIMETYPE_XML);
-                  writer.setEncoding("UTF-8");
-                  
-                  // output an XML serialized version of the SearchContext object
-                  writer.putContent(search.toXML());
-                  return null;
-               }
-            };
-            txnHelper.doInTransaction(callback);
-            
-            this.cachedSavedSearches.clear();
-            this.savedSearch = null;
-         }
-         catch (Throwable e)
-         {
-            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-                  FacesContext.getCurrentInstance(), MSG_ERROR_SAVE_SEARCH), e.getMessage()), e);
-            outcome = null;
-         }
-      }
-      
-      return outcome;
-   }
-   
-   /**
-    * Action handler called to save an existing search
-    */
-   public String saveEditSearchOK()
-   {
-      String outcome = OUTCOME_BROWSE;
-      
-      final SearchContext search = this.navigator.getSearchContext();
-      if (search != null)
-      {
-         try
-         {
-            final FacesContext context = FacesContext.getCurrentInstance();
-            RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
-            RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
-            {
-               public Object execute() throws Throwable
-               {
-                  // handle Edit e.g. Overwrite of existing search
-                  // detect if was previously selected saved search (e.g. NodeRef not null)
-                  NodeRef searchRef = new NodeRef(Repository.getStoreRef(), savedSearch);
-                  if (nodeService.exists(searchRef))
-                  {
-                     Map<QName, Serializable> props = nodeService.getProperties(searchRef);
-                     props.put(ContentModel.PROP_NAME, searchName);
-                     props.put(ContentModel.PROP_DESCRIPTION, searchDescription);
-                     nodeService.setProperties(searchRef, props);
-                     
-                     ContentService contentService = Repository.getServiceRegistry(context).getContentService();
-                     ContentWriter writer = contentService.getWriter(searchRef, ContentModel.PROP_CONTENT, true);
-                     
-                     // get a writer to our new node ready for XML content
-                     writer.setMimetype(MimetypeMap.MIMETYPE_XML);
-                     writer.setEncoding("UTF-8");
-                     
-                     // output an XML serialized version of the SearchContext object
-                     writer.putContent(search.toXML());
-                  }
-                  return null;
-               }
-            };
-            txnHelper.doInTransaction(callback);
-            
-            this.cachedSavedSearches.clear();
-            this.savedSearch = null;
-         }
-         catch (Throwable e)
-         {
-            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-                  FacesContext.getCurrentInstance(), MSG_ERROR_SAVE_SEARCH), e.getMessage()), e);
-            outcome = null;
-         }
-      }
-      
-      return outcome;
-   }
-   
+
    /**
     * @return list of saved searches as SelectItem objects
     */
    public List<SelectItem> getSavedSearches()
    {
-      List<SelectItem> savedSearches = cachedSavedSearches.get();
+      List<SelectItem> savedSearches = properties.getCachedSavedSearches().get();
       if (savedSearches == null)
       {
          FacesContext fc = FacesContext.getCurrentInstance();
@@ -1109,11 +545,11 @@ public class AdvancedSearchBean
          
          // get the searches list from the current user or global searches location
          NodeRef searchesRef = null;
-         if (SAVED_SEARCHES_USER.equals(getSavedSearchMode()) == true)
+         if (SAVED_SEARCHES_USER.equals(properties.getSavedSearchMode()) == true)
          {
             searchesRef = getUserSearchesRef();
          }
-         else if (SAVED_SEARCHES_GLOBAL.equals(getSavedSearchMode()) == true)
+         else if (SAVED_SEARCHES_GLOBAL.equals(properties.getSavedSearchMode()) == true)
          {
             searchesRef = getGlobalSearchesRef();
          }
@@ -1156,7 +592,7 @@ public class AdvancedSearchBean
                Application.getMessage(FacesContext.getCurrentInstance(), MSG_SELECT_SAVED_SEARCH)));
          
          // store in the cache (will auto-expire)
-         cachedSavedSearches.put(savedSearches);       
+         properties.getCachedSavedSearches().put(savedSearches);
       }
       
       return savedSearches;
@@ -1173,12 +609,12 @@ public class AdvancedSearchBean
       String viewMode = savedModeList.getValue().toString();
       
       // persist
-      setSavedSearchMode(viewMode);
+      properties.setSavedSearchMode(viewMode);
       
       // clear existing caches and values
       // the values will be re-queried when the client requests the saved searches list
-      this.cachedSavedSearches.clear();
-      this.savedSearch = null;
+      properties.getCachedSavedSearches().clear();
+      properties.setSavedSearch(null);
    }
    
    /**
@@ -1186,10 +622,10 @@ public class AdvancedSearchBean
     */
    public void selectSearch(ActionEvent event)
    {
-      if (NO_SELECTION.equals(savedSearch) == false)
+      if (NO_SELECTION.equals(properties.getSavedSearch()) == false)
       {
          // read an XML serialized version of the SearchContext object
-         NodeRef searchSearchRef = new NodeRef(Repository.getStoreRef(), savedSearch);
+         NodeRef searchSearchRef = new NodeRef(Repository.getStoreRef(), properties.getSavedSearch());
          ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
          ContentService cs = services.getContentService();
          try
@@ -1221,31 +657,31 @@ public class AdvancedSearchBean
    {
       resetFields();
       
-      this.text = search.getText();
+      properties.setText(search.getText());
       
       switch (search.getMode())
       {
          case SearchContext.SEARCH_ALL:
-            this.mode = MODE_ALL;
+            properties.setMode(MODE_ALL);
             break;
          case SearchContext.SEARCH_FILE_NAMES_CONTENTS:
-            this.mode = MODE_FILES_TEXT;
+            properties.setMode(MODE_FILES_TEXT);
             break;
          case SearchContext.SEARCH_FILE_NAMES:
-            this.mode = MODE_FILES;
+            properties.setMode(MODE_FILES);
             break;
          case SearchContext.SEARCH_SPACE_NAMES:
-            this.mode = MODE_FOLDERS;
+            properties.setMode(MODE_FOLDERS);
             break;
       }
-      this.panels.put(PANEL_RESTRICT, true);
+      properties.getPanels().put(PANEL_RESTRICT, true);
       
       if (search.getLocation() != null)
       {
-         this.locationChildren = search.getLocation().endsWith("//*");
-         this.location = findNodeRefFromPath(search.getLocation());
-         this.lookin = LOOKIN_OTHER;
-         this.panels.put(PANEL_LOCATION, true);
+         properties.setLocationChildren(search.getLocation().endsWith("//*"));
+         properties.setLocation(findNodeRefFromPath(search.getLocation()));
+         properties.setLookin(LOOKIN_OTHER);
+         properties.getPanels().put(PANEL_LOCATION, true);
       }
       
       String[] categories = search.getCategories();
@@ -1259,40 +695,41 @@ public class AdvancedSearchBean
                Node categoryNode = new MapNode(categoryRef);
                // add a value bound propery used to indicate if searching across children is selected
                categoryNode.getProperties().put(INCLUDE_CHILDREN, category.endsWith("//*"));
-               this.categories.add(categoryNode);
+               properties.getCategories().add(categoryNode);
             }
          }
-         this.panels.put(PANEL_CATEGORIES, true);
+         properties.getPanels().put(PANEL_CATEGORIES, true);
       }
       
-      this.contentType = search.getContentType();
-      this.contentFormat = search.getMimeType();
-      this.folderType = search.getFolderType();
+      properties.setContentType(search.getContentType());
+      properties.setContentFormat(search.getMimeType());
+      properties.setFolderType(search.getFolderType());
       
-      this.description = search.getAttributeQuery(ContentModel.PROP_DESCRIPTION);
-      this.title = search.getAttributeQuery(ContentModel.PROP_TITLE);
-      this.author = search.getAttributeQuery(ContentModel.PROP_AUTHOR);
-      if (this.contentType != null || this.contentFormat != null ||
-          this.description != null || this.title != null || this.author != null)
+      properties.setDescription(search.getAttributeQuery(ContentModel.PROP_DESCRIPTION));
+      properties.setTitle(search.getAttributeQuery(ContentModel.PROP_TITLE));
+      properties.setAuthor(search.getAttributeQuery(ContentModel.PROP_AUTHOR));
+      if (properties.getContentType() != null || properties.getContentFormat() != null ||
+          properties.getDescription() != null || properties.getTitle() != null ||
+          properties.getAuthor() != null)
       {
-         this.panels.put(PANEL_ATTRS, true);
+         properties.getPanels().put(PANEL_ATTRS, true);
       }
       
       RangeProperties createdDate = search.getRangeProperty(ContentModel.PROP_CREATED);
       if (createdDate != null)
       {
-         this.createdDateFrom = Utils.parseXMLDateFormat(createdDate.lower);
-         this.createdDateTo = Utils.parseXMLDateFormat(createdDate.upper);
-         this.createdDateChecked = true;
-         this.panels.put(PANEL_ATTRS, true);
+         properties.setCreatedDateFrom(Utils.parseXMLDateFormat(createdDate.lower));
+         properties.setCreatedDateTo(Utils.parseXMLDateFormat(createdDate.upper));
+         properties.setCreatedDateChecked(true);
+         properties.getPanels().put(PANEL_ATTRS, true);
       }
       RangeProperties modifiedDate = search.getRangeProperty(ContentModel.PROP_MODIFIED);
       if (modifiedDate != null)
       {
-         this.modifiedDateFrom = Utils.parseXMLDateFormat(modifiedDate.lower);
-         this.modifiedDateTo = Utils.parseXMLDateFormat(modifiedDate.upper);
-         this.modifiedDateChecked = true;
-         this.panels.put(PANEL_ATTRS, true);
+         properties.setModifiedDateFrom(Utils.parseXMLDateFormat(modifiedDate.lower));
+         properties.setModifiedDateTo(Utils.parseXMLDateFormat(modifiedDate.upper));
+         properties.setModifiedDateChecked(true);
+         properties.getPanels().put(PANEL_ATTRS, true);
       }
       
       // in case of dynamic config, only lookup once
@@ -1310,12 +747,12 @@ public class AdvancedSearchBean
                RangeProperties dateProps = search.getRangeProperty(QName.createQName(qname));
                if (dateProps != null)
                {
-                  this.customProperties.put(UISearchCustomProperties.PREFIX_DATE_FROM + qname,
+                  properties.getCustomProperties().put(UISearchCustomProperties.PREFIX_DATE_FROM + qname,
                         Utils.parseXMLDateFormat(dateProps.lower));
-                  this.customProperties.put(UISearchCustomProperties.PREFIX_DATE_TO + qname,
+                  properties.getCustomProperties().put(UISearchCustomProperties.PREFIX_DATE_TO + qname,
                         Utils.parseXMLDateFormat(dateProps.upper));
-                  this.customProperties.put(qname, true);
-                  this.panels.put(PANEL_CUSTOM, true);
+                  properties.getCustomProperties().put(qname, true);
+                  properties.getPanels().put(PANEL_CUSTOM, true);
                }
             }
             else if (DataTypeDefinition.BOOLEAN.equals(typeName))
@@ -1323,8 +760,8 @@ public class AdvancedSearchBean
                String strBool = search.getFixedValueQuery(QName.createQName(qname));
                if (strBool != null)
                {
-                  this.customProperties.put(qname, Boolean.parseBoolean(strBool));
-                  this.panels.put(PANEL_CUSTOM, true);
+                  properties.getCustomProperties().put(qname, Boolean.parseBoolean(strBool));
+                  properties.getPanels().put(PANEL_CUSTOM, true);
                }
             }
             else if (DataTypeDefinition.NODE_REF.equals(typeName) || DataTypeDefinition.CATEGORY.equals(typeName))
@@ -1332,8 +769,8 @@ public class AdvancedSearchBean
                String strNodeRef = search.getFixedValueQuery(QName.createQName(qname));
                if (strNodeRef != null)
                {
-                  this.customProperties.put(qname, new NodeRef(strNodeRef));
-                  this.panels.put(PANEL_CUSTOM, true);
+                  properties.getCustomProperties().put(qname, new NodeRef(strNodeRef));
+                  properties.getPanels().put(PANEL_CUSTOM, true);
                }
             }
             else if (DataTypeDefinition.INT.equals(typeName) || DataTypeDefinition.LONG.equals(typeName) ||
@@ -1341,8 +778,8 @@ public class AdvancedSearchBean
             {
                // currently numbers are rendered as text in UISearchCustomProperties component
                // this code will need updating if that changes!
-               this.customProperties.put(qname, search.getFixedValueQuery(QName.createQName(qname)));
-               this.panels.put(PANEL_CUSTOM, true);
+               properties.getCustomProperties().put(qname, search.getFixedValueQuery(QName.createQName(qname)));
+               properties.getPanels().put(PANEL_CUSTOM, true);
             }
             else
             {
@@ -1351,14 +788,14 @@ public class AdvancedSearchBean
                Object value = search.getFixedValueQuery(QName.createQName(qname));
                if (value != null)
                {
-                  this.customProperties.put(UISearchCustomProperties.PREFIX_LOV_ITEM + qname, value);
-                  this.customProperties.put(qname, Boolean.TRUE);
+                  properties.getCustomProperties().put(UISearchCustomProperties.PREFIX_LOV_ITEM + qname, value);
+                  properties.getCustomProperties().put(qname, Boolean.TRUE);
                }
                else
                {
-                  this.customProperties.put(qname, search.getAttributeQuery(QName.createQName(qname)));
+                  properties.getCustomProperties().put(qname, search.getAttributeQuery(QName.createQName(qname)));
                }
-               this.panels.put(PANEL_CUSTOM, true);
+               properties.getPanels().put(PANEL_CUSTOM, true);
             }
          }
       }
@@ -1367,7 +804,7 @@ public class AdvancedSearchBean
    /**
     * Return NodeRef to the last Node referenced on the end of the specified xpath value
     * 
-    * @param xpath      XPath - note that any /* or //* will be removed to find trailing node
+    * @param xpath   XPath - note that any /* or //* will be removed to find trailing node
     * 
     * @return NodeRef if found null otherwise
     */
@@ -1403,9 +840,9 @@ public class AdvancedSearchBean
    /**
     * @return the cached reference to the shared Saved Searches folder
     */
-   private NodeRef getUserSearchesRef()
+   protected NodeRef getUserSearchesRef()
    {
-      if (userSearchesRef == null)
+      if (properties.getUserSearchesRef() == null)
       {
          NodeRef globalRef = getGlobalSearchesRef();
          if (globalRef != null)
@@ -1434,7 +871,7 @@ public class AdvancedSearchBean
             {
                if (results.size() == 1)
                {
-                  userSearchesRef = results.get(0);
+                  properties.setUserSearchesRef(results.get(0));
                }
                else if (results.size() == 0 && new Node(globalRef).hasPermission(PermissionService.ADD_CHILDREN))
                {
@@ -1449,21 +886,21 @@ public class AdvancedSearchBean
                         ContentModel.TYPE_FOLDER,
                         props);
                   
-                  userSearchesRef = childRef.getChildRef();
+                  properties.setUserSearchesRef(childRef.getChildRef());
                }
             }
          }
       }
       
-      return userSearchesRef;
+      return properties.getUserSearchesRef();
    }
    
    /**
     * @return the cached reference to the global Saved Searches folder
     */
-   private NodeRef getGlobalSearchesRef()
+   protected NodeRef getGlobalSearchesRef()
    {
-      if (globalSearchesRef == null)
+      if (properties.getGlobalSearchesRef() == null)
       {
          FacesContext fc = FacesContext.getCurrentInstance();
          String xpath = Application.getRootPath(fc) + "/" +
@@ -1487,11 +924,11 @@ public class AdvancedSearchBean
          
          if (results != null && results.size() == 1)
          {
-            globalSearchesRef = results.get(0);
+            properties.setGlobalSearchesRef(results.get(0));
          }
       }
       
-      return globalSearchesRef;
+      return properties.getGlobalSearchesRef();
    }
    
    /**
@@ -1508,7 +945,7 @@ public class AdvancedSearchBean
          Node categoryNode = new MapNode(categoryRef);
          // add a value bound propery used to indicate if searching across children is selected
          categoryNode.getProperties().put(INCLUDE_CHILDREN, chkChildren.isSelected());
-         this.categories.add(categoryNode);
+         properties.getCategories().add(categoryNode);
       }
    }
    
@@ -1517,10 +954,10 @@ public class AdvancedSearchBean
     */
    public void removeCategory(ActionEvent event)
    {
-      Node node = (Node)this.categoriesDataModel.getRowData();
+      Node node = (Node) properties.getCategoriesDataModel().getRowData();
       if (node != null)
       {
-         this.categories.remove(node);
+         properties.getCategories().remove(node);
       }
    }
    
@@ -1529,14 +966,14 @@ public class AdvancedSearchBean
     */
    private AdvancedSearchConfigElement getSearchConfig()
    {
-      if ((this.searchConfigElement == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
+      if (properties.getSearchConfigElement() == null)
       {
-         searchConfigElement = (AdvancedSearchConfigElement)Application.getConfigService(
+         properties.setSearchConfigElement((AdvancedSearchConfigElement)Application.getConfigService(
                FacesContext.getCurrentInstance()).getConfig("Advanced Search").
-               getConfigElement(AdvancedSearchConfigElement.CONFIG_ELEMENT_ID);
+               getConfigElement(AdvancedSearchConfigElement.CONFIG_ELEMENT_ID));
       }
       
-      return searchConfigElement;
+      return properties.getSearchConfigElement();
    }
    
    /**
@@ -1546,9 +983,9 @@ public class AdvancedSearchBean
     */
    private Map<String, DataTypeDefinition> getCustomPropertyLookup()
    {
-      if ((customPropertyLookup == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
+      if ((properties.getCustomPropertyLookup() == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
-         customPropertyLookup = new HashMap<String, DataTypeDefinition>(7, 1.0f);
+         properties.setCustomPropertyLookup(new HashMap<String, DataTypeDefinition>(7, 1.0f));
          List<CustomProperty> customProps = getSearchConfig().getCustomProperties();
          if (customProps != null)
          {
@@ -1572,12 +1009,12 @@ public class AdvancedSearchBean
                
                if (propQName != null && propDef != null)
                {
-                  customPropertyLookup.put(propQName.toString(), propDef.getDataType());
+                  properties.getCustomPropertyLookup().put(propQName.toString(), propDef.getDataType());
                }
             }
          }
       }
-      return customPropertyLookup;
+      return properties.getCustomPropertyLookup();
    }
    
    /**
@@ -1587,18 +1024,31 @@ public class AdvancedSearchBean
    {
       if (event instanceof ExpandedEvent)
       {
-         this.panels.put(event.getComponent().getId(), ((ExpandedEvent)event).State);
+         properties.getPanels().put(event.getComponent().getId(), ((ExpandedEvent) event).State);
       }
    }
    
+   @Override
+   public String getFinishButtonLabel()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_SAVE);
+   }
+   
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
+   {
+      return null;
+   }
    
    // ------------------------------------------------------------------------------
-   // Private data 
+   // Private data
+   
+   protected SearchProperties properties;
    
    private static final String MSG_ALL_FORMATS = "all_formats";
-   private static final String MSG_ERROR_SAVE_SEARCH = "error_save_search";
    private static final String MSG_ERROR_RESTORE_SEARCH = "error_restore_search";
    private static final String MSG_SELECT_SAVED_SEARCH = "select_saved_search";
+   private static final String MSG_SAVE = "save";
    
    private static final String OUTCOME_BROWSE = "browse";
    
@@ -1622,119 +1072,4 @@ public class AdvancedSearchBean
    private static final String SAVED_SEARCHES_GLOBAL = "global";
    
    private static final String NO_SELECTION = "NONE";
-   
-   /** The NodeService to be used by the bean */
-   protected NodeService nodeService;
-   
-   /** The NamespaceService to be used by the bean */
-   protected NamespaceService namespaceService;
-   
-   /** The NavigationBean reference */
-   protected NavigationBean navigator;
-   
-   /** SearchService bean reference */
-   protected SearchService searchService;
-   
-   /** PermissionService */
-   protected PermissionService permissionService;
-   
-   /** Client Config reference */
-   protected AdvancedSearchConfigElement searchConfigElement = null;
-   
-   /** Progressive panel UI state */
-   private Map<String, Boolean> panels = new HashMap<String, Boolean>(5, 1.0f);
-   
-   /** Saved search properties */
-   private String searchName;
-   private String searchDescription;
-   
-   /** custom property names to values */
-   private Map<String, Object> customProperties = new HashMap<String, Object>(5, 1.0f);
-   
-   /** lookup of custom property QName string to DataTypeDefinition for the property */
-   private Map<String, DataTypeDefinition> customPropertyLookup = null;
-   
-   /** content format list restricting searches */
-   private List<SelectItem> contentFormats;
-   
-   /** content format selection */
-   private String contentFormat;
-   
-   /** content type selection */
-   private String contentType;
-   
-   /** content types for restricting searches */
-   private List<SelectItem> contentTypes;
-   
-   /** folder type selection */
-   private String folderType;
-   
-   /** folder types for restricting searches */
-   private List<SelectItem> folderTypes;
-   
-   /** the text to search for */
-   private String text = "";
-   
-   /** search mode */
-   private String mode = MODE_ALL;
-   
-   /** folder lookin mode */
-   private String lookin = LOOKIN_ALL;
-   
-   /** Space Selector location */
-   private NodeRef location = null;
-   
-   /** categories to search */
-   private List<Node> categories = new ArrayList<Node>(2);
-   
-   /** datamodel for table of categories to search */
-   private DataModel categoriesDataModel = null;
-   
-   /** title attribute to search */
-   private String title = null;
-   
-   /** description attribute to search */
-   private String description = null;
-   
-   /** created attribute to search from */
-   private Date createdDateFrom = null;
-   
-   /** created attribute to search to */
-   private Date createdDateTo = null;
-   
-   /** modified attribute to search from */
-   private Date modifiedDateFrom = null;
-   
-   /** modified attribute to search to */
-   private Date modifiedDateTo = null;
-   
-   /** true to search location children as well as location */
-   private boolean locationChildren = true;
-   
-   /** author (creator) attribute to search */
-   private String author = null;
-   
-   private boolean modifiedDateChecked = false;
-   private boolean createdDateChecked = false;
-   
-   /** cached ref to the global saved searches folder */
-   private NodeRef globalSearchesRef = null;
-   
-   /** cached ref to the current users saved searches folder */
-   private NodeRef userSearchesRef = null;
-   
-   /** ID to the last selected saved search */
-   private String savedSearch = null;
-   
-   /** ModeList component value for selecting user/global searches */
-   private String savedSearchMode = SAVED_SEARCHES_USER;
-   
-   /** name of the saved search to edit */
-   private String editSearchName = null;
-   
-   /** form field for saving search as user/global */
-   private boolean searchSaveGlobal = false;
-   
-   /** auto-expiring cache of the list of saved searches */
-   private ExpiringValueCache<List<SelectItem>> cachedSavedSearches = new ExpiringValueCache<List<SelectItem>>();
 }

@@ -80,8 +80,8 @@
                               <div class="mainTitle"><h:outputText value="#{msg.category_management}" /></div>
                               <div class="mainSubTitle">
                                  <%-- show either root message or the current category name --%>
-                                 <h:outputText value="#{msg.categories}" rendered="#{CategoriesBean.currentCategoryId == null}" />
-                                 <h:outputText value="#{CategoriesBean.currentCategory.name}" rendered="#{CategoriesBean.currentCategoryId != null}" />
+                                 <h:outputText value="#{msg.categories}" rendered="#{CategoriesDialog.currentCategoryId == null}" />
+                                 <h:outputText value="#{CategoriesDialog.currentCategory.name}" rendered="#{CategoriesDialog.currentCategoryId != null}" />
                               </div>
                               <div class="mainSubText"><h:outputText value="#{msg.categories_description}" /></div>
                            </td>
@@ -89,18 +89,18 @@
                            <td style="padding-left:4px" width=52>
                               <%-- Create actions menu --%>
                               <a:menu id="createMenu" itemSpacing="4" label="#{msg.create_options}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
-                                 <a:actionLink value="#{msg.add_category}" image="/images/icons/add_category.gif" action="addCategory" actionListener="#{CategoriesBean.clearCategoryAction}" />
+                                 <a:actionLink value="#{msg.add_category}" image="/images/icons/add_category.gif" action="dialog:createCategory" actionListener="#{CategoriesDialog.clearCategoryAction}" />
                               </a:menu>
                            </td>
                            <td style="padding-left:4px" width=80>
                               <%-- More actions menu --%>
                               <a:menu id="actionsMenu" itemSpacing="4" label="#{msg.more_actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
-                                 <a:booleanEvaluator value="#{CategoriesBean.currentCategoryId != null}">
-                                    <a:actionLink value="#{msg.edit_category}" image="/images/icons/edit_category.gif" action="editCategory" actionListener="#{CategoriesBean.setupCategoryAction}">
-                                       <f:param name="id" value="#{CategoriesBean.currentCategoryId}" />
+                                 <a:booleanEvaluator value="#{CategoriesDialog.currentCategoryId != null}">
+                                    <a:actionLink value="#{msg.edit_category}" image="/images/icons/edit_category.gif" action="dialog:editCategory" actionListener="#{CategoriesDialog.setupCategoryAction}">
+                                       <f:param name="id" value="#{CategoriesDialog.currentCategoryId}" />
                                     </a:actionLink>
-                                    <a:actionLink value="#{msg.delete_category}" image="/images/icons/delete_category.gif" action="deleteCategory" actionListener="#{CategoriesBean.setupCategoryAction}">
-                                       <f:param name="id" value="#{CategoriesBean.currentCategoryId}" />
+                                    <a:actionLink value="#{msg.delete_category}" image="/images/icons/delete_category.gif" action="dialog:deleteCategory" actionListener="#{CategoriesDialog.setupCategoryAction}">
+                                       <f:param name="id" value="#{CategoriesDialog.currentCategoryId}" />
                                     </a:actionLink>
                                  </a:booleanEvaluator>
                               </a:menu>
@@ -110,7 +110,7 @@
                            <td width=110 valign=middle>
                               <%-- View mode settings --%>
                               <a:modeList itemSpacing="3" iconColumnWidth="20" selectedStyleClass="statusListHighlight" selectedImage="/images/icons/Details.gif"
-                                    value="#{CategoriesBean.viewMode}" actionListener="#{CategoriesBean.viewModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu">
+                                    value="#{CategoriesProperties.viewMode}" actionListener="#{CategoriesDialog.viewModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu">
                                  <a:listItem value="icons" label="#{msg.category_icons}" />
                                  <a:listItem value="details" label="#{msg.category_details}" />
                               </a:modeList>
@@ -138,7 +138,7 @@
                               
                               <%-- Category Path Breadcrumb --%>
                               <div style="padding-left:8px;padding-top:4px;padding-bottom:4px">
-                                 <a:breadcrumb value="#{CategoriesBean.location}" styleClass="title" />
+                                 <a:breadcrumb value="#{CategoriesDialog.location}" styleClass="title" />
                               </div>
                               
                               <%-- Categories List --%>
@@ -146,9 +146,9 @@
                               
                               <a:panel id="categories-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle" label="#{msg.items}">
                               
-                              <a:richList id="categories-list" binding="#{CategoriesBean.categoriesRichList}" viewMode="#{CategoriesBean.viewMode}" pageSize="15"
+                              <a:richList id="categories-list" binding="#{CategoriesProperties.categoriesRichList}" viewMode="#{CategoriesProperties.viewMode}" pageSize="15"
                                     styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
-                                    value="#{CategoriesBean.categories}" var="r" initialSortColumn="name" initialSortDescending="true">
+                                    value="#{CategoriesDialog.categories}" var="r" initialSortColumn="name" initialSortDescending="true">
                                  
                                  <%-- Primary column for icons view mode --%>
                                  <a:column primary="true" style="padding:2px;text-align:left;vertical-align:top;">
@@ -156,16 +156,16 @@
                                        <a:sortLink label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
                                     </f:facet>
                                     <f:facet name="large-icon">
-                                       <a:actionLink value="#{r.name}" image="/images/icons/category.gif" actionListener="#{CategoriesBean.clickCategory}" showLink="false">
+                                       <a:actionLink value="#{r.name}" image="/images/icons/category.gif" actionListener="#{CategoriesDialog.clickCategory}" showLink="false">
                                           <f:param name="id" value="#{r.id}" />
                                        </a:actionLink>
                                     </f:facet>
                                     <f:facet name="small-icon">
-                                       <a:actionLink value="#{r.name}" image="/images/icons/category_small.gif" actionListener="#{CategoriesBean.clickCategory}" showLink="false">
+                                       <a:actionLink value="#{r.name}" image="/images/icons/category_small.gif" actionListener="#{CategoriesDialog.clickCategory}" showLink="false">
                                           <f:param name="id" value="#{r.id}" />
                                        </a:actionLink>
                                     </f:facet>
-                                    <a:actionLink value="#{r.name}" actionListener="#{CategoriesBean.clickCategory}" styleClass="header">
+                                    <a:actionLink value="#{r.name}" actionListener="#{CategoriesDialog.clickCategory}" styleClass="header">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
                                  </a:column>
@@ -175,10 +175,10 @@
                                     <f:facet name="header">
                                        <h:outputText value="#{msg.actions}"/>
                                     </f:facet>
-                                    <a:actionLink value="#{msg.modify}" image="/images/icons/edit_category.gif" showLink="false" action="editCategory" style="padding-right:2px" actionListener="#{CategoriesBean.setupCategoryAction}">
+                                    <a:actionLink value="#{msg.modify}" image="/images/icons/edit_category.gif" showLink="false" action="dialog:editCategory" style="padding-right:2px" actionListener="#{CategoriesDialog.setupCategoryAction}">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
-                                    <a:actionLink value="#{msg.delete}" image="/images/icons/delete_category.gif" showLink="false" action="deleteCategory" actionListener="#{CategoriesBean.setupCategoryAction}">
+                                    <a:actionLink value="#{msg.delete}" image="/images/icons/delete_category.gif" showLink="false" action="dialog:deleteCategory" actionListener="#{CategoriesDialog.setupCategoryAction}">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
                                  </a:column>

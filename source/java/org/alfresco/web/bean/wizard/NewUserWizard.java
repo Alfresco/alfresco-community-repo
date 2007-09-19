@@ -57,7 +57,7 @@ import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.spaces.CreateSpaceWizard;
-import org.alfresco.web.bean.users.UsersBean;
+import org.alfresco.web.bean.users.UsersDialog;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -558,7 +558,7 @@ public class NewUserWizard extends AbstractWizardBean
             else
             {
                outcome = null;
-               Utils.addErrorMessage(Application.getMessage(context, UsersBean.ERROR_PASSWORD_MATCH));
+               Utils.addErrorMessage(Application.getMessage(context, UsersDialog.ERROR_PASSWORD_MATCH));
             }
          }
          

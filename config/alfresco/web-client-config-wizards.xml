@@ -559,7 +559,65 @@
                      instruction-id="new_edition_finish_instruction" />
             </step>
          </wizard>
+         	<wizard name="createUser"
+				managed-bean="CreateUserWizard"
+				title-id="new_user_title"
+				description-id="new_user_desc"
+				icon="/images/icons/new_user_large.gif">
+				<step name="person-properties"
+					title-id="person_properties"
+					description-id="new_user_step1_desc">
+					<page
+						path="/jsp/users/person-properties.jsp"
+						title-id="new_user_step1_title"
+						description-id="new_user_step1_desc"
+						instruction-id="default_instruction" />
+				</step>
+				<step name="user-properties" title-id="user_properties"
+					description-id="new_user_step2_desc">
+					<page
+						path="/jsp/users/new-user-properties.jsp"
+						title-id="new_user_step2_title"
+						description-id="new_user_step2_desc"
+						instruction-id="default_instruction" />
+				</step>
+				<step name="summary" title-id="summary"
+					description-id="summary_step_description">
+					<page path="/jsp/wizard/summary.jsp"
+						title-id="summary" description-id="summary_desc"
+						instruction-id="new_user_finish_instruction" />
+				</step>
+			</wizard>
 
+			<wizard name="editUser"
+				managed-bean="EditUserWizard"
+				title-id="new_user_title"
+				description-id="new_user_desc"
+				icon="/images/icons/new_user_large.gif">
+				<step name="person-properties"
+					title-id="person_properties"
+					description-id="new_user_step1_desc">
+					<page
+						path="/jsp/users/person-properties.jsp"
+						title-id="new_user_step1_title"
+						description-id="new_user_step1_desc"
+						instruction-id="default_instruction" />
+				</step>
+				<step name="user-properties" title-id="user_properties"
+					description-id="new_user_step2_desc">
+					<page
+						path="/jsp/users/edit-user-properties.jsp"
+						title-id="new_user_step2_title"
+						description-id="new_user_step2_desc"
+						instruction-id="default_instruction" />
+				</step>
+				<step name="summary" title-id="summary"
+					description-id="summary_step_description">
+					<page path="/jsp/wizard/summary.jsp"
+						title-id="summary" description-id="summary_desc"
+						instruction-id="new_user_finish_instruction" />
+				</step>
+			</wizard>
          <!--
          	Definition of the 2 steps edition wizard.
          	The first step is skiped to force the new edition to start with a translation selected by the user.

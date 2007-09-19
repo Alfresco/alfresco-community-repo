@@ -160,10 +160,10 @@
                                     <f:facet name="header">
                                        <h:outputText value="#{msg.actions}"/>
                                     </f:facet>
-                                    <a:actionLink value="#{msg.change_roles}" image="/images/icons/edituser.gif" showLink="false" action="editRoles" actionListener="#{ContentUsersBean.setupUserAction}">
+<a:actionLink value="#{msg.change_roles}" image="/images/icons/edituser.gif" showLink="false" action="dialog:editContentUserRoles" actionListener="#{EditContentUserRolesDialog.setupUserAction}">
                                        <f:param name="userName" value="#{r.userName}" />
                                     </a:actionLink>
-                                    <a:actionLink value="#{msg.remove}" image="/images/icons/delete_person.gif" showLink="false" action="removeUser" actionListener="#{ContentUsersBean.setupUserAction}">
+<a:actionLink value="#{msg.remove}" image="/images/icons/delete_person.gif" showLink="false" action="dialog:removeContentUser" actionListener="#{RemoveContentUserDialog.setupUserAction}">
                                        <f:param name="userName" value="#{r.userName}" />
                                     </a:actionLink>
                                  </a:column>

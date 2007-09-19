@@ -72,7 +72,7 @@ public class CreateRuleWizard extends BaseActionWizard
    protected static final String PROP_CONDITION_SUMMARY = "conditionSummary";
    
    protected RuleService ruleService;
-   protected RulesBean rulesBean;
+   protected RulesDialog rulesDialog;
    
    private List<SelectItem> modelTypes;
    private List<SelectItem> mimeTypes;
@@ -683,13 +683,13 @@ public class CreateRuleWizard extends BaseActionWizard
    }
    
    /**
-    * Sets the RulesBean instance to be used by the wizard in edit mode
+    * Sets the rulesDialog instance to be used by the wizard in edit mode
     * 
-    * @param rulesBean The RulesBean
+    * @param rulesDialog The rulesDialog
     */
-   public void setRulesBean(RulesBean rulesBean)
+   public void setRulesDialog(RulesDialog RulesDialog)
    {
-      this.rulesBean = rulesBean;
+      this.rulesDialog = RulesDialog;
    }
    
    

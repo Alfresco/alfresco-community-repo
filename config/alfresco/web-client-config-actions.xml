@@ -28,7 +28,7 @@
             <style-class>inlineAction</style-class>
             <image>/images/icons/edit_icon.gif</image>
             <!-- action, action-listener, onclick, href and target action attributes are supported -->
-            <action-listener>#{CheckinCheckoutBean.editFile}</action-listener>
+            <action-listener>#{CheckinCheckoutDialog.editFile}</action-listener>
             <action>editDocument</action>
             <href>http://...</href>
             <target>new</target>
@@ -50,7 +50,7 @@
             <evaluator>org.alfresco.web.action.evaluator.EditDocHttpEvaluator</evaluator>
             <label-id>edit</label-id>
             <image>/images/icons/edit_icon.gif</image>
-            <action-listener>#{CheckinCheckoutBean.editFile}</action-listener>
+            <action-listener>#{CheckinCheckoutDialog.editFile}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -87,7 +87,7 @@
             <evaluator>org.alfresco.web.action.evaluator.CheckinDocEvaluator</evaluator>
             <label-id>checkin</label-id>
             <image>/images/icons/CheckIn_icon.gif</image>
-            <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
+            <action-listener>#{CheckinCheckoutDialog.setupContentAction}</action-listener>
             <action>dialog:checkinFile</action>
             <params>
                <param name="id">#{actionContext.id}</param>
@@ -99,7 +99,7 @@
             <evaluator>org.alfresco.web.action.evaluator.CheckoutDocEvaluator</evaluator>
             <label-id>checkout</label-id>
             <image>/images/icons/CheckOut_icon.gif</image>
-            <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
+            <action-listener>#{CCCheckoutFileDialog.setupContentAction}</action-listener>
             <action>dialog:checkoutFile</action>
             <params>
                <param name="id">#{actionContext.id}</param>
@@ -111,7 +111,7 @@
             <evaluator>org.alfresco.web.action.evaluator.CancelCheckoutDocEvaluator</evaluator>
             <label-id>undocheckout</label-id>
             <image>/images/icons/undo_checkout.gif</image>
-            <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
+            <action-listener>#{CCUndoCheckoutFileDialog.setupContentAction}</action-listener>
             <action>dialog:undoCheckoutFile</action>
             <params>
                <param name="id">#{actionContext.id}</param>
@@ -199,7 +199,7 @@
             <evaluator>org.alfresco.web.action.evaluator.UpdateDocEvaluator</evaluator>
             <label-id>update</label-id>
             <image>/images/icons/update.gif</image>
-            <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
+            <action-listener>#{CheckinCheckoutDialog.setupContentAction}</action-listener>
             <action>dialog:updateFile</action>
             <params>
                <param name="id">#{actionContext.id}</param>
@@ -571,14 +571,14 @@
          <action id="reapply-rules">
             <label-id>reapply_rules</label-id>
             <image>/images/icons/reapply_rules.gif</image>
-            <action-listener>#{RulesBean.reapplyRules}</action-listener>
+            <action-listener>#{RulesDialog.reapplyRules}</action-listener>
          </action>
 
          <!-- Ignore Inherited Rules -->
          <action id="ignore-inherited-rules">
-            <label>#{RulesBean.ignoreInheritedRulesLabelId}</label>
+            <label>#{RulesDialog.ignoreInheritedRulesLabelId}</label>
             <image>/images/icons/reapply_rules.gif</image>
-            <action-listener>#{RulesBean.ignoreInheritedRules}</action-listener>
+            <action-listener>#{RulesDialog.ignoreInheritedRules}</action-listener>
          </action>
 
          <!-- Reset Tree -->
@@ -688,7 +688,7 @@
                <evaluator>org.alfresco.web.action.evaluator.CheckoutDocEvaluator</evaluator>
                <label-id>checkout</label-id>
                <image>/images/icons/CheckOut_icon.gif</image>
-               <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
+               <action-listener>#{CheckinCheckoutDialog.setupContentAction}</action-listener>
                <action>checkoutFile</action>
             </action>-->
 

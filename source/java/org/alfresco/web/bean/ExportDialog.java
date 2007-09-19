@@ -25,12 +25,10 @@
 package org.alfresco.web.bean;
 
 import java.io.Serializable;
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.action.executer.ExporterActionExecuter;
 import org.alfresco.repo.action.executer.RepositoryExporterActionExecuter;
@@ -39,8 +37,8 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -49,16 +47,14 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gavinc
  */
-public class ExportBean
+public class ExportDialog extends BaseDialogBean
 {
-   private static final Log logger = LogFactory.getLog(ExportBean.class);
+   private static final Log logger = LogFactory.getLog(ExportDialog.class);
    
    private static final String ALL_SPACES = "all";
    private static final String CURRENT_SPACE = "current";
-
    private static final String DEFAULT_OUTCOME = "dialog:close";
-   
-   private static final String MSG_ERROR = "error_export";
+   private static final String MSG_EXPORT = "export";
    
    protected BrowseBean browseBean;
    protected NodeService nodeService;
@@ -72,74 +68,56 @@ public class ExportBean
    private boolean runInBackground = true;
    private boolean includeSelf;
    
-   /**
-    * Performs the export operation using the current state of the bean
-    * 
-    * @return The outcome
-    */
-   public String export()
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       if (logger.isDebugEnabled())
          logger.debug("Called export for " + this.mode + " with package name: " + this.packageName);
       
-      String outcome = DEFAULT_OUTCOME;
-      
-      UserTransaction tx = null;
-      
-      try
+      // construct appropriate action to execute
+      Action action = null;
+      NodeRef startNode = this.browseBean.getActionSpace().getNodeRef();
+
+      // get the appropriate node
+      if (this.mode.equals(ALL_SPACES))
       {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-         tx.begin();
-
-         // construct appropriate action to execute
-         Action action = null;
-         NodeRef startNode = this.browseBean.getActionSpace().getNodeRef();
-         
-         // get the appropriate node
-         if (this.mode.equals(ALL_SPACES))
-         {
-             Map<String, Serializable> params = new HashMap<String, Serializable>(5);
-             params.put(ExporterActionExecuter.PARAM_PACKAGE_NAME, this.packageName);
-             params.put(ExporterActionExecuter.PARAM_DESTINATION_FOLDER, this.destination);
-             action = this.actionService.createAction(RepositoryExporterActionExecuter.NAME, params);
-         }
-         else
-         {
-             Map<String, Serializable> params = new HashMap<String, Serializable>(5);
-             params.put(ExporterActionExecuter.PARAM_STORE, Repository.getStoreRef().toString());
-             params.put(ExporterActionExecuter.PARAM_PACKAGE_NAME, this.packageName);
-             params.put(ExporterActionExecuter.PARAM_ENCODING, this.encoding);
-             params.put(ExporterActionExecuter.PARAM_DESTINATION_FOLDER, this.destination);
-             params.put(ExporterActionExecuter.PARAM_INCLUDE_CHILDREN, Boolean.valueOf(includeChildren));
-             params.put(ExporterActionExecuter.PARAM_INCLUDE_SELF, new Boolean(includeSelf));
-             action = this.actionService.createAction(ExporterActionExecuter.NAME, params);
-         }
-
-         // execute action
-         action.setExecuteAsynchronously(this.runInBackground);
-         this.actionService.executeAction(action, startNode);
-
-         if (logger.isDebugEnabled())
-         {
-            logger.debug("Executed space export action with action params of " + action.getParameterValues());
-         }
-         
-         // commit the transaction
-         tx.commit();
-         
-         // reset the bean
-         reset();
+         Map<String, Serializable> params = new HashMap<String, Serializable>(5);
+         params.put(ExporterActionExecuter.PARAM_PACKAGE_NAME, this.packageName);
+         params.put(ExporterActionExecuter.PARAM_DESTINATION_FOLDER, this.destination);
+         action = this.actionService.createAction(RepositoryExporterActionExecuter.NAME, params);
       }
-      catch (Throwable e)
+      else
       {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), MSG_ERROR), e.toString()), e);
-         outcome = null;
+         Map<String, Serializable> params = new HashMap<String, Serializable>(5);
+         params.put(ExporterActionExecuter.PARAM_STORE, Repository.getStoreRef().toString());
+         params.put(ExporterActionExecuter.PARAM_PACKAGE_NAME, this.packageName);
+         params.put(ExporterActionExecuter.PARAM_ENCODING, this.encoding);
+         params.put(ExporterActionExecuter.PARAM_DESTINATION_FOLDER, this.destination);
+         params.put(ExporterActionExecuter.PARAM_INCLUDE_CHILDREN, Boolean.valueOf(includeChildren));
+         params.put(ExporterActionExecuter.PARAM_INCLUDE_SELF, new Boolean(includeSelf));
+         action = this.actionService.createAction(ExporterActionExecuter.NAME, params);
       }
+
+      // execute action
+      action.setExecuteAsynchronously(this.runInBackground);
+      this.actionService.executeAction(action, startNode);
+
+      if (logger.isDebugEnabled())
+      {
+         logger.debug("Executed space export action with action params of " + action.getParameterValues());
+      }
+      
+      // reset the bean
+      reset();
       
       return outcome;
+   }
+   
+   @Override
+   public String getContainerTitle()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_EXPORT) + 
+             " '" + browseBean.getActionSpace().getName() + "'";
    }
    
    /**

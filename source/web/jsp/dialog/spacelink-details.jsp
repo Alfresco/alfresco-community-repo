@@ -133,7 +133,7 @@
                                     <a:panel id="link-panel" rendered="#{NavigationBean.inPortalServer == false}">
                                     <tr>
                                        <td colspan=4>
-                                          <a href='<%=request.getContextPath()%><a:outputText value="#{LinkPropertiesBean.spaceLinkDestinationUrl}" id="out5" />'><a:outputText value="#{msg.link_destination_details}" id="out6" /></a>
+<a href='<%=request.getContextPath()%><a:outputText value="#{LinkPropertiesDialog.spaceLinkDestinationUrl}" id="out5" />'><a:outputText value="#{msg.link_destination_details}" id="out6" /></a>
                                        </td>
                                     </tr>
                                     </a:panel>
@@ -147,7 +147,7 @@
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
                                        <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/Change_details.gif"
-                                             action="editLinkProperties" actionListener="#{LinkPropertiesBean.setupFolderLinkForAction}" />
+action="dialog:editLinkProperties" actionListener="#{LinkPropertiesDialog.setupFolderLinkForAction}" />
                                     </r:permissionEvaluator>
                                  </f:facet>
                               </h:panelGroup>

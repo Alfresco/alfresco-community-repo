@@ -87,14 +87,14 @@
                            <td style="padding-left:4px" width=80>
                              <%-- More actions menu --%>
                              <a:menu id="actionsMenu" itemSpacing="4" label="#{msg.more_actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
-                                <r:actions id="acts_rules" value="rules_actions_menu" context="#{RulesBean.space}" />
+                                <r:actions id="acts_rules" value="rules_actions_menu" context="#{RulesDialog.space}" />
                              </a:menu>
                            </td>
                            <td class="separator" width=1><img src="<%=request.getContextPath()%>/images/parts/dotted_separator.gif" border=0 height=29 width=1></td>  
                            <td width="125" style="padding-left:2px">
                               <%-- Filters --%>
                               <a:modeList itemSpacing="3" iconColumnWidth="20" selectedStyleClass="statusListHighlight"
-                                    value="#{RulesBean.viewMode}" actionListener="#{RulesBean.viewModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu"
+                                    value="#{RulesDialog.viewMode}" actionListener="#{RulesDialog.viewModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu"
                                     selectedImage="/images/icons/filter.gif">
                                  <a:listItem value="inherited" label="#{msg.inherited}" />
                                  <a:listItem value="local" label="#{msg.local}" />
@@ -118,7 +118,7 @@
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width="4"></td> 
                   <td>
                
-	               <h:panelGroup rendered="#{RulesBean.ignoreInheritedRules}">
+	               <h:panelGroup rendered="#{RulesDialog.ignoreInheritedRules}">
 	               <tr height='5'><td></td></tr>
 	               <tr>
 	                  <td>               
@@ -155,11 +155,11 @@
                               <%-- Rules List --%>
                               <a:panel id="rules-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle" label="#{msg.rules}">
                               
-                              <a:richList id="rulesList" viewMode="details" value="#{RulesBean.rules}" var="r"
+                              <a:richList id="rulesList" viewMode="details" value="#{RulesDialog.rules}" var="r"
                                           styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" 
                                           altRowStyleClass="recordSetRowAlt" width="100%" pageSize="10"
                                           initialSortColumn="createdDate" initialSortDescending="false"
-                                          binding="#{RulesBean.richList}">
+                                          binding="#{RulesDialog.richList}">
                         
                                  <%-- Primary column for details view mode --%>
                                  <a:column primary="true" width="200" style="padding:2px;text-align:left">
@@ -170,7 +170,7 @@
                                        <h:panelGroup>
                                           <a:booleanEvaluator value="#{r.local}">
                                              <a:actionLink value="#{r.title}" image="/images/icons/rule.gif" 
-                                                           actionListener="#{RulesBean.setupRuleAction}" action="wizard:editRule"
+                                                           actionListener="#{RulesDialog.setupRuleAction}" action="wizard:editRule"
                                                            showLink="false">
                                                 <f:param name="id" value="#{r.id}" />
                                              </a:actionLink>
@@ -181,7 +181,7 @@
                                        </h:panelGroup>
                                     </f:facet>
                                     <a:booleanEvaluator value="#{r.local}">
-                                       <a:actionLink value="#{r.title}" actionListener="#{RulesBean.setupRuleAction}" 
+                                       <a:actionLink value="#{r.title}" actionListener="#{RulesDialog.setupRuleAction}" 
                                                      action="wizard:editRule">
                                           <f:param name="id" value="#{r.id}" />
                                        </a:actionLink>
@@ -247,12 +247,12 @@
                                     <a:booleanEvaluator value="#{r.local}">
                                        <a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" showLink="false" 
                                                      styleClass="inlineAction"
-                                                     actionListener="#{RulesBean.setupRuleAction}" action="deleteRule">
+                                                     actionListener="#{RulesDialog.setupRuleAction}" action="dialog:deleteRule">
                                           <f:param name="id" value="#{r.id}" />
                                        </a:actionLink>
                                        <a:actionLink value="#{msg.change_details}" image="/images/icons/change_rule.gif" 
                                                      showLink="false" styleClass="inlineAction"
-                                                     actionListener="#{RulesBean.setupRuleAction}" action="wizard:editRule">
+                                                     actionListener="#{RulesDialog.setupRuleAction}" action="wizard:editRule">
                                           <f:param name="id" value="#{r.id}" />
                                        </a:actionLink>
                                     </a:booleanEvaluator>

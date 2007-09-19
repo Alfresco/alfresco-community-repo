@@ -10,7 +10,7 @@
             <evaluator>org.alfresco.web.action.evaluator.ForumsCheckinDocEvaluator</evaluator>
             <label-id>checkin</label-id>
             <image>/images/icons/CheckIn_icon.gif</image>
-            <action-listener>#{CheckinCheckoutBean.setupContentAction}</action-listener>
+            <action-listener>#{CheckinCheckoutDialog.setupContentAction}</action-listener>
             <action>dialog:checkinFile</action>
             <params>
                <param name="id">#{actionContext.id}</param>

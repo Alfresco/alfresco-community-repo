@@ -79,8 +79,8 @@
                               <div class="mainTitle"><h:outputText value="#{msg.groups_management}" /></div>
                               <div class="mainSubTitle">
                                  <%-- show either root message or the current group name --%>
-                                 <h:outputText value="#{msg.root_groups}" rendered="#{GroupsBean.currentGroup == null}" />
-                                 <h:outputText value="#{GroupsBean.groupName}" rendered="#{GroupsBean.currentGroup != null}" />
+                                 <h:outputText value="#{msg.root_groups}" rendered="#{GroupsProperties.group == null}" />
+                                 <h:outputText value="#{GroupsProperties.groupName}" rendered="#{GroupsProperties.group != null}" />
                               </div>
                               <div class="mainSubText"><h:outputText value="#{msg.groups_description}" /></div>
                            </td>
@@ -88,12 +88,12 @@
                            <td align=right>
                               <%-- Create actions menu --%>
                               <a:menu id="createMenu" itemSpacing="4" label="#{msg.create_options}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
-                                 <a:booleanEvaluator value="#{GroupsBean.currentGroup == null}">
-                                    <a:actionLink value="#{msg.new_group}" image="/images/icons/create_group.gif" action="newGroup" actionListener="#{GroupsBean.clearGroupAction}" />
+                                 <a:booleanEvaluator value="#{GroupsProperties.group == null}">
+                                    <a:actionLink value="#{msg.new_group}" image="/images/icons/create_group.gif" action="dialog:createGroup" actionListener="#{GroupsDialog.clearGroupAction}" />
                                  </a:booleanEvaluator>
-                                 <a:booleanEvaluator value="#{GroupsBean.currentGroup != null}">
-                                    <a:actionLink value="#{msg.new_sub_group}" image="/images/icons/create_group.gif" action="newGroup" actionListener="#{GroupsBean.setupGroupAction}">
-                                       <f:param name="id" value="#{GroupsBean.currentGroup}" />
+                                 <a:booleanEvaluator value="#{GroupsProperties.group != null}">
+                                    <a:actionLink value="#{msg.new_sub_group}" image="/images/icons/create_group.gif" action="dialog:createGroup" actionListener="#{GroupsDialog.setupGroupAction}">
+                                       <f:param name="id" value="#{GroupsProperties.group}" />
                                     </a:actionLink>
                                  </a:booleanEvaluator>
                               </a:menu>
@@ -101,16 +101,16 @@
                            <td style="padding-left:4px" width=80>
                               <%-- More actions menu --%>
                               <a:menu id="actionsMenu" itemSpacing="4" label="#{msg.more_actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
-                                 <a:booleanEvaluator value="#{GroupsBean.currentGroup != null}">
-                                    <a:actionLink value="#{msg.new_sub_group}" image="/images/icons/create_group.gif" action="newGroup" actionListener="#{GroupsBean.setupGroupAction}">
-                                       <f:param name="id" value="#{GroupsBean.currentGroup}" />
+                                 <a:booleanEvaluator value="#{GroupsProperties.group != null}">
+                                    <a:actionLink value="#{msg.new_sub_group}" image="/images/icons/create_group.gif" action="dialog:createGroup" actionListener="#{GroupsDialog.setupGroupAction}">
+                                       <f:param name="id" value="#{GroupsProperties.group}" />
                                     </a:actionLink>
-                                    <a:actionLink value="#{msg.delete_group}" image="/images/icons/delete_group.gif" action="deleteGroup" actionListener="#{GroupsBean.setupGroupAction}">
-                                       <f:param name="id" value="#{GroupsBean.currentGroup}" />
+                                    <a:actionLink value="#{msg.delete_group}" image="/images/icons/delete_group.gif" action="dialog:deleteGroup" actionListener="#{GroupsDialog.setupGroupAction}">
+                                       <f:param name="id" value="#{GroupsProperties.group}" />
                                     </a:actionLink>
                                     <%-- TODO: should this be add user(S) - multiple required on generic picker? --%>
-                                    <a:actionLink value="#{msg.add_user}" image="/images/icons/add_user.gif" action="addUser" actionListener="#{GroupsBean.setupGroupAction}">
-                                       <f:param name="id" value="#{GroupsBean.currentGroup}" />
+                                    <a:actionLink value="#{msg.add_user}" image="/images/icons/add_user.gif" action="dialog:addUsers" actionListener="#{GroupsDialog.setupGroupAction}">
+                                       <f:param name="id" value="#{GroupsProperties.group}" />
                                     </a:actionLink>
                                  </a:booleanEvaluator>
                               </a:menu>
@@ -119,7 +119,7 @@
                           <td style="padding-left:4px" width=80 valign=middle>
                               <%-- Filter settings --%>
                               <a:modeList itemSpacing="3" iconColumnWidth="20" selectedStyleClass="statusListHighlight" selectedImage="/images/icons/filter.gif"
-                                    value="#{GroupsBean.filterMode}" actionListener="#{GroupsBean.filterModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu">
+                                    value="#{GroupsProperties.filterMode}" actionListener="#{GroupsDialog.filterModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu">
                                  <a:listItem value="children" label="#{msg.group_filter_children}" />
                                  <a:listItem value="all" label="#{msg.group_filter_all}" />
                               </a:modeList>
@@ -128,7 +128,7 @@
                           <td style="padding-left:4px" width=80 valign=middle>
                               <%-- View mode settings --%>
                               <a:modeList itemSpacing="3" iconColumnWidth="20" selectedStyleClass="statusListHighlight" selectedImage="/images/icons/Details.gif"
-                                    value="#{GroupsBean.viewMode}" actionListener="#{GroupsBean.viewModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu">
+                                    value="#{GroupsProperties.viewMode}" actionListener="#{GroupsDialog.viewModeChanged}" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu">
                                  <a:listItem value="icons" label="#{msg.group_icons}" />
                                  <a:listItem value="details" label="#{msg.group_details}" />
                               </a:modeList>
@@ -156,7 +156,7 @@
                               
                               <%-- Group Path Breadcrumb --%>
                               <div style="padding-left:8px;padding-top:4px;padding-bottom:4px">
-                                 <a:breadcrumb value="#{GroupsBean.location}" styleClass="title" />
+                                 <a:breadcrumb value="#{GroupsDialog.location}" styleClass="title" />
                               </div>
                               
                               <%-- Groups List --%>
@@ -164,33 +164,33 @@
                               
                               <a:panel id="groups-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle" label="#{msg.groups}">
                               
-                              <a:richList id="groups-list" binding="#{GroupsBean.groupsRichList}" viewMode="#{GroupsBean.viewMode}" pageSize="12"
+                              <a:richList id="groups-list" binding="#{GroupsProperties.groupsRichList}" viewMode="#{GroupsProperties.viewMode}" pageSize="12"
                                     styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
-                                    value="#{GroupsBean.groups}" var="r" initialSortColumn="name" initialSortDescending="true">
+                                    value="#{GroupsDialog.groups}" var="r" initialSortColumn="name" initialSortDescending="true">
                                  
                                  <%-- Primary column for icons view mode --%>
-                                 <a:column primary="true" style="padding:2px;text-align:left;vertical-align:top" rendered="#{GroupsBean.viewMode == 'icons'}">
+                                 <a:column primary="true" style="padding:2px;text-align:left;vertical-align:top" rendered="#{GroupsProperties.viewMode == 'icons'}">
                                     <f:facet name="large-icon">
-                                       <a:actionLink value="#{r.name}" image="/images/icons/group_large.gif" actionListener="#{GroupsBean.clickGroup}" showLink="false">
+                                       <a:actionLink value="#{r.name}" image="/images/icons/group_large.gif" actionListener="#{GroupsDialog.clickGroup}" showLink="false">
                                           <f:param name="id" value="#{r.id}" />
                                        </a:actionLink>
                                     </f:facet>
-                                    <a:actionLink value="#{r.name}" actionListener="#{GroupsBean.clickGroup}" styleClass="header">
+                                    <a:actionLink value="#{r.name}" actionListener="#{GroupsDialog.clickGroup}" styleClass="header">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
                                  </a:column>
                                  
                                  <%-- Primary column for details view mode --%>
-                                 <a:column primary="true" style="padding:2px;text-align:left" rendered="#{GroupsBean.viewMode == 'details'}">
+                                 <a:column primary="true" style="padding:2px;text-align:left" rendered="#{GroupsProperties.viewMode == 'details'}">
                                     <f:facet name="small-icon">
-                                       <a:actionLink value="#{r.name}" image="/images/icons/group.gif" actionListener="#{GroupsBean.clickGroup}" showLink="false">
+                                       <a:actionLink value="#{r.name}" image="/images/icons/group.gif" actionListener="#{GroupsDialog.clickGroup}" showLink="false">
                                           <f:param name="id" value="#{r.id}" />
                                        </a:actionLink>
                                     </f:facet>
                                     <f:facet name="header">
                                        <a:sortLink label="#{msg.identifier}" value="name" mode="case-insensitive" styleClass="header"/>
                                     </f:facet>
-                                    <a:actionLink value="#{r.name}" actionListener="#{GroupsBean.clickGroup}">
+                                    <a:actionLink value="#{r.name}" actionListener="#{GroupsDialog.clickGroup}">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
                                  </a:column>
@@ -200,13 +200,13 @@
                                     <f:facet name="header">
                                        <h:outputText value="#{msg.actions}"/>
                                     </f:facet>
-                                    <a:actionLink value="#{msg.new_sub_group}" image="/images/icons/create_group.gif" showLink="false" styleClass="inlineAction" action="newGroup" actionListener="#{GroupsBean.setupGroupAction}">
+                                    <a:actionLink value="#{msg.new_sub_group}" image="/images/icons/create_group.gif" showLink="false" styleClass="inlineAction" action="dialog:createGroup" actionListener="#{GroupsDialog.setupGroupAction}">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
-                                    <a:actionLink value="#{msg.add_user}" image="/images/icons/add_user.gif" showLink="false" styleClass="inlineAction" action="addUser" actionListener="#{GroupsBean.setupGroupAction}">
+                                    <a:actionLink value="#{msg.add_user}" image="/images/icons/add_user.gif" showLink="false" styleClass="inlineAction" action="dialog:addUsers" actionListener="#{GroupsDialog.setupGroupAction}">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
-                                    <a:actionLink value="#{msg.delete}" image="/images/icons/delete_group.gif" showLink="false" styleClass="inlineAction" action="deleteGroup" actionListener="#{GroupsBean.setupGroupAction}">
+                                    <a:actionLink value="#{msg.delete}" image="/images/icons/delete_group.gif" showLink="false" styleClass="inlineAction" action="dialog:deleteGroup" actionListener="#{GroupsDialog.setupGroupAction}">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
                                  </a:column>
@@ -223,12 +223,12 @@
                               
                               <a:panel id="users-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle" label="#{msg.users}">
                               
-                              <a:richList id="users-list" binding="#{GroupsBean.usersRichList}" viewMode="#{GroupsBean.viewMode}" pageSize="12"
+                              <a:richList id="users-list" binding="#{GroupsProperties.usersRichList}" viewMode="#{GroupsProperties.viewMode}" pageSize="12"
                                     styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
-                                    value="#{GroupsBean.users}" var="r" initialSortColumn="name" initialSortDescending="true">
+                                    value="#{GroupsDialog.users}" var="r" initialSortColumn="name" initialSortDescending="true">
                                  
                                  <%-- Primary column for icons view mode --%>
-                                 <a:column primary="true" style="padding:2px;text-align:left;vertical-align:top;font-weight: bold;" rendered="#{GroupsBean.viewMode == 'icons'}">
+                                 <a:column primary="true" style="padding:2px;text-align:left;vertical-align:top;font-weight: bold;" rendered="#{GroupsProperties.viewMode == 'icons'}">
                                     <f:facet name="large-icon">
                                        <h:graphicImage alt="#{r.name}" value="/images/icons/user_large.gif" />
                                     </f:facet>
@@ -236,7 +236,7 @@
                                  </a:column>
                                  
                                  <%-- Primary column for details view mode --%>
-                                 <a:column primary="true" style="padding:2px;text-align:left;" rendered="#{GroupsBean.viewMode == 'details'}">
+                                 <a:column primary="true" style="padding:2px;text-align:left;" rendered="#{GroupsProperties.viewMode == 'details'}">
                                     <f:facet name="small-icon">
                                        <h:graphicImage alt="#{r.name}" value="/images/icons/person.gif" />
                                     </f:facet>
@@ -259,7 +259,7 @@
                                     <f:facet name="header">
                                        <h:outputText value="#{msg.actions}"/>
                                     </f:facet>
-                                    <a:actionLink value="#{msg.remove}" image="/images/icons/remove_user.gif" showLink="false" styleClass="inlineAction" actionListener="#{GroupsBean.removeUser}">
+                                    <a:actionLink value="#{msg.remove}" image="/images/icons/remove_user.gif" showLink="false" styleClass="inlineAction" actionListener="#{GroupsDialog.removeUser}">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
                                  </a:column>

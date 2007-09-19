@@ -63,7 +63,7 @@ public class EditRuleWizard extends CreateRuleWizard
       super.init(parameters);
       
       // get hold of the current rule details
-      Rule rule = this.rulesBean.getCurrentRule();
+      Rule rule = this.rulesDialog.getCurrentRule();
       
       if (rule == null)
       {
@@ -163,7 +163,7 @@ public class EditRuleWizard extends CreateRuleWizard
       Node currentSpace = browseBean.getActionSpace();
       
       // get the existing rule
-      Rule rule = this.rulesBean.getCurrentRule();
+      Rule rule = this.rulesDialog.getCurrentRule();
       
       // Get the composite action
       CompositeAction compositeAction = getCompositeAction(rule);

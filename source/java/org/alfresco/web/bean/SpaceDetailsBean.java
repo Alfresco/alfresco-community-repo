@@ -39,13 +39,15 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.GuestTemplateContentServlet;
+import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.dialog.IDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -55,21 +57,31 @@ import org.alfresco.web.ui.common.component.UIActionLink;
  * 
  * @author Kevin Roast
  */
-public class SpaceDetailsBean extends BaseDetailsBean
+public class SpaceDetailsBean extends BaseDetailsBean implements IDialogBean
 {
    private static final String MSG_HAS_FOLLOWING_CATEGORIES = "has_following_categories_space";
    private static final String MSG_NO_CATEGORIES_APPLIED = "no_categories_applied_space";
    private static final String MSG_ERROR_UPDATE_CATEGORY = "error_update_category";
    private static final String MSG_ERROR_ASPECT_CLASSIFY = "error_aspect_classify_space";
+   private static final String MSG_MODIFY_CATEGORIES_OF = "modify_categories_of";
 
    /** Category details */
    private NodeRef addedCategory;
    private List categories;
+   private BaseDialogBean baseDialogBean = new BaseDialogBeanImpl();
    
    /** RSS Template ID */
    private String rssTemplate;
-   
-   
+
+   private class BaseDialogBeanImpl extends BaseDialogBean
+   {
+      @Override
+      protected String finishImpl(FacesContext context, String outcome) throws Exception
+      {
+         return saveCategories(context, outcome);
+      }
+   }
+
    // ------------------------------------------------------------------------------
    // Construction
    
@@ -397,9 +409,9 @@ public class SpaceDetailsBean extends BaseDetailsBean
     *  
     * @return The outcome
     */
-   public String saveCategories()
+   public String saveCategories(FacesContext newContext, String newOutcome)
    {
-      String outcome = "cancel";
+      String outcome = newOutcome;
       
       UserTransaction tx = null;
       
@@ -423,8 +435,6 @@ public class SpaceDetailsBean extends BaseDetailsBean
          
          // reset the state of the current document so it reflects the changes just made
          getSpace().reset();
-         
-         outcome = "finish";
       }
       catch (Throwable e)
       {
@@ -587,5 +597,59 @@ public class SpaceDetailsBean extends BaseDetailsBean
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
       }
+   }
+   
+   // ------------------------------------------------------------------------------
+   // dialog implementation
+   
+   public String cancel()
+   {
+      return baseDialogBean.cancel();
+   }
+ 
+   public String finish()
+   {
+      return baseDialogBean.finish();
+   }
+ 
+   public List<DialogButtonConfig> getAdditionalButtons()
+   {
+      return baseDialogBean.getAdditionalButtons();
+   }
+ 
+   public String getCancelButtonLabel()
+   {
+      return baseDialogBean.getCancelButtonLabel();
+   }
+ 
+   public String getContainerDescription()
+   {
+      return baseDialogBean.getContainerDescription();
+   }
+ 
+   public String getContainerTitle()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_MODIFY_CATEGORIES_OF) + 
+            " '" + getSpace().getName() + "'";
+   }
+ 
+   public boolean getFinishButtonDisabled()
+   {
+      return false;
+   }
+ 
+   public String getFinishButtonLabel()
+   {
+      return baseDialogBean.getFinishButtonLabel();
+   }
+ 
+   public void init(Map<String, String> parameters)
+   {
+      baseDialogBean.init(parameters);
+   }
+ 
+   public void restored()
+   {
+      baseDialogBean.restored();
    }
 }

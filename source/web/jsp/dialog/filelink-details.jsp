@@ -145,7 +145,7 @@
                                     <a:panel id="link-panel" rendered="#{NavigationBean.inPortalServer == false}">
                                     <tr>
                                        <td colspan=3>
-                                          <a href='<%=request.getContextPath()%><a:outputText value="#{LinkPropertiesBean.fileLinkBookmarkUrl}" id="out5" />'><a:outputText value="#{msg.link_destination_details}" id="out6" /></a>
+                                          <a href='<%=request.getContextPath()%><a:outputText value="#{LinkPropertiesDialog.fileLinkBookmarkUrl}" id="out5" />'><a:outputText value="#{msg.link_destination_details}" id="out6" /></a>
                                        </td>
                                     </tr>
                                     </a:panel>
@@ -158,7 +158,7 @@
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write">
                                        <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/Change_details.gif"
-                                             action="editLinkProperties" actionListener="#{LinkPropertiesBean.setupFileLinkForAction}" />
+                                             action="dialog:editLinkProperties" actionListener="#{LinkPropertiesDialog.setupFileLinkForAction}" />
                                     </r:permissionEvaluator>
                                  </f:facet>
                               </h:panelGroup>

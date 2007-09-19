@@ -31,7 +31,6 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -41,7 +40,9 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
@@ -51,14 +52,22 @@ import org.alfresco.web.ui.common.Utils.URLMode;
  * Backing bean for the edit link properties dialog
  * 
  * @author kevinr
+ * @author YanO
  */
-public class LinkPropertiesBean
+public class LinkPropertiesDialog extends BaseDialogBean
 {
-   protected NodeService nodeService;
-   protected DictionaryService dictionaryService;
-   protected BrowseBean browseBean;
-   protected NavigationBean navigator;
    private Node editableNode;
+   
+   public Map<String, Object> getProperties()
+   {
+      return this.editableNode.getProperties();
+   }
+   
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
+      return false;
+   }
    
    /**
     * Returns the node being edited
@@ -122,25 +131,11 @@ public class LinkPropertiesBean
       return Utils.generateURL(FacesContext.getCurrentInstance(), new Node(destRef), URLMode.SHOW_DETAILS);
    }
    
-   /**
-    * Event handler used to save the edited properties back to the repository
-    * 
-    * @return The outcome
-    */
-   public String save()
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      String outcome = "cancelEdit";
-      
-      // setup the dispatch context as it is required for correct cancel/finish back to link dialog
-      this.navigator.setupDispatchContext(this.editableNode);
-      
-      UserTransaction tx = null;
-      
       try
       {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-         tx.begin();
-         
          NodeRef nodeRef = this.editableNode.getNodeRef();
          Map<String, Object> props = this.editableNode.getProperties();
          
@@ -192,100 +187,29 @@ public class LinkPropertiesBean
          // send the properties back to the repository
          this.nodeService.setProperties(nodeRef, properties);
          
-         // commit the transaction
-         tx.commit();
-         
-         // set the outcome to refresh
-         outcome = "finishEdit";
-         
          // reset any document held by the browse bean as it's just been updated
          // if this is a space link then it doesn't matter anyway
          if (this.browseBean.getDocument() != null)
          {
-             this.browseBean.getDocument().reset();
+            this.browseBean.getDocument().reset();
          }
       }
       catch (InvalidNodeRefException err)
       {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] {this.browseBean.getDocument().getId()}) );
+               context, Repository.ERROR_NODEREF), new Object[] {this.browseBean.getDocument().getId()}));
          
          // this failure means the node no longer exists - we cannot show the doc properties screen
-         outcome = "browse";
+         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
+                   AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
       }
       catch (Throwable e)
       {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
+               context, Repository.ERROR_GENERIC), e.getMessage()), e);
+         outcome = null;
       }
       
       return outcome;
-   }
-   
-   public String cancel()
-   {
-      // setup the dispatch context as it is required for correct cancel/finish back to link dialog
-      this.navigator.setupDispatchContext(this.editableNode);
-      
-      return "cancelEdit";
-   }
-   
-   public Map<String, Object> getProperties()
-   {
-      return this.editableNode.getProperties();
-   }
-   
-   /**
-    * @return Returns the nodeService.
-    */
-   public NodeService getNodeService()
-   {
-      return this.nodeService;
-   }
-
-   /**
-    * @param nodeService The nodeService to set.
-    */
-   public void setNodeService(NodeService nodeService)
-   {
-      this.nodeService = nodeService;
-   }
-
-   /**
-    * Sets the DictionaryService to use when persisting metadata
-    * 
-    * @param dictionaryService The DictionaryService
-    */
-   public void setDictionaryService(DictionaryService dictionaryService)
-   {
-      this.dictionaryService = dictionaryService;
-   }
-
-   /**
-    * @return The BrowseBean
-    */
-   public BrowseBean getBrowseBean()
-   {
-      return this.browseBean;
-   }
-
-   /**
-    * @param browseBean The BrowseBean to set.
-    */
-   public void setBrowseBean(BrowseBean browseBean)
-   {
-      this.browseBean = browseBean;
-   }
-   
-   /**
-    * @param navigator The NavigationBean to set.
-    */
-   public void setNavigator(NavigationBean navigator)
-   {
-      this.navigator = navigator;
    }
 }

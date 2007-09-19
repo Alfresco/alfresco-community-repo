@@ -106,7 +106,7 @@
                            
                            <td align=right>
                               <%-- Current object actions --%>
-                              <a:actionLink value="#{msg.create_user}" image="/images/icons/create_user.gif" padding="4" rendered="#{LoginBean.alfrescoAuth}" action="createUser" actionListener="#{NewUserWizard.startWizard}" />
+                              <a:actionLink value="#{msg.create_user}" image="/images/icons/create_user.gif" padding="4" rendered="#{LoginBean.alfrescoAuth}" action="wizard:createUser" />
                            </td>
                            
                            <td class="separator" width=1><img src="<%=request.getContextPath()%>/images/parts/dotted_separator.gif" border=0 height=29 width=1></td>
@@ -153,14 +153,14 @@
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %>
                               
                               <div style="padding: 6px;"></div>
-                              <h:inputText id="search-text" value="#{UsersBean.searchCriteria}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;
-                              <h:commandButton id="search-btn" value="#{msg.search}" action="#{UsersBean.search}" disabled="true" />&nbsp;
-                              <h:commandButton value="#{msg.show_all}" action="#{UsersBean.showAll}" />
+                              <h:inputText id="search-text" value="#{UsersBeanProperties.searchCriteria}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;
+                              <h:commandButton id="search-btn" value="#{msg.search}" action="#{UsersDialog.search}" disabled="true" />&nbsp;
+                              <h:commandButton value="#{msg.show_all}" action="#{UsersDialog.showAll}" />
                               <div style="padding: 6px;"></div>
                               
-                              <a:richList id="users-list" binding="#{UsersBean.usersRichList}" viewMode="details" pageSize="10"
+                              <a:richList id="users-list" binding="#{UsersBeanProperties.usersRichList}" viewMode="details" pageSize="10"
                                     styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
-                                    value="#{UsersBean.users}" var="r" initialSortColumn="userName" initialSortDescending="true">
+                                    value="#{UsersDialog.users}" var="r" initialSortColumn="userName" initialSortDescending="true">
                                  
                                  <%-- Primary column with full name --%>
                                  <a:column primary="true" width="200" style="padding:2px;text-align:left">
@@ -194,14 +194,14 @@
                                     <f:facet name="header">
                                        <h:outputText value="#{msg.actions}"/>
                                     </f:facet>
-                                    <a:actionLink value="#{msg.modify}" image="/images/icons/edituser.gif" showLink="false" action="editUser" actionListener="#{NewUserWizard.startWizardForEdit}">
+                                    <a:actionLink value="#{msg.modify}" image="/images/icons/edituser.gif" showLink="false" action="wizard:editUser" actionListener="#{UsersDialog.setupUserAction}">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
-                                    <a:actionLink value="#{msg.change_password}" image="/images/icons/change_password.gif" showLink="false" action="dialog:changePassword" actionListener="#{UsersBean.setupUserAction}">
+                                    <a:actionLink value="#{msg.change_password}" image="/images/icons/change_password.gif" showLink="false" action="dialog:changePassword" actionListener="#{UsersDialog.setupUserAction}">
                                        <f:param name="id" value="#{r.id}" />
                                     </a:actionLink>
                                     <a:booleanEvaluator value="#{r.userName != 'admin'}">
-                                       <a:actionLink value="#{msg.delete}" image="/images/icons/delete_person.gif" showLink="false" action="dialog:deleteUser" actionListener="#{UsersBean.setupUserAction}">
+                                       <a:actionLink value="#{msg.delete}" image="/images/icons/delete_person.gif" showLink="false" action="dialog:deleteUser" actionListener="#{DeleteUserDialog.setupUserAction}">
                                           <f:param name="id" value="#{r.id}" />
                                        </a:actionLink>
                                     </a:booleanEvaluator>

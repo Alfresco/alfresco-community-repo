@@ -41,31 +41,28 @@ import org.alfresco.repo.search.impl.lucene.QueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.LoginBean;
+import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
-import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Kevin Roast
  */
-public class UsersBean implements IContextListener
+public class UsersDialog extends BaseDialogBean implements IContextListener
 {
-   private static Log    logger = LogFactory.getLog(UsersBean.class);
+   private static Log    logger = LogFactory.getLog(UsersDialog.class);
 
    public static final String ERROR_PASSWORD_MATCH = "error_password_match";
    private static final String ERROR_DELETE = "error_delete_user";
@@ -74,30 +71,8 @@ public class UsersBean implements IContextListener
    private static final String DEFAULT_OUTCOME = "manageUsers";
    private static final String DIALOG_CLOSE = "dialog:close";
 
-   /** NodeService bean reference */
-   protected NodeService nodeService;
-
-   /** SearchService bean reference */
-   protected SearchService searchService;
-   
-   /** AuthenticationService bean reference */
-   protected AuthenticationService authenticationService;
-
-   /** PersonService bean reference */
-   protected PersonService personService;
-   
-   /** Component reference for Users RichList control */
-   protected UIRichList usersRichList;
-
-   /** action context */
-   private Node person = null;
-   
+   protected UsersBeanProperties properties;
    private List<Node> users = Collections.<Node>emptyList();
-   
-   private String password = null;
-   private String oldPassword = null;
-   private String confirm = null;
-   private String searchCriteria = null;
    
    
    // ------------------------------------------------------------------------------
@@ -106,7 +81,7 @@ public class UsersBean implements IContextListener
    /**
     * Default Constructor
     */
-   public UsersBean()
+   public UsersDialog()
    {
       UIContextService.getInstance(FacesContext.getCurrentInstance()).registerBean(this);
    }
@@ -116,51 +91,11 @@ public class UsersBean implements IContextListener
    // Bean property getters and setters
 
    /**
-    * @param nodeService        The NodeService to set.
+    * @param properties the properties to set
     */
-   public void setNodeService(NodeService nodeService)
+   public void setProperties(UsersBeanProperties properties)
    {
-      this.nodeService = nodeService;
-   }
-
-   /**
-    * @param searchService      the search service
-    */
-   public void setSearchService(SearchService searchService)
-   {
-      this.searchService = searchService;
-   }
-
-   /**
-    * @param authenticationService  The AuthenticationService to set.
-    */
-   public void setAuthenticationService(AuthenticationService authenticationService)
-   {
-      this.authenticationService = authenticationService;
-   }
-
-   /**
-    * @param personService  The PersonService to set.
-    */
-   public void setPersonService(PersonService personService)
-   {
-      this.personService = personService;
-   }
-
-   /**
-    * @return Returns the usersRichList.
-    */
-   public UIRichList getUsersRichList()
-   {
-      return this.usersRichList;
-   }
-
-   /**
-    * @param usersRichList  The usersRichList to set.
-    */
-   public void setUsersRichList(UIRichList usersRichList)
-   {
-      this.usersRichList = usersRichList;
+      this.properties = properties;
    }
 
    /**
@@ -177,90 +112,10 @@ public class UsersBean implements IContextListener
    }
    
    /**
-    * @return Returns the search criteria
-    */
-   public String getSearchCriteria()
-   {
-      return searchCriteria;
-   }
-
-   /**
-    * @param searchCriteria The search criteria to select
-    */
-   public void setSearchCriteria(String searchCriteria)
-   {
-      this.searchCriteria = searchCriteria;
-   }
-
-   /**
-    * @return Returns the confirm password.
-    */
-   public String getConfirm()
-   {
-      return this.confirm;
-   }
-
-   /**
-    * @param confirm The confirm password to set.
-    */
-   public void setConfirm(String confirm)
-   {
-      this.confirm = confirm;
-   }
-
-   /**
-    * @return Returns the password.
-    */
-   public String getPassword()
-   {
-      return this.password;
-   }
-
-   /**
-    * @param password The password to set.
-    */
-   public void setPassword(String password)
-   {
-      this.password = password;
-   }
-   
-   /**
-    * @return Returns the old password.
-    */
-   public String getOldPassword()
-   {
-      return this.oldPassword;
-   }
-
-   /**
-    * @param oldPassword The old password to set.
-    */
-   public void setOldPassword(String oldPassword)
-   {
-      this.oldPassword = oldPassword;
-   }
-
-   /**
-    * @return Returns the person context.
-    */
-   public Node getPerson()
-   {
-      return this.person;
-   }
-
-   /**
-    * @param person     The person context to set.
-    */
-   public void setPerson(Node person)
-   {
-      this.person = person;
-   }
-
-   /**
     * Action event called by all actions that need to setup a Person context on
     * the Users bean before an action page is called. The context will be a
     * Person Node in setPerson() which can be retrieved on the action page from
-    * UsersBean.getPerson().
+    * UsersDialog.getPerson().
     */
    public void setupUserAction(ActionEvent event)
    {
@@ -279,7 +134,7 @@ public class UsersBean implements IContextListener
             Node node = new Node(ref);
             
             // remember the Person node
-            setPerson(node);
+            properties.setPerson(node);
             
             // clear the UI state in preparation for finishing the action
             // and returning to the main page
@@ -293,7 +148,7 @@ public class UsersBean implements IContextListener
       }
       else
       {
-         setPerson(null);
+         properties.setPerson(null);
       }
    }
 
@@ -305,7 +160,7 @@ public class UsersBean implements IContextListener
       FacesContext context = FacesContext.getCurrentInstance();
       try
       {
-         String userName = (String)getPerson().getProperties().get("userName");
+         String userName = (String) properties.getPerson().getProperties().get("userName");
          
          // we only delete the user auth if Alfresco is managing the authentication 
          Map session = context.getExternalContext().getSessionMap();
@@ -314,7 +169,7 @@ public class UsersBean implements IContextListener
             // delete the User authentication
             try
             {
-               authenticationService.deleteAuthentication(userName);
+               properties.getAuthenticationService().deleteAuthentication(userName);
             }
             catch (AuthenticationException authErr)
             {
@@ -323,7 +178,7 @@ public class UsersBean implements IContextListener
          }
          
          // delete the associated Person
-         this.personService.deletePerson(userName);
+         properties.getPersonService().deletePerson(userName);
          
          // re-do the search to refresh the list
          search();
@@ -339,70 +194,7 @@ public class UsersBean implements IContextListener
    }
    
    /**
-    * Action handler called for OK button press on Change Password screen
-    */
-   public String changePasswordOK()
-   {
-      String outcome = DIALOG_CLOSE;
-      
-      if (this.password != null && this.confirm != null && this.password.equals(this.confirm))
-      {
-         try
-         {
-            String userName = (String)this.person.getProperties().get(ContentModel.PROP_USERNAME);
-            this.authenticationService.setAuthentication(userName, this.password.toCharArray());
-         }
-         catch (Exception e)
-         {
-            outcome = null;
-            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext
-                  .getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
-         }
-      }
-      else
-      {
-         outcome = null;
-         Utils.addErrorMessage(Application.getMessage(FacesContext.getCurrentInstance(),
-               ERROR_PASSWORD_MATCH));
-      }
-      
-      return outcome;
-   }
-   
-   /**
-    * Action handler called for OK button press on Change My Password screen
-    * For this screen the user is required to enter their old password - effectively login.
-    */
-   public String changeMyPasswordOK()
-   {
-      String outcome = DIALOG_CLOSE;
-      
-      if (this.password != null && this.confirm != null && this.password.equals(this.confirm))
-      {
-         try
-         {
-            String userName = (String)this.person.getProperties().get(ContentModel.PROP_USERNAME);
-            this.authenticationService.updateAuthentication(userName, this.oldPassword.toCharArray(), this.password.toCharArray());
-         }
-         catch (Exception e)
-         {
-            outcome = null;
-            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext
-                  .getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
-         }
-      }
-      else
-      {
-         outcome = null;
-         Utils.addErrorMessage(Application.getMessage(FacesContext.getCurrentInstance(),
-               ERROR_PASSWORD_MATCH));
-      }
-      
-      return outcome;
-   }
-   
-   /**
-    * Action handler called for the OK button press 
+    * Action handler called for the OK button press
     */
    public String changeUserDetails()
    {
@@ -411,16 +203,16 @@ public class UsersBean implements IContextListener
       FacesContext context = FacesContext.getCurrentInstance();
       try
       {
-         Map<QName, Serializable> props = this.nodeService.getProperties(getPerson().getNodeRef());
+         Map<QName, Serializable> props = properties.getNodeService().getProperties(properties.getPerson().getNodeRef());
          props.put(ContentModel.PROP_FIRSTNAME,
-               (String)getPerson().getProperties().get(ContentModel.PROP_FIRSTNAME));
+               (String) properties.getPerson().getProperties().get(ContentModel.PROP_FIRSTNAME));
          props.put(ContentModel.PROP_LASTNAME,
-               (String)getPerson().getProperties().get(ContentModel.PROP_LASTNAME));
+               (String) properties.getPerson().getProperties().get(ContentModel.PROP_LASTNAME));
          props.put(ContentModel.PROP_EMAIL,
-               (String)getPerson().getProperties().get(ContentModel.PROP_EMAIL));
+               (String) properties.getPerson().getProperties().get(ContentModel.PROP_EMAIL));
          
          // persist changes
-         this.nodeService.setProperties(getPerson().getNodeRef(), props);
+         properties.getNodeService().setProperties(properties.getPerson().getNodeRef(), props);
          
          // if the above call was successful, then reset Person Node in the session
          Application.getCurrentUser(context).reset();
@@ -441,9 +233,9 @@ public class UsersBean implements IContextListener
     */
    public String search()
    {
-      this.usersRichList.setValue(null);
+      properties.getUsersRichList().setValue(null);
       
-      if (this.searchCriteria == null || this.searchCriteria.trim().length() == 0)
+      if (properties.getSearchCriteria() == null || properties.getSearchCriteria().trim().length() == 0)
       {
          this.users = Collections.<Node>emptyList();
       }
@@ -458,7 +250,7 @@ public class UsersBean implements IContextListener
             tx.begin();
             
             // define the query to find people by their first or last name
-            String search = this.searchCriteria.trim();
+            String search = properties.getSearchCriteria().trim();
             StringBuilder query = new StringBuilder(256);
             query.append("TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (");
             for (StringTokenizer t = new StringTokenizer(search, " "); t.hasMoreTokens(); /**/)
@@ -483,7 +275,7 @@ public class UsersBean implements IContextListener
             params.addStore(Repository.getStoreRef());
             params.setQuery(query.toString());
             
-            List<NodeRef> people = this.searchService.query(params).getNodeRefs();
+            List<NodeRef> people = properties.getSearchService().query(params).getNodeRefs();
             
             if (logger.isDebugEnabled())
                logger.debug("Found " + people.size() + " users");
@@ -539,15 +331,20 @@ public class UsersBean implements IContextListener
     */
    public String showAll()
    {
-      this.usersRichList.setValue(null);
+      properties.getUsersRichList().setValue(null);
       
       this.users = Repository.getUsers(FacesContext.getCurrentInstance(), 
-            this.nodeService, this.searchService);
+            properties.getNodeService(), properties.getSearchService());
       
       // return null to stay on the same page
       return null;
    }
    
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
+   {
+      return null;
+   }
    
    // ------------------------------------------------------------------------------
    // IContextListener implementation
@@ -557,9 +354,9 @@ public class UsersBean implements IContextListener
     */
    public void contextUpdated()
    {
-      if (this.usersRichList != null)
+      if (properties.getUsersRichList() != null)
       {
-         this.usersRichList.setValue(null);
+         properties.getUsersRichList().setValue(null);
          this.users = null;
       }
    }

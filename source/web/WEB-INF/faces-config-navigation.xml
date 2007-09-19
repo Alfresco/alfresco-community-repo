@@ -77,6 +77,30 @@
          <from-outcome>import</from-outcome>
          <to-view-id>/jsp/dialog/import.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>manageCategories</from-outcome>
+         <to-view-id>/jsp/categories/categories.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>manageUsers</from-outcome>
+         <to-view-id>/jsp/users/users.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>manageGroups</from-outcome>
+         <to-view-id>/jsp/groups/groups.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>showSystemInfo</from-outcome>
+         <to-view-id>/jsp/dialog/system-info.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>showNodeBrowser</from-outcome>
+         <to-view-id>/jsp/admin/store-browser.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>export</from-outcome>
+         <to-view-id>/jsp/dialog/export.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
    <!-- rule to get to the Advanced Search page from anywhere -->
@@ -209,30 +233,6 @@
    <!-- Admin Console rules -->
    <navigation-rule>
       <from-view-id>/jsp/admin/admin-console.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>manageCategories</from-outcome>
-         <to-view-id>/jsp/categories/categories.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>manageUsers</from-outcome>
-         <to-view-id>/jsp/users/users.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>manageGroups</from-outcome>
-         <to-view-id>/jsp/groups/groups.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>showSystemInfo</from-outcome>
-         <to-view-id>/jsp/dialog/system-info.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>showNodeBrowser</from-outcome>
-         <to-view-id>/jsp/admin/store-browser.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>export</from-outcome>
-         <to-view-id>/jsp/dialog/export.jsp</to-view-id>
-      </navigation-case>
    </navigation-rule>
    
    <navigation-rule>
@@ -268,18 +268,6 @@
    </navigation-rule>
    
    <navigation-rule>
-      <from-view-id>/jsp/dialog/checkout-file.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>checkoutFileLink</from-outcome>
-         <to-view-id>/jsp/dialog/checkout-file-link.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>workingCopyMissing</from-outcome>
-         <to-view-id>/jsp/dialog/working-copy-missing.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
       <from-view-id>/jsp/dialog/space-details.jsp</from-view-id>
       <navigation-case>
          <from-outcome>manageInvitedUsers</from-outcome>
@@ -288,10 +276,6 @@
       <navigation-case>
          <from-outcome>manageRules</from-outcome>
          <to-view-id>/jsp/dialog/rules.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>export</from-outcome>
-         <to-view-id>/jsp/dialog/export.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
          <from-outcome>applyTemplate</from-outcome>
@@ -320,7 +304,7 @@
    </navigation-rule>
    
    <navigation-rule>
-      <from-view-id>/jsp/dialog/apply-rss-template.jsp</from-view-id>
+      <from-view-id>/jsp/dialog/*</from-view-id>
          <navigation-case>
          <from-outcome>manageInvitedUsers</from-outcome>
          <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
@@ -616,7 +600,7 @@
    
    <!-- User Details and preferences action outcomes -->
    <navigation-rule>
-      <from-view-id>/jsp/users/user-console.jsp</from-view-id>
+      <from-view-id>/jsp/*</from-view-id>
       <navigation-case>
          <from-outcome>changePassword</from-outcome>
          <to-view-id>/jsp/users/change-my-password.jsp</to-view-id>
@@ -825,10 +809,6 @@
          <from-outcome>manageInvitedUsers</from-outcome>
          <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
       </navigation-case>
-      <navigation-case>
-         <from-outcome>export</from-outcome>
-         <to-view-id>/jsp/dialog/export.jsp</to-view-id>
-      </navigation-case>
    </navigation-rule>
    
    <!-- Manage Deleted Items screen action outcomes -->
@@ -884,6 +864,14 @@
          <from-outcome>topicDeleted</from-outcome>
          <to-view-id>/jsp/forums/forum.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>checkoutFileLink</from-outcome>
+         <to-view-id>/jsp/dialog/checkout-file-link.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>workingCopyMissing</from-outcome>
+         <to-view-id>/jsp/dialog/working-copy-missing.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
    <navigation-rule>
@@ -931,4 +919,15 @@
          <to-view-id>/jsp/wcm/browse-sandbox.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
+   
+   
+   <!-- Overridden dialog:close navigation rules for Recovery Report -->
+   <navigation-rule>
+      <from-view-id>/jsp/*</from-view-id>
+      <navigation-case>
+         <from-outcome>goToTrashList</from-outcome>
+         <to-view-id>/jsp/trashcan/trash-list.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
 </faces-config>

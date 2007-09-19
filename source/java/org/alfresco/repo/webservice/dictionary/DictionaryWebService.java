@@ -299,21 +299,13 @@ public class DictionaryWebService extends AbstractWebService implements Dictiona
     private void getSubClasses(org.alfresco.service.cmr.dictionary.ClassDefinition classDef, Set<org.alfresco.service.cmr.dictionary.ClassDefinition> subClasses, boolean recurse)
     {
         QName superClass = classDef.getName();
-        Collection<QName> candidates = (classDef.isAspect()) ? dictionaryService.getAllAspects() : dictionaryService.getAllTypes();
-
-        // Note: this is the brute force way of finding sub-classes
-        // TODO: Add support into Dictionary for retrieving sub-classes
-        for (QName candidate : candidates)
+        
+        Collection<QName> subClassNames = (classDef.isAspect()) ? dictionaryService.getSubAspects(superClass, recurse) : dictionaryService.getSubTypes(superClass, recurse);
+        
+        for (QName subClass : subClassNames)
         {
-            if (dictionaryService.isSubClass(candidate, superClass) && !candidate.equals(superClass))
-            {
-                org.alfresco.service.cmr.dictionary.ClassDefinition subClassDef = dictionaryService.getClass(candidate);
-                subClasses.add(subClassDef);
-                if (recurse)
-                {
-                    getSubClasses(subClassDef, subClasses, recurse);
-                }
-            }
+        	org.alfresco.service.cmr.dictionary.ClassDefinition subClassDef = dictionaryService.getClass(subClass);
+            subClasses.add(subClassDef);
         }
     }
 

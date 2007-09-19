@@ -195,15 +195,26 @@ public class AuthorityCapabilityRegistryImpl implements
                 {
                     continue;
                 }
-                auth = normalizeAuthority(auth);
                 Set<String> children = fAuthorityService.getContainedAuthorities(null, auth, true);
+                auth = normalizeAuthority(auth);
                 Set<String> found = fAuthorityToChild.get(auth);
                 if (found == null)
                 {
                     found = new HashSet<String>();
                     fAuthorityToChild.put(auth, found);
                 }
-                AuthorityEntry entry = fAuthorityEntryDAO.get(fAuthorityToID.get(auth));
+                AuthorityEntry entry = null;
+                if (!fAuthorityToID.containsKey(auth))
+                {
+                    entry = new AuthorityEntryImpl(auth);
+                    fAuthorityEntryDAO.save(entry);
+                    fAuthorityToID.put(auth, entry.getId());
+                    fIDToAuthority.put(entry.getId(), auth);
+                }
+                else
+                {
+                    entry = fAuthorityEntryDAO.get(fAuthorityToID.get(auth));
+                }
                 for (String child : children)
                 {
                     child = normalizeAuthority(child);
@@ -211,7 +222,18 @@ public class AuthorityCapabilityRegistryImpl implements
                     {
                         continue;
                     }
-                    AuthorityEntry childEntry = fAuthorityEntryDAO.get(fAuthorityToID.get(child));
+                    AuthorityEntry childEntry = null;
+                    if (!fAuthorityToID.containsKey(child))
+                    {
+                        childEntry = new AuthorityEntryImpl(child);
+                        fAuthorityEntryDAO.save(childEntry);
+                        fAuthorityToID.put(child, childEntry.getId());
+                        fIDToAuthority.put(childEntry.getId(), child);
+                    }
+                    else
+                    {
+                        childEntry = fAuthorityEntryDAO.get(fAuthorityToID.get(child));
+                    }
                     entry.getChildren().add(childEntry);
                     found.add(child);
                     Set<String> parents = fChildToAuthority.get(child);

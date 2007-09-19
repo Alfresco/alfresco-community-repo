@@ -73,24 +73,32 @@ public class ACLTest extends TestCase
             fCapabilityRegistry = (AuthorityCapabilityRegistry)fContext.getBean("authorityCapabilityRegistry");
         }
         // Set up sample users groups and roles.
-        fAuthenticationService.createAuthentication("Buffy", "Buffy".toCharArray());
-        fPersonService.getPerson("Buffy");
-        fAuthorityService.createAuthority(AuthorityType.GROUP, null, "Scoobies");
-        fAuthorityService.addAuthority("GROUP_Scoobies", "Buffy");
-        fAuthenticationService.createAuthentication("Willow", "Willow".toCharArray());
-        fPersonService.getPerson("Willow");
-        fAuthorityService.addAuthority("GROUP_Scoobies", "Willow");
-        fAuthenticationService.createAuthentication("Xander", "Xander".toCharArray());
-        fPersonService.getPerson("Xander");
-        fAuthorityService.addAuthority("GROUP_Scoobies", "Xander");
-        fAuthenticationService.createAuthentication("Tara", "Tara".toCharArray());
-        fPersonService.getPerson("Tara");
-        fAuthenticationService.createAuthentication("Spike", "Spike".toCharArray());
-        fPersonService.getPerson("Spike");
-        fAuthorityService.createAuthority(AuthorityType.GROUP, null, "vampires");
-        fAuthorityService.addAuthority("GROUP_vampires", "Spike");
-        fAuthorityService.createAuthority(AuthorityType.GROUP, null, "soulless");
-        fAuthorityService.addAuthority("GROUP_soulless", "Spike");
+        try
+        {
+            fAuthenticationService.createAuthentication("Buffy", "Buffy".toCharArray());
+            fPersonService.getPerson("Buffy");
+            fAuthorityService.createAuthority(AuthorityType.GROUP, null, "Scoobies");
+            fAuthorityService.addAuthority("GROUP_Scoobies", "Buffy");
+            fAuthenticationService.createAuthentication("Willow", "Willow".toCharArray());
+            fPersonService.getPerson("Willow");
+            fAuthorityService.addAuthority("GROUP_Scoobies", "Willow");
+            fAuthenticationService.createAuthentication("Xander", "Xander".toCharArray());
+            fPersonService.getPerson("Xander");
+            fAuthorityService.addAuthority("GROUP_Scoobies", "Xander");
+            fAuthenticationService.createAuthentication("Tara", "Tara".toCharArray());
+            fPersonService.getPerson("Tara");
+            fAuthenticationService.createAuthentication("Spike", "Spike".toCharArray());
+            fPersonService.getPerson("Spike");
+            fAuthorityService.createAuthority(AuthorityType.GROUP, null, "vampires");
+            fAuthorityService.addAuthority("GROUP_vampires", "Spike");
+            fAuthorityService.createAuthority(AuthorityType.GROUP, null, "soulless");
+            fAuthorityService.addAuthority("GROUP_soulless", "Spike");
+        }
+        catch (Exception e)
+        {
+            tearDown();
+            setUp();
+        }
     }
 
     /* (non-Javadoc)

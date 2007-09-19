@@ -155,7 +155,7 @@ public class TenantAdminConsoleBean
      */
     public String getCurrentUserName()
     {
-        return tenantInterpreter.getCurrentUserName();
+    	return (tenantInterpreter != null) ? tenantInterpreter.getCurrentUserName() : null;
     }
 
     /**
@@ -168,7 +168,7 @@ public class TenantAdminConsoleBean
         try
         {
             long startms = System.currentTimeMillis();
-            String result = tenantInterpreter.interpretCommand(command);
+            String result = (tenantInterpreter != null) ? tenantInterpreter.interpretCommand(command) : "Tenant AdminConsole is not available - check that multi-tenancy is enabled !";
             setDuration(System.currentTimeMillis() - startms);
             setResult(result);
             setCommand("");

@@ -127,6 +127,15 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
 
     
     /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.DictionaryService#getSubTypes(org.alfresco.service.namespace.QName, boolean)
+     */
+    public Collection<QName> getSubTypes(QName superType, boolean follow)
+    {
+    	return dictionaryDAO.getSubTypes(superType, follow);
+    }
+    
+    
+    /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.DictionaryService#getTypes(org.alfresco.repo.ref.QName)
      */
     public Collection<QName> getTypes(QName model)
@@ -154,6 +163,15 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
         return aspects;
     }
 
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.DictionaryService#getSubAspects(org.alfresco.service.namespace.QName, boolean)
+     */
+    public Collection<QName> getSubAspects(QName superAspect, boolean follow)
+    {
+    	return dictionaryDAO.getSubAspects(superAspect, follow);
+    }
+    
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.DictionaryService#getAspects(org.alfresco.repo.ref.QName)
@@ -277,6 +295,19 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
             propDef = propDefs.get(propertyName);
         }
         return propDef;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.DictionaryService#getPropertyDefs(org.alfresco.service.namespace.QName)
+     */
+    public Map<QName,PropertyDefinition> getPropertyDefs(QName className)
+    {
+        ClassDefinition classDef = dictionaryDAO.getClass(className);
+        if (classDef != null)
+        {
+            return classDef.getProperties();
+        }
+        return null;
     }
 
     

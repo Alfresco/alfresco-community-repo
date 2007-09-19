@@ -341,20 +341,7 @@ public class LuceneQueryParser extends QueryParser
                 {
                     throw new SearcherException("Invalid type: " + queryText);
                 }
-                QName targetQName = target.getName();
-                HashSet<QName> subclasses = new HashSet<QName>();
-                for (QName classRef : dictionaryService.getAllTypes())
-                {
-                    TypeDefinition current = dictionaryService.getType(classRef);
-                    while ((current != null) && !current.getName().equals(targetQName))
-                    {
-                        current = (current.getParentName() == null) ? null : dictionaryService.getType(current.getParentName());
-                    }
-                    if (current != null)
-                    {
-                        subclasses.add(classRef);
-                    }
-                }
+                Collection<QName> subclasses = dictionaryService.getSubTypes(target.getName(), true);
                 BooleanQuery booleanQuery = new BooleanQuery();
                 for (QName qname : subclasses)
                 {
@@ -420,21 +407,9 @@ public class LuceneQueryParser extends QueryParser
                     }
                 }
 
-                QName targetQName = target.getName();
-                HashSet<QName> subclasses = new HashSet<QName>();
-                for (QName classRef : dictionaryService.getAllAspects())
-                {
-                    AspectDefinition current = dictionaryService.getAspect(classRef);
-                    while ((current != null) && !current.getName().equals(targetQName))
-                    {
-                        current = (current.getParentName() == null) ? null : dictionaryService.getAspect(current.getParentName());
-                    }
-                    if (current != null)
-                    {
-                        subclasses.add(classRef);
-                    }
-                }
 
+                Collection<QName> subclasses = dictionaryService.getSubAspects(target.getName(), true);               
+              
                 BooleanQuery booleanQuery = new BooleanQuery();
                 for (QName qname : subclasses)
                 {

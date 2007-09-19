@@ -25,6 +25,7 @@
 package org.alfresco.service.cmr.dictionary;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
@@ -95,6 +96,14 @@ public interface DictionaryService
     Collection<QName> getAllTypes();
     
     /**
+     * @param type
+     * @param follow  true => follow up the super-class hierarchy, false => immediate sub types only
+     * @return the sub types of specified type
+     */
+    @NotAuditable
+    Collection<QName> getSubTypes(QName type, boolean follow);
+   
+    /**
      * @param model the model to retrieve types for
      * @return the names of all types defined within the specified model
      */
@@ -124,6 +133,14 @@ public interface DictionaryService
      */
     @NotAuditable
     Collection<QName> getAllAspects();
+    
+    /**
+     * @param aspect
+     * @param follow  true => follow up the super-class hierarchy, false => immediate sub aspects only
+     * @return the sub aspects of specified aspect
+     */
+    @NotAuditable
+    Collection<QName> getSubAspects(QName aspect, boolean follow);
     
     /**
      * @param model the model to retrieve aspects for
@@ -168,6 +185,15 @@ public interface DictionaryService
      */
     @NotAuditable
     PropertyDefinition getProperty(QName className, QName propertyName);
+    
+    /**
+     * Gets the definitions of the properties defined by the specified Class.
+     * 
+     * @param className the class name
+     * @return the property definitions
+     */
+    @NotAuditable
+    Map<QName,PropertyDefinition> getPropertyDefs(QName className);
 
     /**
      * Gets the definition of the property as defined by its owning Class.

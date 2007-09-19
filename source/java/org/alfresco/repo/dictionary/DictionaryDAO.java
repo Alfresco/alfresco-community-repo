@@ -65,12 +65,26 @@ public interface DictionaryDAO extends ModelQuery
      * @return the types of the model
      */
     public Collection<TypeDefinition> getTypes(QName model);
+    
+    /**
+     * @param superType
+     * @param follow  true => follow up the super-class hierarchy, false => immediate sub types only
+     * @return
+     */
+    public Collection<QName> getSubTypes(QName superType, boolean follow);
 
     /**
      * @param model the model to retrieve aspects for
      * @return the aspects of the model
      */
     public Collection<AspectDefinition> getAspects(QName model);
+    
+    /**
+     * @param superAspect
+     * @param follow  true => follow up the super-class hierarchy, false => immediate sub aspects only
+     * @return
+     */
+    public Collection<QName> getSubAspects(QName superAspect, boolean follow);
        
     /**
      * @param model the model for which to get properties for

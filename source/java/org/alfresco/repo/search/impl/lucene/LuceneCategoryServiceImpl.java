@@ -305,15 +305,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     public Collection<QName> getClassificationAspects()
     {
-        List<QName> list = new ArrayList<QName>();
-        for (QName aspect : dictionaryService.getAllAspects())
-        {
-            if (dictionaryService.isSubClass(aspect, ContentModel.ASPECT_CLASSIFIABLE))
-            {
-                list.add(aspect);
-            }
-        }
-        return list;
+    	return dictionaryService.getSubAspects(ContentModel.ASPECT_CLASSIFIABLE, true);
     }
 
     public NodeRef createClassifiction(StoreRef storeRef, QName typeName, String attributeName)

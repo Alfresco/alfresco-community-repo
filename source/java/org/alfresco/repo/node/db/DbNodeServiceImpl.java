@@ -970,6 +970,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     
     private Map<QName, Serializable> getPropertiesImpl(Node node) throws InvalidNodeRefException
     {
+    	Map<QName,PropertyDefinition> propDefs = dictionaryService.getPropertyDefs(node.getTypeQName());
+    	
         Map<QName, PropertyValue> nodeProperties = node.getProperties();
         Map<QName, Serializable> ret = new HashMap<QName, Serializable>(nodeProperties.size());
         // copy values
@@ -978,7 +980,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             QName propertyQName = entry.getKey();
             PropertyValue propertyValue = entry.getValue();
             // get the property definition
-            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+            PropertyDefinition propertyDef = propDefs.get(propertyQName);
             
             if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.NODE_REF)) && 
                 (propertyValue != null) && (propertyValue.getStringValue() != null))

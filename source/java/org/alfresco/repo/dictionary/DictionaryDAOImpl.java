@@ -511,6 +511,54 @@ public class DictionaryDAOImpl implements DictionaryDAO
         }
         return null;
     }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.DictionaryDAO#getSubTypes(org.alfresco.service.namespace.QName, boolean)
+     */
+    public Collection<QName> getSubTypes(QName superType, boolean follow)
+    {
+    	// note: could be optimised further, if compiled into the model
+    	
+        // Get all types (with parent type) for all models
+        Map<QName, QName> allTypesAndParents = new HashMap<QName, QName>(); // name, parent
+        
+        for (CompiledModel model : getCompiledModels().values())
+        {
+        	for (TypeDefinition type : model.getTypes())
+        	{
+        		allTypesAndParents.put(type.getName(), type.getParentName());
+        	}
+        }
+        
+        // Get sub types
+    	HashSet<QName> subTypes = new HashSet<QName>();
+        for (QName type : allTypesAndParents.keySet())
+        {
+        	if (follow)
+        	{   
+        		// all sub types
+        		QName current = type;
+	            while ((current != null) && !current.equals(superType))
+	            {
+	            	current = allTypesAndParents.get(current); // get parent
+	            }
+	            if (current != null)
+	            {
+	            	subTypes.add(type);
+	            }
+        	}
+        	else
+        	{
+        		// immediate sub types only
+        		if (allTypesAndParents.get(type).equals(superType))
+        		{
+        			subTypes.add(type);
+        		}
+        	}
+
+        }
+        return subTypes;
+    }
 
 
     /* (non-Javadoc)
@@ -528,6 +576,53 @@ public class DictionaryDAOImpl implements DictionaryDAO
         	}
         }
         return null;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.DictionaryDAO#getSubAspects(org.alfresco.service.namespace.QName, boolean)
+     */
+    public Collection<QName> getSubAspects(QName superAspect, boolean follow)
+    {
+    	// note: could be optimised further, if compiled into the model
+    	
+        // Get all aspects (with parent aspect) for all models   
+        Map<QName, QName> allAspectsAndParents = new HashMap<QName, QName>(); // name, parent
+        
+        for (CompiledModel model : getCompiledModels().values())
+        {
+        	for (AspectDefinition aspect : model.getAspects())
+        	{
+        		allAspectsAndParents.put(aspect.getName(), aspect.getParentName());
+        	}
+        }
+   	
+        // Get sub aspects
+    	HashSet<QName> subAspects = new HashSet<QName>();
+        for (QName aspect : allAspectsAndParents.keySet())
+        {
+        	if (follow)
+        	{
+        		// all sub aspects
+	        	QName current = aspect;
+	            while ((current != null) && !current.equals(superAspect))
+	            {
+	            	current = allAspectsAndParents.get(current); // get parent
+	            }
+	            if (current != null)
+	            {
+	            	subAspects.add(aspect);
+	            }
+	    	}
+	    	else
+	    	{
+	    		// immediate sub aspects only
+	    		if (allAspectsAndParents.get(aspect).equals(superAspect))
+	    		{
+	    			subAspects.add(aspect);
+	    		}
+	    	}        	
+        }
+        return subAspects;
     }
 
 
@@ -609,33 +704,31 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public Collection<QName> getModels()
     {
+    	return getCompiledModels().keySet();
+    }
+    
+    // return all tenant-specific models and all shared (non-overridden) models
+    private Map<QName,CompiledModel> getCompiledModels() 
+    {
         String tenantDomain = tenantService.getCurrentUserDomain();
         if (tenantDomain != "")
         {
             // return all tenant-specific models and all shared (non-overridden) models
-            Collection<QName> filteredModels = new ArrayList<QName>();
-            Collection<QName> tenantModels = new ArrayList<QName>();
-            Collection<QName> nontenantModels = new ArrayList<QName>();
-
+            Map<QName, CompiledModel> filteredModels = new HashMap<QName, CompiledModel>();
+            
             // get tenant models (if any)
-            for (QName key : getCompiledModels(tenantDomain).keySet())
-            {
-                tenantModels.add(key);
-            }
+            Map<QName,CompiledModel> tenantModels = getCompiledModels(tenantDomain);
             
             // get non-tenant models (if any)
             // note: these will be shared, if not overridden - could be core/system model or additional custom model shared between tenants
-            for (QName key : getCompiledModels("").keySet())
-            {
-                nontenantModels.add(key);
-            }
+            Map<QName,CompiledModel> nontenantModels = getCompiledModels("");
 
             // check for overrides
-            filteredModels.addAll(nontenantModels);
-
-            for (QName tenantModel : tenantModels)
+            filteredModels.putAll(nontenantModels);
+     
+            for (QName tenantModel : tenantModels.keySet())
             {
-                for (QName nontenantModel : nontenantModels)
+                for (QName nontenantModel : nontenantModels.keySet())
                 {
                     if (tenantModel.equals(nontenantModel))
                     {
@@ -646,12 +739,12 @@ public class DictionaryDAOImpl implements DictionaryDAO
                 }
             }
 
-            filteredModels.addAll(tenantModels);
+            filteredModels.putAll(tenantModels);
             return filteredModels;
         }
         else
         {
-            return getCompiledModels("").keySet();
+            return getCompiledModels("");
         } 
     }
     

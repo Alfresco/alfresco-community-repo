@@ -439,7 +439,7 @@ public class LoaderSession
         sb.append("Session name:     ").append(name).append(getLineEnding())
           .append("RMI URLS:         ").append(rmiUrls).append(getLineEnding())
           .append("Store References: ").append(storeRefs).append(getLineEnding())
-          .append("Folder Profiles:  ").append(folderProfilesAsList)
+          .append("Folder Profiles:  ").append(folderProfilesAsList).append(getLineEnding())
           .append("Start Time:       ").append(new Date(startTime));
         return sb.toString();
     }

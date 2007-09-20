@@ -35,7 +35,7 @@ import java.util.List;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.repo.domain.hibernate.NodeImpl;
+import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
@@ -158,10 +158,10 @@ public class InvalidNameEndingPatch extends AbstractPatch
         {
             // get the association types to check
             @SuppressWarnings("unused")
-            List<NodeImpl> nodes = getInvalidNames();
+            List<Node> nodes = getInvalidNames();
 
             int updated = 0;
-            for (NodeImpl node : nodes)
+            for (Node node : nodes)
             {
                 NodeRef nodeRef = node.getNodeRef();
                 String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
@@ -206,7 +206,7 @@ public class InvalidNameEndingPatch extends AbstractPatch
         }
         
         @SuppressWarnings("unchecked")
-        private List<NodeImpl> getInvalidNames()
+        private List<Node> getInvalidNames()
         {
             HibernateCallback callback = new HibernateCallback()
             {
@@ -221,7 +221,7 @@ public class InvalidNameEndingPatch extends AbstractPatch
                     return query.list();
                 }
             };
-            List<NodeImpl> results = (List<NodeImpl>) getHibernateTemplate().execute(callback);
+            List<Node> results = (List<Node>) getHibernateTemplate().execute(callback);
             return results;
         }
         

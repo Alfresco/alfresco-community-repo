@@ -189,8 +189,8 @@ public abstract class AbstractLoaderThread extends Thread
           .append(String.format("%40s", loaderName)).append("\t")
           .append(String.format("%15.0f", (float)statCount)).append("\t")
           .append(String.format("%15.3f", statTotalSec)).append("\t")
-          .append(String.format("%15.3f", statPerSec)).append("\t")
           .append(String.format("%15.3f", statAveSec)).append("\t")
+          .append(String.format("%15.3f", statPerSec)).append("\t")
           .append("");
         return sb.toString();
     }

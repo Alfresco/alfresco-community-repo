@@ -145,39 +145,9 @@ public abstract class WebScriptRuntime
                     logger.debug("Format style: " + desc.getFormatStyle() + ", Default format: " + desc.getDefaultFormat());
                     logger.debug("Invoking Web Script "  + description.getId() + (user == null ? " (unauthenticated)" : " (authenticated as " + user + ") (format " + format + ") (" + locale + ")"));
                 }
-                
-                if (description.getRequiredTransaction() == RequiredTransaction.none)
-                {
-                    authenticatedExecute(scriptReq, scriptRes);
-                }
-                else
-                {
-                    // encapsulate script within transaction
-                    RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
-                    {
-                        public Object execute() throws Exception
-                        {
-                            if (logger.isDebugEnabled())
-                                logger.debug("Begin transaction: " + description.getRequiredTransaction());
-                            
-                            authenticatedExecute(scriptReq, scriptRes);
-                            
-                            if (logger.isDebugEnabled())
-                                logger.debug("End transaction: " + description.getRequiredTransaction());
-                            
-                            return null;
-                        }        
-                    };
-                
-                    if (description.getRequiredTransaction() == RequiredTransaction.required)
-                    {
-                        retryingTransactionHelper.doInTransaction(work); 
-                    }
-                    else
-                    {
-                        retryingTransactionHelper.doInTransaction(work, false, true); 
-                    }
-                }
+
+                // execute script within required level of authentication
+                authenticatedExecute(scriptReq, scriptRes);
             }
             finally
             {
@@ -277,7 +247,7 @@ public abstract class WebScriptRuntime
         
         if (required == RequiredAuthentication.none)
         {
-            wrappedExecute(scriptReq, scriptRes);
+            transactionedExecute(scriptReq, scriptRes);
         }
         else if ((required == RequiredAuthentication.user || required == RequiredAuthentication.admin) && isGuest)
         {
@@ -311,7 +281,7 @@ public abstract class WebScriptRuntime
                     }
                     
                     // Execute Web Script
-                    wrappedExecute(scriptReq, scriptRes);
+                    transactionedExecute(scriptReq, scriptRes);
                 }
             }
             finally
@@ -327,6 +297,52 @@ public abstract class WebScriptRuntime
                 
                 if (logger.isDebugEnabled())
                     logger.debug("Authentication reset: " + (currentUser == null ? "unauthenticated" : "authenticated as " + currentUser));                
+            }
+        }
+    }
+
+    /**
+     * Execute script within required level of transaction
+     * 
+     * @param scriptReq
+     * @param scriptRes
+     * @throws IOException
+     */
+    protected void transactionedExecute(final WebScriptRequest scriptReq, final WebScriptResponse scriptRes)
+        throws IOException
+    {
+        final WebScript script = scriptReq.getServiceMatch().getWebScript();
+        final WebScriptDescription description = script.getDescription();
+        if (description.getRequiredTransaction() == RequiredTransaction.none)
+        {
+            wrappedExecute(scriptReq, scriptRes);
+        }
+        else
+        {
+            // encapsulate script within transaction
+            RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
+            {
+                public Object execute() throws Exception
+                {
+                    if (logger.isDebugEnabled())
+                        logger.debug("Begin transaction: " + description.getRequiredTransaction());
+                    
+                    wrappedExecute(scriptReq, scriptRes);
+                    
+                    if (logger.isDebugEnabled())
+                        logger.debug("End transaction: " + description.getRequiredTransaction());
+                    
+                    return null;
+                }        
+            };
+        
+            if (description.getRequiredTransaction() == RequiredTransaction.required)
+            {
+                retryingTransactionHelper.doInTransaction(work); 
+            }
+            else
+            {
+                retryingTransactionHelper.doInTransaction(work, false, true); 
             }
         }
     }

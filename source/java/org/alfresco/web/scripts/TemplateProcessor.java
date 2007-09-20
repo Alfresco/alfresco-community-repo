@@ -56,10 +56,10 @@ import freemarker.template.TemplateExceptionHandler;
 public class TemplateProcessor extends FreeMarkerProcessor implements ApplicationContextAware, ApplicationListener
 {
     private ProcessorLifecycle lifecycle = new ProcessorLifecycle();
-    private TemplateLoader templateLoader = null;
-    private String defaultEncoding;
-    private Configuration templateConfig;
-    private FreeMarkerProcessor freeMarkerProcessor;
+    protected TemplateLoader templateLoader = null;
+    protected String defaultEncoding;
+    protected Configuration templateConfig;
+    protected FreeMarkerProcessor freeMarkerProcessor;
 
 
     /* (non-Javadoc)
@@ -153,6 +153,9 @@ public class TemplateProcessor extends FreeMarkerProcessor implements Applicatio
         
         // rethrow any exception so we can deal with them
         config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+        
+        // turn off locale sensitive lookup - to save numerous wasted calls to nodeservice.exists()
+        config.setLocalizedLookup(false);
         
         // set template encoding
         if (defaultEncoding != null)

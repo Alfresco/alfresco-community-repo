@@ -54,13 +54,13 @@ public class WebScriptServlet extends HttpServlet
     private static final Log logger = LogFactory.getLog(WebScriptServlet.class);
 
     // Component Dependencies
-    private DeclarativeWebScriptRegistry registry;
-    private ServiceRegistry serviceRegistry;
-    private WebScriptServletAuthenticator authenticator;
+    protected DeclarativeWebScriptRegistry registry;
+    protected ServiceRegistry serviceRegistry;
+    protected WebScriptServletAuthenticator authenticator;
     protected ConfigService configService;
 
     /** Host Server Configuration */
-    private static ServerConfigElement serverConfig;
+    protected static ServerConfigElement serverConfig;
 
     
     @Override

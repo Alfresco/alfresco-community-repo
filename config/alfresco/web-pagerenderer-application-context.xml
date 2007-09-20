@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   
+   <!-- Page Renderer Configuration -->
+   <bean id="pagerenderer.configsource" class="org.alfresco.config.source.UrlConfigSource">
+      <constructor-arg>
+         <list>
+            <value>classpath:alfresco/web-pagerenderer-config.xml</value>
+            <value>classpath:alfresco/extension/web-pagerenderer-config-custom.xml</value>
+         </list>
+      </constructor-arg>
+   </bean>
+   
+   <bean id="pagerenderer.config" class="org.alfresco.config.xml.XMLConfigService" init-method="init">
+      <constructor-arg>
+         <ref bean="pagerenderer.configsource" />
+      </constructor-arg>
+   </bean>
+   
+   <bean id="pagerenderer.templateprocessor" class="org.alfresco.web.app.servlet.PageTemplateProcessor">
+      <property name="freeMarkerProcessor" ref="freeMarkerProcessor" /> 
+      <property name="serviceRegistry" ref="ServiceRegistry" />     
+      <!-- <property name="defaultEncoding"><value>UTF-8</value></property> -->
+   </bean>
+   
+</beans>

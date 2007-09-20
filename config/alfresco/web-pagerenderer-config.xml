@@ -1,0 +1,6 @@
+<alfresco-config>
+   
+   <config evaluator="string-compare" condition="PageRenderer">
+   </config>
+   
+</alfresco-config>

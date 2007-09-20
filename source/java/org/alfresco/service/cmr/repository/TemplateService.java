@@ -76,7 +76,6 @@ public interface TemplateService
      * 
      * The template engine used will be determined by the extension of the template.
      * 
-     * @param engine       Name of the template engine to use
      * @param template     Template (qualified classpath name or noderef)
      * @param model        Object model to process template against
      * @param out          Writer object to send output too

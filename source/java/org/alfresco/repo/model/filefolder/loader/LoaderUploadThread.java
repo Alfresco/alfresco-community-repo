@@ -25,6 +25,7 @@
 package org.alfresco.repo.model.filefolder.loader;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,9 +51,10 @@ public class LoaderUploadThread extends AbstractLoaderThread
     
     static
     {
-        CacheManager cacheManager = new CacheManager();
-        Cache cache = new Cache("LoaderUploadThread-PathCache", 100000, false, false, 300, 300);
-        cacheManager.addCache(cache);
+        System.setProperty(CacheManager.ENABLE_SHUTDOWN_HOOK_PROPERTY, "TRUE");
+        URL url = LoaderUploadThread.class.getResource("/org/alfresco/repo/model/filefolder/loader/loader-ehcache.xml");
+        CacheManager cacheManager = new CacheManager(url);
+        Cache cache = cacheManager.getCache("org.alfresco.LoaderUploadThread.PathCache");
         
         pathCache = new EhCacheAdapter<String, NodeRef>();
         pathCache.setCache(cache);
@@ -81,12 +83,13 @@ public class LoaderUploadThread extends AbstractLoaderThread
         // Iterate down the path, checking the cache and populating it as necessary
         List<String> currentPath = new ArrayList<String>();
         NodeRef currentParentNodeRef = workingRootNodeRef;
+        String currentKey = workingRootNodeRef.toString();
         for (String pathElement : folderPath)
         {
             currentPath.add(pathElement);
-            String key = currentPath.toString();
+            currentKey += ("/" + pathElement);
             // Is this there?
-            NodeRef nodeRef = pathCache.get(key);
+            NodeRef nodeRef = pathCache.get(currentKey);
             if (nodeRef != null)
             {
                 // Found it
@@ -102,7 +105,7 @@ public class LoaderUploadThread extends AbstractLoaderThread
                     ContentModel.TYPE_FOLDER);
             currentParentNodeRef = folderInfo.getNodeRef();
             // Cache the new node
-            pathCache.put(key, currentParentNodeRef);
+            pathCache.put(currentKey, currentParentNodeRef);
         }
         // Done
         return currentParentNodeRef;

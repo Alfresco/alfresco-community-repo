@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ehcache>
+
+    <diskStore 
+        path="java.io.tmpdir"/>
+        
+    <defaultCache 
+        maxElementsInMemory="5000" 
+        eternal="true" 
+        timeToIdleSeconds="0" 
+        timeToLiveSeconds="0" 
+        overflowToDisk="false" 
+        >
+    </defaultCache>
+    
+    <cache 
+        name="org.alfresco.LoaderUploadThread.PathCache" 
+        maxElementsInMemory="100000" 
+        eternal="true"
+        overflowToDisk="true"
+        diskPersistent="true"
+        />
+        
+</ehcache>

@@ -33,43 +33,40 @@ import org.alfresco.web.bean.repository.Node;
 
 public class TrashcanItemDetailsDialog extends TrashcanDialog
 {
-    private static final String MSG_DETAILS_OF = "details_of";
-    private static final String MSG_ORIGINAL_LOCATION = "original_location";
-    private static final String MSG_DELETEDITEM_DETAILS_DESCR = "deleteditem_details_description";
+   private static final String MSG_DETAILS_OF = "details_of";
+   private static final String MSG_ORIGINAL_LOCATION = "original_location";
+   private static final String MSG_CLOSE = "close";
 
-    private static final String MSG_CLOSE = "close";
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
+   {
+      return null;
+   }
 
-    @Override
-    protected String finishImpl(FacesContext context, String outcome) throws Exception
-    {
-        return null;
+   @Override
+   public String getContainerTitle()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DETAILS_OF) + " '" + 
+             property.getItem().getName() + "'";
+   }
+   
+   @Override
+   public String getContainerSubTitle()
+   {
+      Path path = (Path) property.getItem().getProperties().get("locationPath");
+      
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_ORIGINAL_LOCATION) + ": " + 
+             path.toDisplayPath(nodeService);
+   }
 
-    }
-
-    @Override
-    public String getContainerDescription()
-    {
-        Path path = (Path) property.getItem().getProperties().get("locationPath");
-        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_ORIGINAL_LOCATION) + ": " + path.toDisplayPath(nodeService) + "\n"
-                + Application.getMessage(FacesContext.getCurrentInstance(), MSG_DELETEDITEM_DETAILS_DESCR);
-
-    }
-
-    @Override
-    public String getContainerTitle()
-    {
-        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DETAILS_OF) + " '" + property.getItem().getName() + "'";
-    }
-
-    public Node getItem()
-    {
-        return property.getItem();
-    }
-
-    @Override
-    public String getCancelButtonLabel()
-    {
-        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_CLOSE);
-    }
-
+   @Override
+   public String getCancelButtonLabel()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_CLOSE);
+   }
+   
+   public Node getItem()
+   {
+      return property.getItem();
+   }
 }

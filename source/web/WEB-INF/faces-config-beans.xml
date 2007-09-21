@@ -4999,8 +4999,12 @@
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
-         <property-name>navigationBean</property-name>
+         <property-name>navigator</property-name>
          <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>aboutBean</property-name>
+         <value>#{AboutBean}</value>
       </managed-property>
    </managed-bean>
    

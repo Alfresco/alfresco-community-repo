@@ -414,8 +414,8 @@
                  description-id="change_password_description" error-message-id="error_wizard" />  
          
          <dialog name="itemDetails" page="/jsp/trashcan/item-details.jsp" managed-bean="TrashcanItemDetailsDialog"
-                 icon="/images/icons/details_large.gif" title-id="details_of"
-                 description-id="original_location" show-ok-button="false" />
+                 icon="/images/icons/details_large.gif" description-id="deleteditem_details_description" 
+                 show-ok-button="false" />
          
          <dialog name="recoverItem" page="/jsp/trashcan/recover-item.jsp" managed-bean="TrashcanRecoverItemDialog"
                  icon="/images/icons/recover_large.gif" title-id="recover_item"
@@ -438,8 +438,7 @@
                  description-id="recovery_report_info" show-ok-button="false" />
          
          <dialog name="showSystemInfo" page="/jsp/dialog/system-info.jsp" managed-bean="ShowSystemInfoDialog"
-                 icon="/images/icons/file_large.gif" title-id="system_info"
-                 description-id="current_user"  show-ok-button="false"/>
+                 icon="/images/icons/file_large.gif" title-id="system_info" show-ok-button="false"/>
       </dialogs>
    </config>
    

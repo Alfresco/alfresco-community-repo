@@ -29,40 +29,54 @@ import javax.faces.context.FacesContext;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 
+/**
+ * Implementation for the SystemInfo dialog.
+ * 
+ * @author gavinc
+ */
 public class ShowSystemInfoDialog extends BaseDialogBean
 {
-    private final static String MSG_CURRENT_USER = "current_user";
-    private static final String LBL_CLOSE = "close";
+   private static final String MSG_CURRENT_USER = "current_user";
+   private static final String MSG_CLOSE = "close";
+   private static final String MSG_VERSION = "version";
 
-    private NavigationBean navigationBean;
+   protected AboutBean aboutBean; 
 
-    @Override
-    protected String finishImpl(FacesContext context, String outcome) throws Exception
-    {
-        return null;
-    }
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
+   {
+      return null;
+   }
 
-    public NavigationBean getNavigationBean()
-    {
-        return navigationBean;
-    }
+   public void setAboutBean(AboutBean aboutBean)
+   {
+      this.aboutBean = aboutBean;
+   }
 
-    public void setNavigationBean(NavigationBean navigationBean)
-    {
-        this.navigationBean = navigationBean;
-    }
+   @Override
+   public String getContainerSubTitle()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_CURRENT_USER) + ": " + 
+               this.navigator.getCurrentUser().getUserName();
+   }
 
-    @Override
-    public String getContainerDescription()
-    {
-        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_CURRENT_USER) + " '" + navigationBean.getCurrentUser().getUserName() + "'";
-    }
+   @Override
+   public String getContainerDescription()
+   {
+      StringBuilder builder = new StringBuilder(Application.getMessage(
+               FacesContext.getCurrentInstance(), MSG_VERSION));
+      builder.append(": ");
+      builder.append(this.aboutBean.getEdition());
+      builder.append(" - v");
+      builder.append(this.aboutBean.getVersion());
+      
+      return builder.toString();
+   }
 
-    @Override
-    public String getCancelButtonLabel()
-    {
-
-        return Application.getMessage(FacesContext.getCurrentInstance(), LBL_CLOSE);
-    }
+   @Override
+   public String getCancelButtonLabel()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_CLOSE);
+   }
 
 }

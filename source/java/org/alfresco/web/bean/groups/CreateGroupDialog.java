@@ -41,62 +41,81 @@ import org.alfresco.web.ui.common.Utils;
 
 public class CreateGroupDialog extends GroupsDialog
 {
-    private static final String MSG_ERR_EXISTS = "groups_err_exists";
+   private static final String MSG_ERR_EXISTS = "groups_err_exists";
+   private static final String MSG_BUTTON_NEW_GROUP = "new_group";
 
-    private static final String BUTTON_NEW_GROUP = "new_group";
+   @Override
+   public void init(Map<String, String> parameters)
+   {
+      super.init(parameters);
+      properties.setName("");
+   }
 
-    @Override
-    protected String finishImpl(FacesContext context, String outcome) throws Exception
-    {
-        try
-        {
-            // create new Group using Authentication Service
-            String groupName = properties.getAuthService().getName(AuthorityType.GROUP, properties.getName());
-            if (properties.getAuthService().authorityExists(groupName) == false)
-            {
-                properties.getAuthService().createAuthority(AuthorityType.GROUP, properties.getActionGroup(), properties.getName());
-            }
-            else
-            {
-                Utils.addErrorMessage(Application.getMessage(context, MSG_ERR_EXISTS));
-                outcome = null;
-            }
-        }
-        catch (Throwable err)
-        {
-            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(context, Repository.ERROR_GENERIC), err.getMessage()), err);
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
+   {
+      try
+      {
+         // create new Group using Authentication Service
+         String groupName = properties.getAuthService().getName(AuthorityType.GROUP, properties.getName());
+         if (properties.getAuthService().authorityExists(groupName) == false)
+         {
+            properties.getAuthService().createAuthority(AuthorityType.GROUP, properties.getActionGroup(), properties.getName());
+         }
+         else
+         {
+            Utils.addErrorMessage(Application.getMessage(context, MSG_ERR_EXISTS));
             outcome = null;
-        }
-        
-        if (outcome == null)
-        {
-            isFinished = false;
-        }
-        
-        return outcome;
-    }
+         }
+      }
+      catch (Throwable err)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                  context, Repository.ERROR_GENERIC), err.getMessage()), err);
+         outcome = null;
+      }
 
-    @Override
-    public void init(Map<String, String> parameters)
-    {
-        super.init(parameters);
-        properties.setName("");
-    }
+      if (outcome == null)
+      {
+         isFinished = false;
+      }
 
-    public void validateGroupName(FacesContext context, UIComponent component, Object value) throws ValidatorException
-    {
-        String name = (String) value;
-        if (name.indexOf('\'') != -1 || name.indexOf('"') != -1 || name.indexOf('\\') != -1)
-        {
-            String err = MessageFormat.format(Application.getMessage(context, "groups_err_group_name"), new Object[] { "', \", \\" });
-            throw new ValidatorException(new FacesMessage(err));
-        }
-    }
+      return outcome;
+   }
 
-    @Override
-    public String getFinishButtonLabel()
-    {
-        return Application.getMessage(FacesContext.getCurrentInstance(), BUTTON_NEW_GROUP);
-    }
+   @Override
+   public String getFinishButtonLabel()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_BUTTON_NEW_GROUP);
+   }
+
+   @Override
+   public String getContainerSubTitle()
+   {
+      String subtitle = null;
+
+      if (properties.getActionGroup() != null)
+      {
+         subtitle = properties.getActionGroupName();
+      }
+      else
+      {
+         subtitle = properties.getGroupName();
+      }
+
+      return subtitle;
+   }
+
+   public void validateGroupName(FacesContext context, UIComponent component, Object value) throws ValidatorException
+   {
+      String name = (String) value;
+      
+      if (name.indexOf('\'') != -1 || name.indexOf('"') != -1 || name.indexOf('\\') != -1)
+      {
+         String err = MessageFormat.format(Application.getMessage(context, "groups_err_group_name"), 
+                  new Object[] { "', \", \\" });
+         throw new ValidatorException(new FacesMessage(err));
+      }
+   }
 
 }

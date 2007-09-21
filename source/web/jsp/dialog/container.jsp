@@ -79,6 +79,7 @@
                            </td>
                            <td>
                               <div class="mainTitle"><h:outputText value="#{DialogManager.title}" /></div>
+                              <div class="mainSubTitle"><h:outputText value="#{DialogManager.subTitle}" /></div>
                               <div class="mainSubText"><h:outputText value="#{DialogManager.description}" /></div>
                            </td>
                            <td style="padding-left:4px" align="right">

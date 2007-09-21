@@ -169,6 +169,11 @@ public abstract class BaseDialogBean implements IDialogBean
       return null;
    }
    
+   public String getContainerSubTitle()
+   {
+      return null;
+   }
+   
    public String getContainerDescription()
    {
       return null;

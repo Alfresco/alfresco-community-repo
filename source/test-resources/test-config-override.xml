@@ -96,7 +96,8 @@
 
       <dialogs>
          <dialog name="createSpace" page="/custom/my-create-space.jsp" managed-bean="MyNewSpaceDialog"
-                 title-id="create_space_title" description-id="create_space_description" />
+                 title-id="my_create_space_title" subtitle-id="my_create_space_subtitle" 
+                 description-id="my_create_space_description" actions-config-id="my-space-actions" />
       </dialogs>
    </config>
    

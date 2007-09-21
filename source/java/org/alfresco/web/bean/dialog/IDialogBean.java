@@ -100,6 +100,15 @@ public interface IDialogBean
    public String getContainerTitle();
    
    /**
+    * Returns the subtitle to be used for the dialog
+    * <p>If this returns null the DialogManager will
+    * lookup the subtitle via the dialog configuration</p>
+    * 
+    * @return The subtitle or null if the subtitle is to be acquired via configuration
+    */
+   public String getContainerSubTitle();
+   
+   /**
     * Returns the description to be used for the dialog
     * <p>If this returns null the DialogManager will
     * lookup the description via the dialog configuration</p>

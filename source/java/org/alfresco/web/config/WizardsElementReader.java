@@ -49,10 +49,11 @@ public class WizardsElementReader implements ConfigElementReader
    
    public static final String ATTR_NAME = "name";
    public static final String ATTR_MANAGED_BEAN = "managed-bean";
-   public static final String ATTR_ACTIONS_CONFIG_ID = "actions-config-id";
    public static final String ATTR_ICON = "icon";
    public static final String ATTR_TITLE = "title";
    public static final String ATTR_TITLE_ID = "title-id";
+   public static final String ATTR_SUBTITLE = "subtitle";
+   public static final String ATTR_SUBTITLE_ID = "subtitle-id";
    public static final String ATTR_DESCRIPTION = "description";
    public static final String ATTR_DESCRIPTION_ID = "description-id";
    public static final String ATTR_INSTRUCTION = "instruction";
@@ -88,17 +89,19 @@ public class WizardsElementReader implements ConfigElementReader
             
             String name = wizard.attributeValue(ATTR_NAME);
             String bean = wizard.attributeValue(ATTR_MANAGED_BEAN);
-            String actions = wizard.attributeValue(ATTR_ACTIONS_CONFIG_ID);
             String icon = wizard.attributeValue(ATTR_ICON);
             String title = wizard.attributeValue(ATTR_TITLE);
             String titleId = wizard.attributeValue(ATTR_TITLE_ID);
+            String subTitle = wizard.attributeValue(ATTR_SUBTITLE);
+            String subTitleId = wizard.attributeValue(ATTR_SUBTITLE_ID);
             String description = wizard.attributeValue(ATTR_DESCRIPTION);
             String descriptionId = wizard.attributeValue(ATTR_DESCRIPTION_ID);
             String errorMsgId = wizard.attributeValue(ATTR_ERROR_MSG_ID);
             
             // create the wizard config object
             WizardsConfigElement.WizardConfig wizardCfg = new WizardsConfigElement.WizardConfig(
-                  name, bean, actions, icon, title, titleId, description, descriptionId, errorMsgId);
+                  name, bean, icon, title, titleId, subTitle, subTitleId, 
+                  description, descriptionId, errorMsgId);
             
             Iterator<Element> steps = wizard.elementIterator(ELEMENT_STEP);
             while (steps.hasNext())

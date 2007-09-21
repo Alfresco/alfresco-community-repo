@@ -164,17 +164,18 @@ public class WizardsConfigElement extends ConfigElementAdapter
     */
    public static class WizardConfig extends AbstractConfig
    {
+      protected String subTitle;
+      protected String subTitleId;
       protected String name;
       protected String managedBean;
       protected String icon;
-      protected String actionsConfigId;
       protected String errorMsgId = "error_wizard";
       
       protected Map<String, StepConfig> steps = new LinkedHashMap<String, StepConfig>(4);
       
-      public WizardConfig(String name, String bean, 
-                          String actionsConfigId, String icon,
+      public WizardConfig(String name, String bean, String icon,
                           String title, String titleId,
+                          String subTitle, String subTitleId,
                           String description, String descriptionId,
                           String errorMsgId)
       {
@@ -183,10 +184,11 @@ public class WizardsConfigElement extends ConfigElementAdapter
          // check we have a name
          ParameterCheck.mandatoryString("name", name);
          
+         this.subTitle = subTitle;
+         this.subTitleId = subTitleId;
          this.name = name;
          this.managedBean = bean;
          this.icon = icon;
-         this.actionsConfigId = actionsConfigId;
          
          if (errorMsgId != null && errorMsgId.length() > 0)
          {
@@ -204,14 +206,19 @@ public class WizardsConfigElement extends ConfigElementAdapter
          return this.managedBean;
       }
       
+      public String getSubTitle()
+      {
+         return this.subTitle;
+      }
+      
+      public String getSubTitleId()
+      {
+         return this.subTitleId;
+      }
+      
       public String getIcon()
       {
          return this.icon;
-      }
-      
-      public String getActionsConfigId()
-      {
-         return this.actionsConfigId;
       }
       
       public String getErrorMessageId()
@@ -260,10 +267,11 @@ public class WizardsConfigElement extends ConfigElementAdapter
          StringBuilder buffer = new StringBuilder(super.toString());
          buffer.append(" (name=").append(this.name);
          buffer.append(" managed-bean=").append(this.managedBean);
-         buffer.append(" actions-config-id=").append(this.actionsConfigId);
          buffer.append(" icon=").append(this.icon);
          buffer.append(" title=").append(this.title);
          buffer.append(" titleId=").append(this.titleId);
+         buffer.append(" subTitle=").append(this.subTitle);
+         buffer.append(" subTitleId=").append(this.subTitleId);
          buffer.append(" description=").append(this.description);
          buffer.append(" descriptionId=").append(this.descriptionId);
          buffer.append(" errorMsgId=").append(this.errorMsgId).append(")");

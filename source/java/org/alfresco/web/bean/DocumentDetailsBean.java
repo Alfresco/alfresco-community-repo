@@ -1131,6 +1131,11 @@ public class DocumentDetailsBean extends BaseDetailsBean implements IDialogBean
       return Application.getMessage(FacesContext.getCurrentInstance(), MSG_MODIFY_CATEGORIES_OF) + 
             " '" + getDocument().getName() + "'";
    }
+   
+   public String getContainerSubTitle()
+   {
+      return baseDialogBean.getContainerSubTitle();
+   }
 
    public boolean getFinishButtonDisabled()
    {

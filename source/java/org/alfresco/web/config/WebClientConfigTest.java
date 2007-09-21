@@ -662,13 +662,21 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("name", "createSpace", dialog.getName());
       assertEquals("page", "/jsp/dialog/create-space.jsp", dialog.getPage());
       assertEquals("managed-bean", "NewSpaceDialog", dialog.getManagedBean());
-      assertEquals("actions-config-id", "space-actions", dialog.getActionsConfigId());
       assertEquals("icon", "/images/icons/create_space_large.gif", dialog.getIcon());
       assertEquals("title-id", "create_space_title", dialog.getTitleId());
+      assertEquals("subtitle-id", "create_space_subtitle", dialog.getSubTitleId());
       assertEquals("description-id", "create_space_description", dialog.getDescriptionId());
       assertEquals("error-message-id", "error_create_space_dialog", dialog.getErrorMessageId());
+      assertEquals("actions-config-id", "space-actions", dialog.getActionsConfigId());
+      assertEquals("more-actions-config-id", "more-actions", dialog.getMoreActionsConfigId());
+      assertTrue("actions-as-menu should be true", dialog.getActionsAsMenu());
+      assertEquals("actions-menu-label-id", "actions_menu_label", dialog.getActionsMenuLabelId());
+      assertEquals("more-actions-menu-label-id", "more_actions_menu_label", dialog.getMoreActionsMenuLabelId());
       assertNull("title should be null", dialog.getTitle());
+      assertNull("subtitle should be null", dialog.getSubTitle());
       assertNull("description should be null", dialog.getDescription());
+      assertNull("actions-menu-label should be null", dialog.getActionsMenuLabel());
+      assertNull("more-actions-menu-label should be null", dialog.getMoreActionsMenuLabel());
       
       // get the 'spaceDetails' dialog
       dialog = dialogsElement.getDialog("spaceDetails");
@@ -678,13 +686,21 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("name", "spaceDetails", dialog.getName());
       assertEquals("page", "/jsp/dialog/space-details.jsp", dialog.getPage());
       assertEquals("managed-bean", "SpaceDetailsDialog", dialog.getManagedBean());
-      assertEquals("actions-config-id", "space-actions", dialog.getActionsConfigId());
       assertEquals("icon", "/images/icons/create_space_large.gif", dialog.getIcon());
       assertEquals("title", "Space Details Dialog", dialog.getTitle());
+      assertEquals("subtitle", "Space details subtitle", dialog.getSubTitle());
       assertEquals("description", "Space Details Dialog Decsription", dialog.getDescription());
       assertEquals("error-message-id", "error_dialog", dialog.getErrorMessageId());
+      assertEquals("actions-config-id", "space-actions", dialog.getActionsConfigId());
+      assertNull("more-actions-config-id should be null", dialog.getMoreActionsConfigId());
+      assertFalse("actions-as-menu should be false", dialog.getActionsAsMenu());
+      assertEquals("actions-menu-label", "Create" , dialog.getActionsMenuLabel());
+      assertEquals("more-actions-menu-label", "More Actions" , dialog.getMoreActionsMenuLabel());
       assertNull("title-id should be null", dialog.getTitleId());
+      assertNull("subtitle-id should be null", dialog.getSubTitleId());
       assertNull("description-id should be null", dialog.getDescriptionId());
+      assertNull("actions-menu-label-id should be null", dialog.getActionsMenuLabelId());
+      assertNull("more-actions-menu-label-id should be null", dialog.getMoreActionsMenuLabelId());
    }
    
    public void testDialogOverride()
@@ -707,11 +723,13 @@ public class WebClientConfigTest extends BaseTest
       DialogConfig dialog = dialogsElement.getDialog("createSpace");
       assertNotNull("createSpace dialog should not be null", dialog);
       
-      // make sure the page and managed bean attributes have been overridden
+      // make sure the relevant attributes have been overridden
       assertEquals("page", "/custom/my-create-space.jsp", dialog.getPage());
       assertEquals("managed-bean", "MyNewSpaceDialog", dialog.getManagedBean());
-      assertEquals("title-id", "create_space_title", dialog.getTitleId());
-      assertEquals("description-id", "create_space_description", dialog.getDescriptionId());
+      assertEquals("title-id", "my_create_space_title", dialog.getTitleId());
+      assertEquals("description-id", "my_create_space_description", dialog.getDescriptionId());
+      assertEquals("subtitle-id", "my_create_space_subtitle", dialog.getSubTitleId());
+      assertEquals("actions-config-id", "my-space-actions", dialog.getActionsConfigId());
    }
    
    public void testWizards()
@@ -749,12 +767,13 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("name", "exampleWizard", wizard.getName());
       assertEquals("exampleWizard steps", 2, wizard.getNumberSteps());
       assertEquals("managed-bean", "ExampleWizard", wizard.getManagedBean());
-      assertEquals("actions-config-id", "example-wizard-actions", wizard.getActionsConfigId());
       assertEquals("icon", "/images/icons/example-logo.gif", wizard.getIcon());
       assertEquals("title", "Example Wizard Title", wizard.getTitle());
+      assertEquals("subtitle", "Example wizard sub title", wizard.getSubTitle());
       assertEquals("description", "Example Wizard Description", wizard.getDescription());
       assertEquals("error-message-id", "error_wizard", wizard.getErrorMessageId());
       assertNull("title-id should be null", wizard.getTitleId());
+      assertNull("subtitle-id should be null", wizard.getSubTitleId());
       assertNull("description-id should be null", wizard.getDescriptionId());
       
       // retrive step 1 config and check it is correct
@@ -769,12 +788,13 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("name", "createSpace", wizard.getName());
       assertEquals("createSpace steps", 3, wizard.getNumberSteps());
       assertEquals("managed-bean", "AdvancedSpaceWizard", wizard.getManagedBean());
-      assertEquals("actions-config-id", "create-space-actions", wizard.getActionsConfigId());
       assertEquals("icon", "/images/icons/create_space_large.gif", wizard.getIcon());
       assertEquals("title-id", "advanced_space_details_title", wizard.getTitleId());
+      assertEquals("subtitle-id", "advanced_space_details_subtitle", wizard.getSubTitleId());
       assertEquals("description-id", "advanced_space_details_description", wizard.getDescriptionId());
       assertEquals("error-message-id", "error_create_space_wizard", wizard.getErrorMessageId());
       assertNull("title should be null", wizard.getTitle());
+      assertNull("subtitle should be null", wizard.getSubTitle());
       assertNull("description should be null", wizard.getDescription());
       List<StepConfig> steps = wizard.getStepsAsList();
       assertNotNull("steps should not be null", steps);

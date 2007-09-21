@@ -12,13 +12,18 @@
 
       <dialogs>
          <dialog name="createSpace" page="/jsp/dialog/create-space.jsp" managed-bean="NewSpaceDialog"
-                 actions-config-id="space-actions" icon="/images/icons/create_space_large.gif"
-                 title-id="create_space_title" description-id="create_space_description" 
-                 error-message-id="error_create_space_dialog" />
+                 icon="/images/icons/create_space_large.gif"
+                 title-id="create_space_title" subtitle-id="create_space_subtitle"
+                 description-id="create_space_description" error-message-id="error_create_space_dialog" 
+                 actions-config-id="space-actions" actions-as-menu="true"
+                 actions-menu-label-id="actions_menu_label" more-actions-config-id="more-actions"
+                 more-actions-menu-label-id="more_actions_menu_label" />
                  
          <dialog name="spaceDetails" page="/jsp/dialog/space-details.jsp" managed-bean="SpaceDetailsDialog"
-                 title="Space Details Dialog" description="Space Details Dialog Decsription" 
-                 actions-config-id="space-actions" icon="/images/icons/create_space_large.gif" />
+                 title="Space Details Dialog" subtitle="Space details subtitle"
+                 description="Space Details Dialog Decsription" 
+                 actions-config-id="space-actions" icon="/images/icons/create_space_large.gif" 
+                 actions-menu-label="Create" more-actions-menu-label="More Actions" />
                  
       </dialogs>
    </config>
@@ -31,8 +36,8 @@
          <!-- example wizard -->
          <wizard  name="exampleWizard" managed-bean="ExampleWizard"
                   icon="/images/icons/example-logo.gif"
-                  actions-config-id="example-wizard-actions"
-                  title="Example Wizard Title" description="Example Wizard Description">
+                  title="Example Wizard Title" description="Example Wizard Description"
+                  subtitle="Example wizard sub title">
             <step name="details" title="Details">
                <page path="/jsp/wizard/example/details.jsp"
                      title="Step Title" description="Step Description"
@@ -48,8 +53,8 @@
          <!-- Definition of an advanced space wizard  -->
          <wizard name="createSpace" managed-bean="AdvancedSpaceWizard"
                  icon="/images/icons/create_space_large.gif"
-                 actions-config-id="create-space-actions"
-                 title-id="advanced_space_details_title" 
+                 title-id="advanced_space_details_title"
+                 subtitle-id="advanced_space_details_subtitle" 
                  description-id="advanced_space_details_description"
                  error-message-id="error_create_space_wizard">
             <step name="details" title-id="starting_space">

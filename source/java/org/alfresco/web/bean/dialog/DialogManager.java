@@ -213,6 +213,35 @@ public final class DialogManager
    }
    
    /**
+    * Returns the resolved subtitle to use for the dialog
+    * 
+    * @return The subtitle
+    */
+   public String getSubTitle()
+   {
+      // try and get the subtitle directly from the dialog
+      String subTitle = this.currentDialogState.getDialog().getContainerSubTitle();
+      
+      if (subTitle == null)
+      {
+         // try and get the title via a message bundle key
+         subTitle = this.currentDialogState.getConfig().getSubTitleId();
+         
+         if (subTitle != null)
+         {
+            subTitle = Application.getMessage(FacesContext.getCurrentInstance(), subTitle);
+         }
+         else
+         {
+            // try and get the title from the configuration
+            subTitle = this.currentDialogState.getConfig().getSubTitle();
+         }
+      }
+      
+      return subTitle;
+   }
+   
+   /**
     * Returns the resolved description to use for the dialog
     * 
     * @return The description
@@ -270,6 +299,39 @@ public final class DialogManager
    public boolean isOKButtonVisible()
    {
       return this.currentDialogState.getConfig().isOKButtonVisible();
+   }
+   
+   /**
+    * Determines whether the current dialog should display the next
+    * and previous buttons in the header area.
+    * 
+    * @return true if navigation support is enabled
+    */
+   public boolean isNavigationVisible()
+   {
+      return (getBean() instanceof NavigationSupport);
+   }
+   
+   /**
+    * Determines whether the current dialog should display the list
+    * of views in the header area.
+    * 
+    * @return true if change view support is enabled
+    */
+   public boolean isViewListVisible()
+   {
+      return (getBean() instanceof ChangeViewSupport);
+   }
+   
+   /**
+    * Determines whether the current dialog should display the list
+    * of filters in the header area.
+    * 
+    * @return true if filter support is enabled
+    */
+   public boolean isFilterListVisible()
+   {
+      return (getBean() instanceof FilterViewSupport);
    }
    
    /**

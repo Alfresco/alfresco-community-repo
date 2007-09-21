@@ -632,6 +632,11 @@ public class SpaceDetailsBean extends BaseDetailsBean implements IDialogBean
       return Application.getMessage(FacesContext.getCurrentInstance(), MSG_MODIFY_CATEGORIES_OF) + 
             " '" + getSpace().getName() + "'";
    }
+   
+   public String getContainerSubTitle()
+   {
+      return baseDialogBean.getContainerSubTitle();
+   }
  
    public boolean getFinishButtonDisabled()
    {

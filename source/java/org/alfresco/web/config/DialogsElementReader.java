@@ -48,14 +48,26 @@ public class DialogsElementReader implements ConfigElementReader
    public static final String ATTR_NAME = "name";
    public static final String ATTR_PAGE = "page";
    public static final String ATTR_MANAGED_BEAN = "managed-bean";
-   public static final String ATTR_ACTIONS_CONFIG_ID = "actions-config-id";
    public static final String ATTR_ICON = "icon";
    public static final String ATTR_TITLE = "title";
    public static final String ATTR_TITLE_ID = "title-id";
+   public static final String ATTR_SUBTITLE = "subtitle";
+   public static final String ATTR_SUBTITLE_ID = "subtitle-id";
    public static final String ATTR_DESCRIPTION = "description";
    public static final String ATTR_DESCRIPTION_ID = "description-id";
    public static final String ATTR_ERROR_MSG_ID = "error-message-id";
    public static final String ATTR_SHOW_OK_BUTTON = "show-ok-button";
+   
+   // action related attributes
+   public static final String ATTR_ACTIONS_CONFIG_ID = "actions-config-id";
+   public static final String ATTR_ACTIONS_AS_MENU = "actions-as-menu";
+   public static final String ATTR_ACTIONS_MENU_LABEL = "actions-menu-label";
+   public static final String ATTR_ACTIONS_MENU_LABEL_ID = "actions-menu-label-id";
+   public static final String ATTR_MORE_ACTIONS_CONFIG_ID = "more-actions-config-id";
+   public static final String ATTR_MORE_ACTIONS_MENU_LABEL = "more-actions-menu-label";
+   public static final String ATTR_MORE_ACTIONS_MENU_LABEL_ID = "more-actions-menu-label-id";
+   
+   // button related attributes
    public static final String ATTR_ID = "id";
    public static final String ATTR_LABEL = "label";
    public static final String ATTR_LABEL_ID = "label-id";
@@ -92,10 +104,11 @@ public class DialogsElementReader implements ConfigElementReader
             String name = item.attributeValue(ATTR_NAME);
             String page = item.attributeValue(ATTR_PAGE);
             String bean = item.attributeValue(ATTR_MANAGED_BEAN);
-            String actions = item.attributeValue(ATTR_ACTIONS_CONFIG_ID);
             String icon = item.attributeValue(ATTR_ICON);
             String title = item.attributeValue(ATTR_TITLE);
             String titleId = item.attributeValue(ATTR_TITLE_ID);
+            String subTitle = item.attributeValue(ATTR_SUBTITLE);
+            String subTitleId = item.attributeValue(ATTR_SUBTITLE_ID);
             String description = item.attributeValue(ATTR_DESCRIPTION);
             String descriptionId = item.attributeValue(ATTR_DESCRIPTION_ID);
             String errorMsgId = item.attributeValue(ATTR_ERROR_MSG_ID);
@@ -107,13 +120,46 @@ public class DialogsElementReader implements ConfigElementReader
                isOKButtonVisible = Boolean.parseBoolean(showOK);
             }
             
+            // action related config
+            String actionsConfigId = item.attributeValue(ATTR_ACTIONS_CONFIG_ID);
+            boolean useMenuForActions = false;
+            String asMenu = item.attributeValue(ATTR_ACTIONS_AS_MENU);
+            if (asMenu != null)
+            {
+               useMenuForActions = Boolean.parseBoolean(asMenu);
+            }
+            String actionsMenuLabel = item.attributeValue(ATTR_ACTIONS_MENU_LABEL);
+            String actionsMenuLabelId = item.attributeValue(ATTR_ACTIONS_MENU_LABEL_ID);
+            String moreActionsConfigId = item.attributeValue(ATTR_MORE_ACTIONS_CONFIG_ID);
+            String moreActionsMenuLabel = item.attributeValue(ATTR_MORE_ACTIONS_MENU_LABEL);
+            String moreActionsMenuLabelId = item.attributeValue(ATTR_MORE_ACTIONS_MENU_LABEL_ID);
+            
             // parse any buttons that may be present
             List<DialogButtonConfig> buttons = parseButtons(item);
             
-            DialogsConfigElement.DialogConfig cfg = new DialogsConfigElement.DialogConfig(
-                  name, page, bean, actions, icon, title, titleId, description, 
-                  descriptionId, errorMsgId, isOKButtonVisible, buttons);
+            // setup the attrbiutes object
+            DialogsConfigElement.DialogAttributes attrs = 
+                  new DialogsConfigElement.DialogAttributes(name, page, bean);
+            attrs.setIcon(icon);
+            attrs.setTitle(title);
+            attrs.setTitleId(titleId);
+            attrs.setSubTitle(subTitle);
+            attrs.setSubTitleId(subTitleId);
+            attrs.setDescription(description);
+            attrs.setDescriptionId(descriptionId);
+            attrs.setErrorMessageId(errorMsgId);
+            attrs.setOKButtonVisible(isOKButtonVisible);
+            attrs.setButtons(buttons);
+            attrs.setActionsConfigId(actionsConfigId);
+            attrs.setActionsAsMenu(useMenuForActions);
+            attrs.setActionsMenuLabel(actionsMenuLabel);
+            attrs.setActionsMenuLabelId(actionsMenuLabelId);
+            attrs.setMoreActionsConfigId(moreActionsConfigId);
+            attrs.setMoreActionsMenuLabel(moreActionsMenuLabel);
+            attrs.setMoreActionsMenuLabelId(moreActionsMenuLabelId);
             
+            // create and add the dialog config object
+            DialogsConfigElement.DialogConfig cfg = new DialogsConfigElement.DialogConfig(attrs);
             configElement.addDialog(cfg);
          }
       }
@@ -123,7 +169,7 @@ public class DialogsElementReader implements ConfigElementReader
 
    /**
     * Retrieve the configuration for additional buttons.
-    * 
+    *
     * @param dialog The dialog XML element
     * @return List of configured buttons
     */

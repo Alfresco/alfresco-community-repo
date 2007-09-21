@@ -78,6 +78,7 @@
                            </td>
                            <td>
                               <div class="mainTitle"><h:outputText value="#{WizardManager.title}" /></div>
+                              <div class="mainSubTitle"><h:outputText value="#{WizardManager.subTitle}" /></div>
                               <div class="mainSubText"><h:outputText value="#{WizardManager.description}" /></div>
                            </td>
                         </tr>

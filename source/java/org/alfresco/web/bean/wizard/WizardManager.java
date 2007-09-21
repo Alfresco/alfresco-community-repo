@@ -225,6 +225,35 @@ public final class WizardManager
    }
    
    /**
+    * Returns the resolved subtitle to use for the wizard
+    * 
+    * @return The subtitle
+    */
+   public String getSubTitle()
+   {
+      // try and get the title directly from the wizard
+      String subTitle = this.currentWizardState.getWizard().getContainerSubTitle();
+      
+      if (subTitle == null)
+      {
+         // try and get the title via a message bundle key
+         subTitle = this.currentWizardState.getConfig().getSubTitleId();
+         
+         if (subTitle != null)
+         {
+            subTitle = Application.getMessage(FacesContext.getCurrentInstance(), subTitle);
+         }
+         else
+         {
+            // try and get the title from the configuration
+            subTitle = this.currentWizardState.getConfig().getSubTitle();
+         }
+      }
+      
+      return subTitle;
+   }
+   
+   /**
     * Returns the resolved description to use for the wizard
     * 
     * @return The description

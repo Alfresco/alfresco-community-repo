@@ -123,113 +123,120 @@ public class DialogsConfigElement extends ConfigElementAdapter
    }
    
    /**
-    * Inner class representing the configuration of a single dialog
+    * Immutable inner class representing the configuration of a single dialog.
     * 
     * @author gavinc
     */
    public static class DialogConfig
    {
-      protected String name;
-      protected String page;
-      protected String managedBean;
-      protected String actionsConfigId;
-      protected String icon;
-      protected String title;
-      protected String titleId;
-      protected String description;
-      protected String descriptionId;
-      protected String errorMsgId = "error_dialog";
-      protected boolean isOKButtonVisible = true;
-      protected List<DialogButtonConfig> buttons;
+      protected DialogAttributes attributes;
       
-      public DialogConfig(String name, String page, String bean,
-                          String actionsConfigId, String icon, 
-                          String title, String titleId,
-                          String description, String descriptionId,
-                          String errorMsgId, boolean isOKButtonVisible,
-                          List<DialogButtonConfig> buttons)
+      public DialogConfig(DialogAttributes attrs)
       {
-         // check the mandatory parameters are present
-         ParameterCheck.mandatoryString("name", name);
-         ParameterCheck.mandatoryString("page", page);
-         ParameterCheck.mandatoryString("managedBean", bean);
+         // check the attributes object has been supplied
+         ParameterCheck.mandatory("attrs", attrs);
          
-         this.name = name;
-         this.page = page;
-         this.managedBean = bean;
-         this.actionsConfigId = actionsConfigId;
-         this.icon = icon;
-         this.title = title;
-         this.titleId = titleId;
-         this.description = description;
-         this.descriptionId = descriptionId;
-         this.isOKButtonVisible = isOKButtonVisible;
-         this.buttons = buttons;
-         
-         if (errorMsgId != null && errorMsgId.length() > 0)
-         {
-            this.errorMsgId = errorMsgId;
-         }
-      }
-      
-      public String getDescription()
-      {
-         return this.description;
-      }
-      
-      public String getDescriptionId()
-      {
-         return this.descriptionId;
-      }
-      
-      public String getManagedBean()
-      {
-         return this.managedBean;
-      }
-      
-      public String getActionsConfigId()
-      {
-         return this.actionsConfigId;
+         this.attributes = attrs;
       }
       
       public String getName()
       {
-         return this.name;
+         return this.attributes.getName();
       }
       
       public String getPage()
       {
-         return this.page;
+         return this.attributes.getPage();
       }
       
-      public String getIcon()
+      public String getManagedBean()
       {
-         return this.icon;
+         return this.attributes.getManagedBean();
       }
       
       public String getTitle()
       {
-         return this.title;
+         return this.attributes.getTitle();
       }
       
       public String getTitleId()
       {
-         return this.titleId;
+         return this.attributes.getTitleId();
+      }
+      
+      public String getSubTitle()
+      {
+         return this.attributes.getSubTitle();
+      }
+      
+      public String getSubTitleId()
+      {
+         return this.attributes.getSubTitleId();
+      }
+      
+      public String getDescription()
+      {
+         return this.attributes.getDescription();
+      }
+      
+      public String getDescriptionId()
+      {
+         return this.attributes.getDescriptionId();
+      }
+      
+      public String getIcon()
+      {
+         return this.attributes.getIcon();
       }
       
       public String getErrorMessageId()
       {
-         return this.errorMsgId;
+         return this.attributes.getErrorMessageId();
       }
       
       public boolean isOKButtonVisible()
       {
-         return this.isOKButtonVisible;
+         return this.attributes.isOKButtonVisible();
       }
       
       public List<DialogButtonConfig> getButtons()
       {
-         return this.buttons;
+         return this.attributes.getButtons();
+      }
+      
+      public String getActionsConfigId()
+      {
+         return this.attributes.getActionsConfigId();
+      }
+      
+      public boolean getActionsAsMenu()
+      {
+         return this.attributes.getActionsAsMenu();
+      }
+      
+      public String getActionsMenuLabel()
+      {
+         return this.attributes.getActionsMenuLabel();
+      }
+      
+      public String getActionsMenuLabelId()
+      {
+         return this.attributes.getActionsMenuLabelId();
+      }
+      
+      public String getMoreActionsConfigId()
+      {
+         return this.attributes.getMoreActionsConfigId();
+      }
+      
+      public String getMoreActionsMenuLabel()
+      {
+         return this.attributes.getMoreActionsMenuLabel();
+      }
+      
+      public String getMoreActionsMenuLabelId()
+      {
+         return this.attributes.getMoreActionsMenuLabelId();
       }
       
       /**
@@ -239,24 +246,13 @@ public class DialogsConfigElement extends ConfigElementAdapter
       public String toString()
       {
          StringBuilder buffer = new StringBuilder(super.toString());
-         buffer.append(" (name=").append(this.name);
-         buffer.append(" page=").append(this.page);
-         buffer.append(" managed-bean=").append(this.managedBean);
-         buffer.append(" actions-config-id=").append(this.actionsConfigId);
-         buffer.append(" icon=").append(this.icon);
-         buffer.append(" title=").append(this.title);
-         buffer.append(" titleId=").append(this.titleId);
-         buffer.append(" description=").append(this.description);
-         buffer.append(" descriptionId=").append(this.descriptionId);
-         buffer.append(" errorMsgId=").append(this.errorMsgId);
-         buffer.append(" isOKButtonVisible=").append(this.isOKButtonVisible);
-         buffer.append(" buttons=").append(this.buttons).append(")");
+         buffer.append(" (").append(this.attributes.toString()).append(")");
          return buffer.toString();
       }
    }
    
    /**
-    * Inner class representing the configuration for an additional
+    * Immutable inner class representing the configuration for an additional
     * dialog button.
     * 
     * @author gavinc
@@ -340,6 +336,274 @@ public class DialogsConfigElement extends ConfigElementAdapter
          buffer.append(" action=").append(this.action);
          buffer.append(" disabled=").append(this.disabled);
          buffer.append(" onclick=").append(this.onclick).append(")");
+         return buffer.toString();
+      }
+   }
+   
+   /**
+    * Object holding all the dialog attributes collected from config.
+    * 
+    * @author gavinc
+    */
+   public static class DialogAttributes
+   {
+      protected String name;
+      protected String page;
+      protected String managedBean;
+      protected String icon;
+      protected String title;
+      protected String titleId;
+      protected String subTitle;
+      protected String subTitleId;
+      protected String description;
+      protected String descriptionId;
+      protected String errorMsgId = "error_dialog";
+      protected boolean isOKButtonVisible = true;
+      protected List<DialogButtonConfig> buttons;
+      protected String actionsConfigId;
+      protected boolean actionsAsMenu = false;
+      protected String actionsMenuLabel;
+      protected String actionsMenuLabelId;
+      protected String moreActionsConfigId;
+      protected String moreActionsMenuLabel;
+      protected String moreActionsMenuLabelId;
+      
+      // ----------------------------------------------------
+      // Construction
+      
+      public DialogAttributes(String name, String page, String bean)
+      {
+         // check the mandatory parameters are present
+         ParameterCheck.mandatoryString("name", name);
+         ParameterCheck.mandatoryString("page", page);
+         ParameterCheck.mandatoryString("managedBean", bean);
+         
+         this.name = name;
+         this.page = page;
+         this.managedBean = bean;
+      }
+      
+      // ----------------------------------------------------
+      // Setters
+
+      public void setIcon(String icon)
+      {
+         this.icon = icon;
+      }
+
+      public void setTitle(String title)
+      {
+         this.title = title;
+      }
+
+      public void setTitleId(String titleId)
+      {
+         this.titleId = titleId;
+      }
+
+      public void setSubTitle(String subTitle)
+      {
+         this.subTitle = subTitle;
+      }
+
+      public void setSubTitleId(String subTitleId)
+      {
+         this.subTitleId = subTitleId;
+      }
+
+      public void setDescription(String description)
+      {
+         this.description = description;
+      }
+
+      public void setDescriptionId(String descriptionId)
+      {
+         this.descriptionId = descriptionId;
+      }
+      
+      public void setErrorMessageId(String errorMsgId)
+      {
+         if (errorMsgId != null && errorMsgId.length() > 0)
+         {
+            this.errorMsgId = errorMsgId;
+         }
+      }
+
+      public void setOKButtonVisible(boolean isOKButtonVisible)
+      {
+         this.isOKButtonVisible = isOKButtonVisible;
+      }
+
+      public void setButtons(List<DialogButtonConfig> buttons)
+      {
+         this.buttons = buttons;
+      }
+
+      public void setActionsConfigId(String actionsConfigId)
+      {
+         this.actionsConfigId = actionsConfigId;
+      }
+
+      public void setActionsAsMenu(boolean actionsAsMenu)
+      {
+         this.actionsAsMenu = actionsAsMenu;
+      }
+
+      public void setActionsMenuLabel(String actionsMenuLabel)
+      {
+         this.actionsMenuLabel = actionsMenuLabel;
+      }
+
+      public void setActionsMenuLabelId(String actionsMenuLabelId)
+      {
+         this.actionsMenuLabelId = actionsMenuLabelId;
+      }
+
+      public void setMoreActionsConfigId(String moreActionsConfigId)
+      {
+         this.moreActionsConfigId = moreActionsConfigId;
+      }
+
+      public void setMoreActionsMenuLabel(String moreActionsMenuLabel)
+      {
+         this.moreActionsMenuLabel = moreActionsMenuLabel;
+      }
+
+      public void setMoreActionsMenuLabelId(String moreActionsMenuLabelId)
+      {
+         this.moreActionsMenuLabelId = moreActionsMenuLabelId;
+      }
+
+      // ----------------------------------------------------
+      // Getters
+
+      public String getName()
+      {
+         return this.name;
+      }
+      
+      public String getPage()
+      {
+         return this.page;
+      }
+      
+      public String getManagedBean()
+      {
+         return this.managedBean;
+      }
+      
+      public String getDescription()
+      {
+         return this.description;
+      }
+      
+      public String getDescriptionId()
+      {
+         return this.descriptionId;
+      }
+      
+      public String getIcon()
+      {
+         return this.icon;
+      }
+      
+      public String getTitle()
+      {
+         return this.title;
+      }
+      
+      public String getTitleId()
+      {
+         return this.titleId;
+      }
+      
+      public String getSubTitle()
+      {
+         return this.subTitle;
+      }
+      
+      public String getSubTitleId()
+      {
+         return this.subTitleId;
+      }
+      
+      public String getErrorMessageId()
+      {
+         return this.errorMsgId;
+      }
+      
+      public boolean isOKButtonVisible()
+      {
+         return this.isOKButtonVisible;
+      }
+      
+      public List<DialogButtonConfig> getButtons()
+      {
+         return this.buttons;
+      }
+      
+      public String getActionsConfigId()
+      {
+         return this.actionsConfigId;
+      }
+      
+      public boolean getActionsAsMenu()
+      {
+         return this.actionsAsMenu;
+      }
+      
+      public String getActionsMenuLabel()
+      {
+         return this.actionsMenuLabel;
+      }
+      
+      public String getActionsMenuLabelId()
+      {
+         return this.actionsMenuLabelId;
+      }
+      
+      public String getMoreActionsConfigId()
+      {
+         return this.moreActionsConfigId;
+      }
+      
+      public String getMoreActionsMenuLabel()
+      {
+         return this.moreActionsMenuLabel;
+      }
+      
+      public String getMoreActionsMenuLabelId()
+      {
+         return this.moreActionsMenuLabelId;
+      }
+      
+      /**
+       * @see java.lang.Object#toString()
+       */
+      @Override
+      public String toString()
+      {
+         StringBuilder buffer = new StringBuilder();
+         buffer.append("name=").append(this.name);
+         buffer.append(" page=").append(this.page);
+         buffer.append(" managedBean=").append(this.managedBean);
+         buffer.append(" icon=").append(this.icon);
+         buffer.append(" title=").append(this.title);
+         buffer.append(" titleId=").append(this.titleId);
+         buffer.append(" subTitle=").append(this.subTitle);
+         buffer.append(" subTitleId=").append(this.subTitleId);
+         buffer.append(" description=").append(this.description);
+         buffer.append(" descriptionId=").append(this.descriptionId);
+         buffer.append(" errorMsgId=").append(this.errorMsgId);
+         buffer.append(" isOKButtonVisible=").append(this.isOKButtonVisible);
+         buffer.append(" actionsConfigId=").append(this.actionsConfigId);
+         buffer.append(" actionsAsMenu=").append(this.actionsAsMenu);
+         buffer.append(" actionsMenuLabel=").append(this.actionsMenuLabel);
+         buffer.append(" actionsMenuLabelId=").append(this.actionsMenuLabelId);
+         buffer.append(" moreActionsConfigId=").append(this.moreActionsConfigId);
+         buffer.append(" moreActionsMenuLabel=").append(this.moreActionsMenuLabel);
+         buffer.append(" moreActionsMenuLabelId=").append(this.moreActionsMenuLabelId);
+         buffer.append(" buttons=").append(this.buttons);
          return buffer.toString();
       }
    }

@@ -51,7 +51,7 @@ public class LoaderUploadThread extends AbstractLoaderThread
     static
     {
         CacheManager cacheManager = new CacheManager();
-        Cache cache = new Cache("LoaderUploadThread-PathCache", 10000, false, false, 300, 300);
+        Cache cache = new Cache("LoaderUploadThread-PathCache", 100000, false, false, 300, 300);
         cacheManager.addCache(cache);
         
         pathCache = new EhCacheAdapter<String, NodeRef>();
@@ -81,7 +81,7 @@ public class LoaderUploadThread extends AbstractLoaderThread
         // Iterate down the path, checking the cache and populating it as necessary
         List<String> currentPath = new ArrayList<String>();
         NodeRef currentParentNodeRef = workingRootNodeRef;
-        for (String pathElement : currentPath)
+        for (String pathElement : folderPath)
         {
             currentPath.add(pathElement);
             String key = currentPath.toString();

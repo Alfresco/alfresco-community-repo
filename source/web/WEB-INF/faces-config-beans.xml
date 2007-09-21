@@ -4348,6 +4348,10 @@
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
          <property-name>contentUsersBean</property-name>
          <value>#{ContentUsersBean}</value>
       </managed-property>

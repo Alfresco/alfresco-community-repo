@@ -282,8 +282,7 @@
                  description-id="add_user_group_description"/>
          
          <dialog name="removeContentUser" page="/jsp/roles/remove-content-user.jsp" managed-bean="RemoveContentUserDialog"
-                 icon="/images/icons/delete_large.gif" title-id="title_remove_invited_user" 
-                 description-id="remove_content_user_confirm" />
+                 icon="/images/icons/delete_large.gif" description-id="remove_content_user_info" />
          
          <dialog name="editFileDialog" page="/jsp/dialog/edit-file.jsp" managed-bean="EditFileDialog"
                  icon="/images/icons/edit_large.gif" title-id="title_edit_file"

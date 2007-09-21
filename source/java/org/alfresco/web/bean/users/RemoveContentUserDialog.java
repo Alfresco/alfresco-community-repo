@@ -27,47 +27,69 @@ package org.alfresco.web.bean.users;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 
+/**
+ * Implementation of remove content user dialog.
+ * 
+ * @author gavinc
+ */
 public class RemoveContentUserDialog extends BaseDialogBean
 {
-    private ContentUsersBean contentUsersBean;
-    @Override
-    public boolean getFinishButtonDisabled()
-    {
-        return false;
-    }
-    
-    @Override
-    protected String finishImpl(FacesContext context, String outcome) throws Exception
-    {
-        contentUsersBean.removeOK();
-        return outcome;
-    }
-    
-    public void setupUserAction(ActionEvent event)
-    {
-        this.contentUsersBean.setupUserAction(event);
-    }
-    
-    public String getPersonName()
-    {
-       return this.contentUsersBean.getPersonName();
-    }
+   private static final String MSG_REMOVE_USER = "remove_user";
+   
+   private ContentUsersBean contentUsersBean;
 
-    public void setPersonName(String personName)
-    {
-       this.contentUsersBean.setPersonName(personName);
-    }
-    
-    public ContentUsersBean getContentUsersBean()
-    {
-        return contentUsersBean;
-    }
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
+      return false;
+   }
 
-    public void setContentUsersBean(ContentUsersBean contentUsersBean)
-    {
-        this.contentUsersBean = contentUsersBean;
-    }
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
+   {
+      contentUsersBean.removeOK();
+      
+      return outcome;
+   }
 
+   @Override
+   public String getContainerTitle()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_REMOVE_USER) + 
+             " '" + this.getPersonName() + "'";
+   }
+   
+   @Override
+   public String getContainerSubTitle()
+   {
+      return this.browseBean.getDocument().getName();
+   }
+
+   public void setupUserAction(ActionEvent event)
+   {
+      this.contentUsersBean.setupUserAction(event);
+   }
+
+   public String getPersonName()
+   {
+      return this.contentUsersBean.getPersonName();
+   }
+
+   public void setPersonName(String personName)
+   {
+      this.contentUsersBean.setPersonName(personName);
+   }
+
+   public ContentUsersBean getContentUsersBean()
+   {
+      return contentUsersBean;
+   }
+
+   public void setContentUsersBean(ContentUsersBean contentUsersBean)
+   {
+      this.contentUsersBean = contentUsersBean;
+   }
 }

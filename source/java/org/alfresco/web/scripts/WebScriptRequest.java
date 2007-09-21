@@ -119,6 +119,25 @@ public interface WebScriptRequest
     public String[] getParameterValues(String name);
     
     /**
+     * 
+     * @return
+     */
+    public String[] getAttributeNames();
+    
+    /**
+     * 
+     * @param name
+     * @return
+     */
+    public Object getAttribute(String name);
+    
+    /**
+     * 
+     * @return
+     */
+    public Object[] getAttributeValues();
+    
+    /**
      * Gets the path extension beyond the path registered for this service
      * 
      * e.g.

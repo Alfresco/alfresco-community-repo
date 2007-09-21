@@ -155,7 +155,7 @@ public class PageRendererServlet extends WebScriptServlet
       try
       {
          // lookup template path from page config in website AVM store
-         PageDefinition pageDefinition = lookupPageDefinition(store, page);
+         PageDefinition pageDefinition = lookupPageDefinition(store, req.getContextPath(), page);
          
          // set response content type and charset
          res.setContentType(MIMETYPE_HTML);
@@ -167,19 +167,24 @@ public class PageRendererServlet extends WebScriptServlet
          authenticate(getServletContext(), req, res);
          
          // set the web app context path for the template loader to use when rebuilding urls
-         this.webscriptTemplateLoader.setContextPath(req.getContextPath());
-         this.webscriptTemplateLoader.setPageDefinition(pageDefinition);
+         LoaderPageContext context = new LoaderPageContext();
+         context.Path = req.getContextPath();
+         context.PageDef = pageDefinition;
+         context.AVMStore = store;
+         context.Theme = "default";     // TODO: where does this come from?
+         this.webscriptTemplateLoader.setContext(context);
          
          // Process the template page using our custom loader - the loader will find and buffer
          // individual included webscript output into the main writer for the servlet page.
          // TODO: where does the theme name come from!? same problem as where does store name come from...
-         String templatePath = getStoreSitePath(store) + '/' + "themes" + '/' + "default" + '/' +
+         String templatePath = getStoreSitePath(store, req.getContextPath()) + '/' + "themes" + '/' + "default" + '/' +
                                "templates" + '/' + pageDefinition.TemplateName;
          
          if (logger.isDebugEnabled())
             logger.debug("Page template resolved as: " + templatePath);
          
-         processTemplatePage(templatePath, req, res);
+         // execute the templte to render the page - based on the current page definition
+         processTemplatePage(templatePath, pageDefinition, req, res);
       }
       catch (Throwable err)
       {
@@ -188,19 +193,24 @@ public class PageRendererServlet extends WebScriptServlet
       }
    }
    
-   private void processTemplatePage(String templatePath, HttpServletRequest req, HttpServletResponse res)
+   /**
+    * Execute the template to render the main page - based on the specified page definition config
+    * @throws IOException
+    */
+   private void processTemplatePage(String templatePath, PageDefinition pageDef, HttpServletRequest req, HttpServletResponse res)
       throws IOException
    {
       NodeRef ref = AVMNodeConverter.ToNodeRef(-1, templatePath);
-      templateProcessor.process(ref.toString(), getModel(req), res.getWriter());
+      templateProcessor.process(ref.toString(), getModel(pageDef, req), res.getWriter());
    }
    
-   private Object getModel(HttpServletRequest req)
+   private Object getModel(PageDefinition pageDef, HttpServletRequest req)
    {
       // TODO: add the full template model here?
       // just a basic minimum model for now
       Map<String, Object> model = new HashMap<String, Object>();
       model.put("url", new URLHelper(req.getContextPath()));
+      model.put("title", pageDef.Title);
       return model;
    }
    
@@ -212,39 +222,20 @@ public class PageRendererServlet extends WebScriptServlet
     * 
     * @return Path to the template content
     */
-   private PageDefinition lookupPageDefinition(String store, String page)
+   private PageDefinition lookupPageDefinition(String store, String contextPath, String page)
    {
-      // Lookup page via standard Alfresco XML config
-      /*Config config = getConfig();
-      if (config != null)
-      {
-         ConfigElement pagesConfig = config.getConfigElement("pages");
-         for (ConfigElement pageConfig : pagesConfig.getChildren("page"))
-         {
-            String pageId = pageConfig.getAttribute("id");
-            if (page.equals(pageId))
-            {
-               // found page reference
-               if (logger.isDebugEnabled())
-                  logger.debug("Looked up page id: " + page + " as " + pageConfig.getValue());
-               pageValue = pageConfig.getValue();
-               break;
-            }
-         }
-      }*/
-      
       // Lookup (and cache) config for default page-definition file in root
       PageDefinition defaultPageDef = defaultPageDefCache.get(store);
       if (defaultPageDef == null)
       {
          // read default config for the site and cache the result
-         String defaultConfigPath = getStoreSitePath(store) + '/' + "pages" + '/' + "page-definition.xml";
+         String defaultConfigPath = getPageDefinitionPath(null, store, contextPath);
          defaultPageDef = readPageDefinitionConfig(defaultConfigPath, page, null);
          defaultPageDefCache.put(store, defaultPageDef);
       }
       
       // Lookup page xml config in AVM store using page name as location
-      String configPath = getStoreSitePath(store) + '/' + "pages" + '/' + page + '/' + "page-definition.xml";
+      String configPath = getPageDefinitionPath(page, store, contextPath);
       
       // read the page definition and return it
       return readPageDefinitionConfig(configPath, page, defaultPageDef);
@@ -276,6 +267,7 @@ public class PageRendererServlet extends WebScriptServlet
                throw new AlfrescoRuntimeException(
                      "Expected 'page' root element in page-definition.xml config: " + configPath);
             }
+            String title = rootElement.attributeValue("title");
             
             String templateName = null;
             if (defaultPageDef != null && defaultPageDef.TemplateName != null)
@@ -299,6 +291,7 @@ public class PageRendererServlet extends WebScriptServlet
             
             // create config object for this page and store template name for this page
             pageDef = new PageDefinition(templateName);
+            pageDef.Title = title;
             
             // copy in component mappings from default config definitions first
             if (defaultPageDef != null)
@@ -385,9 +378,25 @@ public class PageRendererServlet extends WebScriptServlet
       //auth.authenticateAsGuest();
    }
    
-   private static String getStoreSitePath(String store)
+   /**
+    * @return the path to the site assets based on the avm store and webapp context path
+    */
+   private static String getStoreSitePath(String store, String contextPath)
    {
-      return store + ":/" + JNDIConstants.DIR_DEFAULT_WWW + '/' + "avm_site";
+      if (contextPath.length() == 0)
+      {
+         contextPath = "/ROOT";      // servlet ROOT- default hidden context path
+      }
+      return store + ":/" + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE + contextPath;
+   }
+   
+   /**
+    * @return the page to a Page Definition config file for the specified avm store and page
+    */
+   private static String getPageDefinitionPath(String page, String store, String contextPath)
+   {
+      return getStoreSitePath(store, contextPath) + '/' + "WEB-INF" + '/' + "pages" + '/' +
+             (page != null ? page + '/' : "") + "page-definition.xml";
    }
    
    
@@ -399,16 +408,21 @@ public class PageRendererServlet extends WebScriptServlet
       private String webScript;
       private String scriptUrl;
       private String encoding;
+      private String avmStore;
+      private PageComponent component;
       private ByteArrayOutputStream baOut = null;
       
-      PageRendererWebScriptRuntime(String webScript, String scriptUrl, String encoding)
+      PageRendererWebScriptRuntime(
+            PageComponent component, String avmStore, String webScript, String executeUrl, String encoding)
       {
          super(registry, serviceRegistry);
-         this.encoding = encoding;
+         this.component = component;
+         this.avmStore = avmStore;
          this.webScript = webScript;
-         this.scriptUrl = scriptUrl;
+         this.scriptUrl = executeUrl;
+         this.encoding = encoding;
          if (logger.isDebugEnabled())
-            logger.debug("Constructing runtime for url: " + scriptUrl);
+            logger.debug("Constructing runtime for url: " + executeUrl);
       }
 
       @Override
@@ -420,7 +434,12 @@ public class PageRendererServlet extends WebScriptServlet
       @Override
       protected WebScriptRequest createRequest(WebScriptMatch match)
       {
-         return new WebScriptPageRendererRequest(scriptUrl, match);
+         // set the component properties as the additional request attributes 
+         Map<String, String> attributes = new HashMap<String, String>();
+         attributes.putAll(component.Properties);
+         // add the well known attribute - such as avm store
+         attributes.put("store", this.avmStore);
+         return new WebScriptPageRendererRequest(scriptUrl, match, attributes);
       }
 
       @Override
@@ -481,11 +500,38 @@ public class PageRendererServlet extends WebScriptServlet
     */
    private class WebScriptPageRendererRequest extends WebScriptURLRequest
    {
-      WebScriptPageRendererRequest(String scriptUrl, WebScriptMatch match)
+      private Map<String, String> attributes;
+      
+      WebScriptPageRendererRequest(String scriptUrl, WebScriptMatch match, Map<String, String> attributes)
       {
          super(scriptUrl, match);
+         this.attributes = attributes;
       }
 
+      /* (non-Javadoc)
+       * @see org.alfresco.web.scripts.WebScriptRequest#getAttribute(java.lang.String)
+       */
+      public Object getAttribute(String name)
+      {
+         return this.attributes.get(name);
+      }
+
+      /* (non-Javadoc)
+       * @see org.alfresco.web.scripts.WebScriptRequest#getAttributeNames()
+       */
+      public String[] getAttributeNames()
+      {
+         return this.attributes.keySet().toArray(new String[this.attributes.size()]);
+      }
+
+      /* (non-Javadoc)
+       * @see org.alfresco.web.scripts.WebScriptRequest#getAttributeValues()
+       */
+      public Object[] getAttributeValues()
+      {
+         return this.attributes.values().toArray(new String[this.attributes.size()]);
+      }
+      
       public String getAgent()
       {
          return null;
@@ -562,8 +608,7 @@ public class PageRendererServlet extends WebScriptServlet
     */
    private class WebScriptTemplateLoader implements TemplateLoader
    {
-      private ThreadLocal<PageDefinition> pageDefinition = new ThreadLocal<PageDefinition>();
-      private String contextPath;
+      private ThreadLocal<LoaderPageContext> context = new ThreadLocal<LoaderPageContext>();
       private long last = 0L;
       
       public void closeTemplateSource(Object templateSource) throws IOException
@@ -591,26 +636,7 @@ public class PageRendererServlet extends WebScriptServlet
             if (logger.isDebugEnabled())
                logger.debug("Found webscript component key: " + key);
             
-            // lookup against component def config
-            PageComponent component = this.pageDefinition.get().Components.get(key);
-            if (component == null)
-            {
-               // TODO: if the lookup fails, exception or just ignore render and log...?
-               throw new AlfrescoRuntimeException("Failed to find component identified by key '" + key +
-                     "' found in template: " + pageDefinition.get().TemplateName);
-            }
-            
-            // TODO: remove the /service prefix from all config files?
-            String url = component.Url;
-            if (url.lastIndexOf('?') != -1)
-            {
-               url = url.substring("/service".length(), url.lastIndexOf('?'));
-            }
-            else
-            {
-               url = url.substring("/service".length());
-            }
-            return url;
+            return key;
          }
          else
          {
@@ -625,10 +651,33 @@ public class PageRendererServlet extends WebScriptServlet
 
       public Reader getReader(Object templateSource, String encoding) throws IOException
       {
+         String key = templateSource.toString();
+         
+         // lookup against component def config
+         LoaderPageContext context = this.context.get();
+         PageComponent component = context.PageDef.Components.get(key);
+         if (component == null)
+         {
+            // TODO: if the lookup fails, exception or just ignore render and log...?
+            throw new AlfrescoRuntimeException("Failed to find component identified by key '" + key +
+                  "' found in template: " + context.PageDef.TemplateName);
+         }
+         
+         // TODO: remove the /service prefix from all config files?
+         String webscript = component.Url;
+         if (webscript.lastIndexOf('?') != -1)
+         {
+            webscript = webscript.substring("/service".length(), webscript.lastIndexOf('?'));
+         }
+         else
+         {
+            webscript = webscript.substring("/service".length());
+         }
+         
          // Execute the webscript and return a Reader to the textual content
-         String webscriptUrl = this.contextPath + "/service" + templateSource.toString();
+         String executeUrl = context.Path + component.Url;
          PageRendererWebScriptRuntime runtime = new PageRendererWebScriptRuntime(
-               templateSource.toString(), webscriptUrl, encoding);
+               component, context.AVMStore, webscript, executeUrl, encoding);
          runtime.executeScript();
          
          // Return a reader from the runtime that executed the webscript - this effectively
@@ -640,23 +689,25 @@ public class PageRendererServlet extends WebScriptServlet
       }
       
       /**
-       * Setter to apply the current page definition for this template execution. A ThreadLocal is used
+       * Setter to apply the current context for this template execution. A ThreadLocal is used
        * to allow multiple servlet threads to execute using the same TemplateLoader (there can only be one)
-       * but with different page definitions for each thread.
+       * but with a different context for each thread.
        */
-      public void setPageDefinition(PageDefinition pageDef)
+      public void setContext(LoaderPageContext context)
       {
-         this.pageDefinition.set(pageDef);
+         this.context.set(context);
       }
-      
-      /**
-       * Setter called by the servlet to ensure the loader has the full context path available
-       * Does not matter if called multiple times by multiple threads as value is always the same.
-       */
-      public void setContextPath(String path)
-      {
-         this.contextPath = path;
-      }
+   }
+   
+   /**
+    * Simple structure class representing the current page context for the template loader
+    */
+   private static class LoaderPageContext
+   {
+      PageDefinition PageDef;
+      String Path;
+      String AVMStore;
+      String Theme;
    }
    
    /**
@@ -677,9 +728,13 @@ public class PageRendererServlet extends WebScriptServlet
        }
    }
    
+   /**
+    * Simple structure class representing a single page definition
+    */
    private static class PageDefinition
    {
       public String TemplateName;
+      public String Title;
       public Map<String, PageComponent> Components = new HashMap<String, PageComponent>();
       
       PageDefinition(String templateId)
@@ -688,6 +743,9 @@ public class PageRendererServlet extends WebScriptServlet
       }
    }
    
+   /**
+    * Simple structure class representing a single component definition for a page
+    */
    private static class PageComponent
    {
       public String Id;

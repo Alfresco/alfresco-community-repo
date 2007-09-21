@@ -104,6 +104,13 @@ public class DeclarativeWebScript extends AbstractWebScript
             model.put("status", status);
             model.put("cache", cache);
             
+            // extract any request attributes and add them to the model - this is useful for requests
+            // that wish to pass further arbituary data into a webscript model
+            for (String name : req.getAttributeNames())
+            {
+               model.put(name, req.getAttribute(name));
+            }
+            
             // execute script if it exists
             if (executeScript != null)
             {
@@ -119,7 +126,7 @@ public class DeclarativeWebScript extends AbstractWebScript
             }
     
             // create model for template rendering
-            Map<String, Object> templateModel = createTemplateModel(req, res, model);            
+            Map<String, Object> templateModel = createTemplateModel(req, res, model);
             
             // is a redirect to a status specific template required?
             if (status.getRedirect())

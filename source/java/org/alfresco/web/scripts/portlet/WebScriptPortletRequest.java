@@ -116,4 +116,28 @@ public class WebScriptPortletRequest extends WebScriptURLRequest
         // NOTE: rely on default agent mappings
         return null;
     }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequest#getAttribute(java.lang.String)
+     */
+    public Object getAttribute(String name)
+    {
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequest#getAttributeNames()
+     */
+    public String[] getAttributeNames()
+    {
+        return new String[0];
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRequest#getAttributeValues()
+     */
+    public Object[] getAttributeValues()
+    {
+        return new String[0];
+    }
 }

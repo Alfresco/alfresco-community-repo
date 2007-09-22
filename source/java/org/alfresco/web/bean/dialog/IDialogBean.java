@@ -116,4 +116,12 @@ public interface IDialogBean
     * @return The title or null if the title is to be acquired via configuration
     */
    public String getContainerDescription();
+   
+   /**
+    * Returns the object to use as the context for the main and more
+    * actions that may be configured by the dialog
+    * 
+    * @return Object to use as the context for actions
+    */
+   public Object getActionsContext();
 }

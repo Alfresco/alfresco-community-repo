@@ -310,6 +310,13 @@ input,textarea,select
    height: 5px;
 }
 
+.dialogMainActions
+{
+   padding-left: 2px;
+   padding-right: 5px;
+   vertical-align: -1px;
+}
+
 .topToolbar
 {
 }

@@ -269,10 +269,20 @@ public final class DialogManager
       
       return desc;
    }
+      
+   /**
+    * Returns the page the dialog will use
+    * 
+    * @return The page
+    */
+   public String getPage()
+   {
+      return this.currentDialogState.getConfig().getPage();
+   }
    
    /**
     * Returns the id of a configured action group representing the actions to
-    * display for the dialog.
+    * display for the dialog
     * 
     * @return The action group id
     */
@@ -282,13 +292,96 @@ public final class DialogManager
    }
    
    /**
-    * Returns the page the dialog will use
+    * Returns the id of a configured action group representing the 
+    * 'more actions' to  display for the dialog
     * 
-    * @return The page
+    * @return The action group id
     */
-   public String getPage()
+   public String getMoreActions()
    {
-      return this.currentDialogState.getConfig().getPage();
+      return this.currentDialogState.getConfig().getMoreActionsConfigId();
+   }
+   
+   /**
+    * Returns the object to use as the context for the main and more
+    * actions that may be configured by the dialog
+    * 
+    * @return Object to use as the context for actions, the current
+    *         node by default
+    */
+   public Object getActionsContext()
+   {
+      return this.currentDialogState.getDialog().getActionsContext();
+   }
+   
+   /**
+    * Returns the label to use for the main actions when a menu is being used
+    * 
+    * @return The actions menu label
+    */
+   public String getActionsMenuLabel()
+   {
+      // try and get the label via a message bundle key
+      String label = this.currentDialogState.getConfig().getActionsMenuLabelId();
+         
+      if (label != null)
+      {
+         label = Application.getMessage(FacesContext.getCurrentInstance(), label);
+      }
+      else
+      {
+         // try and get the description from the configuration
+         label = this.currentDialogState.getConfig().getActionsMenuLabel();
+      }
+      
+      // if the label is still null use the default of 'Create'
+      if (label == null)
+      {
+         label = Application.getMessage(FacesContext.getCurrentInstance(), "create_options");
+      }
+         
+      return label;
+   }
+   
+   /**
+    * Returns the label to use for the more actions menu
+    * 
+    * @return The more actions menu label
+    */
+   public String getMoreActionsMenuLabel()
+   {
+      // try and get the label via a message bundle key
+      String label = this.currentDialogState.getConfig().getMoreActionsMenuLabelId();
+         
+      if (label != null)
+      {
+         label = Application.getMessage(FacesContext.getCurrentInstance(), label);
+      }
+      else
+      {
+         // try and get the description from the configuration
+         label = this.currentDialogState.getConfig().getMoreActionsMenuLabel();
+      }
+      
+      // if the label is still null use the default of 'More Actions'
+      if (label == null)
+      {
+         label = Application.getMessage(FacesContext.getCurrentInstance(), "more_actions");
+      }
+         
+      return label;
+   }
+   
+   /**
+    * Determines whether the main actions should be rendered as a 
+    * menu
+    * 
+    * @return true to render the main set of actions as a menu, false
+    *         to render them as a horizontal list
+    */
+   public boolean getActionsAsMenu()
+   {
+      return this.currentDialogState.getConfig().getActionsAsMenu();
    }
    
    /**
@@ -303,7 +396,7 @@ public final class DialogManager
    
    /**
     * Determines whether the current dialog should display the next
-    * and previous buttons in the header area.
+    * and previous buttons in the header area
     * 
     * @return true if navigation support is enabled
     */
@@ -314,7 +407,7 @@ public final class DialogManager
    
    /**
     * Determines whether the current dialog should display the list
-    * of views in the header area.
+    * of views in the header area
     * 
     * @return true if change view support is enabled
     */
@@ -325,7 +418,7 @@ public final class DialogManager
    
    /**
     * Determines whether the current dialog should display the list
-    * of filters in the header area.
+    * of filters in the header area
     * 
     * @return true if filter support is enabled
     */

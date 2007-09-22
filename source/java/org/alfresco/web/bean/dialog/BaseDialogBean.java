@@ -31,6 +31,7 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -146,6 +147,8 @@ public abstract class BaseDialogBean implements IDialogBean
    
    public List<DialogButtonConfig> getAdditionalButtons()
    {
+      // none by default, subclasses can override if necessary
+      
       return null;
    }
 
@@ -166,17 +169,38 @@ public abstract class BaseDialogBean implements IDialogBean
 
    public String getContainerTitle()
    {
+      // nothing by default, subclasses can override if necessary
+      
       return null;
    }
    
    public String getContainerSubTitle()
    {
+      // nothing by default, subclasses can override if necessary
+      
       return null;
    }
    
    public String getContainerDescription()
    {
+      // nothing by default, subclasses can override if necessary
+      
       return null;
+   }
+   
+   public Object getActionsContext()
+   {
+      // return the current node as the context for actions be default
+      // dialog implementations can override this method to return the
+      // appropriate object for their use case
+      
+      if (this.navigator == null)
+      {
+         throw new AlfrescoRuntimeException("To use actions in the dialog the 'navigator' " +
+                  "property must be injected with an instance of NavigationBean!");
+      }
+      
+      return this.navigator.getCurrentNode();
    }
 
    /**

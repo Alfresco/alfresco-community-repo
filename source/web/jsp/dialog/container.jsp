@@ -75,18 +75,93 @@
                      <table cellspacing="4" cellpadding="0" width="100%">
                         <tr>
                            <td width="32">
-                              <h:graphicImage id="wizard-logo" url="#{DialogManager.icon}" />
+                              <h:graphicImage id="dialog-logo" url="#{DialogManager.icon}" />
                            </td>
-                           <td>
+                           <td width="100%">
                               <div class="mainTitle"><h:outputText value="#{DialogManager.title}" /></div>
                               <div class="mainSubTitle"><h:outputText value="#{DialogManager.subTitle}" /></div>
                               <div class="mainSubText"><h:outputText value="#{DialogManager.description}" /></div>
                            </td>
-                           <td style="padding-left:4px" align="right">
-                              <r:actions id="dialog_actions" value="#{DialogManager.actions}" 
-                                         context="#{NavigationBean.currentNode}" />
+                           <td>
+                              <table cellspacing="4" cellpadding="1" width="100%">
+                                 <tr>
+                                    <%-- Main actions --%>
+                                    <a:panel id="main-actions-panel" rendered="#{DialogManager.actions != null}">
+                                       <td style="white-space: nowrap;">
+                                          <r:actions id="main_actions_list" rendered="#{DialogManager.actionsAsMenu == false}"
+                                                     styleClass="dialogMainActions" value="#{DialogManager.actions}" 
+                                                     context="#{DialogManager.actionsContext}" />
+                                                     
+                                          <a:menu id="main_actions_menu" rendered="#{DialogManager.actionsAsMenu == true}"
+                                                  itemSpacing="4" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" 
+                                                  style="white-space: nowrap" label="#{DialogManager.actionsMenuLabel}">
+                                             <r:actions id="main_actions_menu_items" value="#{DialogManager.actions}" 
+                                                        context="#{DialogManager.actionsContext}" />
+                                          </a:menu>
+                                       </td>
+                                    </a:panel>
+                                    
+                                    <%-- More actions menu --%>
+                                    <a:panel id="more-actions-panel" rendered="#{DialogManager.moreActions != null}">
+                                       <td style="padding-left: 4px" width="80">
+                                          <a:menu id="more_actions_menu" itemSpacing="4" image="/images/icons/menu.gif" 
+                                                  menuStyleClass="moreActionsMenu" style="white-space:nowrap" 
+                                                  label="#{DialogManager.moreActionsMenuLabel}">
+                                             <r:actions id="more_actions_menu_items" value="#{DialogManager.moreActions}" 
+                                                        context="#{DialogManager.actionsContext}" />
+                                          </a:menu>
+                                       </td>
+                                    </a:panel>
+                                    
+                                    <%-- View Filters --%>
+                                    <a:panel id="filters-panel" rendered="#{DialogManager.filterListVisible}">
+                                       <td class="separator" width="1">
+                                          <img src="<%=request.getContextPath()%>/images/parts/dotted_separator.gif" border="0" height="29" width="1" />
+                                       </td>
+                                       <td style="padding-left: 4px" width="80" valign="middle">
+                                          <a:modeList itemSpacing="3" iconColumnWidth="20" selectedStyleClass="statusListHighlight" 
+                                                      selectedImage="/images/icons/filter.gif" menu="true" styleClass="moreActionsMenu" 
+                                                      menuImage="/images/icons/menu.gif" value="#{DialogManager.bean.filterMode}" 
+                                                      actionListener="#{DialogManager.bean.filterModeChanged}">
+                                             <a:listItems value="#{DialogManager.bean.filterItems}" />
+                                          </a:modeList>
+                                       </td>
+                                    </a:panel>
+                                    
+                                    <%-- View Mode --%>
+                                    <a:panel id="views-panel" rendered="#{DialogManager.viewListVisible}">
+                                       <td class="separator" width="1">
+                                          <img src="<%=request.getContextPath()%>/images/parts/dotted_separator.gif" border="0" height="29" width="1" />
+                                       </td>
+                                       <td style="padding-left: 4px" width="80" valign="middle">
+                                          <a:modeList itemSpacing="3" iconColumnWidth="20" selectedStyleClass="statusListHighlight" 
+                                                      selectedImage="/images/icons/Details.gif" menu="true" styleClass="moreActionsMenu" 
+                                                      menuImage="/images/icons/menu.gif" value="#{DialogManager.bean.viewMode}" 
+                                                      actionListener="#{DialogManager.bean.viewModeChanged}">
+                                             <a:listItems value="#{DialogManager.bean.viewItems}" />
+                                          </a:modeList>
+                                       </td>
+                                    </a:panel>
+                                    
+                                    <%-- Navigation --%>
+                                    <a:panel id="nav-panel" rendered="#{DialogManager.navigationVisible}">
+                                       <td style="padding-left: 10px; white-space: nowrap;" valign="middle">
+                                          <a:actionLink id="act-prev" value="#{msg.previous_item}" image="/images/icons/nav_prev.gif" 
+                                                        showLink="false" actionListener="#{DialogManager.bean.previousItem}">
+                                             <f:param name="id" value="#{DialogManager.bean.currentItemId}" />
+                                          </a:actionLink>
+                                          <img src="<%=request.getContextPath()%>/images/icons/nav_file.gif" width="24" height="24" align="absmiddle" />
+                                          <a:actionLink id="act-next" value="#{msg.next_item}" image="/images/icons/nav_next.gif" 
+                                                        showLink="false" actionListener="#{DialogManager.bean.nextItem}">
+                                             <f:param name="id" value="#{DialogManager.bean.currentItemId}" />
+                                          </a:actionLink>
+                                       </td>
+                                    </a:panel>
+
+                                    <td><div style="width: 5px;">&nbsp;</div></td>
+                                 </tr>
+                              </table>
                            </td>
-                           <td width="10">&nbsp;</td>
                         </tr>
                      </table>
                      

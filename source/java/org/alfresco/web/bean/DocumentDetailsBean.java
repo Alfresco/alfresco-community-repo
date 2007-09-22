@@ -1156,4 +1156,9 @@ public class DocumentDetailsBean extends BaseDetailsBean implements IDialogBean
    {
       baseDialogBean.restored();
    }
+   
+   public Object getActionsContext()
+   {
+      return baseDialogBean.getActionsContext();
+   }
 }

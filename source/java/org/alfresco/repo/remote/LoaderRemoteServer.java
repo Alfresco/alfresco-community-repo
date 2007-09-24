@@ -24,17 +24,24 @@
  */
 package org.alfresco.repo.remote;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.Charset;
 import java.util.List;
 
 import net.sf.acegisecurity.Authentication;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.remote.LoaderRemote;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -67,6 +74,8 @@ public class LoaderRemoteServer implements LoaderRemote
     private AuthenticationService authenticationService;
     private NodeService nodeService;
     private NodeDaoService nodeDaoService;
+    private FileFolderService fileFolderService;
+    private MimetypeService mimetypeService;
 
     /**
      * @param transactionService            provides transactional support and retrying
@@ -98,6 +107,22 @@ public class LoaderRemoteServer implements LoaderRemote
     public void setNodeDaoService(NodeDaoService nodeDaoService)
     {
         this.nodeDaoService = nodeDaoService;
+    }
+
+    /**
+     * @param fileFolderService             the file-specific service
+     */
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
+
+    /**
+     * @param mimetypeService               used to determine encoding, etc
+     */
+    public void setMimetypeService(MimetypeService mimetypeService)
+    {
+        this.mimetypeService = mimetypeService;
     }
 
     /**
@@ -227,6 +252,66 @@ public class LoaderRemoteServer implements LoaderRemote
                 public Integer execute() throws Throwable
                 {
                     return nodeDaoService.getNodeCount(storeRef);
+                }
+            };
+            return retryingTransactionHelper.doInTransaction(callback, false, true);
+        }
+        finally
+        {
+            AuthenticationUtil.setCurrentAuthentication(authentication);
+        }
+    }
+
+    public FileInfo[] uploadContent(
+            String ticket,
+            final NodeRef folderNodeRef,
+            final String[] filenames,
+            final byte[][] bytes)
+    {
+        if (filenames.length < bytes.length)
+        {
+            throw new IllegalArgumentException("The number of files must match the number of binary byte arrays given.");
+        }
+        
+        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        try
+        {
+            authenticationService.validate(ticket);
+            
+            // Make the call
+            RetryingTransactionCallback<FileInfo[]> callback = new RetryingTransactionCallback<FileInfo[]>()
+            {
+                public FileInfo[] execute() throws Throwable
+                {
+                    FileInfo[] results = new FileInfo[filenames.length];
+                    // Create each file
+                    for (int i = 0; i < filenames.length; i++)
+                    {
+                        // Create the file
+                        FileInfo newFileInfo = fileFolderService.create(
+                                folderNodeRef,
+                                filenames[i],
+                                ContentModel.TYPE_CONTENT);
+                        results[i] = newFileInfo;
+                        NodeRef newFileNodeRef = newFileInfo.getNodeRef();
+
+                        // Guess the mimetype
+                        String mimetype = mimetypeService.guessMimetype(filenames[i]);
+                        // Get a writer
+                        ContentWriter writer = fileFolderService.getWriter(newFileNodeRef);
+                        // Make a stream
+                        ByteArrayInputStream is = new ByteArrayInputStream(bytes[i]);
+                        // Guess the encoding
+                        ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
+                        Charset charset = charsetFinder.getCharset(is, mimetype);
+                        // Set metadata
+                        writer.setEncoding(charset.name());
+                        writer.setMimetype(mimetype);
+                        // Write the stream
+                        writer.putContent(is);
+                    }
+                    // Done
+                    return results;
                 }
             };
             return retryingTransactionHelper.doInTransaction(callback, false, true);

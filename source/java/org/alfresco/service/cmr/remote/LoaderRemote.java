@@ -24,6 +24,7 @@
  */
 package org.alfresco.service.cmr.remote;
 
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 
@@ -72,4 +73,15 @@ public interface LoaderRemote
      * @return              Returns the total number of nodes for the given ADM store
      */
     public int getNodeCount(String ticket, StoreRef storeRef);
+    
+    /**
+     * Upload multiple files to a folder.
+     * 
+     * @param ticket        the authentication ticket
+     * @param folderNodeRef the folder to upload to
+     * @param filenames     the names of the files to upload
+     * @param bytes         the contents of the files
+     * @return              Returns the details of each file created
+     */
+    public FileInfo[] uploadContent(String ticket, NodeRef folderNodeRef, String[] filenames, byte[][] bytes);
 }

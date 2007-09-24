@@ -265,7 +265,7 @@ public class FileFolderRemoteLoader
             String valuesStr = properties.getProperty(propertyName);
             FileFolderRemoteLoader.checkProperty(propertyName, valuesStr);
             // Parse it into the well-known values
-            String[] strValues = new String[] {"1", "0", "0", "1", "false"};
+            String[] strValues = new String[] {"1", "0", "0", "1", "false", "1"};
             int index = 0;
             StringTokenizer tokenizer = new StringTokenizer(valuesStr, ",");
             while (tokenizer.hasMoreTokens())
@@ -286,6 +286,7 @@ public class FileFolderRemoteLoader
             long testTotal = 0L;
             long testDepth = 1L;
             boolean testVerbose = false;
+            long filesPerUpload = 1;
             try
             {
                 testCount = Long.parseLong(strValues[0]);
@@ -293,12 +294,13 @@ public class FileFolderRemoteLoader
                 testTotal = Long.parseLong(strValues[2]);
                 testDepth = Long.parseLong(strValues[3]);
                 testVerbose = Boolean.parseBoolean(strValues[4]);
+                filesPerUpload = Long.parseLong(strValues[5]);
             }
             catch (Throwable e)
             {
                 throw new LoaderClientException(
                         "Unable to parse the loader configuration for '" + name + "'. " + LoaderSession.getLineEnding() +
-                        "The correct format is [threadCount], [period(ms)], [total], [folder depth], [verbose]");
+                        "The correct format is [threadCount], [period(ms)], [total], [folder depth], [verbose]<, [filesPerUpload]>");
             }
             
             // Construct
@@ -307,7 +309,7 @@ public class FileFolderRemoteLoader
                 AbstractLoaderThread thread = null;
                 if (type.equals("upload"))
                 {
-                    thread = new LoaderUploadThread(session, name, testPeriod, testTotal, testDepth, testVerbose);
+                    thread = new LoaderUploadThread(session, name, testPeriod, testTotal, testDepth, testVerbose, filesPerUpload);
                 }
                 else if (type.equals("totals"))
                 {

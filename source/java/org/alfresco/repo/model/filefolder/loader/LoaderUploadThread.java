@@ -27,6 +27,7 @@ package org.alfresco.repo.model.filefolder.loader;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import net.sf.ehcache.Cache;
@@ -60,15 +61,19 @@ public class LoaderUploadThread extends AbstractLoaderThread
         pathCache.setCache(cache);
     }
     
+    private int filesPerUpload;
+    
     public LoaderUploadThread(
             LoaderSession session,
             String loaderName,
             long testPeriod,
             long testTotal,
             long testLoadDepth,
-            boolean verbose)
+            boolean verbose,
+            long filesPerUpload)
     {
         super(session, loaderName, testPeriod, testTotal, testLoadDepth, verbose);
+        this.filesPerUpload = (int) filesPerUpload;
     }
 
     /**
@@ -101,7 +106,7 @@ public class LoaderUploadThread extends AbstractLoaderThread
             FileInfo folderInfo = serverProxy.fileFolderRemote.makeFolders(
                     serverProxy.ticket,
                     currentParentNodeRef,
-                    currentPath,
+                    Collections.singletonList(pathElement),
                     ContentModel.TYPE_FOLDER);
             currentParentNodeRef = folderInfo.getNodeRef();
             // Cache the new node
@@ -119,29 +124,41 @@ public class LoaderUploadThread extends AbstractLoaderThread
         // Make sure the folder exists
         NodeRef folderNodeRef = makeFolders(serverProxy.ticket, serverProxy, workingRootNodeRef, folderPath);
 
-        // Get a random file
-        File file = getFile();
-        byte[] bytes = FileCopyUtils.copyToByteArray(file);
-        // Get the extension
-        String filename = GUID.generate();
-        int index = file.getName().lastIndexOf('.');
-        if (index > 0)
+        // Build a set of files to upload
+        byte[][] bytes = new byte[filesPerUpload][];
+        String[] filenames = new String[filesPerUpload];
+        for (int i = 0; i < filesPerUpload; i++)
         {
-            String ext = file.getName().substring(index + 1, file.getName().length());
-            filename += ("." + ext);
+            // Get a random file
+            File file = getFile();
+            bytes[i] = FileCopyUtils.copyToByteArray(file);
+            // Get the extension
+            filenames[i] = GUID.generate();
+            int index = file.getName().lastIndexOf('.');
+            if (index > 0)
+            {
+                String ext = file.getName().substring(index + 1, file.getName().length());
+                filenames[i] += ("." + ext);
+            }
         }
         
         // Upload it
-        FileInfo fileInfo = serverProxy.fileFolderRemote.create(
+        FileInfo[] fileInfos = serverProxy.loaderRemote.uploadContent(
                 serverProxy.ticket,
                 folderNodeRef,
-                filename,
-                ContentModel.TYPE_CONTENT);
-        NodeRef fileNodeRef = fileInfo.getNodeRef();
-        serverProxy.fileFolderRemote.putContent(serverProxy.ticket, fileNodeRef, bytes, filename);
+                filenames,
+                bytes);
         
         // Done
-        String msg = String.format("Uploaded %s to folder: %s", filename, folderPath.toString());
+        String msg = String.format("Uploaded %d files to folder: %s", fileInfos.length, folderPath.toString());
         return msg;
+    }
+
+    @Override
+    public String getSummary()
+    {
+        String summary = super.getSummary();
+        summary += (String.format("%d files per iteration", filesPerUpload));
+        return summary;
     }
 }

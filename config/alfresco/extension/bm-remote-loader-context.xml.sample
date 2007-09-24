@@ -51,6 +51,12 @@
         <property name="nodeDaoService">
             <ref bean="nodeDaoService"/>
         </property>
+        <property name="fileFolderService">
+            <ref bean="FileFolderService"/>
+        </property>
+        <property name="mimetypeService">
+            <ref bean="MimetypeService"/>
+        </property>
     </bean>
     
     <bean id="loaderRemoteServerRMI" class="org.springframework.remoting.rmi.RmiServiceExporter">

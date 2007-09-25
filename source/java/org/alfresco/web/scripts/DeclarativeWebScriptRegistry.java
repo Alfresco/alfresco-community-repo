@@ -758,6 +758,12 @@ public class DeclarativeWebScriptRegistry extends AbstractLifecycleBean
         {
             return service;
         }
+        
+        @Override
+        public String toString()
+        {
+            return path;
+        }
     }
     
     /**

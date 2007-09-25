@@ -139,6 +139,13 @@ public abstract class WebScriptURLRequest extends WebScriptRequestImpl
         }
         this.serviceMatch = serviceMatch;
     }
+    
+    @Override
+    public String toString()
+    {
+        return "Request Service Match: " + serviceMatch +
+               " URL: " + this.contextPath + this.servletPath + this.pathInfo + "?" + queryString;
+    }
 
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptRequest#getServiceMatch()

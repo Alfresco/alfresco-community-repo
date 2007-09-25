@@ -80,8 +80,18 @@ import freemarker.cache.TemplateLoader;
 /**
  * Servlet for rendering templated pages based on Webscript components.
  * 
- * NOTE: No web-client helper classes should be used here! This servlet should be movable
- *       to the headerless repo remote client with the minimum of work.
+ * GET: /<context>/<servlet>/store/theme/folderpath/...
+ * 
+ * store=avmstore name
+ * theme=theme folder name
+ * folderpath=location of page definition file (any length inc none to load root)
+ * 
+ * TODO:
+ * POST: /<context>/<servlet>/store/theme
+ * REQUEST: page definition XML content? Template data?
+ * 
+ * NOTE: No web-client specific helper classes should be used here! This servlet should be
+ *       movable to the new web-script presentation tier with the minimum of work.
  * 
  * @author Kevin Roast
  */
@@ -134,28 +144,45 @@ public class PageRendererServlet extends WebScriptServlet
       
       uri = uri.substring(req.getContextPath().length());   // skip server context path
       StringTokenizer t = new StringTokenizer(uri, "/");
-      int tokenCount = t.countTokens();
       t.nextToken();    // skip servlet name
-      if (t.hasMoreTokens() == false)
+      if (t.countTokens() < 3)
       {
          throw new IllegalArgumentException("Invalid URL to PageRendererServlet: " + uri);
       }
       
-      // retrieve the page name from the url
-      String page = t.nextToken();
-      
       // the AVM store to retrieve pages and config from
-      // TODO: find a better way to set the store for a website servlet
-      String store = req.getParameter("store");
-      if (store == null)
+      String store = t.nextToken();
+      
+      // theme directory to retrieve template from
+      String theme = t.nextToken();
+      
+      // path to the config file
+      String page = null;
+      while (t.hasMoreTokens())
       {
-         throw new AlfrescoRuntimeException("'store' argument mandatory for PageRendererServlet.");
+         if (page == null)
+         {
+            page = "";
+         }
+         page += t.nextToken();
+         if (t.hasMoreTokens())
+         {
+            page += '/';
+         }
       }
       
       try
       {
          // lookup template path from page config in website AVM store
-         PageDefinition pageDefinition = lookupPageDefinition(store, req.getContextPath(), page);
+         PageDefinition pageDefinition;
+         if (req.getMethod().equals("GET"))
+         {
+            pageDefinition = lookupPageDefinition(store, req.getContextPath(), page);
+         }
+         else
+         {
+            throw new UnsupportedOperationException("POST to be implemented.");
+         }
          
          // set response content type and charset
          res.setContentType(MIMETYPE_HTML);
@@ -171,13 +198,12 @@ public class PageRendererServlet extends WebScriptServlet
          context.Path = req.getContextPath();
          context.PageDef = pageDefinition;
          context.AVMStore = store;
-         context.Theme = "default";     // TODO: where does this come from?
+         context.Theme = theme;
          this.webscriptTemplateLoader.setContext(context);
          
          // Process the template page using our custom loader - the loader will find and buffer
          // individual included webscript output into the main writer for the servlet page.
-         // TODO: where does the theme name come from!? same problem as where does store name come from...
-         String templatePath = getStoreSitePath(store, req.getContextPath()) + '/' + "themes" + '/' + "default" + '/' +
+         String templatePath = getStoreSitePath(store, req.getContextPath()) + '/' + "themes" + '/' + theme + '/' +
                                "templates" + '/' + pageDefinition.TemplateName;
          
          if (logger.isDebugEnabled())
@@ -197,17 +223,20 @@ public class PageRendererServlet extends WebScriptServlet
     * Execute the template to render the main page - based on the specified page definition config
     * @throws IOException
     */
-   private void processTemplatePage(String templatePath, PageDefinition pageDef, HttpServletRequest req, HttpServletResponse res)
+   private void processTemplatePage(
+         String templatePath, PageDefinition pageDef, HttpServletRequest req, HttpServletResponse res)
       throws IOException
    {
       NodeRef ref = AVMNodeConverter.ToNodeRef(-1, templatePath);
       templateProcessor.process(ref.toString(), getModel(pageDef, req), res.getWriter());
    }
    
+   /**
+    * @return model to use for main template page execution
+    */
    private Object getModel(PageDefinition pageDef, HttpServletRequest req)
    {
-      // TODO: add the full template model here?
-      // just a basic minimum model for now
+      // just a basic minimum model - in the future the repo will not be available!
       Map<String, Object> model = new HashMap<String, Object>();
       model.put("url", new URLHelper(req.getContextPath()));
       model.put("title", pageDef.Title);
@@ -385,7 +414,7 @@ public class PageRendererServlet extends WebScriptServlet
    {
       if (contextPath.length() == 0)
       {
-         contextPath = "/ROOT";      // servlet ROOT- default hidden context path
+         contextPath = "/ROOT";      // servlet ROOT - default hidden context path
       }
       return store + ":/" + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE + contextPath;
    }
@@ -741,6 +770,18 @@ public class PageRendererServlet extends WebScriptServlet
       {
          this.TemplateName = templateId;
       }
+      
+      @Override
+      public String toString()
+      {
+         StringBuilder buf = new StringBuilder(256);
+         buf.append("TemplateName: ").append(TemplateName);
+         for (String id : Components.keySet())
+         {
+            buf.append("\r\n   ").append(Components.get(id).toString());
+         }
+         return buf.toString();
+      }
    }
    
    /**
@@ -756,6 +797,12 @@ public class PageRendererServlet extends WebScriptServlet
       {
          this.Id = id;
          this.Url = url;
+      }
+
+      @Override
+      public String toString()
+      {
+         return "Component: " + Id + " URL: " + Url + " Properties: " + Properties.toString(); 
       }
    }
 }

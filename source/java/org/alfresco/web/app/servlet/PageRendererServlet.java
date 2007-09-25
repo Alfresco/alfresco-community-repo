@@ -199,6 +199,7 @@ public class PageRendererServlet extends WebScriptServlet
          context.PageDef = pageDefinition;
          context.AVMStore = store;
          context.Theme = theme;
+         pageDefinition.Theme = theme;
          this.webscriptTemplateLoader.setContext(context);
          
          // Process the template page using our custom loader - the loader will find and buffer
@@ -240,6 +241,7 @@ public class PageRendererServlet extends WebScriptServlet
       Map<String, Object> model = new HashMap<String, Object>();
       model.put("url", new URLHelper(req.getContextPath()));
       model.put("title", pageDef.Title);
+      model.put("theme", pageDef.Theme);
       return model;
    }
    
@@ -438,15 +440,17 @@ public class PageRendererServlet extends WebScriptServlet
       private String scriptUrl;
       private String encoding;
       private String avmStore;
+      private String theme;
       private PageComponent component;
       private ByteArrayOutputStream baOut = null;
       
       PageRendererWebScriptRuntime(
-            PageComponent component, String avmStore, String webScript, String executeUrl, String encoding)
+            PageComponent component, String avmStore, String theme, String webScript, String executeUrl, String encoding)
       {
          super(registry, serviceRegistry);
          this.component = component;
          this.avmStore = avmStore;
+         this.theme = theme;
          this.webScript = webScript;
          this.scriptUrl = executeUrl;
          this.encoding = encoding;
@@ -468,6 +472,7 @@ public class PageRendererServlet extends WebScriptServlet
          attributes.putAll(component.Properties);
          // add the well known attribute - such as avm store
          attributes.put("store", this.avmStore);
+         attributes.put("theme", this.theme);
          return new WebScriptPageRendererRequest(scriptUrl, match, attributes);
       }
 
@@ -706,7 +711,7 @@ public class PageRendererServlet extends WebScriptServlet
          // Execute the webscript and return a Reader to the textual content
          String executeUrl = context.Path + component.Url;
          PageRendererWebScriptRuntime runtime = new PageRendererWebScriptRuntime(
-               component, context.AVMStore, webscript, executeUrl, encoding);
+               component, context.AVMStore, context.Theme, webscript, executeUrl, encoding);
          runtime.executeScript();
          
          // Return a reader from the runtime that executed the webscript - this effectively
@@ -764,6 +769,7 @@ public class PageRendererServlet extends WebScriptServlet
    {
       public String TemplateName;
       public String Title;
+      public String Theme;
       public Map<String, PageComponent> Components = new HashMap<String, PageComponent>();
       
       PageDefinition(String templateId)

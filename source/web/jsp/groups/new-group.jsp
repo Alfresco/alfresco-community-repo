@@ -75,7 +75,7 @@
 <tr>
 <td></f:verbatim><h:outputText value="#{msg.identifier}" /><f:verbatim>:</td>
 <td width="100%">
-</f:verbatim><h:inputText id="name" value="#{GroupsProperties.name}" size="35" maxlength="1024"  validator="#{DialogManager.bean.validateGroupName}"
+</f:verbatim><h:inputText id="name" value="#{DialogManager.bean.name}" size="35" maxlength="1024"  validator="#{DialogManager.bean.validateGroupName}"
 onkeyup="javascript:checkButtonState();" onchange="javascript:checkButtonState();"/><f:verbatim>&nbsp;*
 </td>
 </tr>

@@ -203,6 +203,20 @@ public abstract class BaseDialogBean implements IDialogBean
       return this.navigator.getCurrentNode();
    }
 
+   public String getActionsConfigId()
+   {
+      // nothing by default, subclasses can override if necessary
+      
+      return null;
+   }
+
+   public String getMoreActionsConfigId()
+   {
+      // nothing by default, subclasses can override if necessary
+      
+      return null;
+   }
+
    /**
     * @param browseBean The BrowseBean to set.
     */

@@ -24,57 +24,106 @@
  */
 package org.alfresco.web.bean.groups;
 
-import java.text.MessageFormat;
+import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.GroupsDialog;
-import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.bean.dialog.BaseDialogBean;
 
-public class DeleteGroupDialog extends GroupsDialog
+public class DeleteGroupDialog extends BaseDialogBean
 {
-    private static final String BUTTON_DELETE = "delete";
+   /** The group to be deleted */
+   protected String group = null;
+   protected String groupName = null;
+   
+   /** The number of items the group contains */
+   protected int numItemsInGroup = 0;
+   
+   /** The AuthorityService to be used by the bean */
+   protected AuthorityService authService;
+   
+   private static final String MSG_DELETE = "delete";
+   private static final String MSG_DELETE_GROUP = "delete_group";
 
-    private static final String MSG_DELETE_GROUP = "delete_group";
+   // ------------------------------------------------------------------------------
+   // Dialog implementation
+   
+   @Override
+   public void init(Map<String, String> parameters)
+   {
+      super.init(parameters);
 
-    @Override
-    protected String finishImpl(FacesContext context, String outcome) throws Exception
-    {
-        try
-        {
-            // delete group using the Authentication Service
-            properties.getAuthService().deleteAuthority(properties.getActionGroup());
-            removeFromBreadcrumb(properties.getActionGroup());
+      // retrieve parameters
+      this.group = parameters.get(GroupsDialog.PARAM_GROUP);
+      this.groupName = parameters.get(GroupsDialog.PARAM_GROUP_NAME);
+      
+      // calculate the number of items the givev group has
+      if (this.group != null)
+      {
+         numItemsInGroup = this.authService.getContainedAuthorities(
+                     AuthorityType.GROUP, this.group, false).size();
+         numItemsInGroup += this.authService.getContainedAuthorities(
+                     AuthorityType.USER, this.group, false).size();
+      }
+   }
+   
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
+   {
+      // delete group using the Authentication Service
+      this.authService.deleteAuthority(this.group);
+      
+      return outcome;
+   }
 
-            // clear action context
-            setActionGroup(null);
-        }
-        catch (Throwable err)
-        {
-            // rollback the transaction
-            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
-            outcome = null;
-        }
-        return outcome;
-    }
+   @Override
+   protected String doPostCommitProcessing(FacesContext context, String outcome)
+   {
+      // add the group to the request object so it gets picked up by
+      // groups dialog, this will allow it to be removed from the breadcrumb
+      context.getExternalContext().getRequestMap().put(
+               GroupsDialog.KEY_GROUP, this.group);
+      
+      return outcome;
+   }
 
-    @Override
-    public boolean getFinishButtonDisabled()
-    {
-        return false;
-    }
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
+      return false;
+   }
 
-    @Override
-    public String getFinishButtonLabel()
-    {
-        return Application.getMessage(FacesContext.getCurrentInstance(), BUTTON_DELETE);
-    }
+   @Override
+   public String getFinishButtonLabel()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DELETE);
+   }
 
-    @Override
-    public String getContainerTitle()
-    {
-        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DELETE_GROUP) + " '" + properties.getActionGroupName() + "'";
-    }
+   @Override
+   public String getContainerTitle()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DELETE_GROUP) + " '" + 
+             this.groupName + "'";
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Bean property getters and setters
+   
+   public String getGroupName()
+   {
+      return this.groupName;
+   }
+   
+   public int getNumItemsInGroup()
+   {
+      return this.numItemsInGroup;
+   }
+   
+   public void setAuthService(AuthorityService authService)
+   {
+      this.authService = authService;
+   }
 }

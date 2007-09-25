@@ -86,28 +86,28 @@
                               <table cellspacing="4" cellpadding="1" width="100%">
                                  <tr>
                                     <%-- Main actions --%>
-                                    <a:panel id="main-actions-panel" rendered="#{DialogManager.actions != null}">
+                                    <a:panel id="main-actions-panel" rendered="#{DialogManager.actionsId != null}">
                                        <td style="white-space: nowrap;">
                                           <r:actions id="main_actions_list" rendered="#{DialogManager.actionsAsMenu == false}"
-                                                     styleClass="dialogMainActions" value="#{DialogManager.actions}" 
+                                                     styleClass="dialogMainActions" value="#{DialogManager.actionsId}" 
                                                      context="#{DialogManager.actionsContext}" />
                                                      
                                           <a:menu id="main_actions_menu" rendered="#{DialogManager.actionsAsMenu == true}"
                                                   itemSpacing="4" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" 
                                                   style="white-space: nowrap" label="#{DialogManager.actionsMenuLabel}">
-                                             <r:actions id="main_actions_menu_items" value="#{DialogManager.actions}" 
+                                             <r:actions id="main_actions_menu_items" value="#{DialogManager.actionsId}" 
                                                         context="#{DialogManager.actionsContext}" />
                                           </a:menu>
                                        </td>
                                     </a:panel>
                                     
                                     <%-- More actions menu --%>
-                                    <a:panel id="more-actions-panel" rendered="#{DialogManager.moreActions != null}">
+                                    <a:panel id="more-actions-panel" rendered="#{DialogManager.moreActionsId != null}">
                                        <td style="padding-left: 4px" width="80">
                                           <a:menu id="more_actions_menu" itemSpacing="4" image="/images/icons/menu.gif" 
                                                   menuStyleClass="moreActionsMenu" style="white-space:nowrap" 
                                                   label="#{DialogManager.moreActionsMenuLabel}">
-                                             <r:actions id="more_actions_menu_items" value="#{DialogManager.moreActions}" 
+                                             <r:actions id="more_actions_menu_items" value="#{DialogManager.moreActionsId}" 
                                                         context="#{DialogManager.actionsContext}" />
                                           </a:menu>
                                        </td>

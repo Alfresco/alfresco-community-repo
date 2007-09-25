@@ -41,12 +41,13 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
-
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.GroupsDialog;
+import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.groups.GroupsDialog.UserAuthorityDetails;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.SortableSelectItem;
 import org.alfresco.web.ui.common.Utils;
@@ -58,48 +59,57 @@ import org.alfresco.web.ui.common.component.UIGenericPicker;
  * @author YanO
  * @author gavinc
  */
-public class AddUsersDialog extends GroupsDialog
+public class AddUsersDialog extends BaseDialogBean
 {
-   private static final String BUTTON_FINISH = "finish_button";
+   /** The id of the group to add users to */
+   protected String group;
+   
+   /** Name of the group to add users to */
+   protected String groupName;
+   
+   /** The AuthorityService to be used by the bean */
+   protected AuthorityService authService;
+
+   /** personService bean reference */
+   protected PersonService personService;
 
    /** selected users to be added to a group */
-   private List<UserAuthorityDetails> usersForGroup;
+   protected List<UserAuthorityDetails> usersForGroup;
 
    /** datamodel for table of users added to group */
-   private DataModel usersDataModel = null;
+   protected DataModel usersDataModel = null;
 
+   // ------------------------------------------------------------------------------
+   // Dialog implementation
+   
    @Override
    public void init(Map<String, String> parameters)
    {
       super.init(parameters);
+      
+      // retrieve parameters
+      this.group = parameters.get(GroupsDialog.PARAM_GROUP);
+      this.groupName = parameters.get(GroupsDialog.PARAM_GROUP_NAME);
+      
       usersForGroup = new ArrayList<UserAuthorityDetails>();
    }
 
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      try
+      // add each selected user to the current group in turn
+      for (UserAuthorityDetails wrapper : this.usersForGroup)
       {
-         // add each selected user to the current group in turn
-         for (UserAuthorityDetails wrapper : this.usersForGroup)
-         {
-            properties.getAuthService().addAuthority(properties.getActionGroup(), wrapper.getAuthority());
-         }
+         this.authService.addAuthority(this.group, wrapper.getAuthority());
       }
-      catch (Throwable err)
-      {
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-                  FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
-         outcome = null;
-      }
-      setActionGroup(null);
+      
       return outcome;
    }
 
    @Override
    public String getContainerSubTitle()
    {
-      return properties.getActionGroupName();
+      return this.groupName;
    }
 
    @Override
@@ -108,12 +118,37 @@ public class AddUsersDialog extends GroupsDialog
       return false;
    }
 
-   @Override
-   public String getFinishButtonLabel()
+   // ------------------------------------------------------------------------------
+   // Bean property getters and setters
+   
+   public void setAuthService(AuthorityService authService)
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), BUTTON_FINISH);
+      this.authService = authService;
    }
 
+   public void setPersonService(PersonService personService)
+   {
+      this.personService = personService;
+   }
+   
+   /**
+    * @return Returns the usersDataModel.
+    */
+   public DataModel getUsersDataModel()
+   {
+      if (this.usersDataModel == null)
+      {
+         this.usersDataModel = new ListDataModel();
+      }
+
+      this.usersDataModel.setWrappedData(this.usersForGroup);
+
+      return this.usersDataModel;
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Helpers
+   
    /**
     * Query callback method executed by the Generic Picker component. This
     * method is part of the contract to the Generic Picker, it is up to the
@@ -141,7 +176,7 @@ public class AddUsersDialog extends GroupsDialog
 
                // build xpath to match available User/Person objects
                ServiceRegistry services = Repository.getServiceRegistry(context);
-               NodeRef peopleRef = properties.getPersonService().getPeopleContainer();
+               NodeRef peopleRef = personService.getPeopleContainer();
                String xpath = "*[like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "firstName, '%" + contains + 
                               "%', false)" + " or " + "like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + 
                               "lastName, '%" + contains + "%', false)]";
@@ -186,6 +221,9 @@ public class AddUsersDialog extends GroupsDialog
       }
    }
 
+   // ------------------------------------------------------------------------------
+   // Event handlers
+   
    /**
     * Add the selected User to the list for adding to a Group
     */
@@ -216,10 +254,10 @@ public class AddUsersDialog extends GroupsDialog
                StringBuilder label = new StringBuilder(48);
 
                // build a display label showing the user person name
-               if (properties.getPersonService().personExists(authority) == true)
+               if (this.personService.personExists(authority) == true)
                {
                   // found a Person with a User authority
-                  NodeRef ref = properties.getPersonService().getPerson(authority);
+                  NodeRef ref = this.personService.getPerson(authority);
                   String firstName = (String) this.nodeService.getProperty(ref, ContentModel.PROP_FIRSTNAME);
                   String lastName = (String) this.nodeService.getProperty(ref, ContentModel.PROP_LASTNAME);
 
@@ -247,20 +285,5 @@ public class AddUsersDialog extends GroupsDialog
       {
          this.usersForGroup.remove(wrapper);
       }
-   }
-
-   /**
-    * @return Returns the usersDataModel.
-    */
-   public DataModel getUsersDataModel()
-   {
-      if (this.usersDataModel == null)
-      {
-         this.usersDataModel = new ListDataModel();
-      }
-
-      this.usersDataModel.setWrappedData(this.usersForGroup);
-
-      return this.usersDataModel;
    }
 }

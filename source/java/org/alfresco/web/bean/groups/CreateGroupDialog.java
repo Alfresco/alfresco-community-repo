@@ -32,52 +32,55 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
 
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.GroupsDialog;
-
-import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.ui.common.Utils;
 
-public class CreateGroupDialog extends GroupsDialog
+public class CreateGroupDialog extends BaseDialogBean
 {
+   protected String parentGroup;
+   protected String parentGroupName;
+   protected String name;
+   
+   /** The AuthorityService to be used by the bean */
+   protected AuthorityService authService;
+   
    private static final String MSG_ERR_EXISTS = "groups_err_exists";
+   private static final String MSG_ERR_NAME = "groups_err_group_name";
+   private static final String MSG_ROOT_GROUPS = "root_groups";
    private static final String MSG_BUTTON_NEW_GROUP = "new_group";
 
+   // ------------------------------------------------------------------------------
+   // Dialog implementation
+   
    @Override
    public void init(Map<String, String> parameters)
    {
       super.init(parameters);
-      properties.setName("");
+
+      // retrieve parameters
+      this.parentGroup = parameters.get(GroupsDialog.PARAM_GROUP);
+      this.parentGroupName = parameters.get(GroupsDialog.PARAM_GROUP_NAME);
+      
+      // reset variables
+      this.name = null;
    }
 
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      try
+      // create new Group using Authentication Service
+      String groupName = this.authService.getName(AuthorityType.GROUP, this.name);
+      if (this.authService.authorityExists(groupName) == false)
       {
-         // create new Group using Authentication Service
-         String groupName = properties.getAuthService().getName(AuthorityType.GROUP, properties.getName());
-         if (properties.getAuthService().authorityExists(groupName) == false)
-         {
-            properties.getAuthService().createAuthority(AuthorityType.GROUP, properties.getActionGroup(), properties.getName());
-         }
-         else
-         {
-            Utils.addErrorMessage(Application.getMessage(context, MSG_ERR_EXISTS));
-            outcome = null;
-         }
+         this.authService.createAuthority(AuthorityType.GROUP, this.parentGroup, this.name);
       }
-      catch (Throwable err)
+      else
       {
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-                  context, Repository.ERROR_GENERIC), err.getMessage()), err);
+         Utils.addErrorMessage(Application.getMessage(context, MSG_ERR_EXISTS));
          outcome = null;
-      }
-
-      if (outcome == null)
-      {
-         isFinished = false;
       }
 
       return outcome;
@@ -94,17 +97,38 @@ public class CreateGroupDialog extends GroupsDialog
    {
       String subtitle = null;
 
-      if (properties.getActionGroup() != null)
+      if (this.parentGroupName != null)
       {
-         subtitle = properties.getActionGroupName();
+         subtitle = this.parentGroupName;
       }
       else
       {
-         subtitle = properties.getGroupName();
+         subtitle = Application.getMessage(FacesContext.getCurrentInstance(), MSG_ROOT_GROUPS);
       }
 
       return subtitle;
    }
+   
+   // ------------------------------------------------------------------------------
+   // Bean property getters and setters
+   
+   public String getName()
+   {
+      return this.name;
+   }
+
+   public void setName(String name)
+   {
+      this.name = name;
+   }
+   
+   public void setAuthService(AuthorityService authService)
+   {
+      this.authService = authService;
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Helpers
 
    public void validateGroupName(FacesContext context, UIComponent component, Object value) throws ValidatorException
    {
@@ -112,10 +136,9 @@ public class CreateGroupDialog extends GroupsDialog
       
       if (name.indexOf('\'') != -1 || name.indexOf('"') != -1 || name.indexOf('\\') != -1)
       {
-         String err = MessageFormat.format(Application.getMessage(context, "groups_err_group_name"), 
+         String err = MessageFormat.format(Application.getMessage(context, MSG_ERR_NAME), 
                   new Object[] { "', \", \\" });
          throw new ValidatorException(new FacesMessage(err));
       }
    }
-
 }

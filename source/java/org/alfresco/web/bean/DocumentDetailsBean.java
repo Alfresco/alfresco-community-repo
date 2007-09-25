@@ -1161,4 +1161,14 @@ public class DocumentDetailsBean extends BaseDetailsBean implements IDialogBean
    {
       return baseDialogBean.getActionsContext();
    }
+   
+   public String getActionsConfigId()
+   {
+      return baseDialogBean.getActionsConfigId();
+   }
+
+   public String getMoreActionsConfigId()
+   {
+      return baseDialogBean.getMoreActionsConfigId();
+   }
 }

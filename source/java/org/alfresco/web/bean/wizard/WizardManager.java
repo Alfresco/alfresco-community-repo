@@ -82,7 +82,18 @@ public final class WizardManager
       if (component instanceof UIActionLink)
       {
          // store the parameters
-         setupParameters( ((UIActionLink)component).getParameterMap() );
+         this.paramsToApply = ((UIActionLink)component).getParameterMap();
+         
+         // make sure "null" parameters are actually null, this can occur
+         // when null parameters are sent to the client and posted back
+         for (String name : this.paramsToApply.keySet())
+         {
+            String value = this.paramsToApply.get(name);
+            if (value != null && value.equalsIgnoreCase("null"))
+            {
+               this.paramsToApply.put(name, null);
+            }
+         }
       }
    }
    

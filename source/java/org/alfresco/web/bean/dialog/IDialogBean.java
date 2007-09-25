@@ -124,4 +124,18 @@ public interface IDialogBean
     * @return Object to use as the context for actions
     */
    public Object getActionsContext();
+   
+   /**
+    * Returns the id of an action group to use for the main actions
+    * 
+    * @return Id of an action group
+    */
+   public String getActionsConfigId();
+   
+   /**
+    * Returns the id of an action group to use for the more actions
+    * 
+    * @return Id of an action group
+    */
+   public String getMoreActionsConfigId();
 }

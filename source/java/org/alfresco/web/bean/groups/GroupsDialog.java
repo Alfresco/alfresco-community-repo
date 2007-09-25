@@ -22,7 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.web.bean;
+package org.alfresco.web.bean.groups;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -38,18 +38,23 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
-import org.alfresco.web.bean.groups.GroupsProperties;
+import org.alfresco.web.bean.dialog.ChangeViewSupport;
+import org.alfresco.web.bean.dialog.FilterViewSupport;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIBreadcrumb;
+import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.common.component.UIModeList;
+import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -58,12 +63,48 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Kevin Roast
  */
-public class GroupsDialog extends BaseDialogBean implements IContextListener
+public class GroupsDialog extends BaseDialogBean 
+   implements IContextListener, FilterViewSupport, ChangeViewSupport
 {
-   protected GroupsProperties properties;
+   public static final String KEY_GROUP = "group";
+   public static final String PARAM_GROUP = "group";
+   public static final String PARAM_GROUP_NAME = "groupName";
    
+   /** The AuthorityService to be used by the bean */
+   protected AuthorityService authService;
+
+   /** personService bean reference */
+   protected PersonService personService;
+
+   /** Component references */
+   protected UIRichList groupsRichList;
+   protected UIRichList usersRichList;
+
+   /** Currently visible Group Authority */
+   protected String group = null;
+   protected String groupName = null;
+   
+   /** RichList view mode */
+   protected String viewMode = VIEW_ICONS;
+   
+   /** Filter mode */
+   protected String filterMode = FILTER_CHILDREN;
+
+   /** Groups path breadcrumb location */
+   protected List<IBreadcrumbHandler> location = null;
+
+   private static final String VIEW_ICONS = "icons";
+   private static final String VIEW_DETAILS = "details";
    private static final String FILTER_CHILDREN = "children";
-   private static final String MSG_GROUPS = "root_groups";
+   private static final String FILTER_ALL = "all";
+   
+   private static final String LABEL_VIEW_ICONS = "group_icons";
+   private static final String LABEL_VIEW_DETAILS = "group_details";
+   private static final String LABEL_FILTER_CHILDREN = "group_filter_children";
+   private static final String LABEL_FILTER_ALL = "group_filter_all";
+   
+   private static final String MSG_ROOT_GROUPS = "root_groups";
+   private static final String MSG_CLOSE = "close";
    
    private static Log logger = LogFactory.getLog(GroupsDialog.class);
    
@@ -79,67 +120,179 @@ public class GroupsDialog extends BaseDialogBean implements IContextListener
    }
    
    // ------------------------------------------------------------------------------
-   // Bean property getters and setters
+   // Dialog implementation
    
-   public void setProperties(GroupsProperties properties)
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      this.properties = properties;
+      return null;
    }
+   
+   @Override
+   public String getContainerSubTitle()
+   {
+      String subtitle = null;
 
-   /**
-    * @param filterMode The filterMode to set.
-    */
+      if (this.group != null)
+      {
+         subtitle = this.groupName;
+      }
+      else
+      {
+         subtitle = Application.getMessage(FacesContext.getCurrentInstance(), MSG_ROOT_GROUPS);
+      }
+
+      return subtitle;
+   }
+   
+   @Override
+   public String getCancelButtonLabel() 
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_CLOSE);
+   }
+   
+   @Override
+   public void restored()
+   {
+      Object groupToRemove = FacesContext.getCurrentInstance().getExternalContext().
+            getRequestMap().get(KEY_GROUP);
+      if (groupToRemove != null)
+      {
+         if (logger.isDebugEnabled())
+            logger.debug("Removing group '" + groupToRemove + "' from breadcrumb");
+         
+         removeFromBreadcrumb((String)groupToRemove);
+      }
+   }
+   
+   @Override
+   public Object getActionsContext()
+   {
+      return this;
+   }
+   
+   // ------------------------------------------------------------------------------
+   // FilterViewSupport implementation
+   
+   public List<UIListItem> getFilterItems()
+   {
+      FacesContext context = FacesContext.getCurrentInstance();
+      List<UIListItem> items = new ArrayList<UIListItem>(2);
+      
+      UIListItem item1 = new UIListItem();
+      item1.setValue(FILTER_CHILDREN);
+      item1.setLabel(Application.getMessage(context, LABEL_FILTER_CHILDREN));
+      items.add(item1);
+      
+      UIListItem item2 = new UIListItem();
+      item2.setValue(FILTER_ALL);
+      item2.setLabel(Application.getMessage(context, LABEL_FILTER_ALL));
+      items.add(item2);
+      
+      return items;
+   }
+   
+   public void filterModeChanged(ActionEvent event)
+   {
+      UIModeList filterList = (UIModeList)event.getComponent();
+      
+      // update list filter mode from user selection
+      setFilterMode(filterList.getValue().toString());
+   }
+   
+   public String getFilterMode()
+   {
+      return this.filterMode;
+   }
+   
    public void setFilterMode(String filterMode)
    {
-      properties.setFilterMode(filterMode);
+      this.filterMode = filterMode;
       
       // clear datalist cache ready to change results based on filter setting
       contextUpdated();
    }
    
-   /**
-    * @param group Set the Group to be used for the current action screen.
-    */
-   public void setActionGroup(String group)
+   // ------------------------------------------------------------------------------
+   // ChangeViewSupport implementation
+   
+   public List<UIListItem> getViewItems()
    {
-      properties.setActionGroup(group);
+      FacesContext context = FacesContext.getCurrentInstance();
+      List<UIListItem> items = new ArrayList<UIListItem>(2);
       
-      if (group != null)
-      {
-         // calculate action group metadata
-         properties.setActionGroupName(properties.getAuthService().getShortName(group));
-         int count = properties.getAuthService().getContainedAuthorities(AuthorityType.GROUP, group, false).size();
-         count += properties.getAuthService().getContainedAuthorities(AuthorityType.USER, group, false).size();
-         properties.setActionGroupItems(count);
-      }
-      else
-      {
-         properties.setActionGroupName(null);
-         properties.setActionGroupItems(0);
-      }
+      UIListItem item1 = new UIListItem();
+      item1.setValue(VIEW_ICONS);
+      item1.setLabel(Application.getMessage(context, LABEL_VIEW_ICONS));
+      items.add(item1);
       
-      // clear value used by Create Group form
-      properties.setName(null);
+      UIListItem item2 = new UIListItem();
+      item2.setValue(VIEW_DETAILS);
+      item2.setLabel(Application.getMessage(context, LABEL_VIEW_DETAILS));
+      items.add(item2);
+      
+      return items;
    }
    
-   /**
-    * Set the current Group Authority.
-    * <p>
-    * Setting this value causes the UI to update and display the specified node as current.
-    * 
-    * @param group      The current group authority.
-    */
-   public void setCurrentGroup(String group, String groupName)
+   public void viewModeChanged(ActionEvent event)
    {
-      if (logger.isDebugEnabled())
-         logger.debug("Setting current group: " + group);
+      UIModeList viewList = (UIModeList)event.getComponent();
       
-      // set the current Group Authority for our UI context operations
-      properties.setGroup(group);
-      properties.setGroupName(groupName);
-      
-      // inform that the UI needs updating after this change 
-      contextUpdated();
+      // update view mode from user selection
+      setViewMode(viewList.getValue().toString());
+   }
+   
+   public String getViewMode()
+   {
+      return this.viewMode;
+   }
+
+   public void setViewMode(String viewMode)
+   {
+      this.viewMode = viewMode;
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Bean property getters and setters
+
+   public String getGroup()
+   {
+      return this.group;
+   }
+
+   public String getGroupName()
+   {
+      return this.groupName;
+   }
+   
+   public void setAuthService(AuthorityService authService)
+   {
+      this.authService = authService;
+   }
+
+   public void setPersonService(PersonService personService)
+   {
+      this.personService = personService;
+   }
+
+   public UIRichList getGroupsRichList()
+   {
+      return groupsRichList;
+   }
+
+   public void setGroupsRichList(UIRichList groupsRichList)
+   {
+      this.groupsRichList = groupsRichList;
+   }
+
+   public UIRichList getUsersRichList()
+   {
+      return usersRichList;
+   }
+
+   public void setUsersRichList(UIRichList usersRichList)
+   {
+      this.usersRichList = usersRichList;
    }
    
    /**
@@ -147,16 +300,16 @@ public class GroupsDialog extends BaseDialogBean implements IContextListener
     */
    public List<IBreadcrumbHandler> getLocation()
    {
-      if (properties.getLocation() == null)
+      if (this.location == null)
       {
          List<IBreadcrumbHandler> loc = new ArrayList<IBreadcrumbHandler>(8);
          loc.add(new GroupBreadcrumbHandler(null,
-               Application.getMessage(FacesContext.getCurrentInstance(), MSG_GROUPS)));
+               Application.getMessage(FacesContext.getCurrentInstance(), MSG_ROOT_GROUPS)));
          
-         properties.setLocation(loc);
+         this.location = loc;
       }
       
-      return properties.getLocation();
+      return this.location;
    }
    
    /**
@@ -175,32 +328,34 @@ public class GroupsDialog extends BaseDialogBean implements IContextListener
          tx.begin();
          
          Set<String> authorities;
-         boolean immediate = (properties.getFilterMode().equals(FILTER_CHILDREN));
-         if (properties.getGroup() == null)
+         boolean immediate = (this.filterMode.equals(FILTER_CHILDREN));
+         if (this.group == null)
          {
             // root groups
             if (immediate == true)
             {
-               authorities = properties.getAuthService().getAllRootAuthorities(AuthorityType.GROUP);
+               authorities = this.authService.getAllRootAuthorities(AuthorityType.GROUP);
             }
             else
             {
-               authorities = properties.getAuthService().getAllAuthorities(AuthorityType.GROUP);
+               authorities = this.authService.getAllAuthorities(AuthorityType.GROUP);
             }
          }
          else
          {
             // sub-group of an existing group
-            authorities = properties.getAuthService().getContainedAuthorities(AuthorityType.GROUP, properties.getGroup(), immediate);
+            authorities = this.authService.getContainedAuthorities(AuthorityType.GROUP, this.group, immediate);
          }
          groups = new ArrayList<Map>(authorities.size());
          for (String authority : authorities)
          {
             Map<String, String> authMap = new HashMap<String, String>(3, 1.0f);
 
-            String name = properties.getAuthService().getShortName(authority);
+            String name = this.authService.getShortName(authority);
             authMap.put("name", name);
             authMap.put("id", authority);
+            authMap.put("group", authority);
+            authMap.put("groupName", name);
             
             groups.add(authMap);
          }
@@ -230,31 +385,31 @@ public class GroupsDialog extends BaseDialogBean implements IContextListener
       try
       {
          FacesContext context = FacesContext.getCurrentInstance();
-         tx = Repository.getUserTransaction(context);
+         tx = Repository.getUserTransaction(context, true);
          tx.begin();
          
          Set<String> authorities;
-         if (properties.getGroup() == null)
+         if (this.group == null)
          {
             authorities = Collections.<String>emptySet();
          }
          else
          {
             // users of an existing group
-            boolean immediate = (properties.getFilterMode().equals(FILTER_CHILDREN));
-            authorities = properties.getAuthService().getContainedAuthorities(AuthorityType.USER, properties.getGroup(), immediate);
+            boolean immediate = (this.filterMode.equals(FILTER_CHILDREN));
+            authorities = this.authService.getContainedAuthorities(AuthorityType.USER, this.group, immediate);
          }
          users = new ArrayList<Map>(authorities.size());
          for (String authority : authorities)
          {
             Map<String, String> authMap = new HashMap<String, String>(3, 1.0f);
             
-            String userName = properties.getAuthService().getShortName(authority);
+            String userName = this.authService.getShortName(authority);
             authMap.put("userName", userName);
             authMap.put("id", authority);
             
             // get Person details for this Authority
-            NodeRef ref = properties.getPersonService().getPerson(authority);
+            NodeRef ref = this.personService.getPerson(authority);
             String firstName = (String)this.nodeService.getProperty(ref, ContentModel.PROP_FIRSTNAME);
             String lastName = (String)this.nodeService.getProperty(ref, ContentModel.PROP_LASTNAME);
             
@@ -283,36 +438,27 @@ public class GroupsDialog extends BaseDialogBean implements IContextListener
    }
    
    /**
-    * Set the Group to be used for next action dialog
+    * Set the current Group Authority.
+    * <p>
+    * Setting this value causes the UI to update and display the specified node as current.
+    * 
+    * @param group      The current group authority.
     */
-   public void setupGroupAction(ActionEvent event)
+   protected void setCurrentGroup(String group, String groupName)
    {
-      UIActionLink link = (UIActionLink)event.getComponent();
-      Map<String, String> params = link.getParameterMap();
-      String group = params.get("id");
-      if (group != null && group.length() != 0)
-      {
-         if (logger.isDebugEnabled())
-            logger.debug("Setup for action, setting current Group to: " + group);
-         
-         // prepare a node for the action context
-         setActionGroup(group);
-         
-         // clear datalist cache ready from return from action dialog
-         contextUpdated();
-      }
-   }
-   
-   /**
-    * Clear the Group action context - e.g. ready for a Create Root Group operation
-    */
-   public void clearGroupAction(ActionEvent event)
-   {
-      setActionGroup(null);
+      if (logger.isDebugEnabled())
+         logger.debug("Setting current group: " + group);
       
-      // clear datalist cache ready from return from action dialog
+      // set the current Group Authority for our UI context operations
+      this.group = group;
+      this.groupName = groupName;
+      
+      // inform that the UI needs updating after this change 
       contextUpdated();
    }
+   
+   // ------------------------------------------------------------------------------
+   // Action handlers 
    
    /**
     * Action called when a Group folder is clicked.
@@ -340,9 +486,17 @@ public class GroupsDialog extends BaseDialogBean implements IContextListener
       String authority = params.get("id");
       if (authority != null && authority.length() != 0)
       {
+         UserTransaction tx = null;
          try
          {
-            properties.getAuthService().removeAuthority(properties.getGroup(), authority);
+            FacesContext context = FacesContext.getCurrentInstance();
+            tx = Repository.getUserTransaction(context);
+            tx.begin();
+            
+            this.authService.removeAuthority(this.group, authority);
+            
+            // commit the transaction
+            tx.commit();
             
             // refresh UI after change
             contextUpdated();
@@ -351,45 +505,26 @@ public class GroupsDialog extends BaseDialogBean implements IContextListener
          {
             Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          }
       }
    }
    
-   /**
-    * Change the current view mode based on user selection
-    */
-   public void viewModeChanged(ActionEvent event)
-   {
-      UIModeList viewList = (UIModeList)event.getComponent();
-      
-      // update view mode from user selection
-      properties.setViewMode(viewList.getValue().toString());
-   }
-   
-   /**
-    * Change the current list filter mode based on user selection
-    */
-   public void filterModeChanged(ActionEvent event)
-   {
-      UIModeList viewList = (UIModeList)event.getComponent();
-      
-      // update list filter mode from user selection
-      setFilterMode(viewList.getValue().toString());
-   }
+   // ------------------------------------------------------------------------------
+   // Helpers 
    
    /**
     * Update the breadcrumb with the clicked Group location
     */
-   private void updateUILocation(String group)
+   protected void updateUILocation(String group)
    {
-      String groupName = properties.getAuthService().getShortName(group);
-      properties.getLocation().add(new GroupBreadcrumbHandler(group, groupName));
+      String groupName = this.authService.getShortName(group);
+      this.location.add(new GroupBreadcrumbHandler(group, groupName));
       this.setCurrentGroup(group, groupName);
    }
    
-   public void removeFromBreadcrumb(String group)
+   protected void removeFromBreadcrumb(String group)
    {
-      
       // remove this node from the breadcrumb if required
       List<IBreadcrumbHandler> location = getLocation();
       GroupBreadcrumbHandler handler = (GroupBreadcrumbHandler) location.get(location.size() - 1);
@@ -408,12 +543,6 @@ public class GroupsDialog extends BaseDialogBean implements IContextListener
       }
    }
    
-   @Override
-   protected String finishImpl(FacesContext context, String outcome) throws Exception
-   {
-      return null;
-   }
-   
    // ------------------------------------------------------------------------------
    // IContextListener implementation 
    
@@ -426,8 +555,15 @@ public class GroupsDialog extends BaseDialogBean implements IContextListener
          logger.debug("Invalidating Group Management Components...");
       
       // force a requery of the richlist dataset
-      properties.getGroupsRichList().setValue(null);
-      properties.getUsersRichList().setValue(null);
+      if (this.groupsRichList != null)
+      {
+         this.groupsRichList.setValue(null);
+      }
+      
+      if (this.usersRichList != null)
+      {
+         this.usersRichList.setValue(null);
+      }
    }
    
    /**
@@ -484,7 +620,7 @@ public class GroupsDialog extends BaseDialogBean implements IContextListener
          // All group breadcrumb elements relate to a Group
          // when selected we set the current Group Id and return
          setCurrentGroup(this.Group, this.Label);
-         properties.setLocation( (List)breadcrumb.getValue() );
+         location = (List<IBreadcrumbHandler>)breadcrumb.getValue();
          
          return null;
       }

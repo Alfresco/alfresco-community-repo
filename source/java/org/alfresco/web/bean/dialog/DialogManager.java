@@ -74,6 +74,17 @@ public final class DialogManager
       {
          // store the parameters
          this.paramsToApply = ((UIActionLink)component).getParameterMap();
+         
+         // make sure "null" parameters are actually null, this can occur
+         // when null parameters are sent to the client and posted back
+         for (String name : this.paramsToApply.keySet())
+         {
+            String value = this.paramsToApply.get(name);
+            if (value != null && value.equalsIgnoreCase("null"))
+            {
+               this.paramsToApply.put(name, null);
+            }
+         }
       }
    }
    
@@ -286,9 +297,18 @@ public final class DialogManager
     * 
     * @return The action group id
     */
-   public String getActions()
+   public String getActionsId()
    {
-      return this.currentDialogState.getConfig().getActionsConfigId();
+      // first see if the dialog itself has supplied an actions id
+      String configId = this.currentDialogState.getDialog().getActionsConfigId();
+       
+      if (configId == null)
+      {
+         // see if an actions id was specified in the dialog config
+         configId = this.currentDialogState.getConfig().getActionsConfigId();
+      }
+      
+      return configId; 
    }
    
    /**
@@ -297,9 +317,18 @@ public final class DialogManager
     * 
     * @return The action group id
     */
-   public String getMoreActions()
+   public String getMoreActionsId()
    {
-      return this.currentDialogState.getConfig().getMoreActionsConfigId();
+      // first see if the dialog itself has supplied a more actions id
+      String configId = this.currentDialogState.getDialog().getMoreActionsConfigId();
+      
+      if (configId == null)
+      {
+         // see if an actions id was specified in the dialog config
+         configId = this.currentDialogState.getConfig().getMoreActionsConfigId();
+      }
+      
+      return configId;
    }
    
    /**

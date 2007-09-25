@@ -34,7 +34,7 @@
 <f:verbatim>
 <table cellpadding="2" cellspacing="2" border="0">
    </f:verbatim>
-   <a:panel id="delete-panel" rendered="#{GroupsProperties.actionGroupItems != 0}"><f:verbatim>
+   <a:panel id="delete-panel" rendered="#{DialogManager.bean.numItemsInGroup != 0}"><f:verbatim>
    <tr>
       <td width="100%" valign="top">
          <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
@@ -46,7 +46,7 @@
                <td class="mainSubText">
                   </f:verbatim>
                   <h:outputFormat value="#{msg.delete_group_warning}">
-                     <f:param value="#{GroupsProperties.actionGroupItems}" />
+                     <f:param value="#{DialogManager.bean.numItemsInGroup}" />
                   </h:outputFormat>
                   <f:verbatim>
                </td>
@@ -62,7 +62,7 @@
       <td class="mainSubTitle">
          </f:verbatim>
          <h:outputFormat value="#{msg.delete_group_confirm}">
-            <f:param value="#{GroupsProperties.actionGroupName}"/>
+            <f:param value="#{DialogManager.bean.groupName}"/>
          </h:outputFormat>
          <f:verbatim>
       </td>

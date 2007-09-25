@@ -288,6 +288,11 @@
                  icon="/images/icons/edit_large.gif" title-id="title_edit_file"
                  description-id="editfile_description"/>
          
+         <dialog name="manageGroups" page="/jsp/groups/groups.jsp" managed-bean="GroupsDialog"
+                 icon="/images/icons/group_large.gif" title-id="groups_management" 
+                 description-id="groups_description" show-ok-button="false"
+                 actions-config-id="group_actions" more-actions-config-id="group_more_actions" />
+         
          <dialog name="deleteGroup" page="/jsp/groups/delete-group.jsp" managed-bean="DeleteGroupDialog"
                  icon="/images/icons/delete_group_large.gif" title-id="delete_group" 
                  description-id="delete_group_info"/>

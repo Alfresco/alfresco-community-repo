@@ -562,9 +562,13 @@
       <description>
          The bean that holds state for the Groups Management screens.
       </description>
-      <managed-bean-name>GroupsProperties</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.groups.GroupsProperties</managed-bean-class>
+      <managed-bean-name>GroupsDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.groups.GroupsDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
       <managed-property>
          <property-name>authService</property-name>
          <value>#{AuthorityService}</value>
@@ -572,23 +576,6 @@
       <managed-property>
          <property-name>personService</property-name>
          <value>#{PersonService}</value>
-      </managed-property>
-   </managed-bean>
-
-   <managed-bean>
-      <description>
-         The bean that holds state for the Groups Management screens.
-      </description>
-      <managed-bean-name>GroupsDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.GroupsDialog</managed-bean-class>
-      <managed-bean-scope>session</managed-bean-scope>
-      <managed-property>
-         <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>properties</property-name>
-         <value>#{GroupsProperties}</value>
       </managed-property>
    </managed-bean>
 
@@ -4371,8 +4358,12 @@
          <value>#{NodeService}</value>
       </managed-property>
       <managed-property>
-         <property-name>properties</property-name>
-         <value>#{GroupsProperties}</value>
+         <property-name>authService</property-name>
+         <value>#{AuthorityService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>personService</property-name>
+         <value>#{PersonService}</value>
       </managed-property>
    </managed-bean>
 
@@ -4384,12 +4375,8 @@
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
-         <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>properties</property-name>
-         <value>#{GroupsProperties}</value>
+         <property-name>authService</property-name>
+         <value>#{AuthorityService}</value>
       </managed-property>
    </managed-bean>
 
@@ -4401,12 +4388,8 @@
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
-         <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>properties</property-name>
-         <value>#{GroupsProperties}</value>
+         <property-name>authService</property-name>
+         <value>#{AuthorityService}</value>
       </managed-property>
    </managed-bean>
 

@@ -655,12 +655,60 @@
             <image>/images/icons/new_edition_icon.gif</image>
             <action>wizard:newEdition</action>
          </action>
+         
+         <!-- Create a group -->
+         <action id="create_group">
+            <label-id>new_group</label-id>
+            <image>/images/icons/create_group.gif</image>
+            <action>dialog:createGroup</action>
+            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <params>
+               <param name="group">#{actionContext.group}</param>
+               <param name="groupName">#{actionContext.groupName}</param>
+            </params>
+         </action>
+         
+         <!-- Create a sub group -->
+         <action id="create_sub_group">
+            <label-id>new_sub_group</label-id>
+            <image>/images/icons/create_group.gif</image>
+            <action>dialog:createGroup</action>
+            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <params>
+               <param name="group">#{actionContext.group}</param>
+               <param name="groupName">#{actionContext.groupName}</param>
+            </params>
+         </action>
+         
+         <!-- Delete group -->
+         <action id="delete_group">
+            <label-id>delete_group</label-id>
+            <image>/images/icons/delete_group.gif</image>
+            <action>dialog:deleteGroup</action>
+            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <params>
+               <param name="group">#{actionContext.group}</param>
+               <param name="groupName">#{actionContext.groupName}</param>
+            </params>
+         </action>
+         
+         <!-- Add a user to a group -->
+         <action id="add_group_user">
+            <label-id>add_user</label-id>
+            <image>/images/icons/add_user.gif</image>
+            <action>dialog:addUsers</action>
+            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <params>
+               <param name="group">#{actionContext.group}</param>
+               <param name="groupName">#{actionContext.groupName}</param>
+            </params>
+         </action>
 
          <!-- the 'action-group' elements define unique blocks of actions that reference the actions
               as defined above and can override or supply display elements for the group of actions -->
          <!-- the component is responsible for making the context Node object available with name
               of 'actionContext' so the actions can access it directly to get properties -->
-
+         
          <!-- Action for adding content - quick upload -->
          <action-group id="add_content_menu">
              <style>white-space:nowrap</style>
@@ -834,6 +882,22 @@
             <action idref="reset_navigator" />
          </action-group>
 
+         <!-- Actions for the manage group dialog -->
+         <action-group id="group_actions">
+            <action idref="create_group" />
+         </action-group>
+         
+         <action-group id="group_more_actions">
+            <action idref="delete_group" />
+            <action idref="add_group_user" />
+         </action-group>
+         
+         <action-group id="group_inline_actions">
+            <action idref="create_sub_group" />
+            <action idref="add_group_user" />
+            <action idref="delete_group" />
+         </action-group>
+         
       </actions>
    </config>
 

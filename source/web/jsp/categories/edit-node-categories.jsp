@@ -37,15 +37,15 @@
       <td width="98%">
          </f:verbatim>
          <r:multiValueSelector id="multi-category-selector"
-                               value="#{DocumentDetailsBean.categories}"
-                               lastItemAdded="#{DocumentDetailsBean.addedCategory}"
+                               value="#{DialogManager.bean.categories}"
+                               lastItemAdded="#{DialogManager.bean.addedCategory}"
                                selectItemMsg="#{msg.select_category}"
                                selectedItemsMsg="#{msg.selected_categories}"
                                noSelectedItemsMsg="#{msg.no_selected_categories}"
                                styleClass="selector">
             <f:subview id="categorySelector">
                <r:categorySelector id="category-selector" label="#{msg.select_category_prompt}"
-                                   styleClass="selector" value="#{DocumentDetailsBean.addedCategory}" />
+                                   styleClass="selector" value="#{DialogManager.bean.addedCategory}" />
             </f:subview>
          </r:multiValueSelector>
          <f:verbatim>

@@ -24,7 +24,6 @@
  */
 package org.alfresco.web.bean;
 
-import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashMap;
@@ -39,15 +38,11 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.GuestTemplateContentServlet;
-import org.alfresco.web.bean.dialog.BaseDialogBean;
-import org.alfresco.web.bean.dialog.IDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -57,30 +52,14 @@ import org.alfresco.web.ui.common.component.UIActionLink;
  * 
  * @author Kevin Roast
  */
-public class SpaceDetailsBean extends BaseDetailsBean implements IDialogBean
+public class SpaceDetailsBean extends BaseDetailsBean
 {
    private static final String MSG_HAS_FOLLOWING_CATEGORIES = "has_following_categories_space";
    private static final String MSG_NO_CATEGORIES_APPLIED = "no_categories_applied_space";
-   private static final String MSG_ERROR_UPDATE_CATEGORY = "error_update_category";
    private static final String MSG_ERROR_ASPECT_CLASSIFY = "error_aspect_classify_space";
-   private static final String MSG_MODIFY_CATEGORIES_OF = "modify_categories_of";
-
-   /** Category details */
-   private NodeRef addedCategory;
-   private List categories;
-   private BaseDialogBean baseDialogBean = new BaseDialogBeanImpl();
    
    /** RSS Template ID */
    private String rssTemplate;
-
-   private class BaseDialogBeanImpl extends BaseDialogBean
-   {
-      @Override
-      protected String finishImpl(FacesContext context, String outcome) throws Exception
-      {
-         return saveCategories(context, outcome);
-      }
-   }
 
    // ------------------------------------------------------------------------------
    // Construction
@@ -352,99 +331,6 @@ public class SpaceDetailsBean extends BaseDetailsBean implements IDialogBean
       
       return html;
    }
-
-   /**
-    * Event handler called to setup the categories for editing
-    * 
-    * @param event The event
-    */
-   public void setupCategoriesForEdit(ActionEvent event)
-   {
-      this.categories = (List)this.nodeService.getProperty(getSpace().getNodeRef(), 
-               ContentModel.PROP_CATEGORIES);
-   }
-   
-   /**
-    * Returns a Map of the initial categories on the node keyed by the NodeRef
-    * 
-    * @return Map of initial categories
-    */
-   public List getCategories()
-   {
-      return this.categories;
-   }
-   
-   /**
-    * Sets the categories Map
-    * 
-    * @param categories
-    */
-   public void setCategories(List categories)
-   {
-      this.categories = categories;
-   }
-   
-   /**
-    * Returns the last category added from the multi value editor
-    * 
-    * @return The last category added
-    */
-   public NodeRef getAddedCategory()
-   {
-      return this.addedCategory;
-   }
-
-   /**
-    * Sets the category added from the multi value editor
-    * 
-    * @param addedCategory The added category
-    */
-   public void setAddedCategory(NodeRef addedCategory)
-   {
-      this.addedCategory = addedCategory;
-   }
-   
-   /**
-    * Updates the categories for the current document
-    *  
-    * @return The outcome
-    */
-   public String saveCategories(FacesContext newContext, String newOutcome)
-   {
-      String outcome = newOutcome;
-      
-      UserTransaction tx = null;
-      
-      try
-      {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-         tx.begin();
-         
-         // firstly retrieve all the properties for the current node
-         Map<QName, Serializable> updateProps = this.nodeService.getProperties(
-        		 getSpace().getNodeRef());
-         
-         // create a node ref representation of the selected id and set the new properties
-         updateProps.put(ContentModel.PROP_CATEGORIES, (Serializable)this.categories);
-         
-         // set the properties on the node
-         this.nodeService.setProperties(getSpace().getNodeRef(), updateProps);
-         
-         // commit the transaction
-         tx.commit();
-         
-         // reset the state of the current document so it reflects the changes just made
-         getSpace().reset();
-      }
-      catch (Throwable e)
-      {
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), MSG_ERROR_UPDATE_CATEGORY), e.getMessage()), e);
-      }
-      
-      return outcome;
-   }
    
    /**
     * Applies the classifiable aspect to the current document
@@ -597,79 +483,5 @@ public class SpaceDetailsBean extends BaseDetailsBean implements IDialogBean
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
       }
-   }
-   
-   // ------------------------------------------------------------------------------
-   // dialog implementation
-   
-   public String cancel()
-   {
-      return baseDialogBean.cancel();
-   }
- 
-   public String finish()
-   {
-      return baseDialogBean.finish();
-   }
- 
-   public List<DialogButtonConfig> getAdditionalButtons()
-   {
-      return baseDialogBean.getAdditionalButtons();
-   }
- 
-   public String getCancelButtonLabel()
-   {
-      return baseDialogBean.getCancelButtonLabel();
-   }
- 
-   public String getContainerDescription()
-   {
-      return baseDialogBean.getContainerDescription();
-   }
- 
-   public String getContainerTitle()
-   {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_MODIFY_CATEGORIES_OF) + 
-            " '" + getSpace().getName() + "'";
-   }
-   
-   public String getContainerSubTitle()
-   {
-      return baseDialogBean.getContainerSubTitle();
-   }
- 
-   public boolean getFinishButtonDisabled()
-   {
-      return false;
-   }
- 
-   public String getFinishButtonLabel()
-   {
-      return baseDialogBean.getFinishButtonLabel();
-   }
- 
-   public void init(Map<String, String> parameters)
-   {
-      baseDialogBean.init(parameters);
-   }
- 
-   public void restored()
-   {
-      baseDialogBean.restored();
-   }
-   
-   public Object getActionsContext()
-   {
-      return baseDialogBean.getActionsContext();
-   }
-   
-   public String getActionsConfigId()
-   {
-      return baseDialogBean.getActionsConfigId();
-   }
-
-   public String getMoreActionsConfigId()
-   {
-      return baseDialogBean.getMoreActionsConfigId();
    }
 }

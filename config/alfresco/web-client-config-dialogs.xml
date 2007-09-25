@@ -365,13 +365,8 @@
                  icon="/images/icons/save_search_large.gif" title-id="save_edit_search"
                  description-id="save_search_description" />  
          
-         <dialog name="editContentCategories" page="/jsp/dialog/edit-category.jsp" managed-bean="DocumentDetailsBean"
-                 icon="/images/icons/edit_large.gif" title-id="modify_categories_of"
-                 description-id="editcategory_description" />
-         
-         <dialog name="editSpaceCategories" page="/jsp/dialog/edit-space-category.jsp" managed-bean="SpaceDetailsBean"
-                 icon="/images/icons/edit_large.gif" title-id="modify_categories_of"
-                 description-id="editcategory_space_description" />        		 
+         <dialog name="editNodeCategories" page="/jsp/categories/edit-node-categories.jsp" 
+                 managed-bean="EditNodeCategoriesDialog" icon="/images/icons/edit_large.gif" />
          
          <dialog name="createCategory" page="/jsp/categories/new-category.jsp" managed-bean="CreateCategoryDialog"
                  icon="/images/icons/create_category_large.gif" title-id="new_category"

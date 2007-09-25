@@ -60,13 +60,10 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
-import org.alfresco.web.bean.dialog.BaseDialogBean;
-import org.alfresco.web.bean.dialog.IDialogBean;
 import org.alfresco.web.bean.ml.MultilingualUtils;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -76,7 +73,7 @@ import org.alfresco.web.ui.common.component.UIActionLink;
  *
  * @author gavinc
  */
-public class DocumentDetailsBean extends BaseDetailsBean implements IDialogBean 
+public class DocumentDetailsBean extends BaseDetailsBean
 {
    private static final String OUTCOME_RETURN = "showDocDetails";
 
@@ -87,8 +84,7 @@ public class DocumentDetailsBean extends BaseDetailsBean implements IDialogBean
    private static final String MSG_ERROR_ASPECT_INLINEEDITABLE = "error_aspect_inlineeditable";
    private static final String MSG_ERROR_ASPECT_VERSIONING = "error_aspect_versioning";
    private static final String MSG_ERROR_ASPECT_CLASSIFY = "error_aspect_classify";
-   private static final String MSG_ERROR_UPDATE_CATEGORY = "error_update_category";
-   private static final String MSG_MODIFY_CATEGORIES_OF = "modify_categories_of";
+   
 
    private static final String ML_VERSION_PANEL_ID = "ml-versions-panel";
 
@@ -99,21 +95,7 @@ public class DocumentDetailsBean extends BaseDetailsBean implements IDialogBean
    protected ContentFilterLanguagesService contentFilterLanguagesService;
    protected EditionService editionService;
 
-   private NodeRef addedCategory;
-   private List categories;
-
    private Node translationDocument;
-   private BaseDialogBean baseDialogBean = new BaseDialogBeanImpl();
-
-   private class BaseDialogBeanImpl extends BaseDialogBean
-   {  
-      @Override
-      protected String finishImpl(FacesContext context, String outcome) throws Exception 
-      {
-         return saveCategories(context, outcome);
-      }
- 
-   }
    
    // ------------------------------------------------------------------------------
    // Construction
@@ -142,10 +124,6 @@ public class DocumentDetailsBean extends BaseDetailsBean implements IDialogBean
    {
       // reset the workflow cache
       this.workflowProperties = null;
-
-      // reset the category caches
-      this.categories = null;
-      this.addedCategory = null;
    }
 
    /**
@@ -577,99 +555,6 @@ public class DocumentDetailsBean extends BaseDetailsBean implements IDialogBean
    }
 
    /**
-    * Event handler called to setup the categories for editing
-    *
-    * @param event The event
-    */
-   public void setupCategoriesForEdit(ActionEvent event)
-   {
-      this.categories = (List)this.nodeService.getProperty(getDocument().getNodeRef(),
-               ContentModel.PROP_CATEGORIES);
-   }
-
-   /**
-    * Returns a Map of the initial categories on the node keyed by the NodeRef
-    *
-    * @return Map of initial categories
-    */
-   public List getCategories()
-   {
-      return this.categories;
-   }
-
-   /**
-    * Sets the categories Map
-    *
-    * @param categories
-    */
-   public void setCategories(List categories)
-   {
-      this.categories = categories;
-   }
-
-   /**
-    * Returns the last category added from the multi value editor
-    *
-    * @return The last category added
-    */
-   public NodeRef getAddedCategory()
-   {
-      return this.addedCategory;
-   }
-
-   /**
-    * Sets the category added from the multi value editor
-    *
-    * @param addedCategory The added category
-    */
-   public void setAddedCategory(NodeRef addedCategory)
-   {
-      this.addedCategory = addedCategory;
-   }
-
-   /**
-    * Updates the categories for the current document
-    *
-    * @return The outcome
-    */
-   public String saveCategories(FacesContext newContext, String newOutcome)
-   {
-      String outcome = newOutcome;
-
-      try
-      {
-         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
-         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
-         {
-            public Object execute() throws Throwable
-            {
-               // firstly retrieve all the properties for the current node
-               Map<QName, Serializable> updateProps = nodeService.getProperties(getDocument().getNodeRef());
-
-               // create a node ref representation of the selected id and set the new properties
-               updateProps.put(ContentModel.PROP_CATEGORIES, (Serializable) categories);
-
-                     // set the properties on the node
-               nodeService.setProperties(getDocument().getNodeRef(), updateProps);
-               return null;
-            }
-         };
-         txnHelper.doInTransaction(callback);
-
-         // reset the state of the current document so it reflects the changes just made
-         getDocument().reset();
-
-      }
-      catch (Throwable e)
-      {
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), MSG_ERROR_UPDATE_CATEGORY), e.getMessage()), e);
-      }
-
-      return outcome;
-   }
-
-   /**
     * Applies the classifiable aspect to the current document
     */
    public void applyClassifiable()
@@ -1096,79 +981,5 @@ public class DocumentDetailsBean extends BaseDetailsBean implements IDialogBean
    public void setEditionService(EditionService editionService)
    {
       this.editionService = editionService;
-   }
-   
-   // ------------------------------------------------------------------------------
-   // IDialogBean implementation
-
-   public String cancel()
-   {
-      return baseDialogBean.cancel();
-   }
-   
-   public String finish()
-   {
-      return baseDialogBean.finish();
-   }
-
-   public List<DialogButtonConfig> getAdditionalButtons()
-   {
-      return baseDialogBean.getAdditionalButtons();
-   }
-
-   public String getCancelButtonLabel()
-   {
-      return baseDialogBean.getCancelButtonLabel();
-   }
-
-   public String getContainerDescription()
-   {
-      return baseDialogBean.getContainerDescription();
-   }
-
-   public String getContainerTitle()
-   {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_MODIFY_CATEGORIES_OF) + 
-            " '" + getDocument().getName() + "'";
-   }
-   
-   public String getContainerSubTitle()
-   {
-      return baseDialogBean.getContainerSubTitle();
-   }
-
-   public boolean getFinishButtonDisabled()
-   {
-      return false;
-   }
-
-   public String getFinishButtonLabel()
-   {
-      return baseDialogBean.getFinishButtonLabel();
-   }
-
-   public void init(Map<String, String> parameters)
-   {
-      baseDialogBean.init(parameters);
-   }
-
-   public void restored()
-   {
-      baseDialogBean.restored();
-   }
-   
-   public Object getActionsContext()
-   {
-      return baseDialogBean.getActionsContext();
-   }
-   
-   public String getActionsConfigId()
-   {
-      return baseDialogBean.getActionsConfigId();
-   }
-
-   public String getMoreActionsConfigId()
-   {
-      return baseDialogBean.getMoreActionsConfigId();
    }
 }

@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.alfresco.filesys.util.HexDump;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERApplicationSpecific;
@@ -401,6 +402,14 @@ public class NegTokenInit
             str.append(" token=");
             str.append(m_mechToken.length);
             str.append(" bytes");
+            
+            if ( m_mechToken.length > 16)
+            {
+            	str.append(" [");
+            	str.append ( HexDump.hexString(m_mechToken, 0, 16, " "));
+            	str.append("]");
+            }
+            	
         }
         
         if ( m_mecListMICPrincipal != null)

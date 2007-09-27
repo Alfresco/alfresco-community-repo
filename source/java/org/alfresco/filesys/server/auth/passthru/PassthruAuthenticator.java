@@ -802,6 +802,9 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
             
             NTLanManAuthContext ntlmCtx = (NTLanManAuthContext) getAuthContext( sess);
             
+            if ( ntlmCtx == null)
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
+            	
             //  Build a type2 message to send back to the client, containing the challenge
 
             String domain = sess.getSMBServer().getServerName();

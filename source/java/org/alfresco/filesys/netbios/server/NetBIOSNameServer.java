@@ -1758,7 +1758,7 @@ public class NetBIOSNameServer extends NetworkServer implements Runnable
                     // Unknown opcode
 
                     default:
-                        logger.error("Unknown OpCode 0x" + Integer.toHexString(nbPkt.getOpcode()));
+//                        logger.error("Unknown OpCode 0x" + Integer.toHexString(nbPkt.getOpcode()));
                         break;
                     }
                 }

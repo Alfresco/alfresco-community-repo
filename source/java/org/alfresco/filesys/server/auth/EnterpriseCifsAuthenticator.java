@@ -71,6 +71,7 @@ import org.alfresco.filesys.smb.server.SMBSrvSession;
 import org.alfresco.filesys.smb.server.VirtualCircuit;
 import org.alfresco.filesys.util.DataPacker;
 import org.alfresco.filesys.util.HexDump;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.NTLMMode;
 import org.ietf.jgss.Oid;
 
@@ -202,25 +203,54 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                     throw new InvalidConfigurationException("Invalid login entry specified");
             }
             
-            // Build the CIFS service account name
+            // Get the server principal name
             
-            StringBuilder cifsAccount = new StringBuilder();
+            ConfigElement principal = params.getChild("Principal");
             
-            cifsAccount.append("cifs/");
-            cifsAccount.append( config.getServerName().toLowerCase());
-            cifsAccount.append("@");
-            cifsAccount.append(m_krbRealm);
-            
-            m_accountName = cifsAccount.toString();
+            if ( principal != null) {
+              
+            	// Use the supplied principal name to build the account name
+            	
+            	StringBuffer cifsAccount = new StringBuffer();
+            	
+            	cifsAccount.append( principal.getValue());
+            	cifsAccount.append("@");
+            	cifsAccount.append(m_krbRealm);
+
+            	m_accountName = cifsAccount.toString();
+            }
+            else {
+              
+	              // Build the CIFS service account name
+	              
+	              StringBuffer cifsAccount = new StringBuffer();
+	              
+	              cifsAccount.append("cifs/");
+	              cifsAccount.append( config.getServerName().toLowerCase());
+	              cifsAccount.append("@");
+	              cifsAccount.append(m_krbRealm);
+	
+	              m_accountName = cifsAccount.toString();
+            }
             
             // Create a login context for the CIFS server service
             
             try
             {
+            	// DEBUG
+            	
+            	if ( logger.isDebugEnabled())
+            		logger.debug( "CIFS Kerberos login using account " + m_accountName);
+            	
                 // Login the CIFS server service
                 
                 m_loginContext = new LoginContext( m_loginEntryName, this);
                 m_loginContext.login();
+                
+                // DEBUG
+                
+                if ( logger.isDebugEnabled())
+                	logger.debug( "CIFS Kerberos login successful");
             }
             catch ( LoginException ex)
             {
@@ -236,9 +266,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
             
             Vector<Oid> mechTypes = new Vector<Oid>();
 
-            mechTypes.add(OID.NTLMSSP);
             mechTypes.add(OID.KERBEROS5);
             mechTypes.add(OID.MSKERBEROS5);
+            mechTypes.add(OID.NTLMSSP);
         
             // Build the SPNEGO NegTokenInit blob
     
@@ -1172,33 +1202,92 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
             	// Start a transaction
             	
             	sess.beginReadTransaction( m_transactionService);
+
+            	// Check if this is a null logon
             	
-                // Setup the Acegi authenticated user
-                
-                // Set the current user to be authenticated, save the authentication token
-                
-                client.setAuthenticationToken( m_authComponent.setCurrentUser( mapUserNameToPerson(krbDetails.getUserName())));
-                
-                // Store the full user name in the client information, indicate that this is not a guest logon
-                
-                client.setUserName( krbDetails.getSourceName());
-                client.setGuest( false);
-                
+            	String userName = krbDetails.getUserName();
+            	
+            	if ( userName != null)
+            	{
+            		// Check for the machine account name
+            		
+            		if ( userName.endsWith( "$") && userName.equals( userName.toUpperCase()))
+            		{
+            			// Null logon
+            			
+                		client.setLogonType( ClientInfo.LogonNull);
+
+                		//  Debug
+                        
+                        if ( logger.isDebugEnabled())
+                            logger.debug("Machine account logon, " + userName + ", as null logon");
+            		}
+            		else
+            		{
+	            		// Map the user name to an Alfresco person name
+	            		
+	            		String alfPersonName = mapUserNameToPerson( userName);
+	            		
+	            		// Check if the user name was mapped, if not then check if this is a domain client system name, ie. ends with '$'
+	            		
+	            		if ( alfPersonName != null)
+	            		{
+	                        // Setup the Acegi authenticated user
+	                        
+	            			AuthenticationUtil.setCurrentUser( alfPersonName);
+	                        
+	                        // Store the full user name in the client information, indicate that this is not a guest logon
+	                        
+	                        client.setUserName( krbDetails.getSourceName());
+	                        client.setGuest( false);
+	                        
+	                        client.setAuthenticationToken( m_authComponent.getCurrentAuthentication());
+	                        
+	                        // Indicate that the session is logged on
+	                        
+	                        sess.setLoggedOn(true);
+	            		}
+	            		else
+	            		{
+	                        // Return a logon failure status
+	                        
+	                        throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
+	            		}
+            		}
+            	}
+            	else
+            	{
+            		// Null logon
+            		
+            		client.setLogonType( ClientInfo.LogonNull);
+            	}
+            	
                 // Indicate that the session is logged on
                 
                 sess.setLoggedOn(true);
-
+                
                 //  Debug
                 
                 if ( logger.isDebugEnabled())
-                    logger.debug("Logged on using Kerberos");
+                    logger.debug("Logged on using Kerberos, user " + userName);
+            }
+            else
+            {
+            	// Debug
+            	
+            	if ( logger.isDebugEnabled())
+            		logger.debug( "No SPNEGO response, Kerberos logon failed");
+            	
+                // Return a logon failure status
+                
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
         }
         catch (Exception ex)
         {
             // Log the error
             
-            logger.error(ex);
+            logger.error("Kerberos logon error", ex);
     
             // Return a logon failure status
             

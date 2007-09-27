@@ -912,19 +912,32 @@ public abstract class CifsAuthenticator
      */
     protected final String mapUserNameToPerson(String userName)
     {
-        // Get the home folder for the user
+        // Get, or create, the person for this user
         
-        UserTransaction tx = m_transactionService.getUserTransaction();
+        UserTransaction tx = m_transactionService.getUserTransaction( false);
         String personName = null;
         
         try
         {
             tx.begin();
-            personName = m_personService.getUserIdentifier( userName);
+
+            NodeRef userNode = m_personService.getPerson(userName);
+            if ( userNode != null)
+            {
+                // Get the person name and use that as the current user to line up with permission checks
+                
+                personName = (String) m_nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
+            }
+
             tx.commit();
         }
         catch (Throwable ex)
         {
+        	// DEBUG
+        	
+        	if ( logger.isDebugEnabled())
+        		logger.debug( "Error mapping person for user " + userName, ex);
+        	
             try
             {
                 tx.rollback();

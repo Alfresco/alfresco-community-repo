@@ -28,7 +28,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.List;
 
+import org.alfresco.config.ConfigDeployment;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.BaseInterpreter;
 import org.alfresco.repo.config.xml.RepoXMLConfigService;
@@ -134,9 +136,22 @@ public class ConfigAdminInterpreter extends BaseInterpreter
             }
             
             // destroy and re-initialise config service
-            webClientConfigService.reset();
-            
-            out.println("Web Client config has been reloaded");
+            webClientConfigService.destroy();
+            List <ConfigDeployment> configDeployments = webClientConfigService.initConfig();
+
+            if (configDeployments != null)
+            {
+            	out.println("Web Client config has been reloaded\n");
+            	
+	            for (ConfigDeployment configDeployment : configDeployments)
+	            {
+	            	out.println(configDeployment.getName() + " ---> " + configDeployment.getDeploymentStatus());
+	            }
+        	}
+            else
+            {
+            	out.println("No config reloaded");
+            }
         }
         
         else

@@ -27,6 +27,7 @@ package org.alfresco.web.config;
 import java.util.List;
 
 import org.alfresco.config.ConfigDeployer;
+import org.alfresco.config.ConfigDeployment;
 import org.alfresco.config.ConfigService;
 import org.alfresco.config.source.UrlConfigSource;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -104,12 +105,14 @@ public class WebClientConfigBootstrap implements ApplicationContextAware, Config
     /**
      * Initialisation method
      */
-    public void initConfig()
+    public List<ConfigDeployment> initConfig()
     {
     	if (configService != null && this.configs != null && this.configs.size() != 0)
         {
             UrlConfigSource configSource = new UrlConfigSource(this.configs);
-            configService.appendConfig(configSource);
+            return configService.appendConfig(configSource);
         }
+    	
+    	return null;
     }
 }

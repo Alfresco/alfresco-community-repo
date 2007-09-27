@@ -24,10 +24,14 @@
  */
 package org.alfresco.repo.webdav;
 
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.NetworkInterface;
 import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
+
+import org.alfresco.filesys.util.IPAddress;
 
 /**
  * Abstract base class for the hierarchical methods COPY and MOVE
@@ -186,15 +190,58 @@ public abstract class HierarchicalMethod extends WebDAVMethod
 
                 localPath = false;
             }
-            else if (url.getHost().equals(m_request.getLocalName()) == false
+            else if (url.getHost().equalsIgnoreCase( m_request.getLocalName()) == false
                     && url.getHost().equals(m_request.getLocalAddr()) == false)
             {
+            	// The target host may contain a domain or be specified as a numeric IP address
+            	
+            	String targetHost = url.getHost();
+            	
+            	if ( IPAddress.isNumericAddress( targetHost) == false)
+            	{
+	            	String localHost  = m_request.getLocalName();
+	            	
+	            	int pos = targetHost.indexOf( ".");
+	            	if ( pos != -1)
+	            		targetHost = targetHost.substring( 0, pos);
+	            	
+	            	pos = localHost.indexOf( ".");
+	            	if ( pos != -1)
+	            		localHost = localHost.substring( 0, pos);
+	            	
+	            	// compare the host names
+	            	
+	            	if ( targetHost.equalsIgnoreCase( localHost) == false)
+	            		localPath = false;
+            	}
+            	else
+            	{
+            		try
+            		{
+	            		// Check if the target IP address is a local address
+	            		
+            			InetAddress targetAddr = InetAddress.getByName( targetHost);
+            			if ( NetworkInterface.getByInetAddress( targetAddr) == null)
+            				localPath = false;
+            		}
+            		catch (Exception ex)
+            		{
+            			// DEBUG
+            			
+            			if ( logger.isDebugEnabled())
+            				logger.debug("Failed to check target IP address, " + targetHost);
+            			
+            			localPath = false;
+            		}
+            	}
+            	
                 // Debug
 
-                if (logger.isDebugEnabled())
+                if (localPath == false && logger.isDebugEnabled())
+                {
                     logger.debug("Destination path, different server name/address");
-
-                localPath = false;
+                    logger.debug("  URL host=" + url.getHost() + ", localName=" + m_request.getLocalName() + ", localAddr=" + m_request.getLocalAddr());
+                }
             }
             else if (url.getPath().indexOf(m_request.getServletPath()) == -1)
             {

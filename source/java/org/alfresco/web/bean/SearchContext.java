@@ -518,44 +518,9 @@ public final class SearchContext implements Serializable
    {
       if (value.indexOf(' ') == -1)
       {
-         String safeValue;
-         String prefix = "";
-         String suffix = "";
-         
-         // look for a wildcard suffix
-         if (value.charAt(value.length() - 1) != OP_WILDCARD)
-         {
-            // look for wildcard prefix
-            if (value.charAt(0) != OP_WILDCARD)
-            {
-               safeValue = QueryParser.escape(value);
-            }
-            else
-            {
-               safeValue = QueryParser.escape(value.substring(1));
-               prefix = STR_OP_WILDCARD;
-            }
-         }
-         else
-         {
-            // found a wildcard suffix - append it again after escaping the other characters
-            suffix = STR_OP_WILDCARD;
-            
-            // look for wildcard prefix
-            if (value.charAt(0) != OP_WILDCARD)
-            {
-               safeValue = QueryParser.escape(value.substring(0, value.length() - 1));
-            }
-            else
-            {
-               safeValue = QueryParser.escape(value.substring(1, value.length() - 1));
-               prefix = STR_OP_WILDCARD;
-            }
-         }
-         
          if (andOp) buf.append('+');
          buf.append('@').append(Repository.escapeQName(qname)).append(":")
-            .append(prefix).append(safeValue).append(suffix).append(' ');
+            .append(SearchContext.escape(value)).append(' ');
       }
       else
       {
@@ -577,44 +542,30 @@ public final class SearchContext implements Serializable
     */
    private static void processSearchTextAttribute(String qname, String value, StringBuilder attrBuf, StringBuilder textBuf)
    {
-      String safeValue;
-      String suffix = "";
-      String prefix = "";
-      
-      if (value.charAt(value.length() - 1) != OP_WILDCARD)
-      {
-         // look for wildcard prefix
-         if (value.charAt(0) != OP_WILDCARD)
-         {
-            safeValue = QueryParser.escape(value);
-         }
-         else
-         {
-            // found a leading wildcard - prepend it again after escaping the other characters
-            prefix = STR_OP_WILDCARD;
-            safeValue = QueryParser.escape(value.substring(1));
-         }
-      }
-      else
-      {
-         suffix = STR_OP_WILDCARD;
-         
-         // look for wildcard prefix
-         if (value.charAt(0) != OP_WILDCARD)
-         {
-            safeValue = QueryParser.escape(value.substring(0, value.length() - 1));
-         }
-         else
-         {
-            if (value.length() == 1) return;    // handle just opcode
-            prefix = STR_OP_WILDCARD;
-            safeValue = QueryParser.escape(value.substring(1, value.length() - 1));
-         }
-      }
-      
-      textBuf.append("TEXT:").append(prefix).append(safeValue).append(suffix);
+      textBuf.append("TEXT:").append(SearchContext.escape(value));
       attrBuf.append("@").append(qname).append(":")
-             .append(prefix).append(safeValue).append(suffix);
+             .append(SearchContext.escape(value));
+   }
+   
+   /**
+    * Returns a String where those characters that QueryParser
+    * expects to be escaped are escaped by a preceding <code>\</code>.
+    * '*' and '?' are not escaped.
+    */
+   private static String escape(String s)
+   {
+      StringBuffer sb = new StringBuffer(s.length() + 4);
+      for (int i = 0; i < s.length(); i++)
+      {
+         char c = s.charAt(i);
+         if (c == '\\' || c == '+' || c == '-' || c == '!' || c == '(' || c == ')' || c == ':' ||
+             c == '^' || c == '[' || c == ']' || c == '\"' || c == '{' || c == '}' || c == '~')
+         {
+            sb.append('\\');
+         }
+         sb.append(c);
+      }
+      return sb.toString();
    }
    
    /**

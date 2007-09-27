@@ -28,7 +28,6 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
@@ -50,7 +49,9 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.content.EditContentPropertiesDialog;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.forms.*;
+import org.alfresco.web.forms.FormInstanceData;
+import org.alfresco.web.forms.FormsService;
+import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.ui.common.Utils;
 
 /**
@@ -186,8 +187,12 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
       // send the properties back to the repository
       this.avmService.setNodeProperties(AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond(), avmProps);
       
-      // perform the rename last as for an AVM it changes the NodeRef
-      if (name != null)
+      // perform the rename last as for an AVM it changes the NodeRef, but only if the name has changed!
+      String path = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
+      final String parentPath = AVMNodeConverter.SplitBase(path)[0];
+      final String oldName = AVMNodeConverter.SplitBase(path)[1];
+      
+      if (name != null && name.equals(oldName) == false)
       {
          if (this.nodeService.hasAspect(nodeRef, WCMAppModel.ASPECT_RENDITION))
          {
@@ -209,12 +214,8 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
             this.nodeService.removeProperty(nodeRef, WCMAppModel.PROP_RENDITIONS);
          }
 
-         String path = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
-         final String parentPath = AVMNodeConverter.SplitBase(path)[0];
-         final String oldName = AVMNodeConverter.SplitBase(path)[1];
          this.avmService.rename(parentPath, oldName, parentPath, name);
          nodeRef = AVMNodeConverter.ToNodeRef(-1, AVMNodeConverter.ExtendAVMPath(parentPath, name));
-         editedProps.put(ContentModel.PROP_NAME.toString(), name);
 
          if (this.nodeService.hasAspect(nodeRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
          {
@@ -230,6 +231,12 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
                }
             }
          }
+      }
+      
+      // add the name property back to the properties map
+      if (name != null)
+      {
+         editedProps.put(ContentModel.PROP_NAME.toString(), name);
       }
       
       return outcome;

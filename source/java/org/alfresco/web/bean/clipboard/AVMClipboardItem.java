@@ -97,7 +97,7 @@ public class AVMClipboardItem extends AbstractClipboardItem
          String sourcePath = AVMNodeConverter.ToAVMVersionPath(getNodeRef()).getSecond();
          
          FileFolderService fileFolderService = getServiceRegistry().getFileFolderService();
-         AVMService avmService = getServiceRegistry().getAVMService();
+         AVMService avmService = getServiceRegistry().getAVMLockingAwareService();
          
          // initial name to attempt the copy of the item with
          String name = getName();

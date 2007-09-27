@@ -406,7 +406,7 @@
                                     <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write">
                                        <a:actionLink id="titleLink3" value="#{msg.change_category}" showLink="false" image="/images/icons/Change_details.gif"
                                              action="dialog:editNodeCategories" actionListener="#{DialogManager.setupParameters}">
-                                          <f:param name="id" value="#{DocumentDetailsBean.document.id}" />
+                                          <f:param name="nodeRef" value="#{DocumentDetailsBean.document.nodeRefAsString}" />
                                        </a:actionLink>
                                     </r:permissionEvaluator>
                                  </f:facet>

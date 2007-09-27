@@ -283,6 +283,14 @@ public class Node implements Serializable
    }
    
    /**
+    * @return Returns the string form of the NodeRef this Node represents
+    */
+   public final String getNodeRefAsString()
+   {
+      return this.nodeRef.toString();
+   }
+   
+   /**
     * @return Returns the type.
     */
    public QName getType()

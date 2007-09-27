@@ -67,13 +67,13 @@ public class EditNodeCategoriesDialog extends BaseDialogBean
       this.addedCategory = null;
       
       // retrieve parameters
-      String id = parameters.get("id");
+      String nodeRef = parameters.get("nodeRef");
       
-      // make sure id was supplied
-      ParameterCheck.mandatoryString("id", id);
+      // make sure nodeRef was supplied
+      ParameterCheck.mandatoryString("nodeRef", nodeRef);
       
       // create the node
-      this.node = new Node(new NodeRef(Repository.getStoreRef(), id));
+      this.node = new Node(new NodeRef(nodeRef));
       
       // determine description for dialog
       FacesContext context = FacesContext.getCurrentInstance();

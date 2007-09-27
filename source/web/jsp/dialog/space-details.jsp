@@ -254,7 +254,7 @@
                                     <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
                                        <a:actionLink id="titleLink3" value="#{msg.change_category}" showLink="false" image="/images/icons/Change_details.gif"
                                              action="dialog:editNodeCategories" actionListener="#{DialogManager.setupParameters}">
-                                          <f:param name="id" value="#{SpaceDetailsBean.space.id}" />
+                                          <f:param name="nodeRef" value="#{SpaceDetailsBean.space.nodeRefAsString}" />
                                        </a:actionLink>
                                     </r:permissionEvaluator>
                                  </f:facet>

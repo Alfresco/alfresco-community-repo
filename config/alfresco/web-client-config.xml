@@ -267,6 +267,9 @@
                     page="/jsp/sidebar/shelf.jsp" />
             <plugin id="opensearch" label-id="opensearch" description-id="opensearch_desc"
                     page="/jsp/sidebar/opensearch.jsp" />
+            <plugin id="category-browser" label-id="category_browser_plugin_label"
+                    description-id="category_browser_plugin_description" 
+                    page="/jsp/sidebar/category-browser.jsp" />
          </plugins>
          
          <!-- the default sidebar plugin to be shown on app startup -->

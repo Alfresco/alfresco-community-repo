@@ -203,6 +203,12 @@
       <component-type>org.alfresco.faces.WebScript</component-type>
       <component-class>org.alfresco.web.scripts.jsf.UIWebScript</component-class>
    </component>
+   
+   <component>
+      <component-type>org.alfresco.faces.CategoryBrowser</component-type>
+      <component-class>org.alfresco.web.ui.repo.component.UICategoryBrowser</component-class>
+   </component>
+
 
    <!-- ==================== CONVERTERS ==================== -->
    <component>

@@ -2168,4 +2168,22 @@
       </attribute>
    </tag>
    
+   <tag>
+      <name>categoryBrowser</name>
+      <tag-class>org.alfresco.web.ui.repo.tag.CategoryBrowserTag</tag-class>
+      <body-content>JSP</body-content>
+ 
+      <attribute>
+      	<name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+       
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
 </taglib>

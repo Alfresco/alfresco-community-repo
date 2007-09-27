@@ -930,4 +930,13 @@
       </navigation-case>
    </navigation-rule>
    
+   <!-- Category Browsing -->
+   <navigation-rule>
+      <from-view-id>/jsp/*</from-view-id>
+      <navigation-case>
+         <from-outcome>category-browse</from-outcome>
+         <to-view-id>/jsp/browse/category-browse.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
 </faces-config>

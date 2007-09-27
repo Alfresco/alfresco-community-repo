@@ -698,8 +698,16 @@ public class BrowseBean implements IContextListener
 
          // setup dispatch context for custom views
          this.navigator.setupDispatchContext(this.navigator.getCurrentNode());
-
-         navigateBrowseScreen();
+         
+         // browse to appropriate view
+         FacesContext fc = FacesContext.getCurrentInstance();
+         String outcome = null;
+         String viewId = fc.getViewRoot().getViewId();
+         if (viewId.equals(BROWSE_VIEW_ID) == false && viewId.equals(CATEGORY_VIEW_ID) == false)
+         {
+            outcome = "browse";
+         }
+         fc.getApplication().getNavigationHandler().handleNavigation(fc, null, outcome);
       }
       else
       {
@@ -1964,7 +1972,8 @@ public class BrowseBean implements IContextListener
    // Private data
 
    /** Browse screen view ID */
-   public static final String BROWSE_VIEW_ID = "/jsp/browse/browse.jsp";
+   public static final String BROWSE_VIEW_ID    = "/jsp/browse/browse.jsp";
+   public static final String CATEGORY_VIEW_ID  = "/jsp/browse/category-browse.jsp";
 
    /** Small icon default name */
    public static final String SPACE_SMALL_DEFAULT = "space_small";

@@ -5014,4 +5014,28 @@
       </managed-property>
    </managed-bean>
    
+   <managed-bean>
+      <managed-bean-name>CategoryBrowserPluginBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.ajax.CategoryBrowserPluginBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>categoryService</property-name>
+         <value>#{CategoryService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <managed-bean-name>CategoryBrowserBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.CategoryBrowserBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+   </managed-bean>
+   
 </faces-config>

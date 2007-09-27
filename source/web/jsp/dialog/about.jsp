@@ -236,6 +236,15 @@
                            </tr>
                            <tr>
                               <td width=50% align=right>
+                                 Category Browsing:
+                              </td>
+                              <td>&nbsp;&#8226;&nbsp;</td>
+                              <td width=50%>
+                                 Atol Conseils et D&#233;veloppements
+                              </td>
+                           </tr>
+                           <tr>
+                              <td width=50% align=right>
                                  Fixes and improvements:
                               </td>
                               <td>&nbsp;&#8226;&nbsp;</td>

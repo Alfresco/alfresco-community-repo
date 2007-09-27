@@ -32,6 +32,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.transaction.UserTransaction;
 
+import org.alfresco.config.ConfigDeployment;
 import org.alfresco.config.ConfigImpl;
 import org.alfresco.config.ConfigSection;
 import org.alfresco.config.ConfigSource;
@@ -138,9 +139,11 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         super(configSource);
     }
 
-    public void initConfig()
+    public List<ConfigDeployment> initConfig()
     {
-        // can be null e.g. initial login, after fresh bootstrap
+    	List<ConfigDeployment> configDeployments = null;
+    	
+    	// can be null e.g. initial login, after fresh bootstrap
         String currentUser = authenticationComponent.getCurrentUserName();
         if (currentUser == null)
         {
@@ -154,7 +157,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
             userTransaction.begin();
             
             // parse config and initialise caches
-            super.initConfig();
+            configDeployments = super.initConfig();
                        
             userTransaction.commit();
             
@@ -172,6 +175,8 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
                 authenticationComponent.clearCurrentSecurityContext();
             }
         }
+        
+        return configDeployments;
     }
     
     public void destroy()

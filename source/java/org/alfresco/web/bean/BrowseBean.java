@@ -1734,47 +1734,47 @@ public class BrowseBean implements IContextListener
    {
       if ((this.nodeEventListeners == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       { 
-	     Set<NodeEventListener> allNodeEventListeners = new HashSet<NodeEventListener>();		     
+         Set<NodeEventListener> allNodeEventListeners = new HashSet<NodeEventListener>();		     
 
-	     if (Application.isDynamicConfig(FacesContext.getCurrentInstance()) && (this.nodeEventListeners != null))
-	     {	 
-	    	 // for dynamic config, can add/remove node event listeners dynamically ...
-		     // however, in case anyone is using public methods (add/removeNodeEventListener)
-		     // we merge list here with list returned from the config
-	         allNodeEventListeners.addAll(this.nodeEventListeners);
-	     }
+         if (Application.isDynamicConfig(FacesContext.getCurrentInstance()) && (this.nodeEventListeners != null))
+         {	 
+            // for dynamic config, can add/remove node event listeners dynamically ...
+            // however, in case anyone is using public methods (add/removeNodeEventListener)
+            // we merge list here with list returned from the config
+            allNodeEventListeners.addAll(this.nodeEventListeners);
+         }
 
-	     FacesContext fc = FacesContext.getCurrentInstance();
-	     Config listenerConfig = Application.getConfigService(fc).getConfig("Node Event Listeners");
-	     if (listenerConfig != null)
-	     {
-	        ConfigElement listenerElement = listenerConfig.getConfigElement("node-event-listeners");
-	        if (listenerElement != null)
-	        {
-	           for (ConfigElement child : listenerElement.getChildren())
-	           {
-	              if (child.getName().equals("listener"))
-	              {
-	                 // retrieved the JSF Managed Bean identified in the config
-	                 String listenerName = child.getValue().trim();
-	                 Object bean = FacesHelper.getManagedBean(fc, listenerName);
-	                 if (bean instanceof NodeEventListener)
-	                 {
-	                     allNodeEventListeners.add((NodeEventListener)bean);
-	                 }
-	              }
-	           }
-	        }
-	     }
+         FacesContext fc = FacesContext.getCurrentInstance();
+         Config listenerConfig = Application.getConfigService(fc).getConfig("Node Event Listeners");
+         if (listenerConfig != null)
+         {
+            ConfigElement listenerElement = listenerConfig.getConfigElement("node-event-listeners");
+            if (listenerElement != null)
+            {
+               for (ConfigElement child : listenerElement.getChildren())
+               {
+                  if (child.getName().equals("listener"))
+                  {
+                     // retrieved the JSF Managed Bean identified in the config
+                     String listenerName = child.getValue().trim();
+                     Object bean = FacesHelper.getManagedBean(fc, listenerName);
+                     if (bean instanceof NodeEventListener)
+                     {
+                        allNodeEventListeners.add((NodeEventListener)bean);
+                     }
+                  }
+               }
+            }
+         }
 
-	     if (Application.isDynamicConfig(FacesContext.getCurrentInstance()))
-	     {	     
-	    	 return allNodeEventListeners;
-	     }
-	     else
-	     {
-	    	 this.nodeEventListeners = allNodeEventListeners;
-	     }
+         if (Application.isDynamicConfig(FacesContext.getCurrentInstance()))
+         {	     
+            return allNodeEventListeners;
+         }
+         else
+         {
+            this.nodeEventListeners = allNodeEventListeners;
+         }
       }
       return this.nodeEventListeners;
    }

@@ -4,14 +4,14 @@
 
 <!--
     Repository Bootstrap Sequence.
-    
+
     This file specifies the initialisation (and order of initialisation) to perform during Repository startup.
-    
+
     The pattern for adding new initialisation to the bootstrap sequence is as follows:
-    
+
     1) Develop a bean that implements the Spring interface ApplicationListener
     2) Place the initialisation logic in the method onApplicationEvent(ApplicationEvent event)...
-    
+
        public void onApplicationEvent(ApplicationEvent event)
        {
           if (event instanceof ContextRefreshedEvent)
@@ -19,7 +19,7 @@
              // initialisation logic here
           }
        }
-       
+
     3) Add the bean definition to this file - Note: the beans are initialised in the order they are specified.
 -->
 
@@ -60,7 +60,7 @@
           </list>
        </property>
     </bean>
-    
+
     <!-- Bootstrap the AVM -->
     <bean id="avmBootstrap" class="org.alfresco.repo.avm.AvmBootstrap" >
        <property name="issuers">
@@ -73,7 +73,7 @@
        	 <ref bean="avmLockingAwareService"/>
        </property>
     </bean>
- 
+
     <!-- Bootstrap AVM Locking Service. -->
     <bean id="avmLockingBootstrap" class="org.alfresco.repo.avm.locking.AVMLockingBootstrap">
        <property name="avmLockingService">
@@ -203,7 +203,7 @@
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
                     <prop key="location">alfresco/bootstrap/webScriptsReadme.xml</prop>
                 </props>
-                
+
                 <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
                     <prop key="location">alfresco/bootstrap/customModelsSpace.acp</prop>
@@ -216,16 +216,16 @@
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
                     <prop key="location">alfresco/bootstrap/customWebClientExtensionSpace.xml</prop>
                 </props>
-                      
+
                 <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
                     <prop key="location">alfresco/bootstrap/customWorkflowDefsSpace.acp</prop>
                 </props>
-                                                 
+
             </list>
         </property>
     </bean>
-    
+
     <import resource="classpath:alfresco/bootstrap/st-admin-context.xml"/>
     <import resource="classpath*:alfresco/extension/mt/mt-admin-context.xml"/>
 
@@ -274,15 +274,8 @@
 		</property>
 	</bean>
 
-	<!-- Bootstrap for the authorityCapabilityRegistry -->    
- 	<bean id="authorityCapabilityBootstrap" class="org.alfresco.repo.simple.permission.AuthorityCapabilityBootstrap">
- 	    <property name="authorityCapabilityRegistry">
- 	        <ref bean="authorityCapabilityRegistry"/>
- 	    </property>
- 	</bean>
-
     <!-- Bootstrap any extensions -->
-    
+
     <import resource="classpath*:alfresco/extension/bootstrap/*-context.xml" />
 
     <!-- Descriptor Service -->
@@ -310,13 +303,13 @@
 
     <!-- Perform index recovery before applying any patches -->
     <!-- rebuild the index if required - before we check that it is there -->
-    
+
     <bean id="indexRecoveryBootstrap" class="org.alfresco.repo.node.index.IndexRecoveryBootstrapBean" >
        <property name="indexRecoveryComponent">
            <ref bean="indexRecoveryComponent"/>
        </property>
     </bean>
-    
+
     <bean id="avmIndexRecoveryBootstrap" class="org.alfresco.repo.node.index.IndexRecoveryBootstrapBean" >
        <property name="indexRecoveryComponent">
           <ref bean="avmIndexRecoveryComponent"/>
@@ -385,15 +378,15 @@
            <ref bean="fileServersConfigService"/>
        </property>
     </bean>
-    
+
     <bean id="cifsServer" class="org.alfresco.filesys.CIFSServer" destroy-method="stopServer">
         <constructor-arg>
            <ref local="fileServerConfiguration"/>
         </constructor-arg>
     </bean>
-   
+
     <!-- FTP Server -->
-    
+
     <bean id="ftpServer" class="org.alfresco.filesys.FTPServer" destroy-method="stopServer">
         <constructor-arg>
            <ref local="fileServerConfiguration"/>
@@ -401,7 +394,7 @@
     </bean>
 
     <!-- NFS Server -->
-    
+
     <bean id="nfsServer" class="org.alfresco.filesys.NFSServer" destroy-method="stopServer">
         <constructor-arg>
            <ref local="fileServerConfiguration"/>
@@ -409,13 +402,13 @@
     </bean>
 
     <!-- Start the quartz scheduler -->
-    
+
     <bean id="schedulerStarter" class="org.alfresco.util.SchedulerStarterBean" >
        <property name="scheduler">
            <ref bean="schedulerFactory"/>
        </property>
     </bean>
-       
+
 	<!-- Startup Message -->
 
     <bean id="openOfficeConnectionTester" class="org.alfresco.util.OpenOfficeConnectionTester" >
@@ -432,7 +425,7 @@
 	       	<ref local="descriptorComponent"/>
        </property>
 	</bean>
-	
+
     <!-- Workflow Scheduler -->
     <bean id="workflowScheduler" class="org.alfresco.repo.workflow.jbpm.JBPMScheduler">
        <property name="JBPMTemplate" ref="jbpm_template" />
@@ -446,5 +439,5 @@
         </constructor-arg>
     </bean>
     -->
-   
+
 </beans>

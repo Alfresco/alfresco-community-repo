@@ -17,7 +17,7 @@
     <import resource="classpath:alfresco/network-protocol-context.xml" />
     <import resource="classpath:alfresco/email-service-context.xml" />
     <import resource="classpath:alfresco/content-services-context.xml" />
-    <import resource="classpath*:alfresco/extension/mt/mt-contentstore-context.xml"/>    
+    <import resource="classpath*:alfresco/extension/mt/mt-contentstore-context.xml"/>
     <import resource="classpath:alfresco/hibernate-context.xml" />
     <import resource="classpath:alfresco/ownable-services-context.xml" />
     <import resource="classpath:alfresco/template-services-context.xml" />
@@ -27,8 +27,8 @@
     <import resource="classpath:alfresco/authentication-services-context.xml" />
     <import resource="classpath:alfresco/policy-context.xml" />
     <import resource="classpath:alfresco/import-export-context.xml" />
-    <import resource="classpath:alfresco/bootstrap-context.xml" />        
-    <import resource="classpath:alfresco/repo-admin-context.xml"/>   
+    <import resource="classpath:alfresco/bootstrap-context.xml" />
+    <import resource="classpath:alfresco/repo-admin-context.xml"/>
     <import resource="classpath:alfresco/workflow-context.xml" />
     <import resource="classpath:alfresco/jcr-api-context.xml" />
     <import resource="classpath:alfresco/avm-services-context.xml" />
@@ -36,7 +36,6 @@
     <import resource="classpath:alfresco/attributes-service-context.xml"/>
     <import resource="classpath:alfresco/linkvalidation-service-context.xml"/>
     <import resource="classpath:alfresco/remote-services-context.xml"/>
-    <import resource="classpath:alfresco/simple-permissions-context.xml"/>
     <import resource="classpath*:alfresco/patch/*-context.xml" />
     <import resource="classpath*:alfresco/domain/*-context.xml" />
 
@@ -47,18 +46,18 @@
     -->
     <import resource="classpath*:alfresco/module-context.xml" />
 
-    <!-- 
+    <!--
          Import of general extensions and bean overrides.
 
-         To give developers final control over the tuning 
-         of their own local build, the dev-context.xml file 
+         To give developers final control over the tuning
+         of their own local build, the dev-context.xml file
          is processed last  (note: dev-context.xml isn't
-         part of the source tree itself).  
-         
+         part of the source tree itself).
+
          For details, see:
          http://wiki.alfresco.com/wiki/Developer_Runtime_Configuration
     -->
     <import resource="classpath*:alfresco/extension/*-context.xml"/>
     <import resource="classpath*:alfresco/extension/dev-context.xml" />
-    
+
 </beans>

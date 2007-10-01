@@ -9,9 +9,9 @@
 <!-- This implementation supports the identification of users as admin users. -->
 <!-- It also supports groups and allows groups and users to be arranged into  -->
 <!-- hierarchies.                                                             -->
-<!--                                                                          --> 
+<!--                                                                          -->
 <beans>
-    
+
     <bean id="authorityService" class="org.alfresco.repo.security.authority.AuthorityServiceImpl">
         <property name="authenticationComponent">
             <ref bean="authenticationComponent" />
@@ -51,13 +51,13 @@
     		</set>
         </property>
     </bean>
-    
+
     <!-- Authority DAO that stores group information along with user information, -->
     <!-- in the repository.                                                       -->
     <!--                                                                          -->
     <!-- This bean uses the userToAuthorityCache configured in cache-context.xml  -->
     <!--                                                                          -->
-    <bean id="authorityDAO" class="org.alfresco.repo.security.authority.AuthorityDAOImpl">   
+    <bean id="authorityDAO" class="org.alfresco.repo.security.authority.AuthorityDAOImpl">
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
@@ -73,9 +73,6 @@
         <property name="userToAuthorityCache">
             <ref bean="userToAuthorityCache" />
         </property>
-        <property name="authorityCapabilityRegistry">
-        	<ref bean="authorityCapabilityRegistry"/>
-        </property>
     </bean>
-    
+
 </beans>

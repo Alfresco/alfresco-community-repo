@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.repo.security.authentication;
@@ -53,7 +53,6 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.service.simple.permission.AuthorityCapabilityRegistry;
 import org.springframework.dao.DataAccessException;
 
 public class RepositoryAuthenticationDao implements MutableAuthenticationDao
@@ -71,8 +70,6 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     private SearchService searchService;
 
     private PasswordEncoder passwordEncoder;
-    
-    private AuthorityCapabilityRegistry authorityCapabilityRegistry;
 
     private boolean userNamesAreCaseSensitive;
 
@@ -115,11 +112,6 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     {
         this.searchService = searchService;
     }
-    
-    public void setAuthorityCapabilityRegistry(AuthorityCapabilityRegistry registry)
-    {
-        this.authorityCapabilityRegistry = registry;
-    }
 
     public UserDetails loadUserByUsername(String incomingUserName) throws UsernameNotFoundException,
             DataAccessException
@@ -156,11 +148,11 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         {
             return null;
         }
-        
+
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("@usr\\:username:\"" + searchUserName + "\"");
-       
+
         try
         {
             sp.addStore(tenantService.getName(searchUserName, STOREREF_USERS));
@@ -219,7 +211,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
                     }
                 }
             }
-            
+
             return returnRef;
         }
         finally
@@ -252,7 +244,6 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         properties.put(ContentModel.PROP_ACCOUNT_LOCKED, Boolean.valueOf(false));
         nodeService.createNode(typesNode, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_USER, ContentModel.TYPE_USER,
                 properties);
-        authorityCapabilityRegistry.addAuthority(caseSensitiveUserName, null);
     }
 
     private NodeRef getUserFolderLocation(String caseSensitiveUserName)
@@ -312,7 +303,6 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
             throw new AuthenticationException("User name does not exist: " + userName);
         }
         nodeService.deleteNode(userRef);
-        authorityCapabilityRegistry.removeAuthority(userName);
     }
 
     public Object getSalt(UserDetails userDetails)

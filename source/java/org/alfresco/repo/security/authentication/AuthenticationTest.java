@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.repo.security.authentication;
@@ -61,7 +61,6 @@ import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.simple.permission.AuthorityCapabilityRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
@@ -72,7 +71,7 @@ public class AuthenticationTest extends TestCase
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
     private NodeService nodeService;
-    
+
     private TenantService tenantService;
 
     private SearchService searchService;
@@ -96,7 +95,7 @@ public class AuthenticationTest extends TestCase
     private SaltSource saltSource;
 
     private TicketComponent ticketComponent;
-    
+
     private SimpleCache<String, Ticket> ticketsCache;
 
     private AuthenticationService authenticationService;
@@ -109,8 +108,6 @@ public class AuthenticationTest extends TestCase
 
     private AuthenticationComponent authenticationComponentImpl;
 
-    private AuthorityCapabilityRegistry authorityCapabilityRegistry;
-    
     public AuthenticationTest()
     {
         super();
@@ -134,7 +131,6 @@ public class AuthenticationTest extends TestCase
         pubAuthenticationService = (AuthenticationService) ctx.getBean("AuthenticationService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         authenticationComponentImpl = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-        authorityCapabilityRegistry = (AuthorityCapabilityRegistry) ctx.getBean("authorityCapabilityRegistry");
         // permissionServiceSPI = (PermissionServiceSPI)
         // ctx.getBean("permissionService");
         ticketsCache = (SimpleCache<String, Ticket>) ctx.getBean("ticketsCache");
@@ -242,7 +238,7 @@ public class AuthenticationTest extends TestCase
     {
         authenticationService.authenticate("GUEST", "".toCharArray());
     }
-    
+
     public void testCreateUsers()
     {
         authenticationService.createAuthentication("GUEST", "".toCharArray());
@@ -265,7 +261,7 @@ public class AuthenticationTest extends TestCase
         {
             // TODO - could create tenant domain 'chocolate.chip.cookie.com'
         }
-        
+
         authenticationService.createAuthentication("Andy_Woof/Domain", "".toCharArray());
         authenticationService.authenticate("Andy_Woof/Domain", "".toCharArray());
         assertEquals("Andy_Woof/Domain", authenticationService.getCurrentUserName());
@@ -273,7 +269,7 @@ public class AuthenticationTest extends TestCase
         authenticationService.createAuthentication("Andy_ Woof/Domain", "".toCharArray());
         authenticationService.authenticate("Andy_ Woof/Domain", "".toCharArray());
         assertEquals("Andy_ Woof/Domain", authenticationService.getCurrentUserName());
-        
+
         if (! tenantService.isEnabled())
         {
             authenticationService.createAuthentication("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?\\|", "".toCharArray());
@@ -295,7 +291,6 @@ public class AuthenticationTest extends TestCase
         dao.setDictionaryService(dictionaryService);
         dao.setNamespaceService(getNamespacePrefixReolsver(""));
         dao.setPasswordEncoder(passwordEncoder);
-        dao.setAuthorityCapabilityRegistry(authorityCapabilityRegistry);
         dao.createUser("Andy", "cabbage".toCharArray());
         assertNotNull(dao.getUserOrNull("Andy"));
 
@@ -702,7 +697,7 @@ public class AuthenticationTest extends TestCase
 
         tc.validateTicket(ticket);
         assertEquals(ticketComponent.getCurrentTicket("Andy"), ticket);
-        
+
         dao.deleteUser("Andy");
         // assertNull(dao.getUserOrNull("Andy"));
 

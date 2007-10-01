@@ -9,10 +9,10 @@
 <!-- Acegi is used for authentication and protecting method calls on public -->
 <!-- services. To do this requires our authentication mechanism to work     -->
 <!-- within the acegi framework.                                            -->
-<!--                                                                        --> 
+<!--                                                                        -->
 <!-- It is important to decide if user names are case sensitive or not.     -->
 <!-- This is configured in repository.properties.                           -->
-<!--                                                                        -->  
+<!--                                                                        -->
 <!--                                                                        -->
 <!-- TODO:                                                                  -->
 <!--                                                                        -->
@@ -20,8 +20,8 @@
 <!-- file. This should be done in the public services definitions.          -->
 <!-- This requires some tests to be fixed up.                               -->
 <!--                                                                        -->
-                                                                         
-    
+
+
 <beans>
     <!--                                                                    -->
     <!-- The Acegi authentication manager.                                  -->
@@ -96,13 +96,10 @@
        <property name="passwordEncoder">
            <ref bean="passwordEncoder" />
        </property>
-       <property name="authorityCapabilityRegistry">
-           <ref bean="authorityCapabilityRegistry"/>
-       </property>
     </bean>
 
     <!-- The DAO also acts as a salt provider.                              -->
-    
+
     <alias alias="saltSource" name="authenticationDao"/>
 
     <!-- Passwords are encoded using MD4                                    -->
@@ -119,7 +116,7 @@
     <!--                                                                    -->
     <!-- The permissions service is required so that permissions can be     -->
     <!-- cleaned up when a user is deleted.                                 -->
-    
+
     <bean id="authenticationService" class="org.alfresco.repo.security.authentication.AuthenticationServiceImpl">
         <property name="authenticationDao">
             <ref bean="authenticationDao" />
@@ -150,7 +147,7 @@
             </props>
         </property>
     </bean>
-    
+
     <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.AuthenticationComponentImpl">
         <property name="authenticationDao">
             <ref bean="authenticationDao" />
@@ -163,19 +160,19 @@
         </property>
     </bean>
 
-    
+
     <!-- Simple Authentication component that rejects all authentication requests -->
     <!-- Use this defintion for Novell IChain integration.                        -->
     <!-- It should never go to the login screen  so this is not required          -->
-    
+
     <!--
     <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.SimpleAcceptOrRejectAllAuthenticationComponentImpl">
         <property name="accept">
             <value>true</value>
-        </property>    
+        </property>
     </bean>
     -->
-    
+
 
     <!-- The person service.                                                -->
 
@@ -255,7 +252,7 @@
             <ref bean="userHomesHomeFolderProvider" />
         </property>
     </bean>
-    
+
     <bean name="companyHomeFolderProvider" class="org.alfresco.repo.security.person.ExistingPathBasedHomeFolderProvider">
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry" />
@@ -270,7 +267,7 @@
             <ref bean="homeFolderManager" />
         </property>
     </bean>
-    
+
     <bean name="guestHomeFolderProvider" class="org.alfresco.repo.security.person.ExistingPathBasedHomeFolderProvider">
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry" />
@@ -290,13 +287,13 @@
             </set>
         </property>
     </bean>
-    
+
     <bean name="bootstrapHomeFolderProvider" class="org.alfresco.repo.security.person.BootstrapHomeFolderProvider">
         <property name="homeFolderManager">
             <ref bean="homeFolderManager" />
         </property>
     </bean>
-    
+
     <bean name="personalHomeFolderProvider" class="org.alfresco.repo.security.person.UIDBasedHomeFolderProvider">
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry" />
@@ -324,7 +321,7 @@
             </set>
         </property>
     </bean>
-    
+
     <bean name="userHomesHomeFolderProvider" class="org.alfresco.repo.security.person.UIDBasedHomeFolderProvider">
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry" />
@@ -352,8 +349,8 @@
             </set>
         </property>
     </bean>
-    
-    
+
+
     <!-- The ticket component.                                              -->
     <!-- Used for reauthentication                                          -->
     <bean id="ticketComponent" class="org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl">

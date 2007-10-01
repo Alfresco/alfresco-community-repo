@@ -3,7 +3,7 @@
 
 <beans>
 
-    <!-- load hibernate configuration properties -->    
+    <!-- load hibernate configuration properties -->
     <bean id="hibernateConfigProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
         <property name="locations">
             <list>
@@ -11,7 +11,7 @@
             </list>
         </property>
     </bean>
-    <!-- load hibernate entity cache strategies -->    
+    <!-- load hibernate entity cache strategies -->
     <bean id="cacheStrategiesPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="ignoreUnresolvablePlaceholders">
             <value>true</value>
@@ -38,7 +38,7 @@
                 <!--  -->
                 <!-- Alfresco Node Storage -->
                 <!--  -->
-                
+
                 <value>org/alfresco/repo/domain/hibernate/Node.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Store.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Transaction.hbm.xml</value>
@@ -47,8 +47,7 @@
                 <value>org/alfresco/repo/domain/hibernate/Permission.hbm.xml</value>
                 <value>org/alfresco/repo/avm/hibernate/AVM.hbm.xml</value>
                 <value>org/alfresco/repo/attributes/hibernate/Attributes.hbm.xml</value>
-                <value>org/alfresco/repo/simple/permission/AuthorityCapability.hbm.xml</value>
-                
+
                 <!-- Audit config -->
                 <!-- TODO: Move into org/alfresco/repo/domain/hibernate/ -->
                 <value>org/alfresco/repo/audit/hibernate/Audit.hbm.xml</value>
@@ -111,7 +110,7 @@
                 <value>org/jbpm/job/ExecuteActionJob.hbm.xml</value>
                 <value>org/jbpm/taskmgmt/exe/TaskMgmtInstance.hbm.xml</value>
                 <value>org/jbpm/taskmgmt/exe/TaskInstance.hbm.xml</value>
-                <value>org/alfresco/repo/workflow/jbpm/WorkflowTaskInstance.hbm.xml</value>           
+                <value>org/alfresco/repo/workflow/jbpm/WorkflowTaskInstance.hbm.xml</value>
                 <value>org/jbpm/taskmgmt/exe/PooledActor.hbm.xml</value>
                 <value>org/jbpm/taskmgmt/exe/SwimlaneInstance.hbm.xml</value>
                 <value>org/jbpm/logging/log/ProcessLog.hbm.xml</value>
@@ -158,12 +157,12 @@
                 <prop key="org.alfresco.repo.domain.hibernate.ServerImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.VersionCountImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.AppliedPatchImpl">${cache.strategy}</prop>
-                
+
                 <prop key="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.DbPermissionImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.DbAuthorityImpl">${cache.strategy}</prop>
-                
+
                  <prop key="org.alfresco.repo.audit.hibernate.AuditConfigImpl">${cache.strategy}</prop>
                  <prop key="org.alfresco.repo.audit.hibernate.AuditDateImpl">${cache.strategy}</prop>
                  <prop key="org.alfresco.repo.audit.hibernate.AuditSourceImpl">${cache.strategy}</prop>
@@ -182,7 +181,7 @@
             </props>
         </property>
     </bean>
-    
+
     <!-- create a transaction manager -->
     <bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
         <property name="transactionSynchronizationName">
@@ -192,14 +191,14 @@
             <ref bean="sessionFactory" />
         </property>
     </bean>
-    
+
     <!-- Hibernate-specific implementations of persistence components -->
    <bean id="versionCounterDaoComponent" class="org.alfresco.repo.domain.hibernate.VersionCounterDaoComponentImpl">
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
       </property>
    </bean>
-   
+
    <bean id="permissionsDaoComponent" class="org.alfresco.repo.domain.hibernate.PermissionsDaoComponentImpl">
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
@@ -214,7 +213,7 @@
  		 <ref bean="nodeACLDAO"/>
  	  </property>
    </bean>
-   
+
 	<bean id="nodeACLDAO" class="org.alfresco.repo.domain.hibernate.NodeAccessControlListDAO">
       <property name="nodeDaoService">
          <ref bean="nodeDaoService" />
@@ -223,13 +222,13 @@
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
-	
+
 	<bean id="avmACLDAO" class="org.alfresco.repo.domain.hibernate.AVMAccessControlListDAO">
 		<property name="avmRepository">
 			<ref bean="avmRepository"/>
 		</property>
    </bean>
-	
+
    <bean id="nodeDaoServiceImpl" class="org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl">
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
@@ -239,9 +238,9 @@
       </property>
       <property name="tenantService">
           <ref bean="tenantService"/>
-      </property>    
+      </property>
    </bean>
-    
+
    <bean id="dbNodeDaoServiceTxnRegistration" class="org.alfresco.repo.transaction.TransactionalDaoInterceptor" >
       <property name="daoService">
          <ref bean="nodeDaoServiceImpl" />
@@ -253,7 +252,7 @@
          <ref bean="permissionsDaoComponent" />
       </property>
    </bean>
-    
+
    <bean id="nodeDaoService" class="org.springframework.aop.framework.ProxyFactoryBean">
       <property name="proxyInterfaces">
          <value>org.alfresco.repo.node.db.NodeDaoService</value>
@@ -268,7 +267,7 @@
       </property>
    </bean>
 
-    
+
     <bean id="auditDao" class="org.alfresco.repo.audit.hibernate.HibernateAuditDAO">
         <property name="sessionFactory">
             <ref bean="sessionFactory"/>
@@ -280,5 +279,5 @@
           <ref bean="&amp;sessionFactory"></ref>  <!-- inject the actual factory, not a session -->
         </property>
     </bean>
-    
+
 </beans>

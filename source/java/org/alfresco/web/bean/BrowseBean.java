@@ -799,7 +799,7 @@ public class BrowseBean implements IContextListener
                   node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
                   // only display the user has the permissions to navigate to the target of the link
                   NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
-                  if (new Node(destRef).hasPermission(PermissionService.READ) == true)
+                  if (destRef != null && new Node(destRef).hasPermission(PermissionService.READ) == true)
                   {
                      node.addPropertyResolver("url", this.resolverLinkUrl);
                      node.addPropertyResolver("webdavUrl", this.resolverLinkWebdavUrl);
@@ -818,7 +818,7 @@ public class BrowseBean implements IContextListener
                   node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
                   // only display the user has the permissions to navigate to the target of the link
                   NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
-                  if (new Node(destRef).hasPermission(PermissionService.READ) == true)
+                  if (destRef != null && new Node(destRef).hasPermission(PermissionService.READ) == true)
                   {
                      node.addPropertyResolver("icon", this.resolverSpaceIcon);
                      node.addPropertyResolver("smallIcon", this.resolverSmallIcon);

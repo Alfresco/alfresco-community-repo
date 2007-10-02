@@ -23,24 +23,30 @@
  */
 package org.alfresco.web.forms;
 
-import java.io.*;
-import java.util.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+
 import javax.faces.context.FacesContext;
-import org.alfresco.model.ContentModel;
+
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.repository.*;
-import org.alfresco.service.namespace.QName;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
@@ -48,10 +54,8 @@ import org.xml.sax.SAXException;
  *
  * @author Ariel Backenroth
  */
-/* package */ class FormInstanceDataImpl
-   implements FormInstanceData
+/* package */ class FormInstanceDataImpl implements FormInstanceData
 {
-
    private static final Log LOGGER = LogFactory.getLog(RenditionImpl.class);
 
    private final NodeRef nodeRef;
@@ -151,17 +155,15 @@ import org.xml.sax.SAXException;
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("regenerating renditions of " + this);
 
-
       final AVMService avmService = this.getServiceRegistry().getAVMService();
-      String originalParentAvmPath = 
-         avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
-                                    AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
-                                    WCMAppModel.PROP_ORIGINAL_PARENT_PATH).getStringValue();
+      PropertyValue pv = avmService.getNodeProperty(
+               AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
+               AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
+               WCMAppModel.PROP_ORIGINAL_PARENT_PATH);
 
-      if (originalParentAvmPath == null)
-      {
-         originalParentAvmPath = AVMNodeConverter.SplitBase(this.getPath())[0];
-      }
+      String originalParentAvmPath = (pv == null) ? 
+               AVMNodeConverter.SplitBase(this.getPath())[0] : pv.getStringValue();
+      
       final HashSet<RenderingEngineTemplate> allRets = 
          new HashSet<RenderingEngineTemplate>(this.getForm().getRenderingEngineTemplates());
       final List<RegenerateResult> result = new LinkedList<RegenerateResult>();

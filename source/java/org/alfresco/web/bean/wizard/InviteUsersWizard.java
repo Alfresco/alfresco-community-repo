@@ -494,7 +494,8 @@ public abstract class InviteUsersWizard extends BaseWizardBean
          String personName = Application.getCurrentUser(context).getFullName(this.nodeService);
          String msgInvitedTo = Application.getMessage(context, MSG_INVITED_TO);
          Node node = this.getNode();
-         String path = this.nodeService.getPath(node.getNodeRef()).toDisplayPath(this.nodeService);
+         String path = this.nodeService.getPath(node.getNodeRef()).toDisplayPath(
+                 this.nodeService, this.permissionService);
          buf.append(MessageFormat.format(msgInvitedTo, new Object[] {
                path + '/' + node.getName(),
                personName}) );

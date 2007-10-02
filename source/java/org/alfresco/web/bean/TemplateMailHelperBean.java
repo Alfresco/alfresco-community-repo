@@ -39,6 +39,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.BaseTemplateContentServlet;
+import org.alfresco.web.app.servlet.BaseTemplateContentServlet.URLHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.repo.component.template.DefaultModelHelper;
@@ -123,6 +125,9 @@ public class TemplateMailHelperBean
                   services, Application.getCurrentUser(fc), templateRef);
             model.put("role", roleText);
             model.put("space", node);
+            // object to allow client urls to be generated in emails
+            model.put("url", new BaseTemplateContentServlet.URLHelper(
+              fc.getExternalContext().getRequestContextPath()));
             
             body = services.getTemplateService().processTemplate("freemarker", templateRef.toString(), model);
          }

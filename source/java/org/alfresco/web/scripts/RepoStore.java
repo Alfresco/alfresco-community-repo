@@ -50,6 +50,7 @@ import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.springframework.beans.BeansException;
@@ -82,6 +83,7 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
     protected ContentService contentService;
     protected FileFolderService fileService;
     protected NamespaceService namespaceService;
+    protected PermissionService permissionService;
 
     
     /**
@@ -132,6 +134,14 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
         this.namespaceService = namespaceService;
     }
     
+    /**
+     * Sets the permission service
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+
     /**
      * Sets whether the repo store must exist
      * 
@@ -248,7 +258,8 @@ public class RepoStore implements WebScriptStore, ApplicationContextAware, Appli
      */
     protected String getPath(NodeRef nodeRef)
     {
-        return nodeService.getPath(nodeRef).toDisplayPath(nodeService) + "/" + nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        return nodeService.getPath(nodeRef).toDisplayPath(nodeService, permissionService) +
+               "/" + nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
     }
     
     /**

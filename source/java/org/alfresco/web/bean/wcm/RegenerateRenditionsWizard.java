@@ -494,7 +494,8 @@ public class RegenerateRenditionsWizard
          query.append("+ASPECT:\"" + WCMAppModel.ASPECT_RENDITION + "\"");
       }
 
-      if (this.regenerateScope.equals(REGENERATE_SCOPE_FORM))
+      if (this.regenerateScope.equals(REGENERATE_SCOPE_FORM) && 
+          this.selectedForms != null)
       {
          query.append(" +(");
          for (int i = 0; i < this.selectedForms.length; i++)
@@ -508,7 +509,9 @@ public class RegenerateRenditionsWizard
          }
          query.append(") ");
       }
-      if (this.regenerateScope.equals(REGENERATE_SCOPE_RENDERING_ENGINE_TEMPLATE))
+      
+      if (this.regenerateScope.equals(REGENERATE_SCOPE_RENDERING_ENGINE_TEMPLATE) &&
+          this.selectedRenderingEngineTemplates != null)
       {
          query.append(" +(");
          for (int i = 0; i < this.selectedRenderingEngineTemplates.length; i++)

@@ -391,7 +391,8 @@ final class Column
     */
    public Column(Column copy)
    {
-      this.dashlets = (List<DashletDefinition>)((ArrayList<DashletDefinition>)copy.dashlets).clone();
+      this.dashlets = new ArrayList<DashletDefinition>(copy.dashlets.size());
+      this.dashlets.addAll(copy.dashlets);
    }
    
    public void addDashlet(DashletDefinition dashlet)

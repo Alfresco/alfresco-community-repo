@@ -35,6 +35,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -100,7 +101,9 @@ public class PageRendererServlet extends WebScriptServlet
    private static Log logger = LogFactory.getLog(PageRendererServlet.class);
    
    private static final String MIMETYPE_HTML = "text/html;charset=utf-8";
-
+   private static final String PARAM_COMPONENT_ID  = "_alfId";
+   private static final String PARAM_COMPONENT_URL = "_alfUrl";
+   
    private PageTemplateProcessor templateProcessor;
    private WebScriptTemplateLoader webscriptTemplateLoader;
    private Map<String, PageDefinition> defaultPageDefCache = null;
@@ -194,11 +197,24 @@ public class PageRendererServlet extends WebScriptServlet
          authenticate(getServletContext(), req, res);
          
          // set the web app context path for the template loader to use when rebuilding urls
-         LoaderPageContext context = new LoaderPageContext();
-         context.Path = req.getContextPath();
+         PageRendererContext context = new PageRendererContext();
+         context.RequestURI = uri;
+         context.RequestPath = req.getContextPath();
          context.PageDef = pageDefinition;
          context.AVMStore = store;
          context.Theme = theme;
+         
+         // look for clicked component id+url
+         // TODO: keep state of page? i.e. multiple webscripts can be hosted and clicked...
+         String compId = req.getParameter(PARAM_COMPONENT_ID);
+         if (compId != null)
+         {
+            String compUrl = req.getParameter(PARAM_COMPONENT_URL);
+            if (logger.isDebugEnabled())
+               logger.debug("Clicked component found: " + compId + " URL: " + compUrl);
+            context.ComponentId = compId;
+            context.ComponentUrl = compUrl;
+         }
          pageDefinition.Theme = theme;
          this.webscriptTemplateLoader.setContext(context);
          
@@ -257,6 +273,7 @@ public class PageRendererServlet extends WebScriptServlet
    {
       // Lookup (and cache) config for default page-definition file in root
       PageDefinition defaultPageDef = defaultPageDefCache.get(store);
+      // TODO: check last modified date (use auto-timeout cache object!)
       if (defaultPageDef == null)
       {
          // read default config for the site and cache the result
@@ -436,21 +453,19 @@ public class PageRendererServlet extends WebScriptServlet
     */
    private class PageRendererWebScriptRuntime extends WebScriptRuntime
    {
+      private PageComponent component;
+      private PageRendererContext context;
       private String webScript;
       private String scriptUrl;
       private String encoding;
-      private String avmStore;
-      private String theme;
-      private PageComponent component;
       private ByteArrayOutputStream baOut = null;
       
       PageRendererWebScriptRuntime(
-            PageComponent component, String avmStore, String theme, String webScript, String executeUrl, String encoding)
+            PageComponent component, PageRendererContext context, String webScript, String executeUrl, String encoding)
       {
          super(registry, serviceRegistry);
          this.component = component;
-         this.avmStore = avmStore;
-         this.theme = theme;
+         this.context = context;
          this.webScript = webScript;
          this.scriptUrl = executeUrl;
          this.encoding = encoding;
@@ -470,9 +485,9 @@ public class PageRendererServlet extends WebScriptServlet
          // set the component properties as the additional request attributes 
          Map<String, String> attributes = new HashMap<String, String>();
          attributes.putAll(component.Properties);
-         // add the well known attribute - such as avm store
-         attributes.put("store", this.avmStore);
-         attributes.put("theme", this.theme);
+         // add the "well known" attributes - such as avm store
+         attributes.put("store", this.context.AVMStore);
+         attributes.put("theme", this.context.Theme);
          return new WebScriptPageRendererRequest(scriptUrl, match, attributes);
       }
 
@@ -486,7 +501,7 @@ public class PageRendererServlet extends WebScriptServlet
             this.baOut = new ByteArrayOutputStream(4096);
             BufferedWriter wrOut = new BufferedWriter(
                   encoding == null ? new OutputStreamWriter(baOut) : new OutputStreamWriter(baOut, encoding));
-            return new WebScriptPageRendererResponse(wrOut, baOut);
+            return new WebScriptPageRendererResponse(context, component.Id, wrOut, baOut);
          }
          catch (UnsupportedEncodingException err)
          {
@@ -584,19 +599,31 @@ public class PageRendererServlet extends WebScriptServlet
    {
       private Writer outWriter;
       private OutputStream outStream;
+      private PageRendererContext context;
+      private String componentId;
       
-      public WebScriptPageRendererResponse(Writer outWriter, OutputStream outStream)
+      public WebScriptPageRendererResponse(
+            PageRendererContext context, String componentId, Writer outWriter, OutputStream outStream)
       {
+         this.context = context;
+         this.componentId = componentId;
          this.outWriter = outWriter;
          this.outStream = outStream;
       }
       
       public String encodeScriptUrl(String url)
       {
-         // TODO: some kind of encoding required here - need to allow webscripts to call themselves
-         //       on this page - so need the servlet PageRenderer URL plus args to identify the webscript
-         //       and it's new url - similar to the JSF or Portlet runtimes
-         return url;
+         // encode to allow presentation tier webscripts to call themselves non this page
+         // needs the servlet URL plus args to identify the webscript and it's new url
+         try
+         {
+            return context.RequestPath + context.RequestURI + "?" + PARAM_COMPONENT_URL + "=" +
+                   URLEncoder.encode(url, "UTF-8") + "&" + PARAM_COMPONENT_ID + "=" + componentId;
+         }
+         catch (UnsupportedEncodingException err)
+         {
+            throw new AlfrescoRuntimeException("Unable to encode UTF-8 format URL: " + url);
+         }
       }
 
       public String getEncodeScriptUrlFunction(String name)
@@ -642,7 +669,7 @@ public class PageRendererServlet extends WebScriptServlet
     */
    private class WebScriptTemplateLoader implements TemplateLoader
    {
-      private ThreadLocal<LoaderPageContext> context = new ThreadLocal<LoaderPageContext>();
+      private ThreadLocal<PageRendererContext> context = new ThreadLocal<PageRendererContext>();
       private long last = 0L;
       
       public void closeTemplateSource(Object templateSource) throws IOException
@@ -688,11 +715,11 @@ public class PageRendererServlet extends WebScriptServlet
          String key = templateSource.toString();
          
          // lookup against component def config
-         LoaderPageContext context = this.context.get();
+         PageRendererContext context = this.context.get();
          PageComponent component = context.PageDef.Components.get(key);
          if (component == null)
          {
-            // TODO: if the lookup fails, exception or just ignore render and log...?
+            // TODO: if the lookup fails, throw exception or just ignore the render and log...?
             throw new AlfrescoRuntimeException("Failed to find component identified by key '" + key +
                   "' found in template: " + context.PageDef.TemplateName);
          }
@@ -709,16 +736,24 @@ public class PageRendererServlet extends WebScriptServlet
          }
          
          // Execute the webscript and return a Reader to the textual content
-         String executeUrl = context.Path + component.Url;
+         String executeUrl;
+         if (component.Id.equals(context.ComponentId) == false)
+         {
+            executeUrl = context.RequestPath + component.Url;
+         }
+         else
+         {
+            // found the component url that was passed in on the servlet request
+            executeUrl = context.ComponentUrl;
+         }
          PageRendererWebScriptRuntime runtime = new PageRendererWebScriptRuntime(
-               component, context.AVMStore, context.Theme, webscript, executeUrl, encoding);
+               component, context, webscript, executeUrl, encoding);
          runtime.executeScript();
          
          // Return a reader from the runtime that executed the webscript - this effectively
          // returns the result as a "template" source to freemarker. Generally this will not itself
-         // be a template but it can contain additional freemarker syntax if required. The downside
-         // to this approach is that the result of the webscript is parsed again by freemarker - this
-         // should be checked for performance issues.
+         // be a template but it can contain additional freemarker syntax if required - it is up to
+         // the template writer to add the parse=[true|false] attribute as appropriate to the #include
          return runtime.getResponseReader();
       }
       
@@ -727,21 +762,24 @@ public class PageRendererServlet extends WebScriptServlet
        * to allow multiple servlet threads to execute using the same TemplateLoader (there can only be one)
        * but with a different context for each thread.
        */
-      public void setContext(LoaderPageContext context)
+      public void setContext(PageRendererContext context)
       {
          this.context.set(context);
       }
    }
    
    /**
-    * Simple structure class representing the current page context for the template loader
+    * Simple structure class representing the current page request context
     */
-   private static class LoaderPageContext
+   private static class PageRendererContext
    {
       PageDefinition PageDef;
-      String Path;
+      String RequestURI;
+      String RequestPath;
       String AVMStore;
       String Theme;
+      String ComponentId;
+      String ComponentUrl;
    }
    
    /**

@@ -83,7 +83,17 @@ public final class ScriptUrlMethod implements TemplateMethodModelEx
                 StringBuffer buf = new StringBuffer(128);
                 buf.append(prefixServiceUrl ? req.getServicePath() : "");
                 buf.append(arg);
-                buf.append(arg.length() != 0 ? "&" : "");
+                if (arg.length() != 0)
+                {
+                   if (arg.indexOf('?') == -1)
+                   {
+                      buf.append('?');
+                   }
+                   else
+                   {
+                      buf.append('&');
+                   }
+                }
                 buf.append("guest=" + (req.isGuest() ? "true" : ""));
                 if (req.getFormatStyle() == FormatStyle.argument)
                 {

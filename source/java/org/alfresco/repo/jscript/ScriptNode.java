@@ -704,7 +704,8 @@ public class ScriptNode implements Serializable, Scopeable
     {
         if (displayPath == null)
         {
-            displayPath = this.nodeService.getPath(this.nodeRef).toDisplayPath(this.nodeService);
+            displayPath = this.nodeService.getPath(this.nodeRef).toDisplayPath(
+                    this.nodeService, this.services.getPermissionService());
         }
         
         return displayPath;

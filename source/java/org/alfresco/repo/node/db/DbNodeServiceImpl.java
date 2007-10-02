@@ -832,6 +832,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
         // Invoke policy behaviours
         invokeOnCreateChildAssociation(assocRef, false);
+
+        // update the node status
+        nodeDaoService.recordChangeId(childNodeRef);
         
         return assoc.getChildAssocRef();
     }
@@ -872,6 +875,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             deleteNode(primaryAssocRef.getChildRef());
         }
+        else
+        {
+            // The cascade delete will update the node status, but just a plain assoc deletion will not
+            // Update the node status
+            nodeDaoService.recordChangeId(childRef);
+        }
 
         // done
     }
@@ -888,6 +897,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         if (deleted)
         {
             invokeOnDeleteChildAssociation(childAssocRef);
+            // Update the node status
+            nodeDaoService.recordChangeId(childNode.getNodeRef());
         }
         // Done
         return deleted;
@@ -914,6 +925,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Delete the secondary association
         nodeDaoService.deleteChildAssoc(assoc, false);
         invokeOnDeleteChildAssociation(childAssocRef);
+        // Update the node status
+        nodeDaoService.recordChangeId(childNode.getNodeRef());
         // Done
         return true;
     }

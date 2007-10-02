@@ -100,6 +100,11 @@ public class IndexRemoteTransactionTracker extends AbstractReindexComponent
                 long txnId = txn.getId();
                 reindexTransaction(txnId);
                 currentTxnId = txnId;
+                // break out if the VM is shutting down
+                if (isShuttingDown())
+                {
+                    break;
+                }
             }
         }
     }

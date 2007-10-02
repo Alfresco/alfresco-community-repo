@@ -7,80 +7,34 @@
     If you include this file, please ensure that you review the sample
     beans contained here.
     -->
-	
-   <bean id="backupContentStore"
-         class="org.alfresco.repo.content.filestore.FileContentStore">
+
+   <bean id="localDriveContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
       <constructor-arg>
-         <value>${dir.contentstore}/../backups/alfresco</value>
+         <value>/var/alfresco/content-store</value>
       </constructor-arg>
    </bean>
-
-   <bean id="contentStoreReplicator"
-         class="org.alfresco.repo.content.replication.ContentStoreReplicator"
-         depends-on="fileContentStore, backupContentStore" >
-      <!-- content source -->
-      <property name="sourceStore">
-          <ref bean="fileContentStore" />
-      </property>
-      <!-- content target -->
-      <property name="targetStore">
-          <ref bean="backupContentStore" />
-      </property>
+   <bean id="networkContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
+      <constructor-arg>
+         <value>/share/alfresco/content-store</value>
+      </constructor-arg>
    </bean>
-
-   <bean id="contentStoreBackupTrigger" class="org.alfresco.util.CronTriggerBean">
-      <property name="jobDetail">
-         <bean class="org.springframework.scheduling.quartz.JobDetailBean">
-            <property name="jobClass">
-               <value>org.alfresco.repo.content.replication.ContentStoreReplicator$ContentStoreReplicatorJob</value>
-            </property>
-            <property name="jobDataAsMap">
-               <map>
-                  <entry key="contentStoreReplicator">
-                     <ref bean="contentStoreReplicator" />
-                  </entry>
-               </map>
-            </property>
-         </bean>
-      </property>
-      <property name="scheduler">
-         <ref bean="schedulerFactory" />
-      </property>
-      <!-- trigger at 3am each day -->
-      <property name="cronExpression">
-         <value>0 0 03 * * ?</value>
-      </property>
-   </bean>
-
-   <bean id="replicatingContentStore"
-         class="org.alfresco.repo.content.replication.ReplicatingContentStore" >
-      <!-- the preferred store for reads and writes -->
+   <bean id="fileContentStore" class="org.alfresco.repo.content.replication.ReplicatingContentStore" >
       <property name="primaryStore">
-         <ref bean="fileContentStore" />
+         <ref bean="localDriveContentStore" />
       </property>
-      <!-- example of possible secondary store configuration -->
       <property name="secondaryStores">
          <list>
-            <ref bean="archiveStoreA" />
-            <ref bean="archiveStoreB" />
+            <ref bean="networkContentStore" />
          </list>
       </property>
-      <!-- enable content missing from the primary store to be pulled in from the secondary stores -->
       <property name="inbound">
-         <value>false</value>
+         <value>true</value>
       </property>
-      <!-- enable replication from the primary to the secondary stores -->
       <property name="outbound">
-         <value>false</value>
+         <value>true</value>
       </property>
-      <!-- this is required if outbound replication is active, otherwise not -->
       <property name="retryingTransactionHelper">
          <ref bean="retryingTransactionHelper"/>
       </property>
-      <!-- set this to force outbound replication to be asynchronous -->
-      <property name="outboundThreadPoolExecutor">
-         <ref bean="threadPoolExecutor" />
-      </property>
    </bean>
-
 </beans>

@@ -73,7 +73,7 @@
         
         -->
         <property name="userIdAttributeName">
-            <value>${ldap.synchronisation.userIdAttributeName]</value>
+            <value>${ldap.synchronisation.userIdAttributeName}</value>
         </property>
         
         <!-- Services -->

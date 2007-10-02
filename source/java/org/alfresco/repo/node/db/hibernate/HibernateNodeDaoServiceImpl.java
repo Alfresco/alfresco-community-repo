@@ -1069,7 +1069,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 if (parentAssoc == null)
                 {
                     // The cache is out of date, so just repopulate it
-                    parentAssoc = null;
+                    parentAssocs = null;
                     break;
                 }
                 else

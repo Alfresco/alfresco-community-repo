@@ -35,7 +35,6 @@ import java.util.Set;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -259,14 +258,8 @@ public abstract class BaseContentNode implements TemplateContent
     {
         if (displayPath == null)
         {
-            try
-            {
-                displayPath = this.services.getNodeService().getPath(getNodeRef()).toDisplayPath(this.services.getNodeService());
-            }
-            catch (AccessDeniedException err)
-            {
-                displayPath = "";
-            }
+            displayPath = this.services.getNodeService().getPath(getNodeRef()).toDisplayPath(
+                    services.getNodeService(), services.getPermissionService());
         }
         
         return displayPath;

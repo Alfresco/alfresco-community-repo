@@ -30,6 +30,8 @@ import java.util.LinkedList;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
@@ -193,7 +195,7 @@ public final class Path implements Iterable<Path.Element>, Serializable
      * 
      * @return human readable form of the Path excluding the final element
      */
-    public String toDisplayPath(NodeService nodeService)
+    public String toDisplayPath(NodeService nodeService, PermissionService permissionService)
     {
         StringBuilder buf = new StringBuilder(64);
         
@@ -207,22 +209,16 @@ public final class Path implements Iterable<Path.Element>, Serializable
                 if (elementRef.getParentRef() != null)
                 {
                     Serializable nameProp = null;
-                    try
+                    if (permissionService.hasPermission(
+                            elementRef.getChildRef(), PermissionService.READ) == AccessStatus.ALLOWED)
                     {
                         nameProp = nodeService.getProperty(elementRef.getChildRef(), ContentModel.PROP_NAME);
-                    }
-                    catch (AccessDeniedException err)
-                    {
-                        // unable to access this property on the path - so we cannot display it's name
-                    }
-                    if (nameProp != null)
-                    {
-                        // use the name property if we find it
+                        // use the name property if we are allowed access to it
                         elementString = nameProp.toString();
                     }
                     else
                     {
-                        // revert to using QName if not found
+                        // revert to using QName if not
                         elementString = elementRef.getQName().getLocalName();
                     }
                 }

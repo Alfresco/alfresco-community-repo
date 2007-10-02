@@ -19,7 +19,7 @@
     </bean>
     
     <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.ChainingAuthenticationComponentImpl">
-		<property name="authenticationComponentss">
+		<property name="authenticationComponents">
             <list>
                 <ref bean="authenticationComponentImplJAAS"/>
             </list>

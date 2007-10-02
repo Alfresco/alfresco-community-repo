@@ -27,7 +27,6 @@ package org.alfresco.web.ui.repo.tag;
 import java.io.IOException;
 import java.io.Writer;
 
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
@@ -80,23 +79,26 @@ public class PageTag extends TagSupport
    private final static String SF_LOGO   = "/images/logo/sflogo.php.png";
    private final static String ALF_TEXT  = "Alfresco Community";
    private final static String ALF_COPY  = "Supplied free of charge with " +
-        "<a class=footer href='http://www.alfresco.com/services/support/communityterms/#support'>no support</a>, " +
-        "<a class=footer href='http://www.alfresco.com/services/support/communityterms/#certification'>no certification</a>, " +
-        "<a class=footer href='http://www.alfresco.com/services/support/communityterms/#maintenance'>no maintenance</a>, " +
-        "<a class=footer href='http://www.alfresco.com/services/support/communityterms/#warranty'>no warranty</a> and " +
-        "<a class=footer href='http://www.alfresco.com/services/support/communityterms/#indemnity'>no indemnity</a> by " +
-        "<a class=footer href='http://www.alfresco.com'>Alfresco</a> or its " +
-        "<a class=footer href='http://www.alfresco.com/partners/'>Certified Partners</a>. " +
-        "<a class=footer href='http://www.alfresco.com/services/support/'>Click here for support</a>. " +
+        "<a class='footer' href='http://www.alfresco.com/services/support/communityterms/#support'>no support</a>, " +
+        "<a class='footer' href='http://www.alfresco.com/services/support/communityterms/#certification'>no certification</a>, " +
+        "<a class='footer' href='http://www.alfresco.com/services/support/communityterms/#maintenance'>no maintenance</a>, " +
+        "<a class='footer' href='http://www.alfresco.com/services/support/communityterms/#warranty'>no warranty</a> and " +
+        "<a class='footer' href='http://www.alfresco.com/services/support/communityterms/#indemnity'>no indemnity</a> by " +
+        "<a class='footer' href='http://www.alfresco.com'>Alfresco</a> or its " +
+        "<a class='footer' href='http://www.alfresco.com/partners/'>Certified Partners</a>. " +
+        "<a class='footer' href='http://www.alfresco.com/services/support/'>Click here for support</a>. " +
         "Alfresco Software Inc. &copy; 2005-2007 All rights reserved.";
    
-   private static Log logger = LogFactory.getLog(PageTag.class);
+   private final static Log logger = LogFactory.getLog(PageTag.class);
    private static String alfresco = null;
    private static String loginPage = null;
    
    private long startTime = 0;
    private String title;
    private String titleId;
+   private String doctypeRootElement;
+   private String doctypePublic;
+   private String doctypeSystem;
    
    /**
     * @return The title for the page
@@ -129,12 +131,45 @@ public class PageTag extends TagSupport
    {
       this.titleId = titleId;
    }
+
+   public String getDoctypeRootElement()
+   {
+      return this.doctypeRootElement;
+   }
+
+   public void setDoctypeRootElement(final String doctypeRootElement)
+   {
+      this.doctypeRootElement = doctypeRootElement;
+   }
+   
+   public String getDoctypePublic()
+   {
+      return this.doctypePublic;
+   }
+
+   public void setDoctypePublic(final String doctypePublic)
+   {
+      this.doctypePublic = doctypePublic;
+   }
+
+   public String getDoctypeSystem()
+   {
+      return this.doctypeSystem;
+   }
+   
+   public void setDoctypeSystem(final String doctypeSystem)
+   {
+      this.doctypeSystem = doctypeSystem;
+   }
    
    public void release()
    {
       super.release();
-      title = null;
-      titleId = null;
+      this.title = null;
+      this.titleId = null;
+      this.doctypeRootElement = null;
+      this.doctypeSystem = null;
+      this.doctypePublic = null;
    }
 
    /**
@@ -152,6 +187,18 @@ public class PageTag extends TagSupport
          
          if (!Application.inPortalServer())
          {
+            if (this.getDoctypeRootElement() != null &&
+                this.getDoctypePublic() != null)
+            {
+               out.write("<!DOCTYPE ");
+               out.write(this.getDoctypeRootElement().toLowerCase());
+               out.write(" PUBLIC \"" + this.getDoctypePublic() + "\"");
+               if (this.getDoctypeSystem() != null)
+               {
+                  out.write(" \"" + this.getDoctypeSystem() + "\"");
+               }
+               out.write(">\n");
+            }
             out.write("<html><head><title>");
             if (this.titleId != null && this.titleId.length() != 0)
             {
@@ -238,12 +285,12 @@ public class PageTag extends TagSupport
    
    private String getLoginPage()
    {
-      if (loginPage == null)
+      if (PageTag.loginPage == null)
       {
-         loginPage = Application.getLoginPage(pageContext.getServletContext());
+         PageTag.loginPage = Application.getLoginPage(pageContext.getServletContext());
       }
       
-      return loginPage;
+      return PageTag.loginPage;
    }
 
 /**

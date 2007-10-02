@@ -71,12 +71,13 @@ public class XFormsProcessor
       "/scripts/ajax/dojo/" + (LOGGER.isDebugEnabled() 
                                ? "dojo.js.uncompressed.js" 
                                : "dojo.js"),
+      "/scripts/ajax/mootools.v1.11.js",
       "/scripts/ajax/common.js",
       "/scripts/ajax/ajax_helper.js",
       "/scripts/ajax/tiny_mce_wcm_extensions.js",
       "/scripts/ajax/xforms.js",
       "/scripts/ajax/file_picker_widget.js",
-      "/scripts/upload_helper.js",
+      "/scripts/upload_helper.js"
    };
 
    /** Localized strings needed by the xforms client. */
@@ -168,8 +169,14 @@ public class XFormsProcessor
       // a script with config information and globals.
       e = result.createElement("script");
       e.setAttribute("type", "text/javascript");
-      final StringBuilder js = new StringBuilder("\ndjConfig = {isDebug:" + LOGGER.isDebugEnabled() + "};\n");
-      final String[] jsNamespacesObjects = { "alfresco", "alfresco.constants", "alfresco.xforms", "alfresco.xforms.constants" };
+      final StringBuilder js = new StringBuilder("\n");
+      final String[] jsNamespacesObjects = 
+      {
+         "alfresco", 
+         "alfresco.constants", 
+         "alfresco.xforms", 
+         "alfresco.xforms.constants" 
+      };
       for (final String jsNamespace : jsNamespacesObjects)
       {
          js.append(jsNamespace).
@@ -179,6 +186,9 @@ public class XFormsProcessor
             append(jsNamespace).
             append(";\n");
       }
+      js.append("alfresco.constants.DEBUG = ").
+         append(LOGGER.isDebugEnabled()).
+         append(";\n");
       js.append("alfresco.constants.WEBAPP_CONTEXT = '").
          append(JavaScriptUtils.javaScriptEscape(contextPath)).
          append("';\n");
@@ -255,6 +265,10 @@ public class XFormsProcessor
       // include all our scripts, order is significant
       for (final String script : JS_SCRIPTS)
       {
+         if (script == null)
+         {
+            continue;
+         }
          e = result.createElement("script");
          e.setAttribute("type", "text/javascript");
          e.setAttribute("src", contextPath + script);

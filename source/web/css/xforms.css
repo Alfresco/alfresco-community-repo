@@ -1,7 +1,7 @@
 .xformsItem
 {
 /*	border: 1px dashed blue; */
-	margin-right: 2px;
+/*	margin-right: 2px; */
         clear: both;
 }
 
@@ -9,9 +9,17 @@
 {
         vertical-align: middle;
         margin: 0px 5px;
-        left: 0px;
-        position: relative;
-        top: 0px;
+        width: 9px;
+        height: 9px;
+}
+
+.xformsItemLabelContainer
+{
+        height: 100%;
+        line-height: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        vertical-align: middle;
 }
 
 .xformsItemLabelSubmitError
@@ -34,8 +42,6 @@
 	top: 0px;
 	left: 0px;
 	width: 100%;
-/*	margin-bottom: 10px; */
-/* border: 1px solid #67a4e6;  */
 	border: 1px solid #d2d2d9; 
         clear: both;
 }
@@ -56,10 +62,8 @@
 	height: 20px;
 	line-height: 20px;
 	width: 100%;
-/*	background-color: #cddbe8; */
 	background-color: #ececec; 
 	font-weight: bold;
-/*	border-bottom: 1px solid #67a4e6; */
 	border-bottom: 1px solid #d2d2d9; 
 }
 
@@ -105,11 +109,13 @@
         width: 100%;
         height: 100%;
         background-color: #d9d9de;
+        border: 2px inset black;
         color: black;
         z-index: 100;
         font-weight: bolder;
         font-size: 16px;
         text-align: center;
+        overflow: hidden;
 }        
 
 .xformsRepeat
@@ -141,6 +147,7 @@
 	border: 1px solid #67a4e6; 
 	height: 20px;
 	line-height: 20px;
+        margin: 0px auto;
 }
 
 .xformsRowEven

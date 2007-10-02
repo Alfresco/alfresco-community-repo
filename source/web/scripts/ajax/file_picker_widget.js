@@ -247,27 +247,25 @@ _selectPathInput_changeHandler: function(event)
 
 _navigateToNode: function(path)
 {
-  var req = alfresco.AjaxHelper.createRequest(this,
-                                              "FilePickerBean.getFilePickerData",
-                                              {},
-                                              function(type, data, evt)
-                                              {
-                                                this.target._showPicker(data.documentElement);
-                                              });
-  req.content.currentPath = path;
+  var params = { currentPath:  path};
   if (this.selectableTypes)
   {
-    req.content.selectableTypes = this.selectableTypes;
+    params.selectableTypes = this.selectableTypes;
   }
   if (this.filterMimetypes)
   {
-    req.content.filterMimetypes = this.filterMimetypes;
+    params.filterMimetypes = this.filterMimetypes;
   }
-  alfresco.AjaxHelper.sendRequest(req);
+
+  alfresco.AjaxHelper.sendRequest("FilePickerBean.getFilePickerData",
+                                  params,
+                                  true,
+                                  this._showPicker.bindAsEventListener(this));
 },
 
 _showPicker: function(data)
 {
+  data = data.documentElement;
   while (this.node.hasChildNodes() &&
          this.node.lastChild != this.statusDiv)
   {
@@ -444,7 +442,7 @@ _showPicker: function(data)
   var childNodes = data.getElementsByTagName("child-node");
   for (var i = 0; i < childNodes.length; i++)
   {
-    if (childNodes[i].nodeType != dojo.dom.ELEMENT_NODE)
+    if (childNodes[i].nodeType != document.ELEMENT_NODE)
     {
       continue;
     }

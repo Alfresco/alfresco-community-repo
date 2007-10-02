@@ -28,8 +28,6 @@
 // AJAX helper
 ////////////////////////////////////////////////////////////////////////////////
 
-djConfig.bindEncoding = "UTF-8";
-
 alfresco = typeof alfresco == "undefined" ? {} : alfresco;
 alfresco.constants = typeof alfresco.constants == "undefined" ? {} : alfresco.constants;
 alfresco.constants.AJAX_LOADER_DIV_ID = "alfresco-ajax-loader";
@@ -45,62 +43,23 @@ alfresco.AjaxHelper._requests = [];
 alfresco.AjaxHelper._requestCounter = 0;
 
 /** Creates an ajax request object. */
-alfresco.AjaxHelper.createRequest = function(target, serverMethod, methodArgs, load, error)
+alfresco.AjaxHelper.sendRequest = function(serverMethod, methodArgs, asynchronous, success, failure)
 {
-  var result = new dojo.io.Request(alfresco.constants.WEBAPP_CONTEXT + 
-                                   "/ajax/invoke/" + serverMethod, 
-                                   "text/xml");
-  dojo.io.XMLHTTPTransport.useCache = false;
-  dojo.io.XMLHTTPTransport.preventCache = true;
-  result.target = target;
-  methodArgs._alfresco_AjaxHelper_request_counter = alfresco.AjaxHelper._requestCounter++;
+  var result = new XHR({ method: "post", encoding: "utf-8", async: asynchronous });
+  sucess = success || Class.empty;
+  failure = failure || Class.empty;
+  result._alfresco_AjaxHelper_request_counter = alfresco.AjaxHelper._requestCounter++;
+  result.addEvent("onRequest", alfresco.AjaxHelper._onRequestHandler.bindAsEventListener(result));
+  result.addEvent("onSuccess", alfresco.AjaxHelper._loadHandler.bindAsEventListener(result));
+  result.addEvent("onSuccess", function(text, xml) { success(xml); });
+  result.addEvent("onFailure", alfresco.AjaxHelper._loadHandler.bindAsEventListener(result));
+  result.addEvent("onFailure", alfresco.AjaxHelper._errorHandler.bindAsEventListener(result));
+  result.addEvent("onFailure", function(text, xml) { failure(xml); });
 
-  result.content = methodArgs;
-  result.method = "POST";
-  result.encoding = "UTF-8";
-  result.preventCache = true;
-  result.useCache = false;
-  result._baseLoadHandler = load;
-  result.load = function(type, data, event, kwArgs) 
-  { 
-    // escape from dojo's watchInFlight errors so we get real javascript errors thrown
-    setTimeout(function() { result._baseLoadHandler(type, data, event, kwArgs); }, 10);
-  }
-  dojo.event.connect(result, "load", function(type, data, evt)
-                     {
-                       alfresco.AjaxHelper._loadHandler(result);
-                     });
-  result.error = error || function(type, e, impl)
-    {
-      dojo.debug("error [type:" + type + 
-                 ", number: " + e.number +
-                 ", status: " + impl.status +
-                 ", responseText: " + impl.responseText +
-                 ", readyState : " + impl.readyState +
-                 ", message: '" + e.message + 
-                 "'] while invoking [url: " + this.url + 
-                 ", content: " + methodArgs + "]");
-      if (impl.status == 401)
-      {
-        document.getElementById("logout").onclick();
-      }
-      else
-      {
-        if (impl.status != 0)
-        {
-          _show_error(document.createTextNode(e.message));
-        }
-        alfresco.AjaxHelper._loadHandler(this);
-      }
-    };
+  methodArgs = alfresco.AjaxHelper.toQueryString(methodArgs);
+  alfresco.log("sending request to " + serverMethod + "(" + methodArgs + ")");
+  result.send(alfresco.constants.WEBAPP_CONTEXT + "/ajax/invoke/" + serverMethod, methodArgs);
   return result;
-}
-
-/** Sends an ajax request object. */
-alfresco.AjaxHelper.sendRequest = function(req)
-{
-  alfresco.AjaxHelper._sendHandler(req);
-  dojo.io.queueBind(req);
 }
 
 /** 
@@ -108,16 +67,17 @@ alfresco.AjaxHelper.sendRequest = function(req)
  */
 alfresco.AjaxHelper._getLoaderElement = function()
 {
-  var result = document.getElementById(alfresco.constants.AJAX_LOADER_DIV_ID);
-  if (result)
+  var result = $(alfresco.constants.AJAX_LOADER_DIV_ID);
+  if (!result)
   {
-    return result;
+    result = new Element("div", 
+                         {
+                           "id": alfresco.constants.AJAX_LOADER_DIV_ID,
+                           "class": "xformsAjaxLoader"
+                         });
+    result.setOpacity(0);
+    document.body.appendChild(result);
   }
-  result = document.createElement("div");
-  result.setAttribute("id", alfresco.constants.AJAX_LOADER_DIV_ID);
-  dojo.html.setClass(result, "xformsAjaxLoader");
-  dojo.html.hide(result);
-  document.body.appendChild(result);
   return result;
 }
 
@@ -125,39 +85,29 @@ alfresco.AjaxHelper._getLoaderElement = function()
 alfresco.AjaxHelper._updateLoaderDisplay = function()
 {
   var ajaxLoader = alfresco.AjaxHelper._getLoaderElement();
-  ajaxLoader.innerHTML = (alfresco.AjaxHelper._requests.length == 0
-                          ? alfresco.resources["idle"]
-                          : (alfresco.resources["loading"] + 
-                             (alfresco.AjaxHelper._requests.length > 1
-                              ? " (" + alfresco.AjaxHelper._requests.length + ")"
-                              : "...")));
-  if (djConfig.isDebug)
-  {
-    dojo.debug(ajaxLoader.innerHTML);
-  }
-  if (/* djConfig.isDebug && */ alfresco.AjaxHelper._requests.length != 0)
-  {
-    dojo.html.show(ajaxLoader);
-  }
-  else
-  {
-    dojo.html.hide(ajaxLoader);
-  }
+  ajaxLoader.setText(alfresco.AjaxHelper._requests.length == 0
+                     ? alfresco.resources["idle"]
+                     : (alfresco.resources["loading"] + 
+                        (alfresco.AjaxHelper._requests.length > 1
+                         ? " (" + alfresco.AjaxHelper._requests.length + ")"
+                         : "...")));
+  alfresco.log(ajaxLoader.getText());
+  ajaxLoader.setOpacity(alfresco.AjaxHelper._requests.length != 0 ? 1 : 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // ajax event handlers
 ////////////////////////////////////////////////////////////////////////////////
 
-alfresco.AjaxHelper._sendHandler = function(req)
+alfresco.AjaxHelper._onRequestHandler = function()
 {
-  alfresco.AjaxHelper._requests.push(req);
+  alfresco.AjaxHelper._requests.push(this._alfresco_AjaxHelper_request_counter);
   alfresco.AjaxHelper._updateLoaderDisplay();
 }
 
-alfresco.AjaxHelper._loadHandler = function(req)
+alfresco.AjaxHelper._loadHandler = function()
 {
-  var index = alfresco.AjaxHelper._requests.indexOf(req);
+  var index = alfresco.AjaxHelper._requests.indexOf(this._alfresco_AjaxHelper_request_counter);
   if (index != -1)
   {
     alfresco.AjaxHelper._requests.splice(index, 1);
@@ -167,10 +117,46 @@ alfresco.AjaxHelper._loadHandler = function(req)
     var urls = [];
     for (var i = 0; i < alfresco.AjaxHelper._requests.length; i++)
     {
-      urls.push(alfresco.AjaxHelper._requests[i].url);
+      urls.push(alfresco.AjaxHelper._requests[i]);
     }
     throw new Error("unable to find " + req.url + 
                     " in [" + urls.join(", ") + "]");
   }
   alfresco.AjaxHelper._updateLoaderDisplay();
 }
+
+alfresco.AjaxHelper._errorHandler = function(transport)
+{
+  alfresco.log("error status = " + transport.status +
+               " response text = " + transport.responseText);
+  if (transport.status == 401)
+  {
+    document.getElementById("logout").onclick();
+  }
+  else if (transport.status != 0)
+  {
+    var d = document.createElement("div");
+    d.innerHTML = transport.responseText;
+    _show_error(d);
+  }
+}
+
+alfresco.AjaxHelper.toQueryString = function(source)
+{
+  var queryString = [];
+  for (var property in source) 
+  {
+    if (typeof source[property] == "object")
+    {
+      for (var i = 0; i < source[property].length; i++)
+      {
+        queryString.push(encodeURIComponent(property) + '=' + encodeURIComponent(source[property][i]));
+      }
+    }
+    else
+    {
+      queryString.push(encodeURIComponent(property) + '=' + encodeURIComponent(source[property]));
+    }
+  }
+  return queryString.join('&');
+};

@@ -32,9 +32,12 @@
 <%@ page isELIgnored="false" %>
 <%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
-<r:page title="<%=Application.getWizardManager().getTitle() %>">
 
-<f:view>
+<r:page title="<%=Application.getWizardManager().getTitle() %>"
+        doctypeRootElement="html"
+        doctypePublic="-//W3C//DTD HTML 4.01 Transitional//EN"
+        doctypeSystem="http://www.w3c.org/TR/html4/loose.dtd">
+  <f:view>
    
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
@@ -96,7 +99,7 @@
                </tr>
                
                <%-- Details --%>
-               <tr valign=top>
+               <tr valign="top">
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif); width:4px;"></td>
                   <td>
                      <table cellspacing="0" cellpadding="3" border="0" style="width: 100%;">
@@ -196,7 +199,5 @@
     </table>
     
     </h:form>
-    
-</f:view>
-
+  </f:view>
 </r:page>

@@ -653,6 +653,24 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
+
+      <attribute>
+         <name>doctypeRootElement</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+      </attribute>
+
+      <attribute>
+         <name>doctypePublic</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+      </attribute>
+
+      <attribute>
+         <name>doctypeSystem</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+      </attribute>
    </tag>
    
    <tag>

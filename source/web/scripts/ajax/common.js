@@ -88,6 +88,23 @@ function getContextPath()
    return _alfContextPath;
 }
 
+if (typeof document.ELEMENT_NODE == "undefined")
+{
+  // define dom constants for IE compatability
+  document.ELEMENT_NODE = 1;
+  document.ATTRIBUTE_NODE = 2;
+  document.TEXT_NODE = 3;
+  document.CDATA_SECTION_NODE = 4;
+  document.ENTITY_REFERENCE_NODE = 5;
+  document.ENTITY_NODE = 6;
+  document.PROCESSING_INSTRUCTION_NODE = 7;
+  document.COMMENT_NODE = 8;
+  document.DOCUMENT_NODE = 9;
+  document.DOCUMENT_TYPE_NODE = 10;
+  document.DOCUMENT_FRAGMENT_NODE = 11;
+  document.NOTATION_NODE = 12;
+}
+
 /**
  * Alfresco Utility libraries
  */
@@ -386,22 +403,41 @@ function getContextPath()
  */
 function log(message) 
 {
-   if (!log.window_ || log.window_.closed) 
+   if (window.console)
    {
-      var win = window.open("", null, "width=600,height=400," +
-                              "scrollbars=yes,resizable=yes,status=no," +
-                              "location=no,menubar=no,toolbar=no");
-      if (!win) return;
-      var doc = win.document;
-      doc.write("<html><head><title>Debug Log</title></head>" +
-                "<body></body></html>");
-      doc.close();
-      log.window_ = win;
+     console.log(message);
    }
-   
-   var logLine = log.window_.document.createElement("div");
-   logLine.appendChild(log.window_.document.createTextNode(message));
-   log.window_.document.body.appendChild(logLine);
+   else
+   {
+      if (!log.window_ || log.window_.closed) 
+      {
+         var win = window.open("", null, "width=600,height=400," +
+                                 "scrollbars=yes,resizable=yes,status=no," +
+                                 "location=no,menubar=no,toolbar=no");
+         if (!win) return;
+         var doc = win.document;
+         doc.write("<html><head><title>Debug Log</title></head>" +
+                   "<body></body></html>");
+         doc.close();
+         log.window_ = win;
+      }
+      
+      var logLine = log.window_.document.createElement("div");
+      logLine.appendChild(log.window_.document.createTextNode(message));
+      log.window_.document.body.appendChild(logLine);
+   }
+}
+
+/**
+ * Throws an error if the specified condition is not met.
+ */
+function assert(condition, message)
+{
+  if (!condition)
+  {
+    log(message);
+    throw new Error("Assertion failed: " + message);
+  }
 }
 
 if (!String.prototype.startsWith)

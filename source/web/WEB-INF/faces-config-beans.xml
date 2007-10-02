@@ -4710,6 +4710,10 @@
          <value>#{DictionaryService}</value>
       </managed-property>
       <managed-property>
+         <property-name>permissionService</property-name>
+         <value>#{PermissionService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>property</property-name>
          <value>#{TrashcanDialogProperty}</value>
       </managed-property>

@@ -27,6 +27,7 @@ package org.alfresco.web.bean;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.app.Application;
 
 import org.alfresco.web.bean.repository.Node;
@@ -36,6 +37,8 @@ public class TrashcanItemDetailsDialog extends TrashcanDialog
    private static final String MSG_DETAILS_OF = "details_of";
    private static final String MSG_ORIGINAL_LOCATION = "original_location";
    private static final String MSG_CLOSE = "close";
+   
+   protected PermissionService permissionService;
 
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
@@ -56,7 +59,7 @@ public class TrashcanItemDetailsDialog extends TrashcanDialog
       Path path = (Path) property.getItem().getProperties().get("locationPath");
       
       return Application.getMessage(FacesContext.getCurrentInstance(), MSG_ORIGINAL_LOCATION) + ": " + 
-             path.toDisplayPath(nodeService);
+             path.toDisplayPath(nodeService, permissionService);
    }
 
    @Override
@@ -68,5 +71,10 @@ public class TrashcanItemDetailsDialog extends TrashcanDialog
    public Node getItem()
    {
       return property.getItem();
+   }
+   
+   public void setPermissionService(PermissionService permissionService)
+   {
+      this.permissionService = permissionService;
    }
 }

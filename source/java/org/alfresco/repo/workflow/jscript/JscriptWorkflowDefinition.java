@@ -22,20 +22,29 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.workflow.jsapi;
+package org.alfresco.repo.workflow.jscript;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
+import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.jscript.ScriptableQNameMap;
+import org.alfresco.repo.jscript.ValueConverter;
+import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowInstance;
+import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.namespace.QName;
+import org.mozilla.javascript.Scriptable;
 
-public class WorkflowDefinition
+public class JscriptWorkflowDefinition implements Serializable
 {
-	/** Workflow Service reference */
-	private WorkflowService workflowService;
+	static final long serialVersionUID = 1641614201321129544L;	
+	
+	/** Service Registry */
+	private ServiceRegistry serviceRegistry;
 	
 	/** Workflow definition id */
 	private final String id;
@@ -52,46 +61,55 @@ public class WorkflowDefinition
 	/** Workflow definition description */
 	private final String description;
 	
+	/** Root scripting scope for this object */
+	private final Scriptable scope;
+	
 	/**
 	 * Create a new instance of <code>WorkflowDefinition</code> from a
 	 * CMR workflow object model WorkflowDefinition instance
 	 * 
 	 * @param cmrWorkflowDefinition an instance of WorkflowDefinition from the CMR workflow object model
-	 * @param workflowService reference to the Workflow Service 
+	 * @param serviceRegistry reference to the Service Registry
+	 * @param scope the root scripting scope for this object 
 	 */
-	public WorkflowDefinition(final org.alfresco.service.cmr.workflow.WorkflowDefinition cmrWorkflowDefinition,
-				final WorkflowService workflowService)
+	JscriptWorkflowDefinition(final WorkflowDefinition cmrWorkflowDefinition,
+				final ServiceRegistry serviceRegistry, final Scriptable scope)
 	{
 		this.id = cmrWorkflowDefinition.id;
 		this.name = cmrWorkflowDefinition.name;
 		this.version = cmrWorkflowDefinition.version;
 		this.title = cmrWorkflowDefinition.title;
 		this.description = cmrWorkflowDefinition.description;
-		this.workflowService = workflowService;
+		this.serviceRegistry = serviceRegistry;
+		this.scope = scope;
 	}
 	
 	/**
-	 * Creates a new instance of WorkflowDefinition 
+	 * Creates a new instance of WorkflowDefinition from scratch
 	 * 
 	 * @param id workflow definition ID
 	 * @param name name of workflow definition
 	 * @param version version of workflow definition
 	 * @param title title of workflow definition
 	 * @param description description of workflow definition
-	 * @param workflowService reference to the Workflow Service 
+	 * @param serviceRegistry reference to the Service Registry
+	 * @param scope root scripting scope for this object
 	 */
-	public WorkflowDefinition(final String id, final String name, final String version,
-			final String title, final String description, WorkflowService workflowService)
+	JscriptWorkflowDefinition(final String id, final String name, final String version,
+			final String title, final String description, ServiceRegistry serviceRegistry,
+			final Scriptable scope)
 	{
 		this.id = id;
 		this.name = name;
 		this.version = version;
 		this.title = title;
 		this.description = description;
+		this.serviceRegistry = serviceRegistry;
+		this.scope = scope;
 	}
 	
 	/**
-	 * Get value of 'id' property
+	 * Get value of <code>id</code> property
 	 * 
 	 * @return the id
 	 */
@@ -101,7 +119,7 @@ public class WorkflowDefinition
 	}
 	
 	/**
-	 * Get value of 'name' property
+	 * Get value of <code>name</code> property
 	 * 
 	 * @return the name
 	 */
@@ -111,7 +129,7 @@ public class WorkflowDefinition
 	}
 	
 	/**
-	 * Get value of 'version' property
+	 * Get value of <code>version</code> property
 	 * 
 	 * @return the version
 	 */
@@ -121,7 +139,7 @@ public class WorkflowDefinition
 	}
 	
 	/**
-	 * Get value of 'title' property
+	 * Get value of <code>title</code> property
 	 * 
 	 * @return the title
 	 */
@@ -131,7 +149,7 @@ public class WorkflowDefinition
 	}
 	
 	/**
-	 * Get value of 'description' property
+	 * Get value of <code>description</code> property
 	 * 
 	 * @return the description
 	 */
@@ -143,15 +161,23 @@ public class WorkflowDefinition
 	/**
 	 * Start workflow instance from workflow definition
 	 * 
-	 * @param properties properties (map of key-value pairs used to populate the 
+	 * @param workflowPackage workflow package object to 'attach' to the new workflow
+	 * 		instance
+	 * @param properties properties (map of key-value pairs) used to populate the 
 	 * 		start task properties
 	 * @return the initial workflow path
 	 */
-	public WorkflowPath startWorkflow(Map<QName, Serializable> properties)
+	@SuppressWarnings("unchecked")
+	public JscriptWorkflowPath startWorkflow(ScriptNode workflowPackage,
+		ScriptableQNameMap<String, Serializable> properties)
 	{
-		org.alfresco.service.cmr.workflow.WorkflowPath cmrWorkflowPath = 
+		WorkflowService workflowService = this.serviceRegistry.getWorkflowService();
+		
+		properties.put(WorkflowModel.ASPECT_WORKFLOW_PACKAGE, workflowPackage);
+		
+		WorkflowPath cmrWorkflowPath = 
 			workflowService.startWorkflow(id, properties);
-		return new WorkflowPath(cmrWorkflowPath, workflowService);
+		return new JscriptWorkflowPath(cmrWorkflowPath, this.serviceRegistry, this.scope);
 	}
 	
 	/**
@@ -159,15 +185,20 @@ public class WorkflowDefinition
 	 * 
 	 * @return the active workflow instances spawned from this workflow definition
 	 */
-	public synchronized List<WorkflowInstance> getActiveInstances()
+	public synchronized Scriptable getActiveInstances()
 	{
-		List<org.alfresco.service.cmr.workflow.WorkflowInstance> cmrWorkflowInstances = workflowService.getActiveWorkflows(this.id);
-		List<WorkflowInstance> activeInstances = new ArrayList<WorkflowInstance>();
-		for (org.alfresco.service.cmr.workflow.WorkflowInstance cmrWorkflowInstance : cmrWorkflowInstances)
+		WorkflowService workflowService = this.serviceRegistry.getWorkflowService();
+		
+		List<WorkflowInstance> cmrWorkflowInstances = workflowService.getActiveWorkflows(this.id);
+		ArrayList<Serializable> activeInstances = new ArrayList<Serializable>();
+		for (WorkflowInstance cmrWorkflowInstance : cmrWorkflowInstances)
 		{
-			activeInstances.add(new WorkflowInstance(cmrWorkflowInstance, workflowService));
+			activeInstances.add(new JscriptWorkflowInstance(cmrWorkflowInstance, this.serviceRegistry, this.scope));
 		}
 		
-		return activeInstances;
+		Scriptable activeInstancesScriptable =
+			(Scriptable)new ValueConverter().convertValueForScript(this.serviceRegistry, this.scope, null, activeInstances);
+		
+		return activeInstancesScriptable;
 	}
 }

@@ -22,13 +22,16 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.workflow.jsapi;
+package org.alfresco.repo.workflow.jscript;
 
 import java.io.Serializable;
-import java.util.Map;
+import java.util.Set;
 
-import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.repo.jscript.ScriptableQNameMap;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
+import org.mozilla.javascript.Scriptable;
 
 /**
  * This class represents a workflow task (an instance of a workflow
@@ -37,8 +40,10 @@ import org.alfresco.service.namespace.QName;
  * @author glenj
  *
  */
-public class WorkflowTask
+public class JscriptWorkflowTask implements Serializable
 {
+	static final long serialVersionUID = -8285971359421912313L;
+	
 	/** Unique ID for workflow task */
 	private final String id;
 	
@@ -51,8 +56,8 @@ public class WorkflowTask
 	/** Description of workflow task */
 	private final String description;
 	
-    /** Properties (key/value pairs) */
-    private Map<QName, Serializable> properties;
+    /** Properties (key/value pairs) for this Workflow Task */
+    private ScriptableQNameMap<String, Serializable> properties;
     
     /** Whether task is complete or not - 'true':complete, 'false':in-progress */
     private boolean complete = false;
@@ -60,8 +65,8 @@ public class WorkflowTask
     /** Whether task is pooled or not */
     private boolean pooled = false;
     
-    /** Workflow Service reference */
-    private WorkflowService workflowService;
+    /** Service Registry object */
+    private ServiceRegistry serviceRegistry;
     
 	/**
 	 * Creates a new instance of a workflow task (instance of a workflow task definition)
@@ -70,16 +75,18 @@ public class WorkflowTask
 	 * @param name workflow task name
 	 * @param title workflow task title
 	 * @param description workflow task description
-	 * @param workflowService reference to the Workflow Service 
+	 * @param serviceRegistry Service Registry object
 	 */
-	public WorkflowTask(final String id, final String name, final String title, final String description,
-				final WorkflowService workflowService)
+	JscriptWorkflowTask(final String id, final String name, final String title,
+		final String description, final ServiceRegistry serviceRegistry,
+		final ScriptableQNameMap<String, Serializable> properties)
 	{
 		this.id = id;
 		this.name = name;
 		this.title = title;
 		this.description = description;
-		this.workflowService = workflowService;
+		this.serviceRegistry = serviceRegistry;
+		this.properties = properties;
 	}
 	
 	/**
@@ -87,16 +94,28 @@ public class WorkflowTask
 	 * workflow object model 
 	 * 
 	 * @param cmrWorkflowTask an instance of WorkflowTask from CMR workflow object model
-	 * @param workflowService reference to the Workflow Service 
+	 * @param serviceRegistry Service Registry object
 	 */
-	public WorkflowTask(final org.alfresco.service.cmr.workflow.WorkflowTask cmrWorkflowTask,
-				WorkflowService workflowService)
+	JscriptWorkflowTask(final WorkflowTask cmrWorkflowTask,
+				final ServiceRegistry serviceRegistry)
 	{
 		this.id = cmrWorkflowTask.id;
 		this.name = cmrWorkflowTask.name;
 		this.title = cmrWorkflowTask.title;
 		this.description = cmrWorkflowTask.description;
-		this.workflowService = workflowService;
+		this.serviceRegistry = serviceRegistry;
+		
+		// instantiate ScriptableQNameMap<String, Serializable> properties
+		// from WorkflowTasks's Map<QName, Serializable> properties
+		this.properties = new ScriptableQNameMap<String, Serializable>(
+			serviceRegistry.getNamespaceService());
+		
+		Set<QName> keys = cmrWorkflowTask.properties.keySet();
+		for (QName key : keys)
+		{
+			Serializable value = cmrWorkflowTask.properties.get(key);
+			this.properties.put(key.toString(), value);
+		}
 	}
 
 	/**
@@ -144,7 +163,7 @@ public class WorkflowTask
 	 *
 	 * @return the properties
 	 */
-	public Map<QName, Serializable> getProperties()
+	public Scriptable getProperties()
 	{
 		return properties;
 	}
@@ -154,7 +173,7 @@ public class WorkflowTask
 	 * 
 	 * @param properties the properties to set
 	 */
-	public void setProperties(Map<QName, Serializable> properties)
+	public void setProperties(ScriptableQNameMap<String, Serializable> properties)
 	{
 		this.properties = properties;
 	}
@@ -168,17 +187,6 @@ public class WorkflowTask
 	public boolean isComplete()
 	{
 		return complete;
-	}
-
-	/**
-	 * Sets whether the task is complete or in-progress
-	 * 	'true':complete, 'false':in-progress
-	 * 
-	 * @param complete the complete to set
-	 */
-	public void setComplete(boolean complete)
-	{
-		this.complete = complete;
 	}
 
 	/**
@@ -208,6 +216,6 @@ public class WorkflowTask
 	 */
 	public void endTask(String transitionId)
 	{
-		workflowService.endTask(this.id, transitionId);
+		serviceRegistry.getWorkflowService().endTask(this.id, transitionId);
 	}
 }

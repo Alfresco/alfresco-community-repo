@@ -122,7 +122,7 @@ public abstract class BaseMultiValueRenderer extends BaseRenderer
          // start outer table
          out.write("<table border='0' cellspacing='3' cellpadding='3' class='selector'");
          this.outputAttribute(out, attrs.get("style"), "style");
-         this.outputAttribute(out, attrs.get("styleClass"), "styleClass");
+         this.outputAttribute(out, attrs.get("styleClass"), "class");
          out.write(">");
          
          // render the area before the wrapped component

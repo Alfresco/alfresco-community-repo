@@ -917,8 +917,15 @@ public abstract class CifsAuthenticator
         UserTransaction tx = m_transactionService.getUserTransaction( false);
         String personName = null;
         
+        Authentication curAuth = null;
+        
         try
         {
+        	// Run in the system user context
+        	
+        	curAuth = m_authComponent.getCurrentAuthentication();
+        	m_authComponent.setSystemUserAsCurrentUser();
+        	
             tx.begin();
 
             NodeRef userNode = m_personService.getPerson(userName);
@@ -957,6 +964,12 @@ public abstract class CifsAuthenticator
             {
                 throw new RuntimeException("Error during execution of transaction.", ex);
             }
+        }
+        finally
+        {
+        	// Restore the original authentication context
+        	
+        	m_authComponent.setCurrentAuthentication( curAuth);
         }
         
         // Return the person name

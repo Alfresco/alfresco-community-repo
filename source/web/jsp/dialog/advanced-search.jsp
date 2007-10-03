@@ -328,7 +328,7 @@
                                                    <div style="padding:4px"></div>
                                                    <a:panel label="#{msg.additional_options}" id="custom-panel" style="font-weight:bold" progressive="true"
                                                          expanded='#{SearchProperties.panels["custom-panel"]}' expandedActionListener="#{AdvancedSearchDialog.expandPanel}">
-                                                      <r:searchCustomProperties id="customProps" bean="AdvancedSearchDialog" var="customProperties" style="padding-left:12px;padding-top:4px" />
+                                                      <r:searchCustomProperties id="customProps" bean="SearchProperties" var="customProperties" style="padding-left:12px;padding-top:4px" />
                                                    </a:panel>
                                                 </td>
                                              </tr>

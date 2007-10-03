@@ -174,6 +174,8 @@ public class PageRendererServlet extends WebScriptServlet
          }
       }
       
+      setNoCacheHeaders(res);
+      
       try
       {
          // lookup template path from page config in website AVM store
@@ -447,6 +449,15 @@ public class PageRendererServlet extends WebScriptServlet
              (page != null ? page + '/' : "") + "page-definition.xml";
    }
    
+   /**
+    * Apply the headers required to disallow caching of the response in the browser
+    */
+   private static void setNoCacheHeaders(HttpServletResponse res)
+   {
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Pragma", "no-cache");
+   }
+   
    
    /**
     * WebScript runtime for the PageRenderer servlet.
@@ -707,7 +718,7 @@ public class PageRendererServlet extends WebScriptServlet
 
       public long getLastModified(Object templateSource)
       {
-         return last--;
+         return last++;
       }
 
       public Reader getReader(Object templateSource, String encoding) throws IOException

@@ -94,6 +94,10 @@ public final class ScriptUrlMethod implements TemplateMethodModelEx
                       buf.append('&');
                    }
                 }
+                else
+                {
+                   buf.append('?');
+                }
                 buf.append("guest=" + (req.isGuest() ? "true" : ""));
                 if (req.getFormatStyle() == FormatStyle.argument)
                 {

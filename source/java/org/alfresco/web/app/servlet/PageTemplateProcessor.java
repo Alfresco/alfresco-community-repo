@@ -45,5 +45,6 @@ public class PageTemplateProcessor extends TemplateProcessor
    public void initConfig()
    {
       super.initConfig();
+      templateConfig.setTemplateUpdateDelay(0);
    }
 }

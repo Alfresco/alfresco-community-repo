@@ -65,22 +65,22 @@ public class AVMRepository
 {
     @SuppressWarnings("unused")
     private static Log    fgLogger = LogFactory.getLog(AVMRepository.class);
-    
+
     /**
      * The single instance of AVMRepository.
      */
     private static AVMRepository fgInstance;
-    
+
     /**
      * The current lookup count.
      */
     private ThreadLocal<Integer> fLookupCount;
-    
+
     /**
      * The node id issuer.
      */
     private Issuer fNodeIssuer;
-    
+
     /**
      * The layer id issuer.
      */
@@ -90,46 +90,46 @@ public class AVMRepository
      * Reference to the ContentStoreImpl
      */
     private ContentStore fContentStore;
-    
+
     /**
      * The Lookup Cache instance.
      */
     private LookupCache fLookupCache;
-    
+
     private AVMStoreDAO fAVMStoreDAO;
-    
+
     private AVMNodeDAO fAVMNodeDAO;
-    
+
     private VersionRootDAO fVersionRootDAO;
-    
+
     private VersionLayeredNodeEntryDAO fVersionLayeredNodeEntryDAO;
-    
+
     private AVMStorePropertyDAO fAVMStorePropertyDAO;
-    
+
     private ChildEntryDAO fChildEntryDAO;
 
     // A bunch of TransactionListeners that do work for this.
-    
+
     /**
      * One for create store.
      */
     private CreateStoreTxnListener fCreateStoreTxnListener;
-    
+
     /**
      * One for purge store.
      */
     private PurgeStoreTxnListener fPurgeStoreTxnListener;
-    
+
     /**
      * One for create version.
      */
     private CreateVersionTxnListener fCreateVersionTxnListener;
-    
+
     /**
      * One for purge version.
      */
     private PurgeVersionTxnListener fPurgeVersionTxnListener;
-    
+
     /**
      * Create a new one.
      */
@@ -138,7 +138,7 @@ public class AVMRepository
         fLookupCount = new ThreadLocal<Integer>();
         fgInstance = this;
     }
-    
+
     /**
      * Set the node issuer. For Spring.
      * @param nodeIssuer The issuer.
@@ -156,7 +156,7 @@ public class AVMRepository
     {
         fLayerIssuer = layerIssuer;
     }
-    
+
     /**
      * Set the ContentService.
      */
@@ -164,7 +164,7 @@ public class AVMRepository
     {
         fContentStore = store;
     }
-    
+
     /**
      * Set the Lookup Cache instance.
      * @param cache The instance to set.
@@ -178,7 +178,7 @@ public class AVMRepository
     {
         fCreateStoreTxnListener = listener;
     }
-    
+
     public void setPurgeStoreTxnListener(PurgeStoreTxnListener listener)
     {
         fPurgeStoreTxnListener = listener;
@@ -198,32 +198,32 @@ public class AVMRepository
     {
         fAVMStoreDAO = dao;
     }
-    
+
     public void setAvmNodeDAO(AVMNodeDAO dao)
     {
         fAVMNodeDAO = dao;
     }
-    
+
     public void setVersionRootDAO(VersionRootDAO dao)
     {
         fVersionRootDAO = dao;
     }
-    
+
     public void setVersionLayeredNodeEntryDAO(VersionLayeredNodeEntryDAO dao)
     {
         fVersionLayeredNodeEntryDAO = dao;
     }
-    
+
     public void setAvmStorePropertyDAO(AVMStorePropertyDAO dao)
     {
         fAVMStorePropertyDAO = dao;
     }
-    
+
     public void setChildEntryDAO(ChildEntryDAO dao)
     {
         fChildEntryDAO = dao;
     }
-    
+
     /**
      * Create a file.
      * @param path The path to the containing directory.
@@ -232,7 +232,7 @@ public class AVMRepository
     public OutputStream createFile(String path, String name)
     {
         fLookupCount.set(1);
-        try 
+        try
         {
             String[] pathParts = SplitPath(path);
             AVMStore store = getAVMStoreByName(pathParts[0]);
@@ -245,8 +245,8 @@ public class AVMRepository
         }
         finally
         {
-            fLookupCount.set(null); 
-        }        
+            fLookupCount.set(null);
+        }
     }
 
     /**
@@ -272,9 +272,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Create a new directory.
      * @param path The path to the containing directory.
@@ -297,7 +297,7 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
 
     /**
@@ -341,7 +341,7 @@ public class AVMRepository
         fLookupCache.onWrite(pathParts[0]);
         return child.getDescriptor(parent.getPath(), name, parent.getIndirection(), parent.getIndirectionVersion());
     }
-    
+
     /**
      * Create a new layered directory.
      * @param srcPath The target indirection for the new layered directory.
@@ -370,7 +370,7 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
 
     /**
@@ -396,7 +396,7 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
 
     /**
@@ -411,7 +411,7 @@ public class AVMRepository
             throw new AVMExistsException("AVMStore exists: " + name);
         }
         // Newing up the object causes it to be written to the db.
-        @SuppressWarnings("unused") 
+        @SuppressWarnings("unused")
         AVMStore rep = new AVMStoreImpl(this, name);
         // Special handling for AVMStore creation.
         rep.getRoot().setStoreNew(null);
@@ -447,7 +447,7 @@ public class AVMRepository
             if (version < 0)
             {
                 fLookupCache.onSnapshot(pathParts[0]);
-                version = 
+                version =
                     srcRepo.createSnapshot("Branch Snapshot", null, new HashMap<String, Integer>()).get(pathParts[0]);
             }
             sPath = srcRepo.lookup(version, pathParts[1], false, false);
@@ -461,7 +461,7 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
         // Lookup the destination directory.
         fLookupCount.set(1);
         try
@@ -481,7 +481,7 @@ public class AVMRepository
             DirectoryNode dirNode = (DirectoryNode)dPath.getCurrentNode();
             AVMNode srcNode = sPath.getCurrentNode();
             AVMNode dstNode = null;
-            // We do different things depending on what kind of thing we're 
+            // We do different things depending on what kind of thing we're
             // branching from. I'd be considerably happier if we disallowed
             // certain scenarios, but Jon won't let me :P (bhp).
             if (srcNode.getType() == AVMNodeType.PLAIN_DIRECTORY)
@@ -490,8 +490,8 @@ public class AVMRepository
             }
             else if (srcNode.getType() == AVMNodeType.LAYERED_DIRECTORY)
             {
-                dstNode = 
-                    new LayeredDirectoryNodeImpl((LayeredDirectoryNode)srcNode, dstRepo);
+                dstNode =
+                    new LayeredDirectoryNodeImpl((LayeredDirectoryNode)srcNode, dstRepo, sPath, false);
                 ((LayeredDirectoryNode)dstNode).setLayerID(issueLayerID());
             }
             else if (srcNode.getType() == AVMNodeType.LAYERED_FILE)
@@ -526,9 +526,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Get an output stream to a file.
      * @param path The full path to the file.
@@ -552,9 +552,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Get a content reader from a file node.
      * @param version The version of the file.
@@ -576,10 +576,10 @@ public class AVMRepository
         }
         finally
         {
-            fLookupCount.set(null);   
+            fLookupCount.set(null);
         }
     }
-    
+
     /**
      * Get a ContentWriter to a file node.
      * @param path The path to the file.
@@ -605,7 +605,7 @@ public class AVMRepository
             fLookupCount.set(null);
         }
     }
-    
+
     /**
      * Rename a node.
      * @param srcPath Source containing directory.
@@ -616,7 +616,7 @@ public class AVMRepository
     public void rename(String srcPath, String srcName, String dstPath,
                        String dstName)
     {
-        // This is about as ugly as it gets.  
+        // This is about as ugly as it gets.
         if ((dstPath + "/").indexOf(srcPath + srcName + "/") == 0)
         {
             throw new AVMCycleException("Cyclic rename.");
@@ -651,7 +651,7 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
         fLookupCount.set(1);
         try
         {
@@ -680,7 +680,7 @@ public class AVMRepository
                 // If the source is layered then the renamed thing needs to be layered also.
                 if (sPath.isLayered())
                 {
-                    // If this is a rename happening in the same layer we make a new 
+                    // If this is a rename happening in the same layer we make a new
                     // OverlayedDirectoryNode that is not a primary indirection layer.
                     // Otherwise we do make the new OverlayedDirectoryNode a primary
                     // Indirection layer.  This complexity begs the question of whether
@@ -688,7 +688,7 @@ public class AVMRepository
                     // layer.  Allowing it makes the logic absurdly complex.
                     if (dPath.isLayered() && dPath.getTopLayer().equals(sPath.getTopLayer()))
                     {
-                        dstNode = new LayeredDirectoryNodeImpl((PlainDirectoryNode)srcNode, dstRepo, sPath, false);
+                        dstNode = new LayeredDirectoryNodeImpl((PlainDirectoryNode)srcNode, dstRepo, sPath, true);
                         ((LayeredDirectoryNode)dstNode).setLayerID(sPath.getTopLayer().getLayerID());
                     }
                     else
@@ -708,9 +708,10 @@ public class AVMRepository
                         srcDir.getType() == AVMNodeType.LAYERED_DIRECTORY &&
                         ((LayeredDirectoryNode)srcDir).directlyContains(srcNode)))
                 {
+                    Lookup srcLookup = lookup(-1, srcPath + "/" + srcName, true);
                     // Use the simple 'copy' constructor.
                     dstNode =
-                        new LayeredDirectoryNodeImpl((LayeredDirectoryNode)srcNode, dstRepo);
+                        new LayeredDirectoryNodeImpl((LayeredDirectoryNode)srcNode, dstRepo, srcLookup, true);
                     ((LayeredDirectoryNode)dstNode).setLayerID(((LayeredDirectoryNode)srcNode).getLayerID());
                 }
                 else
@@ -720,8 +721,9 @@ public class AVMRepository
                     // indirection is calculated from it's source context.
                     if (((LayeredDirectoryNode)srcNode).getPrimaryIndirection())
                     {
+                        Lookup srcLookup = lookup(-1, srcPath + "/" + srcName, true);
                         dstNode =
-                            new LayeredDirectoryNodeImpl((LayeredDirectoryNode)srcNode, dstRepo);
+                            new LayeredDirectoryNodeImpl((LayeredDirectoryNode)srcNode, dstRepo, srcLookup, true);
                     }
                     else
                     {
@@ -729,7 +731,7 @@ public class AVMRepository
                             new LayeredDirectoryNodeImpl((DirectoryNode)srcNode, dstRepo, sPath, srcName);
                     }
                     // What needs to be done here is dependent on whether the
-                    // rename is to a layered context.  If so then it should get the layer id 
+                    // rename is to a layered context.  If so then it should get the layer id
                     // of its destination parent.  Otherwise it should get a new layer
                     // id.
                     if (dPath.isLayered())
@@ -768,7 +770,7 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
 
     /**
@@ -793,7 +795,7 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
 
     /**
@@ -842,7 +844,7 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
 
     /**
@@ -880,7 +882,7 @@ public class AVMRepository
         fAVMStoreDAO.invalidateCache();
         fPurgeStoreTxnListener.storePurged(name);
     }
-    
+
     /**
      * Remove all content specific to a AVMRepository and version.
      * @param name The name of the AVMStore.
@@ -921,7 +923,7 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
 
     public InputStream getInputStream(AVMNodeDescriptor desc)
@@ -940,7 +942,7 @@ public class AVMRepository
         ContentReader reader = fContentStore.getReader(data.getContentUrl());
         return reader.getContentInputStream();
     }
-    
+
     /**
      * Get a listing of a directory.
      * @param version The version to look under.
@@ -965,7 +967,7 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
 
     /**
@@ -991,16 +993,16 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Get the list of nodes directly contained in a directory.
      * @param dir The descriptor to the directory node.
      * @param includeDeleted Whether to include deleted children.
      * @return A Map of names to descriptors.
      */
-    public SortedMap<String, AVMNodeDescriptor> 
+    public SortedMap<String, AVMNodeDescriptor>
         getListingDirect(AVMNodeDescriptor dir, boolean includeDeleted)
     {
         AVMNode node = fAVMNodeDAO.getByID(dir.getId());
@@ -1019,7 +1021,7 @@ public class AVMRepository
         LayeredDirectoryNode dirNode = (LayeredDirectoryNode)node;
         return dirNode.getListingDirect(dir, includeDeleted);
     }
-    
+
     /**
      * Get a directory listing from a directory node descriptor.
      * @param dir The directory node descriptor.
@@ -1046,9 +1048,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Get the names of deleted nodes in a directory.
      * @param version The version to look under.
@@ -1071,9 +1073,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Get descriptors of all AVMStores.
      * @return A list of all descriptors.
@@ -1104,7 +1106,7 @@ public class AVMRepository
         }
         return store.getDescriptor();
     }
-    
+
     /**
      * Get all version for a given AVMStore.
      * @param name The name of the AVMStore.
@@ -1121,7 +1123,7 @@ public class AVMRepository
     }
 
     /**
-     * Get the set of versions between (inclusive) of the given dates. 
+     * Get the set of versions between (inclusive) of the given dates.
      * From or to may be null but not both.
      * @param name The name of the AVMRepository.
      * @param from The earliest date.
@@ -1137,7 +1139,7 @@ public class AVMRepository
         }
         return store.getVersions(from, to);
     }
-    
+
     /**
      * Issue a node id.
      * @return The new id.
@@ -1155,7 +1157,7 @@ public class AVMRepository
     {
         return fLayerIssuer.issue();
     }
-    
+
     /**
      * Get the indirection path for a layered node.
      * @param version The version to look under.
@@ -1178,7 +1180,7 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
 
     /**
@@ -1195,7 +1197,7 @@ public class AVMRepository
         }
         return store.getNextVersionID();
     }
-    
+
     /**
      * Get the latest extant snapshotted version id.
      * @param name The store name.
@@ -1209,7 +1211,7 @@ public class AVMRepository
         }
         return store.getLastVersionID();
     }
-    
+
     /**
      * Get an AVMStore by name.
      * @param name The name of the AVMStore.
@@ -1236,7 +1238,7 @@ public class AVMRepository
         }
         return store.getRoot(version);
     }
- 
+
     // TODO Fix this awful mess regarding cycle detection.
     /**
      * Lookup a node.
@@ -1278,7 +1280,7 @@ public class AVMRepository
             }
         }
     }
-    
+
     /**
      * Lookup a descriptor from a directory descriptor.
      * @param dir The directory descriptor.
@@ -1306,9 +1308,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Get all the paths to a particular node.
      * @param desc The node descriptor.
@@ -1326,7 +1328,7 @@ public class AVMRepository
         recursiveGetPaths(node, components, paths);
         return paths;
     }
-    
+
     /**
      * Get a single valid path for a node.
      * @param desc The node descriptor.
@@ -1342,7 +1344,7 @@ public class AVMRepository
         List<String> components = new ArrayList<String>();
         return recursiveGetAPath(node, components);
     }
-    
+
     /**
      * Get all paths for a node reachable by HEAD.
      * @param desc The node descriptor.
@@ -1369,7 +1371,7 @@ public class AVMRepository
      */
     public List<String> getVersionPaths(VersionRoot version, AVMNode node)
     {
-        List<String> paths = new ArrayList<String>();   
+        List<String> paths = new ArrayList<String>();
         List<String> components = new ArrayList<String>();
         recursiveGetVersionPaths(node, components, paths, version.getRoot(), version.getAvmStore().getName());
         return paths;
@@ -1382,7 +1384,7 @@ public class AVMRepository
      * @param paths The list to contain found paths.
      * @param root The root node of the version.
      * @param storeName The name of the store.
-     */    
+     */
     private void recursiveGetVersionPaths(AVMNode node, List<String> components, List<String> paths, DirectoryNode root, String storeName)
     {
         if (node.equals(root))
@@ -1425,14 +1427,14 @@ public class AVMRepository
         recursiveGetPathsInStoreHead(node, components, paths, st.getRoot(), store);
         return paths;
     }
-    
+
     /**
      * Do the actual work.
      * @param node The current node.
      * @param components The currently accumulated path components.
      * @param paths The list to put full paths in.
      */
-    private void recursiveGetPaths(AVMNode node, List<String> components, 
+    private void recursiveGetPaths(AVMNode node, List<String> components,
                                    List<Pair<Integer, String>> paths)
     {
         if (node.getIsRoot())
@@ -1496,14 +1498,14 @@ public class AVMRepository
         }
         return null;
     }
-    
+
     /**
      * Do the actual work.
      * @param node The current node.
      * @param components The currently accumulated path components.
      * @param paths The list to put full paths in.
      */
-    private void recursiveGetHeadPaths(AVMNode node, List<String> components, 
+    private void recursiveGetHeadPaths(AVMNode node, List<String> components,
                                        List<Pair<Integer, String>> paths)
     {
         if (node.getIsRoot())
@@ -1533,7 +1535,7 @@ public class AVMRepository
      * @param components The currently accumulated path components.
      * @param paths The list to put full paths in.
      */
-    private void recursiveGetPathsInStoreHead(AVMNode node, List<String> components, 
+    private void recursiveGetPathsInStoreHead(AVMNode node, List<String> components,
                                               List<Pair<Integer, String>> paths, DirectoryNode root,
                                               String storeName)
     {
@@ -1557,15 +1559,15 @@ public class AVMRepository
      * Add a path to the list.
      * @param components The path name components.
      * @param version The version id.
-     * @param storeName The name of the 
+     * @param storeName The name of the
      * @param paths The List to add to.
      */
-    private void addPath(List<String> components, int version, String storeName, 
+    private void addPath(List<String> components, int version, String storeName,
                          List<Pair<Integer, String>> paths)
     {
         paths.add(new Pair<Integer, String>(version, makePath(components, storeName)));
     }
-    
+
     /**
      * Alternate version.
      * @param components
@@ -1577,7 +1579,7 @@ public class AVMRepository
     {
         paths.add(makePath(components, storeName));
     }
-    
+
     /**
      * Helper for generating paths.
      * @param components The path components.
@@ -1601,7 +1603,7 @@ public class AVMRepository
         }
         return pathBuilder.toString();
     }
-   
+
     /**
      * Get information about layering of a path.
      * @param version The version to look under.
@@ -1631,9 +1633,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Lookup a directory specifically.
      * @param version The version to look under.
@@ -1707,7 +1709,7 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
 
     /**
@@ -1732,9 +1734,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Get the history chain for a node.
      * @param desc The node to get history of.
@@ -1764,7 +1766,7 @@ public class AVMRepository
         }
         return history;
     }
-    
+
     /**
      * Set the opacity of a layered directory. An opaque directory hides
      * the things it points to via indirection.
@@ -1788,9 +1790,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-        
+
     /**
      * Set a property on a node.
      * @param path The path to the node.
@@ -1814,9 +1816,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Set a collection of properties at once.
      * @param path The path to the node.
@@ -1839,9 +1841,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Get a property by name for a node.
      * @param version The version to look under.
@@ -1865,9 +1867,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Get a Map of all the properties of a node.
      * @param version The version to look under.
@@ -1890,9 +1892,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Delete a single property from a node.
      * @param path The path to the node.
@@ -1915,7 +1917,7 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
 
     /**
@@ -1939,9 +1941,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Set a property on a store. Overwrites if property exists.
      * @param store The AVMStore.
@@ -1957,7 +1959,7 @@ public class AVMRepository
         }
         st.setProperty(name, value);
     }
-    
+
     /**
      * Set a group of properties on a store. Overwrites any properties that exist.
      * @param store The AVMStore.
@@ -1972,7 +1974,7 @@ public class AVMRepository
         }
         st.setProperties(props);
     }
-    
+
     /**
      * Get a property from a store.
      * @param store The name of the store.
@@ -1992,9 +1994,9 @@ public class AVMRepository
         }
         return st.getProperty(name);
     }
-    
+
     /**
-     * Queries a given store for properties with keys that match a given pattern. 
+     * Queries a given store for properties with keys that match a given pattern.
      * @param store The name of the store.
      * @param keyPattern The sql 'like' pattern, inserted into a QName.
      * @return A Map of the matching key value pairs.
@@ -2018,22 +2020,22 @@ public class AVMRepository
     }
 
     /**
-     * Queries all AVM stores for properties with keys that matcha given pattern. 
+     * Queries all AVM stores for properties with keys that matcha given pattern.
      * @param keyPattern The sql 'like' pattern, inserted into a QName.
      * @return A List of Pairs of Store name, Map.Entry.
      */
     public Map<String, Map<QName, PropertyValue>>
         queryStoresPropertyKeys(QName keyPattern)
     {
-        List<AVMStoreProperty> matches = 
+        List<AVMStoreProperty> matches =
             fAVMStorePropertyDAO.queryByKeyPattern(keyPattern);
-        Map<String, Map<QName, PropertyValue>> results = 
+        Map<String, Map<QName, PropertyValue>> results =
             new HashMap<String, Map<QName, PropertyValue>>();
         for (AVMStoreProperty prop : matches)
         {
             String storeName = prop.getStore().getName();
             Map<QName, PropertyValue> pairs = null;
-            if ((pairs = results.get(storeName)) == null) 
+            if ((pairs = results.get(storeName)) == null)
             {
                 pairs = new HashMap<QName, PropertyValue>();
                 results.put(storeName, pairs);
@@ -2042,7 +2044,7 @@ public class AVMRepository
         }
         return results;
     }
-    
+
     /**
      * Get all the properties for a store.
      * @param store The name of the Store.
@@ -2061,7 +2063,7 @@ public class AVMRepository
         }
         return st.getProperties();
     }
-    
+
     /**
      * Delete a property from a store.
      * @param store The name of the store.
@@ -2076,7 +2078,7 @@ public class AVMRepository
         }
         st.deleteProperty(name);
     }
-    
+
     /**
      * Get the common ancestor of two nodes if one exists. Unfortunately
      * this is a quadratic problem, taking time proportional to the product
@@ -2162,7 +2164,7 @@ public class AVMRepository
             fLookupCount.set(null);
         }
     }
-    
+
     /**
      * Get the ContentData for a file for writing.
      * @param path The path to the file.
@@ -2186,7 +2188,7 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
 
     /**
@@ -2211,9 +2213,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Get the single instance of AVMRepository.
      * @return The single instance.
@@ -2222,7 +2224,7 @@ public class AVMRepository
     {
         return fgInstance;
     }
-    
+
     public void setMetaDataFrom(String path, AVMNodeDescriptor from)
     {
         fLookupCount.set(1);
@@ -2245,9 +2247,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Add an aspect to an AVM Node.
      * @param path The path to the node.
@@ -2270,9 +2272,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Get all the aspects on an AVM node.
      * @param version The version to look under.
@@ -2295,9 +2297,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Remove an aspect and all associated properties from a node.
      * @param path The path to the node.
@@ -2320,9 +2322,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Does a node have a particular aspect.
      * @param version The version to look under.
@@ -2346,9 +2348,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Set the ACL on a node.
      * @param path The path to the node.
@@ -2371,9 +2373,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Get the ACL on a node.
      * @param version The version to look under.
@@ -2396,9 +2398,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Link a node into a directory, directly.
      * @param parentPath The path to the parent.
@@ -2422,9 +2424,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * This is the danger version of link. It must be called on
      * a copied and unsnapshotted directory.  It blithely inserts
@@ -2447,9 +2449,9 @@ public class AVMRepository
         }
         dir.link(name, child);
     }
-    
+
     /**
-     * Remove name without leaving behind a deleted node. Dangerous 
+     * Remove name without leaving behind a deleted node. Dangerous
      * if used unwisely.
      * @param path The path to the layered directory.
      * @param name The name of the child.
@@ -2483,9 +2485,9 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
-    
+
     /**
      * Force a copy on write.
      * @param path The path to force.
@@ -2514,7 +2516,7 @@ public class AVMRepository
         finally
         {
             fLookupCount.set(null);
-        }        
+        }
     }
 
     /**
@@ -2548,7 +2550,7 @@ public class AVMRepository
         fPurgeStoreTxnListener.storePurged(sourceName);
         fCreateStoreTxnListener.storeCreated(destName);
     }
-    
+
     /**
      * Revert a head path to a given version. This works by cloning
      * the version to revert to, and then linking that new version into head.
@@ -2576,7 +2578,7 @@ public class AVMRepository
             fLookupCount.set(null);
         }
     }
-    
+
     /**
      * Set the GUID on a node.
      * @param path
@@ -2601,7 +2603,7 @@ public class AVMRepository
             fLookupCount.set(null);
         }
     }
- 
+
     /**
      * Set the encoding on a node.
      * @param path
@@ -2664,14 +2666,14 @@ public class AVMRepository
         recursiveGetStoreVersionPaths(store, node, version, components, paths);
         return paths;
     }
-    
+
     /**
      * Do the actual work.
      * @param node The current node.
      * @param components The currently accumulated path components.
      * @param paths The list to put full paths in.
      */
-    private void recursiveGetStoreVersionPaths(String storeName, AVMNode node, int version, List<String> components, 
+    private void recursiveGetStoreVersionPaths(String storeName, AVMNode node, int version, List<String> components,
                                                List<String> paths)
     {
         if (node.getIsRoot())

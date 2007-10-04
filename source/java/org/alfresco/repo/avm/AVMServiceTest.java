@@ -96,11 +96,47 @@ import org.alfresco.util.Pair;
 
 /**
  * Big test of AVM behavior.
- * 
+ *
  * @author britt
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
+    public void testRename6()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createStore("layer");
+            fService.createLayeredDirectory("main:/a", "layer:/", "a");
+            fService.rename("layer:/a/b", "c", "layer:/a/b", "z");
+            System.out.println(recursiveContents("layer:/", -1, true));
+            List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
+            System.out.println(diffs);
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            System.out.println(recursiveContents("layer:/", -1, true));
+            System.out.println(recursiveContents("main:/", -1, true));
+            fSyncService.flatten("layer:/a", "main:/a");
+            System.out.println(recursiveContents("layer:/", -1, true));
+            System.out.println(recursiveContents("main:/", -1, true));
+            fService.createFile("layer:/a/b/z", "fudge").close();
+            fService.rename("layer:/a/b", "z", "layer:/a/b", "y");
+            System.out.println(recursiveContents("layer:/", -1, true));
+            diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
+            System.out.println(diffs);
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            System.out.println(recursiveContents("layer:/", -1, true));
+            System.out.println(recursiveContents("main:/", -1, true));
+            fSyncService.flatten("layer:/a", "main:/a");
+            System.out.println(recursiveContents("layer:/", -1, true));
+            System.out.println(recursiveContents("main:/", -1, true));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
     public void testSpacesInStoreNames()
     {
         try
@@ -115,7 +151,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fail();
         }
     }
-    
+
     public void testHeadPathsInLayers()
     {
         try
@@ -143,7 +179,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fail();
         }
     }
-    
+
     /**
      * Minimal testing of Locking Aware service.
      */
@@ -154,17 +190,17 @@ public class AVMServiceTest extends AVMServiceTestBase
         AuthenticationService authService = (AuthenticationService)fContext.getBean("AuthenticationService");
         try
         {
-            fService.setStoreProperty("main", QName.createQName(null, ".dns.main"), 
+            fService.setStoreProperty("main", QName.createQName(null, ".dns.main"),
                     new PropertyValue(DataTypeDefinition.TEXT, "Nothing."));
             fService.createStore("test");
-            fService.setStoreProperty("test", QName.createQName(null, ".dns.test.main"), 
+            fService.setStoreProperty("test", QName.createQName(null, ".dns.test.main"),
                     new PropertyValue(DataTypeDefinition.TEXT, "Nothing."));
             setupBasicTree0();
             authService.authenticateAsGuest();
             // assertEquals(0, fLockingService.getUsersLocks("admin").size());
             List<AVMDifference> diffs = fSyncService.compare(-1, "main:/", -1, "test:/", null);
             fSyncService.update(diffs, null, false, false, false, false, null, null);
-            RetryingTransactionHelper.RetryingTransactionCallback<Object> cb = 
+            RetryingTransactionHelper.RetryingTransactionCallback<Object> cb =
             new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
             {
                 public Object execute()
@@ -172,7 +208,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                 {
                     BulkLoader loader = new BulkLoader();
                     loader.setAvmService(fService);
-                    loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");      
+                    loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
                     return null;
                 }
             };
@@ -232,13 +268,13 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            
+
             StoreRef storeRef = AVMNodeConverter.ToStoreRef("main");
             SearchService searchService = fIndexerAndSearcher.getSearcher(storeRef, true);
             ResultSet   results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}SillyProperty")+":\"Silly\"");
             assertEquals(0, results.length());
             results.close();
-            
+
             QName name = QName.createQName("silly.uri", "SillyProperty");
             PropertyValue value = new PropertyValue(DataTypeDefinition.TEXT, "Silly Property Value");
             fService.setNodeProperty("main:/a/b/c/foo", name, value);
@@ -251,8 +287,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             Map<QName, PropertyValue> props = fService.getNodeProperties(-1, "main:/a/b/c/foo");
             assertEquals(1, props.size());
             assertEquals(value.toString(), props.get(name).toString());
-            
-            
+
+
             props = new HashMap<QName, PropertyValue>();
             QName n1 = QName.createQName("silly.uri", "Prop1");
             PropertyValue p1 = new PropertyValue(DataTypeDefinition.DATETIME, new Date(System.currentTimeMillis()));
@@ -270,38 +306,38 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals(p1.toString(), props.get(n1).toString());
             assertEquals(p2.toString(), props.get(n2).toString());
             assertEquals(p3.toString(), props.get(n3).toString());
-            
+
             results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop1")+":\"" + props.get(n1).getStringValue() +"\"");
             assertEquals(1, results.length());
             results.close();
             results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop2")+":\"" + props.get(n2).getStringValue() +"\"");
             assertEquals(1, results.length());
             results.close();
-            
+
             fService.deleteNodeProperty("main:/a/b/c/bar", n1);
             fService.createSnapshot("main", null, null);
-            
+
             results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop1")+":\"" + props.get(n1).getStringValue() +"\"");
             assertEquals(0, results.length());
             results.close();
             results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop2")+":\"" + props.get(n2).getStringValue() +"\"");
             assertEquals(1, results.length());
             results.close();
-            
+
             props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
             assertEquals(2, props.size());
             assertEquals(p2.toString(), props.get(n2).toString());
             assertEquals(p3.toString(), props.get(n3).toString());
             fService.deleteNodeProperties("main:/a/b/c/bar");
             fService.createSnapshot("main", null, null);
-            
+
             results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop1")+":\"" + p1.getStringValue() +"\"");
             assertEquals(0, results.length());
             results.close();
             results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@{silly.uri}Prop2")+":\"" + props.get(n2).getStringValue() +"\"");
             assertEquals(0, results.length());
             results.close();
-            
+
             props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
             assertEquals(0, props.size());
             fService.removeNode("main:/a/b/c/foo");
@@ -361,9 +397,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             fail();
         }
     }
-    
-    
-    
+
+
+
     public void testForceCopyDeleted()
     {
         try
@@ -1075,7 +1111,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             };
             TransactionService transactionService = (TransactionService) fContext.getBean("transactionService");
             transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
-            
+
             results = searchService.query(storeRef, "lucene", "TEXT:\"HEAD\"");
             assertEquals(0, results.length());
             results.close();
@@ -1769,7 +1805,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             };
             TransactionService transactionService = (TransactionService) fContext.getBean("transactionService");
             transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
-            
+
             diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a", null);
             assertEquals(0, diffs.size());
             System.out.println(recursiveList("area", -1, true));
@@ -1814,7 +1850,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             };
             TransactionService transactionService = (TransactionService) fContext.getBean("transactionService");
             transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
-            
+
             diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a", null);
             assertEquals(0, diffs.size());
             System.out.println(recursiveList("area", -1, true));
@@ -2877,9 +2913,11 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals("baz", list.get(0));
             assertEquals("figs", list.get(1));
             // Rename /layer/d to /layer/e and uncover /layer/d
+            System.out.println(recursiveContents("main:/", -1, true));
             fService.rename("main:/layer", "d", "main:/layer", "e");
             fService.uncover("main:/layer", "d");
             fService.createSnapshot("main", null, null);
+            System.out.println(recursiveContents("main:/", -1, true));
             // History unchanged.
             checkHistory(history, "main");
             // /layer/d contains figs.
@@ -2887,11 +2925,12 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals(1, listing.size());
             list = new ArrayList<String>(listing.keySet());
             assertEquals("figs", list.get(0));
-            // /layer/e contains baz.
+            // /layer/e contains baz and figs.
             listing = fService.getDirectoryListing(-1, "main:/layer/e");
-            assertEquals(1, listing.size());
+            assertEquals(2, listing.size());
             list = new ArrayList<String>(listing.keySet());
             assertEquals("baz", list.get(0));
+            assertEquals("figs", list.get(1));
             for (String val : history.values())
             {
                 System.out.println(val);
@@ -3592,8 +3631,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             results = searchService.query(storeRef, "lucene", "PATH:\"/a/b\"");
             assertEquals(0, results.length());
             results.close();
-            
-            
+
+
             results = searchService.query(storeRef, "lucene", "PATH:\"/d\"");
             assertEquals(1, results.length());
             results.close();
@@ -3605,7 +3644,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             results = searchService.query(storeRef, "lucene", "PATH:\"/d/e/brenamed\"");
             assertEquals(1, results.length());
             results.close();
-            
+
             results = searchService.query(storeRef, "lucene", "PATH:\"/d/e/brenamed/c\"");
             assertEquals(1, results.length());
             results.close();
@@ -3618,7 +3657,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals(1, results.length());
             results.close();
 
-            
+
             results = searchService.query(storeRef, "lucene", "PATH:\"/d/e/f\"");
             assertEquals(1, results.length());
             results.close();
@@ -3666,7 +3705,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             results = searchService.query(storeRef, "lucene", "PATH:\"/*/*/*/*/*\"");
             assertEquals(2, results.length());
             results.close();
-            
+
             results = searchService.query(storeRef, "lucene", "PATH:\"/*/*/*/*/*/*\"");
             assertEquals(0, results.length());
             results.close();
@@ -3702,7 +3741,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             System.out.println(history.get(2));
             l = fService.getDirectoryListing(-1, "main:/d");
             assertEquals(0, l.size());
-            
+
 //          Text index
             StoreRef storeRef = AVMNodeConverter.ToStoreRef("main");
             SearchService searchService = fIndexerAndSearcher.getSearcher(storeRef, true);
@@ -3841,7 +3880,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             results = searchService.query(storeRef, "lucene", "PATH:\"/*/*/*/*/*\"");
             assertEquals(0, results.length());
             results.close();
-            
+
         }
         catch (Exception e)
         {
@@ -4704,224 +4743,224 @@ public class AVMServiceTest extends AVMServiceTestBase
         }
     }
 
-    
+
     protected void runQueriesForInitialRenameStructure(String store)
     {
         StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
-        
-      
+
+
         SearchService searchService = fIndexerAndSearcher.getSearcher(AVMNodeConverter.ToStoreRef(store), true);
-        
+
         // Note "a" is a stop word and therefore not findable ...
-        
+
         ResultSet   results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_CREATOR)+":admin");
         assertEquals(7, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_MODIFIER)+":admin");
         assertEquals(7, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_OWNER)+":admin");
         assertEquals(7, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_NODE_UUID)+":unknown");
         assertEquals(7, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_STORE_PROTOCOL)+":avm");
         assertEquals(7, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_STORE_IDENTIFIER)+":"+store);
         assertEquals(7, results.length());
         results.close();
-        
+
         // Basic paths
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/a\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/a/b\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/a/b/c\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/d\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/d/e\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/d/e/f\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
         assertEquals(7, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"//*\"");
         assertEquals(6, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/a//.\"");
         assertEquals(3, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/a//*\"");
         assertEquals(2, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/a/*\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"//c/*\"");
         assertEquals(0, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/*\"");
         assertEquals(2, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/*/*\"");
         assertEquals(2, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/*/*/*\"");
         assertEquals(2, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/*/*/*/*\"");
         assertEquals(0, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/*/*/*/*/*\"");
         assertEquals(0, results.length());
         results.close();
     }
-    
-    
+
+
     protected void runQueriesForInitialRenameStructureAndInitialLayers(String store)
     {
         StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
-        
-      
+
+
         SearchService searchService = fIndexerAndSearcher.getSearcher(AVMNodeConverter.ToStoreRef(store), true);
-        
+
         // Note "a" is a stop word and therefore not findable ...
-        
+
         ResultSet   results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_CREATOR)+":admin");
         assertEquals(9, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_MODIFIER)+":admin");
         assertEquals(7, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_OWNER)+":admin");
         assertEquals(7, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_NODE_UUID)+":unknown");
         assertEquals(7, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_STORE_PROTOCOL)+":avm");
         assertEquals(7, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", LuceneQueryParser.escape("@"+ContentModel.PROP_STORE_IDENTIFIER)+":"+store);
         assertEquals(7, results.length());
         results.close();
-        
+
         // Basic paths
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/a\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/a/b\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/a/b/c\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/d\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/d/e\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/d/e/f\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
         assertEquals(7, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"//*\"");
         assertEquals(6, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/a//.\"");
         assertEquals(3, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/a//*\"");
         assertEquals(2, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/a/*\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"//c/*\"");
         assertEquals(0, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/*\"");
         assertEquals(2, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/*/*\"");
         assertEquals(2, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/*/*/*\"");
         assertEquals(2, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/*/*/*/*\"");
         assertEquals(0, results.length());
         results.close();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"/*/*/*/*/*\"");
         assertEquals(0, results.length());
         results.close();
     }
-    
+
     /**
      * Test rename behavior of an overlayed file withing a layer.
      */
@@ -5178,7 +5217,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            
+
             StoreRef storeRef = AVMNodeConverter.ToStoreRef("main");
             SearchService searchService = fIndexerAndSearcher.getSearcher(storeRef, true);
             ResultSet   results = searchService.query(storeRef, "lucene", "ASPECT:\"" + ContentModel.ASPECT_TITLED.toString()  +"\"");
@@ -5187,7 +5226,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             results = searchService.query(storeRef, "lucene", "ASPECT:\"" + ContentModel.ASPECT_AUDITABLE.toString()  +"\"");
             assertEquals(0, results.length());
             results.close();
-            
+
             fService.addAspect("main:/a/b/c/foo", ContentModel.ASPECT_TITLED);
             fService.addAspect("main:/a/b/c/foo", ContentModel.ASPECT_AUDITABLE);
             Map<QName, PropertyValue> properties = new HashMap<QName, PropertyValue>();
@@ -5198,14 +5237,14 @@ public class AVMServiceTest extends AVMServiceTestBase
             properties.put(ContentModel.PROP_MODIFIER, new PropertyValue(DataTypeDefinition.TEXT, "Quentin"));
             fService.setNodeProperties("main:/a/b/c/foo", properties);
             fService.createSnapshot("main", null, null);
-            
+
             results = searchService.query(storeRef, "lucene", "ASPECT:\"" + ContentModel.ASPECT_TITLED.toString()  +"\"");
             assertEquals(1, results.length());
             results.close();
             results = searchService.query(storeRef, "lucene", "ASPECT:\"" + ContentModel.ASPECT_AUDITABLE.toString()  +"\"");
             assertEquals(1, results.length());
             results.close();
-            
+
             fService.removeNode("main:/a/b/c/bar");
             fService.addAspect("main:/a/b/c/bar", ContentModel.ASPECT_TITLED);
             Set<QName> names = fService.getAspects(-1, "main:/a/b/c/foo");
@@ -5215,15 +5254,15 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertTrue(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_TITLED));
             fService.removeAspect("main:/a/b/c/foo", ContentModel.ASPECT_TITLED);
             fService.createSnapshot("main", null, null);
-            
+
             results = searchService.query(storeRef, "lucene", "ASPECT:\"" + ContentModel.ASPECT_TITLED.toString()  +"\"");
             assertEquals(0, results.length());
             results.close();
             results = searchService.query(storeRef, "lucene", "ASPECT:\"" + ContentModel.ASPECT_AUDITABLE.toString()  +"\"");
             assertEquals(1, results.length());
             results.close();
-            
-            
+
+
             fService.getFileOutputStream("main:/a/b/c/foo").close();
             assertFalse(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_TITLED));
             assertTrue(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_AUDITABLE));
@@ -5567,52 +5606,52 @@ public class AVMServiceTest extends AVMServiceTestBase
             avmIndexer.deleteIndex("avmAsynchronousTest", IndexMode.SYNCHRONOUS);
         }
         tx.commit();
-        
+
         tx = fTransactionService.getUserTransaction();
         tx.begin();
         assertEquals(-1, fIndexingInterceptor.getLastIndexedSnapshot("bananaStoreWoof"));
         assertEquals(-1, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
         tx.commit();
-      
+
         // TODO: Suspend and resume indexing in case we are really unlucky and hit an index before we expect it.
-        
+
         SearchService searchService = fIndexerAndSearcher.getSearcher(storeRef, true);
         ResultSet results;
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
         assertEquals(0, results.length());
         results.close();
-        
+
         fService.createStore("avmAsynchronousTest");
-        
+
         tx = fTransactionService.getUserTransaction();
         tx.begin();
         assertEquals(0, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
         tx.commit();
-        
+
         fService.createSnapshot("avmAsynchronousTest", null, null);
-        
+
         tx = fTransactionService.getUserTransaction();
         tx.begin();
         assertEquals(0, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
         tx.commit();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         fService.createDirectory("avmAsynchronousTest:/", "a");
         fService.createDirectory("avmAsynchronousTest:/a", "b");
         fService.createDirectory("avmAsynchronousTest:/a/b", "c");
-        
+
         tx = fTransactionService.getUserTransaction();
         tx.begin();
         assertEquals(0, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
         assertTrue(fIndexingInterceptor.isIndexUpToDate("avmAsynchronousTest"));
         tx.commit();
-        
+
         fService.createSnapshot("avmAsynchronousTest", null, null);
-        
+
         tx = fTransactionService.getUserTransaction();
         tx.begin();
         assertEquals(1, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
@@ -5624,31 +5663,31 @@ public class AVMServiceTest extends AVMServiceTestBase
         assertTrue(fIndexingInterceptor.isSnapshotIndexed("avmAsynchronousTest", 1));
         assertFalse(fIndexingInterceptor.isSnapshotIndexed("avmAsynchronousTest", 2));
         tx.commit();
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
         assertEquals(1, results.length());
         results.close();
-        
+
         Thread.sleep(180000);
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
         assertEquals(4, results.length());
         results.close();
-        
-        
+
+
         tx = fTransactionService.getUserTransaction();
         tx.begin();
         assertEquals(1, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
         assertTrue(fIndexingInterceptor.isIndexUpToDate("avmAsynchronousTest"));
         assertTrue(fIndexingInterceptor.isIndexUpToDateAndSearchable("avmAsynchronousTest"));
         tx.commit();
-        
+
         fService.purgeStore("avmAsynchronousTest");
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
         assertEquals(0, results.length());
         results.close();
-        
+
         fService.createStore("avmAsynchronousTest");
         fService.createSnapshot("avmAsynchronousTest", null, null);
         fService.createDirectory("avmAsynchronousTest:/", "a");
@@ -5662,9 +5701,9 @@ public class AVMServiceTest extends AVMServiceTestBase
         fService.createDirectory("avmAsynchronousTest:/a", "b");
         fService.createDirectory("avmAsynchronousTest:/a/b", "c");
         fService.createSnapshot("avmAsynchronousTest", null, null);
-        
+
         Thread.sleep(180000);
-        
+
         results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
         assertEquals(4, results.length());
         results.close();

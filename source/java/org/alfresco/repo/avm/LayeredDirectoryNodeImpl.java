@@ -53,34 +53,34 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * The layer id.
      */
     private long fLayerID;
-    
+
     /**
      * The pointer to the underlying directory.
      */
     private String fIndirection;
-    
+
     /**
      * Whether this is a primary indirection node.
      */
     private boolean fPrimaryIndirection;
-    
+
     /**
      * Whether this is opaque.
      */
     private boolean fOpacity;
-    
+
     /**
      * The indirection version.
      */
     private int fIndirectionVersion;
-    
+
     /**
      * Default constructor. Called by Hibernate.
      */
     protected LayeredDirectoryNodeImpl()
     {
     }
-    
+
     /**
      * Make a new one from a specified indirection path.
      * @param indirection The indirection path to set.
@@ -111,7 +111,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             copyAspects(toCopy);
         }
     }
-    
+
     /**
      * Kind of copy constructor, sort of.
      * @param other The LayeredDirectoryNode we are copied from.
@@ -119,7 +119,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     @SuppressWarnings("unchecked")
     public LayeredDirectoryNodeImpl(LayeredDirectoryNode other,
-                                    AVMStore repos)
+                                    AVMStore repos,
+                                    Lookup lookup, boolean copyAll)
     {
         super(repos.getAVMRepository().issueID(), repos);
         fIndirection = other.getIndirection();
@@ -128,12 +129,20 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fLayerID = -1;
         fOpacity = false;
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
-        for (ChildEntry child : AVMDAOs.Instance().fChildEntryDAO.getByParent(other))
+        Map<String, AVMNode> children = null;
+        if (copyAll)
         {
-            ChildKey key = new ChildKey(this, child.getKey().getName());
-            ChildEntryImpl newChild = new ChildEntryImpl(key,                                                         
-                                                         child.getChild());
-            AVMDAOs.Instance().fChildEntryDAO.save(newChild);
+            children = other.getListing(lookup, true);
+        }
+        else
+        {
+            children = other.getListingDirect(lookup, true);
+        }
+        for (Map.Entry<String, AVMNode> child : children.entrySet())
+        {
+            ChildKey key = new ChildKey(this, child.getKey());
+            ChildEntry entry = new ChildEntryImpl(key, child.getValue());
+            AVMDAOs.Instance().fChildEntryDAO.save(entry);
         }
         setVersionID(other.getVersionID() + 1);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
@@ -141,7 +150,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         copyAspects(other);
         copyACLs(other);
     }
-    
+
     /**
      * Construct one from a PlainDirectoryNode.  Called when a COW is performed in a layered
      * context.
@@ -200,12 +209,19 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fOpacity = false;
         setVersionID(dir.getVersionID() + 1);
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
+        Map<String, AVMNode> children = dir.getListing(srcLookup, true);
+        for (Map.Entry<String, AVMNode> child : children.entrySet())
+        {
+            ChildKey key = new ChildKey(this, child.getKey());
+            ChildEntry entry = new ChildEntryImpl(key, child.getValue());
+            AVMDAOs.Instance().fChildEntryDAO.save(entry);
+        }
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         copyProperties(dir);
         copyAspects(dir);
         copyACLs(dir);
-    }   
-    
+    }
+
     /**
      * Is this a primary indirection node.
      * @return Whether this is a primary indirection.
@@ -214,7 +230,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     {
         return fPrimaryIndirection;
     }
-    
+
     /**
      * Set the primary indirection state of this.
      * @param has Whether this is a primary indirection node.
@@ -223,7 +239,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     {
         fPrimaryIndirection = has;
     }
-    
+
     /**
      * Get the indirection path.
      * @return The indirection path.
@@ -232,7 +248,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     {
         return fIndirection;
     }
-    
+
     /**
      * Get the underlying path in the Lookup's context.
      * @param lPath The Lookup.
@@ -264,7 +280,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
         return lPath.getCurrentIndirectionVersion();
     }
-    
+
     /**
      * Get the layer id.
      * @return The layer id.
@@ -273,7 +289,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     {
         return fLayerID;
     }
-    
+
     /**
      * Set the layer id.
      * @param id The id to set.
@@ -282,7 +298,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     {
         fLayerID = id;
     }
-    
+
     /**
      * Copy on write logic.
      * @param lPath
@@ -298,7 +314,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             // This means that this is being seen indirectly through the topmost
             // layer.  The following creates a node that will inherit its
             // indirection from its parent.
-            newMe = new LayeredDirectoryNodeImpl((String)null, 
+            newMe = new LayeredDirectoryNodeImpl((String)null,
                                                  store, this);
             newMe.setPrimaryIndirection(false);
             newMe.setLayerID(lPath.getTopLayer().getLayerID());
@@ -307,7 +323,9 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             // A simple copy is made.
             newMe = new LayeredDirectoryNodeImpl(this,
-                                                 store);
+                                                 store,
+                                                 lPath,
+                                                 false);
             newMe.setLayerID(getLayerID());
         }
         newMe.setAncestor(this);
@@ -412,7 +430,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @param includeDeleted Whether to inlude deleted nodes.
      * @return A Map of Strings to descriptors.
      */
-    public SortedMap<String, AVMNodeDescriptor> getListingDirect(AVMNodeDescriptor dir, 
+    public SortedMap<String, AVMNodeDescriptor> getListingDirect(AVMNodeDescriptor dir,
                                                                  boolean includeDeleted)
     {
         List<ChildEntry> children = AVMDAOs.Instance().fChildEntryDAO.getByParent(this);
@@ -430,14 +448,14 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
         return listing;
     }
-    
+
     /**
      * Get a listing from a directory node descriptor.
      * @param dir The directory node descriptor.
      * @param includeDeleted Should DeletedNodes be shown.
      * @return A Map of names to node descriptors.
      */
-    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir, 
+    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir,
                                                            boolean includeDeleted)
     {
         if (dir.getPath() == null || dir.getIndirection() == null)
@@ -500,7 +518,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     }
 
     /**
-     * Lookup a child by name. 
+     * Lookup a child by name.
      * @param lPath The Lookup.
      * @param name The name we are looking.
      * @param version The version in which we are looking.
@@ -556,7 +574,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        ChildKey key = new ChildKey(this, name);        
+        ChildKey key = new ChildKey(this, name);
         ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
         if (entry != null)
         {
@@ -627,7 +645,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             {
                 child = temp.getFirst();
             }
-            indirect = true;            
+            indirect = true;
         }
         if (child != null && (indirect || child.getStoreNew() == null || child.getAncestor() != null))
         {
@@ -644,7 +662,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             AVMDAOs.Instance().fAVMNodeDAO.flush();
         }
     }
-    
+
     /**
      * Get the type of this node.
      * @return The type of this node.
@@ -663,7 +681,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     {
         return "[LD:" + getId() + ":" + getUnderlying(lPath) + "]";
     }
-    
+
     /**
      * Set the primary indirection. No COW.
      * @param path The indirection path.
@@ -677,7 +695,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fIndirection = path;
         fPrimaryIndirection = true;
     }
-    
+
     /**
      * Make this node become a primary indirection.  COW.
      * @param lPath The Lookup.
@@ -704,7 +722,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
         rawSetPrimary(target);
     }
-    
+
     /**
      * Let anything behind name in this become visible.
      * @param lPath The Lookup.
@@ -727,7 +745,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             AVMDAOs.Instance().fChildEntryDAO.delete(entry);
         }
     }
-    
+
     /**
      * Get the descriptor for this node.
      * @param lPath The Lookup.
@@ -798,7 +816,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                                      fPrimaryIndirection,
                                      fLayerID,
                                      fOpacity,
-                                     -1, 
+                                     -1,
                                      -1);
     }
 
@@ -822,7 +840,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
         else
         {
-            indirection = parentIndirection.endsWith("/") ? parentIndirection + name : 
+            indirection = parentIndirection.endsWith("/") ? parentIndirection + name :
                 parentIndirection + "/" + name;
             indirectionVersion = parentIndirectionVersion;
         }
@@ -929,7 +947,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         ChildEntry newChild = new ChildEntryImpl(key, node);
         AVMDAOs.Instance().fChildEntryDAO.save(newChild);
     }
-    
+
     /**
      * Remove name without leaving behind a deleted node.
      * @param name The name of the child to flatten.
@@ -962,7 +980,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             fIndirectionVersion = version;
         }
     }
-    
+
     /**
      * Get the indirection version.
      * @return The indirection version.

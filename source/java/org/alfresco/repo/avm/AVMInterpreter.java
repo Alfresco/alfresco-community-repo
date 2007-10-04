@@ -56,12 +56,12 @@ public class AVMInterpreter
      * The service interface.
      */
     private AVMService fService;
-    
+
     /**
      * The sync service.
      */
     private AVMSyncService fSyncService;
-    
+
     /**
      * The reader for interaction.
      */
@@ -73,12 +73,12 @@ public class AVMInterpreter
     private BulkLoader fLoader;
 
     /**
-     * Main entry point.  
+     * Main entry point.
      * Syntax: AVMInteractiveConsole storage (new|old).
      */
     public static void main(String[] args)
     {
-        FileSystemXmlApplicationContext context = 
+        FileSystemXmlApplicationContext context =
             new FileSystemXmlApplicationContext("config/alfresco/application-context.xml");
         AVMInterpreter console = new AVMInterpreter();
         console.setAvmService((AVMService)context.getBean("AVMService"));
@@ -106,7 +106,7 @@ public class AVMInterpreter
     {
         fService = service;
     }
-    
+
     /**
      * Set the AVM sync service.
      * @param syncService
@@ -115,7 +115,7 @@ public class AVMInterpreter
     {
         fSyncService = syncService;
     }
-    
+
     /**
      * Set the bulk loader.
      * @param loader
@@ -124,7 +124,7 @@ public class AVMInterpreter
     {
         fLoader = loader;
     }
-    
+
     /**
      * A Read-Eval-Print loop.
      */
@@ -181,7 +181,7 @@ public class AVMInterpreter
                     return "Not Found.";
                 }
                 Map<String, AVMNodeDescriptor> listing =
-                    fService.getDirectoryListing(desc);
+                    fService.getDirectoryListing(desc, true);
                 for (String name : listing.keySet())
                 {
                     out.println(name + " " + listing.get(name));
@@ -320,9 +320,9 @@ public class AVMInterpreter
                 {
                     return "Syntax Error.";
                 }
-                BufferedReader reader = 
+                BufferedReader reader =
                     new BufferedReader(
-                        new InputStreamReader(fService.getFileInputStream(Integer.parseInt(command[2]), 
+                        new InputStreamReader(fService.getFileInputStream(Integer.parseInt(command[2]),
                                                                           command[1])));
                 String l;
                 while ((l = reader.readLine()) != null)
@@ -361,7 +361,7 @@ public class AVMInterpreter
                 {
                     return "Syntax Error.";
                 }
-                PrintStream ps = 
+                PrintStream ps =
                     new PrintStream(fService.getFileOutputStream(command[1]));
                 String l;
                 while (!(l = in.readLine()).equals(""))
@@ -376,7 +376,7 @@ public class AVMInterpreter
                 {
                     return "Syntax Error.";
                 }
-                PrintStream ps = 
+                PrintStream ps =
                     new PrintStream(fService.createFile(command[1], command[2]));
                 String l;
                 while (!(l = in.readLine()).equals(""))
@@ -415,7 +415,7 @@ public class AVMInterpreter
                {
                   return "Syntax Error.";
                }
-               
+
                fService.deleteNodeProperty(command[1], QName.createQName(command[2]));
                out.println("deleted property " + command[2] + " of " + command[1]);
             }
@@ -483,7 +483,7 @@ public class AVMInterpreter
                     return "Not Found.";
                 }
                 out.println(desc);
-                Map<QName, PropertyValue> props = 
+                Map<QName, PropertyValue> props =
                     fService.getStoreProperties(command[1]);
                 for (QName name : props.keySet())
                 {
@@ -512,7 +512,7 @@ public class AVMInterpreter
                 {
                     return "Syntax Error.";
                 }
-                AVMDifference diff = new AVMDifference(Integer.parseInt(command[2]), command[1], 
+                AVMDifference diff = new AVMDifference(Integer.parseInt(command[2]), command[1],
                                                        -1, command[3], AVMDifference.NEWER);
                 List<AVMDifference> diffs = new ArrayList<AVMDifference>();
                 diffs.add(diff);
@@ -552,7 +552,7 @@ public class AVMInterpreter
 
     private void recursiveList(PrintStream out, AVMNodeDescriptor dir, int indent)
     {
-        Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(dir);
+        Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(dir, true);
         for (String name : listing.keySet())
         {
             AVMNodeDescriptor child = listing.get(name);
@@ -568,7 +568,7 @@ public class AVMInterpreter
         }
     }
 }
-                    
 
 
-                
+
+

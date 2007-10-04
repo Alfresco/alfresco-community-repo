@@ -140,11 +140,6 @@ public class AdvancedSearchDialog extends BaseDialogBean
     */
    public DataModel getCategoriesDataModel()
    {
-      if (properties.getCategoriesDataModel() == null)
-      {
-         properties.setCategoriesDataModel(new ListDataModel());
-      }
-      
       properties.getCategoriesDataModel().setWrappedData(properties.getCategories());
       
       return properties.getCategoriesDataModel();

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.model.DataModel;
+import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
 import org.alfresco.repo.cache.ExpiringValueCache;
@@ -101,7 +102,7 @@ public class SearchProperties
     private List<Node> categories = new ArrayList<Node>(2);
 
     /** datamodel for table of categories to search */
-    private DataModel categoriesDataModel = null;
+    private DataModel categoriesDataModel = new ListDataModel();
 
     /** title attribute to search */
     private String title = null;
@@ -334,11 +335,6 @@ public class SearchProperties
     public DataModel getCategoriesDataModel()
     {
         return categoriesDataModel;
-    }
-
-    public void setCategoriesDataModel(DataModel categoriesDataModel)
-    {
-        this.categoriesDataModel = categoriesDataModel;
     }
 
     public String getTitle()

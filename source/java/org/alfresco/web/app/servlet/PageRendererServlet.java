@@ -104,9 +104,12 @@ public class PageRendererServlet extends WebScriptServlet
    private static final String PARAM_COMPONENT_ID  = "_alfId";
    private static final String PARAM_COMPONENT_URL = "_alfUrl";
    
+   // timeout to reload default page cache from 
+   private static final int DEFAULT_PAGE_CONFIG_CACHE_TIMEOUT = 30000;
+   
    private PageTemplateProcessor templateProcessor;
    private WebScriptTemplateLoader webscriptTemplateLoader;
-   private Map<String, PageDefinition> defaultPageDefCache = null;
+   private Map<String, ExpiringValueCache<PageDefinition>> defaultPageDefMap = null;
    
    @Override
    public void init() throws ServletException
@@ -129,7 +132,7 @@ public class PageRendererServlet extends WebScriptServlet
       configService = (ConfigService)context.getBean("pagerenderer.config");
       
       // create cache for default config
-      defaultPageDefCache = Collections.synchronizedMap(new HashMap<String, PageDefinition>());
+      defaultPageDefMap = Collections.synchronizedMap(new HashMap<String, ExpiringValueCache<PageDefinition>>());
    }
 
    @Override
@@ -274,14 +277,19 @@ public class PageRendererServlet extends WebScriptServlet
    private PageDefinition lookupPageDefinition(String store, String contextPath, String page)
    {
       // Lookup (and cache) config for default page-definition file in root
-      PageDefinition defaultPageDef = defaultPageDefCache.get(store);
-      // TODO: check last modified date (use auto-timeout cache object!)
+      ExpiringValueCache<PageDefinition> cache = defaultPageDefMap.get(store);
+      if (cache == null)
+      {
+         cache = new ExpiringValueCache<PageDefinition>(DEFAULT_PAGE_CONFIG_CACHE_TIMEOUT);
+         defaultPageDefMap.put(store, cache);
+      }
+      PageDefinition defaultPageDef = cache.get();
       if (defaultPageDef == null)
       {
          // read default config for the site and cache the result
          String defaultConfigPath = getPageDefinitionPath(null, store, contextPath);
          defaultPageDef = readPageDefinitionConfig(defaultConfigPath, page, null);
-         defaultPageDefCache.put(store, defaultPageDef);
+         cache.put(defaultPageDef);
       }
       
       // Lookup page xml config in AVM store using page name as location
@@ -796,19 +804,19 @@ public class PageRendererServlet extends WebScriptServlet
    /**
     * Helper to return context path for generating urls
     */
-   public static class URLHelper
+   private static class URLHelper
    {
-       String context;
-       
-       public URLHelper(String context)
-       {
-           this.context = context;
-       }
-       
-       public String getContext()
-       {
-           return context;
-       }
+      String context;
+
+      public URLHelper(String context)
+      {
+         this.context = context;
+      }
+
+      public String getContext()
+      {
+         return context;
+      }
    }
    
    /**
@@ -858,6 +866,60 @@ public class PageRendererServlet extends WebScriptServlet
       public String toString()
       {
          return "Component: " + Id + " URL: " + Url + " Properties: " + Properties.toString(); 
+      }
+   }
+   
+   /**
+    * Helper class to automatically expire a cached value after a timeout 
+    */
+   private static class ExpiringValueCache<T>
+   {
+      private long timeout;
+      private long snapshot = 0;
+      private T value;
+
+      /**
+       * Constructor
+       * 
+       * @param timeout   Timeout in milliseconds before cached value is discarded
+       */
+      public ExpiringValueCache(long timeout)
+      {
+         this.timeout = timeout; 
+      }
+
+      /**
+       * Put a value into the cache. The item will be return from the associated get() method
+       * until the timeout expires then null will be returned.
+       * 
+       * @param value     The object to store in the cache
+       */
+      public void put(T value)
+      {
+         this.value = value;
+         this.snapshot = System.currentTimeMillis();
+      }
+
+      /**
+       * Get the cached object. The set item will be returned until it expires, then null will be returned.
+       *  
+       * @return cached object or null if not set or expired.
+       */
+      public T get()
+      {
+         if (snapshot + timeout < System.currentTimeMillis())
+         {
+            this.value = null;
+         }
+         return this.value;
+      }
+
+      /**
+       * Clear the cache value
+       */
+      public void clear()
+      {
+         this.value = null;
       }
    }
 }

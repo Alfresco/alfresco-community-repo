@@ -370,6 +370,11 @@ public class NavigationBean
             context.getApplication().getNavigationHandler().handleNavigation(context, null, OUTCOME_MYALFRESCO);
          }
       }
+      else
+      {
+         // handle outcomes to any other custom location
+         context.getApplication().getNavigationHandler().handleNavigation(context, null, location);
+      }
    }
    
    /**

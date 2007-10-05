@@ -25,7 +25,6 @@
 package org.alfresco.web.action.evaluator;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.wcm.AVMUtil;
 
@@ -34,7 +33,7 @@ import org.alfresco.web.bean.wcm.AVMUtil;
  * 
  * @author Kevin Roast
  */
-public class WCMStagingReadonlyEvaluator implements ActionEvaluator
+public class WCMStagingReadonlyEvaluator extends BaseActionEvaluator
 {
    /**
     * @return true if the item is not locked by another user

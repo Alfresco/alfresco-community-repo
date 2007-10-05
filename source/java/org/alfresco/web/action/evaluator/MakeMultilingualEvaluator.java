@@ -27,7 +27,6 @@ package org.alfresco.web.action.evaluator;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.UserPreferencesBean;
 import org.alfresco.web.bean.repository.Node;
@@ -39,7 +38,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * @author Yannick Pignot
  */
-public class MakeMultilingualEvaluator implements ActionEvaluator
+public class MakeMultilingualEvaluator extends BaseActionEvaluator
 {
    public boolean evaluate(Node node)
    {

@@ -29,7 +29,6 @@ import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 
@@ -38,7 +37,7 @@ import org.alfresco.web.bean.repository.Repository;
  * 
  * @author Kevin Roast
  */
-public class CheckoutDocEvaluator implements ActionEvaluator
+public class CheckoutDocEvaluator extends BaseActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)

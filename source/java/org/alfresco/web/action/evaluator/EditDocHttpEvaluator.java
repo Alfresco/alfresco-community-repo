@@ -30,7 +30,6 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -40,7 +39,7 @@ import org.alfresco.web.bean.repository.Repository;
  * 
  * @author Kevin Roast
  */
-public class EditDocHttpEvaluator implements ActionEvaluator
+public class EditDocHttpEvaluator extends BaseActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)

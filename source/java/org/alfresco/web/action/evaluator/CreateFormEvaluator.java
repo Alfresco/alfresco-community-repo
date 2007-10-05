@@ -29,7 +29,6 @@ import javax.faces.context.FacesContext;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.NavigationBean;
@@ -41,7 +40,7 @@ import org.alfresco.web.bean.repository.Repository;
  * 
  * @author Kevin Roast
  */
-public class CreateFormEvaluator implements ActionEvaluator
+public class CreateFormEvaluator extends BaseActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)

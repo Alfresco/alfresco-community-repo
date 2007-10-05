@@ -28,7 +28,6 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
-import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
@@ -42,7 +41,7 @@ import org.alfresco.web.bean.wcm.WebProject;
  * 
  * @author Kevin Roast
  */
-public class WCMLockEvaluator implements ActionEvaluator
+public class WCMLockEvaluator extends BaseActionEvaluator
 {
    /**
     * @return true if the item is not locked by another user

@@ -24,10 +24,12 @@
  */
 package org.alfresco.web.ui.repo.component.evaluator;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
-import org.alfresco.config.ConfigException;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Node;
@@ -56,12 +58,30 @@ public class ActionInstanceEvaluator extends BaseEvaluator
          {
             result = this.getEvaluator().evaluate((Node)obj);
          }
+         else
+         {
+            result = this.getEvaluator().evaluate(obj);
+         }
       }
       catch (Exception err)
       {
-         // return default value on error
-         s_logger.warn("Error during ActionInstanceEvaluator evaluation of " + this.getEvaluator() +
-                       ": " + err.getMessage());
+         // return default value on error and report meaningful error
+         StringBuilder builder = new StringBuilder("Error during ActionInstanceEvaluator evaluation of ");
+         builder.append(this.getEvaluator()).append(": ");
+         String msg = err.getMessage();
+         if (msg != null)
+         {
+            builder.append(msg);
+         }
+         else
+         {
+            StringWriter strWriter = new StringWriter();
+            PrintWriter writer = new PrintWriter(strWriter);
+            err.printStackTrace(writer);
+            builder.append(strWriter.toString());
+         }
+         
+         s_logger.warn(builder.toString());
       }
       
       return result;

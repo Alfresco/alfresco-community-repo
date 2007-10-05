@@ -26,7 +26,6 @@ package org.alfresco.web.action.evaluator;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
@@ -36,7 +35,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * @author Kevin Roast
  */
-public class ShortcutNodeEvaluator implements ActionEvaluator
+public class ShortcutNodeEvaluator extends BaseActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)

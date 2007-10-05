@@ -31,7 +31,6 @@ import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 
@@ -42,7 +41,7 @@ import org.alfresco.web.bean.repository.Repository;
  * 
  * @author gavinc
  */
-public class DiscussionCopyEvaluator implements ActionEvaluator
+public class DiscussionCopyEvaluator extends BaseActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)

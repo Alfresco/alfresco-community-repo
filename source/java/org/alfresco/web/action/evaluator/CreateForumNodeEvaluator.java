@@ -25,7 +25,6 @@
 package org.alfresco.web.action.evaluator;
 
 import org.alfresco.model.ForumModel;
-import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Node;
 
 /**
@@ -33,7 +32,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * @author Kevin Roast
  */
-public class CreateForumNodeEvaluator implements ActionEvaluator
+public class CreateForumNodeEvaluator extends BaseActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)

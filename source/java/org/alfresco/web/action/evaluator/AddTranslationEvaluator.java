@@ -28,7 +28,6 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
-import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.UserPreferencesBean;
 import org.alfresco.web.bean.ml.MultilingualUtils;
@@ -45,8 +44,11 @@ import org.alfresco.web.bean.repository.Node;
  *
  * @author Yannick Pignot
  */
-public class AddTranslationEvaluator implements ActionEvaluator
+public class AddTranslationEvaluator extends BaseActionEvaluator
 {
+   /**
+    * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
+    */
    public boolean evaluate(Node node)
    {
       boolean isNodeMultililingal = node.hasAspect(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);

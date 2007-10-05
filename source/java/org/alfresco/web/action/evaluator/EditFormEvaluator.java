@@ -23,8 +23,6 @@
 package org.alfresco.web.action.evaluator;
 
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Node;
 
 /**
@@ -32,7 +30,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * @author Ariel Backenroth
  */
-public class EditFormEvaluator implements ActionEvaluator
+public class EditFormEvaluator extends BaseActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)

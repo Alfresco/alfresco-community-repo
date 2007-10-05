@@ -27,7 +27,6 @@ package org.alfresco.web.action.evaluator;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
@@ -37,7 +36,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * @author gavinc
  */
-public class StartWorkflowEvaluator implements ActionEvaluator
+public class StartWorkflowEvaluator extends BaseActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)

@@ -26,7 +26,6 @@ package org.alfresco.web.action.evaluator;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Node;
 
 /**
@@ -34,7 +33,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * @author Kevin Roast
  */
-public class CancelCheckoutDocEvaluator implements ActionEvaluator
+public class CancelCheckoutDocEvaluator extends BaseActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)

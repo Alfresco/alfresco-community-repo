@@ -684,6 +684,7 @@
          <action id="delete_group">
             <label-id>delete_group</label-id>
             <image>/images/icons/delete_group.gif</image>
+            <evaluator>org.alfresco.web.action.evaluator.GroupActionEvaluator</evaluator>
             <action>dialog:deleteGroup</action>
             <action-listener>#{DialogManager.setupParameters}</action-listener>
             <params>
@@ -696,6 +697,7 @@
          <action id="add_group_user">
             <label-id>add_user</label-id>
             <image>/images/icons/add_user.gif</image>
+            <evaluator>org.alfresco.web.action.evaluator.GroupActionEvaluator</evaluator>
             <action>dialog:addUsers</action>
             <action-listener>#{DialogManager.setupParameters}</action-listener>
             <params>

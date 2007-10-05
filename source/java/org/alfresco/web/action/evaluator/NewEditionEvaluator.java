@@ -26,7 +26,6 @@ package org.alfresco.web.action.evaluator;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.ml.MultilingualUtils;
 import org.alfresco.web.bean.repository.Node;
 
@@ -38,7 +37,7 @@ import org.alfresco.web.bean.repository.Node;
  *
  * @author Yanick Pignot
  */
-public class NewEditionEvaluator implements ActionEvaluator
+public class NewEditionEvaluator extends BaseActionEvaluator
 {
    public boolean evaluate(Node node)
    {

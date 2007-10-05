@@ -31,7 +31,6 @@ import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 
@@ -40,7 +39,7 @@ import org.alfresco.web.bean.repository.Repository;
  * 
  * @author Kevin Roast
  */
-public class ForumsCheckinDocEvaluator implements ActionEvaluator
+public class ForumsCheckinDocEvaluator extends BaseActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)

@@ -31,7 +31,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.util.ISO9075;
-import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -44,7 +43,7 @@ import org.alfresco.web.bean.repository.User;
  * 
  * @author gavinc
  */
-public class CancelWorkflowEvaluator implements ActionEvaluator
+public class CancelWorkflowEvaluator extends BaseActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)

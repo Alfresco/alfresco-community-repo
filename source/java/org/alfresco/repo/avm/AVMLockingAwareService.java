@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing
  */
 
@@ -61,13 +61,13 @@ import org.springframework.context.ApplicationContextAware;
 public class AVMLockingAwareService implements AVMService, ApplicationContextAware
 {
     private AVMService fService;
-    
+
     private AVMLockingService fLockingService;
-    
+
     private AuthenticationService fAuthenticationService;
-    
+
     private ApplicationContext fContext;
-    
+
     public AVMLockingAwareService()
     {
     }
@@ -79,7 +79,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     {
         fContext = applicationContext;
     }
-    
+
     public void init()
     {
         fService = (AVMService)fContext.getBean("avmService");
@@ -678,6 +678,8 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         fService.removeNode(parent, name);
         String[] storePath = parent.split(":");
         fService.createSnapshot(storePath[0], null, null);
+        fLockingService.removeLocksInDirectory(getWebProject(storePath[0]), storePath[0],
+                                               storePath[1] + '/' + name);
     }
 
     /* (non-Javadoc)
@@ -689,6 +691,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         fService.removeNode(path);
         String[] storePath = path.split(":");
         fService.createSnapshot(storePath[0], null, null);
+        fLockingService.removeLocksInDirectory(getWebProject(storePath[0]), storePath[0], storePath[1]);
     }
 
     /* (non-Javadoc)
@@ -834,7 +837,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         grabLock(dirPath + '/' + name);
         fService.uncover(dirPath, name);
     }
-    
+
     private String[] splitPath(String path)
     {
         String[] storePath = path.split(":");
@@ -844,7 +847,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         }
         return storePath;
     }
-    
+
     private String getWebProject(String name)
     {
         Map<QName, PropertyValue> results = fService.queryStorePropertyKey(name, QName.createQName(null, ".dns%"));
@@ -855,7 +858,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         String dnsString = results.keySet().iterator().next().getLocalName();
         return dnsString.substring(dnsString.lastIndexOf('.') + 1, dnsString.length());
     }
-    
+
     private void grabLock(String path)
     {
         AVMNodeDescriptor desc = fService.lookup(-1, path, false);

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.alfresco.repo.avm;
 
@@ -16,32 +16,32 @@ import org.apache.commons.logging.LogFactory;
  * All lookup traffic goes through here.
  * @author britt
  */
-public class LookupCache 
+public class LookupCache
 {
     private static Log    fgLogger = LogFactory.getLog(LookupCache.class);
-    
+
     /**
      * The Map of of keys to lookups.
      */
     private SimpleCache<LookupKey, Lookup> fCache;
-    
+
     /**
      * Reference to the Node DAO.
      */
     private AVMNodeDAO fAVMNodeDAO;
-    
+
     /**
      * Reference to the Store DAO.
      */
     private AVMStoreDAO fAVMStoreDAO;
-    
+
     /**
      * Make one up.
      */
     public LookupCache()
     {
     }
-    
+
     /**
      * Set up the node dao.
      * @param dao The dao to set.
@@ -50,21 +50,21 @@ public class LookupCache
     {
         fAVMNodeDAO = dao;
     }
-    
+
     /**
      * Set the store dao.
      * @param dao The dao to set.
      */
     public void setAvmStoreDAO(AVMStoreDAO dao)
     {
-        fAVMStoreDAO = dao;        
+        fAVMStoreDAO = dao;
     }
-    
+
     public void setTransactionalCache(SimpleCache<LookupKey, Lookup> cache)
     {
         fCache = cache;
     }
-    
+
     /**
      * Lookup a path. Try to fulfill the request from the cache.
      * @param store The AVMStore.
@@ -74,7 +74,7 @@ public class LookupCache
      * @param includeDeleted
      * @return
      */
-    public Lookup lookup(AVMStore store, int version, SimplePath path, 
+    public Lookup lookup(AVMStore store, int version, SimplePath path,
                          boolean write, boolean includeDeleted)
     {
         // Create a key object.
@@ -95,7 +95,7 @@ public class LookupCache
         if (path.size() == 0)
         {
             return null;
-        }        
+        }
         Lookup result = new Lookup(store, store.getName(), version);
         // Grab the root node to start the lookup.
         DirectoryNode dir = null;
@@ -114,6 +114,7 @@ public class LookupCache
         {
             return null;
         }
+        dir = (DirectoryNode)AVMNodeUnwrapper.Unwrap(dir);
         // Add an entry for the root.
         result.add(dir, "", true, write);
         dir = (DirectoryNode)result.getCurrentNode();
@@ -149,9 +150,9 @@ public class LookupCache
         }
         result.add(child.getFirst(), path.get(path.size() - 1), child.getSecond(), write);
         fCache.put(key, result);
-        return result;        
+        return result;
     }
-    
+
     /**
      * Try to find a match in the cache.
      * @param key The lookup key.
@@ -196,9 +197,9 @@ public class LookupCache
         }
         return null;
     }
-    
+
     // Following are the cache invalidation calls.
-    
+
     /**
      * Called when a simple write operation occurs.  This
      * invalidates all read lookups and all layered lookups.
@@ -216,7 +217,7 @@ public class LookupCache
         {
             Lookup value = fCache.get(key);
             if ((key.getStoreName().equals(storeName) &&
-                !key.isWrite()) || value == null || 
+                !key.isWrite()) || value == null ||
                 (!key.isWrite() && value.isLayered()))
             {
                 if (fgLogger.isDebugEnabled())
@@ -227,7 +228,7 @@ public class LookupCache
             }
         }
     }
-    
+
     /**
      * Called when a delete has occurred in a store.  This invalidates both
      * reads and write lookups in that store.
@@ -254,9 +255,9 @@ public class LookupCache
             }
         }
     }
-    
+
     /**
-     * Called when a snapshot occurs in a store.  This invalidates write 
+     * Called when a snapshot occurs in a store.  This invalidates write
      * lookups.  Read lookups stay untouched.
      */
     public synchronized void onSnapshot(String storeName)
@@ -283,7 +284,7 @@ public class LookupCache
             }
         }
     }
-    
+
     public synchronized void reset()
     {
         fCache.clear();

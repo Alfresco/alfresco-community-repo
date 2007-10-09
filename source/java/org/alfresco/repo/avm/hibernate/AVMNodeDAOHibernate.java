@@ -50,7 +50,7 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
     {
         super();
     }
-    
+
     /**
      * Save the given node, having never been saved before.
      */
@@ -85,7 +85,7 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
     {
         getSession().flush();
     }
-    
+
     /**
      * Get the root of a particular version.
      * @param store The store we're querying.
@@ -94,7 +94,7 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
      */
     public DirectoryNode getAVMStoreRoot(AVMStore store, int version)
     {
-        Query query = 
+        Query query =
             getSession().getNamedQuery("VersionRoot.GetVersionRoot");
         query.setEntity("store", store);
         query.setInteger("version", version);
@@ -131,7 +131,7 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
     }
 
     /**
-     * Get up to batchSize orphans. 
+     * Get up to batchSize orphans.
      * @param batchSize Get no more than this number.
      * @return A List of orphaned AVMNodes.
      */
@@ -166,7 +166,7 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
         query.setEntity("store", store);
         return (List<AVMNode>)query.list();
     }
-    
+
     /**
      * Inappropriate hack to get Hibernate to play nice.
      */
@@ -208,5 +208,13 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
                                                "where lfn.indirectionVersion is null");
         query.setMaxResults(count);
         return (List<LayeredFileNode>)query.list();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNodeDAO#evict(org.alfresco.repo.avm.AVMNode)
+     */
+    public void evict(AVMNode node)
+    {
+        getSession().evict(node);
     }
 }

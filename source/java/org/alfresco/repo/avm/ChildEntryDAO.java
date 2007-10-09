@@ -36,7 +36,7 @@ public interface ChildEntryDAO
      * @param entry The entry to save.
      */
     public void save(ChildEntry entry);
-    
+
     /**
      * Get an entry by name and parent.
      * @param name The name of the child to find.
@@ -44,14 +44,14 @@ public interface ChildEntryDAO
      * @return The ChildEntry or null if not foun.
      */
     public ChildEntry get(ChildKey key);
-    
+
     /**
      * Get all the children of a given parent.
      * @param parent The parent.
      * @return A List of ChildEntries.
      */
     public List<ChildEntry> getByParent(DirectoryNode parent);
-    
+
     /**
      * Get the entry for a given child in a given parent.
      * @param parent The parent.
@@ -59,29 +59,35 @@ public interface ChildEntryDAO
      * @return The ChildEntry or null.
      */
     public ChildEntry getByParentChild(DirectoryNode parent, AVMNode child);
-    
+
     /**
      * Get all the ChildEntries corresponding to the given child.
      * @param child The child for which to look up entries.
      * @return The matching entries.
      */
     public List<ChildEntry> getByChild(AVMNode child);
-    
+
     /**
      * Update a dirty ChildEntry.
      * @param child The dirty entry.
      */
     public void update(ChildEntry child);
-    
+
     /**
      * Delete one.
      * @param child The one to delete.
      */
     public void delete(ChildEntry child);
-    
+
     /**
      * Delete all children of the given parent.
      * @param parent The parent.
      */
     public void deleteByParent(AVMNode parent);
+
+    /**
+     * Evict a child entry.
+     * @param entry
+     */
+    public void evict(ChildEntry entry);
 }

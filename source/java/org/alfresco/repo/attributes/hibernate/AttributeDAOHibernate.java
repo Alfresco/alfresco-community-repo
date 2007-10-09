@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing
  */
 
@@ -43,6 +43,8 @@ import org.alfresco.repo.attributes.Attribute.Type;
 import org.alfresco.service.cmr.attributes.AttrQuery;
 import org.alfresco.service.cmr.attributes.AttrQueryHelper;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -53,24 +55,26 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 public class AttributeDAOHibernate extends HibernateDaoSupport implements
         AttributeDAO
 {
+    private static Log fgLogger = LogFactory.getLog(AttributeDAOHibernate.class);
+
     private MapEntryDAO fMapEntryDAO;
-    
+
     private ListEntryDAO fListEntryDAO;
-    
+
     public AttributeDAOHibernate()
     {
     }
-    
+
     public void setMapEntryDao(MapEntryDAO dao)
     {
         fMapEntryDAO = dao;
     }
-    
+
     public void setListEntryDao(ListEntryDAO dao)
     {
         fListEntryDAO = dao;
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.attributes.AttributeDAO#delete(org.alfresco.repo.attributes.Attribute)
      */
@@ -83,6 +87,7 @@ public class AttributeDAOHibernate extends HibernateDaoSupport implements
             for (MapEntry entry : mapEntries)
             {
                 Attribute subAttr = entry.getAttribute();
+                getSession().evict(entry);
                 fMapEntryDAO.delete(entry);
                 delete(subAttr);
             }
@@ -94,10 +99,16 @@ public class AttributeDAOHibernate extends HibernateDaoSupport implements
             for (ListEntry entry : listEntries)
             {
                 Attribute subAttr = entry.getAttribute();
+                getSession().evict(entry);
                 fListEntryDAO.delete(entry);
                 delete(subAttr);
             }
         }
+        if (fgLogger.isDebugEnabled())
+        {
+            fgLogger.debug("Entities: " + getSession().getStatistics().getEntityCount());
+        }
+        getSession().evict(attr);
         getSession().delete(attr);
     }
 
@@ -143,5 +154,27 @@ public class AttributeDAOHibernate extends HibernateDaoSupport implements
     public void save(Attribute attr)
     {
         getSession().save(attr);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.AttributeDAO#evict(org.alfresco.repo.attributes.Attribute)
+     */
+    public void evict(Attribute attr)
+    {
+        if (attr.getType() == Attribute.Type.MAP)
+        {
+            for (Attribute child : attr.values())
+            {
+                evict(child);
+            }
+        }
+        if (attr.getType() == Attribute.Type.LIST)
+        {
+            for (Attribute child : attr)
+            {
+                evict(child);
+            }
+        }
+        getSession().evict(attr);
     }
 }

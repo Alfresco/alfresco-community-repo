@@ -34,13 +34,13 @@ public interface AVMNodeDAO
      * Save the given node, having never been saved before.
      */
     public void save(AVMNode node);
-    
+
     /**
      * Delete a single node.
      * @param node The node to delete.
      */
     public void delete(AVMNode node);
-    
+
     /**
      * Get by ID.
      * @param id The id to get.
@@ -60,63 +60,69 @@ public interface AVMNodeDAO
      * @param node The node.
      */
     public void update(AVMNode node);
-    
+
     /**
      * Get the ancestor of a node.
      * @param node The node whose ancestor is desired.
      * @return The ancestor or null.
      */
     public AVMNode getAncestor(AVMNode node);
-    
+
     /**
      * Get the node the given node was merged from.
      * @param node The node whose merged from is desired.
      * @return The merged from node or null.
      */
     public AVMNode getMergedFrom(AVMNode node);
-    
+
     /**
-     * Get up to batchSize orphans. 
+     * Get up to batchSize orphans.
      * @param batchSize Get no more than this number.
      * @return A List of orphaned AVMNodes.
      */
     public List<AVMNode> getOrphans(int batchSize);
-    
+
     /**
      * Get all content urls in he AVM Repository.
      * @return A List of URL Strings.
      */
     public List<String> getContentUrls();
-    
+
     /**
      * Get all the nodes that are new in the given store.
      * @param store The store to query.
      * @return A List of AVMNodes.
      */
     public List<AVMNode> getNewInStore(AVMStore store);
-    
+
     /**
      * Inappropriate hack to get Hibernate to play nice.
      */
     public void flush();
-    
+
     /**
-     * Get a batch 
+     * Get a batch
      * @return An iterator over all nodes.
      */
     List<AVMNode> getEmptyGUIDS(int count);
-    
+
     /**
      * Get a batch of LayeredDirectories which have null indirectionVersions.
      * @param count
      * @return
      */
     List<LayeredDirectoryNode> getNullVersionLayeredDirectories(int count);
-    
+
     /**
      * Get a batch of LayeredFiles which have null indirectionVersions.
      * @param count
      * @return
      */
     List<LayeredFileNode> getNullVersionLayeredFiles(int count);
+
+    /**
+     * Evict an AVMNode that is no longer going to be used.
+     * @param node
+     */
+    public void evict(AVMNode node);
 }

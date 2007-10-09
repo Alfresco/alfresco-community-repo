@@ -402,6 +402,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             {
                 listing.put(entry.getKey().getName(), entry.getChild());
             }
+            AVMDAOs.Instance().fChildEntryDAO.evict(entry);
         }
         return listing;
     }
@@ -420,6 +421,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             {
                 listing.put(entry.getKey().getName(), entry.getChild());
             }
+            AVMDAOs.Instance().fChildEntryDAO.evict(entry);
         }
         return listing;
     }
@@ -445,6 +447,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             AVMNodeDescriptor childDesc =
                 childNode.getDescriptor(dir.getPath(), child.getKey().getName(), dir.getIndirection(), dir.getIndirectionVersion());
             listing.put(child.getKey().getName(), childDesc);
+            AVMDAOs.Instance().fAVMNodeDAO.evict(childNode);
+            AVMDAOs.Instance().fChildEntryDAO.evict(child);
         }
         return listing;
     }
@@ -477,6 +481,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                                     listing.get(name).getDescriptor(dir.getPath(), name,
                                                                     lookup.getCurrentIndirection(),
                                                                     lookup.getCurrentIndirectionVersion()));
+                    AVMDAOs.Instance().fAVMNodeDAO.evict(listing.get(name));
                 }
             }
         }
@@ -494,6 +499,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                                 child.getKey().getName(),
                                 dir.getIndirection(),
                                 dir.getIndirectionVersion()));
+                AVMDAOs.Instance().fAVMNodeDAO.evict(child.getChild());
+                AVMDAOs.Instance().fChildEntryDAO.evict(child);
             }
         }
         return baseListing;
@@ -582,10 +589,13 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             {
                 return null;
             }
-            return entry.getChild().getDescriptor(mine.getPath(),
-                                                  name,
-                                                  mine.getIndirection(),
-                                                  mine.getIndirectionVersion());
+            AVMNodeDescriptor desc = entry.getChild().getDescriptor(mine.getPath(),
+                                                                    name,
+                                                                    mine.getIndirection(),
+                                                                    mine.getIndirectionVersion());
+            AVMDAOs.Instance().fAVMNodeDAO.evict(entry.getChild());
+            AVMDAOs.Instance().fChildEntryDAO.evict(entry);
+            return desc;
         }
         // If we are opaque don't check underneath.
         if (fOpacity)
@@ -601,7 +611,9 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             {
                 return null;
             }
-            return child.getFirst().getDescriptor(lookup);
+            AVMNodeDescriptor desc = child.getFirst().getDescriptor(lookup);
+            AVMDAOs.Instance().fAVMNodeDAO.evict(child.getFirst());
+            return desc;
         }
         else
         {

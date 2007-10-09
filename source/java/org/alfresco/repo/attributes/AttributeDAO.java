@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing
  */
 
@@ -41,13 +41,13 @@ public interface AttributeDAO
      * @param attr The attribute to save.
      */
     public void save(Attribute attr);
-    
+
     /**
      * Delete an attribute (recursively).
      * @param attr The attribute to delete.
      */
     public void delete(Attribute attr);
-    
+
     /**
      * Find all attributes that match a given path and AttrQuery.
      * @param map The map within which to query.
@@ -55,11 +55,17 @@ public interface AttributeDAO
      * @return A List of key, attribute value pairs.
      */
     public List<Pair<String,Attribute>> find(MapAttribute map, AttrQuery query);
-    
+
     /**
      * Delete entries from a map that match the given query.
      * @param map
      * @param query
      */
     public void delete(MapAttribute map, AttrQuery query);
+
+    /**
+     * Evict an Attribute from the session cache.
+     * @param attr
+     */
+    public void evict(Attribute attr);
 }

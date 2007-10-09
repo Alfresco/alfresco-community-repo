@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing
  */
 
@@ -44,30 +44,30 @@ import org.alfresco.util.Pair;
 public class AttributeServiceImpl implements AttributeService
 {
     private GlobalAttributeEntryDAO fGlobalAttributeEntryDAO;
-    
+
     private AttributeDAO fAttributeDAO;
-    
+
     private AttributeConverter fAttributeConverter;
-    
+
     public AttributeServiceImpl()
     {
     }
-    
+
     public void setGlobalAttributeEntryDao(GlobalAttributeEntryDAO dao)
     {
         fGlobalAttributeEntryDAO = dao;
     }
-    
+
     public void setAttributeDao(AttributeDAO dao)
     {
         fAttributeDAO = dao;
     }
-    
+
     public void setAttributeConverter(AttributeConverter converter)
     {
         fAttributeConverter = converter;
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.attributes.AttributeService#getAttribute(java.lang.String)
      */
@@ -93,7 +93,7 @@ public class AttributeServiceImpl implements AttributeService
         int off = 0;
         while (off < path.length())
         {
-            while (off < path.length() && path.charAt(off) == '/') 
+            while (off < path.length() && path.charAt(off) == '/')
             {
                 off++;
             }
@@ -121,7 +121,7 @@ public class AttributeServiceImpl implements AttributeService
         }
         return components;
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.attributes.AttributeService#query(java.lang.String, org.alfresco.service.cmr.attributes.AttrQuery)
      */
@@ -192,7 +192,9 @@ public class AttributeServiceImpl implements AttributeService
         {
             return null;
         }
-        return fAttributeConverter.toValue(found);
+        Attribute converted = fAttributeConverter.toValue(found);
+        fAttributeDAO.evict(found);
+        return converted;
     }
 
     /* (non-Javadoc)
@@ -251,7 +253,9 @@ public class AttributeServiceImpl implements AttributeService
         {
             throw new AVMWrongTypeException("Not a Map: " + keys);
         }
-        found.put(name, fAttributeConverter.toPersistent(value));   
+        Attribute converted = fAttributeConverter.toPersistent(value);
+        found.put(name, converted);
+        fAttributeDAO.evict(converted);
     }
 
     /* (non-Javadoc)
@@ -278,11 +282,11 @@ public class AttributeServiceImpl implements AttributeService
         }
         List<Pair<String, Attribute>> rawResult =
             fAttributeDAO.find((MapAttribute)found, query);
-        List<Pair<String, Attribute>> result = 
+        List<Pair<String, Attribute>> result =
             new ArrayList<Pair<String, Attribute>>();
         for (Pair<String, Attribute> raw : rawResult)
         {
-            result.add(new Pair<String, Attribute>(raw.getFirst(), 
+            result.add(new Pair<String, Attribute>(raw.getFirst(),
                                                    fAttributeConverter.toValue(raw.getSecond())));
         }
         return result;
@@ -313,7 +317,7 @@ public class AttributeServiceImpl implements AttributeService
         }
         found.remove(name);
     }
-    
+
     private Attribute getAttributeFromPath(List<String> keys)
     {
         GlobalAttributeEntry entry = fGlobalAttributeEntryDAO.get(keys.get(0));
@@ -480,7 +484,9 @@ public class AttributeServiceImpl implements AttributeService
         {
             throw new AVMWrongTypeException("Attribute Not List: " + keys);
         }
+        Attribute converted = fAttributeConverter.toPersistent(value);
         found.set(index, fAttributeConverter.toPersistent(value));
+        fAttributeDAO.evict(converted);
     }
 
     /* (non-Javadoc)

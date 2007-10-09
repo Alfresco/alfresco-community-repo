@@ -48,7 +48,7 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
     {
         super();
     }
-    
+
     /**
      * Save an unsaved ChildEntry.
      * @param entry The entry to save.
@@ -68,7 +68,7 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
     {
         return (ChildEntry)getSession().get(ChildEntryImpl.class, key);
     }
-    
+
     /**
      * Get all the children of a given parent.
      * @param parent The parent.
@@ -141,5 +141,13 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
         Query delete = getSession().getNamedQuery("ChildEntry.DeleteByParent");
         delete.setEntity("parent", parent);
         delete.executeUpdate();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.ChildEntryDAO#evict(org.alfresco.repo.avm.ChildEntry)
+     */
+    public void evict(ChildEntry entry)
+    {
+        getSession().evict(entry);
     }
 }

@@ -55,14 +55,14 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
     }
-    
+
     /**
      * Anonymous constructor.
      */
     protected PlainDirectoryNodeImpl()
     {
     }
-    
+
     /**
      * Copy like constructor.
      * @param other The other directory.
@@ -89,7 +89,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     }
 
     /**
-     * Does this directory directly contain the given node. 
+     * Does this directory directly contain the given node.
      * @param node The node to check.
      * @return Whether it was found.
      */
@@ -114,7 +114,8 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             {
                 continue;
             }
-            result.put(child.getKey().getName(), child.getChild());
+            result.put(child.getKey().getName(), AVMNodeUnwrapper.Unwrap(child.getChild()));
+            AVMDAOs.Instance().fChildEntryDAO.evict(child);
         }
         return result;
     }
@@ -128,14 +129,14 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     {
         return getListing(lPath, includeDeleted);
     }
-    
+
     /**
      * Get a listing of the nodes directly contained by a directory.
      * @param dir The node's descriptor.
      * @param includeDeleted Whether to include deleted nodes.
      * @return A Map of Strings to descriptors.
      */
-    public SortedMap<String, AVMNodeDescriptor> getListingDirect(AVMNodeDescriptor dir, 
+    public SortedMap<String, AVMNodeDescriptor> getListingDirect(AVMNodeDescriptor dir,
                                                                  boolean includeDeleted)
     {
         return getListing(dir, includeDeleted);
@@ -160,11 +161,13 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             {
                 continue;
             }
-            result.put(child.getKey().getName(), 
-                       child.getChild().getDescriptor(dir.getPath(), 
-                                                      child.getKey().getName(), 
+            result.put(child.getKey().getName(),
+                       child.getChild().getDescriptor(dir.getPath(),
+                                                      child.getKey().getName(),
                                                       dir.getIndirection(),
                                                       dir.getIndirectionVersion()));
+            AVMDAOs.Instance().fAVMNodeDAO.evict(child.getChild());
+            AVMDAOs.Instance().fChildEntryDAO.evict(child);
         }
         return result;
     }
@@ -190,7 +193,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     {
         ChildKey key = new ChildKey(this, name);
         ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
-        if (entry == null || 
+        if (entry == null ||
             (!includeDeleted && entry.getChild().getType() == AVMNodeType.DELETED_NODE))
         {
             return null;
@@ -214,12 +217,15 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         }
         ChildKey key = new ChildKey(this, name);
         ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
-        if (entry == null || 
+        if (entry == null ||
             (!includeDeleted && entry.getChild().getType() == AVMNodeType.DELETED_NODE))
         {
             return null;
         }
-        return entry.getChild().getDescriptor(mine.getPath(), name, (String)null, -1);
+        AVMNodeDescriptor desc = entry.getChild().getDescriptor(mine.getPath(), name, (String)null, -1);
+        AVMDAOs.Instance().fAVMNodeDAO.evict(entry.getChild());
+        AVMDAOs.Instance().fChildEntryDAO.evict(entry);
+        return desc;
     }
 
     /**
@@ -291,11 +297,11 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     public AVMNode copy(Lookup lPath)
     {
         DirectoryNode newMe = null;
-        // In a layered context a copy on write creates a new 
+        // In a layered context a copy on write creates a new
         // layered directory.
         if (lPath.isLayered())
         {
-            // Subtlety warning: This distinguishes the case of a 
+            // Subtlety warning: This distinguishes the case of a
             // Directory that was branched into the layer and one
             // that is indirectly seen in this layer.
             newMe = new LayeredDirectoryNodeImpl(this, lPath.getAVMStore(), lPath,
@@ -311,7 +317,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     }
 
     /**
-     * Get the type of this node. 
+     * Get the type of this node.
      * @return The type of this node.
      */
     public int getType()
@@ -327,10 +333,10 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     public String toString(Lookup lPath)
     {
         return "[PD:" + getId() + "]";
-    }    
- 
+    }
+
     /**
-     * Turn this into a primary indirection. This must be in a 
+     * Turn this into a primary indirection. This must be in a
      * layered context.
      * @param lPath The Lookup.
      */
@@ -414,7 +420,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                                      false,
                                      -1,
                                      false,
-                                     -1, 
+                                     -1,
                                      -1);
     }
 
@@ -449,7 +455,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                                      -1,
                                      -1);
     }
-    
+
     /**
      * Link a node with the given id into this directory.
      * @param lPath The Lookup for this directory.
@@ -461,7 +467,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         if (DEBUG)
         {
             checkReadOnly();
-        }        
+        }
         // Assure that the incoming node exists.
         AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(toLink.getId());
         if (node == null)

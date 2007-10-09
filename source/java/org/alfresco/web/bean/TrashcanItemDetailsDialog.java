@@ -26,16 +26,13 @@ package org.alfresco.web.bean;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.app.Application;
-
 import org.alfresco.web.bean.repository.Node;
 
 public class TrashcanItemDetailsDialog extends TrashcanDialog
 {
    private static final String MSG_DETAILS_OF = "details_of";
-   private static final String MSG_ORIGINAL_LOCATION = "original_location";
    private static final String MSG_CLOSE = "close";
    
    protected PermissionService permissionService;
@@ -52,15 +49,6 @@ public class TrashcanItemDetailsDialog extends TrashcanDialog
       return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DETAILS_OF) + " '" + 
              property.getItem().getName() + "'";
    }
-   
-   @Override
-   public String getContainerSubTitle()
-   {
-      Path path = (Path) property.getItem().getProperties().get("locationPath");
-      
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_ORIGINAL_LOCATION) + ": " + 
-             path.toDisplayPath(nodeService, permissionService);
-   }
 
    @Override
    public String getCancelButtonLabel()
@@ -68,6 +56,12 @@ public class TrashcanItemDetailsDialog extends TrashcanDialog
       return Application.getMessage(FacesContext.getCurrentInstance(), MSG_CLOSE);
    }
    
+   @Override
+   public Object getActionsContext()
+   {
+      return getItem();
+   }
+
    public Node getItem()
    {
       return property.getItem();

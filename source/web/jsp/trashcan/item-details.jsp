@@ -28,6 +28,9 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
+<h:outputText value="#{msg.original_location}: " styleClass="mainSubTitle" />
+<r:nodePath value="#{TrashcanDialogProperty.item.properties.locationPath}" breadcrumb="true" actionListener="#{BrowseBean.clickSpacePath}" showLeaf="true" />
+<f:verbatim><div style="padding:4px"></div></f:verbatim>
 
 <a:panel label="#{msg.view_links}" id="link-panel" progressive="true"
 border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white">
@@ -86,15 +89,6 @@ columns="1" mode="view" labelStyleClass="propertiesLabel" externalConfig="true" 
 </table>
 
 </f:verbatim>
-</a:panel>
-<f:verbatim><div style="padding:4px"></div></f:verbatim>
-<a:panel label="#{msg.actions}" id="actions-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" style="text-align:center;white-space:nowrap" progressive="true">
-<a:actionLink value="#{msg.recover}" image="/images/icons/recover.gif" action="dialog:recoverItem" padding="3">
-<f:param name="id" value="#{TrashcanDialogProperty.item.id}" />
-</a:actionLink>
-<a:actionLink value="#{msg.delete}" image="/images/icons/delete.gif" action="dialog:deleteItem" padding="3">
-<f:param name="id" value="#{TrashcanDialogProperty.item.id}" />
-</a:actionLink>
 </a:panel>
 
 

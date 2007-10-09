@@ -705,6 +705,28 @@
                <param name="groupName">#{actionContext.groupName}</param>
             </params>
          </action>
+         
+         <!-- recover item action -->
+         <action id="recover_item">
+            <label-id>recover</label-id>
+            <image>/images/icons/recover.gif</image>
+            <action>dialog:recoverItem</action>
+            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- delete item action -->
+         <action id="delete_item">
+            <label-id>delete</label-id>
+            <image>/images/icons/delete.gif</image>
+            <action>dialog:deleteItem</action>
+            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
 
          <!-- the 'action-group' elements define unique blocks of actions that reference the actions
               as defined above and can override or supply display elements for the group of actions -->
@@ -898,6 +920,12 @@
             <action idref="create_sub_group" />
             <action idref="add_group_user" />
             <action idref="delete_group" />
+         </action-group>
+         
+         <action-group id="deleteditem_actions">
+            <style-class>inlineAction</style-class>
+            <action idref="recover_item" />
+            <action idref="delete_item" />
          </action-group>
          
       </actions>

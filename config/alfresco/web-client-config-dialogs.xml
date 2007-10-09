@@ -414,7 +414,7 @@
          
          <dialog name="itemDetails" page="/jsp/trashcan/item-details.jsp" managed-bean="TrashcanItemDetailsDialog"
                  icon="/images/icons/details_large.gif" description-id="deleteditem_details_description" 
-                 show-ok-button="false" />
+                 show-ok-button="false" actions-config-id="deleteditem_actions" />
          
          <dialog name="recoverItem" page="/jsp/trashcan/recover-item.jsp" managed-bean="TrashcanRecoverItemDialog"
                  icon="/images/icons/recover_large.gif" title-id="recover_item"

@@ -25,6 +25,7 @@
 package org.alfresco.repo.dictionary;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -71,13 +72,17 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DictionaryModelType implements ContentServicePolicies.OnContentUpdatePolicy,
                                             NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                            NodeServicePolicies.BeforeDeleteNodePolicy
+                                            NodeServicePolicies.BeforeDeleteNodePolicy,
+                                            NodeServicePolicies.OnRemoveAspectPolicy
 {
     // Logger
     private static Log logger = LogFactory.getLog(DictionaryModelType.class);
     
     /** Key to the pending models */
     private static final String KEY_PENDING_MODELS = "dictionaryModelType.pendingModels";
+    
+    /** Key to the removed aspect */
+    private static final String KEY_WORKING_COPY = "dictionaryModelType.workingCopy";
     
     /** The dictionary DAO */
     private DictionaryDAO dictionaryDAO;
@@ -232,6 +237,12 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                 ContentModel.TYPE_DICTIONARY_MODEL, 
                 new JavaBehaviour(this, "beforeDeleteNode"));
         
+        // Register interest in the remove aspect policy
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"), 
+                this, 
+                new JavaBehaviour(this, "onRemoveAspect"));
+        
         // Create the transaction listener
         this.transactionListener = new DictionaryModelTypeTransactionListener(this.nodeService, this.contentService);
     }
@@ -290,11 +301,28 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         }
     }
     
+    public void onRemoveAspect(NodeRef nodeRef, QName aspect)
+    {
+    	// undo/cancel checkout removes the aspect prior to deleting the node - hence need to track here
+    	if (aspect.equals(ContentModel.ASPECT_WORKING_COPY))
+    	{
+    		AlfrescoTransactionSupport.bindResource(KEY_WORKING_COPY, nodeRef);
+    	}
+    }
+    
     @SuppressWarnings("unchecked")
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        // Ignore if the node is a working copy 
-        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
+    	boolean workingCopy = nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY);
+    	
+    	NodeRef wcNodeRef = (NodeRef)AlfrescoTransactionSupport.getResource(KEY_WORKING_COPY);
+    	if ((wcNodeRef != null) && (wcNodeRef.equals(nodeRef)))
+    	{
+    		workingCopy = true;
+    	}
+    	
+        // Ignore if the node is a working copy or archived
+        if ((workingCopy == false) && (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_ARCHIVED) == false))
         {
             QName modelName = (QName)this.nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_NAME);
             if (modelName != null)
@@ -361,8 +389,9 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                 isActive = value.booleanValue();
                             }
                             
-                            // Ignore if the node is a working copy or if its inactive
-                            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
+                            // Ignore if the node is a working copy or archived
+                            if ((nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false) &&
+                               (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_ARCHIVED) == false))
                             {
                                 if (isActive == true)
                                 {
@@ -376,16 +405,31 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                         M2Model m2Model = M2Model.createModel(contentReader.getContentInputStream());
                                         
                                         // Try and compile the model
-                                        ModelDefinition modelDefintion = m2Model.compile(dictionaryDAO, namespaceDAO).getModelDefinition();
+                                        ModelDefinition modelDefinition = m2Model.compile(dictionaryDAO, namespaceDAO).getModelDefinition();
                                         
                                         // Update the meta data for the model
                                         Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-                                        props.put(ContentModel.PROP_MODEL_NAME, modelDefintion.getName());
-                                        props.put(ContentModel.PROP_MODEL_DESCRIPTION, modelDefintion.getDescription());
-                                        props.put(ContentModel.PROP_MODEL_AUTHOR, modelDefintion.getAuthor());
-                                        props.put(ContentModel.PROP_MODEL_PUBLISHED_DATE, modelDefintion.getPublishedDate());
-                                        props.put(ContentModel.PROP_MODEL_VERSION, modelDefintion.getVersion());
+                                        props.put(ContentModel.PROP_MODEL_NAME, modelDefinition.getName());
+                                        props.put(ContentModel.PROP_MODEL_DESCRIPTION, modelDefinition.getDescription());
+                                        props.put(ContentModel.PROP_MODEL_AUTHOR, modelDefinition.getAuthor());
+                                        props.put(ContentModel.PROP_MODEL_PUBLISHED_DATE, modelDefinition.getPublishedDate());
+                                        props.put(ContentModel.PROP_MODEL_VERSION, modelDefinition.getVersion());
                                         nodeService.setProperties(nodeRef, props);
+                                        
+                                        ArrayList<NodeRef> modelNodeRefs = getModelNodes(nodeRef.getStoreRef(), modelDefinition.getName());
+                                        for (NodeRef existingNodeRef : modelNodeRefs)
+                                        {
+                                        	if (! existingNodeRef.equals(nodeRef))
+                                        	{
+                                        		// check if existing model node is active
+                                                Boolean existingValue = (Boolean)nodeService.getProperty(existingNodeRef, ContentModel.PROP_MODEL_ACTIVE);
+                                                if ((existingValue != null) && (existingValue.booleanValue() == true))
+                                                {
+                                                	String name = (String)nodeService.getProperty(existingNodeRef, ContentModel.PROP_NAME);
+                                                    throw new AlfrescoRuntimeException("Cannot activate '"+modelDefinition.getName()+"' - existing active model: " + name);
+                                                }
+                                        	}
+                                        }
                                         
                                         // Validate model against dictionary - could be new, unchanged or updated
                                         dictionaryDAO.validateModel(m2Model);
@@ -541,4 +585,23 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             }
         }
     }
+    
+	private ArrayList<NodeRef> getModelNodes(StoreRef storeRef, QName modelName)
+	{
+		ArrayList<NodeRef> nodeRefs = new ArrayList<NodeRef>();
+		
+	    ResultSet rs = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, "TYPE:\""+ContentModel.TYPE_DICTIONARY_MODEL+"\"");
+	    if (rs.length() > 0)
+	    {
+	    	for (NodeRef modelNodeRef : rs.getNodeRefs())
+	        {
+	    		QName name = (QName)nodeService.getProperty(modelNodeRef, ContentModel.PROP_MODEL_NAME);
+	    		if ((name != null) && (name.equals(modelName)))
+	    		{
+	    			nodeRefs.add(modelNodeRef);
+	    		}
+	        }
+	    }
+	    return nodeRefs;
+	}
 }

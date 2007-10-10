@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -75,6 +76,12 @@ public abstract class AbstractLoaderThread extends Thread
         
         this.statCount = 0;
         this.statTotalMs = 0.0D;
+        
+        // Check the load depth
+        if (this.testLoadDepth < 1 || this.testLoadDepth > this.session.getFolderProfiles().length)
+        {
+            throw new AlfrescoRuntimeException("The load depth must be [1," + this.session.getFolderProfiles().length);
+        }
     }
 
     /**
@@ -211,7 +218,7 @@ public abstract class AbstractLoaderThread extends Thread
         // We work through these until we get the required depth.
         // The root node is ignored as it acts as the search root
         List<String> path = new ArrayList<String>((int)testLoadDepth);
-        for (int i = 1; i < folderProfiles.length; i++)
+        for (int i = 1; i < testLoadDepth; i++)
         {
             int folderProfile = folderProfiles[i];
             int randomFolderId = random.nextInt(folderProfile);

@@ -26,7 +26,6 @@ package org.alfresco.repo.model.filefolder.loader;
 
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -86,12 +85,10 @@ public class LoaderUploadThread extends AbstractLoaderThread
             List<String> folderPath) throws Exception
     {
         // Iterate down the path, checking the cache and populating it as necessary
-        List<String> currentPath = new ArrayList<String>();
         NodeRef currentParentNodeRef = workingRootNodeRef;
         String currentKey = workingRootNodeRef.toString();
         for (String pathElement : folderPath)
         {
-            currentPath.add(pathElement);
             currentKey += ("/" + pathElement);
             // Is this there?
             NodeRef nodeRef = pathCache.get(currentKey);

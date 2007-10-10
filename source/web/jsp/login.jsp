@@ -167,7 +167,7 @@
                </table>
             </div>
             <script>
-               document.cookie="_alfTest"
+               document.cookie="_alfTest=_alfTest"
                var cookieEnabled = (document.cookie.indexOf("_alfTest") != -1);
                if (cookieEnabled == false)
                {

@@ -1938,8 +1938,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC),
                 properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC));
         PropertyValue originalOwnerProperty = properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER);
-        // remove the aspect archived aspect
-        aspects.remove(ContentModel.ASPECT_ARCHIVED);
+        
+        // remove the archived aspect
+        removeAspect(archivedNodeRef, ContentModel.ASPECT_ARCHIVED); // allow policy to fire, e.g. for DictionaryModelType
+        
         properties.remove(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
         properties.remove(ContentModel.PROP_ARCHIVED_BY);
         properties.remove(ContentModel.PROP_ARCHIVED_DATE);

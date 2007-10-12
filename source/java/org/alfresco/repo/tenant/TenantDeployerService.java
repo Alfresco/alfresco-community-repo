@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.tenant;
 
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 
 
@@ -44,4 +46,6 @@ public interface TenantDeployerService
     public void register(TenantDeployer tenantDeployer);
     
     public void unregister(TenantDeployer tenantDeployer);
+    
+    public List<Tenant> getAllTenants();
 }

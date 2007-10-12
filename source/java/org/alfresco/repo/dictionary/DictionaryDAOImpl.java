@@ -704,23 +704,54 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public Collection<QName> getModels()
     {
+        // get all models - including inherited models, if applicable
     	return getCompiledModels().keySet();
     }
     
-    // return all tenant-specific models and all shared (non-overridden) models
+    // MT-specific
+    public boolean isModelInherited(QName modelName)
+    {    
+        String tenantDomain = tenantService.getCurrentUserDomain();
+        if (tenantDomain != "")
+        {
+            // get tenant-specific model (if any)
+            CompiledModel model = getCompiledModels(tenantDomain).get(modelName);
+            if (model != null)
+            {
+                return false;
+            }
+            // else drop down to check for shared (core/system) models ...
+        }
+
+        // get non-tenant model (if any)
+        CompiledModel model = getCompiledModels("").get(modelName);
+        if (model == null)
+        {
+            throw new DictionaryException("d_dictionary.model.err.no_model", modelName);
+        }
+        
+        if (tenantDomain != "")
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
     private Map<QName,CompiledModel> getCompiledModels() 
     {
         String tenantDomain = tenantService.getCurrentUserDomain();
         if (tenantDomain != "")
         {
-            // return all tenant-specific models and all shared (non-overridden) models
+            // return all tenant-specific models and all inherited (non-overridden) models
             Map<QName, CompiledModel> filteredModels = new HashMap<QName, CompiledModel>();
             
             // get tenant models (if any)
             Map<QName,CompiledModel> tenantModels = getCompiledModels(tenantDomain);
             
-            // get non-tenant models (if any)
-            // note: these will be shared, if not overridden - could be core/system model or additional custom model shared between tenants
+            // get non-tenant models - these will include core/system models and any additional custom models (which are implicitly available to all tenants)
             Map<QName,CompiledModel> nontenantModels = getCompiledModels("");
 
             // check for overrides
@@ -744,14 +775,9 @@ public class DictionaryDAOImpl implements DictionaryDAO
         }
         else
         {
+            // return all (non-tenant) models
             return getCompiledModels("");
         } 
-    }
-    
-    // used for clean-up, e.g. when deleting a tenant
-    protected Collection<QName> getNonSharedModels()
-    {            
-        return getCompiledModels(tenantService.getCurrentUserDomain()).keySet();
     }
 
     /* (non-Javadoc)

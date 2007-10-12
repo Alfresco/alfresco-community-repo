@@ -172,4 +172,7 @@ public interface DictionaryDAO extends ModelQuery
      * Destroy the Dictionary
      */
     public void destroy();
+    
+    // MT-specific
+    public boolean isModelInherited(QName name);
 }

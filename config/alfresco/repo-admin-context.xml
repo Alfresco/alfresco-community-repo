@@ -89,6 +89,7 @@
       <property name="searchService" ref="SearchService"/>
       <property name="namespaceService" ref="namespaceService"/>
       <property name="tenantService" ref="tenantService"/>
+      <property name="tenantDeployerService" ref="tenantAdminService"/>
         
       <property name="storeUrls">
             <list>

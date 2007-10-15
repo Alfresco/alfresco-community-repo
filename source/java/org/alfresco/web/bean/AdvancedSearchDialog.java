@@ -28,7 +28,6 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,13 +36,10 @@ import javax.faces.component.UISelectBoolean;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.DataModel;
-import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
 import org.alfresco.model.ContentModel;
-
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -53,7 +49,6 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
-
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -91,6 +86,9 @@ import org.alfresco.web.ui.repo.component.UISearchCustomProperties;
  */
 public class AdvancedSearchDialog extends BaseDialogBean
 {
+   /** PermissionService */
+   protected PermissionService permissionService;
+
    /**
     * Default constructor
     */
@@ -102,8 +100,14 @@ public class AdvancedSearchDialog extends BaseDialogBean
       properties.getPanels().put(PANEL_CUSTOM, false);
    }
    
+   
    // ------------------------------------------------------------------------------
    // Bean property getters and setters
+   
+   public void setPermissionService(PermissionService permissionService)
+   {
+      this.permissionService = permissionService;
+   }
    
    public void setProperties(SearchProperties properties)
    {
@@ -119,8 +123,8 @@ public class AdvancedSearchDialog extends BaseDialogBean
       if (allow)
       {
          NodeRef savedSearchRef = new NodeRef(Repository.getStoreRef(), properties.getSavedSearch());
-         allow = (properties.getPermissionService().hasPermission(savedSearchRef,
-                  PermissionService.WRITE) == AccessStatus.ALLOWED);
+         allow = (this.permissionService.hasPermission(savedSearchRef,
+                     PermissionService.WRITE) == AccessStatus.ALLOWED);
       }
       return allow;
    }
@@ -269,6 +273,7 @@ public class AdvancedSearchDialog extends BaseDialogBean
       
       return properties.getContentFormats();
    }
+   
    
    // ------------------------------------------------------------------------------
    // Action event handlers
@@ -1034,6 +1039,7 @@ public class AdvancedSearchDialog extends BaseDialogBean
    {
       return null;
    }
+   
    
    // ------------------------------------------------------------------------------
    // Private data

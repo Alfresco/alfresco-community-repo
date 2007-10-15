@@ -37,7 +37,6 @@ import javax.faces.model.SelectItem;
 import org.alfresco.repo.cache.ExpiringValueCache;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.config.AdvancedSearchConfigElement;
 
@@ -47,11 +46,8 @@ public class SearchProperties
     private static final String LOOKIN_ALL = "all";
     private static final String SAVED_SEARCHES_USER = "user";
 
-    /** PermissionService */
-    protected PermissionService permissionService;
-
     /** Client Config reference */
-    protected AdvancedSearchConfigElement searchConfigElement = null;
+    private AdvancedSearchConfigElement searchConfigElement = null;
 
     /** Progressive panel UI state */
     private Map<String, Boolean> panels = new HashMap<String, Boolean>(5, 1.0f);
@@ -152,15 +148,6 @@ public class SearchProperties
     /** auto-expiring cache of the list of saved searches */
     private ExpiringValueCache<List<SelectItem>> cachedSavedSearches = new ExpiringValueCache<List<SelectItem>>();
 
-    public PermissionService getPermissionService()
-    {
-        return permissionService;
-    }
-
-    public void setPermissionService(PermissionService permissionService)
-    {
-        this.permissionService = permissionService;
-    }
 
     public AdvancedSearchConfigElement getSearchConfigElement()
     {

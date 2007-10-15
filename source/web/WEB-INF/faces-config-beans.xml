@@ -485,10 +485,6 @@
       <managed-bean-name>SearchProperties</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.SearchProperties</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
-      <managed-property>
-         <property-name>permissionService</property-name>
-         <value>#{PermissionService}</value>
-      </managed-property>
    </managed-bean>
 
    <managed-bean>
@@ -513,6 +509,10 @@
       <managed-property>
          <property-name>searchService</property-name>
          <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>permissionService</property-name>
+         <value>#{PermissionService}</value>
       </managed-property>
       <managed-property>
          <property-name>properties</property-name>

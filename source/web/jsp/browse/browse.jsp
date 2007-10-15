@@ -207,7 +207,7 @@
                </tr>
                
                <%-- Custom Template View --%>
-               <a:panel id="custom-wrapper-panel" rendered="#{NavigationBean.hasCustomView}">
+               <a:panel id="custom-wrapper-panel" rendered="#{NavigationBean.hasCustomView && NavigationBean.searchContext == null}">
                <tr valign=top>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">

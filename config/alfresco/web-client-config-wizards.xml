@@ -16,28 +16,34 @@
                      description-id="create_website_step1_desc"
                      instruction-id="default_instruction" />
             </step>
-            <step name="forms" title-id="website_forms" description-id="create_website_step2_desc">
-               <page path="/jsp/wcm/create-website-wizard/forms.jsp"
+            <step name="createfrom" title-id="website_createfrom" description-id="create_website_step2_desc">
+               <page path="/jsp/wcm/create-website-wizard/create-from.jsp"
                      title-id="create_website_step2_title"
                      description-id="create_website_step2_desc"
                      instruction-id="default_instruction" />
             </step>
-            <step name="settings" title-id="website_settings" description-id="create_website_step3_desc">
-               <page path="/jsp/wcm/create-website-wizard/settings.jsp"
+            <step name="forms" title-id="website_forms" description-id="create_website_step3_desc">
+               <page path="/jsp/wcm/create-website-wizard/forms.jsp"
                      title-id="create_website_step3_title"
                      description-id="create_website_step3_desc"
                      instruction-id="default_instruction" />
             </step>
-            <step name="invite" title-id="website_invite" description-id="create_website_step4_desc">
-               <page path="/jsp/wcm/create-website-wizard/invite.jsp"
+            <step name="settings" title-id="website_settings" description-id="create_website_step4_desc">
+               <page path="/jsp/wcm/create-website-wizard/settings.jsp"
                      title-id="create_website_step4_title"
                      description-id="create_website_step4_desc"
                      instruction-id="default_instruction" />
             </step>
-            <step name="notify" title-id="website_notify" description-id="create_website_step5_desc">
-               <page path="/jsp/wcm/create-website-wizard/notify.jsp"
+            <step name="invite" title-id="website_invite" description-id="create_website_step5_desc">
+               <page path="/jsp/wcm/create-website-wizard/invite.jsp"
                      title-id="create_website_step5_title"
                      description-id="create_website_step5_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="notify" title-id="website_notify" description-id="create_website_step6_desc">
+               <page path="/jsp/wcm/create-website-wizard/notify.jsp"
+                     title-id="create_website_step6_title"
+                     description-id="create_website_step6_desc"
                      instruction-id="default_instruction" />
             </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">

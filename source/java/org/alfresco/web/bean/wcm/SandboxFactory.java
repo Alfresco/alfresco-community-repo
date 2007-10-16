@@ -73,30 +73,43 @@ public final class SandboxFactory
     * DNS: .dns.<store> = <path-to-webapps-root>
     * Website Name: .website.name = website name
     * 
-    * @param storeId             The store name to create the sandbox for
+    * @param storeId             The store name to create the sandbox for.
     * @param webProjectNodeRef   The noderef for the webproject.
+    * @param branchStoreId       The ID of the store to branch this staging store from.
     */
-   public static SandboxInfo createStagingSandbox(final String storeId, 
-                                                  final NodeRef webProjectNodeRef)
+   public static SandboxInfo createStagingSandbox(String storeId, 
+                                                  NodeRef webProjectNodeRef,
+                                                  String branchStoreId)
    {
-      final ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
-      final AVMService avmService = services.getAVMService();
-      final PermissionService permissionService = services.getPermissionService();
+      ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
+      AVMService avmService = services.getAVMService();
+      PermissionService permissionService = services.getPermissionService();
       
       // create the 'staging' store for the website
-      final String stagingStoreName = AVMUtil.buildStagingStoreName(storeId);
+      String stagingStoreName = AVMUtil.buildStagingStoreName(storeId);
       avmService.createStore(stagingStoreName);
       if (logger.isDebugEnabled())
          logger.debug("Created staging sandbox store: " + stagingStoreName);
       
-      // create the system directories 'www' and 'avm_webapps'
-      avmService.createDirectory(stagingStoreName + ":/", JNDIConstants.DIR_DEFAULT_WWW);
+      // we can either branch from an existing staging store or create a new structure
+      if (branchStoreId != null)
+      {
+         String branchStorePath = AVMUtil.buildStagingStoreName(branchStoreId) + ":/" +
+                                  JNDIConstants.DIR_DEFAULT_WWW;
+         avmService.createBranch(-1, branchStorePath,
+                                 stagingStoreName + ":/", JNDIConstants.DIR_DEFAULT_WWW);
+      }
+      else
+      {
+         // create the system directories 'www' and 'avm_webapps'
+         avmService.createDirectory(stagingStoreName + ":/", JNDIConstants.DIR_DEFAULT_WWW);
+         avmService.createDirectory(AVMUtil.buildStoreRootPath(stagingStoreName), 
+                                    JNDIConstants.DIR_DEFAULT_APPBASE);
+      }
+      
       // apply READ permissions for all users
       NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, AVMUtil.buildStoreRootPath(stagingStoreName));
       permissionService.setPermission(dirRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
-      
-      avmService.createDirectory(AVMUtil.buildStoreRootPath(stagingStoreName), 
-                                 JNDIConstants.DIR_DEFAULT_APPBASE);
       
       // tag the store with the store type
       avmService.setStoreProperty(stagingStoreName,
@@ -114,7 +127,7 @@ public final class SandboxFactory
       
       
       // create the 'preview' store for the website
-      final String previewStoreName = AVMUtil.buildStagingPreviewStoreName(storeId);
+      String previewStoreName = AVMUtil.buildStagingPreviewStoreName(storeId);
       avmService.createStore(previewStoreName);
       if (logger.isDebugEnabled())
          logger.debug("Created staging preview sandbox store: " + previewStoreName +
@@ -180,18 +193,18 @@ public final class SandboxFactory
     * @param role       Role permission for the user
     * @return           Summary information regarding the sandbox
     */
-   public static SandboxInfo createUserSandbox(final String storeId, 
-                                               final List<String> managers,
-                                               final String username, 
-                                               final String role)
+   public static SandboxInfo createUserSandbox(String storeId, 
+                                               List<String> managers,
+                                               String username, 
+                                               String role)
    {
-      final ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
-      final AVMService avmService = services.getAVMService();
-      final PermissionService permissionService = services.getPermissionService();
+      ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
+      AVMService avmService = services.getAVMService();
+      PermissionService permissionService = services.getPermissionService();
       
       // create the user 'main' store
-      final String userStoreName    = AVMUtil.buildUserMainStoreName(storeId, username);
-      final String previewStoreName = AVMUtil.buildUserPreviewStoreName(storeId, username);
+      String userStoreName    = AVMUtil.buildUserMainStoreName(storeId, username);
+      String previewStoreName = AVMUtil.buildUserPreviewStoreName(storeId, username);
       
       if (avmService.getStore(userStoreName) != null)
       {
@@ -203,7 +216,7 @@ public final class SandboxFactory
       }
       
       avmService.createStore(userStoreName);
-      final String stagingStoreName = AVMUtil.buildStagingStoreName(storeId);
+      String stagingStoreName = AVMUtil.buildStagingStoreName(storeId);
       if (logger.isDebugEnabled())
          logger.debug("Created user sandbox store: " + userStoreName +
                       " above staging store " + stagingStoreName);

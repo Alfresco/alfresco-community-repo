@@ -596,7 +596,7 @@
       <property-sheet>
          <show-property name="wca:avmstore" read-only="true" />
          <show-property name="wca:defaultwebapp" read-only="true" />
-         <show-property name="wca:deployto" read-only="true" />
+         <show-property name="wca:deployto" converter="org.alfresco.faces.MultiValueConverter" read-only="true" />
          <show-property name="app:icon" show-in-view-mode="false" show-in-edit-mode="false" />
       </property-sheet>
    </config>

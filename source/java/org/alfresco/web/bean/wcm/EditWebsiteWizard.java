@@ -34,14 +34,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.workflow.WorkflowDefinition;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
-import org.alfresco.web.forms.Form;
-import org.alfresco.web.forms.FormNotFoundException;
-import org.alfresco.web.forms.FormsService;
-import org.alfresco.web.forms.RenderingEngineTemplate;
 
 /**
  * Backing bean for the Edit Web Project wizard.
@@ -69,109 +63,7 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
          throw new IllegalArgumentException("Edit Web Project wizard requires action node context.");
       }
       
-      loadWebProjectModel(websiteRef);
-   }
-   
-   /**
-    * Restore the forms, templates and workflows from the model for this web project
-    * 
-    * @param nodeRef        NodeRef to the web project
-    */
-   private void loadWebProjectModel(NodeRef nodeRef)
-   {
-      // simple properties
-      Map<QName, Serializable> props = this.nodeService.getProperties(nodeRef);
-      this.name = (String)props.get(ContentModel.PROP_NAME);
-      this.title = (String)props.get(ContentModel.PROP_TITLE);
-      this.description = (String)props.get(ContentModel.PROP_DESCRIPTION);
-      this.dnsName = (String)props.get(WCMAppModel.PROP_AVMSTORE);
-      this.webapp = (String)props.get(WCMAppModel.PROP_DEFAULTWEBAPP);
-      this.deployTo = (List<String>)props.get(WCMAppModel.PROP_DEPLOYTO);
-      
-      // load the form templates
-      List<ChildAssociationRef> webFormRefs = this.nodeService.getChildAssocs(
-            nodeRef, WCMAppModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
-      for (ChildAssociationRef ref : webFormRefs)
-      {
-         NodeRef formRef = ref.getChildRef();
-         
-         String name = (String)this.nodeService.getProperty(formRef, WCMAppModel.PROP_FORMNAME);
-         try
-         {
-            final Form formImpl = this.formsService.getForm(name);
-            FormWrapper form = new FormWrapper(formImpl);
-            form.setTitle((String)this.nodeService.getProperty(formRef, ContentModel.PROP_TITLE));
-            form.setDescription((String)this.nodeService.getProperty(formRef, ContentModel.PROP_DESCRIPTION));
-            form.setOutputPathPattern((String)this.nodeService.getProperty(formRef, WCMAppModel.PROP_OUTPUT_PATH_PATTERN));
-            
-            // the single workflow attached to the form 
-            List<ChildAssociationRef> workflowRefs = this.nodeService.getChildAssocs(
-               formRef, WCMAppModel.ASSOC_WORKFLOWDEFAULTS, RegexQNamePattern.MATCH_ALL);
-            if (workflowRefs.size() == 1)
-            {
-               NodeRef wfRef = workflowRefs.get(0).getChildRef();
-               String wfName = (String)this.nodeService.getProperty(wfRef, WCMAppModel.PROP_WORKFLOW_NAME);
-               WorkflowDefinition wfDef = this.workflowService.getDefinitionByName(wfName);
-               if (wfDef != null)
-               {
-                  WorkflowWrapper wfWrapper = new WorkflowWrapper(wfName, wfDef.getTitle(), wfDef.getDescription());
-                  wfWrapper.setParams((Map<QName, Serializable>)AVMWorkflowUtil.deserializeWorkflowParams(wfRef));
-                  if (wfDef.startTaskDefinition != null)
-                  {
-                     wfWrapper.setType(wfDef.startTaskDefinition.metadata.getName());
-                  }
-                  form.setWorkflow(wfWrapper);
-               }
-            }
-            
-            // the templates attached to the form
-            List<ChildAssociationRef> templateRefs = this.nodeService.getChildAssocs(
-               formRef, WCMAppModel.ASSOC_WEBFORMTEMPLATE, RegexQNamePattern.MATCH_ALL);
-            for (ChildAssociationRef tChildRef : templateRefs)
-            {
-               final NodeRef templateRef = tChildRef.getChildRef();
-               final String renderingEngineTemplateName = (String)
-                  this.nodeService.getProperty(templateRef, 
-                                               WCMAppModel.PROP_BASE_RENDERING_ENGINE_TEMPLATE_NAME);
-               final RenderingEngineTemplate ret = formImpl.getRenderingEngineTemplate(renderingEngineTemplateName);
-               if (ret != null)
-               {
-                  final String outputPathPattern = (String)
-                     this.nodeService.getProperty(templateRef, WCMAppModel.PROP_OUTPUT_PATH_PATTERN);
-                  form.addTemplate(new PresentationTemplate(ret, outputPathPattern));
-               }
-            }
-            
-            this.forms.add(form);
-         }
-         catch (FormNotFoundException fnfe)
-         {
-            //ignore
-            logger.debug(fnfe.getMessage(), fnfe);
-         }
-      }
-      
-      // load the workflows associated with the website
-      List<ChildAssociationRef> workflowRefs = this.nodeService.getChildAssocs(
-            nodeRef, WCMAppModel.ASSOC_WEBWORKFLOWDEFAULTS, RegexQNamePattern.MATCH_ALL);
-      for (ChildAssociationRef wChildRef : workflowRefs)
-      {
-         NodeRef wfRef = wChildRef.getChildRef();
-         String wfName = (String)this.nodeService.getProperty(wfRef, WCMAppModel.PROP_WORKFLOW_NAME);
-         WorkflowDefinition wfDef = this.workflowService.getDefinitionByName(wfName);
-         if (wfDef != null)
-         {
-            WorkflowWrapper wfWrapper = new WorkflowWrapper(wfName, wfDef.getTitle(), wfDef.getDescription());
-            wfWrapper.setParams((Map<QName, Serializable>)AVMWorkflowUtil.deserializeWorkflowParams(wfRef));
-            wfWrapper.setFilenamePattern((String)this.nodeService.getProperty(wfRef, 
-                                                                              WCMAppModel.PROP_FILENAMEPATTERN));
-            if (wfDef.startTaskDefinition != null)
-            {
-               wfWrapper.setType(wfDef.startTaskDefinition.metadata.getName());
-            }
-            this.workflows.add(wfWrapper);
-         }
-      }
+      loadWebProjectModel(websiteRef, true, false);
    }
    
    /**

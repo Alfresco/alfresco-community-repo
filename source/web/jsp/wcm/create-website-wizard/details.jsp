@@ -160,7 +160,7 @@
 		    value="/images/icons/Help_icon.gif" style="cursor:help; padding-left: 4px; vertical-align: -4px;"
 		    onclick="javascript:toggleDeployToHelp()" />
          <f:verbatim>
-         <div id="deploy-to-help" class="summary infoText statusInfoText" style="display: none; padding: 5px; width: 220px;">
+         <div id="deploy-to-help" class="summary infoText statusInfoText" style="display:none; padding:5px;">
          </f:verbatim>
             <h:outputText id="deploy-top-help-text" value="#{WizardManager.bean.deployToHelp}" escape="false" />
          <f:verbatim>

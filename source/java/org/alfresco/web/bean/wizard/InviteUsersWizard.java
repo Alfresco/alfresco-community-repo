@@ -370,50 +370,58 @@ public abstract class InviteUsersWizard extends BaseWizardBean
       if (results != null)
       {
          String role = (String)rolePicker.getValue();
-         
          if (role != null)
          {
             for (int i=0; i<results.length; i++)
             {
-               String authority = results[i];
-               
-               // only add if authority not already present in the list with same role
-               boolean foundExisting = false;
-               for (int n=0; n<this.userGroupRoles.size(); n++)
-               {
-                  UserGroupRole wrapper = this.userGroupRoles.get(n);
-                  if (authority.equals(wrapper.getAuthority()) &&
-                      (!this.allowDuplicateAuthorities || role.equals(wrapper.getRole())))
-                  {
-                     foundExisting = true;
-                     break;
-                  }
-               }
-               
-               if (foundExisting == false)
-               {
-                  StringBuilder label = new StringBuilder(64);
-                  
-                  // build a display label showing the user and their role for the space
-                  AuthorityType authType = AuthorityType.getAuthorityType(authority);
-                  if (authType == AuthorityType.GUEST || authType == AuthorityType.USER)
-                  {
-                     if (authType == AuthorityType.GUEST || this.personService.personExists(authority) == true)
-                     {
-                        // found a User authority
-                        label.append(buildLabelForUserAuthorityRole(authority, role));
-                     }
-                  }
-                  else
-                  {
-                     // found a group authority
-                     label.append(buildLabelForGroupAuthorityRole(authority, role));
-                  }
-                  
-                  this.userGroupRoles.add(new UserGroupRole(authority, role, label.toString()));
-               }
+               addAuthorityWithRole(results[i], role);
             }
          }
+      }
+   }
+
+   /**
+    * Add an authority with the specified role to the list managed by this wizard.
+    * 
+    * @param authority        Authority to add (cannot be null)
+    * @param role             Role for the authorities (cannot be null)
+    */
+   public void addAuthorityWithRole(String authority, String role)
+   {
+      // only add if authority not already present in the list with same role
+      boolean foundExisting = false;
+      for (int n=0; n<this.userGroupRoles.size(); n++)
+      {
+         UserGroupRole wrapper = this.userGroupRoles.get(n);
+         if (authority.equals(wrapper.getAuthority()) &&
+               (!this.allowDuplicateAuthorities || role.equals(wrapper.getRole())))
+         {
+            foundExisting = true;
+            break;
+         }
+      }
+      
+      if (foundExisting == false)
+      {
+         StringBuilder label = new StringBuilder(64);
+         
+         // build a display label showing the user and their role for the space
+         AuthorityType authType = AuthorityType.getAuthorityType(authority);
+         if (authType == AuthorityType.GUEST || authType == AuthorityType.USER)
+         {
+            if (authType == AuthorityType.GUEST || this.personService.personExists(authority) == true)
+            {
+               // found a User authority
+               label.append(buildLabelForUserAuthorityRole(authority, role));
+            }
+         }
+         else
+         {
+            // found a group authority
+            label.append(buildLabelForGroupAuthorityRole(authority, role));
+         }
+         
+         this.userGroupRoles.add(new UserGroupRole(authority, role, label.toString()));
       }
    }
    

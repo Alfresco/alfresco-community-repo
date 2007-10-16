@@ -1,6 +1,6 @@
-/*
+<%--
  * Copyright (C) 2005-2007 Alfresco Software Limited.
- *
+ 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -21,18 +21,23 @@
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
- */
-package org.alfresco.web.ui.wcm;
+--%>
+<%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
+<%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
+<%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-/**
- * @author Kevin Roast
- */
-public class WebResources extends org.alfresco.web.ui.repo.WebResources
-{
-   // Image paths
-   public static final String IMAGE_SANDBOX_32 = "/images/icons/sandbox_large.gif";
-   public static final String IMAGE_USERSANDBOX_32 = "/images/icons/user_sandbox_large.gif";
-   public static final String IMAGE_WEBFORM_32 = "/images/icons/webform_large.gif";
-   public static final String IMAGE_TEMPLATE_32 = "/images/icons/template_large.gif";
-   public static final String IMAGE_WEBPROJECT_32 = "/images/icons/website_large.gif";
-}
+<h:panelGrid columns="1">
+   <h:selectOneRadio id="create-from" value="#{WizardManager.bean.createFrom}" layout="pageDirection">
+      <f:selectItem itemValue="empty" itemLabel="#{msg.website_create_empty}" />
+      <f:selectItem itemValue="existing" itemLabel="#{msg.website_create_existing}:" />
+   </h:selectOneRadio>
+   <h:panelGroup id="grp-1">
+      <f:verbatim><div style="height:180px;*height:184px;margin-left:28px;width:90%;overflow:auto" class='selectListTable'></f:verbatim>
+      <a:selectList id="website-list" value="#{WizardManager.bean.sourceWebProject}" style="width:100%" itemStyleClass="selectListItem">
+         <a:listItems id="website-items" value="#{WizardManager.bean.webProjectsList}" />
+      </a:selectList>
+      <f:verbatim></div></f:verbatim>
+   </h:panelGroup>
+</h:panelGrid>

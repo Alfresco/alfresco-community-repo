@@ -345,11 +345,11 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
                                     QName type = nodeService.getType(test);
                                     if (dictionaryService.isSubClass(type, ContentModel.TYPE_CATEGORY))
                                     {
-                                        return inboundValue;
+                                        return test;
                                     }
                                     else
                                     {
-                                        return null;
+                                        return test;
                                     }
                                 }
                                 else

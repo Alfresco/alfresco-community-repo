@@ -54,7 +54,7 @@ public class MultiValueConverter implements Converter
          throws ConverterException
    {
       List<String> items = new ArrayList<String>();
-      StringTokenizer tokenizer = new StringTokenizer(value, ",");
+      StringTokenizer tokenizer = new StringTokenizer(value, ", ");
       while (tokenizer.hasMoreTokens())
       {
          items.add(tokenizer.nextToken().trim());

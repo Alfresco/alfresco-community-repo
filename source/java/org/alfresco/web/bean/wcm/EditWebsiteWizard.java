@@ -66,6 +66,13 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       loadWebProjectModel(websiteRef, true, false);
    }
    
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
+      // always allow Finish as we are editing existing settings
+      return false;
+   }
+
    /**
     * @see org.alfresco.web.bean.dialog.BaseDialogBean#finishImpl(javax.faces.context.FacesContext, java.lang.String)
     */
@@ -79,6 +86,7 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       this.nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, this.title);
       this.nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, this.description);
       this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_DEPLOYTO, (Serializable)this.deployTo);
+      this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_ISSOURCE, this.isSource);
       
       // clear the existing settings for forms, template and workflows - then the existing methods
       // can be used to apply the modified and previous settings from scratch

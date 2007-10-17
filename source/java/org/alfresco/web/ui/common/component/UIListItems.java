@@ -35,6 +35,7 @@ import javax.faces.el.ValueBinding;
 public class UIListItems extends SelfRenderingComponent
 {
    private Object value;
+   private boolean cacheValue;
    
    /**
     * @see javax.faces.component.UIComponent#getFamily()
@@ -49,7 +50,7 @@ public class UIListItems extends SelfRenderingComponent
     */
    public Object getValue()
    {
-      if (this.value == null)
+      if (getCacheValue() == false || this.value == null)
       {
          ValueBinding vb = getValueBinding("value");
          if (vb != null)
@@ -69,6 +70,27 @@ public class UIListItems extends SelfRenderingComponent
    }
 
    /**
+    * @return the cacheValue
+    */
+   public boolean getCacheValue()
+   {
+      ValueBinding vb = getValueBinding("cacheValue");
+      if (vb != null)
+      {
+         this.cacheValue = (Boolean)vb.getValue(getFacesContext());;
+      }
+      return this.cacheValue;
+   }
+
+   /**
+    * @param cacheValue the cacheValue to set
+    */
+   public void setCacheValue(boolean cacheValue)
+   {
+      this.cacheValue = cacheValue;
+   }
+
+   /**
     * @see javax.faces.component.StateHolder#restoreState(javax.faces.context.FacesContext, java.lang.Object)
     */
    public void restoreState(FacesContext context, Object state)
@@ -77,6 +99,7 @@ public class UIListItems extends SelfRenderingComponent
       // standard component attributes are restored by the super class
       super.restoreState(context, values[0]);
       this.value = values[1];
+      this.cacheValue = (Boolean)values[2];
    }
    
    /**
@@ -85,7 +108,11 @@ public class UIListItems extends SelfRenderingComponent
    public Object saveState(FacesContext context)
    {
       // standard component attributes are saved by the super class
-      return new Object[] { super.saveState(context), this.value };
+      return new Object[] {
+            super.saveState(context),
+            this.value,
+            this.cacheValue
+         };
    }
 }
 

@@ -60,6 +60,7 @@ public class ListItemsTag extends BaseComponentTag
       super.setProperties(component);
       
       setStringBindingProperty(component, "value", this.value);
+      setBooleanProperty(component, "cacheValue", this.cacheValue);
    }
 
    /**
@@ -78,5 +79,20 @@ public class ListItemsTag extends BaseComponentTag
       super.release();
       
       this.value = null;
+      this.cacheValue = null;
    }
+   
+   /**
+    * Set the cacheValue
+    *
+    * @param cacheValue     the cacheValue
+    */
+   public void setCacheValue(String cacheValue)
+   {
+      this.cacheValue = cacheValue;
+   }
+
+
+   /** the cacheValue */
+   private String cacheValue;
 }

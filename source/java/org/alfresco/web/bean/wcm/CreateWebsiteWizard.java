@@ -91,6 +91,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    private static final String COMPONENT_WORKFLOWLIST = "workflow-list";
    
    // wizard step names (that are referenced)
+   private static final String STEP_DETAILS = "details";
    private static final String STEP_FORMS = "forms";
    
    private static final String MATCH_DEFAULT = ".*";
@@ -114,6 +115,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
    protected String createFrom = null;
    protected String[] sourceWebProject = null;
    protected ExpiringValueCache<List<UIListItem>> webProjectsList;
+   protected boolean isSource;
+   protected boolean showAllSourceProjects;
    
    protected AVMService avmService;
    protected WorkflowService workflowService;
@@ -168,12 +171,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.title = null;
       this.description = null;
       this.deployTo = null;
+      this.isSource = false;
       clearFormsWorkflowsAndUsers();
       this.createFrom = CREATE_EMPTY;
       // requry existing web projects list every 10 seconds
       this.webProjectsList = new ExpiringValueCache<List<UIListItem>>(1000L*10L);
       this.sourceWebProject = null;
       this.createFromValueChanged = false;
+      this.showAllSourceProjects = false;
    }
 
    private void clearFormsWorkflowsAndUsers()
@@ -194,6 +199,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
+      // the Finish button can be pressed early in the steps - ensure the model is up-to-date
+      updateModelOnCreateFromChange();
+      
       // create the website space in the correct parent folder
       final NodeRef websiteParent = WebProject.getWebsitesFolder();
       
@@ -215,6 +223,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
       uiFacetsProps.put(ContentModel.PROP_TITLE, this.title);
       uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, this.description);
       this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
+      
+      // use as template source flag
+      this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_ISSOURCE, this.isSource);
       
       // set the default webapp name for the project
       String webapp = (this.webapp != null && this.webapp.length() != 0) ? this.webapp : WEBAPP_DEFAULT;
@@ -249,8 +260,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
          // create the default webapp folder under the hidden system folders
          if (branchStoreId == null)
          {
-            final String stagingStore = AVMUtil.buildStagingStoreName(avmStore);
-            final String stagingStoreRoot = AVMUtil.buildSandboxRootPath(stagingStore);
+            String stagingStore = AVMUtil.buildStagingStoreName(avmStore);
+            String stagingStoreRoot = AVMUtil.buildSandboxRootPath(stagingStore);
             this.avmService.createDirectory(stagingStoreRoot, webapp);
             this.avmService.addAspect(AVMNodeConverter.ExtendAVMPath(stagingStoreRoot, webapp),
                                       WCMAppModel.ASPECT_WEBAPP);
@@ -293,6 +304,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
          AVMUtil.updateVServerWebapp(path, true);
       }
       return outcome;
+   }
+   
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
+      // allow finish from any step other than the initial details page
+      String stepName = Application.getWizardManager().getCurrentStepName();
+      return (STEP_DETAILS.equals(stepName));
    }
    
    /**
@@ -417,6 +436,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
          this.dnsName = (String)props.get(WCMAppModel.PROP_AVMSTORE);
          this.webapp = (String)props.get(WCMAppModel.PROP_DEFAULTWEBAPP);
          this.deployTo = (List<String>)props.get(WCMAppModel.PROP_DEPLOYTO);
+         Boolean isSource = (Boolean)props.get(WCMAppModel.PROP_ISSOURCE);
+         if (isSource != null)
+         {
+            this.isSource = isSource.booleanValue();
+         }
       }
       
       if (loadUsers)
@@ -750,6 +774,22 @@ public class CreateWebsiteWizard extends BaseWizardBean
    }
    
    /**
+    * @return true if this website is set to be a template source website for future web projects
+    */
+   public boolean isSource()
+   {
+      return this.isSource;
+   }
+
+   /**
+    * @param isSource   true if this website is set to be a template source website for future web projects
+    */
+   public void setSource(boolean isSource)
+   {
+      this.isSource = isSource;
+   }
+
+   /**
     * @return the existingWebProjects
     */
    public List<UIListItem> getWebProjectsList()
@@ -759,16 +799,23 @@ public class CreateWebsiteWizard extends BaseWizardBean
       {
          FacesContext fc = FacesContext.getCurrentInstance();
          
-         // construct the query to retrieve all web projects
+         // construct the query to retrieve the web projects
          String path = Application.getRootPath(fc) + "/" + Application.getWebsitesFolderName(fc) + "/*";
-         String query = "PATH:\"/" + path + "\" +TYPE:\"{" + NamespaceService.WCMAPP_MODEL_1_0_URI + "}webfolder\"";
+         StringBuilder query = new StringBuilder(200);
+         query.append("PATH:\"/").append(path).append("\"");
+         query.append(" +TYPE:\"{").append(NamespaceService.WCMAPP_MODEL_1_0_URI).append("}webfolder\"");
+         if (this.showAllSourceProjects == false)
+         {
+            // only query for web project templates by default
+            query.append(" +@").append(Repository.escapeQName(WCMAppModel.PROP_ISSOURCE)).append(":true");
+         }
          
          ResultSet results = null;
          try
          {
             // execute the query
             results = searchService.query(Repository.getStoreRef(), 
-                                          SearchService.LANGUAGE_LUCENE, query);
+                                          SearchService.LANGUAGE_LUCENE, query.toString());
             webProjects = new ArrayList<UIListItem>(results.length());
             for (ResultSetRow row : results)
             {
@@ -797,6 +844,25 @@ public class CreateWebsiteWizard extends BaseWizardBean
    }
    
    /**
+    * Action handler called when toggle Show All/Show Template Web Projects link is clicked
+    */
+   public void toggleWebProjectsList(ActionEvent event)
+   {
+      this.showAllSourceProjects = !this.showAllSourceProjects;
+      this.webProjectsList.clear();
+      this.createFromValueChanged = true;
+   }
+   
+   /**
+    * @return true to show all Web Projects in the Create From list,
+    *         false to only show those marked as templates
+    */
+   public boolean getShowAllSourceProjects()
+   {
+      return this.showAllSourceProjects;
+   }
+
+   /**
     * @return the deploy to help text that gets displayed if the user
     * clicks the Help icon
     */
@@ -820,25 +886,33 @@ public class CreateWebsiteWizard extends BaseWizardBean
       {
          // if we have just entered the Forms page and the Create From page data has changed
          // then we need to pre-populate the Forms etc. from the template web project
-         if (this.createFromValueChanged)
-         {
-            if (CREATE_EXISTING.equals(this.createFrom))
-            {
-               if (this.sourceWebProject != null && this.sourceWebProject.length != 0)
-               {
-                  clearFormsWorkflowsAndUsers();
-                  loadWebProjectModel(new NodeRef(this.sourceWebProject[0]), false, true);
-               }
-            }
-            else
-            {
-               clearFormsWorkflowsAndUsers();
-            }
-            
-            this.createFromValueChanged = false;
-         }
+         updateModelOnCreateFromChange();
       }
       return super.next();
+   }
+
+   /**
+    * Update the wizard model when the value in the Create From page changes
+    */
+   private void updateModelOnCreateFromChange()
+   {
+      if (this.createFromValueChanged)
+      {
+         if (CREATE_EXISTING.equals(this.createFrom))
+         {
+            if (this.sourceWebProject != null && this.sourceWebProject.length != 0)
+            {
+               clearFormsWorkflowsAndUsers();
+               loadWebProjectModel(new NodeRef(this.sourceWebProject[0]), false, true);
+            }
+         }
+         else
+         {
+            clearFormsWorkflowsAndUsers();
+         }
+         
+         this.createFromValueChanged = false;
+      }
    }
 
    /**

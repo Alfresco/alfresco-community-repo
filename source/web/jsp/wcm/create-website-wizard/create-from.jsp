@@ -36,8 +36,14 @@
    <h:panelGroup id="grp-1">
       <f:verbatim><div style="height:180px;*height:184px;margin-left:28px;width:90%;overflow:auto" class='selectListTable'></f:verbatim>
       <a:selectList id="website-list" value="#{WizardManager.bean.sourceWebProject}" style="width:100%" itemStyleClass="selectListItem">
-         <a:listItems id="website-items" value="#{WizardManager.bean.webProjectsList}" />
+         <a:listItems id="website-items" value="#{WizardManager.bean.webProjectsList}" cacheValue="false" />
       </a:selectList>
+      <f:verbatim></div></f:verbatim>
+      <f:verbatim><div style="margin-left:28px;margin-top:4px"></f:verbatim>
+      <h:outputText id="txt-note" value="#{msg.website_sourcenote}" />
+      <f:verbatim><br></f:verbatim>
+      <a:actionLink id="lnk-showall" value="#{msg.website_sourceshowall}" actionListener="#{WizardManager.bean.toggleWebProjectsList}" rendered="#{!WizardManager.bean.showAllSourceProjects}" />
+      <a:actionLink id="lnk-showtemplates" value="#{msg.website_sourceshowtemplates}" actionListener="#{WizardManager.bean.toggleWebProjectsList}" rendered="#{WizardManager.bean.showAllSourceProjects}" />
       <f:verbatim></div></f:verbatim>
    </h:panelGroup>
 </h:panelGrid>

@@ -106,7 +106,7 @@
          <h:outputText value="#{msg.name}:"/>
          <f:verbatim>
       </td>
-      <td width="85%">
+      <td width="75%">
          </f:verbatim>
          <h:inputText id="name" value="#{WizardManager.bean.name}" size="45" maxlength="1024"
                       onkeyup="javascript:checkButtonState();" />
@@ -124,7 +124,7 @@
          <h:outputText value="#{msg.website_dnsname}:"/>
          <f:verbatim>
       </td>
-      <td width="85%">
+      <td>
          </f:verbatim>
          <h:inputText id="dnsname" value="#{WizardManager.bean.dnsName}" size="45" maxlength="64"
                onkeyup="javascript:checkButtonState();" disabled="#{WizardManager.bean.editMode}" />
@@ -138,7 +138,7 @@
          <h:outputText value="#{msg.website_webapp}:"/>
          <f:verbatim>
       </td>
-      <td width="85%">
+      <td>
          </f:verbatim>
          <h:inputText id="webapp" value="#{WizardManager.bean.webapp}" size="45" maxlength="256" disabled="true" />
          <f:verbatim>
@@ -151,7 +151,7 @@
          <h:outputText value="#{msg.website_deployto}:"/>
          <f:verbatim>
       </td>
-      <td width="85%">
+      <td>
          </f:verbatim>
          <h:inputText id="server" value="#{WizardManager.bean.deployTo}" size="45" maxlength="256">
             <a:convertMultiValue />
@@ -190,6 +190,19 @@
       <td>
          </f:verbatim>
          <h:inputTextarea id="description" value="#{WizardManager.bean.description}" rows="3" cols="42" />
+         <f:verbatim>
+      </td>
+   </tr>
+   <tr>
+      <td></td>
+      <td valign="top">
+         </f:verbatim>
+         <h:outputText value="#{msg.website_sourcetemplate}"/>
+         <f:verbatim>
+      </td>
+      <td>
+         </f:verbatim>
+         <h:selectBooleanCheckbox id="template" value="#{WizardManager.bean.source}" />
          <f:verbatim>
       </td>
    </tr>

@@ -6,6 +6,7 @@
 		<project>3rd Party</project>
 		<project>MBean</project>
 		<project>Repository</project>
+		<project>Web-Framework</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

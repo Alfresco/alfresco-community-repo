@@ -46,6 +46,10 @@
                <title>Snapshot Version Selected For Deployment</title>
                <type>d:int</type>
             </property>
+            <property name="wca:issource">
+               <title>Used as a template website</title>
+               <type>d:boolean</type>
+            </property>
          </properties>
          <associations>
             <child-association name="wca:webuser">

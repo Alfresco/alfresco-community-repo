@@ -349,12 +349,12 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
                                     }
                                     else
                                     {
-                                        return test;
+                                        return null;
                                     }
                                 }
                                 else
                                 {
-                                    return inboundValue;
+                                    return test;
                                 }
                             }
                             else

@@ -340,4 +340,13 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         }
     }
 
+    public void clearCurrentTicket()
+    {
+        clearCurrentSecurityContext();
+    }
+    
+    public static void clearCurrentSecurityContext()
+    {
+        currentTicket.set(null);
+    }
 }

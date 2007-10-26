@@ -118,6 +118,7 @@ public class AuthenticationServiceImpl implements AuthenticationService
             clearCurrentSecurityContext();
             throw ae;
         }
+        ticketComponent.clearCurrentTicket();
     }
     
     public boolean authenticationExists(String userName)
@@ -168,6 +169,7 @@ public class AuthenticationServiceImpl implements AuthenticationService
     public void clearCurrentSecurityContext()
     {
         authenticationComponent.clearCurrentSecurityContext();
+        ticketComponent.clearCurrentTicket();
     }
 
     public boolean isCurrentUserTheSystemUser()
@@ -183,6 +185,7 @@ public class AuthenticationServiceImpl implements AuthenticationService
     public void authenticateAsGuest() throws AuthenticationException
     {
         authenticationComponent.setGuestUserAsCurrentUser();
+        ticketComponent.clearCurrentTicket();
     }
     
     public boolean guestUserAuthenticationAllowed()

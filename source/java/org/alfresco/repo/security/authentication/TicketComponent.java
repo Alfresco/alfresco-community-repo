@@ -97,4 +97,10 @@ public interface TicketComponent
      * @return the authority
      */
     public String getAuthorityForTicket(String ticket);
+    
+    /**
+     * Clear the current ticket
+     *
+     */
+    public void clearCurrentTicket();
 }

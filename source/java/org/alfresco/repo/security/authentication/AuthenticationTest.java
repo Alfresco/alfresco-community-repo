@@ -465,6 +465,8 @@ public class AuthenticationTest extends TestCase
         // assertNull(dao.getUserOrNull("Andy"));
     }
 
+  
+    
     public void testTicket()
     {
         dao.createUser("Andy", "ticket".toCharArray());
@@ -701,6 +703,32 @@ public class AuthenticationTest extends TestCase
         dao.deleteUser("Andy");
         // assertNull(dao.getUserOrNull("Andy"));
 
+    }
+    
+    public void testAuthenticationServiceGetNewTicket()
+    {
+        authenticationService.createAuthentication("GUEST", "".toCharArray());
+        authenticationService.authenticate("GUEST", "".toCharArray());
+
+        // create an authentication object e.g. the user
+        authenticationService.createAuthentication("Andy", "auth1".toCharArray());
+
+        // authenticate with this user details
+        authenticationService.authenticate("Andy", "auth1".toCharArray());
+
+        // assert the user is authenticated
+        assertEquals("Andy", authenticationService.getCurrentUserName());
+        
+        String ticket1 = authenticationService.getCurrentTicket();
+        
+        authenticationService.authenticate("Andy", "auth1".toCharArray());
+
+        // assert the user is authenticated
+        assertEquals("Andy", authenticationService.getCurrentUserName());
+        
+        String ticket2 = authenticationService.getCurrentTicket();
+        
+        assertFalse(ticket1.equals(ticket2));
     }
 
     public void testAuthenticationService1()

@@ -277,6 +277,7 @@ public abstract class AuthenticationUtil
     public static void clearCurrentSecurityContext()
     {
         ContextHolder.setContext(null);
+        InMemoryTicketComponentImpl.clearCurrentSecurityContext();
     }
 
     /**

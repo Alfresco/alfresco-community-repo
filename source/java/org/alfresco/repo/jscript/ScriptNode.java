@@ -2030,7 +2030,17 @@ public class ScriptNode implements Serializable, Scopeable
         
         if (xpath.length() != 0)
         {
-            if (logger.isDebugEnabled()) logger.debug("Executing xpath: " + xpath);
+            if (logger.isDebugEnabled())
+            {
+               logger.debug("Executing xpath: " + xpath);
+               if (params != null)
+               {
+                  for (int i=0; i<params.length; i++)
+                  {
+                     logger.debug(" [" + params[i].getQName() + "]=" + params[i].getDefault());
+                  }
+               }
+            }
             
             List<NodeRef> nodes = this.services.getSearchService().selectNodes(this.nodeRef, xpath, params,
                     this.services.getNamespaceService(), false);

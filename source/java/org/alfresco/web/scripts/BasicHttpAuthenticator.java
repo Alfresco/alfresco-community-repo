@@ -60,7 +60,7 @@ public class BasicHttpAuthenticator implements WebScriptServletAuthenticator
     /* (non-Javadoc)
      * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
      */
-    public boolean authenticate(RequiredAuthentication required, boolean isGuest, HttpServletRequest req, HttpServletResponse res)
+    public boolean authenticate(RequiredAuthentication required, boolean isGuest, WebScriptServletRequest preq, WebScriptServletResponse pres)
     {
         boolean authorized = false;
 
@@ -68,6 +68,8 @@ public class BasicHttpAuthenticator implements WebScriptServletAuthenticator
         // validate credentials
         // 
 
+        HttpServletRequest req = preq.getHttpServletRequest();
+        HttpServletResponse res = pres.getHttpServletResponse();
         String authorization = req.getHeader("Authorization");
         String ticket = req.getParameter("alf_ticket");
         

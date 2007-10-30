@@ -24,9 +24,6 @@
  */
 package org.alfresco.web.scripts;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 
 /**
@@ -46,5 +43,6 @@ public interface WebScriptServletAuthenticator
     * 
     * @return true if authorised to execute the script, false otherwise
     */
-   public boolean authenticate(RequiredAuthentication required, boolean isGuest, HttpServletRequest req, HttpServletResponse res);
+   // TODO: DC - This method to be refactored during Web Script F/W extraction
+   public boolean authenticate(RequiredAuthentication required, boolean isGuest, WebScriptServletRequest req, WebScriptServletResponse res);
 }

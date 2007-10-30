@@ -285,7 +285,7 @@ public class WebScriptPortlet implements Portlet
          * @see org.alfresco.web.scripts.WebScriptRuntime#authenticate(org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication, boolean)
          */
         @Override
-        protected boolean authenticate(RequiredAuthentication required, boolean isGuest)
+        protected boolean authenticate(RequiredAuthentication required, boolean isGuest, WebScriptRequest preq, WebScriptResponse pres)
         {
             return authenticator.authenticate(required, isGuest, req, res);
         }

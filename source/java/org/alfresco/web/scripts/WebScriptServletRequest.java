@@ -31,6 +31,8 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.web.config.ServerConfigElement;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -40,6 +42,9 @@ import org.alfresco.web.config.ServerConfigElement;
  */
 public class WebScriptServletRequest extends WebScriptRequestImpl
 {
+    // Logger
+    private static final Log logger = LogFactory.getLog(WebScriptServletRequest.class);
+
     /** Server Config */
     private ServerConfigElement serverConfig;
     
@@ -48,7 +53,10 @@ public class WebScriptServletRequest extends WebScriptRequestImpl
     
     /** Service bound to this request */
     private WebScriptMatch serviceMatch;
-    
+
+    /** Form data associated with multipart/form-data */
+    private FormData formData;
+
     
     /**
      * Construct
@@ -56,7 +64,7 @@ public class WebScriptServletRequest extends WebScriptRequestImpl
      * @param req
      * @param serviceMatch
      */
-    WebScriptServletRequest(HttpServletRequest req, WebScriptMatch serviceMatch)
+    public WebScriptServletRequest(HttpServletRequest req, WebScriptMatch serviceMatch)
     {
         this(null, req, serviceMatch);
     }
@@ -68,11 +76,20 @@ public class WebScriptServletRequest extends WebScriptRequestImpl
      * @param req
      * @param serviceMatch
      */
-    WebScriptServletRequest(ServerConfigElement serverConfig, HttpServletRequest req, WebScriptMatch serviceMatch)
+    public WebScriptServletRequest(ServerConfigElement serverConfig, HttpServletRequest req, WebScriptMatch serviceMatch)
     {
         this.serverConfig = serverConfig;
         this.req = req;
         this.serviceMatch = serviceMatch;
+        String contentType = req.getContentType();
+
+        if (logger.isDebugEnabled())
+            logger.debug("Content Type: " + contentType);
+        
+        if (contentType != null && contentType.startsWith("multipart/form-data"))
+        {
+            formData = new FormData(req);
+        }
     }
     
     /**
@@ -165,10 +182,20 @@ public class WebScriptServletRequest extends WebScriptRequestImpl
      */
     public String[] getParameterNames()
     {
-        Set<String> keys = req.getParameterMap().keySet();
-        String[] names = new String[keys.size()];
-        keys.toArray(names);
-        return names;
+        if (formData == null)
+        {
+            Set<String> keys = req.getParameterMap().keySet();
+            String[] names = new String[keys.size()];
+            keys.toArray(names);
+            return names;
+        }
+        else
+        {
+            Set<String> keys = formData.getParameters().keySet();
+            String[] names = new String[keys.size()];
+            keys.toArray(names);
+            return names;
+        }        
     }
 
     /* (non-Javadoc)
@@ -176,7 +203,14 @@ public class WebScriptServletRequest extends WebScriptRequestImpl
      */
     public String getParameter(String name)
     {
-        return req.getParameter(name);
+        if (formData == null)
+        {
+            return req.getParameter(name);
+        }
+        else
+        {
+            return formData.getParameters().get(name);
+        }        
     }
 
     /* (non-Javadoc)
@@ -184,7 +218,15 @@ public class WebScriptServletRequest extends WebScriptRequestImpl
      */
     public String[] getParameterValues(String name)
     {
-        return req.getParameterValues(name);
+        if (formData == null)
+        {           
+            return req.getParameterValues(name);
+        }
+        else
+        {
+            String value = formData.getParameters().get(name);
+            return (value == null ) ? new String[] {} : new String[] {value};
+        }
     }
     
     /* (non-Javadoc)
@@ -302,4 +344,14 @@ public class WebScriptServletRequest extends WebScriptRequestImpl
         return Boolean.valueOf(forceSuccess);
     }
 
+    /**
+     * Gets the Form data associated with this request
+     * 
+     * @return form data, or null if request is not multipart/form-data encoded
+     */
+    public FormData getFormData()
+    {
+        return formData;
+    }
+    
 }

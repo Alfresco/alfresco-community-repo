@@ -278,6 +278,16 @@
    </servlet>
 
    <servlet>
+      <servlet-name>facebookServlet</servlet-name>
+      <servlet-class>org.alfresco.web.scripts.facebook.FacebookServlet</servlet-class>
+   </servlet>
+
+   <servlet>
+      <servlet-name>fbapiServlet</servlet-name>
+      <servlet-class>org.alfresco.web.scripts.facebook.FacebookAPIServlet</servlet-class>
+   </servlet>
+
+   <servlet>
       <servlet-name>proxyServlet</servlet-name>
       <servlet-class>org.alfresco.web.app.servlet.HTTPProxyServlet</servlet-class>
    </servlet>
@@ -420,6 +430,26 @@
    <servlet-mapping>
       <servlet-name>portalapiServlet</servlet-name>
       <url-pattern>/168s/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>facebookServlet</servlet-name>
+      <url-pattern>/facebook/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>facebookServlet</servlet-name>
+      <url-pattern>/fb/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>fbapiServlet</servlet-name>
+      <url-pattern>/fbservice/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>fbapiServlet</servlet-name>
+      <url-pattern>/fbs/*</url-pattern>
    </servlet-mapping>
 
    <servlet-mapping>

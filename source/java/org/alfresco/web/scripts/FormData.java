@@ -27,7 +27,9 @@ package org.alfresco.web.scripts;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -55,8 +57,10 @@ public class FormData implements Serializable, Scopeable
     private Scriptable scope;
     private HttpServletRequest req;
     private ServletFileUpload upload;
-    private List<FileItem> files = null;
-   
+    private Map<String, FormField> fields = null;
+    private Map<String, String> parameters = null;
+    private Map<String, ScriptContent> files = null;
+    
     /**
      * Construct
      * 
@@ -70,24 +74,19 @@ public class FormData implements Serializable, Scopeable
     /* (non-Javadoc)
      * @see org.alfresco.repo.jscript.Scopeable#setScope(org.mozilla.javascript.Scriptable)
      */
-	public void setScope(Scriptable scope)
-	{
-		this.scope = scope;
-	}
-
-	/**
-	 * Determine if multi-part form data has been provided
-	 * 
-	 * @return  true => multi-part
-	 */
-	public boolean getIsMultiPart()
-	{
-	    return upload.isMultipartContent(req);
-	}
-
-    public boolean jsGet_isMultipart()
+    public void setScope(Scriptable scope)
     {
-        return getIsMultiPart();
+        this.scope = scope;
+    }
+
+    /**
+     * Determine if multi-part form data has been provided
+     * 
+     * @return  true => multi-part
+     */
+    public boolean getIsMultiPart()
+    {
+        return upload.isMultipartContent(req);
     }
 
     /**
@@ -96,107 +95,143 @@ public class FormData implements Serializable, Scopeable
      * @param name  field to look for
      * @return  true => form data contains field
      */
-	public boolean hasField(String name)
-	{
-	    List<FileItem> files = getFiles();
-	    for (FileItem file : files)
-	    {
-	        if (file.getFieldName().equals(name))
-	        {
-	            return true;
-	        }
-	    }
-	    return false;
-	}
+    public boolean hasField(String name)
+    {
+        Map<String, FormField> fields = getFieldsMap();
+        return fields.containsKey(name);
+    }
 
-	/**
-	 * Gets the Form fields
-	 * 
-	 * @return  array of FormField
-	 */
+    /**
+     * Gets the Form fields
+     * 
+     * @return  array of FormField
+     */
     public Scriptable getFields()
     {
-        List<FileItem> files = getFiles();
-        Object[] fields = new Object[files.size()];
-        int i = 0;
-        for (FileItem file : files)
-        {
-            fields[i++] = new FormField(file);
-        }
+        Map<String, FormField> fieldsMap = getFieldsMap();
+        Object[] fields = new Object[fieldsMap.values().size()];
+        fieldsMap.values().toArray(fields);
         return Context.getCurrentContext().newArray(this.scope, fields);        
     }
 
-    public Scriptable jsGet_fields()
+    /*package*/ Map<String, String> getParameters()
     {
-        return getFields();
+        return getParametersMap();
     }
-
+    
+    /*package*/ Map<String, ScriptContent> getFiles()
+    {
+        return getFilesMap();
+    }
+    
     /**
      * Helper to parse servlet request form data
      * 
      * @return  parsed form data
      */
-	private List<FileItem> getFiles()
-	{
-	    // NOTE: This class is not thread safe - it is expected to be constructed on each thread.
-	    if (files == null)
-	    {
-	        FileItemFactory factory = new DiskFileItemFactory();
-	        upload = new ServletFileUpload(factory);
-	        try
-	        {
-	            files = upload.parseRequest(req);
-	        }
+    private Map<String, FormField> getFieldsMap()
+    {
+        // NOTE: This class is not thread safe - it is expected to be constructed on each thread.
+        if (fields == null)
+        {
+            FileItemFactory factory = new DiskFileItemFactory();
+            upload = new ServletFileUpload(factory);
+            try
+            {
+                List<FileItem> fileItems = upload.parseRequest(req);
+                fields = new HashMap<String, FormField>();
+                for (FileItem fileItem : fileItems)
+                {
+                    FormField formField = new FormField(fileItem);
+                    fields.put(fileItem.getFieldName(), formField);
+                }
+            }
             catch(FileUploadException e)
             {
                 // NOTE: assume no files can be located
-                files = Collections.EMPTY_LIST;
+                fields = Collections.emptyMap();
             }
-	    }
-	    return files;
-	}
+        }
+        return fields;
+    }
  
+    private Map<String, String> getParametersMap()
+    {
+        if (parameters == null)
+        {
+            Map<String, FormField> fields = getFieldsMap();
+            parameters = new HashMap<String, String>();
+            for (Map.Entry<String, FormField> entry : fields.entrySet())
+            {
+                FormField field = entry.getValue();
+                if (!field.getIsFile())
+                {
+                    parameters.put(entry.getKey(), field.getValue());
+                }
+            }
+        }
+        return parameters;
+    }
+    
+    private Map<String, ScriptContent> getFilesMap()
+    {
+        if (files == null)
+        {
+            Map<String, FormField> fields = getFieldsMap();
+            files = new HashMap<String, ScriptContent>();
+            for (Map.Entry<String, FormField> entry : fields.entrySet())
+            {
+                FormField field = entry.getValue();
+                if (field.getIsFile())
+                {
+                    files.put(entry.getKey(), field.getContent());
+                }
+            }           
+        }
+        return files;
+    }
+    
 
-	/**
-	 * Form Field
-	 * 
-	 * @author davidc
-	 */
-	public class FormField implements Serializable
-	{
-	    private FileItem file;
+    /**
+     * Form Field
+     * 
+     * @author davidc
+     */
+    public class FormField implements Serializable
+    {
+        private FileItem file;
 
-	    /**
-	     * Construct
-	     * 
-	     * @param file
-	     */
-	    public FormField(FileItem file)
-	    {
-	        this.file = file;
-	    }
-	    
-	    /**
-	     * @return  field name
-	     */
-	    public String getName()
-	    {
-	        return file.getFieldName();
-	    }
-	    
-	    public String jsGet_name()
-	    {
-	        return getName();
-	    }
-	    
-	    /**
-	     * @return  true => field represents a file
-	     */
-	    public boolean getIsFile()
-	    {
-	        return !file.isFormField();
-	    }
-	    
+        /**
+         * Construct
+         * 
+         * @param file
+         */
+        public FormField(FileItem file)
+        {
+            this.file = file;
+        }
+        
+        /**
+         * @return  field name
+         */
+        public String getName()
+        {
+            return file.getFieldName();
+        }
+        
+        public String jsGet_name()
+        {
+            return getName();
+        }
+        
+        /**
+         * @return  true => field represents a file
+         */
+        public boolean getIsFile()
+        {
+            return !file.isFormField();
+        }
+        
         public boolean jsGet_isFile()
         {
             return getIsFile();
@@ -206,9 +241,9 @@ public class FormData implements Serializable, Scopeable
          * @return  field value (for file, attempts conversion to string)
          */
         public String getValue()
-	    {
-	        return file.getString();
-	    }
+        {
+            return file.getString();
+        }
         
         public String jsGet_value()
         {
@@ -218,30 +253,30 @@ public class FormData implements Serializable, Scopeable
         /**
          * @return  field as content
          */
-	    public ScriptContent getContent()
-	    {
-	        try
-	        {
-	            return new ScriptNode.ScriptContentStream(file.getInputStream(), getMimetype(), null);
-	        }
-	        catch(IOException e)
-	        {
-	            return null;
-	        }
-	    }
+        public ScriptContent getContent()
+        {
+            try
+            {
+                return new ScriptNode.ScriptContentStream(file.getInputStream(), getMimetype(), null);
+            }
+            catch(IOException e)
+            {
+                return null;
+            }
+        }
 
-	    public ScriptContent jsGet_content()
+        public ScriptContent jsGet_content()
         {
             return getContent();
         }
 
-	    /**
-	     * @return  mimetype
-	     */
-	    public String getMimetype()
-	    {
-	        return file.getContentType();
-	    }
+        /**
+         * @return  mimetype
+         */
+        public String getMimetype()
+        {
+            return file.getContentType();
+        }
 
         public String jsGet_mimetype()
         {
@@ -251,16 +286,16 @@ public class FormData implements Serializable, Scopeable
         /**
          * @return  filename (only for file fields, otherwise null)
          */
-	    public String getFilename()
-	    {
-	        return file.getName();
-	    }
-	    
+        public String getFilename()
+        {
+            return file.getName();
+        }
+        
         public String jsGet_filename()
         {
             return getFilename();
         }
 
-	}
-	
+    }
+    
 }

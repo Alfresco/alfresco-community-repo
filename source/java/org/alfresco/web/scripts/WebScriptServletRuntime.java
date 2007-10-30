@@ -42,10 +42,10 @@ import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
  */
 public class WebScriptServletRuntime extends WebScriptRuntime
 {
-    private HttpServletRequest req;
-    private HttpServletResponse res;
-    private WebScriptServletAuthenticator authenticator;
-    private ServerConfigElement serverConfig;
+    protected HttpServletRequest req;
+    protected HttpServletResponse res;
+    protected WebScriptServletAuthenticator authenticator;
+    protected ServerConfigElement serverConfig;
     
 
     /**
@@ -137,12 +137,12 @@ public class WebScriptServletRuntime extends WebScriptRuntime
      * @see org.alfresco.web.scripts.WebScriptRuntime#authenticate(org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication, boolean)
      */
     @Override
-    protected boolean authenticate(RequiredAuthentication required, boolean isGuest)
+    protected boolean authenticate(RequiredAuthentication required, boolean isGuest, WebScriptRequest req, WebScriptResponse res)
     {
         boolean authorised = true;
         if (authenticator != null)
         {
-            authorised = authenticator.authenticate(required, isGuest, req, res);
+            authorised = authenticator.authenticate(required, isGuest, (WebScriptServletRequest)req, (WebScriptServletResponse)res);
         }
         return authorised;
     }

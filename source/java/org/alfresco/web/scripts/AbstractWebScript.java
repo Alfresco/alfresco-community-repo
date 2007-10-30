@@ -29,13 +29,11 @@ import java.io.Writer;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.jscript.Scopeable;
 import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.template.AbsoluteUrlMethod;
 import org.alfresco.service.ServiceRegistry;
@@ -50,10 +48,10 @@ import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredTransaction;
+import org.alfresco.web.scripts.facebook.FacebookModel;
+import org.alfresco.web.scripts.facebook.FacebookServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Scriptable;
 
 
 /**
@@ -305,13 +303,20 @@ public abstract class AbstractWebScript implements WebScript
         // add web script context
         model.put("args", createScriptArgs(req));
         model.put("argsM", createScriptArgsM(req));
-        if (req instanceof WebScriptServletRequest)
-        {
-            model.put("formdata", new FormData(((WebScriptServletRequest)req).getHttpServletRequest()));
-        }
         model.put("guest", req.isGuest());
         model.put("url", new URLModel(req));
         model.put("server", new ServerModel(descriptorService.getServerDescriptor()));
+
+        // TODO: Refactor creation of runtime specific parameters with
+        //       Web Script F/W extraction
+        if (req instanceof WebScriptServletRequest)
+        {
+            model.put("formdata", ((WebScriptServletRequest)req).getFormData());
+        }
+        if (req instanceof FacebookServletRequest)
+        {
+            model.put("facebook", new FacebookModel(((FacebookServletRequest)req)));
+        }
 
         // add custom model
         if (customModel != null)
@@ -366,13 +371,20 @@ public abstract class AbstractWebScript implements WebScript
         model.put("url", new URLModel(req));
         model.put("webscript", getDescription());
         model.put("server", new ServerModel(descriptorService.getServerDescriptor()));
-        
+
+        // TODO: Refactor creation of runtime specific parameters with
+        //       Web Script F/W extraction
+        if (req instanceof FacebookServletRequest)
+        {
+            model.put("facebook", new FacebookModel(((FacebookServletRequest)req)));
+        }
+
         // add template support
         model.put("absurl", new AbsoluteUrlMethod(req.getServerPath()));
         model.put("scripturl", new ScriptUrlMethod(req, res));
         model.put("clienturlfunction", new ClientUrlFunctionMethod(res));
         model.put("date", new Date());
-        model.put(TemplateService.KEY_IMAGE_RESOLVER, getWebScriptRegistry().getTemplateImageResolver());
+        model.put(TemplateService.KEY_IMAGE_RESOLVER, getWebScriptRegistry().getTemplateImageResolver());        
         
         // add custom model
         if (customModel != null)

@@ -25,6 +25,8 @@
 package org.alfresco.web.scripts;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -162,6 +164,13 @@ public abstract class WebScriptRuntime
         {
             if (logger.isInfoEnabled())
                 logger.info("Caught exception & redirecting to status template: " + e.getMessage());
+            if (logger.isDebugEnabled())
+            {
+                StringWriter writer = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(writer);
+                e.printStackTrace(printWriter);
+                logger.debug("Caught exception: " + writer.toString());
+            }
             
             // extract status code, if specified
             int statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
@@ -189,10 +198,10 @@ public abstract class WebScriptRuntime
             // NOTE: search order...
             //   1) root located <status>.ftl
             //   2) root located status.ftl
-            String templatePath = "/" + statusCode + ".ftl";
+            String templatePath = getStatusCodeTemplate(statusCode);
             if (!registry.getTemplateProcessor().hasTemplate(templatePath))
             {
-                templatePath = "/status.ftl";
+                templatePath = getStatusTemplate();
                 if (!registry.getTemplateProcessor().hasTemplate(templatePath))
                 {
                     throw new WebScriptException("Failed to find status template " + templatePath + " (format: " + WebScriptResponse.HTML_FORMAT + ")");
@@ -273,7 +282,7 @@ public abstract class WebScriptRuntime
                 //
                 // Apply appropriate authentication to Web Script invocation
                 //
-                if (authenticate(required, isGuest))
+                if (authenticate(required, isGuest, scriptReq, scriptRes))
                 {
                     if (required == RequiredAuthentication.admin && !authorityService.hasAdminAuthority())
                     {
@@ -404,7 +413,8 @@ public abstract class WebScriptRuntime
      * 
      * @return true if authorised, false otherwise
      */
-    protected abstract boolean authenticate(RequiredAuthentication required, boolean isGuest);
+    // TODO: DC - This method to be refactored during Web Script F/W extraction
+    protected abstract boolean authenticate(RequiredAuthentication required, boolean isGuest, WebScriptRequest req, WebScriptResponse res);
     
     /**
      * Pre-execution hook
@@ -429,4 +439,15 @@ public abstract class WebScriptRuntime
     protected void postExecute(WebScriptRequest scriptReq, WebScriptResponse scriptRes)
     {
     }
+    
+    protected String getStatusCodeTemplate(int statusCode)
+    {
+        return "/" + statusCode + ".ftl";
+    }
+    
+    protected String getStatusTemplate()
+    {
+        return "/status.ftl";
+    }
+    
 }

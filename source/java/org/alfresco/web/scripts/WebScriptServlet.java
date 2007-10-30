@@ -76,7 +76,7 @@ public class WebScriptServlet extends HttpServlet
         String authenticatorId = getInitParameter("authenticator");
         if (authenticatorId == null || authenticatorId.length() == 0)
         {
-            authenticatorId = "webscripts.authenticator.webclient";
+            authenticatorId = getDefaultAuthenticator();
         }
         Object bean = context.getBean(authenticatorId);
         if (bean == null || !(bean instanceof WebScriptServletAuthenticator))
@@ -88,6 +88,9 @@ public class WebScriptServlet extends HttpServlet
         // retrieve host server configuration 
         Config config = configService.getConfig("Server");
         serverConfig = (ServerConfigElement)config.getConfigElement(ServerConfigElement.CONFIG_ELEMENT_ID);
+        
+        // servlet specific initialisation
+        initServlet(context);
     }
 
 
@@ -106,4 +109,21 @@ public class WebScriptServlet extends HttpServlet
         runtime.executeScript();
     }
     
+    /**
+     * Servlet specific initialisation
+     * 
+     * @param context
+     */
+    protected void initServlet(ApplicationContext context)
+    {
+        // NOOP
+    }
+    
+    /**
+     * @return  default authenticator (bean name)
+     */
+    protected String getDefaultAuthenticator()
+    {
+        return "webscripts.authenticator.webclient";
+    }
 }

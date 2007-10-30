@@ -132,6 +132,7 @@
             <prop key="opensearchdescription">application/opensearchdescription+xml</prop>
             <prop key="mediawiki">text/plain</prop>
             <prop key="portlet">text/html</prop>
+            <prop key="fbml">text/html</prop>
          </props>
       </property>
    </bean>
@@ -183,6 +184,17 @@
 
    <!--  Scripted API Service -->
    <bean id="webscript_default" parent="webscript" class="org.alfresco.web.scripts.DeclarativeWebScript" singleton="false"/>
+
+
+   <!--  -->
+   <!--  Facebook Web Scripts -->
+   <!--  -->
+
+   <bean id="facebook.service" class="org.alfresco.web.scripts.facebook.FacebookService">
+      <property name="registry" ref="webscripts.registry" />
+   </bean>
+
+   <bean id="facebook.authenticator" class="org.alfresco.web.scripts.facebook.FacebookAuthenticator"/>
 
 
    <!--  -->

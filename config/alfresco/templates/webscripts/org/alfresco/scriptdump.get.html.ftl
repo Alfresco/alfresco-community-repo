@@ -24,7 +24,7 @@
      <tr><td>URL Template:</td><td>${URI}</td></tr>
      </#list>
      <tr><td>Format Style:</td><td>${script.formatStyle}</td></tr>
-     <tr><td>Default Format:</td><td>${script.defaultFormat}</td></tr>
+     <tr><td>Default Format:</td><td>${script.defaultFormat!"[undefined}]"}</td></tr>
      <tr><td>Implementation:</td><td>${script_class}</td></tr>
     </table>
     <p/>

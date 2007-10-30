@@ -288,7 +288,7 @@ public class UIWebScript extends SelfRenderingComponent
        * @see org.alfresco.web.scripts.WebScriptRuntime#authenticate(org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication, boolean)
        */
       @Override
-      protected boolean authenticate(RequiredAuthentication required, boolean isGuest)
+      protected boolean authenticate(RequiredAuthentication required, boolean isGuest, WebScriptRequest req, WebScriptResponse res)
       {
          // JSF component already in an authenticated environment as the
          // /faces servlet filter (or JSF portlet wrapper) is called first

@@ -63,6 +63,8 @@ import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
 import org.alfresco.web.scripts.WebScriptRuntime;
 import org.alfresco.web.scripts.WebScriptServlet;
+import org.alfresco.web.scripts.WebScriptServletRequest;
+import org.alfresco.web.scripts.WebScriptServletResponse;
 import org.alfresco.web.scripts.WebScriptURLRequest;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 import org.apache.commons.logging.Log;
@@ -529,7 +531,7 @@ public class PageRendererServlet extends WebScriptServlet
       }
 
       @Override
-      protected boolean authenticate(RequiredAuthentication required, boolean isGuest)
+      protected boolean authenticate(RequiredAuthentication required, boolean isGuest, WebScriptRequest req, WebScriptResponse res)
       {
          // TODO: what authentication here?
          return true;

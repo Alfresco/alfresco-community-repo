@@ -63,7 +63,7 @@ public class WebClientAuthenticator implements WebScriptServletAuthenticator, Se
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptServletAuthenticator#authenticate(org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication, boolean, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
-    public boolean authenticate(RequiredAuthentication required, boolean isGuest, HttpServletRequest req, HttpServletResponse res)
+    public boolean authenticate(RequiredAuthentication required, boolean isGuest, WebScriptServletRequest preq, WebScriptServletResponse pres)
     {
         AuthenticationStatus status = null;
 
@@ -72,6 +72,8 @@ public class WebClientAuthenticator implements WebScriptServletAuthenticator, Se
             //
             // validate credentials
             // 
+            HttpServletRequest req = preq.getHttpServletRequest();
+            HttpServletResponse res = pres.getHttpServletResponse();
             String ticket = req.getParameter("ticket");
             
             if (logger.isDebugEnabled())

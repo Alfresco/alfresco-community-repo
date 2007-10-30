@@ -248,9 +248,18 @@ public class TemplateServiceImpl implements TemplateService
         }
         
         // Put the common node reference into the model
-        model.put(KEY_COMPANY_HOME, companyHome);
-        model.put(KEY_USER_HOME, userHome);
-        model.put(KEY_PERSON, person);
+        if (companyHome != null)
+        {
+            model.put(KEY_COMPANY_HOME, companyHome);
+        }
+        if (userHome != null)
+        {
+            model.put(KEY_USER_HOME, userHome);
+        }
+        if (person != null)
+        {
+            model.put(KEY_PERSON, person);
+        }
         
         // add the template itself as "template" if it comes from content on a node
         if (template != null)

@@ -79,6 +79,7 @@ import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.UniqueTag;
 import org.mozilla.javascript.Wrapper;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
@@ -1884,13 +1885,17 @@ public class ScriptNode implements Serializable, Scopeable
     
     private String processTemplate(String template, NodeRef templateRef, ScriptableObject args)
     {
+        Object person = (Object)scope.get("person", scope);
+        Object companyhome = (Object)scope.get("companyhome", scope);
+        Object userhome = (Object)scope.get("userhome", scope);
+        
         // build default model for the template processing
         Map<String, Object> model = this.services.getTemplateService().buildDefaultModel(
-                ((ScriptNode)((Wrapper)scope.get("person", scope)).unwrap()).getNodeRef(),
-                ((ScriptNode)((Wrapper)scope.get("companyhome", scope)).unwrap()).getNodeRef(),
-                ((ScriptNode)((Wrapper)scope.get("userhome", scope)).unwrap()).getNodeRef(),
-                templateRef,
-                null);
+            (person.equals(UniqueTag.NOT_FOUND)) ? null : ((ScriptNode)((Wrapper)person).unwrap()).getNodeRef(),
+            (companyhome.equals(UniqueTag.NOT_FOUND)) ? null : ((ScriptNode)((Wrapper)companyhome).unwrap()).getNodeRef(),
+            (userhome.equals(UniqueTag.NOT_FOUND)) ? null : ((ScriptNode)((Wrapper)userhome).unwrap()).getNodeRef(),
+            templateRef,
+            null);
         
         // add the current node as either the document/space as appropriate
         if (this.getIsDocument())

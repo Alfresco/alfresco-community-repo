@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -158,6 +159,32 @@ public final class Search extends BaseScopableProcessorExtension
     }
 
     /**
+     * Execute a Lucene search (sorted)
+     * 
+     * @param search  Lucene search string to execute
+     * @param sortKey  property name to sort on
+     * @param asc  true => ascending sort
+     * 
+     * @return JavaScript array of Node results from the search - can be empty but not null
+     */
+    public Scriptable luceneSearch(String search, String sortColumn, boolean asc)
+    {
+        if (search == null || search.length() == 0)
+        {
+            return Context.getCurrentContext().newArray(getScope(), 0);
+        }
+        if (sortColumn == null || sortColumn.length() == 0)
+        {
+            return luceneSearch(search);
+        }
+        
+        SortColumn[] sort = new SortColumn[1];
+        sort[0] = new SortColumn(sortColumn, asc);
+        Object[] results = query(search, sort, SearchService.LANGUAGE_LUCENE);
+        return Context.getCurrentContext().newArray(getScope(), results);
+    }
+    
+    /**
      * Execute a saved Lucene search
      * 
      * @param savedSearch   Node that contains the saved search XML content
@@ -271,4 +298,82 @@ public final class Search extends BaseScopableProcessorExtension
 
         return set.toArray(new Object[(set.size())]);
     }
+
+    /**
+     * Execute the query
+     * 
+     * Removes any duplicates that may be present (ID search can cause duplicates - it is better to remove them here)
+     * 
+     * @param search    Lucene search to execute
+     * @param language  Search language to use e.g. SearchService.LANGUAGE_LUCENE
+     * 
+     * @return Array of Node objects
+     */
+    private Object[] query(String search, SortColumn[] sort, String language)
+    {   
+        LinkedHashSet<ScriptNode> set = new LinkedHashSet<ScriptNode>();
+
+        // perform the search against the repo
+        ResultSet results = null;
+        try
+        {
+            SearchParameters sp = new SearchParameters();
+            sp.addStore(this.storeRef);
+            sp.setLanguage(language);
+            sp.setQuery(search);
+            if (sort != null)
+            {
+                for (SortColumn sd : sort)
+                {
+                    sp.addSort(sd.column, sd.asc);
+                }
+            }
+            
+            results = this.services.getSearchService().query(sp);
+
+            if (results.length() != 0)
+            {
+                for (ResultSetRow row: results)
+                {
+                    NodeRef nodeRef = row.getNodeRef();
+                    set.add(new ScriptNode(nodeRef, this.services, getScope()));
+                }
+            }
+        }
+        catch (Throwable err)
+        {
+            throw new AlfrescoRuntimeException("Failed to execute search: " + search, err);
+        }
+        finally
+        {
+            if (results != null)
+            {
+                results.close();
+            }
+        }
+
+        return set.toArray(new Object[(set.size())]);
+    }
+
+    /**
+     * Search sort column 
+     */
+    private class SortColumn
+    {
+        /**
+         * Constructor
+         * 
+         * @param column  column to sort on
+         * @param asc  sort direction
+         */
+        SortColumn(String column, boolean asc)
+        {
+            this.column = column;
+            this.asc = asc;
+        }
+        
+        public String column;
+        public boolean asc;
+    }
+    
 }

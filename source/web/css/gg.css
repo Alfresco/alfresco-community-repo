@@ -1,0 +1,78 @@
+body 
+{
+   margin: 1px;
+   font-family: Trebuchet MS, Arial, sans-serif;
+   font-size: 12px;
+   color: #515D6B;
+}
+
+div
+{
+   font-family: Trebuchet MS, Arial, sans-serif;
+   font-size: 12px;
+   color: #515D6B;
+}
+
+div.main
+{
+   border: 1px solid #CCD4DB;
+}
+
+div.toolbar
+{
+   height: 16px;
+   padding: 3px;
+}
+
+div.titlebar
+{
+   font-weight: bold;
+   padding: 2 0 2 8;
+   background-color: #DCE4EB;
+   border-bottom: 1px solid #CCD4DB;
+}
+
+div.dialog
+{
+   padding: 6px;
+}
+
+span.metaTitle
+{
+   font-size: 11px;
+   color: #666677;
+}
+
+span.metaData
+{
+   font-size: 11px;
+}
+
+a:link, a:visited
+{
+   font-family: Trebuchet MS, Arial, sans-serif;
+   text-decoration: none;
+   color: #515D6B;
+}
+
+a:hover
+{
+   color: #168ECE;
+}
+
+input
+{
+   font-family: Trebuchet MS, Arial, sans-serif;
+   font-size: 12px;
+   margin: 2px;
+   padding: 2px;
+   color: #515D6B;
+   background-color: #F8FCFD;
+   border: 1px solid #CCD4DB;
+   width: 100%;
+}
+
+input.formItemError
+{
+   border-color: red !important;
+}

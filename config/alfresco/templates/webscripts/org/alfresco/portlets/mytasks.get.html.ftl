@@ -58,7 +58,7 @@
                <td>
                   <div id="taskFooter">
                      <#-- the count value is retrieved and set dynamically from the AJAX webscript output above -->
-                     <span onclick="MyTasks.displayMessage('sljfsdfjlsdjifds lsdfj lsidjfoi jsdofij sodfj ');" class="taskFooterText">Showing <span id="taskCount">0</span> <#if filter=4>overdue</#if> task(s)<#if filter=1> due today</#if><#if filter=2> due next week</#if><#if filter=3> with no due date set</#if></span>
+                     <span class="taskFooterText">Showing <span id="taskCount">0</span> <#if filter=4>overdue</#if> task(s)<#if filter=1> due today</#if><#if filter=2> due next week</#if><#if filter=3> with no due date set</#if></span>
                   </div>
                </td>
             </tr>

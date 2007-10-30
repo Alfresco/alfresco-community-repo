@@ -19,7 +19,7 @@
 	            <tr><td>Start Date:</td><td>${task.startDate?date}</td></tr>
 	            <tr><td>Due Date:</td><td>
 	            <#if task.properties["bpm:dueDate"]?exists>
-	               ${task.startDate?date}
+	               ${t.properties["bpm:dueDate"]?date}
 	            <#else>
 	               <i>None</i>
 	            </#if>

@@ -38,7 +38,7 @@ import org.apache.commons.logging.LogFactory;
 
 
 /**
- * HTTP Servlet Web Script Runtime
+ * Facebook Canvas Page Servlet.
  * 
  * @author davidc
  */
@@ -47,6 +47,7 @@ public class FacebookServletRuntime extends FacebookAPIRuntime
     // Logger
     private static final Log logger = LogFactory.getLog(FacebookServletRuntime.class);
 
+    // Component dependencies
     protected FacebookService facebookService;
 
     /**
@@ -86,18 +87,27 @@ public class FacebookServletRuntime extends FacebookAPIRuntime
         return fbreq;
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptServletRuntime#getScriptUrl()
+     */
     @Override
     protected String getScriptUrl()
     {
         return "/facebook" + super.getScriptUrl();
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRuntime#getStatusCodeTemplate(int)
+     */
     @Override
     protected String getStatusCodeTemplate(int statusCode)
     {
         return "/fbml." + statusCode + ".ftl";
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRuntime#getStatusTemplate()
+     */
     @Override
     protected String getStatusTemplate()
     {

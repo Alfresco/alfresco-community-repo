@@ -208,7 +208,9 @@
    <bean id="webscript.org.alfresco.indexpackage.get" class="org.alfresco.web.scripts.bean.IndexPackage" parent="webscript" />
 
    <!--  Maintain list of available Web APIs -->
-   <bean id="webscript.org.alfresco.index.post" class="org.alfresco.web.scripts.bean.IndexUpdate" parent="webscript" />
+   <bean id="webscript.org.alfresco.index.post" class="org.alfresco.web.scripts.bean.IndexUpdate" parent="webscript" >
+      <property name="facebookService" ref="facebook.service"/>
+   </bean>
 
    <!--  Retrieve Web Script Description Document -->
    <bean id="webscript.org.alfresco.scriptdescription.get" class="org.alfresco.web.scripts.bean.ServiceDescription" parent="webscript" />

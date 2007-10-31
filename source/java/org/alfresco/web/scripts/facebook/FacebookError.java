@@ -24,66 +24,31 @@
  */
 package org.alfresco.web.scripts.facebook;
 
-
 /**
- * Facebook Application
+ * Facebook Error.
  * 
- * @author davidc
+ * @author David Caruana
  */
-public class FacebookAppModel
+public class FacebookError extends RuntimeException
 {
-    String appId;
-    String apiKey;    
-    String secretKey;
+    private static final long serialVersionUID = -7338963365877285084L;
+
+    private int code = -1;
+
+    public FacebookError(String msg)
+    {
+        super(msg);
+    }
+
+    public FacebookError(int code, String msg)
+    {
+        super(msg);
+        this.code = code;
+    }
     
-    /**
-     * Construct
-     * 
-     * @param apiKey
-     */
-    public FacebookAppModel(String apiKey)
+    public int getCode()
     {
-        this.apiKey = apiKey;
-    }
-    
-    /**
-     * @return  application apiKey
-     */
-    public String getApiKey()
-    {
-        return apiKey;
-    }
-
-    /**
-     * @return  application secret
-     */
-    public String getSecret()
-    {
-        return secretKey;
-    }
-
-    /**
-     * @param secretKey  application secret
-     */
-    public void setSecret(String secretKey)
-    {
-        this.secretKey = secretKey;
-    }
-
-    /**
-     * @return  application id
-     */
-    public String getId()
-    {
-        return appId;
-    }
-
-    /**
-     * @param appId  application id
-     */
-    public void setId(String appId)
-    {
-        this.appId = appId;
+        return code;
     }
     
 }

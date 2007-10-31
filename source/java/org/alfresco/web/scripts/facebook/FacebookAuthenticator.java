@@ -36,6 +36,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 
+/**
+ * Web Script Authenticator that supports Facebook authentication
+ * mechanism.
+ * 
+ * Upon success, the request is authenticated as the Facebook User Id.
+ * 
+ * @author davidc
+ */
 public class FacebookAuthenticator implements WebScriptServletAuthenticator
 {
     // Logger

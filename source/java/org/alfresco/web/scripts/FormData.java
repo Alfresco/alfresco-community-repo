@@ -114,11 +114,21 @@ public class FormData implements Serializable, Scopeable
         return Context.getCurrentContext().newArray(this.scope, fields);        
     }
 
+    /**
+     * Gets parameters encoded in the form data
+     * 
+     * @return  map (name, value) of parameters
+     */
     /*package*/ Map<String, String> getParameters()
     {
         return getParametersMap();
     }
     
+    /**
+     * Gets files encoded in form data
+     * 
+     * @return  map (name, ScriptContent) of files
+     */
     /*package*/ Map<String, ScriptContent> getFiles()
     {
         return getFilesMap();
@@ -127,7 +137,7 @@ public class FormData implements Serializable, Scopeable
     /**
      * Helper to parse servlet request form data
      * 
-     * @return  parsed form data
+     * @return  map of all form fields
      */
     private Map<String, FormField> getFieldsMap()
     {
@@ -155,6 +165,11 @@ public class FormData implements Serializable, Scopeable
         return fields;
     }
  
+    /**
+     * Helper to parse servlet request form data
+     * 
+     * @return  map of all form parameters
+     */
     private Map<String, String> getParametersMap()
     {
         if (parameters == null)
@@ -173,6 +188,11 @@ public class FormData implements Serializable, Scopeable
         return parameters;
     }
     
+    /**
+     * Helper to parse servlet request form data
+     * 
+     * @return  map of all form files
+     */
     private Map<String, ScriptContent> getFilesMap()
     {
         if (files == null)

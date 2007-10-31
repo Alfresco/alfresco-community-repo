@@ -49,9 +49,7 @@ public class FacebookAPIServlet extends WebScriptServlet
     private static final Log logger = LogFactory.getLog(FacebookAPIServlet.class);
 
 
-    /*
-     * (non-Javadoc)
-     * 
+    /* (non-Javadoc)
      * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest,
      *      javax.servlet.http.HttpServletResponse)
      */
@@ -63,9 +61,9 @@ public class FacebookAPIServlet extends WebScriptServlet
         WebScriptRuntime runtime = new FacebookAPIRuntime(registry, serviceRegistry, authenticator, req, res, serverConfig);
         runtime.executeScript();
     }
-    
-    /**
-     * @return  default authenticator (bean name)
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptServlet#getDefaultAuthenticator()
      */
     @Override
     protected String getDefaultAuthenticator()

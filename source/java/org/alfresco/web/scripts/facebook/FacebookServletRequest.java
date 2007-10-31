@@ -33,7 +33,7 @@ import org.alfresco.web.scripts.WebScriptServletRequest;
 
 
 /**
- * HTTP Servlet Web Script Request
+ * Facebook Servlet Request
  * 
  * @author davidc
  */
@@ -57,47 +57,74 @@ public class FacebookServletRequest extends WebScriptServletRequest
         this.pathInfo = pathInfo;
     }
     
+    /**
+     * @param secretKey  application secret
+     */
     /*package*/ void setSecretKey(String secretKey)
     {
         this.secretKey = secretKey;
     }
     
+    /**
+     * @param appId  application id
+     */
     /*package*/ void setAppId(String appId)
     {
         this.appId = appId;
     }
     
+    /**
+     * @return  application api key
+     */
     public String getApiKey()
     {
         return getParameter("fb_sig_api_key");
     }
     
+    /**
+     * @return  Facebook user id
+     */
     public String getUserId()
     {
         return getParameter("fb_sig_user");
     }
-    
+
+    /**
+     * @return  session key
+     */
     public String getSessionKey()
     {
         return getParameter("fb_sig_session_key");
     }
 
+    /**
+     * @return  true => within Facebook canvas
+     */
     public boolean isInCanvas()
     {
         String canvas = getParameter("fb_sig_api_key");
         return (canvas == null || canvas.equals("1"));
     }
     
+    /**
+     * @return  application secret
+     */
     public String getSecretKey()
     {
         return secretKey;
     }
     
+    /**
+     * @return  application id
+     */
     public String getAppId()
     {
         return appId;
     }
-    
+
+    /**
+     * @return  application canvas path
+     */
     public String getCanvasPath()
     {
         String pathInfo = getPathInfo();
@@ -109,6 +136,22 @@ public class FacebookServletRequest extends WebScriptServletRequest
         return pathSegments[2];
     }
     
+    /**
+     * @return  application page path
+     */
+    public String getPagePath()
+    {
+        String pagePath = getPathInfo();
+        if (pagePath.startsWith("/facebook"))
+        {
+            pagePath = pathInfo.substring("/facebook".length());
+        }
+        return pagePath;
+    }
+
+    /**
+     * @return  friends of authenticated Facebook user
+     */
     public String[] getFriends()
     {
         String[] friends;
@@ -117,9 +160,13 @@ public class FacebookServletRequest extends WebScriptServletRequest
         return friends;
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptServletRequest#getPathInfo()
+     */
     @Override
     public String getPathInfo()
     {
         return pathInfo;
     }
+    
 }

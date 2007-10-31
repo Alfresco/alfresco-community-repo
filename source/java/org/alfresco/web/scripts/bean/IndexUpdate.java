@@ -32,6 +32,7 @@ import java.util.Map;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptStatus;
+import org.alfresco.web.scripts.facebook.FacebookService;
 
 
 /**
@@ -41,7 +42,17 @@ import org.alfresco.web.scripts.WebScriptStatus;
  */
 public class IndexUpdate extends DeclarativeWebScript
 {
-
+    // component dependencies
+    private FacebookService facebookService;
+    
+    /**
+     * @param facebookService facebook service
+     */
+    public void setFacebookService(FacebookService facebookService)
+    {
+        this.facebookService = facebookService;
+    }
+        
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
@@ -54,9 +65,19 @@ public class IndexUpdate extends DeclarativeWebScript
         String reset = req.getParameter("reset");
         if (reset != null && reset.equals("on"))
         {
+            // reset list of web scripts
             int previousCount = getWebScriptRegistry().getWebScripts().size();
             getWebScriptRegistry().reset();
             tasks.add("Reset Web Scripts Registry; found " + getWebScriptRegistry().getWebScripts().size() + " Web Scripts.  Previously, there were " + previousCount + ".");
+            
+            // reset facebook service
+            // TODO: Determine more appropriate place to put this
+            int appCount = facebookService.getAppModels().size();
+            if (appCount > 0)
+            {
+                facebookService.reset();
+                tasks.add("Reset " + appCount + " Facebook Applications.");
+            }
         }
 
         // create model for rendering

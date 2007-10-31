@@ -50,9 +50,7 @@ public class FacebookServlet extends FacebookAPIServlet
     protected FacebookService facebookService;
 
 
-    /*
-     * (non-Javadoc)
-     * 
+    /* (non-Javadoc)
      * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest,
      *      javax.servlet.http.HttpServletResponse)
      */
@@ -64,7 +62,10 @@ public class FacebookServlet extends FacebookAPIServlet
         WebScriptRuntime runtime = new FacebookServletRuntime(registry, serviceRegistry, authenticator, req, res, serverConfig, facebookService);
         runtime.executeScript();
     }
-        
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptServlet#initServlet(org.springframework.context.ApplicationContext)
+     */
     @Override
     protected void initServlet(ApplicationContext context)
     {

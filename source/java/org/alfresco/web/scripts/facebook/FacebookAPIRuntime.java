@@ -37,7 +37,7 @@ import org.alfresco.web.scripts.WebScriptServletRuntime;
 
 
 /**
- * HTTP Servlet Web Script Runtime
+ * Runtime to support requests from Facebook
  * 
  * @author davidc
  */

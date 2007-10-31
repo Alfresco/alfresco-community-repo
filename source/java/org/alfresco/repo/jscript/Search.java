@@ -305,6 +305,7 @@ public final class Search extends BaseScopableProcessorExtension
      * Removes any duplicates that may be present (ID search can cause duplicates - it is better to remove them here)
      * 
      * @param search    Lucene search to execute
+     * @param sort      Columns to sort by
      * @param language  Search language to use e.g. SearchService.LANGUAGE_LUCENE
      * 
      * @return Array of Node objects

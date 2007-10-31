@@ -1211,7 +1211,10 @@ public class ScriptNode implements Serializable, Scopeable
         
         reset();
         
-        return newInstance(fileInfo.getNodeRef(), this.services, this.scope);
+        ScriptNode file = newInstance(fileInfo.getNodeRef(), this.services, this.scope);
+        file.setMimetype(this.services.getMimetypeService().guessMimetype(name));
+        
+        return file;
     }
     
     /**
@@ -2368,6 +2371,15 @@ public class ScriptNode implements Serializable, Scopeable
         public String getEncoding()
         {
             return contentData.getEncoding();
+        }
+        
+        public void setEncoding(String encoding)
+        {
+            this.contentData = ContentData.setEncoding(this.contentData, encoding);
+            services.getNodeService().setProperty(nodeRef, this.property, this.contentData);
+            
+            // update cached variables after putContent()
+            this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
         }
 
         public void setMimetype(String mimetype)

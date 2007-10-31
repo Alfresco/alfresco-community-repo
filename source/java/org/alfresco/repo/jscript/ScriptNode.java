@@ -1206,8 +1206,8 @@ public class ScriptNode implements Serializable, Scopeable
     {
         ParameterCheck.mandatoryString("Node Name", name);
         
-        FileInfo fileInfo = this.services.getFileFolderService().create(this.nodeRef, name,
-                ContentModel.TYPE_CONTENT);
+        FileInfo fileInfo = this.services.getFileFolderService().create(
+                this.nodeRef, name, ContentModel.TYPE_CONTENT);
         
         reset();
         
@@ -1225,8 +1225,8 @@ public class ScriptNode implements Serializable, Scopeable
     {
         ParameterCheck.mandatoryString("Node Name", name);
         
-        FileInfo fileInfo = this.services.getFileFolderService().create(this.nodeRef, name,
-                ContentModel.TYPE_FOLDER);
+        FileInfo fileInfo = this.services.getFileFolderService().create(
+                this.nodeRef, name, ContentModel.TYPE_FOLDER);
         
         reset();
         

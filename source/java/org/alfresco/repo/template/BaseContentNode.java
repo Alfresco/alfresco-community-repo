@@ -419,6 +419,26 @@ public abstract class BaseContentNode implements TemplateContent
     }
     
     /**
+     * @return The display label of the mimetype encoding for content attached to the node from the default
+     *         content property (@see ContentModel.PROP_CONTENT)
+     */
+    public String getDisplayMimetype()
+    {
+        TemplateContentData content = (TemplateContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
+        return (content != null ? content.getDisplayMimetype() : null);
+    }
+    
+    /**
+     * @return The character encoding for content attached to the node from the default content property
+     *         (@see ContentModel.PROP_CONTENT)
+     */
+    public String getEncoding()
+    {
+        TemplateContentData content = (TemplateContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
+        return (content != null ? content.getEncoding() : null);
+    }
+    
+    /**
      * @return The size in bytes of the content attached to the node from the default content property
      *         (@see ContentModel.PROP_CONTENT)
      */
@@ -560,6 +580,16 @@ public abstract class BaseContentNode implements TemplateContent
         public String getMimetype()
         {
             return contentData.getMimetype();
+        }
+        
+        public String getDisplayMimetype()
+        {
+            return services.getMimetypeService().getDisplaysByMimetype().get(getMimetype());
+        }
+        
+        public String getEncoding()
+        {
+            return contentData.getEncoding();
         }
         
         private ContentData contentData;

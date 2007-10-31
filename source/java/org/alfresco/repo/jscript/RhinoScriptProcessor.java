@@ -219,8 +219,8 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         if (scriptlets.size() == 1)
         {
             // quick exit for single script with no includes
-            if (logger.isDebugEnabled())
-                logger.debug("Script content resolved to:\r\n" + script);
+            if (logger.isTraceEnabled())
+                logger.trace("Script content resolved to:\r\n" + script);
             
             return script;
         }
@@ -239,8 +239,8 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                 result.append(scriptlet);
             }
             
-            if (logger.isDebugEnabled())
-                logger.debug("Script content resolved to:\r\n" + result.toString());
+            if (logger.isTraceEnabled())
+                logger.trace("Script content resolved to:\r\n" + result.toString());
             
             return result.toString();
         }
@@ -340,7 +340,9 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         {
             // no (further) includes found - include the original script content
             if (logger.isDebugEnabled())
-                logger.debug("Imports resolved, adding resource '" + location + "' content:\r\n" + script);
+                logger.debug("Imports resolved, adding resource '" + location);
+            if (logger.isTraceEnabled())
+                logger.trace(script);
             scripts.put(location, script);
         }
     }

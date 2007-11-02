@@ -54,8 +54,9 @@ public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy, N
 
     private SearchService searchService;
 
-    public static final String SEARCH_TEMPLATE = "ASPECT:\"" + EmailServerModel.ASPECT_ALIASABLE + "\" +@" + NamespaceService.EMAILSERVER_MODEL_PREFIX + "\\:"
-            + EmailServerModel.PROP_ALIAS.getLocalName() + ":\"%s\"";
+    public static final String SEARCH_TEMPLATE =
+        "ASPECT:\"" + EmailServerModel.ASPECT_ALIASABLE +
+        "\" +@" + NamespaceService.EMAILSERVER_MODEL_PREFIX + "\\:" + EmailServerModel.PROP_ALIAS.getLocalName() + ":\"%s\"";
 
     /**
      * @param searchService Alfresco Search Service

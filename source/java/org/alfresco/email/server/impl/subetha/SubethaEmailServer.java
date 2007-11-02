@@ -31,7 +31,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.alfresco.email.server.EmailServer;
-import org.alfresco.email.server.EmailServerConfiguration;
 import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.apache.commons.logging.Log;
@@ -53,17 +52,17 @@ public class SubethaEmailServer extends EmailServer
 
     private SMTPServer serverImpl;
 
-    protected SubethaEmailServer(EmailServerConfiguration serverConfiguration)
+    protected SubethaEmailServer()
     {
-        super(serverConfiguration);
-        serverImpl = new SMTPServer(new HandlerFactory());
-        serverImpl.setPort(serverConfiguration.getPort());
-        serverImpl.setHostName(serverConfiguration.getDomain());
+        super();
     }
 
     @Override
     public void startup()
     {
+        serverImpl = new SMTPServer(new HandlerFactory());
+        serverImpl.setPort(getPort());
+        serverImpl.setHostName(getDomain());
         serverImpl.start();
         log.info("Email Server has started successfully");
     }
@@ -112,7 +111,7 @@ public class SubethaEmailServer extends EmailServer
             this.from = from;
             try
             {
-                blackAndWhiteListFiltering(from);
+                filterSender(from);
             }
             catch (EmailMessageException e)
             {
@@ -168,11 +167,16 @@ public class SubethaEmailServer extends EmailServer
             try
             {
                 emailMessage = new SubethaEmailMessage(from, delivery.getRecipient(), data);
-                configuration.getEmailService().importMessage(emailMessage);
+                getEmailService().importMessage(emailMessage);
             }
             catch (EmailMessageException e)
             {
                 throw new RejectException(554, e.getMessage());
+            }
+            catch (Throwable e)
+            {
+                log.error(e.getMessage(), e);
+                throw new RejectException(554, "An internal error prevented mail delivery.");
             }
         }
 

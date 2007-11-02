@@ -24,10 +24,9 @@
  */
 package org.alfresco.email.server.handler;
 
-import org.alfresco.i18n.I18NUtil;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.email.EmailMessage;
-import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -44,20 +43,26 @@ public class TopicEmailMessageHandler extends AbstractForumEmailMessageHandler
      */
     public void processMessage(NodeRef nodeRef, EmailMessage message)
     {
-        QName nodeType = getNodeService().getType(nodeRef);
+        QName nodeTypeQName = getNodeService().getType(nodeRef);
         NodeRef topicNode = null;
 
-        if (nodeType.equals(ForumModel.TYPE_TOPIC))
+        if (getDictionaryService().isSubClass(nodeTypeQName, ForumModel.TYPE_TOPIC))
         {
             topicNode = nodeRef;
         }
-        else if (nodeType.equals(ForumModel.TYPE_POST))
+        else if (getDictionaryService().isSubClass(nodeTypeQName, ForumModel.TYPE_POST))
         {
-            topicNode = getNodeService().getPrimaryParent(nodeRef).getChildRef();
+            topicNode = getNodeService().getPrimaryParent(nodeRef).getParentRef();
+            if (topicNode == null)
+            {
+                throw new AlfrescoRuntimeException("A POST node has no primary parent: " + nodeRef);
+            }
         }
-        if (topicNode == null)
+        else
         {
-            throw new EmailMessageException(I18NUtil.getMessage("email.server.incorrect-node-ref"));
+            throw new AlfrescoRuntimeException("\n" +
+                    "Message handler " + this.getClass().getName() + " cannot handle type " + nodeTypeQName + ".\n" +
+                    "Check the message handler mappings.");
         }
         addPostNode(topicNode, message);
     }

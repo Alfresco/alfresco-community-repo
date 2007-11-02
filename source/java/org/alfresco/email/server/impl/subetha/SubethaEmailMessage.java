@@ -39,7 +39,6 @@ import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 
-import org.alfresco.i18n.I18NUtil;
 import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.email.EmailMessagePart;
@@ -53,6 +52,15 @@ import org.apache.commons.logging.LogFactory;
  */
 public class SubethaEmailMessage implements EmailMessage
 {
+    private static final String ERR_FAILED_TO_CREATE_MIME_MESSAGE = "email.server.err.failed_to_create_mime_message";
+    private static final String ERR_EXTRACTING_FROM_ADDRESS = "email.server.err.extracting_from_address";
+    private static final String ERR_NO_FROM_ADDRESS = "email.server.err.no_from_address";
+    private static final String ERR_EXTRACTING_TO_ADDRESS = "email.server.err.extracting_to_address";
+    private static final String ERR_NO_TO_ADDRESS = "email.server.err.no_to_address";
+    private static final String ERR_EXTRACTING_SUBJECT = "email.server.err.extracting_subject";
+    private static final String ERR_EXTRACTING_SENT_DATE = "email.server.err.extracting_sent_date";
+    private static final String ERR_PARSE_MESSAGE = "email.server.err.parse_message";
+    
     private static final long serialVersionUID = -3735187524926395261L;
 
     private static final Log log = LogFactory.getLog(SubethaEmailMessage.class);
@@ -98,7 +106,7 @@ public class SubethaEmailMessage implements EmailMessage
         }
         catch (MessagingException e)
         {
-            throw new EmailMessageException(I18NUtil.getMessage("email.server.error-creating-message"), e);
+            throw new EmailMessageException(ERR_FAILED_TO_CREATE_MIME_MESSAGE, e.getMessage());
         }
 
         processMimeMessage(mimeMessage);
@@ -115,11 +123,11 @@ public class SubethaEmailMessage implements EmailMessage
             }
             catch (MessagingException e)
             {
-                throw new EmailMessageException("Error extract from.", e);
+                throw new EmailMessageException(ERR_EXTRACTING_FROM_ADDRESS, e.getMessage());
             }
             if (addresses == null || addresses.length == 0)
             {
-                throw new EmailMessageException("There is no one from.");
+                throw new EmailMessageException(ERR_NO_FROM_ADDRESS);
             }
             from = addresses[0].toString();
         }
@@ -133,11 +141,11 @@ public class SubethaEmailMessage implements EmailMessage
             }
             catch (MessagingException e)
             {
-                throw new EmailMessageException("Error extract recepient.", e);
+                throw new EmailMessageException(ERR_EXTRACTING_TO_ADDRESS, e.getMessage());
             }
             if (addresses == null || addresses.length == 0)
             {
-                throw new EmailMessageException("There is no one recepient.");
+                throw new EmailMessageException(ERR_NO_TO_ADDRESS);
             }
             to = addresses[0].toString();
         }
@@ -148,7 +156,7 @@ public class SubethaEmailMessage implements EmailMessage
         }
         catch (MessagingException e)
         {
-            throw new EmailMessageException("Error extract subject.", e);
+            throw new EmailMessageException(ERR_EXTRACTING_SUBJECT, e.getMessage());
         }
         if (subject == null)
         {
@@ -161,7 +169,7 @@ public class SubethaEmailMessage implements EmailMessage
         }
         catch (MessagingException e)
         {
-            throw new EmailMessageException("Error extract sentDate.", e);
+            throw new EmailMessageException(ERR_EXTRACTING_SENT_DATE, e.getMessage());
         }
         if (sentDate == null)
         {
@@ -261,11 +269,11 @@ public class SubethaEmailMessage implements EmailMessage
         }
         catch (IOException e)
         {
-            throw new EmailMessageException(I18NUtil.getMessage("email.server.error-parse-message"), e);
+            throw new EmailMessageException(ERR_PARSE_MESSAGE, e.getMessage());
         }
         catch (MessagingException e)
         {
-            throw new EmailMessageException(I18NUtil.getMessage("email.server.error-parse-message"), e);
+            throw new EmailMessageException(ERR_PARSE_MESSAGE, e.getMessage());
         }
     }
 

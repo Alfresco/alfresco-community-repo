@@ -13,45 +13,17 @@
         </property>
    </bean>
    
-   
     <bean id="emailServerConfigurationProperties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="ignoreUnresolvablePlaceholders">
             <value>true</value>
         </property>
         <property name="locations">
             <list>
-                <value>classpath:alfresco/email-server.properties</value>
+                <value>classpath:alfresco/emailserver/email-server.properties</value>
             </list>
         </property>
     </bean>
    
-	<bean id="emailServerConfiguration" class="org.alfresco.email.server.EmailServerConfiguration">
-
-		<property name="domain">
-			<value>${email.server.domain}</value>
-		</property>
-		
-		<property name="port">
-			<value>${email.server.port}</value>
-		</property>
-		
-		<property name="enabled">
-			<value>${email.server.enabled}</value>
-		</property>
-
-		<property name="blockedSenders">
-			<value>${email.server.blocked.senders}</value>
-		</property>
-
-		<property name="allowedSenders">
-			<value>${email.server.allowed.senders}</value>
-		</property>
-
-		<property name="emailService">
-			<ref bean="emailService" />
-		</property>
-	</bean>
-
 	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
         <property name="service">
             <ref bean="emailService"/>
@@ -60,55 +32,74 @@
             <value>org.alfresco.service.cmr.email.EmailService</value>
         </property>
         <property name="serviceName">
-            <value>emailService</value>
+            <value>EmailService</value>
         </property>
         <property name="registryPort">
-            <value>${avm.remote.port}</value>
+            <value>${alfresco.rmi.services.port}</value>
         </property>
     </bean>
 
+   <alias name="emailService" alias="EmailService"/>
+
 	<bean id="emailService" class="org.alfresco.email.server.EmailServiceImpl">
-	
-		<property name="mailInboundEnabled">
-			<value>${mail.inbound.enabled}</value>
+		<property name="emailInboundEnabled">
+			<value>${email.inbound.enabled}</value>
 		</property>
-	
-		<property name="unknownUser" value="admin" />
-	
+		<property name="unknownUser">
+         <value>${email.inbound.unknownUser}</value>
+		</property>
 		<property name="emailMessageHandlerMap">
 			<map>
-				<entry key="folder">
+				<entry key="cm:folder">
 					<ref bean="folderEmailMessageHandler"></ref>
 				</entry>
-				<entry key="forum">
-					<ref bean="forumEmailMessageHandler"></ref>
-				</entry>
-				<entry key="discussion">
-					<ref bean="forumEmailMessageHandler"></ref>
-				</entry>
-				<entry key="topic">
-					<ref bean="topicEmailMessageHandler"></ref>
-				</entry>
-				<entry key="post">
-					<ref bean="topicEmailMessageHandler"></ref>
-				</entry>
-				<entry key="content">
+				<entry key="cm:content">
 					<ref bean="documentEmailMessageHandler"></ref>
+				</entry>
+				<entry key="fm:forum">
+					<ref bean="forumEmailMessageHandler"></ref>
+				</entry>
+				<entry key="fm:discussion">
+					<ref bean="forumEmailMessageHandler"></ref>
+				</entry>
+				<entry key="fm:topic">
+					<ref bean="topicEmailMessageHandler"></ref>
+				</entry>
+				<entry key="fm:post">
+					<ref bean="topicEmailMessageHandler"></ref>
 				</entry>
 			</map>
 		</property>
-		
+		<property name="namespaceService">
+			<ref bean="NamespaceService" />
+		</property>
 		<property name="nodeService">
-			<ref bean="nodeService" />
+			<ref bean="NodeService" />
 		</property>
 		<property name="searchService">
-			<ref bean="searchService" />
+			<ref bean="SearchService" />
 		</property>
-		
 		<property name="retryingTransactionHelper">
 			<ref bean="retryingTransactionHelper" />
 		</property>
-		
+	</bean>
+
+	<bean id="emailMessageHandlerBase" abstract="true">
+		<property name="dictionaryService">
+			<ref bean="DictionaryService" />
+		</property>
+		<property name="nodeService">
+			<ref bean="NodeService" />
+		</property>
+		<property name="searchService">
+			<ref bean="SearchService" />
+		</property>
+		<property name="contentService">
+			<ref bean="ContentService" />
+		</property>
+		<property name="mimetypeService">
+			<ref bean="MimetypeService" />
+		</property>
 	</bean>
 
 	<bean id="folderEmailMessageHandler"
@@ -127,28 +118,7 @@
 		parent="emailMessageHandlerBase"
 		class="org.alfresco.email.server.handler.TopicEmailMessageHandler" />
 
-	<bean id="emailMessageHandlerBase" abstract="true">
-		<property name="authenticationService">
-			<ref bean="authenticationService" />
-		</property>
-		<property name="authenticationComponent">
-			<ref bean="authenticationComponent" />
-		</property>
-		<property name="nodeService">
-			<ref bean="nodeService" />
-		</property>
-		<property name="personService">
-			<ref bean="personService" />
-		</property>
-		<property name="searchService">
-			<ref bean="searchService" />
-		</property>
-		<property name="contentService">
-			<ref bean="contentService" />
-		</property>
-	</bean>
-
-	<bean id="alisableAspect"
+	<bean id="aliasableAspect"
 		class="org.alfresco.email.server.AliasableAspect"
 		init-method="initialise">
 		<property name="nodeService">
@@ -161,6 +131,5 @@
 			<ref bean="policyComponent" />
 		</property>
 	</bean>	
-
 
 </beans>

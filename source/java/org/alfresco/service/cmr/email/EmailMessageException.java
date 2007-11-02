@@ -24,7 +24,12 @@
  */
 package org.alfresco.service.cmr.email;
 
+import org.alfresco.i18n.I18NUtil;
+
 /**
+ * A checked and handled exception indicating a specific and well-known
+ * email error condition.
+ * 
  * @since 2.2
  */
 public class EmailMessageException extends RuntimeException
@@ -32,36 +37,13 @@ public class EmailMessageException extends RuntimeException
     private static final long serialVersionUID = 5039365329619219256L;
 
     /**
-     * Empty contructor
+     * @param message       exception message.
+     * @param params        message arguments for I18N
+     * 
+     * @see I18NUtil#getMessage(String, Object[])
      */
-    public EmailMessageException()
+    public EmailMessageException(String message, Object ... params)
     {
-        
-        super();
-    }
-
-    /**
-     * @param message exception message.
-     * @param cause throwable object.
-     */
-    public EmailMessageException(String message, Throwable cause)
-    {
-        super(message, cause);
-    }
-
-    /**
-     * @param message exception message.
-     */
-    public EmailMessageException(String message)
-    {
-        super(message);
-    }
-
-    /**
-     * @param cause throwable object
-     */
-    public EmailMessageException(Throwable cause)
-    {
-        super(cause);
+        super(I18NUtil.getMessage(message, params));
     }
 }

@@ -1037,5 +1037,26 @@
             </props>
         </property>
     </bean>
+
+    <bean id="patch.emailContributorGroup" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.emailContributorGroup</value></property>
+        <property name="description"><value>patch.emailContributorGroup.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>108</value></property>
+        <property name="targetSchema"><value>109</value></property>
+        <!-- bootstrap view -->
+        <property name="importerBootstrap">
+            <ref bean="userBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${alfresco_user_store.system_container.childname}/sys:authorities/usr:GROUP_EMAIL_CONTRIBUTORS</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${alfresco_user_store.system_container.childname}/sys:authorities</prop>
+                <prop key="location">alfresco/bootstrap/emailServer.xml</prop>
+            </props>
+        </property>
+    </bean>
     
 </beans>

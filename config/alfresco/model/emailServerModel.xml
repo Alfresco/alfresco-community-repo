@@ -25,6 +25,13 @@
 			prefix="emailserver" />
 	</namespaces>
 
+   <constraints>
+      <constraint name="emailserver:alias" type="REGEX">
+         <parameter name="expression"><value><![CDATA[[a-zA-Z0-9.\-]*]]></value></parameter>
+         <parameter name="requiresMatch"><value>true</value></parameter>
+      </constraint>
+   </constraints>
+   
 	<aspects>
 
 		<aspect name="emailserver:attached">
@@ -51,12 +58,15 @@
 		</aspect>
 
 		<aspect name="emailserver:aliasable">
-			<title>Aliasable</title>
+			<title>Email Alias</title>
 			<properties>
 				<property name="emailserver:alias">
 					<title>Alias</title>
 					<type>d:text</type>
 					<mandatory>true</mandatory>
+               <constraints>
+                  <constraint ref="emailserver:alias" />
+               </constraints>
 				</property>
 			</properties>
 		</aspect>

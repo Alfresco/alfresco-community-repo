@@ -100,6 +100,10 @@
                     <prop key="path">/${alfresco_user_store.system_container.childname}</prop>
                     <prop key="location">alfresco/bootstrap/alfrescoAuthorityStorePermission.xml</prop>
                 </props>
+                <props>
+                    <prop key="path">/${alfresco_user_store.system_container.childname}/sys:authorities</prop>
+                    <prop key="location">alfresco/bootstrap/emailServer.xml</prop>
+                </props>
             </list>
         </property>
     </bean>
@@ -432,12 +436,25 @@
     </bean>
 
     <!-- Email Server -->
-    <!--
     <bean id="emailServer" class="org.alfresco.email.server.impl.subetha.SubethaEmailServer">
-        <constructor-arg>
-           <ref bean="emailServerConfiguration"/>
-        </constructor-arg>
+        <property name="enabled">
+            <value>${email.server.enabled}</value>
+        </property>
+        <property name="domain">
+            <value>${email.server.domain}</value>
+        </property>
+        <property name="port">
+            <value>${email.server.port}</value>
+        </property>
+        <property name="blockedSenders">
+            <value>${email.server.blocked.senders}</value>
+        </property>
+        <property name="allowedSenders">
+            <value>${email.server.allowed.senders}</value>
+        </property>
+        <property name="emailService">
+            <ref bean="EmailService" />
+        </property>
     </bean>
-    -->
 
 </beans>

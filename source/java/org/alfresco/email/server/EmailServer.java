@@ -24,9 +24,16 @@
  */
 package org.alfresco.email.server;
 
-import org.alfresco.i18n.I18NUtil;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.email.EmailMessageException;
+import org.alfresco.service.cmr.email.EmailService;
 import org.alfresco.util.AbstractLifecycleBean;
+import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -38,61 +45,162 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public abstract class EmailServer extends AbstractLifecycleBean
 {
-    protected EmailServerConfiguration configuration;
+    private static final String ERR_SENDER_BLOCKED = "email.server.err.sender_blocked";
+    
+    private boolean enabled;
+    private String domain;
+    private int port;
+    private Set<String> blockedSenders;
+    private Set<String> allowedSenders;
+
+    private EmailService emailService;
+
 
     /**
      * @param serverConfiguration Server configuration
      */
-    protected EmailServer(EmailServerConfiguration serverConfiguration)
+    protected EmailServer()
     {
-        this.configuration = serverConfiguration;
+        this.enabled = false;
+        this.port = 25;
+        this.domain = null;
+        this.blockedSenders = new HashSet<String>(23);
+        this.allowedSenders = new HashSet<String>(23);
+    }
+
+    /**
+     * @param enabled Enable/disable server
+     */
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
+
+    protected String getDomain()
+    {
+        return domain;
+    }
+
+    public void setDomain(String domain)
+    {
+        this.domain = domain;
+    }
+
+    protected int getPort()
+    {
+        return port;
+    }
+
+    /**
+     * @param port SMTP port (25 is default)
+     */
+    public void setPort(int port)
+    {
+        this.port = port;
+    }
+
+    /**
+     * Set the blocked senders as a comma separated list.  The entries will be trimmed of
+     * all whitespace.
+     * 
+     * @param blockedSenders    a comman separated list of blocked senders
+     */
+    public void setBlockedSenders(String blockedSenders)
+    {
+        StringTokenizer tokenizer = new StringTokenizer(blockedSenders, ",", false);
+        while (tokenizer.hasMoreTokens())
+        {
+            String sender = tokenizer.nextToken().trim();
+            this.blockedSenders.add(sender);
+        }
+    }
+    
+    /**
+     * @param blockedSenders    a list of senders that are not allowed to email in
+     */
+    public void setBlockedSenders(List<String> blockedSenders)
+    {
+        this.blockedSenders.addAll(blockedSenders);
+    }
+
+    /**
+     * Set the allowed senders as a comma separated list.  The entries will be trimmed of
+     * all whitespace.
+     * 
+     * @param allowedSenders    a comman separated list of blocked senders
+     */
+    public void setAllowedSenders(String allowedSenders)
+    {
+        StringTokenizer tokenizer = new StringTokenizer(allowedSenders, ",", false);
+        while (tokenizer.hasMoreTokens())
+        {
+            String sender = tokenizer.nextToken().trim();
+            if (sender.length() == 0)
+            {
+                // Nothing
+                continue;
+            }
+            this.allowedSenders.add(sender);
+        }
+    }
+    
+    /**
+     * @param allowedSenders    a list of senders that are allowed to email in
+     */
+    public void setAllowedSenders(List<String> allowedSenders)
+    {
+        this.allowedSenders.addAll(allowedSenders);
+    }
+    
+    /**
+     * @return                  the service interface to interact with
+     */
+    protected EmailService getEmailService()
+    {
+        return emailService;
+    }
+
+    /**
+     * @param emailService      the service interface to interact with
+     */
+    public void setEmailService(EmailService emailService)
+    {
+        this.emailService = emailService;
     }
 
     /**
      * Filter incoming message by its sender e-mail address.
      * 
-     * @param sender An e-mail address of sender
-     * @throws EmailMessageException Exception will be thrown if the e-mail is rejected accordingly with blocked and allowed lists.
+     * @param sender                    An e-mail address of sender
+     * @throws EmailMessageException    if the e-mail is rejected accordingly with blocked and allowed lists
      */
-    public void blackAndWhiteListFiltering(String sender)
+    protected void filterSender(String sender)
     {
-        // At first try to find sender in the black list
-        String[] blackList = configuration.getArrayBlockedSenders();
-        String[] whiteList = configuration.getArrayAllowedSenders();
-
-        // At first try to find sender in the black list
-        // If sender is found, mail will be rejected at once
-        if (blackList != null)
+        // Check if the sender is in the blocked list
+        for (String blockedSender : blockedSenders)
         {
-            for (String deniedAddress : blackList)
+            if (sender.matches(blockedSender))
             {
-                if (sender.matches(deniedAddress))
-                {
-                    throw new EmailMessageException(I18NUtil.getMessage("email.server.denied-address", sender));
-                }
+                throw new EmailMessageException(ERR_SENDER_BLOCKED, sender);
             }
         }
-
-        // Sender wasn't found in black list or black list is empty
-        // Try to find sender in the white list
-        // If sender is found in white list,
-        // the message will be accepted at once.
-        if (whiteList != null)
+        
+        // If there are any restrictions in the allowed list, then a positive match
+        // is absolutely required
+        if (!allowedSenders.isEmpty())
         {
-            boolean accept = false;
-            for (String acceptedAddress : whiteList)
+            boolean matched = false;
+            for (String allowedSender : allowedSenders)
             {
-                if (sender.matches(acceptedAddress))
+                if (sender.matches(allowedSender))
                 {
-                    if (log.isInfoEnabled())
-                        log.info("Sender with address \"" + sender + "\"matches to expression \"" + acceptedAddress + "\" in the white list. The message was accepted.");
-                    accept = true;
+                    matched = true;
                     break;
                 }
             }
-            if (!accept)
+            if (!matched)
             {
-                throw new EmailMessageException(I18NUtil.getMessage("email.server.not-white-address", sender));
+                throw new EmailMessageException(ERR_SENDER_BLOCKED, sender);
             }
         }
     }
@@ -113,10 +221,19 @@ public abstract class EmailServer extends AbstractLifecycleBean
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        if (configuration.isEnabled())
+        if (!enabled)
         {
-            startup();
+            return;
         }
+        // Check properties
+        PropertyCheck.mandatory(this, "domain", domain);
+        if (port <= 0 || port > 65535)
+        {
+            throw new AlfrescoRuntimeException("Property 'port' is incorrect");
+        }
+        PropertyCheck.mandatory(this, "emailService", emailService);
+        // Startup
+        startup();
     }
 
     /**
@@ -125,7 +242,7 @@ public abstract class EmailServer extends AbstractLifecycleBean
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
-        if (configuration.isEnabled())
+        if (enabled)
         {
             shutdown();
         }

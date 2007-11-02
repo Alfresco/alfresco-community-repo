@@ -29,7 +29,7 @@
 			<value>avm</value>
 		</property>
 		<property name="registryPort">
-			<value>${avm.remote.port}</value>
+			<value>${alfresco.rmi.services.port}</value>
 		</property>
 	</bean>
 			
@@ -53,7 +53,7 @@
             <value>avmsync</value>
         </property>
         <property name="registryPort">
-            <value>${avm.remote.port}</value>
+            <value>${alfresco.rmi.services.port}</value>
         </property>
     </bean>
     
@@ -78,7 +78,7 @@
             <value>attributes</value>
         </property>
         <property name="registryPort">
-            <value>${avm.remote.port}</value>
+            <value>${alfresco.rmi.services.port}</value>
         </property>
     </bean>
 
@@ -94,7 +94,7 @@
 			<value>authentication</value>
 		</property>
 		<property name="registryPort">
-			<value>${avm.remote.port}</value>
+			<value>${alfresco.rmi.services.port}</value>
 		</property>
 	</bean>    
 	
@@ -161,7 +161,7 @@
             <value>repo</value>
         </property>
         <property name="registryPort">
-            <value>${avm.remote.port}</value>
+            <value>${alfresco.rmi.services.port}</value>
         </property>
     </bean>	
     
@@ -187,7 +187,7 @@
             <value>action</value>
         </property>
         <property name="registryPort">
-            <value>${avm.remote.port}</value>
+            <value>${alfresco.rmi.services.port}</value>
         </property>
     </bean>
 </beans>

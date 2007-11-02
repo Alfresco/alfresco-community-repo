@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PropertyMap;
 
 /**
  * Abstact class implements common logic for forum processing email mesages.
@@ -62,12 +63,20 @@ public abstract class AbstractForumEmailMessageHandler extends AbstractEmailMess
         Date now = new Date();
         String nodeName = "posted-" + new SimpleDateFormat("dd-MM-yyyy-hh-mm-ss").format(now) + ".html";
 
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
+        PropertyMap properties = new PropertyMap(3);
         properties.put(ContentModel.PROP_NAME, nodeName);
 
-        ChildAssociationRef childAssoc = nodeService.createNode(nodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, nodeName),
-                ForumModel.TYPE_POST, properties);
-        NodeRef postNode = childAssoc.getChildRef();
+        NodeRef postNode = nodeService.getChildByName(nodeRef, ContentModel.ASSOC_CONTAINS, nodeName);
+        if (postNode == null)
+        {
+            ChildAssociationRef childAssoc = nodeService.createNode(
+                    nodeRef,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, nodeName),
+                    ForumModel.TYPE_POST,
+                    properties);
+            postNode = childAssoc.getChildRef();
+        }
 
         // Add necessary aspects
         properties.clear();
@@ -116,26 +125,34 @@ public abstract class AbstractForumEmailMessageHandler extends AbstractEmailMess
     /**
      * Adds topic node into Alfresco repository
      * 
-     * @param parentNode Parent node
-     * @param name Topic name
-     * @return Reference to created node
+     * @param parentNode        Parent node
+     * @param name              Topic name
+     * @return                  Reference to created node
      */
     protected NodeRef addTopicNode(NodeRef parentNode, String name)
     {
-
+        NodeService nodeService = getNodeService();
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
         properties.put(ContentModel.PROP_NAME, name);
 
-        ChildAssociationRef association = getNodeService().createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
-                ForumModel.TYPE_TOPIC, properties);
-        NodeRef topic = association.getChildRef();
+        NodeRef topicNode = nodeService.getChildByName(parentNode, ContentModel.ASSOC_CONTAINS, name);
+        if (topicNode == null)
+        {
+            ChildAssociationRef association = nodeService.createNode(
+                    parentNode,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
+                    ForumModel.TYPE_TOPIC,
+                    properties);
+            topicNode = association.getChildRef();
+        }
 
         // Add necessary aspects
         properties.clear();
         properties.put(ApplicationModel.PROP_ICON, "topic");
-        getNodeService().addAspect(topic, ApplicationModel.ASPECT_UIFACETS, properties);
+        getNodeService().addAspect(topicNode, ApplicationModel.ASPECT_UIFACETS, properties);
 
-        return topic;
+        return topicNode;
     }
 
 }

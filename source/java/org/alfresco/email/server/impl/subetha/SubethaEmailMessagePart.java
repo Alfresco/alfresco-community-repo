@@ -35,9 +35,9 @@ import java.util.regex.Pattern;
 import javax.mail.MessagingException;
 import javax.mail.Part;
 
-import org.alfresco.i18n.I18NUtil;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.email.EmailMessagePart;
+import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.remote.RemotableInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,6 +47,10 @@ import org.apache.commons.logging.LogFactory;
  */
 public class SubethaEmailMessagePart implements EmailMessagePart
 {
+    private static final String ERR_UNSUPPORTED_ENCODING = "email.server.err.usupported_encoding";
+    private static final String ERR_FAILED_TO_READ_CONTENT_STREAM = "email.server.err.failed_to_read_content_stream";
+    private static final String ERR_INCORRECT_MESSAGE_PART = "email.server.err.incorrect_message_part";
+    
     private static final long serialVersionUID = -8530238872199733096L;
 
     static final Log log = LogFactory.getLog(SubethaEmailMessagePart.class);
@@ -74,8 +78,7 @@ public class SubethaEmailMessagePart implements EmailMessagePart
      */
     public SubethaEmailMessagePart(Part messagePart)
     {
-        if (messagePart == null)
-            throw new IllegalArgumentException("messagePart");
+        ParameterCheck.mandatory("messagePart", messagePart);
 
         try
         {
@@ -89,7 +92,7 @@ public class SubethaEmailMessagePart implements EmailMessagePart
                 encoding = matcher.group(1);
                 if (!Charset.isSupported(encoding))
                 {
-                    throw new EmailMessageException(I18NUtil.getMessage("email.server.usupported-encoding", encoding));
+                    throw new EmailMessageException(ERR_UNSUPPORTED_ENCODING, encoding);
                 }
             }
 
@@ -99,12 +102,12 @@ public class SubethaEmailMessagePart implements EmailMessagePart
             }
             catch (Exception ex)
             {
-                throw new EmailMessageException(I18NUtil.getMessage("email.server.error-getting-content-stream"), ex);
+                throw new EmailMessageException(ERR_FAILED_TO_READ_CONTENT_STREAM, ex.getMessage());
             }
         }
         catch (MessagingException e)
         {
-            throw new EmailMessageException(I18NUtil.getMessage("email.server.incorrect-message-part"), e);
+            throw new EmailMessageException(ERR_INCORRECT_MESSAGE_PART, e.getMessage());
         }
     }
 

@@ -24,10 +24,9 @@
  */
 package org.alfresco.email.server.handler;
 
-import org.alfresco.i18n.I18NUtil;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.email.EmailMessage;
-import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -55,9 +54,9 @@ public class ForumEmailMessageHandler extends AbstractForumEmailMessageHandler
             messageSubject = "EMPTY_SUBJECT_" + System.currentTimeMillis();
         }
 
-        QName nodeType = getNodeService().getType(nodeRef);
+        QName nodeTypeQName = getNodeService().getType(nodeRef);
 
-        if (nodeType.equals(ForumModel.TYPE_FORUM))
+        if (getDictionaryService().isSubClass(nodeTypeQName, ForumModel.TYPE_FORUM))
         {
             NodeRef topicNode = getTopicNode(nodeRef, messageSubject);
 
@@ -69,7 +68,9 @@ public class ForumEmailMessageHandler extends AbstractForumEmailMessageHandler
         }
         else
         {
-            throw new EmailMessageException(I18NUtil.getMessage("email.server.incorrect-node-type"));
+            throw new AlfrescoRuntimeException("\n" +
+                    "Message handler " + this.getClass().getName() + " cannot handle type " + nodeTypeQName + ".\n" +
+                    "Check the message handler mappings.");
         }
     }
 }

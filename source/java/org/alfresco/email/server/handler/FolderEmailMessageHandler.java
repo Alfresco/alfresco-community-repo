@@ -25,19 +25,25 @@
 package org.alfresco.email.server.handler;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.mail.MessagingException;
 
 import org.alfresco.email.server.EmailServerModel;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.email.EmailMessagePart;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -53,6 +59,10 @@ import org.apache.commons.logging.LogFactory;
  */
 public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
 {
+    private static final String MSG_RECEIVED_BY_SMTP = "email.server.msg.received_by_smtp";
+    private static final String MSG_DEFAULT_SUBJECT = "email.server.msg.default_subject";
+    private static final String ERR_MAIL_READ_ERROR = "email.server.err.mail_read_error";
+    
     private static final Log log = LogFactory.getLog(FolderEmailMessageHandler.class);
 
     /**
@@ -67,90 +77,82 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
         try
         {
             // Check type of the node. It must be a SPACE
-            QName nodeTypeName = getNodeService().getType(nodeRef);
+            QName nodeTypeQName = getNodeService().getType(nodeRef);
 
-            if (nodeTypeName.equals(ContentModel.TYPE_FOLDER))
+            if (getDictionaryService().isSubClass(nodeTypeQName, ContentModel.TYPE_FOLDER))
             {
                 // Add the content into the system
-                addAlfrescoContent(nodeRef, message, null);
+                addAlfrescoContent(nodeRef, message);
             }
             else
             {
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Addressed node type isn't a folder. Message has been passed without any actions.");
-                }
+                throw new AlfrescoRuntimeException("\n" +
+                        "Message handler " + this.getClass().getName() + " cannot handle type " + nodeTypeQName + ".\n" +
+                        "Check the message handler mappings.");
             }
         }
         catch (IOException ex)
         {
-            throw new EmailMessageException(I18NUtil.getMessage("email.server.content-error"), ex);
+            throw new EmailMessageException(ERR_MAIL_READ_ERROR, ex.getMessage());
         }
     }
 
     /**
      * Add content to Alfresco repository
      * 
-     * @param spaceNodeRef Addressed node
-     * @param mailParser Mail message
-     * @param nameConflictResolver String that can be used as part of name for resolving name conflict.
-     * @throws IOException Exception can be thrown while saving a content into Alfresco repository.
-     * @throws MessagingException Exception can be thrown while parsing e-mail message.
+     * @param spaceNodeRef          Addressed node
+     * @param mailParser            Mail message
+     * @throws IOException          Exception can be thrown while saving a content into Alfresco repository.
+     * @throws MessagingException   Exception can be thrown while parsing e-mail message.
      */
-    public void addAlfrescoContent(NodeRef spaceNodeRef, EmailMessage message, String nameConflictResolver) throws IOException
+    public void addAlfrescoContent(NodeRef spaceNodeRef, EmailMessage message) throws IOException
     {
         // Set default values for email fields
-        if (nameConflictResolver == null)
-            nameConflictResolver = "";
-        String messageSubject = "EMPTY_SUBJECT_" + nameConflictResolver;
-        if (message.getSubject().length() != 0)
+        String messageSubject = message.getSubject();
+        if (messageSubject == null || messageSubject.length() == 0)
         {
-            messageSubject = message.getSubject() + nameConflictResolver;
+            Date now = new Date();
+            messageSubject = I18NUtil.getMessage(MSG_DEFAULT_SUBJECT, new SimpleDateFormat("dd-MM-yyyy-hh-mm-ss").format(now));
         }
 
-        // Create node
-        if (log.isDebugEnabled())
-        {
-            log.debug("Adding main content node ...");
-        }
+        // Create main content node
         NodeRef contentNodeRef;
         contentNodeRef = addContentNode(getNodeService(), spaceNodeRef, messageSubject);
-
         // Add titled aspect
-        addTitledAspect(contentNodeRef, messageSubject);
-
+        addTitledAspect(contentNodeRef, messageSubject, message.getFrom());
         // Add emailed aspect
         addEmailedAspect(contentNodeRef, message);
-
         // Write the message content
-
         if (message.getBody() != null)
-            writeContent(contentNodeRef, message.getBody().getContent(), message.getBody().getContentType(), message.getBody().getEncoding());
-        else
-            writeContent(contentNodeRef, "<The message was empty>");
-        if (log.isDebugEnabled())
         {
-            log.debug("Main content node has been added.");
+            InputStream contentIs = message.getBody().getContent();
+            // The message body is plain text, unless an extension has been provided
+            MimetypeService mimetypeService = getMimetypeService();
+            String mimetype = mimetypeService.guessMimetype(messageSubject);
+            if (mimetype.equals(MimetypeMap.MIMETYPE_BINARY))
+            {
+                mimetype= MimetypeMap.MIMETYPE_TEXT_PLAIN;
+            }
+            // Use the default encoding.  It will get overridden if the body is text.
+            String encoding = message.getBody().getEncoding();
+            
+            writeContent(contentNodeRef, contentIs, mimetype, encoding);
         }
 
         // Add attachments
         EmailMessagePart[] attachments = message.getAttachments();
         for (EmailMessagePart attachment : attachments)
         {
-            NodeRef attachmentNode;
             String fileName = attachment.getFileName();
 
-            // Add name conflict resolver if necessary
-            if (nameConflictResolver.length() != 0)
-            {
-                if (fileName.lastIndexOf('.') != -1)
-                    fileName = fileName.substring(0, fileName.lastIndexOf('.')) + " (" + nameConflictResolver + ")" + fileName.substring(fileName.lastIndexOf('.'));
-                else
-                    fileName += " (" + nameConflictResolver + ")";
-            }
+            InputStream contentIs = attachment.getContent();
+            
+            MimetypeService mimetypeService = getMimetypeService();
+            String mimetype = mimetypeService.guessMimetype(fileName);
+            String encoding = attachment.getEncoding();
 
-            attachmentNode = addAttachment(getNodeService(), spaceNodeRef, contentNodeRef, fileName);
-            writeContent(attachmentNode, attachment.getContent(), attachment.getContentType(), attachment.getEncoding());
+            NodeRef attachmentNode = addAttachment(getNodeService(), spaceNodeRef, contentNodeRef, fileName);
+            writeContent(attachmentNode, contentIs, mimetype, encoding);
         }
     }
 
@@ -178,11 +180,25 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
      */
     private NodeRef addContentNode(NodeService nodeService, NodeRef parent, String name, QName assocType)
     {
-        Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
-        contentProps.put(ContentModel.PROP_NAME, name);
-        ChildAssociationRef associationRef = nodeService.createNode(parent, assocType, QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, name), ContentModel.TYPE_CONTENT,
-                contentProps);
-        return associationRef.getChildRef();
+        NodeRef childNodeRef = nodeService.getChildByName(parent, assocType, name);
+        if (childNodeRef != null)
+        {
+            // The node is present already.  Make sure the name csae is correct
+            nodeService.setProperty(childNodeRef, ContentModel.PROP_NAME, name);
+        }
+        else
+        {
+            Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
+            contentProps.put(ContentModel.PROP_NAME, name);
+            ChildAssociationRef associationRef = nodeService.createNode(
+                    parent,
+                    assocType,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
+                    ContentModel.TYPE_CONTENT,
+                    contentProps);
+            childNodeRef = associationRef.getChildRef();
+        }
+        return childNodeRef;
     }
 
     /**
@@ -203,9 +219,15 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
         
         NodeRef attachmentNode = addContentNode(nodeService, folder, fileName);
 
+        // Remove 'attached' aspect so that we work with the document in its clean form
+        if (nodeService.hasAspect(attachmentNode, EmailServerModel.ASPECT_ATTACHED))
+        {
+            nodeService.removeAspect(attachmentNode, EmailServerModel.ASPECT_ATTACHED);
+        }
+        
         // Add attached aspect
-        Map<QName, Serializable> attachedProps = new HashMap<QName, Serializable>();
-        nodeService.addAspect(attachmentNode, EmailServerModel.ASPECT_ATTACHED, attachedProps);
+        nodeService.addAspect(attachmentNode, EmailServerModel.ASPECT_ATTACHED, null);
+        // Recreate the association
         nodeService.createAssociation(attachmentNode, mainContentNode, EmailServerModel.ASSOC_ATTACHMENT);
         
         if (log.isDebugEnabled())
@@ -221,11 +243,11 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
      * @param nodeRef Target node.
      * @param title Title
      */
-    private void addTitledAspect(NodeRef nodeRef, String title)
+    private void addTitledAspect(NodeRef nodeRef, String title, String from)
     {
         Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>();
         titledProps.put(ContentModel.PROP_TITLE, title);
-        titledProps.put(ContentModel.PROP_DESCRIPTION, "Received by SMTP");
+        titledProps.put(ContentModel.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_RECEIVED_BY_SMTP, from));
         getNodeService().addAspect(nodeRef, ContentModel.ASPECT_TITLED, titledProps);
         
         if (log.isDebugEnabled())

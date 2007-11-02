@@ -24,26 +24,28 @@
  */
 package org.alfresco.email.server.handler;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.email.server.EmailServerModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.content.encoding.ContentCharsetFinder;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,17 +62,16 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
 {
     private static final Log log = LogFactory.getLog(EmailMessageHandler.class);
 
-    private AuthenticationService authenticationService;
-    private AuthenticationComponent authenticationComponent;
+    private DictionaryService dictionaryService;
     private NodeService nodeService;
-    private PersonService personService;
     private SearchService searchService;
     private ContentService contentService;
+    private MimetypeService mimetypeService;
 
     /**
      * @return Alfresco Content Service.
      */
-    public ContentService getContentService()
+    protected ContentService getContentService()
     {
         return contentService;
     }
@@ -84,41 +85,25 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     }
 
     /**
-     * @return Alfresco Authentication Component. 
+     * @return                      the Alfresco dictionary service
      */
-    public AuthenticationComponent getAuthenticationComponent()
+    protected DictionaryService getDictionaryService()
     {
-        return authenticationComponent;
+        return dictionaryService;
     }
 
     /**
-     * @param authenticationComponent Alfresco Authentication Component.
+     * @param dictionaryService     Alfresco dictionary service
      */
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    public void setDictionaryService(DictionaryService dictionaryService)
     {
-        this.authenticationComponent = authenticationComponent;
-    }
-
-    /**
-     * @return Alfresco Authentication Service.
-     */
-    public AuthenticationService getAuthenticationService()
-    {
-        return authenticationService;
-    }
-
-    /**
-     * @param authenticationService Alfresco Authentication Service.
-     */
-    public void setAuthenticationService(AuthenticationService authenticationService)
-    {
-        this.authenticationService = authenticationService;
+        this.dictionaryService = dictionaryService;
     }
 
     /**
      * @return Alfresco Node Service.
      */
-    public NodeService getNodeService()
+    protected NodeService getNodeService()
     {
         return nodeService;
     }
@@ -132,36 +117,27 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     }
 
     /**
-     * @return Alfesco Person Service. 
-     */
-    public PersonService getPersonService()
-    {
-        return personService;
-    }
-
-    /**
-     * @param personService Alfresco Person Service.
-     */
-    public void setPersonService(PersonService personService)
-    {
-        this.personService = personService;
-    }
-
-    /**
-     * @return Alfresco Search Service.
-     */
-    public SearchService getSearchService()
-    {
-        return searchService;
-    }
-
-    /**
      * @param searchService Alfresco Search Service.
      */
-    
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
+    }
+
+    /**
+     * @return      the service used to determine mimeypte and encoding
+     */
+    protected MimetypeService getMimetypeService()
+    {
+        return mimetypeService;
+    }
+
+    /**
+     * @param mimetypeService       the the service to determine mimetype and encoding
+     */
+    public void setMimetypeService(MimetypeService mimetypeService)
+    {
+        this.mimetypeService = mimetypeService;
     }
 
     /**
@@ -206,12 +182,12 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
      * 
      * @param nodeRef Target node.
      * @param content Text for writting.
-     * @param contentType MIME content type. For exaple you can set this parameter to "text/html" or "text/xml", etc.
+     * @param mimetype MIME content type. For exaple you can set this parameter to "text/html" or "text/xml", etc.
      */
-    protected void writeContent(NodeRef nodeRef, String content, String contentType)
+    protected void writeContent(NodeRef nodeRef, String content, String mimetype)
     {
-        InputStream inputStream = new ByteArrayInputStream(content.getBytes());
-        writeContent(nodeRef, inputStream, contentType, "UTF-8");
+        InputStream inputStream = new ByteArrayInputStream(content.getBytes(Charset.forName("UTF-8")));
+        writeContent(nodeRef, inputStream, mimetype, "UTF-8");
     }
 
     /**
@@ -219,20 +195,35 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
      * 
      * @param nodeRef Target node.
      * @param content Content stream.
-     * @param contentType MIME content type.
+     * @param mimetype MIME content type.
      * @param encoding Encoding. Can be null for non text based content.
      */
-    protected void writeContent(NodeRef nodeRef, InputStream content, String contentType, String encoding)
+    protected void writeContent(NodeRef nodeRef, InputStream content, String mimetype, String encoding)
     {
+        InputStream bis = new BufferedInputStream(content, 4092);
+        
+        // Guess the encoding if it is text
+        if (mimetypeService.isText(mimetype))
+        {
+            ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
+            encoding = charsetFinder.getCharset(bis, mimetype).name();
+        }
+        else if (encoding == null)
+        {
+            encoding = "UTF-8";
+        }
+        
         if (log.isDebugEnabled())
         {
-            log.debug("Write content (MimeType=\"" + contentType + "\", Encoding=\"" + encoding + "\"");
+            log.debug("Write content (MimeType=\"" + mimetype + "\", Encoding=\"" + encoding + "\"");
         }
+        
+        
         ContentService contentService = getContentService();
         ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-        writer.setMimetype(contentType);
+        writer.setMimetype(mimetype);
         writer.setEncoding(encoding);
-        writer.putContent(content);
+        writer.putContent(bis);
     }
     
     /**

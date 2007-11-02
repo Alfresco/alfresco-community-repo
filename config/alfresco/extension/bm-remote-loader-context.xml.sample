@@ -32,7 +32,7 @@
             <value>org.alfresco.FileFolderRemote</value>
         </property>
         <property name="registryPort">
-            <value>${rmi.services.remote.port}</value>
+            <value>${alfresco.rmi.services.port}</value>
         </property>
     </bean>
     
@@ -70,7 +70,7 @@
             <value>org.alfresco.LoaderRemote</value>
         </property>
         <property name="registryPort">
-            <value>${rmi.services.remote.port}</value>
+            <value>${alfresco.rmi.services.port}</value>
         </property>
     </bean>
     

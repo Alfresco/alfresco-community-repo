@@ -75,6 +75,8 @@ public class CreateUserWizard extends BaseWizardBean
     protected String companyId = null;
     protected String homeSpaceName = "";
     protected NodeRef homeSpaceLocation = null;
+    protected String presenceProvider = null;
+    protected String presenceUsername = null;
 
     /** AuthenticationService bean reference */
     private AuthenticationService authenticationService;
@@ -144,6 +146,8 @@ public class CreateUserWizard extends BaseWizardBean
         this.companyId = "";
         this.homeSpaceName = "";
         this.homeSpaceLocation = getDefaultHomeSpace();
+        this.presenceProvider = "";
+        this.presenceUsername = "";
     }
 
     /**
@@ -185,6 +189,40 @@ public class CreateUserWizard extends BaseWizardBean
     public void setCompanyId(String companyId)
     {
         this.companyId = companyId;
+    }
+
+    /**
+     * @return Returns the presenceProvider.
+     */
+    public String getPresenceProvider()
+    {
+       return this.presenceProvider;
+    }
+
+    /**
+     * @param presenceProvider
+     *            The presenceProvider to set.
+     */
+    public void setPresenceProvider(String presenceProvider)
+    {
+       this.presenceProvider = presenceProvider;
+    }
+
+    /**
+     * @return Returns the presenceUsername.
+     */
+    public String getPresenceUsername()
+    {
+       return this.presenceUsername;
+    }
+
+    /**
+     * @param presenceUsername
+     *            The presenceUsername to set.
+     */
+    public void setPresenceUsername(String presenceUsername)
+    {
+       this.presenceUsername = presenceUsername;
     }
 
     /**

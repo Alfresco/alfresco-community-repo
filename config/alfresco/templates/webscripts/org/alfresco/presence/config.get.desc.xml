@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Presence Custom View Configuration</shortname>
+  <description>Add webscript aspect to space node</description>
+  <url>/ui/presence/config?n={nodeRef}&amp;w={webscriptUrl}</url>
+  <format default="html"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

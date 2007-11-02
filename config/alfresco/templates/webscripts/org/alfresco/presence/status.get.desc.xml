@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Presence Custom View</shortname>
+  <description>Show online presence status of space users</description>
+  <url>/ui/presence/status?nodeRef={noderef}</url>
+  <format default="html"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

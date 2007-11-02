@@ -86,4 +86,22 @@
 </f:verbatim><h:inputText value="#{WizardManager.bean.companyId}" size="35" maxlength="1024" /><f:verbatim>
 </td>
 </tr>
+
+<tr>
+	<td></f:verbatim><h:outputText value="Presence Provider"/><f:verbatim>:</td>
+	<td>
+		</f:verbatim><h:selectOneMenu value="#{WizardManager.bean.presenceProvider}">
+			<f:selectItem itemValue="" itemLabel="(None)"/>
+			<f:selectItem itemValue="skype" itemLabel="Skype"/>
+			<f:selectItem itemValue="yahoo" itemLabel="Yahoo"/>
+		</h:selectOneMenu><f:verbatim>
+	</td>
+</tr>
+<tr>
+	<td></f:verbatim><h:outputText value="Presence Username"/><f:verbatim>:</td>
+	<td>
+		</f:verbatim><h:inputText value="#{WizardManager.bean.presenceUsername}" size="35" maxlength="256" /><f:verbatim>
+	</td>
+</tr>
+
 </table></f:verbatim>

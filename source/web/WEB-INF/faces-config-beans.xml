@@ -4046,6 +4046,15 @@
 
    <managed-bean>
       <description>
+         Bean proxying ajax calls for the online Presence webscript
+      </description>
+      <managed-bean-name>PresenceProxyBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.ajax.PresenceProxyBean</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+
+   <managed-bean>
+      <description>
          Bean that returns manages the tree data for the navigator component
       </description>
       <managed-bean-name>NavigatorPluginBean</managed-bean-name>

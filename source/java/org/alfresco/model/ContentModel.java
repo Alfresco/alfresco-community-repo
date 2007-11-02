@@ -165,6 +165,8 @@ public interface ContentModel
     static final QName PROP_ORGID = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "organizationId");
     static final QName PROP_HOME_FOLDER_PROVIDER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "homeFolderProvider");
     static final QName PROP_DEFAULT_HOME_FOLDER_PATH = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "defaultHomeFolderPath");
+    static final QName PROP_PRESENCEPROVIDER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "presenceProvider");
+    static final QName PROP_PRESENCEUSERNAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "presenceUsername");
     
     // Ownable aspect  
     static final QName ASPECT_OWNABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "ownable");

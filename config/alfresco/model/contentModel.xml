@@ -179,6 +179,12 @@
             <property name="cm:defaultHomeFolderPath">
                <type>d:text</type>
             </property>
+            <property name="cm:presenceProvider">
+            	<type>d:text</type>
+            </property>
+            <property name="cm:presenceUsername">
+            	<type>d:text</type>
+            </property>
          </properties>
       </type>
 

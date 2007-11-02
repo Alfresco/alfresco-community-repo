@@ -151,4 +151,14 @@
             <ref bean="ServiceRegistry"/>
         </property>
     </bean>
+
+    <bean id="presenceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.Presence">
+        <property name="extensionName">
+            <value>presence</value>
+        </property>        
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+
 </beans>

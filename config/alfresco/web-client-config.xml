@@ -325,6 +325,7 @@
          <aspect name="versionable"/>
          <aspect name="templatable"/>
          <aspect name="emailed"/>
+         <aspect name="emailserver:aliasable"/>
       </aspects>
       <!-- List of aspects to only show in the add features action -->
       <aspects-add>

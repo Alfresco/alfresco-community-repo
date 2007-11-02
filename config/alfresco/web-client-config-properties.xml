@@ -607,4 +607,14 @@
       </property-sheet>
    </config>
    
+   <!-- ******************************** -->
+   <!-- Configuration for Email Server   -->
+   <!-- ******************************** -->
+   
+   <config evaluator="aspect-name" condition="emailserver:aliasable">
+      <property-sheet>
+         <show-property name="emailserver:alias" display-label-id="email.server.alias" read-only="false" />
+      </property-sheet>
+   </config>
+   
 </alfresco-config>

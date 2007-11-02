@@ -28,11 +28,12 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.nio.charset.Charset;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.email.server.EmailServerModel;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
@@ -186,8 +187,15 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
      */
     protected void writeContent(NodeRef nodeRef, String content, String mimetype)
     {
-        InputStream inputStream = new ByteArrayInputStream(content.getBytes(Charset.forName("UTF-8")));
-        writeContent(nodeRef, inputStream, mimetype, "UTF-8");
+        try
+        {
+            InputStream inputStream = new ByteArrayInputStream(content.getBytes("UTF-8"));
+            writeContent(nodeRef, inputStream, mimetype, "UTF-8");
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to write content", e);
+        }
     }
 
     /**

@@ -93,7 +93,7 @@ public class FacebookService
                             logger.debug("Initialising Facebook Application '" + apiKey + "'");
                         
                         // Locate app initialisation script in web script store
-                        String appPath = "/com/facebook/_apps/app." + apiKey + ".js";
+                        String appPath = "com/facebook/_apps/app." + apiKey + ".js";
                         ScriptLocation appScript = registry.getScriptProcessor().findScript(appPath);
                         if (appScript == null)
                         {

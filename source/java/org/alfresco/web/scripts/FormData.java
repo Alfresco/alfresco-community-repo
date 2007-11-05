@@ -26,6 +26,7 @@ package org.alfresco.web.scripts;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +34,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.jscript.Scopeable;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptNode.ScriptContent;
@@ -60,7 +62,9 @@ public class FormData implements Serializable, Scopeable
     private Map<String, FormField> fields = null;
     private Map<String, String> parameters = null;
     private Map<String, ScriptContent> files = null;
-    
+    private List<FileItem> files = null;
+    private String encoding = null;
+   
     /**
      * Construct
      * 
@@ -146,6 +150,8 @@ public class FormData implements Serializable, Scopeable
         {
             FileItemFactory factory = new DiskFileItemFactory();
             upload = new ServletFileUpload(factory);
+            encoding = req.getCharacterEncoding();
+            upload.setHeaderEncoding(encoding);
             try
             {
                 List<FileItem> fileItems = upload.parseRequest(req);
@@ -262,8 +268,15 @@ public class FormData implements Serializable, Scopeable
          */
         public String getValue()
         {
-            return file.getString();
-        }
+            try
+            {
+                return (file.isFormField() && encoding != null) ? file.getString(encoding) : file.getString();
+            }
+            catch (UnsupportedEncodingException e)
+            {
+                throw new AlfrescoRuntimeException("Unable to decode form field", e);
+            }
+	    }
         
         public String jsGet_value()
         {

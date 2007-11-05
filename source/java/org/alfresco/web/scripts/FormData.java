@@ -62,7 +62,6 @@ public class FormData implements Serializable, Scopeable
     private Map<String, FormField> fields = null;
     private Map<String, String> parameters = null;
     private Map<String, ScriptContent> files = null;
-    private List<FileItem> files = null;
     private String encoding = null;
    
     /**

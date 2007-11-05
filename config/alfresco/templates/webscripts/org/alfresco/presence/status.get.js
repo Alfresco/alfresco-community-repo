@@ -1,11 +1,26 @@
+var results = new Array();
 main();
 
 function main()
 {
 	var nodeRef = args["nodeRef"];
 	var space = search.findNode(nodeRef);
+	model.space = space;
+
+	parsePermissions(space);
+	
+	while ((space.inheritsPermissions) && (space.parent != null))
+	{
+		space = space.parent;
+		parsePermissions(space);
+	}
+	
+	model.presenceResults = results;
+}
+
+function parsePermissions(space)
+{
 	var tokens, user, group;
-	var results = new Array();
 
 	for each(perm in space.permissions)
 	{
@@ -33,21 +48,23 @@ function main()
 			}
 		}	
 	}
-	
-	model.space = space;
-	model.presenceResults = results;
 }
 
 function pushUnique(results, user, details)
 {
+	var provider = String(details).split("|")[0];
+	if (provider == "")
+	{
+		provider = "none";
+	}
 	var fullName = user.properties["firstName"] + " " + user.properties["lastName"];
 	
 	for (i=0; i < results.length; i++)
 	{
-		if (results[i][0] == fullName)
+		if (results[i][1] == fullName)
 		{
 			return;
 		}
 	}
-	results.push(new Array(fullName, details));
+	results.push(new Array(provider, fullName, details));
 }

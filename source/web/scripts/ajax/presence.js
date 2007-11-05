@@ -7,30 +7,46 @@ var Presence =
 	{
       window.contextPath = Presence.getContextPath();
 
-		var users = $$("#presenceContainer .presenceStatus");
-		users.each(function(user, i)
+		var statuses = $$("#presenceContainer .presenceStatus");
+		var users = $$("#presenceContainer .presenceUsername");
+		
+		statuses.each(function(status, i)
 		{
-			// ajax call to load online status
-			var userDetails = user.attributes["rel"].value.split("|");
+			var user = users[i];
+			
+			var userDetails = status.attributes["rel"].value.split("|");
 			var proxyURL = window.contextPath + "/ajax/invoke/PresenceProxyBean.proxyRequest";
 			var statusURL = Presence.getStatusURL(userDetails);
 			
 			if (statusURL != "")
 			{
+				// ajax call to load online status
 				var myAjax = new Ajax(proxyURL, {
 					method: 'get',
 					headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
 					onComplete: function(textResponse, xmlResponse)
 					{
 						var statusType = Presence.getStatusType(userDetails[0], textResponse);
+						status.addClass(statusType);
 						user.addClass(statusType);
+						if (statusType == "unknown")
+						{
+							status.title = "User's status is unknown, possibly due to client privacy settings";
+						}
+						else
+						{
+							status.title = "User's status is " + statusType;
+						}
+						user.title = status.title;
 					}
 				});
 				myAjax.request("url=" + escape(statusURL));
 			}
 			else
 			{
-				user.addClass("unknown");
+				status.addClass("unknown");
+				status.title = "User's presence provider has not been configured by Alfresco admin";
+				user.title = status.title;
 			}
 		});
 	},
@@ -79,7 +95,17 @@ var Presence =
 		switch(provider)
 		{
 			case "skype":
-				statusType = (response == "Online") ? "online" : "offline";
+				switch (response)
+				{
+					case "Online":
+						statusType = "online";
+						break;
+					case "Offline":
+						statusType = "offline";
+						break;
+					default:
+						statusType = "unknown";
+				}
 				break;
 			case "yahoo":
 				statusType = (response == "01") ? "online" : "offline";

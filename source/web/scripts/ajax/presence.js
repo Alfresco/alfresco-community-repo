@@ -27,7 +27,7 @@ var Presence =
 					onComplete: function(textResponse, xmlResponse)
 					{
 						var statusType = Presence.getStatusType(userDetails[0], textResponse);
-						status.addClass(statusType);
+						status.addClass(userDetails[0] + "-" + statusType);
 						user.addClass(statusType);
 						if (statusType == "unknown")
 						{
@@ -44,7 +44,7 @@ var Presence =
 			}
 			else
 			{
-				status.addClass("unknown");
+				status.addClass("none");
 				status.title = "User's presence provider has not been configured by Alfresco admin";
 				user.title = status.title;
 			}

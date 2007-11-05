@@ -1,30 +1,31 @@
 <script type="text/javascript" src="${url.context}/scripts/ajax/presence.js"></script>
 
 <div class="presenceTitle">Colleague Status</div>
-<div class="presenceKeyContainer">
+<div id="presenceKeyContainer">
 	<div class="presenceKeyTitle">Presence Status Key:</div>
 	<div class="presenceKey">
-		<img src="${url.context}/images/icons/presence_skype_online.png" width="16" height="16" alt="online" title="Skype online">=Skype online<br>
-		<img src="${url.context}/images/icons/presence_yahoo_online.png" width="16" height="16" alt="online" title="Yahoo online">=Yahoo online<br>
-		<img src="${url.context}/images/icons/presence_status_none.png" width="16" height="16" alt="offline" title="Not configured">=not configured
+		<img src="${url.context}/images/icons/presence_skype_online.png" width="16" height="16" alt="Skype online" title="Skype online">=Skype online<br>
+		<img src="${url.context}/images/icons/presence_yahoo_online.png" width="16" height="16" alt="Yahoo online" title="Yahoo online">=Yahoo online<br>
+		<img src="${url.context}/images/icons/presence_status_none.png" width="16" height="16" alt="Not configured" title="Not configured">=not configured
 	</div>
 	<div class="presenceKey">
-		<img src="${url.context}/images/icons/presence_skype_offline.png" width="16" height="16" alt="online" title="Skype offline">=offline<br>
-		<img src="${url.context}/images/icons/presence_yahoo_offline.png" width="16" height="16" alt="offline" title="Yahoo offline">=offline<br>
-		<img src="${url.context}/images/icons/presence_status_unknown.png" width="16" height="16" alt="online" title="Status possibly blocked due to privacy settings">=unknown
+		<img src="${url.context}/images/icons/presence_skype_offline.png" width="16" height="16" alt="Skype offline" title="Skype offline">=offline<br>
+		<img src="${url.context}/images/icons/presence_yahoo_offline.png" width="16" height="16" alt="Yahoo offline" title="Yahoo offline">=offline<br>
+		<img src="${url.context}/images/icons/presence_status_unknown.png" width="16" height="16" alt="Unknown" title="Status possibly blocked due to privacy settings">=unknown
 	</div>
 </div>
+
 <div id="presenceContainer">
 <#list presenceResults as pr>
 	<div class="presenceUser">
-		<div class="presenceStatus ${pr[0]}" rel="${pr[2]}" title=""></div>
+		<div class="presenceStatus" rel="${pr[2]}" title=""></div>
 		<div class="presenceUsername">${pr[1]}</div>
 	</div>
 </#list>
 </div>
 
 <div id="recentDocsContainer">
-	<div class="presenceTitle">Documents created or modified in the last week</div>
+	<div class="recentDocsTitle">Recently created or modified documents</div>
 	<div id="recentDocsTable">
 		<table cellspacing="0" cellpadding="3" border="0">
 		   <tr>
@@ -38,7 +39,7 @@
 	   <#if (dateCompare(child.properties["cm:modified"], date, 1000*60*60*24*7) == 1) || (dateCompare(child.properties["cm:created"], date, 1000*60*60*24*7) == 1)>
 	   	<#assign rowNum = rowNum + 1>
 	      <tr class="recentDoc ${(rowNum % 2 = 0)?string("even", "odd")}">
-	         <td><a href="${url.context}${child.url}" target="new"><img src="${url.context}${child.icon16}" border=0></a></td>
+	         <td><a href="${url.context}${child.url}" target="new"><img src="${url.context}${child.icon16}" alt="*" border="0"></a></td>
 	         <td><a href="${url.context}${child.url}" target="new">${child.properties.name}</a></td>
 	         <td>${child.properties["cm:created"]?datetime}</td>
 	         <td>${child.properties["cm:modified"]?datetime}</td>
@@ -59,7 +60,7 @@
 	float: left;
 }
 
-.presenceKeyContainer
+#presenceKeyContainer
 {
 	float: right;
 	border: 1px dashed grey;
@@ -99,19 +100,19 @@
 	margin: 0px 4px;
 }
 
-.presenceStatus.skype.online
+.presenceStatus.skype-online
 {
 	background-image: url(${url.context}/images/icons/presence_skype_online.png) !important;
 }
-.presenceStatus.skype.offline
+.presenceStatus.skype-offline
 {
 	background-image: url(${url.context}/images/icons/presence_skype_offline.png) !important;
 }
-.presenceStatus.yahoo.online
+.presenceStatus.yahoo-online
 {
 	background-image: url(${url.context}/images/icons/presence_yahoo_online.png) !important;
 }
-.presenceStatus.yahoo.offline
+.presenceStatus.yahoo-offline
 {
 	background-image: url(${url.context}/images/icons/presence_yahoo_offline.png) !important;
 }
@@ -119,7 +120,7 @@
 {
 	background-image: url(${url.context}/images/icons/presence_status_unknown.png) !important;
 }
-.presenceStatus.null.unknown
+.presenceStatus.none
 {
 	background-image: url(${url.context}/images/icons/presence_status_none.png) !important;
 }
@@ -130,11 +131,20 @@
 	margin: 4px 0px 0px;
 }
 
+.recentDocsTitle
+{
+	font-family: "Trebuchet MS", Verdana, Helvetica, sans-serif;
+	font-size: medium;
+	font-weight: bold;
+	margin: 0px 0px 4px;
+	float: left;
+}
+
 #recentDocsContainer
 {
 	float: left;
-	clear: both;
-	margin-top: 8px;
+	clear: left;
+	margin-top: 32px;
 }
 
 #recentDocsTable

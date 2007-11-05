@@ -22,38 +22,44 @@ function parsePermissions(space)
 {
 	var tokens, user, group;
 
-	for each(perm in space.permissions)
+	try
 	{
-		tokens = perm.split(";");
-		if (tokens[0] == "ALLOWED")
+		for each(perm in space.permissions)
 		{
-			if (("CollaboratorContributorCoordinatorEditor").indexOf(tokens[2]) != -1)
+			tokens = perm.split(";");
+			if (tokens[0] == "ALLOWED")
 			{
-				user = people.getPerson(tokens[1]);
-				if (user != null)
+				if (("CollaboratorContributorCoordinatorEditor").indexOf(tokens[2]) != -1)
 				{
-					pushUnique(results, user, presence.getDetails(user));
-				}
-				else
-				{
-					group = people.getGroup(tokens[1]);
-					if (group != null)
+					user = people.getPerson(tokens[1]);
+					if (user != null)
 					{
-						for each(user in people.getMembers(group))
+						pushUnique(results, user, presence.getDetails(user));
+					}
+					else
+					{
+						group = people.getGroup(tokens[1]);
+						if (group != null)
 						{
-							pushUnique(results, user, presence.getDetails(user));
+							for each(user in people.getMembers(group))
+							{
+								pushUnique(results, user, presence.getDetails(user));
+							}
 						}
 					}
 				}
-			}
-		}	
+			}	
+		}
+	}
+	catch (e)
+	{
 	}
 }
 
 function pushUnique(results, user, details)
 {
 	var provider = String(details).split("|")[0];
-	if (provider == "")
+	if (provider == "null")
 	{
 		provider = "none";
 	}

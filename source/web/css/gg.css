@@ -27,7 +27,7 @@ div.toolbar
 div.titlebar
 {
    font-weight: bold;
-   padding: 2 0 2 8;
+   padding: 2px 0px 2px 8px;
    background-color: #DCE4EB;
    border-bottom: 1px solid #CCD4DB;
 }
@@ -60,6 +60,12 @@ a:hover
    color: #168ECE;
 }
 
+form
+{
+   padding: 0px;
+   margin: 0px;
+}
+
 input
 {
    font-family: Trebuchet MS, Arial, sans-serif;
@@ -69,7 +75,7 @@ input
    color: #515D6B;
    background-color: #F8FCFD;
    border: 1px solid #CCD4DB;
-   width: 100%;
+   width: 97%;
 }
 
 input.formItemError

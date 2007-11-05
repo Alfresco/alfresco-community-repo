@@ -43,6 +43,7 @@ import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FilenameUtils;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 
@@ -320,14 +321,13 @@ public class FormData implements Serializable, Scopeable
          */
         public String getFilename()
         {
-            return file.getName();
+            // workaround a bug in IE where the full path is returned
+            return FilenameUtils.getName(file.getName());
         }
         
         public String jsGet_filename()
         {
             return getFilename();
         }
-
     }
-    
 }

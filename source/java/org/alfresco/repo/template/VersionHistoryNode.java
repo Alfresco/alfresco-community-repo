@@ -25,7 +25,6 @@
 package org.alfresco.repo.template;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -37,12 +36,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
-import org.springframework.util.StringUtils;
 
 /**
  * Template Node wrapper representing a record in the version history of a node.
@@ -275,17 +272,10 @@ public class VersionHistoryNode extends BaseContentNode
     public String getUrl()
     {
         NodeRef nodeRef = this.version.getFrozenStateNodeRef();
-        try
-        {
-            return MessageFormat.format(parent.CONTENT_GET_URL, new Object[] {
-                    nodeRef.getStoreRef().getProtocol(),
-                    nodeRef.getStoreRef().getIdentifier(),
-                    nodeRef.getId(),
-                    StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") } );
-        }
-        catch (UnsupportedEncodingException err)
-        {
-            throw new TemplateException("Failed to encode content URL for node: " + nodeRef, err);
-        }
+        return MessageFormat.format(parent.CONTENT_GET_URL, new Object[] {
+                nodeRef.getStoreRef().getProtocol(),
+                nodeRef.getStoreRef().getIdentifier(),
+                nodeRef.getId(),
+                URLEncoder.encode(getName()) } );
     }
 }

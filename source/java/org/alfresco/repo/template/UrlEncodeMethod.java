@@ -24,9 +24,9 @@
  */
 package org.alfresco.repo.template;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.List;
+
+import org.alfresco.util.URLEncoder;
 
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;
@@ -55,18 +55,7 @@ public class UrlEncodeMethod extends BaseTemplateProcessorExtension implements T
             Object arg0 = args.get(0);
             if (arg0 instanceof TemplateScalarModel)
             {
-                try
-                {
-                    // TODO: Support other encodings, although
-                    //       http://java.sun.com/j2se/1.4.2/docs/api/java/net/URLEncoder.html
-                    //       recommends UTF-8
-                    result = URLEncoder.encode(((TemplateScalarModel)arg0).getAsString(), "UTF-8");
-                }
-                catch (UnsupportedEncodingException e)
-                {
-                    // fallback to original url
-                    result = ((TemplateScalarModel)arg0).getAsString();
-                }
+                result = URLEncoder.encode(((TemplateScalarModel)arg0).getAsString());
             }
         }
         

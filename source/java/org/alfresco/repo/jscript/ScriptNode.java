@@ -28,8 +28,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,6 +72,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.URLEncoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Context;
@@ -82,7 +81,6 @@ import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.UniqueTag;
 import org.mozilla.javascript.Wrapper;
 import org.springframework.util.FileCopyUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * Node class implementation, specific for use by ScriptService as part of the object model.
@@ -861,16 +859,9 @@ public class ScriptNode implements Serializable, Scopeable
     {
         if (getIsDocument() == true)
         {
-            try
-            {
-                return MessageFormat.format(CONTENT_DEFAULT_URL, new Object[] { nodeRef.getStoreRef().getProtocol(),
-                        nodeRef.getStoreRef().getIdentifier(), nodeRef.getId(),
-                        StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") });
-            }
-            catch (UnsupportedEncodingException err)
-            {
-                throw new AlfrescoRuntimeException("Failed to encode content URL for node: " + nodeRef, err);
-            }
+            return MessageFormat.format(CONTENT_DEFAULT_URL, new Object[] { nodeRef.getStoreRef().getProtocol(),
+                    nodeRef.getStoreRef().getIdentifier(), nodeRef.getId(),
+                    URLEncoder.encode(getName())});
         }
         else
         {
@@ -894,18 +885,11 @@ public class ScriptNode implements Serializable, Scopeable
     {
         if (getIsDocument() == true)
         {
-            try
-            {
-               return MessageFormat.format(CONTENT_DOWNLOAD_URL, new Object[] {
-                        nodeRef.getStoreRef().getProtocol(),
-                        nodeRef.getStoreRef().getIdentifier(),
-                        nodeRef.getId(),
-                        StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") });
-            }
-            catch (UnsupportedEncodingException err)
-            {
-                throw new AlfrescoRuntimeException("Failed to encode content download URL for node: " + nodeRef, err);
-            }
+           return MessageFormat.format(CONTENT_DOWNLOAD_URL, new Object[] {
+                    nodeRef.getStoreRef().getProtocol(),
+                    nodeRef.getStoreRef().getIdentifier(),
+                    nodeRef.getId(),
+                    URLEncoder.encode(getName()) });
         }
         else
         {
@@ -2308,17 +2292,10 @@ public class ScriptNode implements Serializable, Scopeable
          */
         public String getUrl()
         {
-            try
-            {
-                return MessageFormat.format(CONTENT_PROP_URL, new Object[] { nodeRef.getStoreRef().getProtocol(),
-                        nodeRef.getStoreRef().getIdentifier(), nodeRef.getId(),
-                        StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20"),
-                        StringUtils.replace(URLEncoder.encode(property.toString(), "UTF-8"), "+", "%20") });
-            }
-            catch (UnsupportedEncodingException err)
-            {
-                throw new AlfrescoRuntimeException("Failed to encode content URL for node: " + nodeRef, err);
-            }
+            return MessageFormat.format(CONTENT_PROP_URL, new Object[] { nodeRef.getStoreRef().getProtocol(),
+                    nodeRef.getStoreRef().getIdentifier(), nodeRef.getId(),
+                    URLEncoder.encode(getName()),
+                    URLEncoder.encode(property.toString()) });
         }
         
         public String jsGet_url()
@@ -2333,19 +2310,12 @@ public class ScriptNode implements Serializable, Scopeable
         {
             if (getIsDocument() == true)
             {
-                try
-                {
-                   return MessageFormat.format(CONTENT_DOWNLOAD_PROP_URL, new Object[] {
-                            nodeRef.getStoreRef().getProtocol(),
-                            nodeRef.getStoreRef().getIdentifier(),
-                            nodeRef.getId(),
-                            StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20"),
-                            StringUtils.replace(URLEncoder.encode(property.toString(), "UTF-8"), "+", "%20") });
-                }
-                catch (UnsupportedEncodingException err)
-                {
-                    throw new AlfrescoRuntimeException("Failed to encode content download URL for node: " + nodeRef, err);
-                }
+                return MessageFormat.format(CONTENT_DOWNLOAD_PROP_URL, new Object[] {
+                        nodeRef.getStoreRef().getProtocol(),
+                        nodeRef.getStoreRef().getIdentifier(),
+                        nodeRef.getId(),
+                        URLEncoder.encode(getName()),
+                        URLEncoder.encode(property.toString()) });
             }
             else
             {

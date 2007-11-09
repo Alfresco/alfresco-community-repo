@@ -25,8 +25,6 @@
 package org.alfresco.repo.template;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,10 +43,9 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
-import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.namespace.QName;
-import org.springframework.util.StringUtils;
+import org.alfresco.util.URLEncoder;
 
 /**
  * Base class for Template API objects that supply content functionality.
@@ -58,9 +55,11 @@ import org.springframework.util.StringUtils;
 public abstract class BaseContentNode implements TemplateContent
 {
     protected final static String CONTENT_GET_URL      = "/d/d/{0}/{1}/{2}/{3}";
-    protected final static String CONTENT_DOWNLOAD_URL = "/d/a/{0}/{1}/{2}/{3}";
     protected final static String CONTENT_GET_PROP_URL = "/d/d/{0}/{1}/{2}/{3}?property={4}";
+    protected final static String CONTENT_DOWNLOAD_URL      = "/d/a/{0}/{1}/{2}/{3}";
     protected final static String CONTENT_DOWNLOAD_PROP_URL = "/d/a/{0}/{1}/{2}/{3}?property={4}";
+    protected final static String CONTENT_SERVICE_GET_URL        = "/api/node/content/{0}/{1}/{2}/{3}";
+    protected final static String CONTENT_SERVICE_GET_PROP_URL   = "/api/node/content;{4}/{0}/{1}/{2}/{3}";
     protected final static String FOLDER_BROWSE_URL    = "/n/browse/{0}/{1}/{2}";
     
     protected final static String NAMESPACE_BEGIN = "" + QName.NAMESPACE_BEGIN;
@@ -359,18 +358,8 @@ public abstract class BaseContentNode implements TemplateContent
     {
         if (getIsDocument() == true)
         {
-            try
-            {
-                return MessageFormat.format(CONTENT_GET_URL, new Object[] {
-                        getNodeRef().getStoreRef().getProtocol(),
-                        getNodeRef().getStoreRef().getIdentifier(),
-                        getNodeRef().getId(),
-                        StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") } );
-            }
-            catch (UnsupportedEncodingException err)
-            {
-                throw new TemplateException("Failed to encode content URL for node: " + getNodeRef(), err);
-            }
+            TemplateContentData content = (TemplateContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
+            return content != null ? content.getUrl() : "";
         }
         else
         {
@@ -391,18 +380,21 @@ public abstract class BaseContentNode implements TemplateContent
     {
         if (getIsDocument() == true)
         {
-            try
-            {
-               return MessageFormat.format(CONTENT_DOWNLOAD_URL, new Object[] {
-                        getNodeRef().getStoreRef().getProtocol(),
-                        getNodeRef().getStoreRef().getIdentifier(),
-                        getNodeRef().getId(),
-                        StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") });
-            }
-            catch (UnsupportedEncodingException err)
-            {
-                throw new TemplateException("Failed to encode content download URL for node: " + getNodeRef(), err);
-            }
+            TemplateContentData content = (TemplateContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
+            return content != null ? content.getDownloadUrl() : "";
+        }
+        else
+        {
+            return "";
+        }
+    }
+    
+    public String getServiceUrl()
+    {
+        if (getIsDocument() == true)
+        {
+            TemplateContentData content = (TemplateContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
+            return content != null ? content.getServiceUrl() : "";
         }
         else
         {
@@ -428,7 +420,7 @@ public abstract class BaseContentNode implements TemplateContent
             for (int i=1; i<paths.size(); i++)
             {
                 path.append("/")
-                    .append(StringUtils.replace(URLEncoder.encode(paths.get(i).getName(), "UTF-8"), "+", "%20"));
+                    .append(URLEncoder.encode(paths.get(i).getName()));
             }
             return path.toString();
         }
@@ -436,10 +428,6 @@ public abstract class BaseContentNode implements TemplateContent
         {
             // cannot build path if file no longer exists
             return "";
-        }
-        catch (UnsupportedEncodingException err)
-        {
-            throw new TemplateException("Failed to encode content WebDav URL for node: " + getNodeRef(), err);
         }
     }
     
@@ -575,36 +563,57 @@ public abstract class BaseContentNode implements TemplateContent
         
         public String getUrl()
         {
-            try
+            if (ContentModel.PROP_CONTENT.equals(property))
             {
-                return MessageFormat.format(CONTENT_GET_PROP_URL, new Object[] {
-                       getNodeRef().getStoreRef().getProtocol(),
-                       getNodeRef().getStoreRef().getIdentifier(),
-                       getNodeRef().getId(),
-                       StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20"),
-                       StringUtils.replace(URLEncoder.encode(property.toString(), "UTF-8"), "+", "%20") } );
+                return buildUrl(CONTENT_GET_URL);
             }
-            catch (UnsupportedEncodingException err)
+            else
             {
-                throw new TemplateException("Failed to encode content URL for node: " + getNodeRef(), err);
+                return buildPropUrl(CONTENT_GET_PROP_URL);
             }
         }
         
         public String getDownloadUrl()
         {
-            try
+            if (ContentModel.PROP_CONTENT.equals(property))
             {
-               return MessageFormat.format(CONTENT_DOWNLOAD_PROP_URL, new Object[] {
-                        getNodeRef().getStoreRef().getProtocol(),
-                        getNodeRef().getStoreRef().getIdentifier(),
-                        getNodeRef().getId(),
-                        StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20"),
-                        StringUtils.replace(URLEncoder.encode(property.toString(), "UTF-8"), "+", "%20") });
+                return buildUrl(CONTENT_DOWNLOAD_URL);
             }
-            catch (UnsupportedEncodingException err)
+            else
             {
-                throw new TemplateException("Failed to encode content download URL for node: " + getNodeRef(), err);
+                return buildPropUrl(CONTENT_DOWNLOAD_PROP_URL);
             }
+        }
+        
+        public String getServiceUrl()
+        {
+            if (ContentModel.PROP_CONTENT.equals(property))
+            {
+                return buildUrl(CONTENT_SERVICE_GET_URL);
+            }
+            else
+            {
+                return buildPropUrl(CONTENT_SERVICE_GET_PROP_URL);
+            }
+        }
+        
+        private String buildUrl(String format)
+        {
+           return MessageFormat.format(format, new Object[] {
+                     getNodeRef().getStoreRef().getProtocol(),
+                     getNodeRef().getStoreRef().getIdentifier(),
+                     getNodeRef().getId(),
+                     URLEncoder.encode(getName()) } );
+        }
+        
+        private String buildPropUrl(String pformat)
+        {
+            return MessageFormat.format(pformat, new Object[] {
+                     getNodeRef().getStoreRef().getProtocol(),
+                     getNodeRef().getStoreRef().getIdentifier(),
+                     getNodeRef().getId(),
+                     URLEncoder.encode(getName()),
+                     URLEncoder.encode(property.toString()) } );
         }
         
         public long getSize()

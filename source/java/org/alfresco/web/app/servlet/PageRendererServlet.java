@@ -35,7 +35,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -57,6 +56,7 @@ import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.util.URLEncoder;
 import org.alfresco.web.scripts.WebScriptCache;
 import org.alfresco.web.scripts.WebScriptMatch;
 import org.alfresco.web.scripts.WebScriptRequest;
@@ -636,15 +636,8 @@ public class PageRendererServlet extends WebScriptServlet
       {
          // encode to allow presentation tier webscripts to call themselves non this page
          // needs the servlet URL plus args to identify the webscript and it's new url
-         try
-         {
-            return context.RequestPath + context.RequestURI + "?" + PARAM_COMPONENT_URL + "=" +
-                   URLEncoder.encode(url, "UTF-8") + "&" + PARAM_COMPONENT_ID + "=" + componentId;
-         }
-         catch (UnsupportedEncodingException err)
-         {
-            throw new AlfrescoRuntimeException("Unable to encode UTF-8 format URL: " + url);
-         }
+         return context.RequestPath + context.RequestURI + "?" + PARAM_COMPONENT_URL + "=" +
+                URLEncoder.encode(url) + "&" + PARAM_COMPONENT_ID + "=" + componentId;
       }
 
       public String getEncodeScriptUrlFunction(String name)

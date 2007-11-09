@@ -25,7 +25,6 @@
 package org.alfresco.web.ui.repo.component;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -43,6 +42,7 @@ import javax.faces.el.ValueBinding;
 import org.alfresco.config.Config;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.URLEncoder;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.config.ActionsConfigElement;
@@ -451,7 +451,7 @@ public class UIActions extends SelfRenderingComponent
             {
                // found a Path - encode it as a URL argument
                scriptHref.append("?scriptPath=");
-               scriptHref.append(Utils.replace(URLEncoder.encode(actionDef.Script, "UTF-8"), "+", "%20"));
+               scriptHref.append(URLEncoder.encode(actionDef.Script));
             }
             else
             {

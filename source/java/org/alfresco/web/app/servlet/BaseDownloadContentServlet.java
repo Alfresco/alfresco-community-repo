@@ -25,10 +25,8 @@
 package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.StringTokenizer;
@@ -51,8 +49,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.URLEncoder;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 
 /**
@@ -293,21 +291,10 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
     */
    protected final static String generateUrl(String pattern, NodeRef ref, String name)
    {
-      String url = null;
-      
-      try
-      {
-         url = MessageFormat.format(pattern, new Object[] {
-                  ref.getStoreRef().getProtocol(),
-                  ref.getStoreRef().getIdentifier(),
-                  ref.getId(),
-                  Utils.replace(URLEncoder.encode(name, "UTF-8"), "+", "%20") } );
-      }
-      catch (UnsupportedEncodingException uee)
-      {
-         throw new AlfrescoRuntimeException("Failed to encode content URL for node: " + ref, uee);
-      }
-      
-      return url;
+      return MessageFormat.format(pattern, new Object[] {
+              ref.getStoreRef().getProtocol(),
+              ref.getStoreRef().getIdentifier(),
+              ref.getId(),
+              URLEncoder.encode(name) } );
    }
 }

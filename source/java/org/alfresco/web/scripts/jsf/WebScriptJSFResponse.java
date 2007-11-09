@@ -28,12 +28,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.net.URLEncoder;
 
 import javax.faces.component.UIForm;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.util.URLEncoder;
 import org.alfresco.web.scripts.WebScriptCache;
 import org.alfresco.web.scripts.WebScriptResponse;
 import org.alfresco.web.ui.common.Utils;
@@ -81,14 +81,7 @@ public class WebScriptJSFResponse implements WebScriptResponse
       buf.append("'].value=");
       buf.append("'");
       // encode the URL to the webscript
-      try
-      {
-         buf.append(URLEncoder.encode(url, "UTF-8"));
-      }
-      catch (UnsupportedEncodingException e)
-      {
-         throw new AlfrescoRuntimeException("Unable to utf-8 encode script url.");
-      }
+      buf.append(URLEncoder.encode(url));
       buf.append("'");
       buf.append(";");
       

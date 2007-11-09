@@ -25,9 +25,7 @@
 package org.alfresco.web.scripts.bean;
 
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Locale;
@@ -37,19 +35,18 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.URLEncoder;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.util.StringUtils;
 
 
 /**
@@ -389,19 +386,11 @@ public class KeywordSearch extends DeclarativeWebScript
         @Override
         public String getUrl()
         {
-            try
-            {
-                return MessageFormat.format(URL, new Object[] {
-                    getNodeRef().getStoreRef().getProtocol(),
-                    getNodeRef().getStoreRef().getIdentifier(),
-                    getNodeRef().getId(),
-                    StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") } );
-            }
-            catch (UnsupportedEncodingException err)
-            {
-                throw new TemplateException("Failed to encode content URL for node: " + getNodeRef(), err);
-            }
+            return MessageFormat.format(URL, new Object[] {
+                 getNodeRef().getStoreRef().getProtocol(),
+                 getNodeRef().getStoreRef().getIdentifier(),
+                 getNodeRef().getId(),
+                 URLEncoder.encode(getName()) } );
         }
     }
-    
 }

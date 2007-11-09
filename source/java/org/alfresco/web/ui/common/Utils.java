@@ -27,7 +27,6 @@ package org.alfresco.web.ui.common;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -744,8 +743,7 @@ public final class Utils
                // build up the path skipping the first path as it is the root folder
                for (int x = 1; x < paths.size(); x++)
                {
-                  path.append("/").append(
-                        Utils.replace(URLEncoder.encode(paths.get(x).getName(), "UTF-8"), "+", "%20"));
+                  path.append("/").append(URLEncoder.encode(paths.get(x).getName()));
                }
                url = path.toString();
             }
@@ -756,11 +754,6 @@ public final class Utils
             catch (FileNotFoundException nodeErr)
             {
                // cannot build path if file no longer exists
-            }
-            catch (UnsupportedEncodingException encErr)
-            {
-               if (logger.isWarnEnabled())
-                  logger.warn("Failed to calculate webdav url for node: " + node.getNodeRef(), encErr);
             }
             break;
          }

@@ -47,7 +47,7 @@
             
             <#-- Otherwise treat it as a string -->
             <#else>
-               <tr><td>${t} = ${document.properties[t]}</td></tr>
+               <tr><td>${t} = ${document.properties[t]?html}</td></tr>
             </#if>
          </#if>
       </#list>

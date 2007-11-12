@@ -185,13 +185,12 @@ public final class SearchContext implements Serializable
                {
                   fullTextBuf.append(OP_NOT);
                   nameAttrBuf.append(OP_NOT);
-                  additionalAttrsBuf.append(OP_NOT);
                }
                
                processSearchTextAttribute(nameAttr, text, nameAttrBuf, fullTextBuf);
                for (QName qname : this.simpleSearchAdditionalAttrs)
                {
-                  processSearchAttribute(qname, text, additionalAttrsBuf, false);
+                  processSearchAttribute(qname, text, additionalAttrsBuf, false, operatorNOT);
                }
             }
          }
@@ -243,20 +242,11 @@ public final class SearchContext implements Serializable
                   
                   if (term.length() != 0)
                   {
-                     // operators such as AND and OR are only make sense for full text searching 
-                     if (termCount != 0 && !operatorAND)
-                     {
-                        fullTextBuf.append("OR ");
-                        nameAttrBuf.append("OR ");
-                        additionalAttrsBuf.append("OR ");
-                     }
-                     
                      // prepend NOT operator if supplied
                      if (operatorNOT)
                      {
                         fullTextBuf.append(OP_NOT);
                         nameAttrBuf.append(OP_NOT);
-                        additionalAttrsBuf.append(OP_NOT);
                      }
                      
                      // prepend AND operator if supplied
@@ -264,13 +254,12 @@ public final class SearchContext implements Serializable
                      {
                         fullTextBuf.append(OP_AND);
                         nameAttrBuf.append(OP_AND);
-                        additionalAttrsBuf.append(OP_AND);
                      }
                      
                      processSearchTextAttribute(nameAttr, term, nameAttrBuf, fullTextBuf);
                      for (QName qname : this.simpleSearchAdditionalAttrs)
                      {
-                        processSearchAttribute(qname, term, additionalAttrsBuf, false);
+                        processSearchAttribute(qname, term, additionalAttrsBuf, operatorAND, operatorNOT);
                      }
                      
                      fullTextBuf.append(' ');
@@ -306,10 +295,6 @@ public final class SearchContext implements Serializable
          {
             for (int i=0; i<categories.length; i++)
             {
-               if (i > 0)
-               {
-                  pathQuery.append("OR");
-               }
                pathQuery.append(" PATH:\"").append(categories[i]).append("\" ");
             }
             if (location != null)
@@ -423,7 +408,7 @@ public final class SearchContext implements Serializable
          {
             case SearchContext.SEARCH_ALL:
                query = '(' + fileTypeQuery + " AND " + '(' + nameAttrQuery + ' ' + additionalAttrsQuery + ' ' + fullTextQuery + ')' + ')' +
-                       " OR " +
+                       ' ' +
                        '(' + folderTypeQuery + " AND " + '(' + nameAttrQuery + ' ' + additionalAttrsQuery + "))";
                break;
             
@@ -449,7 +434,7 @@ public final class SearchContext implements Serializable
          switch (mode)
          {
             case SearchContext.SEARCH_ALL:
-               query = '(' + fileTypeQuery + " OR " + folderTypeQuery + ')';
+               query = '(' + fileTypeQuery + ' ' + folderTypeQuery + ')';
                break;
             
             case SearchContext.SEARCH_FILE_NAMES:
@@ -487,7 +472,7 @@ public final class SearchContext implements Serializable
       }
       
       if (logger.isDebugEnabled())
-         logger.debug("Query: " + query);
+         logger.debug("Query:\r\n" + query);
       
       return query;
    }
@@ -502,7 +487,7 @@ public final class SearchContext implements Serializable
     */
    private static void processSearchAttribute(QName qname, String value, StringBuilder buf)
    {
-      processSearchAttribute(qname, value, buf, true);
+      processSearchAttribute(qname, value, buf, true, false);
    }
    
    /**
@@ -513,12 +498,14 @@ public final class SearchContext implements Serializable
     * @param value      Non-null value of the attribute
     * @param buf        Buffer to append lucene terms to
     * @param andOp      If true apply the '+' AND operator as the prefix to the attribute term
+    * @param notOp      If true apply the '-' NOT operator as the prefix to the attribute term
     */
-   private static void processSearchAttribute(QName qname, String value, StringBuilder buf, boolean andOp)
+   private static void processSearchAttribute(QName qname, String value, StringBuilder buf, boolean andOp, boolean notOp)
    {
       if (value.indexOf(' ') == -1)
       {
          if (andOp) buf.append('+');
+         else if (notOp) buf.append('-');
          buf.append('@').append(Repository.escapeQName(qname)).append(":")
             .append(SearchContext.escape(value)).append(' ');
       }
@@ -527,7 +514,9 @@ public final class SearchContext implements Serializable
          // phrase multi-word search
          String safeValue = QueryParser.escape(value);
          if (andOp) buf.append('+');
-         buf.append('@').append(Repository.escapeQName(qname)).append(":\"").append(safeValue).append('"').append(' ');
+         else if (notOp) buf.append('-');
+         buf.append('@').append(Repository.escapeQName(qname)).append(":\"")
+            .append(safeValue).append('"').append(' ');
       }
    }
    

@@ -38,6 +38,47 @@
                         ignore-if-missing="false" />
       </property-sheet>
    </config>
+   
+   <!-- WCM file and folder types, specified here so they appear first in the property sheet -->
+   <config evaluator="node-type" condition="wcm:avmplaincontent">
+      <property-sheet>
+         <show-property name="name" />
+         <show-property name="title" display-label-id="title"
+                        ignore-if-missing="false" />
+         <show-property name="description" display-label-id="description"
+                        ignore-if-missing="false" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="wcm:avmlayeredcontent">
+      <property-sheet>
+         <show-property name="name" />
+         <show-property name="title" display-label-id="title"
+                        ignore-if-missing="false" />
+         <show-property name="description" display-label-id="description"
+                        ignore-if-missing="false" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="wcm:avmplainfolder">
+      <property-sheet>
+         <show-property name="name" />
+         <show-property name="title" display-label-id="title"
+                        ignore-if-missing="false" />
+         <show-property name="description" display-label-id="description"
+                        ignore-if-missing="false" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="wcm:avmlayeredfolder">
+      <property-sheet>
+         <show-property name="name" />
+         <show-property name="title" display-label-id="title"
+                        ignore-if-missing="false" />
+         <show-property name="description" display-label-id="description"
+                        ignore-if-missing="false" />
+      </property-sheet>
+   </config>
 
    <config evaluator="node-type" condition="dictionaryModel">
       <property-sheet>
@@ -591,7 +632,7 @@
       </property-sheet>
    </config>
 
-   <!-- Configuration for wcm types and aspects -->
+   <!-- Configuration for wcm types and aspects -->   
    <config evaluator="node-type" condition="wca:webfolder">
       <property-sheet>
          <show-property name="wca:avmstore" read-only="true" />

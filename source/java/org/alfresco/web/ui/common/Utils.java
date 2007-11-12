@@ -80,6 +80,7 @@ import org.alfresco.web.ui.common.component.UIStatusMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.myfaces.shared_impl.renderkit.html.HtmlFormRendererBase;
+import org.springframework.util.StringUtils;
 import org.springframework.web.jsf.FacesContextUtils;
 
 /**
@@ -650,7 +651,7 @@ public final class Utils
             buf.append("']['");
             buf.append(name);
             buf.append("'].value='");
-            buf.append(params.get(name));
+            buf.append(StringUtils.replace(params.get(name), "'", "\\'"));
             buf.append("';");
             
             // weak, but this seems to be the way Sun RI do it...

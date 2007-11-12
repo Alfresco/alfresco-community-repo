@@ -36,6 +36,8 @@ import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.mbeans.VirtServerRegistry;
+import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.sandbox.SandboxConstants;
@@ -43,6 +45,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
@@ -926,6 +929,7 @@ public final class AVMUtil
       // get services
       FacesContext fc = FacesContext.getCurrentInstance();
       SearchService searchService = Repository.getServiceRegistry(fc).getSearchService();
+      NodeService nodeService = Repository.getServiceRegistry(fc).getNodeService();
       
       // construct the query
       String path = Application.getRootPath(fc) + "/" + Application.getWebsitesFolderName(fc) + "/*";
@@ -939,9 +943,29 @@ public final class AVMUtil
          results = searchService.query(Repository.getStoreRef(), 
                SearchService.LANGUAGE_LUCENE, query);
          
+         // WCM-810:
+         // the 'avmstore' property was not defined as an identifier in the model (before 2.2)
+         // which means it may get tokenised which in turn means that 'test' and 'test-site' 
+         // would get returned by the query above even though it's an exact match query,
+         // we therefore need to go through the results and check names if there is more 
+         // than one result although this shouldn't happen anymore as the 
+         // AVMStorePropertyTokenisationPatch will have reindexed the wca:avmstore property
          if (results.length() == 1)
          {
             webProjectNode = results.getNodeRef(0);
+         }
+         else if (results.length() > 1)
+         {
+            for (NodeRef node : results.getNodeRefs())
+            {
+               String nodeStoreName = (String)nodeService.getProperty(node, 
+                        WCMAppModel.PROP_AVMSTORE);
+               if (nodeStoreName.equals(storeName))
+               {
+                  webProjectNode = node;
+                  break;
+               }
+            }
          }
       }
       finally

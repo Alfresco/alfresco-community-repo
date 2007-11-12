@@ -51,7 +51,7 @@
             <th><a id="docFilter3" class="docfilterLink <#if filter=3>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(3); return false;"><span>PDF Documents</span></a></th>
             <th><a id="docFilter4" class="docfilterLink <#if filter=4>docfilterLinkSelected</#if>" href="#" onclick="MyDocs.filter(4); return false;"><span>Recently Modified</span></a></th>
             <th align=right>
-               <a href="#" onclick="MyDocs.refreshList(); return false;" class="refreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px">Refresh</a>
+               <a href="#" onclick="MyDocs.refreshList(); return false;" class="docRefreshViewLink"><img src="${url.context}/images/icons/reset.gif" border="0" width="16" height="16" style="vertical-align:-25%;padding-right:4px">Refresh</a>
             </th>
          </tr>
       </table>
@@ -93,11 +93,11 @@
 <style type="text/css">
 a.docfilterLink, a.docfilterLink:hover
 {
-   color: #8EA1B3;
-   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
-   font-size: 12px;
-   font-weight: bold;
-   text-decoration: none;
+   color: #8EA1B3 !important;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif !important;
+   font-size: 12px !important;
+   font-weight: bold !important;
+   text-decoration: none !important;
    padding: 8px 4px 16px;
    outline: none;
    display: block;
@@ -209,11 +209,11 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
 
 a.docItem, a.docItem:hover
 {
-   font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
-   font-size: 14px;
-   color: #515D6B;
+   font-family: Trebuchet MS, Arial, Helvetica, sans-serif !important;
+   font-size: 14px !important;
+   color: #515D6B !important;
    padding: 0px 8px 6px 8px;
-   text-decoration: none;
+   text-decoration: none !important;
 }
 
 .docIcon
@@ -366,14 +366,14 @@ a.docItem, a.docItem:hover
    overflow: hidden;
 }
 
-a.refreshViewLink
+a.docRefreshViewLink
 {
    padding: 8px 4px 0px 0px;
    display: block;
    outline: none;
 }
 
-a.refreshViewLink:link, a.refreshViewLink:visited, a.refreshViewLink:hover
+a.docRefreshViewLink:link, a.docRefreshViewLink:visited, a.docRefreshViewLink:hover
 {
    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    font-size: 12px;

@@ -932,7 +932,7 @@ public class ForumsBean implements IContextListener
             ContentModel.PROP_CONTENT);  
       if (reader != null)
       {
-         replyContent = reader.getContentString();
+         replyContent = Utils.stripUnsafeHTMLTags(reader.getContentString());
       }
       
       // get the date of the article being replied to

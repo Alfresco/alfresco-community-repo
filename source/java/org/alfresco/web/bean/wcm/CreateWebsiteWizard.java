@@ -71,6 +71,7 @@ import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormNotFoundException;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.RenderingEngineTemplate;
+import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.common.component.UISelectList;
 import org.alfresco.web.ui.wcm.WebResources;
@@ -935,7 +936,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          {
             foundCurrentUser = true;
          }
-         buf.append(userRole.getLabel());
+         buf.append(Utils.encode(userRole.getLabel()));
          buf.append("<br>");
       }
       if (foundCurrentUser == false)

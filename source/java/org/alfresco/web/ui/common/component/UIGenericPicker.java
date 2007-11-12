@@ -383,7 +383,7 @@ public class UIGenericPicker extends UICommand
             out.write("<option value=\"");
             out.write(currentResults[i].getValue().toString());
             out.write("\">");
-            out.write(currentResults[i].getLabel());
+            out.write(Utils.encode(currentResults[i].getLabel()));
             out.write("</option>");
          }
       }

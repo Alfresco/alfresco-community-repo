@@ -30,20 +30,14 @@
 
 <f:verbatim>
 <table cellpadding="2" cellspacing="2" border="0">
-<tr>
-<td class="mainSubTitle">
-</f:verbatim><h:outputFormat value="#{msg.remove_content_user_confirm}">
-<f:param value="#{DialogManager.bean.personName}"/>
-</h:outputFormat><f:verbatim>
-</td>
-</tr>
-<tr>
-<td>
-<%-- Error Messages --%>
-<%-- messages tag to show messages not handled by other specific message tags --%>
-</f:verbatim><h:messages globalOnly="true" styleClass="errorMessage" layout="table" /><f:verbatim>
-<td>
-</tr>
+	<tr>
+		<td class="mainSubTitle">
+			</f:verbatim>
+			<h:outputFormat value="#{msg.remove_content_user_confirm}">
+				<f:param value="#{DialogManager.bean.personName}"/>
+			</h:outputFormat>
+			<f:verbatim>
+		</td>
+	</tr>
 </table>
 </f:verbatim>
-

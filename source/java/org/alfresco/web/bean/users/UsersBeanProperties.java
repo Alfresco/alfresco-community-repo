@@ -51,15 +51,13 @@ public class UsersBeanProperties
     /** action context */
     private Node person = null;
     
-   
-    
     private String password = null;
     private String oldPassword = null;
     private String confirm = null;
     private String searchCriteria = null;
     
     
- // ------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------
     // Bean property getters and setters
 
     /**
@@ -142,8 +140,6 @@ public class UsersBeanProperties
        this.usersRichList = usersRichList;
     }
 
- 
-    
     /**
      * @return Returns the search criteria
      */
@@ -223,6 +219,4 @@ public class UsersBeanProperties
     {
        this.person = person;
     }
-
-    
 }

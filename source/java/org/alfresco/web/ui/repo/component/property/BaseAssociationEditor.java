@@ -717,7 +717,7 @@ public abstract class BaseAssociationEditor extends UIInput
 
       if (ContentModel.TYPE_PERSON.equals(nodeService.getType(targetRef)))
       {
-         out.write(User.getFullName(nodeService, targetRef));
+         out.write(Utils.encode(User.getFullName(nodeService, targetRef)));
       }
       else if (ContentModel.TYPE_AUTHORITY_CONTAINER.equals(nodeService.getType(targetRef)))
       {
@@ -849,7 +849,7 @@ public abstract class BaseAssociationEditor extends UIInput
                      out.write("<option value='");
                      out.write(item.toString());
                      out.write("'>");
-                     out.write(User.getFullName(nodeService, item));
+                     out.write(Utils.encode(User.getFullName(nodeService, item)));
                      out.write("</option>");
                   }
                }

@@ -179,7 +179,7 @@ public class UIUserGroupPicker extends UICommand
             {
                out.write("<span style='color:#93a8b2'>");
             }
-            out.write((String)authority.get("fullName"));
+            out.write(Utils.encode((String)authority.get("fullName")));
             out.write(" (");
             out.write((String)authority.get("roles"));
             out.write(")");

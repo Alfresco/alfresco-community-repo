@@ -43,6 +43,7 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
+import org.alfresco.web.ui.common.Utils;
 
 /**
  * Bean implementation for the "Run Action" wizard.
@@ -176,8 +177,8 @@ public class RunActionWizard extends BaseActionWizard
       StringBuilder actionsSummary = new StringBuilder();
       for (Map<String, Serializable> props : this.allActionsProperties)
       {
-         actionsSummary.append(props.get(PROP_ACTION_SUMMARY));
-         actionsSummary.append("<br/>");
+         actionsSummary.append(Utils.encode(props.get(PROP_ACTION_SUMMARY).toString()));
+         actionsSummary.append("<br>");
       }
       
       ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());

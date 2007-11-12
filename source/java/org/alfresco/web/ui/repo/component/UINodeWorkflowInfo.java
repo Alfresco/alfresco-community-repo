@@ -47,6 +47,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
+import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 
 /**
@@ -243,7 +244,7 @@ public class UINodeWorkflowInfo extends SelfRenderingComponent
          {
             actionPattern = Application.getMessage(FacesContext.getCurrentInstance(), "space_action");
          }
-         Object[] params = new Object[] {action, approveFolderName, approveStepName};
+         Object[] params = new Object[] {action, approveFolderName, Utils.encode(approveStepName)};
          out.write(MessageFormat.format(actionPattern, params));
          
          // add details of the reject step if there is one
@@ -259,7 +260,7 @@ public class UINodeWorkflowInfo extends SelfRenderingComponent
             }
             
             out.write("&nbsp;");
-            params = new Object[] {action, rejectFolderName, rejectStepName};
+            params = new Object[] {action, rejectFolderName, Utils.encode(rejectStepName)};
             out.write(MessageFormat.format(actionPattern, params));
          }
       }
@@ -334,7 +335,7 @@ public class UINodeWorkflowInfo extends SelfRenderingComponent
                if (wi.description != null && wi.description.length() > 0)
                {
                   out.write("&nbsp;(");
-                  out.write(wi.description);
+                  out.write(Utils.encode(wi.description));
                   out.write(")");
                }
                out.write(" ");
@@ -349,7 +350,7 @@ public class UINodeWorkflowInfo extends SelfRenderingComponent
                {
                   out.write(bundle.getString("by"));
                   out.write("&nbsp;");
-                  out.write(User.getFullName(nodeService, wi.initiator));
+                  out.write(Utils.encode(User.getFullName(nodeService, wi.initiator)));
                   out.write(".");
                }
                out.write("</li>");

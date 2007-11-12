@@ -177,7 +177,7 @@
             style="width:100%;" itemStyle="vertical-align: top; margin-right: 5px;">
          <c:forEach items="${WizardManager.bean.invitedUsers}" var="r">
             <a:listItem value="${r.name}" image="/images/icons/user_large.gif">
-               <jsp:attribute name="label"><b>${r.name}</b></jsp:attribute>
+               <jsp:attribute name="label"><b><c:out escapeXml="true" value="${r.name}"/></b></jsp:attribute>
                <jsp:attribute name="description">
                   <table width="100%" cellspacing="0" cellpadding="0" border="0">
                      <colgroup><col width="25%"/><col width="75%"/></colgroup>

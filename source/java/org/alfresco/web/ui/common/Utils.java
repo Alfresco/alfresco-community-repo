@@ -896,16 +896,12 @@ public final class Utils
     * 
     * @return Populated <code>img</code> tag
     */
-   public static String buildImageTag(final FacesContext context, 
-                                      final String image, 
-                                      final int width, 
-                                      final int height,
-                                      String alt, 
-                                      final String onclick, 
-                                      final String verticalAlign)
+   public static String buildImageTag(FacesContext context, String image, int width, int height,
+                                      String alt, String onclick, String verticalAlign)
    {
       StringBuilder buf = new StringBuilder(200);
-      StringBuilder style = new StringBuilder("border-width:0px;");
+      
+      String style = "border-width:0px;";
       buf.append("<img src='")
          .append(context.getExternalContext().getRequestContextPath())
          .append(image)
@@ -931,15 +927,20 @@ public final class Utils
 
       if (verticalAlign != null)
       {
-         style.append("vertical-align:").append(verticalAlign).append(";");
+         StringBuilder styleBuf = new StringBuilder(40);
+         styleBuf.append(style).append("vertical-align:").append(verticalAlign).append(";");
+         style = styleBuf.toString();
       }
       
       if (onclick != null)
       {
          buf.append(" onclick=\"").append(onclick).append('"');
-         style.append("cursor:pointer;");
+         StringBuilder styleBuf = new StringBuilder(style.length() + 16);
+         styleBuf.append(style).append("cursor:pointer;");
+         style = styleBuf.toString();
       }
       buf.append(" style='").append(style).append("'/>");
+      
       return buf.toString();
    }
    
@@ -986,18 +987,15 @@ public final class Utils
     * 
     * @return Populated <code>img</code> tag
     */
-   public static String buildImageTag(final FacesContext context, 
-                                      final String image, 
-                                      String alt, 
-                                      final String verticalAlign)
+   public static String buildImageTag(FacesContext context, String image, String alt, String verticalAlign)
    {
-      final StringBuilder buf = new StringBuilder(128);
+      StringBuilder buf = new StringBuilder(128);
       buf.append("<img src='")
          .append(context.getExternalContext().getRequestContextPath())
          .append(image)
          .append("' ");
 
-      final StringBuilder style = new StringBuilder("border-width:0px;");
+      String style = "border-width:0px;";
       if (alt != null)
       {
          alt = Utils.encode(alt);
@@ -1014,7 +1012,9 @@ public final class Utils
 
       if (verticalAlign != null)
       {
-         style.append("vertical-align:").append(verticalAlign).append(";");
+         StringBuilder styleBuf = new StringBuilder(40);
+         styleBuf.append(style).append("vertical-align:").append(verticalAlign).append(";");
+         style = styleBuf.toString();
       }
       
       buf.append(" style='").append(style).append("'/>");

@@ -592,7 +592,7 @@ public abstract class InviteUsersWizard extends BaseWizardBean
       StringBuilder buf = new StringBuilder(128);
       for (UserGroupRole userRole : this.userGroupRoles)
       {
-         buf.append(userRole.getLabel());
+         buf.append(Utils.encode(userRole.getLabel()));
          buf.append("<br>");
       }
       

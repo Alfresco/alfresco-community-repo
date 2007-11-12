@@ -62,7 +62,7 @@
 	               <tr><td>&nbsp;Owner:</td><td>${node.properties.owner}</td></tr>
 	            </#if>
 	            <#if node.properties.author?exists>
-	               <tr><td>&nbsp;Author:</td><td>${node.properties.author}</td></tr>
+	               <tr><td>&nbsp;Author:</td><td>${node.properties.author?html}</td></tr>
 	            </#if>
 	            <#if node.isDocument>
 	               <tr><td>&nbsp;Size:</td><td>${(node.size / 1000)?string("0.##")} KB</td></tr>

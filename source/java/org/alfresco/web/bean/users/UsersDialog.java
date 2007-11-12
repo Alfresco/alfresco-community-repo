@@ -201,8 +201,12 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
       String outcome = DIALOG_CLOSE;
       
       FacesContext context = FacesContext.getCurrentInstance();
+      UserTransaction tx = null;
       try
       {
+         tx = Repository.getUserTransaction(context, true);
+         tx.begin();
+
          Map<QName, Serializable> props = properties.getNodeService().getProperties(properties.getPerson().getNodeRef());
          props.put(ContentModel.PROP_FIRSTNAME,
                (String) properties.getPerson().getProperties().get(ContentModel.PROP_FIRSTNAME));
@@ -214,6 +218,8 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
          // persist changes
          properties.getNodeService().setProperties(properties.getPerson().getNodeRef(), props);
          
+         tx.commit();
+         
          // if the above call was successful, then reset Person Node in the session
          Application.getCurrentUser(context).reset();
       }
@@ -221,6 +227,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                context, Repository.ERROR_GENERIC), err.getMessage()), err );
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
       }
       
       return outcome;

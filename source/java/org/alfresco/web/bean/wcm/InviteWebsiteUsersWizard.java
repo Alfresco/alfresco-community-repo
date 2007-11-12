@@ -45,6 +45,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.wizard.InviteUsersWizard;
+import org.alfresco.web.ui.common.Utils;
 
 /**
  * Bean providing the ability to invite users to a web project space.
@@ -313,7 +314,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
          {
             foundCurrentUser = true;
          }
-         buf.append(userRole.getLabel());
+         buf.append(Utils.encode(userRole.getLabel()));
          buf.append("<br>");
       }
       if (isStandalone() == false && foundCurrentUser == false)

@@ -190,7 +190,7 @@ public class UIWorkflowHistory extends SelfRenderingComponent
                }
                
                out.write("<tr><td>");
-               out.write(desc == null ? "" : desc);
+               out.write(desc == null ? "" : Utils.encode(desc));
                out.write("</td><td>");
                out.write(task.title);
                out.write("</td><td>");
@@ -200,7 +200,7 @@ public class UIWorkflowHistory extends SelfRenderingComponent
                out.write("</td><td>");
                out.write(owner == null ? "" : owner);
                out.write("</td><td>");
-               out.write(comment == null ? "" : comment);
+               out.write(comment == null ? "" : Utils.encode(comment));
                out.write("</td><td>");
                out.write(Utils.getDateTimeFormat(context).format(completedDate));
                out.write("</td><td>");

@@ -203,7 +203,7 @@ public class CreateRuleWizard extends BaseActionWizard
       for (Map<String, Serializable> props : this.allConditionsProperties)
       {
          conditionsSummary.append(props.get(PROP_CONDITION_SUMMARY));
-         conditionsSummary.append("<br/>");
+         conditionsSummary.append("<br>");
       }
       
       // create the summary using all the actions
@@ -211,7 +211,7 @@ public class CreateRuleWizard extends BaseActionWizard
       for (Map<String, Serializable> props : this.allActionsProperties)
       {
          actionsSummary.append(props.get(PROP_ACTION_SUMMARY));
-         actionsSummary.append("<br/>");
+         actionsSummary.append("<br>");
       }
       
       ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
@@ -224,7 +224,8 @@ public class CreateRuleWizard extends BaseActionWizard
             new String[] {bundle.getString("rule_type"), bundle.getString("name"), bundle.getString("description"),
                           bundle.getString("apply_to_sub_spaces"), bundle.getString("run_in_background"), bundle.getString("rule_disabled"),
                           bundle.getString("conditions"), bundle.getString("actions")},
-            new String[] {this.type, this.title, this.description, subSpacesYesNo, backgroundYesNo, ruleDisabledYesNo,
+            new String[] {this.type, Utils.encode(this.title), Utils.encode(this.description),
+                          subSpacesYesNo, backgroundYesNo, ruleDisabledYesNo,
                           conditionsSummary.toString(), actionsSummary.toString()});
    }
    

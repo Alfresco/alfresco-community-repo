@@ -44,6 +44,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
+import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -170,7 +171,7 @@ public class UIAssociationEditor extends BaseAssociationEditor
             if (ContentModel.TYPE_PERSON.equals(nodeService.getType(targetNode)))
             {
                // if the node represents a person, show the username instead of the name
-               out.write(User.getFullName(nodeService, targetNode));
+               out.write(Utils.encode(User.getFullName(nodeService, targetNode)));
             }
             else if (ContentModel.TYPE_AUTHORITY_CONTAINER.equals(nodeService.getType(targetNode)))
             {

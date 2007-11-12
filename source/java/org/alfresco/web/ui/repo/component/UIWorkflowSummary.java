@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
+import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 
 /**
@@ -113,7 +114,7 @@ public class UIWorkflowSummary extends SelfRenderingComponent
          if (wi.definition.description != null && wi.definition.description.length() > 0)
          {
             out.write("&nbsp;(");
-            out.write(wi.definition.description);
+            out.write(Utils.encode(wi.definition.description));
             out.write(")");
          }
          out.write("</td></tr><tr><td>");
@@ -121,8 +122,8 @@ public class UIWorkflowSummary extends SelfRenderingComponent
          out.write(":</td><td>");
          if (wi.initiator != null)
          {
-            out.write(User.getFullName(Repository.getServiceRegistry(
-                  context).getNodeService(), wi.initiator));
+            out.write(Utils.encode(User.getFullName(Repository.getServiceRegistry(
+                  context).getNodeService(), wi.initiator)));
          }
          out.write("</td></tr><tr><td>");
          out.write(bundle.getString("started_on"));

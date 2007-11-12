@@ -34,6 +34,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
+import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -322,7 +323,7 @@ public abstract class AbstractWizardBean
          buf.append("<tr><td valign='top'><b>");
          buf.append(labels[i]);
          buf.append(":</b></td><td>");
-         buf.append(value != null ? value : notSetMsg);
+         buf.append(value != null ? Utils.encode(value) : notSetMsg);
          buf.append("</td></tr>");
       }
       buf.append("</table>");

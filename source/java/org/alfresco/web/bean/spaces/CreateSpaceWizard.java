@@ -472,7 +472,7 @@ public class CreateSpaceWizard extends BaseWizardBean
       return buildSummary(
             new String[] {bundle.getString("space_type"), bundle.getString("name"),
                           bundle.getString("description"), bundle.getString("creating_from")},
-            new String[] {spaceTypeLabel, this.name, this.description, summaryCreateType});
+            new String[] {spaceTypeLabel, this.name, Utils.encode(this.description), summaryCreateType});
    }
 
    /**

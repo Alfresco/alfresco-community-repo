@@ -1059,4 +1059,18 @@
         </property>
     </bean>
     
+    <bean id="patch.avmStoreAsIdentifier" class="org.alfresco.repo.admin.patch.impl.AVMStorePropertyTokenisationPatch" parent="basePatch" >
+        <property name="id"><value>patch.avmStoreAsIdentifier</value></property>
+        <property name="description"><value>patch.avmStoreAsIdentifier.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>109</value></property>
+        <property name="targetSchema"><value>110</value></property>
+        <property name="spacesImporterBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="indexerAndSearcher">
+            <ref bean="indexerAndSearcherFactory" />
+        </property>
+    </bean>
+    
 </beans>

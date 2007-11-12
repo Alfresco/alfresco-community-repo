@@ -59,6 +59,7 @@ import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.search.QueryRegisterComponent;
+import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.search.results.ChildAssocRefResultSet;
 import org.alfresco.repo.search.results.DetachedResultSet;
@@ -70,6 +71,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -196,6 +198,8 @@ public class ADMLuceneTest extends TestCase
 
     private NamespaceDAOImpl namespaceDao;
 
+    private Date testDate;
+
     /**
      * 
      */
@@ -287,8 +291,9 @@ public class ADMLuceneTest extends TestCase
         testProperties.put(QName.createQName(TEST_NAMESPACE, "long-ista"), Long.valueOf(2));
         testProperties.put(QName.createQName(TEST_NAMESPACE, "float-ista"), Float.valueOf(3.4f));
         testProperties.put(QName.createQName(TEST_NAMESPACE, "double-ista"), Double.valueOf(5.6));
-        testProperties.put(QName.createQName(TEST_NAMESPACE, "date-ista"), new Date());
-        testProperties.put(QName.createQName(TEST_NAMESPACE, "datetime-ista"), new Date());
+        testDate = new Date(new Date().getTime() - 10000);
+        testProperties.put(QName.createQName(TEST_NAMESPACE, "date-ista"), testDate);
+        testProperties.put(QName.createQName(TEST_NAMESPACE, "datetime-ista"), testDate);
         testProperties.put(QName.createQName(TEST_NAMESPACE, "boolean-ista"), Boolean.valueOf(true));
         testProperties.put(QName.createQName(TEST_NAMESPACE, "qname-ista"), QName.createQName("{wibble}wobble"));
         testProperties.put(QName.createQName(TEST_NAMESPACE, "category-ista"), new NodeRef(storeRef, "CategoryId"));
@@ -2475,6 +2480,13 @@ public class ADMLuceneTest extends TestCase
         assertEquals(0, results.length());
         results.close();
 
+        // Dates
+        
+        PropertyDefinition propertyDef = dictionaryService.getProperty(QName.createQName(TEST_NAMESPACE, "datetime-ista"));
+        DataTypeDefinition dataType = propertyDef.getDataType();
+        String analyserClassName = dataType.getAnalyserClassName();
+        boolean usesDateTimeAnalyser = analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName());
+        
         Date date = new Date();
         String sDate = CachingDateFormat.getDateFormat().format(date);
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":\"" + sDate + "\"", null, null);
@@ -2482,9 +2494,18 @@ public class ADMLuceneTest extends TestCase
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":\"" + sDate + "\"", null, null);
+        assertEquals(usesDateTimeAnalyser ? 0 : 1 , results.length());
+        results.close();
+        
+        sDate = CachingDateFormat.getDateFormat().format(testDate);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":\"" + sDate + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":\"" + sDate + "\"", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "boolean-ista")) + ":\"true\"", null, null);
         assertEquals(1, results.length());
         results.close();

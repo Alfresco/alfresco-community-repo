@@ -64,7 +64,7 @@
       </data-type>
 
       <data-type name="d:datetime">
-         <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.DateAnalyser</analyser-class>
+         <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser</analyser-class>
          <java-class>java.util.Date</java-class>
       </data-type>
 

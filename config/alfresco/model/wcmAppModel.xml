@@ -27,6 +27,11 @@
             <property name="wca:avmstore">
                <title>AVM Store Root</title>
                <type>d:text</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
             </property>
             <property name="wca:defaultwebapp">
                <title>Default Webapp</title>

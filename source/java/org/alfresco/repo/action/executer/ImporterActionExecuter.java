@@ -348,7 +348,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
 	            else
 	            {
 	                File newdir = new File(extractDir + entry.getName());
-	                newdir.mkdir();
+	                newdir.mkdirs();
 	            }
 	        }
 	    }

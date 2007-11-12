@@ -21,6 +21,7 @@
         </property>
         <property name="transactionAttributes">
             <props>
+                <prop key="apply*">PROPAGATION_NOT_SUPPORTED</prop>
                 <prop key="get*">${server.transaction.mode.readOnly}</prop>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
@@ -36,6 +37,9 @@
     <bean id="patchComponent" class="org.alfresco.repo.admin.patch.PatchServiceImpl" >
         <property name="descriptorService">
             <ref bean="descriptorComponent" />
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService" />
         </property>
         <property name="ruleService">
             <ref bean="ruleService" />

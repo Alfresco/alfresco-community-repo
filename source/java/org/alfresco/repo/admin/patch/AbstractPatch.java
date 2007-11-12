@@ -335,6 +335,12 @@ public abstract class AbstractPatch implements Patch
         // execute in a transaction
         try
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("\n" +
+                        "Patch will be applied: \n" +
+                        "   patch: " + this);
+            }
             AuthenticationUtil.RunAsWork<String> authorisedPathWork = new AuthenticationUtil.RunAsWork<String>()
             {
                 public String doWork() throws Exception
@@ -361,7 +367,8 @@ public abstract class AbstractPatch implements Patch
             // done
             if (logger.isDebugEnabled())
             {
-                logger.debug("Patch successfully applied: \n" +
+                logger.debug("\n" +
+                        "Patch successfully applied: \n" +
                         "   patch: " + this + "\n" +
                         "   report: " + report);
             }

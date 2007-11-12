@@ -34,10 +34,12 @@ import java.util.Map;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.domain.AppliedPatch;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -61,6 +63,7 @@ public class PatchServiceImpl implements PatchService
     private static Log logger = LogFactory.getLog(PatchServiceImpl.class);
     
     private DescriptorService descriptorService;
+    private TransactionService transactionService;
     private RuleService ruleService;
     private PatchDaoService patchDaoService;
     private List<Patch> patches;
@@ -73,6 +76,11 @@ public class PatchServiceImpl implements PatchService
     public void setDescriptorService(DescriptorService descriptorService)
     {
         this.descriptorService = descriptorService;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     public void setPatchDaoService(PatchDaoService patchDaoService)
@@ -156,7 +164,7 @@ public class PatchServiceImpl implements PatchService
      * @param appliedPatchesById already applied patches keyed by their ID
      * @return Returns true if the patch and all its dependencies were successfully applied.
      */
-    private boolean applyPatchAndDependencies(Patch patch, Map<String, AppliedPatch> appliedPatchesById)
+    private boolean applyPatchAndDependencies(final Patch patch, Map<String, AppliedPatch> appliedPatchesById)
     {
         String id = patch.getId();
         // check if it has already been done
@@ -183,7 +191,14 @@ public class PatchServiceImpl implements PatchService
             }
         }
         // all the dependencies were successful
-        appliedPatch = applyPatch(patch);
+        RetryingTransactionCallback<AppliedPatch> callback = new RetryingTransactionCallback<AppliedPatch>()
+        {
+            public AppliedPatch execute() throws Throwable
+            {
+                return applyPatch(patch);
+            }
+        };
+        appliedPatch = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
         if (!appliedPatch.getSucceeded())
         {
             // this was a failure

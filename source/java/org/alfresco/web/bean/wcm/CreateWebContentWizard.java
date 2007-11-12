@@ -34,6 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ValueChangeEvent;
@@ -45,29 +46,21 @@ import org.alfresco.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.model.WCMWorkflowModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.workflow.WorkflowDefinition;
-import org.alfresco.service.cmr.workflow.WorkflowPath;
-import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.cmr.workflow.WorkflowTask;
-import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.content.BaseContentWizard;
-import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
@@ -224,9 +217,22 @@ public class CreateWebContentWizard extends BaseContentWizard
          // if rendering a form, then save the content now to generate the renditions
          if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType))
          {
+            FacesContext context = FacesContext.getCurrentInstance();
+            RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(context);
+            RetryingTransactionCallback<String> callback = new RetryingTransactionCallback<String>()
+            {
+               public String execute() throws Throwable
+               {
+                  // call the actual implementation
+                  saveContent();
+                  return null;
+               }
+            };
+            
             try
             {
-               this.saveContent();
+               // Execute
+               txnHelper.doInTransaction(callback);
             }
             catch (Exception e)
             {
@@ -261,30 +267,16 @@ public class CreateWebContentWizard extends BaseContentWizard
       }
       return super.back();
    }
-
-   @Override
-   public String finish()
-   {
-      // if a form is not being entered, then save just html/text content
-      if (this.formInstanceData == null || this.renditions == null)
-      {
-         try
-         {
-            this.saveContent();
-         }
-         catch (Exception e)
-         {
-            Utils.addErrorMessage(e.getMessage(), e);
-            return super.getErrorOutcome(e);
-         }
-      }
-      return super.finish();
-   }
    
    @Override
    protected String finishImpl(final FacesContext context, String outcome)
       throws Exception
    {
+      if (this.formInstanceData == null || this.renditions == null)
+      {
+         this.saveContent();
+      }
+            
       final NodeRef[] uploadedFiles = this.filePickerBean.getUploadedFiles();
       final List<AVMDifference> diffList = 
          new ArrayList<AVMDifference>(1 + this.renditions.size() + uploadedFiles.length);
@@ -400,6 +392,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    /**
     * Save the specified content using the currently set wizard attributes
     */
+   @SuppressWarnings("unchecked")
    protected void saveContent() 
       throws Exception
    {
@@ -455,7 +448,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       final Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
       props.put(ContentModel.PROP_TITLE, fileName);
       this.nodeService.addAspect(formInstanceDataNodeRef, ContentModel.ASPECT_TITLED, props);
-
+      
       if (form != null)
       {
          props.clear();
@@ -474,9 +467,21 @@ public class CreateWebContentWizard extends BaseContentWizard
             }
             catch (Exception e)
             {
-               Utils.addErrorMessage("Error generating rendition using " + ret.getName() +
-                                     ": " + e.getMessage(), 
-                                     e);
+               // TODO - improve error handling, e.g. render could return list of errors rather than splitting on newline character
+               StringTokenizer st = new StringTokenizer(e.getMessage(), "\n");
+               if (st.hasMoreElements())
+               {
+                  Utils.addErrorMessage("Error generating rendition using " + ret.getName() + ": " + st.nextToken(), e);
+                  while (st.hasMoreElements()) 
+                  {
+                     Utils.addErrorMessage(st.nextToken(), e);
+                  }
+               }
+               else
+               {
+                  Utils.addErrorMessage("Error generating rendition using " + ret.getName() +
+                                        ": " + e.getMessage(), e);
+               }
             }
          }
       }
@@ -675,6 +680,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    /**
     * Returns the files uploaded using the form
     */
+   @SuppressWarnings("unchecked")
    public List<UIListItem> getUploadedFiles()
    {
       if (this.formProcessorSession == null)

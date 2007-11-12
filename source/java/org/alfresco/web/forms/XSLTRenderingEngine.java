@@ -22,11 +22,17 @@
  * http://www.alfresco.com/legal/licensing" */
 package org.alfresco.web.forms;
 
-import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-import javax.xml.parsers.DocumentBuilder;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -36,29 +42,22 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.NamespaceService;
+
 import org.alfresco.service.namespace.QName;
-import org.alfresco.web.bean.wcm.AVMUtil;
-import org.alfresco.web.forms.XMLUtil;
+import org.apache.bsf.BSFManager;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.xalan.extensions.ExpressionContext;
-import org.apache.xpath.objects.XObject;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
 import org.apache.xml.utils.Constants;
-
-//import org.apache.xml.utils.QName;
-import org.w3c.dom.*;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.SAXException;
-import org.apache.bsf.BSFManager;
 
 /**
  * A rendering engine which uses xsl templates to render renditions of
@@ -473,7 +472,24 @@ public class XSLTRenderingEngine
          final TransformerFactory tf = TransformerFactory.newInstance();
          tf.setErrorListener(errorListener);
          tf.setURIResolver(uriResolver);
+         
+         if (LOGGER.isDebugEnabled())
+         {
+             LOGGER.debug("xslTemplate: \n" + XMLUtil.toString(xslTemplate));
+         }
+         
          t = tf.newTransformer(new DOMSource(xslTemplate));
+         
+         if (errors.size() != 0)
+         {
+            final StringBuilder msg = new StringBuilder("errors encountered creating tranformer ... \n");
+            for (TransformerException te : errors)
+            {
+               msg.append(te.getMessageAndLocation()).append("\n"); 
+            }
+            throw new RenderingEngine.RenderingException(msg.toString());
+         }
+
          t.setErrorListener(errorListener);
          t.setURIResolver(uriResolver);
          t.setParameter("versionParam", "2.0");
@@ -501,7 +517,7 @@ public class XSLTRenderingEngine
 
       if (errors.size() != 0)
       {
-         final StringBuilder msg = new StringBuilder("errors encountered during transformation: \n");
+         final StringBuilder msg = new StringBuilder("errors encountered during transformation ... \n");
          for (TransformerException te : errors)
          {
             msg.append(te.getMessageAndLocation()).append("\n"); 

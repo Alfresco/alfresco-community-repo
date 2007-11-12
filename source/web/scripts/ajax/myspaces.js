@@ -504,7 +504,7 @@ var MySpaces = {
       var panel = $E(".spaceCreateSpacePanel", $(actionEl).getParent());
       panel.setStyle("opacity", 0);
       panel.setStyle("display", "inline");
-      panel.getElementById("space-name").removeClass("spaceFormItemError");
+      panel.getElementsBySelector('#space-name').removeClass("spaceFormItemError");
 
       Alfresco.Dom.smartAlignElement(panel, panel.getParent());
       // make into a dragable panel
@@ -543,9 +543,9 @@ var MySpaces = {
       {
          if (spaceName.test(/(.*[\"\*\\\>\<\?\/\:\|]+.*)|(.*[\.]?.*[\.]+$)|(.*[ ]+$)/i))
          {
-            var spaceName = panel.getElementById("space-name");
-            spaceName.addClass("spaceFormItemError");
-            spaceName.focus();
+            // Different object access methods to workaround MSIE7 problem
+            panel.getElementsBySelector('#space-name').addClass("spaceFormItemError");
+            panel.getElementById("space-name").focus();
          }
          else
          {

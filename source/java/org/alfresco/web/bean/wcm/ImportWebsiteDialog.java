@@ -310,7 +310,10 @@ public class ImportWebsiteDialog
          }
          finally
          {
-            ImporterActionExecuter.deleteDir(tempDir);
+            if (tempDir.exists())
+            {
+               ImporterActionExecuter.deleteDir(tempDir);
+            }
          }
       }
       catch (IOException e)
@@ -330,6 +333,7 @@ public class ImportWebsiteDialog
       ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
       MimetypeService mimetypeService = services.getMimetypeService();
       File topdir = new File(dir);
+      if (!topdir.exists()) return;
       for (File file : topdir.listFiles())
       {
          try

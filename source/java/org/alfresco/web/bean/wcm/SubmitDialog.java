@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.web.bean.wcm;
@@ -84,7 +84,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Submit items for WCM workflow dialog.
- * 
+ *
  * @author Kevin Roast
  */
 public class SubmitDialog extends BaseDialogBean
@@ -93,7 +93,7 @@ public class SubmitDialog extends BaseDialogBean
    private static final String SPACE_ICON = "/images/icons/" + BrowseBean.SPACE_SMALL_DEFAULT + ".gif";
    private static final String MSG_DELETED_ITEM = "avm_node_deleted";
    private static final String MSG_ERR_WORKFLOW_CONFIG = "submit_workflow_config_error";
-   
+
    private String comment;
    private String label;
    private String[] workflowSelectedValue;
@@ -102,7 +102,7 @@ public class SubmitDialog extends BaseDialogBean
    private boolean validateLinks = true;
    private Date defaultExpireDate;
    private Date launchDate;
-   
+
    private List<ItemWrapper> submitItems;
    private List<ItemWrapper> warningItems;
    private HashSet<FormWorkflowWrapper> workflows;
@@ -112,16 +112,16 @@ public class SubmitDialog extends BaseDialogBean
    private SandboxInfo sandboxInfo;
    private List<String> srcPaths;
 
-   // The virtualization server might need to be notified 
-   // because one or more of the files submitted could alter 
+   // The virtualization server might need to be notified
+   // because one or more of the files submitted could alter
    // the behavior the virtual webapp in the target of the submit.
-   // For example, the user might be submitting a new jar or web.xml file. 
+   // For example, the user might be submitting a new jar or web.xml file.
    //
    // This must take place after the transaction has been completed;
-   // therefore, a variable is needed to store the path to the 
+   // therefore, a variable is needed to store the path to the
    // updated webapp so it can happen in doPostCommitProcessing.
-   private String virtUpdatePath;     
-   
+   private String virtUpdatePath;
+
    protected AVMService avmService;
    protected AVMBrowseBean avmBrowseBean;
    protected WorkflowService workflowService;
@@ -129,12 +129,12 @@ public class SubmitDialog extends BaseDialogBean
    protected AVMLockingService avmLockingService;
    protected NameMatcher nameMatcher;
    protected FormsService formsService;
-   
+
    /** Current workflow for dialog context */
    protected WorkflowConfiguration actionWorkflow = null;
-   
+
    private static final Log logger = LogFactory.getLog(SubmitDialog.class);
-   
+
    /**
     * @param avmService       The AVM Service to set.
     */
@@ -142,7 +142,7 @@ public class SubmitDialog extends BaseDialogBean
    {
       this.avmService = avmService;
    }
-   
+
    /**
     * @param avmSyncService   The AVMSyncService to set.
     */
@@ -150,7 +150,7 @@ public class SubmitDialog extends BaseDialogBean
    {
       this.avmSyncService = avmSyncService;
    }
-   
+
    /**
     * @param avmLockingService The AVMLockingService to set
     */
@@ -158,7 +158,7 @@ public class SubmitDialog extends BaseDialogBean
    {
       this.avmLockingService = avmLockingService;
    }
-   
+
    /**
     * @param avmBrowseBean    The AVM BrowseBean to set
     */
@@ -166,7 +166,7 @@ public class SubmitDialog extends BaseDialogBean
    {
       this.avmBrowseBean = avmBrowseBean;
    }
-   
+
    /**
     * @param workflowService  The WorkflowService to set.
     */
@@ -174,7 +174,7 @@ public class SubmitDialog extends BaseDialogBean
    {
       this.workflowService = workflowService;
    }
-   
+
    /**
     * @param nameMatcher The nameMatcher to set.
     */
@@ -198,7 +198,7 @@ public class SubmitDialog extends BaseDialogBean
    public void init(Map<String, String> parameters)
    {
       super.init(parameters);
-      
+
       this.comment = null;
       this.label = null;
       this.submitItems = null;
@@ -213,23 +213,23 @@ public class SubmitDialog extends BaseDialogBean
       this.workflowParams = null;
       this.sandboxInfo = null;
       this.virtUpdatePath = null;
-      
+
       // determine if the dialog has been started from a workflow
       this.loadSelectedNodesFromBrowseBean = Boolean.valueOf(this.parameters.get(PARAM_LOAD_SELECTED_NODES_FROM_BROWSE_BEAN));
    }
-   
+
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       // NOTE: This does not get called in this dialog as we have overridden finish()
-      
+
       return null;
    }
 
    @Override
    public String finish()
    {
-      // NOTE: We need to handle the transaction ourselves in this dialog as the store needs 
+      // NOTE: We need to handle the transaction ourselves in this dialog as the store needs
       //       to be committed and the virtualisation server informed of the workflow
       //       sandbox BEFORE the workflow gets started. This is so that the link validation
       //       service can use the virtualisation server to produce the link report.
@@ -238,15 +238,15 @@ public class SubmitDialog extends BaseDialogBean
       //       before running but there's no support for this.
       //       We therefore need to use 2 transactions, one to create the workflow store
       //       (if necessary) and one to start the workflow
-      
+
       if (getSubmitItemsSize() == 0)
       {
          return null;
       }
-      
+
       FacesContext context = FacesContext.getCurrentInstance();
       String outcome = null;
-      
+
       // check the isFinished flag to stop the finish button
       // being pressed multiple times
       if (this.isFinished == false)
@@ -264,7 +264,7 @@ public class SubmitDialog extends BaseDialogBean
             {
                // if there's no workflow submit changes directly to staging
                outcome = submitDirectToStaging(context);
-               
+
                // force an update of the virt server if necessary
                if (this.virtUpdatePath != null)
                {
@@ -278,21 +278,21 @@ public class SubmitDialog extends BaseDialogBean
             isFinished = false;
          }
       }
-      
+
       return outcome;
    }
-   
+
    /**
     * Submits the selected items straight to the staging area i.e. when
     * there is no workflow configured for the web project.
-    * 
+    *
     * @param context Faces context
     * @return The outcome to use
     */
    protected String submitDirectToStaging(final FacesContext context)
    {
       String outcome = null;
-      
+
       RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(context);
       RetryingTransactionCallback<String> callback = new RetryingTransactionCallback<String>()
       {
@@ -302,7 +302,7 @@ public class SubmitDialog extends BaseDialogBean
             return submitDirectToStagingImpl();
          }
       };
-      
+
       try
       {
          // Execute
@@ -313,21 +313,21 @@ public class SubmitDialog extends BaseDialogBean
          Utils.addErrorMessage(formatErrorMessage(e), e);
          outcome = getErrorOutcome(e);
       }
-      
+
       return outcome;
    }
-   
+
    /**
     * Submits the selected items via the configured workflow.
     * <p>
     * This method uses 2 separate transactions to perform the submit.
     * The first one creates the workflow sandbox. The virtualisation
-    * server is then informed of the new stores. The second 
+    * server is then informed of the new stores. The second
     * transaction then starts the appropriate workflow. This approach
     * is needed to allow link validation to be performed on the
     * workflow sandbox.
     * </p>
-    * 
+    *
     * @param context Faces context
     * @return The outcome to use
     */
@@ -345,7 +345,7 @@ public class SubmitDialog extends BaseDialogBean
             return null;
          }
       };
-      
+
       RetryingTransactionCallback<String> workflowCallback = new RetryingTransactionCallback<String>()
       {
          public String execute() throws Throwable
@@ -355,12 +355,12 @@ public class SubmitDialog extends BaseDialogBean
             return null;
          }
       };
-      
+
       try
       {
          // create the workflow sandbox firstly
          txnHelper.doInTransaction(sandboxCallback, false, true);
-         
+
          if (this.sandboxInfo != null)
          {
             // inform the virtualisation server if the workflow sandbox was created
@@ -368,7 +368,7 @@ public class SubmitDialog extends BaseDialogBean
             {
                AVMUtil.updateVServerWebapp(this.virtUpdatePath, true);
             }
-            
+
             try
             {
                // start the workflow
@@ -379,7 +379,7 @@ public class SubmitDialog extends BaseDialogBean
                cleanupWorkflowSandbox(context);
                throw err;
             }
-            
+
             // if we get this far return the default outcome
             outcome = this.getDefaultFinishOutcome();
          }
@@ -389,25 +389,24 @@ public class SubmitDialog extends BaseDialogBean
          Utils.addErrorMessage(formatErrorMessage(e), e);
          outcome = getErrorOutcome(e);
       }
-      
+
       return outcome;
    }
 
    /**
     * Performs the actual submisson to staging
-    * 
+    *
     * @return The outcome to use
     */
    protected String submitDirectToStagingImpl()
    {
       // direct submit to the staging area without workflow
       List<ItemWrapper> items = getSubmitItems();
-      
+
       // construct diffs for selected items for submission
       String sandboxPath = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getSandbox());
       String stagingPath = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getStagingStore());
       List<AVMDifference> diffs = new ArrayList<AVMDifference>(items.size());
-
       String storeId = this.avmBrowseBean.getWebProject().getStoreId();
       for (ItemWrapper wrapper : items)
       {
@@ -418,10 +417,10 @@ public class SubmitDialog extends BaseDialogBean
 
          // process the expiration date (if any)
          processExpirationDate(srcPath);
-         
+
          // recursively remove locks from this item
          recursivelyRemoveLocks(storeId, -1, this.avmService.lookup(-1, srcPath, true), srcPath);
-         
+
          // If nothing has required notifying the virtualization server
          // so far, check to see if destPath forces a notification
          // (e.g.:  it might be a path to a jar file within WEB-INF/lib).
@@ -431,19 +430,17 @@ public class SubmitDialog extends BaseDialogBean
             this.virtUpdatePath = destPath;
          }
       }
-      
       // write changes to layer so files are marked as modified
       this.avmSyncService.update(diffs, null, true, true, false, false, this.label, this.comment);
       AVMDAOs.Instance().fAVMNodeDAO.flush();
       avmSyncService.flatten(sandboxPath, stagingPath);
-      
       // if we get this far return the default outcome
       return this.getDefaultFinishOutcome();
    }
-   
+
    /**
     * Creates a workflow sandbox for all the submitted items
-    * 
+    *
     * @param context Faces context
     */
    protected void createWorkflowSandbox(FacesContext context)
@@ -457,7 +454,7 @@ public class SubmitDialog extends BaseDialogBean
             this.workflowParams = wrapper.params;
          }
       }
-      
+
       if (this.workflowParams != null)
       {
          // Create workflow sandbox for workflow package
@@ -473,21 +470,21 @@ public class SubmitDialog extends BaseDialogBean
             // Example srcPath:
             //     mysite--alice:/www/avm_webapps/ROOT/foo.txt
             String srcPath = wrapper.getDescriptor().getPath();
-            
+
             // We *always* want to update virtualization server
-            // when a workflow sandbox is given data in the 
+            // when a workflow sandbox is given data in the
             // context of a submit workflow.  Without this,
             // it would be impossible to see workflow data
             // in context.  The raw operation to create a
             // workflow sandbox does not notify the virtualization
-            // server that it exists because it's useful to 
+            // server that it exists because it's useful to
             // defer this operation until everything is already
             // in place; this allows pointlessly fine-grained
             // notifications to be suppressed (they're expensive).
             //
             // Therefore, just derive the name of the webapp
-            // in the workflow sandbox from the 1st item in 
-            // the submit list (even if it's not in WEB-INF), 
+            // in the workflow sandbox from the 1st item in
+            // the submit list (even if it's not in WEB-INF),
             // and force the virt server notification after the
             // transaction has completed via doPostCommitProcessing.
             if (this.virtUpdatePath  == null)
@@ -495,41 +492,41 @@ public class SubmitDialog extends BaseDialogBean
                // Example workflow main store name:
                //     mysite--workflow-9161f640-b020-11db-8015-130bf9b5b652
                String workflowMainStoreName = sandboxInfo.getMainStoreName();
-               
-               // The virtUpdatePath looks just like the srcPath 
+
+               // The virtUpdatePath looks just like the srcPath
                // except that it belongs to a the main store of
                // the workflow sandbox instead of the sandbox
                // that originated the submit.
                this.virtUpdatePath =
-                  workflowMainStoreName + 
+                  workflowMainStoreName +
                   srcPath.substring(srcPath.indexOf(':'),srcPath.length());
             }
-            
+
             // process the expiration date (if any)
             processExpirationDate(srcPath);
-            
+
             this.srcPaths.add(srcPath);
          }
-         
+
          String workflowMainStoreName = sandboxInfo.getMainStoreName();
          List<AVMDifference> diffs = new ArrayList<AVMDifference>(srcPaths.size());
          for (final String srcPath : srcPaths)
          {
-            diffs.add(new AVMDifference(-1, srcPath, -1, 
+            diffs.add(new AVMDifference(-1, srcPath, -1,
                      AVMUtil.getCorrespondingPath(srcPath, workflowMainStoreName),
                      AVMDifference.NEWER));
          }
-                  
+
          // write changes to layer so files are marked as modified
          avmSyncService.update(diffs, null, true, true, false, false, null, null);
-      }        
+      }
       else
       {
          // create error msg for display in dialog - the user must configure the workflow params
          Utils.addErrorMessage(Application.getMessage(context, MSG_ERR_WORKFLOW_CONFIG));
       }
    }
-   
+
    /**
     * Starts the configured workflow to allow the submitted items to be link
     * checked and reviewed.
@@ -549,30 +546,30 @@ public class SubmitDialog extends BaseDialogBean
             if (tasks.size() == 1)
             {
                WorkflowTask startTask = tasks.get(0);
-               
+
                if (startTask.state == WorkflowTaskState.IN_PROGRESS)
-               {                
+               {
                   final NodeRef workflowPackage =
                      AVMWorkflowUtil.createWorkflowPackage(this.srcPaths, sandboxInfo, path);
-                  
+
                   this.workflowParams.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
-                  
+
                   // add submission parameters
                   this.workflowParams.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, getComment());
                   this.workflowParams.put(WCMWorkflowModel.PROP_LABEL, getLabel());
-                  this.workflowParams.put(WCMWorkflowModel.PROP_FROM_PATH, 
+                  this.workflowParams.put(WCMWorkflowModel.PROP_FROM_PATH,
                            AVMUtil.buildStoreRootPath(this.avmBrowseBean.getSandbox()));
                   this.workflowParams.put(WCMWorkflowModel.PROP_LAUNCH_DATE, this.launchDate);
-                  this.workflowParams.put(WCMWorkflowModel.PROP_VALIDATE_LINKS, 
+                  this.workflowParams.put(WCMWorkflowModel.PROP_VALIDATE_LINKS,
                            new Boolean(this.validateLinks));
-                  this.workflowParams.put(WCMWorkflowModel.PROP_WEBAPP, 
+                  this.workflowParams.put(WCMWorkflowModel.PROP_WEBAPP,
                            this.avmBrowseBean.getWebapp());
-                  this.workflowParams.put(WCMWorkflowModel.ASSOC_WEBPROJECT, 
+                  this.workflowParams.put(WCMWorkflowModel.ASSOC_WEBPROJECT,
                            this.avmBrowseBean.getWebsite().getNodeRef());
-                  
+
                   // update start task with submit parameters
                   this.workflowService.updateTask(startTask.id, this.workflowParams, null, null);
-                   
+
                   // end the start task to trigger the first 'proper' task in the workflow
                   this.workflowService.endTask(startTask.id, null);
                }
@@ -580,11 +577,11 @@ public class SubmitDialog extends BaseDialogBean
          }
       }
    }
-   
+
    /**
     * Cleans up the workflow sandbox created by the first transaction. This
     * action is itself preformed in a separate transaction.
-    * 
+    *
     * @param context Faces context
     */
    protected void cleanupWorkflowSandbox(FacesContext context)
@@ -611,7 +608,7 @@ public class SubmitDialog extends BaseDialogBean
          logger.error("Failed to cleanup workflow sandbox after workflow failure", e);
       }
    }
-   
+
    /**
     * Performs the actual deletion of stores in the workflow sandbox.
     */
@@ -620,7 +617,7 @@ public class SubmitDialog extends BaseDialogBean
       if (this.sandboxInfo != null)
       {
          String mainWorkflowStore = this.sandboxInfo.getMainStoreName();
-         Map<QName, PropertyValue> matches = this.avmService.queryStorePropertyKey(mainWorkflowStore, 
+         Map<QName, PropertyValue> matches = this.avmService.queryStorePropertyKey(mainWorkflowStore,
                   QName.createQName(null, ".sandbox-id%"));
          QName sandboxID = matches.keySet().iterator().next();
          // Get all the stores in the sandbox.
@@ -631,7 +628,7 @@ public class SubmitDialog extends BaseDialogBean
          }
       }
    }
-   
+
    /**
     * Recursively remove locks from a path. Walking child folders looking for files
     * to remove locks from.
@@ -654,7 +651,7 @@ public class SubmitDialog extends BaseDialogBean
             }
             desc = history.get(1);
          }
-         
+
          Map<String, AVMNodeDescriptor> list = avmService.getDirectoryListingDirect(desc, true);
          for (Map.Entry<String, AVMNodeDescriptor> child : list.entrySet())
          {
@@ -705,10 +702,10 @@ public class SubmitDialog extends BaseDialogBean
    {
       this.label = label;
    }
-   
+
    /**
     * @return The default expiration date
-    */   
+    */
    public Date getDefaultExpireDate()
    {
       return this.defaultExpireDate;
@@ -721,7 +718,7 @@ public class SubmitDialog extends BaseDialogBean
    {
       this.defaultExpireDate = defaultExpireDate;
    }
-   
+
    /**
     * @return true if a default expiration date is being entered
     */
@@ -795,7 +792,7 @@ public class SubmitDialog extends BaseDialogBean
       {
          // ensure all workflows have been collected from any form generated assets
          calcluateListItemsAndWorkflows();
-         
+
          // add the list of workflows for the website itself to the set
          NodeRef websiteRef = this.avmBrowseBean.getWebsite().getNodeRef();
          List<ChildAssociationRef> webWorkflowRefs = this.nodeService.getChildAssocs(
@@ -815,7 +812,7 @@ public class SubmitDialog extends BaseDialogBean
                workflowMatchers.add(new FormWorkflowWrapper(wfName, params, matchPattern));
             }
          }
-         
+
          // perform match on each submitted file against available workflows
          for (ItemWrapper wrapper : this.submitItems)
          {
@@ -836,7 +833,7 @@ public class SubmitDialog extends BaseDialogBean
             // if all workflows are matched, there is no need to continue looping
             if (workflowMatchers.size() == 0) break;
          }
-         
+
          // build a UI item for each available workflow
          List<UIListItem> items = new ArrayList<UIListItem>(this.workflows.size());
          for (FormWorkflowWrapper wrapper : this.workflows)
@@ -861,10 +858,10 @@ public class SubmitDialog extends BaseDialogBean
          }
          this.workflowItems = items;
       }
-      
+
       return this.workflowItems;
    }
-   
+
    /**
     * @return size of the workflow selection list
     */
@@ -872,7 +869,7 @@ public class SubmitDialog extends BaseDialogBean
    {
       return getWorkflowList().size();
    }
-   
+
    /**
     * @return the List of bean items to show in the Submit list
     */
@@ -885,7 +882,7 @@ public class SubmitDialog extends BaseDialogBean
       }
       return this.submitItems;
    }
-   
+
    /**
     * @return size of the submit list
     */
@@ -893,7 +890,7 @@ public class SubmitDialog extends BaseDialogBean
    {
       return getSubmitItems().size();
    }
-   
+
    /**
     * @return the List of bean items to show in the Warning list
     */
@@ -906,7 +903,7 @@ public class SubmitDialog extends BaseDialogBean
       }
       return this.warningItems;
    }
-   
+
    /**
     * @return size of the warning list
     */
@@ -914,20 +911,20 @@ public class SubmitDialog extends BaseDialogBean
    {
       return this.getWarningItems().size();
    }
-   
+
    /**
     * Calculate the lists of Submittable Items, Warning items and the list of available workflows.
     */
    private void calcluateListItemsAndWorkflows()
    {
       UserTransaction tx = null;
-      
+
       try
       {
          FacesContext context = FacesContext.getCurrentInstance();
          tx = Repository.getUserTransaction(context, true);
          tx.begin();
-         
+
          List<AVMNodeDescriptor> selected;
          if (this.loadSelectedNodesFromBrowseBean)
          {
@@ -960,7 +957,7 @@ public class SubmitDialog extends BaseDialogBean
             selected = new ArrayList<AVMNodeDescriptor>(1);
             selected.add(this.avmService.lookup(-1, this.avmBrowseBean.getAvmActionNode().getPath(), true));
          }
-         
+
          if (selected == null)
          {
             this.submitItems = Collections.<ItemWrapper>emptyList();
@@ -1016,14 +1013,14 @@ public class SubmitDialog extends BaseDialogBean
                   {
                      fid = this.formsService.getFormInstanceData(ref);
                   }
-                           
+
                   // add the form instance data file to the list for submission
                   if (!submittedPaths.contains(fid.getPath()))
                   {
                      this.submitItems.add(new ItemWrapper(this.avmService.lookup(-1, fid.getPath())));
                      submittedPaths.add(fid.getPath());
                   }
-                           
+
                   // locate renditions for this form instance data file and add to list for submission
                   for (final Rendition rendition : fid.getRenditions())
                   {
@@ -1037,28 +1034,28 @@ public class SubmitDialog extends BaseDialogBean
                   WorkflowDefinition defaultWfDef = fid.getForm().getDefaultWorkflow();
                   if (defaultWfDef != null)
                   {
-                     this.workflows.add(new FormWorkflowWrapper(defaultWfDef.getName(), 
+                     this.workflows.add(new FormWorkflowWrapper(defaultWfDef.getName(),
                               fid.getForm().getDefaultWorkflowParameters()));
                   }
                }
             }
          }
-         
+
          tx.commit();
       }
       catch (Throwable e)
       {
          // rollback the transaction on error
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-         
+
          // rethrow the exception to highlight the problem
          throw (RuntimeException)e;
       }
    }
-   
+
    /**
     * Sets up the expiration date for the given source path
-    * 
+    *
     * @param srcPath The path to set the expiration date for
     */
    private void processExpirationDate(String srcPath)
@@ -1075,16 +1072,16 @@ public class SubmitDialog extends BaseDialogBean
       {
          this.avmService.addAspect(srcPath, WCMAppModel.ASPECT_EXPIRES);
       }
-         
+
       // set the expiration date
-      this.avmService.setNodeProperty(srcPath, WCMAppModel.PROP_EXPIRATIONDATE, 
+      this.avmService.setNodeProperty(srcPath, WCMAppModel.PROP_EXPIRATIONDATE,
                                       new PropertyValue(DataTypeDefinition.DATETIME, expirationDate));
-         
+
       if (logger.isDebugEnabled())
-         logger.debug("Set expiration date of " + expirationDate + 
+         logger.debug("Set expiration date of " + expirationDate +
                       " for " + srcPath);
    }
-   
+
    /**
     * Action method to setup a workflow for dialog context for the current row
     */
@@ -1102,7 +1099,7 @@ public class SubmitDialog extends BaseDialogBean
          }
       }
    }
-   
+
    /**
     * @return Returns the action Workflow for dialog context
     */
@@ -1118,17 +1115,17 @@ public class SubmitDialog extends BaseDialogBean
    {
       this.actionWorkflow = actionWorkflow;
    }
-   
+
    /**
     * Applies the entered default date to all modified items
-    * 
+    *
     * @param event The event
     */
    public void applyDefaultExpireDateToAll(ActionEvent event)
    {
       if (logger.isDebugEnabled())
          logger.debug("applying default expiration date of " + this.defaultExpireDate + " to all modified items");
-      
+
       List<ItemWrapper> items = this.getSubmitItems();
       for (ItemWrapper item : items)
       {
@@ -1140,17 +1137,17 @@ public class SubmitDialog extends BaseDialogBean
 
       this.enteringExpireDate = false;
    }
-   
+
    /**
     * Toggles the enteringExpireDate flag
-    * 
+    *
     * @param event The event
     */
    public void enterExpireDate(ActionEvent event)
    {
       this.enteringExpireDate = true;
    }
-   
+
    /**
     * Simple structure class to wrap form workflow name and default parameter values
     */
@@ -1161,13 +1158,13 @@ public class SubmitDialog extends BaseDialogBean
       private QName type;
       private String strFilenamePattern;
       private Pattern filenamePattern;
-      
+
       FormWorkflowWrapper(String name, Map<QName, Serializable> params)
       {
          this.name = name;
          this.params = params;
       }
-      
+
       FormWorkflowWrapper(String name, Map<QName, Serializable> params, String filenamePattern)
       {
          this.name = name;
@@ -1179,12 +1176,12 @@ public class SubmitDialog extends BaseDialogBean
       {
          return this.name;
       }
-      
+
       public String getFilenamePattern()
       {
          return this.strFilenamePattern;
       }
-      
+
       public void setFilenamePattern(String pattern)
       {
          if (pattern != null)
@@ -1213,7 +1210,7 @@ public class SubmitDialog extends BaseDialogBean
       {
          this.type = type;
       }
-      
+
       boolean matchesPath(String path)
       {
          return (filenamePattern != null &&
@@ -1233,30 +1230,30 @@ public class SubmitDialog extends BaseDialogBean
                  this.name.equals(((FormWorkflowWrapper)obj).name));
       }
    }
-   
+
    /**
-    * Wrapper class to provide UI RichList component getters for an AVM node descriptor 
+    * Wrapper class to provide UI RichList component getters for an AVM node descriptor
     */
    public class ItemWrapper
    {
       private static final String rootPath = '/' + JNDIConstants.DIR_DEFAULT_APPBASE;
       private AVMNodeDescriptor descriptor;
-      
+
       public ItemWrapper(AVMNodeDescriptor descriptor)
       {
          this.descriptor = descriptor;
       }
-      
+
       public boolean getExpirable()
       {
          return this.descriptor.isFile() && (this.descriptor.isDeleted() == false);
       }
-      
+
       public boolean getDeleted()
       {
          return descriptor.isDeleted();
       }
-      
+
       public String getName()
       {
          String result = descriptor.getName();
@@ -1266,25 +1263,25 @@ public class SubmitDialog extends BaseDialogBean
          }
          return result;
       }
-      
+
       public String getModifiedDate()
       {
          return ISO8601DateFormat.format(new Date(descriptor.getModDate()));
       }
-      
+
       public String getExpirationDate()
       {
          String expireDate = null;
-         
+
          Date date = expirationDates.get(this.descriptor.getPath());
          if (date != null)
          {
             expireDate = ISO8601DateFormat.format(date);
          }
-         
+
          return expireDate;
       }
-      
+
       public String getDescription()
       {
          if (descriptor.isDeleted() == false)
@@ -1297,23 +1294,23 @@ public class SubmitDialog extends BaseDialogBean
             return "";
          }
       }
-      
+
       public String getPath()
       {
          return descriptor.getPath().substring(descriptor.getPath().indexOf(rootPath) + rootPath.length());
       }
-      
+
       public String getFullPath()
       {
          return descriptor.getPath();
       }
-      
+
       public String getUrl()
       {
          return DownloadContentServlet.generateBrowserURL(
                AVMNodeConverter.ToNodeRef(-1, descriptor.getPath()), descriptor.getName());
       }
-      
+
       public String getPreviewUrl()
       {
          ClientConfigElement config =  Application.getClientConfig(FacesContext.getCurrentInstance());
@@ -1323,7 +1320,7 @@ public class SubmitDialog extends BaseDialogBean
                                            config.getWCMPort(),
                                            dns);
       }
-      
+
       public AVMNodeDescriptor getDescriptor()
       {
          return this.descriptor;

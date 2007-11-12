@@ -39,7 +39,7 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
     protected DirectoryNodeImpl()
     {
     }
-    
+
     /**
      * A pass through constructor. Called when a new concrete subclass
      * instance is created.
@@ -50,7 +50,7 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
     {
         super(id, repo);
     }
-    
+
     /**
      * Dangerous version of link.
      * @param name The name to give the child.
@@ -72,5 +72,8 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
         ChildKey key = new ChildKey(this, name);
         ChildEntry newChild = new ChildEntryImpl(key, node);
         AVMDAOs.Instance().fChildEntryDAO.save(newChild);
-    }    
+        AVMDAOs.Instance().fAVMNodeDAO.flush();
+        AVMDAOs.Instance().fChildEntryDAO.evict(newChild);
+        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
+    }
 }

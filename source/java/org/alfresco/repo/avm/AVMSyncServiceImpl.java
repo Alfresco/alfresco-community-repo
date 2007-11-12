@@ -50,7 +50,7 @@ import org.apache.commons.logging.LogFactory;
 public class AVMSyncServiceImpl implements AVMSyncService
 {
     private static Log    fgLogger = LogFactory.getLog(AVMSyncServiceImpl.class);
-    
+
     /**
      * The AVMService.
      */
@@ -60,7 +60,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
      * The AVMRepository.
      */
     private AVMRepository fAVMRepository;
-    
+
     /**
      * Do nothing constructor.
      */
@@ -69,19 +69,19 @@ public class AVMSyncServiceImpl implements AVMSyncService
     }
 
     /**
-     * Set the AVM Service. For Spring. 
+     * Set the AVM Service. For Spring.
      * @param avmService The AVMService reference.
      */
     public void setAvmService(AVMService avmService)
     {
         fAVMService = avmService;
     }
-    
+
     public void setAvmRepository(AVMRepository avmRepository)
     {
         fAVMRepository = avmRepository;
     }
-    
+
     /**
      * Get a difference list between two corresponding node trees.
      * @param srcVersion The version id for the source tree.
@@ -92,7 +92,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
      * @return A List of AVMDifference structs which can be used for
      * the update operation.
      */
-    public List<AVMDifference> compare(int srcVersion, String srcPath, 
+    public List<AVMDifference> compare(int srcVersion, String srcPath,
                                        int dstVersion, String dstPath,
                                        NameMatcher excluder)
     {
@@ -133,7 +133,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         }
         return result;
     }
-    
+
     /**
      * Internal recursive implementation of compare.
      * @param srcVersion The version of the source tree.
@@ -171,9 +171,9 @@ public class AVMSyncServiceImpl implements AVMSyncService
             }
             case AVMDifference.DIRECTORY :
             {
-                // First special case: source is a layered directory which points to 
+                // First special case: source is a layered directory which points to
                 // the destinations path, and we are comparing 'head' versions.
-                if (srcDesc.isLayeredDirectory() && 
+                if (srcDesc.isLayeredDirectory() &&
                     srcDesc.getIndirection().equals(dstDesc.getPath()) && srcVersion < 0 && dstVersion < 0)
                 {
                     // Get only a direct listing, since that's all that can be different.
@@ -202,7 +202,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                         {
                             // A missing destination child means the source is NEWER.
                             result.add(new AVMDifference(srcVersion, srcChild.getPath(),
-                                       dstVersion, 
+                                       dstVersion,
                                        dstPath,
                                        AVMDifference.NEWER));
                             continue;
@@ -242,14 +242,14 @@ public class AVMSyncServiceImpl implements AVMSyncService
                         if (srcChild == null)
                         {
                             // Missing means the source is older.
-                            result.add(new AVMDifference(srcVersion, 
+                            result.add(new AVMDifference(srcVersion,
                                                          srcPath,
                                                          dstVersion, dstChild.getPath(),
                                                          AVMDifference.OLDER));
                             continue;
                         }
                         // Otherwise, recursively invoke.
-                        compare(srcVersion, srcChild, 
+                        compare(srcVersion, srcChild,
                                 dstVersion, dstChild,
                                 result, excluder);
                     }
@@ -294,7 +294,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                     }
                     AVMNodeDescriptor dstChild = dstList.get(name);
                     String srcPath = AVMNodeConverter.ExtendAVMPath(srcDesc.getPath(), name);
-                    if (excluder != null && (excluder.matches(srcPath) || 
+                    if (excluder != null && (excluder.matches(srcPath) ||
                                              excluder.matches(dstChild.getPath())))
                     {
                         continue;
@@ -313,7 +313,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
             }
         }
     }
-    
+
     /**
      * Updates the destination nodes in the AVMDifferences
      * with the source nodes. Normally any conflicts or cases in
@@ -321,10 +321,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
      * will cause the transaction to roll back.
      * @param diffList A List of AVMDifference structs.
      * @param excluder A possibly null name matcher to exclude unwanted updates.
-     * @param ignoreConflicts If this is true the update will skip those 
-     * AVMDifferences which are in conflict with 
+     * @param ignoreConflicts If this is true the update will skip those
+     * AVMDifferences which are in conflict with
      * the destination.
-     * @param ignoreOlder If this is true the update will skip those 
+     * @param ignoreOlder If this is true the update will skip those
      * AVMDifferences which have the source older than the destination.
      * @param overrideConflicts If this is true the update will override conflicting
      * AVMDifferences and replace the destination with the conflicting source.
@@ -333,10 +333,11 @@ public class AVMSyncServiceImpl implements AVMSyncService
      * @param description Full update blurb.
      * in which the source is older than the destination and overwrite the destination.
      */
-    public void update(List<AVMDifference> diffList, 
+    public void update(List<AVMDifference> diffList,
                        NameMatcher excluder, boolean ignoreConflicts, boolean ignoreOlder,
                        boolean overrideConflicts, boolean overrideOlder, String tag, String description)
     {
+        long start = System.currentTimeMillis();
         if (fgLogger.isDebugEnabled())
         {
             try
@@ -398,7 +399,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
             // The default is that the source is newer in the case where
             // the destination doesn't exist.
             int diffCode = AVMDifference.NEWER;
-            if (dstDesc != null) 
+            if (dstDesc != null)
             {
                 diffCode = compareOne(srcDesc, dstDesc);
             }
@@ -472,6 +473,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             fAVMService.createSnapshot(storeName, tag, description);
         }
+        if (fgLogger.isDebugEnabled())
+        {
+            fgLogger.debug("Raw Update: " + (System.currentTimeMillis() - start));
+        }
     }
 
     /**
@@ -501,7 +506,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         }
         fAVMService.link(parentPath, name, toLink);
     }
-    
+
     /**
      * Recursively copy a node into the given position.
      * @param parentPath The place to put it.
@@ -521,7 +526,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
             recursiveCopy(parentDesc, entry.getKey(), entry.getValue(), excluder);
         }
     }
-    
+
     /**
      * Shortcutting helper that uses an AVMNodeDescriptor parent.
      * @param parent The parent we are linking into.
@@ -531,7 +536,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
     private void recursiveCopy(AVMNodeDescriptor parent, String name, AVMNodeDescriptor toCopy, NameMatcher excluder)
     {
         String newPath = AVMNodeConverter.ExtendAVMPath(parent.getPath(), name);
-        if (excluder != null && (excluder.matches(newPath) || 
+        if (excluder != null && (excluder.matches(newPath) ||
                                  excluder.matches(toCopy.getPath())))
         {
             return;
@@ -546,17 +551,17 @@ public class AVMSyncServiceImpl implements AVMSyncService
         // children into it.
         AVMNodeDescriptor newParentDesc = fAVMRepository.createDirectory(parent, name);
         fAVMService.setMetaDataFrom(newParentDesc.getPath(), toCopy);
-        Map<String, AVMNodeDescriptor> children = 
+        Map<String, AVMNodeDescriptor> children =
             fAVMService.getDirectoryListing(toCopy, true);
         for (Map.Entry<String, AVMNodeDescriptor> entry : children.entrySet())
         {
             recursiveCopy(newParentDesc, entry.getKey(), entry.getValue(), excluder);
         }
     }
-    
+
     /**
      * The workhorse of comparison and updating. Determine the versioning relationship
-     * of two nodes. 
+     * of two nodes.
      * @param srcDesc Descriptor for the source node.
      * @param dstDesc Descriptor for the destination node.
      * @return One of SAME, OLDER, NEWER, CONFLICT, DIRECTORY
@@ -631,7 +636,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
             }
             if (common.getId() == dstDesc.getId())
             {
-                return AVMDifference.NEWER;                
+                return AVMDifference.NEWER;
             }
             // Finally we know they are in conflict.
             return AVMDifference.CONFLICT;
@@ -666,12 +671,12 @@ public class AVMSyncServiceImpl implements AVMSyncService
         // The must, finally, be in conflict.
         return AVMDifference.CONFLICT;
     }
-    
+
     /**
      * Flattens a layer so that all all nodes under and including
-     * <code>layerPath</code> become translucent to any nodes in the 
+     * <code>layerPath</code> become translucent to any nodes in the
      * corresponding location under and including <code>underlyingPath</code>
-     * that are the same version. 
+     * that are the same version.
      * @param layerPath The overlying layer path.
      * @param underlyingPath The underlying path.
      */
@@ -705,7 +710,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         }
         flatten(layerNode, underlyingNode);
     }
-    
+
     /**
      * This is the implementation of flatten.
      * @param layer The on top node.
@@ -747,7 +752,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
             }
             return true;
         }
-        // Grab the listing 
+        // Grab the listing
         Map<String, AVMNodeDescriptor> underListing =
             fAVMService.getDirectoryListing(underlying, true);
         boolean flattened = true;
@@ -783,10 +788,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
         }
         return flattened;
     }
-    
+
     /**
      * Takes a layer, deletes it and recreates it pointing at the same underlying
-     * node. Any changes in the layer are lost (except to history if the layer has been 
+     * node. Any changes in the layer are lost (except to history if the layer has been
      * snapshotted.)
      * @param layerPath
      */
@@ -801,7 +806,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         fAVMService.removeNode(parts[0], parts[1]);
         fAVMService.createLayeredDirectory(desc.getIndirection(), parts[0], parts[1]);
     }
-    
+
     /**
      * Make sure this entire directory path exists.
      * @param path

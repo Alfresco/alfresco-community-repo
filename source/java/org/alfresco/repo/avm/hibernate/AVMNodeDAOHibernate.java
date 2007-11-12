@@ -57,6 +57,7 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
     public void save(AVMNode node)
     {
         getSession().save(node);
+        SessionCacheChecker.instance.check();
     }
 
     /**
@@ -66,6 +67,7 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
     public void delete(AVMNode node)
     {
         getSession().delete(node);
+        SessionCacheChecker.instance.check();
     }
 
     /**
@@ -74,6 +76,7 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
      */
     public AVMNode getByID(long id)
     {
+        SessionCacheChecker.instance.check();
         return AVMNodeUnwrapper.Unwrap((AVMNode)getSession().get(AVMNodeImpl.class, id));
     }
 
@@ -215,6 +218,5 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
      */
     public void evict(AVMNode node)
     {
-        getSession().evict(node);
     }
 }

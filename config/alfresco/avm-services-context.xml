@@ -5,7 +5,7 @@
 <beans>
 
 	<!-- ID Issuers. -->
-	
+
 	<bean id="nodeIssuer" class="org.alfresco.repo.avm.Issuer" depends-on="avmDAOs" >
 		<property name="name">
 			<value>node</value>
@@ -25,21 +25,21 @@
 	</bean>
 
 	<!-- DAOs for persistent data types -->
-	
+
 	<!-- Issuers are not actual entities. More like pseudo entities. -->
-	
+
 	<bean id="issuerDAO" class="org.alfresco.repo.avm.hibernate.IssuerDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
-	
+
 	<bean id="avmNodeDAO" class="org.alfresco.repo.avm.hibernate.AVMNodeDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
-	
+
 	<bean id="avmStoreDAO" class="org.alfresco.repo.avm.hibernate.AVMStoreDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
@@ -54,13 +54,13 @@
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
-	
+
 	<bean id="childEntryDAO" class="org.alfresco.repo.avm.hibernate.ChildEntryDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
-	
+
 	<bean id="historyLinkDAO" class="org.alfresco.repo.avm.hibernate.HistoryLinkDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
@@ -78,25 +78,31 @@
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
-	
+
 	<bean id="avmStorePropertyDAO" class="org.alfresco.repo.avm.hibernate.AVMStorePropertyDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
-	
+
 	<bean id="avmAspectNameDAO" class="org.alfresco.repo.avm.hibernate.AVMAspectNameDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
-		
+
 	<bean id="versionLayeredNodeEntryDAO" class="org.alfresco.repo.avm.hibernate.VersionLayeredNodeEntryDAOHibernate">
 	    <property name="sessionFactory">
 	        <ref bean="sessionFactory"/>
 	    </property>
 	</bean>
-		
+
+	<bean id="sessionCacheChecker" class="org.alfresco.repo.avm.hibernate.SessionCacheChecker">
+	   <property name="sessionFactory">
+	       <ref bean="sessionFactory"/>
+	   </property>
+	</bean>
+
 	<bean id="avmDAOs" class="org.alfresco.repo.avm.AVMDAOs">
 		<property name="issuerDAO">
 			<ref bean="issuerDAO"/>
@@ -141,7 +147,7 @@
 		    <ref bean="versionLayeredNodeEntryDAO"/>
 		</property>
 	</bean>
-	
+
 	<bean id="lookupCache" class="org.alfresco.repo.avm.LookupCache">
 	    <property name="avmNodeDAO">
 	        <ref bean="avmNodeDAO"/>
@@ -153,9 +159,9 @@
 	    	<ref bean="avmLookupCache"/>
 	    </property>
 	</bean>
-	
+
 	<bean id="rawServices" class="org.alfresco.repo.avm.util.RawServices"/>
-	
+
 	<bean id="orphanReaper" class="org.alfresco.repo.avm.OrphanReaper"
 		depends-on="AVMService" destroy-method="shutDown">
 		<property name="activeBaseSleep">
@@ -176,11 +182,11 @@
 	</bean>
 
 	<bean id="createStoreTxnListener" class="org.alfresco.repo.avm.CreateStoreTxnListener"/>
-	
+
 	<bean id="purgeStoreTxnListener" class="org.alfresco.repo.avm.PurgeStoreTxnListener"/>
 
 	<bean id="createVersionTxnListener" class="org.alfresco.repo.avm.CreateVersionTxnListener"/>
-	
+
 	<bean id="purgeVersionTxnListener" class="org.alfresco.repo.avm.PurgeVersionTxnListener"/>
 
 	<bean id="avmRepository" class="org.alfresco.repo.avm.AVMRepository">
@@ -237,14 +243,14 @@
 
 
     <!-- Used to notify virtualization server occur after commit/rollback -->
-    <bean id="AVMSubmitTransactionListener" 
+    <bean id="AVMSubmitTransactionListener"
           class="org.alfresco.repo.avm.wf.AVMSubmitTransactionListener"/>
 
 
     <!-- NameMatcher beans for filtering what shows up as different in compares. -->
     <bean id="excludeRegexMatcher" class="org.alfresco.util.RegexNameMatcher">
-        <property name="patterns">        
-            <!-- 
+        <property name="patterns">
+            <!--
             NOTE:  Regexes are implicitly anchored with ^ and $ in this context.
             -->
             <list>
@@ -252,7 +258,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="excludeExtensionMatcher" class="org.alfresco.repo.avm.util.FileExtensionNameMatcher">
     	<property name="extensions">
     	    <list>
@@ -262,8 +268,8 @@
     	        <value>~</value>
     	    </list>
     	</property>
-    </bean>   
-    
+    </bean>
+
     <bean id="globalPathExcluder" class="org.alfresco.util.OrCompositeNameMatcher">
         <property name="matchers">
             <list>
@@ -272,7 +278,7 @@
             </list>
         </property>
     </bean>
-    
+
     <!-- Bean used to process content that has expired in AVM staging areas -->
     <bean id="avmExpiredContentProcessor" class="org.alfresco.repo.avm.AVMExpiredContentProcessor">
         <property name="adminUserName">
@@ -317,13 +323,13 @@
     </bean>
 
 	<!-- AVM Locking. -->
-	
+
 	<bean id="avmLockingService" class="org.alfresco.repo.avm.locking.AVMLockingServiceImpl">
 	    <property name="attributeService">
 	        <ref bean="attributeService"/>
 	    </property>
 	    <property name="authorityService">
-	        <ref bean="authorityService"/>	
+	        <ref bean="authorityService"/>
 	    </property>
 	    <property name="personService">
 	        <ref bean="personService"/>

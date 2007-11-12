@@ -193,7 +193,6 @@ public class AttributeServiceImpl implements AttributeService
             return null;
         }
         Attribute converted = fAttributeConverter.toValue(found);
-        fAttributeDAO.evict(found);
         return converted;
     }
 
@@ -255,7 +254,6 @@ public class AttributeServiceImpl implements AttributeService
         }
         Attribute converted = fAttributeConverter.toPersistent(value);
         found.put(name, converted);
-        fAttributeDAO.evict(converted);
     }
 
     /* (non-Javadoc)
@@ -316,6 +314,8 @@ public class AttributeServiceImpl implements AttributeService
             throw new AVMWrongTypeException("Attribute Not Map: " + keys);
         }
         found.remove(name);
+        fAttributeDAO.flush();
+        fAttributeDAO.evictFlat(found);
     }
 
     private Attribute getAttributeFromPath(List<String> keys)
@@ -330,11 +330,15 @@ public class AttributeServiceImpl implements AttributeService
         {
             if (current.getType() == Type.MAP)
             {
-                current = current.get(keys.get(i));
+                Attribute newCurrent = current.get(keys.get(i));
+                fAttributeDAO.evictFlat(current);
+                current = newCurrent;
             }
             else if (current.getType() == Type.LIST)
             {
-                current = current.get(Integer.parseInt(keys.get(i)));
+                Attribute newCurrent = current.get(Integer.parseInt(keys.get(i)));
+                fAttributeDAO.evictFlat(current);
+                current = newCurrent;
             }
             else
             {
@@ -486,7 +490,6 @@ public class AttributeServiceImpl implements AttributeService
         }
         Attribute converted = fAttributeConverter.toPersistent(value);
         found.set(index, fAttributeConverter.toPersistent(value));
-        fAttributeDAO.evict(converted);
     }
 
     /* (non-Javadoc)
@@ -515,7 +518,13 @@ public class AttributeServiceImpl implements AttributeService
         {
             throw new AVMBadArgumentException("Illegal zero length keys list.");
         }
-        return getAttributeFromPath(keys) != null;
+        Attribute attr = getAttributeFromPath(keys);
+        if (attr != null)
+        {
+            fAttributeDAO.evictFlat(attr);
+            return true;
+        }
+        return false;
     }
 
     /* (non-Javadoc)

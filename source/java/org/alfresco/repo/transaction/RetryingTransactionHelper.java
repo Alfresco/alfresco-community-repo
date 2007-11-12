@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.repo.transaction;
@@ -39,6 +39,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.StaleObjectStateException;
+import org.hibernate.StaleStateException;
 import org.hibernate.exception.LockAcquisitionException;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -46,17 +47,17 @@ import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.jdbc.UncategorizedSQLException;
 
 /**
- * A helper that runs a unit of work inside a UserTransaction, 
- * transparently retrying the unit of work if the cause of 
+ * A helper that runs a unit of work inside a UserTransaction,
+ * transparently retrying the unit of work if the cause of
  * failure is an optimistic locking or deadlock condition.
- * 
+ *
  * @author britt
  */
 public class RetryingTransactionHelper
 {
     private static final String MSG_READ_ONLY = "permissions.err_read_only";
     private static Log    logger = LogFactory.getLog(RetryingTransactionHelper.class);
-    
+
     /**
      * Exceptions that trigger retries.
      */
@@ -69,30 +70,31 @@ public class RetryingTransactionHelper
                 StaleObjectStateException.class,
                 LockAcquisitionException.class,
                 BatchUpdateException.class,
-                DataIntegrityViolationException.class
+                DataIntegrityViolationException.class,
+                StaleStateException.class
                 };
     }
-    
+
     /**
      * Reference to the TransactionService instance.
      */
     private TransactionService txnService;
-    
+
     /**
      * The maximum number of retries. -1 for infinity.
      */
     private int maxRetries;
-    
+
     /**
      * Whether the the transactions may only be reads
      */
     private boolean readOnly;
-    
+
     /**
      * Random number generator for retry delays.
      */
     private Random random;
-    
+
     /**
      * Callback interface
      * @author britt
@@ -101,7 +103,7 @@ public class RetryingTransactionHelper
     {
         /**
          * Perform a unit of transactional work.
-         * 
+         *
          * @return              Return the result of the unit of work
          * @throws Throwable    This can be anything and will guarantee either a retry or a rollback
          */
@@ -115,7 +117,7 @@ public class RetryingTransactionHelper
     {
         this.random = new Random(System.currentTimeMillis());
     }
-    
+
     // Setters.
     /**
      * Set the TransactionService.
@@ -124,7 +126,7 @@ public class RetryingTransactionHelper
     {
         this.txnService = service;
     }
-    
+
     /**
      * Set the maximimum number of retries. -1 for infinity.
      */
@@ -132,7 +134,7 @@ public class RetryingTransactionHelper
     {
         this.maxRetries = maxRetries;
     }
-    
+
     /**
      * Set whether this helper only supports read transactions.
      */
@@ -142,15 +144,15 @@ public class RetryingTransactionHelper
     }
 
     /**
-     * Execute a callback in a transaction until it succeeds, fails 
+     * Execute a callback in a transaction until it succeeds, fails
      * because of an error not the result of an optimistic locking failure,
      * or a deadlock loser failure, or until a maximum number of retries have
-     * been attempted. 
+     * been attempted.
      * <p>
      * If there is already an active transaction, then the callback is merely
      * executed and any retry logic is left to the caller.  The transaction
      * will attempt to be read-write.
-     * 
+     *
      * @param cb                The callback containing the unit of work.
      * @return                  Returns the result of the unit of work.
      * @throws                  RuntimeException  all checked exceptions are converted
@@ -159,16 +161,16 @@ public class RetryingTransactionHelper
     {
         return doInTransaction(cb, false, false);
     }
-    
+
     /**
-     * Execute a callback in a transaction until it succeeds, fails 
+     * Execute a callback in a transaction until it succeeds, fails
      * because of an error not the result of an optimistic locking failure,
      * or a deadlock loser failure, or until a maximum number of retries have
-     * been attempted. 
+     * been attempted.
      * <p>
      * If there is already an active transaction, then the callback is merely
      * executed and any retry logic is left to the caller.
-     * 
+     *
      * @param cb                The callback containing the unit of work.
      * @param readOnly          Whether this is a read only transaction.
      * @return                  Returns the result of the unit of work.
@@ -178,16 +180,16 @@ public class RetryingTransactionHelper
     {
         return doInTransaction(cb, readOnly, false);
     }
-    
+
     /**
-     * Execute a callback in a transaction until it succeeds, fails 
+     * Execute a callback in a transaction until it succeeds, fails
      * because of an error not the result of an optimistic locking failure,
      * or a deadlock loser failure, or until a maximum number of retries have
-     * been attempted. 
+     * been attempted.
      * <p>
      * It is possible to force a new transaction to be created or to partake in
      * any existing transaction.
-     * 
+     *
      * @param cb                The callback containing the unit of work.
      * @param readOnly          Whether this is a read only transaction.
      * @param requiresNew       <tt>true</tt> to force a new transaction or
@@ -274,7 +276,7 @@ public class RetryingTransactionHelper
                 // Rollback if we can.
                 if (txn != null)
                 {
-                    try 
+                    try
                     {
                         int txnStatus = txn.getStatus();
                         // We can only rollback if a transaction was started (NOT NO_TRANSACTION) and
@@ -285,18 +287,18 @@ public class RetryingTransactionHelper
                         {
                             txn.rollback();
                         }
-                    } 
-                    catch (IllegalStateException e1) 
-                    {
-                        logger.error(e);
-                        throw new AlfrescoRuntimeException("Failure during rollback: " + cb, e1);
-                    } 
-                    catch (SecurityException e1) 
+                    }
+                    catch (IllegalStateException e1)
                     {
                         logger.error(e);
                         throw new AlfrescoRuntimeException("Failure during rollback: " + cb, e1);
                     }
-                    catch (SystemException e1) 
+                    catch (SecurityException e1)
+                    {
+                        logger.error(e);
+                        throw new AlfrescoRuntimeException("Failure during rollback: " + cb, e1);
+                    }
+                    catch (SystemException e1)
                     {
                         logger.error(e);
                         throw new AlfrescoRuntimeException("Failure during rollback: " + cb, e1);
@@ -309,7 +311,7 @@ public class RetryingTransactionHelper
                 }
                 else
                 {
-                    lastException = (e instanceof RuntimeException) ? 
+                    lastException = (e instanceof RuntimeException) ?
                          (RuntimeException)e : new AlfrescoRuntimeException("Exception in Transaction.", e);
                 }
                 // Check if there is a cause for retrying
@@ -324,7 +326,7 @@ public class RetryingTransactionHelper
                     }
                     catch (InterruptedException ie)
                     {
-                        // Do nothing.                                                                                  
+                        // Do nothing.
                     }
                     // Try again
                     continue;
@@ -340,10 +342,10 @@ public class RetryingTransactionHelper
         // So, fail.
         throw lastException;
     }
-    
+
     /**
      * Sometimes, the exception means retry and sometimes not.
-     * 
+     *
      * @param cause     the cause to examine
      * @return          Returns the original cause if it is a valid retry cause, otherwise <tt>null</tt>
      */

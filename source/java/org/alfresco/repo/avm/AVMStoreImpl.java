@@ -361,8 +361,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             newDir.getProperties().putAll(properties);
         }
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(newDir);
     }
 
     /**
@@ -407,8 +405,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         dir.updateModTime();
         dir.putChild(name, newDir);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(newDir);
         // newDir.setVersionID(getNextVersionID());
     }
 
@@ -445,8 +441,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
                 -1,
                 "UTF-8"));
         ContentWriter writer = createContentWriter(AVMNodeConverter.ExtendAVMPath(path, name));
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(file);
         return writer.getContentOutputStream();
     }
 
@@ -490,10 +484,9 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             file.getProperties().putAll(properties);
         }
-        ContentWriter writer = createContentWriter(AVMNodeConverter.ExtendAVMPath(path, name));
         // Yet another flush.
         AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(file);
+        ContentWriter writer = createContentWriter(AVMNodeConverter.ExtendAVMPath(path, name));
         writer.putContent(data);
     }
 
@@ -526,8 +519,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         dir.updateModTime();
         dir.putChild(name, newFile);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(newFile);
         // newFile.setVersionID(getNextVersionID());
     }
 
@@ -633,7 +624,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
             AVMNode child = AVMNodeUnwrapper.Unwrap(listing.get(name));
             AVMNodeDescriptor desc = child.getDescriptor(lPath, name);
             results.put(name, desc);
-            AVMDAOs.Instance().fAVMNodeDAO.evict(child);
         }
         return results;
     }
@@ -653,8 +643,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         List<String> deleted = dir.getDeletedNames();
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(dir);
         return deleted;
     }
 
@@ -688,8 +676,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         dir.removeChild(lPath, name);
         dir.updateModTime();
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(dir);
+        // AVMDAOs.Instance().fAVMNodeDAO.flush();
+        // AVMDAOs.Instance().fAVMNodeDAO.evict(dir);
     }
 
     /**
@@ -711,8 +699,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         ((LayeredDirectoryNode)node).uncover(lPath, name);
         node.updateModTime();
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
     }
 
     // TODO This is problematic.  As time goes on this returns
@@ -882,8 +868,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         dir.turnPrimary(lPath);
         dir.updateModTime();
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(dir);
     }
 
     /**
@@ -905,8 +889,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         dir.retarget(lPath, target);
         dir.updateModTime();
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(dir);
     }
 
     /**
@@ -1080,8 +1062,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         ((LayeredDirectoryNode)node).setOpacity(opacity);
         node.updateModTime();
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
     }
 
     // TODO Does it make sense to set properties on DeletedNodes?
@@ -1101,8 +1081,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         AVMNode node = lPath.getCurrentNode();
         node.setProperty(name, value);
         node.setGuid(GUID.generate());
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
     }
 
     /**
@@ -1120,8 +1098,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         AVMNode node = lPath.getCurrentNode();
         node.addProperties(properties);
         node.setGuid(GUID.generate());
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
     }
 
     /**
@@ -1140,8 +1116,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         AVMNode node = lPath.getCurrentNode();
         PropertyValue prop = node.getProperty(name);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
         return prop;
     }
 
@@ -1160,8 +1134,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         AVMNode node = lPath.getCurrentNode();
         Map<QName, PropertyValue> props = node.getProperties();
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
         return props;
     }
 
@@ -1180,8 +1152,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         AVMNode node = lPath.getCurrentNode();
         node.setGuid(GUID.generate());
         node.deleteProperty(name);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
     }
 
     /**
@@ -1198,8 +1168,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         AVMNode node = lPath.getCurrentNode();
         node.setGuid(GUID.generate());
         node.deleteProperties();
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
     }
 
     /**
@@ -1287,8 +1255,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMWrongTypeException("File Expected.");
         }
         ContentData content = ((FileNode)node).getContentData(lPath);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
+        // AVMDAOs.Instance().fAVMNodeDAO.flush();
+        // AVMDAOs.Instance().fAVMNodeDAO.evict(node);
         return content;
     }
 
@@ -1312,8 +1280,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         node.updateModTime();
         node.setGuid(GUID.generate());
         ContentData content = ((FileNode)node).getContentData(lPath);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
+        // AVMDAOs.Instance().fAVMNodeDAO.flush();
+        // AVMDAOs.Instance().fAVMNodeDAO.evict(node);
         return content;
     }
 
@@ -1335,8 +1303,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMWrongTypeException("File Expected.");
         }
         ((FileNode)node).setContentData(data);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
     }
 
     /**
@@ -1354,8 +1320,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         AVMNode node = lPath.getCurrentNode();
         node.copyMetaDataFrom(from);
         node.setGuid(GUID.generate());
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
     }
 
     /**
@@ -1373,8 +1337,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         AVMNode node = lPath.getCurrentNode();
         node.getAspects().add(aspectName);
         node.setGuid(GUID.generate());
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
     }
 
     /**
@@ -1392,8 +1354,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         AVMNode node = lPath.getCurrentNode();
         Set<QName> aspects = node.getAspects();
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
         return aspects;
     }
 
@@ -1419,8 +1379,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
             node.getProperties().remove(name);
         }
         node.setGuid(GUID.generate());
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
     }
 
     /**
@@ -1439,7 +1397,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         AVMNode node = lPath.getCurrentNode();
         boolean has = node.getAspects().contains(aspectName);
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
         return has;
     }
 
@@ -1458,8 +1415,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         AVMNode node = lPath.getCurrentNode();
         node.setAcl(acl);
         node.setGuid(GUID.generate());
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
     }
 
     /**
@@ -1532,9 +1487,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         toLink.getAspects().add(WCMModel.ASPECT_REVERTED);
         PropertyValue value = new PropertyValue(null, toRevertTo.getId());
         toLink.setProperty(WCMModel.PROP_REVERTED_ID, value);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(dir);
-        AVMDAOs.Instance().fAVMNodeDAO.evict(toLink);
     }
 
     /* (non-Javadoc)
@@ -1549,8 +1501,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         AVMNode node = lPath.getCurrentNode();
         node.setGuid(guid);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
     }
 
     /* (non-Javadoc)
@@ -1570,8 +1520,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         PlainFileNode file = (PlainFileNode)node;
         file.setEncoding(encoding);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(file);
     }
 
     /* (non-Javadoc)
@@ -1591,7 +1539,5 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         PlainFileNode file = (PlainFileNode)node;
         file.setMimeType(mimeType);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        AVMDAOs.Instance().fAVMNodeDAO.evict(file);
     }
 }

@@ -749,7 +749,7 @@
     </bean>
 
 	<!-- The AVMLockingAwareService -->
-	
+
 	<bean id="avmLockingAwareService" class="org.alfresco.repo.avm.AVMLockingAwareService">
 		<!-- Because of circular dependendencies, this bean's dependencies
 		     are grabbed at bootstrap time.x -->
@@ -791,7 +791,21 @@
 
     <!-- The AVMService -->
 
-    <bean id="avmService" class="org.alfresco.repo.avm.AVMServiceImpl">
+    <bean id="avmService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.avm.AVMService</value>
+        </property>
+        <property name="target">
+            <ref bean="avmServiceBase"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <value>sessionSizeResourceInterceptor</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="avmServiceBase" class="org.alfresco.repo.avm.AVMServiceImpl">
         <property name="avmRepository">
             <ref bean="avmRepository"/>
         </property>
@@ -1364,7 +1378,7 @@
 
     <!-- LinkValidationService -->
     <!-- Read transaction advisor for link validation service. -->
-    <bean id="linkValidationServiceReadTxnAdvisor" 
+    <bean id="linkValidationServiceReadTxnAdvisor"
           class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
             <ref bean="retryingReadTxnAdvice"/>
@@ -1382,7 +1396,7 @@
     </bean>
 
     <!-- Write transaction advisor for link validation service. -->
-    <bean id="linkValidationServiceWriteTxnAdvisor" 
+    <bean id="linkValidationServiceWriteTxnAdvisor"
           class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
             <ref bean="retryingWriteTxnAdvice"/>
@@ -1394,7 +1408,7 @@
         </property>
     </bean>
 
-    <bean id="LinkValidationService" 
+    <bean id="LinkValidationService"
           class="org.springframework.aop.framework.ProxyFactoryBean"
           lazy-init="true">
         <property name="proxyInterfaces">

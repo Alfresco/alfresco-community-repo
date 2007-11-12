@@ -68,4 +68,15 @@ public interface AttributeDAO
      * @param attr
      */
     public void evict(Attribute attr);
+
+    /**
+     * Evict an Attribute non-recursively.
+     * @param attr
+     */
+    public void evictFlat(Attribute attr);
+
+    /**
+     * Force a flush.
+     */
+    public void flush();
 }

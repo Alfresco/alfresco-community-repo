@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
-<!-- Beans pertinent to node persistence and services --> 
+<!-- Beans pertinent to node persistence and services -->
 <beans>
-   
+
    <bean id="mlPropertyInterceptor" class="org.alfresco.repo.node.MLPropertyInterceptor">
       <property name="nodeService">
          <ref bean="mlAwareNodeService" />
@@ -15,7 +15,7 @@
          <ref bean="dictionaryService" />
       </property>
    </bean>
-	
+
    <bean id="nodeRefPropertyInterceptor" class="org.alfresco.repo.node.NodeRefPropertyMethodInterceptor">
       <property name="nodeService">
          <ref bean="mlAwareNodeService" />
@@ -24,7 +24,7 @@
          <ref bean="dictionaryService" />
       </property>
    </bean>
-   
+
    <bean id="nodeService" class="org.springframework.aop.framework.ProxyFactoryBean" >
       <property name="targetName">
          <value>mlAwareNodeService</value>
@@ -57,7 +57,7 @@
          </map>
       </property>
    </bean>
-   
+
    <!-- Map stores to archive stores -->
    <bean id="storeArchiveMap" class="org.alfresco.repo.node.StoreArchiveMap">
       <property name="archiveMap">
@@ -66,7 +66,7 @@
          </map>
       </property>
    </bean>
-   
+
    <!-- Wrapper component to handle restore and purge of archived nodes -->
    <bean id="nodeArchiveService" class="org.alfresco.repo.node.archive.NodeArchiveServiceImpl" >
       <property name="nodeService">
@@ -92,7 +92,7 @@
 			<ref bean="policyComponent"/>
 		</property>
 	</bean>
-		
+
    <!-- Handles policy callbacks to ensure that node hierarchy gets indexed -->
    <bean id="nodeIndexer" class="org.alfresco.repo.node.index.NodeIndexer" init-method="init">
       <property name="policyComponent">
@@ -103,7 +103,7 @@
       </property>
    </bean>
 
-   <!-- ensures model-compliance of node structures -->   
+   <!-- ensures model-compliance of node structures -->
    <bean id="integrityChecker" class="org.alfresco.repo.node.integrity.IntegrityChecker" init-method="init">
       <property name="policyComponent">
          <ref bean="policyComponent"/>
@@ -128,7 +128,7 @@
       </property>
    </bean>
 
-   <!-- tags nodes that are incomplete w.r.t. properties-->   
+   <!-- tags nodes that are incomplete w.r.t. properties-->
    <bean id="incompleteNodeTagger" class="org.alfresco.repo.node.integrity.IncompleteNodeTagger" init-method="init">
       <property name="policyComponent">
          <ref bean="policyComponent"/>
@@ -185,7 +185,8 @@
          <value>10000</value>
       </property>
       <property name="resourceManagerCallFrequencyMillis">
-         <value>5000</value>
+         <!-- Was 5000 -->
+         <value>1000</value>
       </property>
    </bean>
    <bean id="sessionSizeResourceManager" class="org.alfresco.repo.domain.hibernate.SessionSizeResourceManager">
@@ -193,8 +194,9 @@
          <ref bean="sessionFactory" />
       </property>
       <property name="threshold">
-         <value>5000</value>
+         <!-- Was 5000 -->
+         <value>100</value>
       </property>
    </bean>
-   
+
 </beans>

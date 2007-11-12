@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.alfresco.repo.transaction;
 
@@ -10,6 +10,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.StaleObjectStateException;
+import org.hibernate.StaleStateException;
 import org.hibernate.exception.LockAcquisitionException;
 import org.springframework.aop.framework.ReflectiveMethodInvocation;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -19,38 +20,38 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
 /**
- * 
+ *
  * @author britt
  */
-public class RetryingTransactionAdvice implements MethodInterceptor 
+public class RetryingTransactionAdvice implements MethodInterceptor
 {
     private static Log    fgLogger = LogFactory.getLog(RetryingTransactionAdvice.class);
-    
+
     /**
      * The transaction manager instance.
      */
     private PlatformTransactionManager fTxnManager;
-    
+
     /**
      * The TransactionDefinition.
      */
     private TransactionDefinition fDefinition;
-    
+
     /**
      * The maximum number of retries.
      */
     private int fMaxRetries;
-    
+
     /**
      * A Random number generator for getting retry intervals.
      */
     private Random fRandom;
-    
+
     public RetryingTransactionAdvice()
     {
         fRandom = new Random(System.currentTimeMillis());
     }
-    
+
     /**
      * Setter.
      */
@@ -66,7 +67,7 @@ public class RetryingTransactionAdvice implements MethodInterceptor
     {
         fDefinition = def;
     }
-    
+
     /**
      * Setter.
      */
@@ -74,11 +75,11 @@ public class RetryingTransactionAdvice implements MethodInterceptor
     {
         fMaxRetries = maxRetries;
     }
-    
+
     /* (non-Javadoc)
      * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
      */
-    public Object invoke(MethodInvocation methodInvocation) throws Throwable 
+    public Object invoke(MethodInvocation methodInvocation) throws Throwable
     {
         RuntimeException lastException = null;
         for (int count = 0; fMaxRetries < -1 || count < fMaxRetries; count++)
@@ -101,9 +102,9 @@ public class RetryingTransactionAdvice implements MethodInterceptor
                     {
                         fgLogger.debug("Transaction succeeded after " + count + " retries.");
                     }
-                }                
+                }
                 return result;
-            }        
+            }
             catch (RuntimeException e)
             {
                 if (txn != null && isNewTxn && !txn.isCompleted())
@@ -122,7 +123,8 @@ public class RetryingTransactionAdvice implements MethodInterceptor
                     if (t instanceof ConcurrencyFailureException ||
                         t instanceof DeadlockLoserDataAccessException ||
                         t instanceof StaleObjectStateException ||
-                        t instanceof LockAcquisitionException)
+                        t instanceof LockAcquisitionException ||
+                        t instanceof StaleStateException)
                     {
                         shouldRetry = true;
                         try
@@ -131,7 +133,7 @@ public class RetryingTransactionAdvice implements MethodInterceptor
                         }
                         catch (InterruptedException ie)
                         {
-                            // Do nothing.                                                                                  
+                            // Do nothing.
                         }
                         break;
                     }

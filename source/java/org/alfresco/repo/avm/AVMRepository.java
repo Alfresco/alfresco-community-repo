@@ -340,8 +340,6 @@ public class AVMRepository
         dir.putChild(name, child);
         fLookupCache.onWrite(pathParts[0]);
         AVMNodeDescriptor desc = child.getDescriptor(parent.getPath(), name, parent.getIndirection(), parent.getIndirectionVersion());
-        fAVMNodeDAO.flush();
-        fAVMNodeDAO.evict(child);
         return desc;
     }
 
@@ -1046,7 +1044,8 @@ public class AVMRepository
                 throw new AVMWrongTypeException("Not a directory.");
             }
             DirectoryNode dirNode = (DirectoryNode)node;
-            return dirNode.getListing(dir, includeDeleted);
+            SortedMap<String, AVMNodeDescriptor> listing = dirNode.getListing(dir, includeDeleted);
+            return listing;
         }
         finally
         {
@@ -2483,8 +2482,6 @@ public class AVMRepository
             }
             LayeredDirectoryNode dir = (LayeredDirectoryNode)node;
             dir.flatten(name);
-            fAVMNodeDAO.flush();
-            fAVMNodeDAO.evict(dir);
         }
         finally
         {
@@ -2516,8 +2513,6 @@ public class AVMRepository
             }
             AVMNode node = lPath.getCurrentNode();
             AVMNodeDescriptor desc = node.getDescriptor(lPath);
-            fAVMNodeDAO.flush();
-            fAVMNodeDAO.evict(node);
             return desc;
         }
         finally
@@ -2738,7 +2733,6 @@ public class AVMRepository
             throw new AVMNotFoundException("Node not found: " + desc);
         }
         Set<QName> aspects = node.getAspects();
-        fAVMNodeDAO.evict(node);
         return aspects;
     }
 }

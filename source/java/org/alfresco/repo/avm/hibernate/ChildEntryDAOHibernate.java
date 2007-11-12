@@ -66,6 +66,7 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
      */
     public ChildEntry get(ChildKey key)
     {
+        SessionCacheChecker.instance.check();
         return (ChildEntry)getSession().get(ChildEntryImpl.class, key);
     }
 
@@ -96,6 +97,7 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
                                      "and ce.child = :child");
         query.setEntity("parent", parent);
         query.setEntity("child", child);
+        SessionCacheChecker.instance.check();
         return (ChildEntry)query.uniqueResult();
     }
 
@@ -148,6 +150,5 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
      */
     public void evict(ChildEntry entry)
     {
-        getSession().evict(entry);
     }
 }

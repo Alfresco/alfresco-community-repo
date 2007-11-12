@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.repo.domain.hibernate;
@@ -27,6 +27,7 @@ package org.alfresco.repo.domain.hibernate;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import org.alfresco.repo.avm.hibernate.SessionCacheChecker;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.util.resource.MethodResourceManager;
 import org.apache.commons.logging.Log;
@@ -44,9 +45,9 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * passes stateful objects back and forth.  There must be no <code>Session</code>-linked
  * objects up the stack from where this instance resides.  Failure to observe this will
  * most likely result in data loss of a sporadic nature.
- * 
+ *
  * @see org.alfresco.repo.domain.hibernate.HibernateNodeTest#testPostCommitClearIssue()
- * 
+ *
  * @author Derek Hulley
  */
 public class SessionSizeResourceManager extends HibernateDaoSupport implements MethodResourceManager
@@ -55,7 +56,7 @@ public class SessionSizeResourceManager extends HibernateDaoSupport implements M
     private static final String KEY_DISABLE_IN_TRANSACTION = "SessionSizeResourceManager.DisableInTransaction";
 
     private static Log logger = LogFactory.getLog(SessionSizeResourceManager.class);
-    
+
     /** Default 1000 */
     private int threshold;
 
@@ -71,7 +72,7 @@ public class SessionSizeResourceManager extends HibernateDaoSupport implements M
     /**
      * @return Returns true if the resource management must be ignored in the current transaction.
      *      If <code>false</code>, the global setting will take effect.
-     * 
+     *
      * @see #setDisableInTransaction()
      */
     public static boolean isDisableInTransaction()
@@ -86,7 +87,7 @@ public class SessionSizeResourceManager extends HibernateDaoSupport implements M
             return true;
         }
     }
-    
+
     /**
      * Default public constructor required for bean instantiation.
      */
@@ -94,14 +95,14 @@ public class SessionSizeResourceManager extends HibernateDaoSupport implements M
     {
         this.threshold = 1000;
     }
-    
+
     /**
      * Set the {@link Session#clear()} threshold.  If the number of entities and collections in the
      * current session exceeds this number, then the session will be cleared.  Have you read the
      * disclaimer?
-     * 
+     *
      * @param threshold the maximum number of entities and associations to keep in memory
-     * 
+     *
      * @see #threshold
      */
     public void setThreshold(int threshold)
@@ -114,6 +115,11 @@ public class SessionSizeResourceManager extends HibernateDaoSupport implements M
             long transactionElapsedTimeNs,
             Method currentMethod)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Session Size Manager Invoked.");
+            SessionCacheChecker.instance.check();
+        }
         if (isDisableInTransaction())
         {
             // Don't do anything

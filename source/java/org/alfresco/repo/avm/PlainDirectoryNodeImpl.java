@@ -115,7 +115,6 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                 continue;
             }
             result.put(child.getKey().getName(), AVMNodeUnwrapper.Unwrap(child.getChild()));
-            AVMDAOs.Instance().fChildEntryDAO.evict(child);
         }
         return result;
     }
@@ -166,8 +165,6 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                                                       child.getKey().getName(),
                                                       dir.getIndirection(),
                                                       dir.getIndirectionVersion()));
-            AVMDAOs.Instance().fAVMNodeDAO.evict(child.getChild());
-            AVMDAOs.Instance().fChildEntryDAO.evict(child);
         }
         return result;
     }
@@ -193,14 +190,19 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     {
         ChildKey key = new ChildKey(this, name);
         ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
-        if (entry == null ||
-            (!includeDeleted && entry.getChild().getType() == AVMNodeType.DELETED_NODE))
+        if (entry == null)
+        {
+            return null;
+        }
+        if (!includeDeleted && entry.getChild().getType() == AVMNodeType.DELETED_NODE)
         {
             return null;
         }
         // We're doing the hand unrolling of the proxy because
         // Hibernate/CGLIB proxies are broken.
-        return new Pair<AVMNode, Boolean>(AVMNodeUnwrapper.Unwrap(entry.getChild()), true);
+
+        Pair<AVMNode, Boolean> result = new Pair<AVMNode, Boolean>(AVMNodeUnwrapper.Unwrap(entry.getChild()), true);
+        return result;
     }
 
     /**
@@ -223,8 +225,6 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             return null;
         }
         AVMNodeDescriptor desc = entry.getChild().getDescriptor(mine.getPath(), name, (String)null, -1);
-        AVMDAOs.Instance().fAVMNodeDAO.evict(entry.getChild());
-        AVMDAOs.Instance().fChildEntryDAO.evict(entry);
         return desc;
     }
 

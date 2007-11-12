@@ -27,8 +27,10 @@ package org.alfresco.repo.attributes.hibernate;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.attributes.AttrQueryHelperImpl;
 import org.alfresco.repo.attributes.Attribute;
@@ -40,12 +42,14 @@ import org.alfresco.repo.attributes.MapAttribute;
 import org.alfresco.repo.attributes.MapEntry;
 import org.alfresco.repo.attributes.MapEntryDAO;
 import org.alfresco.repo.attributes.Attribute.Type;
+import org.alfresco.repo.avm.hibernate.SessionCacheChecker;
 import org.alfresco.service.cmr.attributes.AttrQuery;
 import org.alfresco.service.cmr.attributes.AttrQueryHelper;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;
+import org.hibernate.engine.EntityKey;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
@@ -87,7 +91,6 @@ public class AttributeDAOHibernate extends HibernateDaoSupport implements
             for (MapEntry entry : mapEntries)
             {
                 Attribute subAttr = entry.getAttribute();
-                getSession().evict(entry);
                 fMapEntryDAO.delete(entry);
                 delete(subAttr);
             }
@@ -99,7 +102,6 @@ public class AttributeDAOHibernate extends HibernateDaoSupport implements
             for (ListEntry entry : listEntries)
             {
                 Attribute subAttr = entry.getAttribute();
-                getSession().evict(entry);
                 fListEntryDAO.delete(entry);
                 delete(subAttr);
             }
@@ -108,7 +110,6 @@ public class AttributeDAOHibernate extends HibernateDaoSupport implements
         {
             fgLogger.debug("Entities: " + getSession().getStatistics().getEntityCount());
         }
-        getSession().evict(attr);
         getSession().delete(attr);
     }
 
@@ -161,20 +162,20 @@ public class AttributeDAOHibernate extends HibernateDaoSupport implements
      */
     public void evict(Attribute attr)
     {
-        if (attr.getType() == Attribute.Type.MAP)
-        {
-            for (Attribute child : attr.values())
-            {
-                evict(child);
-            }
-        }
-        if (attr.getType() == Attribute.Type.LIST)
-        {
-            for (Attribute child : attr)
-            {
-                evict(child);
-            }
-        }
-        getSession().evict(attr);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.AttributeDAO#flush()
+     */
+    public void flush()
+    {
+        getSession().flush();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.AttributeDAO#evictFlat(org.alfresco.repo.attributes.Attribute)
+     */
+    public void evictFlat(Attribute attr)
+    {
     }
 }

@@ -413,6 +413,23 @@ public abstract class AbstractReindexComponent implements IndexRecovery
     }
     
     /**
+     * @return          Returns <tt>false</tt> if any one of the transactions aren't in the index.
+     */
+    protected boolean areTxnsInIndex(List<Transaction> txns)
+    {
+        for (Transaction txn : txns)
+        {
+            long txnId = txn.getId().longValue();
+            if (isTxnIdPresentInIndex(txnId) == InIndex.NO)
+            {
+                // Missing txn
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
      * Perform a full reindexing of the given transaction in the context of a completely
      * new transaction.
      * 

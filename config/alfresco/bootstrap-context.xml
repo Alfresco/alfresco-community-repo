@@ -51,6 +51,7 @@
        </property>
        <property name="postUpdateScriptPatches">
           <list>
+             <ref bean="patch.db-V1.4-TxnCommitTimeIndex" />
              <ref bean="patch.db-V2.1-FKIndexes" />
              <ref bean="patch.db-V2.1-ExplicitIndexes" />
              <ref bean="patch.db-V2.1-JBPMData" />

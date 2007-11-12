@@ -149,6 +149,13 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
     {
         getSession().flush();
     }
+        
+    /**
+     * NO-OP
+     */
+    public void beforeCommit()
+    {
+    }
 
     public void setProtocolToACLDAO(Map<String, AccessControlListDAO> map)
     {

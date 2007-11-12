@@ -484,6 +484,13 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         getSession().flush();
     }
 
+    /**
+     * NO-OP
+     */
+    public void beforeCommit()
+    {
+    }
+
     static class SourceKey
     {
         String application;

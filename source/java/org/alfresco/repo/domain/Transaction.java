@@ -39,6 +39,10 @@ public interface Transaction
     
     public void setChangeTxnId(String changeTxnId);
     
+    public Long getCommitTimeMs();
+
+    public void setCommitTimeMs(Long commitTimeMs);
+    
     public Server getServer();
     
     public void setServer(Server server);

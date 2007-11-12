@@ -602,6 +602,12 @@ public abstract class AlfrescoTransactionSupport
             {
                 lucene.prepare();
             }
+            
+            // Flush the DAOs
+            for (TransactionalDao dao : daoServices)
+            {
+                dao.beforeCommit();
+            }
         }
         
         /**

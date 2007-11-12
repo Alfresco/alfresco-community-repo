@@ -28,19 +28,18 @@
    </bean>
    
    <!-- index recovery and validation -->
-   <!--
-      Recovery types are:
-         NONE:     Ignore
-         VALIDATE: Checks that the last transaction for each store is represented in the indexes
-         AUTO:     Validates and auto-recovers if validation fails
-         FULL:     Full index rebuild, processing all transactions in order.  The server is temporarily suspended.
-   -->
    <bean
          id="indexRecoveryComponent"
          class="org.alfresco.repo.node.index.FullIndexRecoveryComponent"
          parent="indexRecoveryComponentBase">
       <property name="recoveryMode">
-          <value>${index.recovery.mode}</value>
+         <value>${index.recovery.mode}</value>
+      </property>
+      <property name="stopOnError">
+         <value>${index.recovery.stopOnError}</value>
+      </property>
+      <property name="indexTracker">
+         <ref bean="admIndexTrackerComponent" />
       </property>
    </bean>
 	
@@ -59,6 +58,50 @@
       </property>
    </bean>
 	
+
+   <!-- Index tracking -->
+   <!--
+      This is the default index tracker component.  It is used during bootstrap when incremental recovery
+      is required.  It is also used, by default in the clustered index tracking sample.
+   -->
+   <bean
+         id="admIndexTrackerComponent"
+         class="org.alfresco.repo.node.index.IndexTransactionTracker"
+         parent="indexRecoveryComponentBase">
+      <property name="maxTxnDurationMinutes">
+         <value>${index.tracking.maxTxnDurationMinutes}</value>
+      </property>
+      <property name="reindexLagMs">
+         <value>${index.tracking.reindexLagMs}</value>
+      </property>
+      <property name="maxRecordSetSize">
+         <value>${index.tracking.maxRecordSetSize}</value>
+      </property>
+   </bean>
+
+    <!-- Schedule index tracking for ADM -->
+    <bean id="admIndexTrackerTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="indexRecoveryComponent">
+                            <ref bean="admIndexTrackerComponent" />
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <property name="cronExpression">
+            <value>${index.tracking.cronExpression}</value>
+        </property>
+    </bean>
 
    <!-- Bean that attempts to index content that was previously missing -->
    <bean

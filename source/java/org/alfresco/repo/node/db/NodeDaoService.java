@@ -294,14 +294,31 @@ public interface NodeDaoService
     public int getNodeCount(final StoreRef storeRef);
     
     public Transaction getTxnById(long txnId);
-    public Transaction getLastTxn();
-    public Transaction getLastRemoteTxn();
-    public Transaction getLastTxnForStore(final StoreRef storeRef);
+    /**
+     * Get all transactions in a given time range.  Since time-based retrieval doesn't guarantee uniqueness
+     * for any given millisecond, a list of optional exclusions may be provided.
+     * 
+     * @param excludeTxnIds         a list of txn IDs to ignore.  <tt>null</tt> is allowed.
+     */
+    public List<Transaction> getTxnsByCommitTimeAscending(
+            long fromTimeInclusive,
+            long toTimeExclusive,
+            int count,
+            List<Long> excludeTxnIds);
+    /**
+     * Get all transactions in a given time range.  Since time-based retrieval doesn't guarantee uniqueness
+     * for any given millisecond, a list of optional exclusions may be provided.
+     * 
+     * @param excludeTxnIds         a list of txn IDs to ignore.  <tt>null</tt> is allowed.
+     */
+    public List<Transaction> getTxnsByCommitTimeDescending(
+            long fromTimeInclusive,
+            long toTimeExclusive,
+            int count,
+            List<Long> excludeTxnIds);
     public int getTxnUpdateCount(final long txnId);
     public int getTxnDeleteCount(final long txnId);
     public int getTransactionCount();
-    public List<Transaction> getNextTxns(final long lastTxnId, final int count);
-    public List<Transaction> getNextRemoteTxns(final long lastTxnId, final int count);
     public List<NodeRef> getTxnChangesForStore(final StoreRef storeRef, final long txnId);
     public List<NodeRef> getTxnChanges(final long txnId);
 }

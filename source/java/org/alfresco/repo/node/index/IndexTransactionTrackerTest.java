@@ -1,26 +1,18 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
-
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
-
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * Licensed under the Mozilla Public License version 1.1 
+ * with a permitted attribution clause. You may obtain a
+ * copy of the License at
+ *
+ *   http://www.alfresco.org/legal/license.txt
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the
+ * License.
  */
 package org.alfresco.repo.node.index;
 
@@ -53,7 +45,7 @@ import org.springframework.context.ApplicationContext;
  * @author Derek Hulley
  */
 @SuppressWarnings("unused")
-public class IndexRemoteTransactionTrackerTest extends TestCase
+public class IndexTransactionTrackerTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
@@ -66,7 +58,7 @@ public class IndexRemoteTransactionTrackerTest extends TestCase
     private Indexer indexer;
     private NodeRef rootNodeRef;
 
-    private IndexRemoteTransactionTracker indexTracker;
+    private IndexTransactionTracker indexTracker;
     
     public void setUp() throws Exception
     {
@@ -74,14 +66,14 @@ public class IndexRemoteTransactionTrackerTest extends TestCase
         searchService = serviceRegistry.getSearchService();
         nodeService = serviceRegistry.getNodeService();
         fileFolderService = serviceRegistry.getFileFolderService();
-        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponentImpl");
         contentStore = (ContentStore) ctx.getBean("fileContentStore");
         ftsIndexer = (FullTextSearchIndexer) ctx.getBean("LuceneFullTextSearchIndexer");
 
         indexer = (Indexer) ctx.getBean("indexerComponent");
         NodeDaoService nodeDaoService = (NodeDaoService) ctx.getBean("nodeDaoService");
         TransactionService transactionService = serviceRegistry.getTransactionService();
-        indexTracker = new IndexRemoteTransactionTracker();
+        indexTracker = new IndexTransactionTracker();
         indexTracker.setAuthenticationComponent(authenticationComponent);
         indexTracker.setFtsIndexer(ftsIndexer);
         indexTracker.setIndexer(indexer);
@@ -116,7 +108,7 @@ public class IndexRemoteTransactionTrackerTest extends TestCase
                 return childAssocRef;
             }
         };
-        ChildAssociationRef childAssocRef = transactionService.getRetryingTransactionHelper().doInTransaction(createNodeWork);
+        ChildAssociationRef childAssocRef = transactionService.getRetryingTransactionHelper().doInTransaction(createNodeWork, true);
     }
     
     public void testSetup() throws Exception

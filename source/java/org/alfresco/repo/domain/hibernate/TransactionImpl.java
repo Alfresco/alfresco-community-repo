@@ -25,6 +25,7 @@
 package org.alfresco.repo.domain.hibernate;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import org.alfresco.repo.domain.Server;
 import org.alfresco.repo.domain.Transaction;
@@ -44,6 +45,7 @@ public class TransactionImpl extends LifecycleAdapter implements Transaction, Se
     private Long id;
     private Long version;
     private String changeTxnId;
+    private Long commitTimeMs;
     private Server server;
     
     public TransactionImpl()
@@ -56,6 +58,7 @@ public class TransactionImpl extends LifecycleAdapter implements Transaction, Se
         StringBuilder sb = new StringBuilder(50);
         sb.append("Transaction")
           .append("[id=").append(id)
+          .append(", txnTimeMs=").append(new Date(commitTimeMs))
           .append(", changeTxnId=").append(changeTxnId)
           .append("]");
         return sb.toString();
@@ -97,6 +100,16 @@ public class TransactionImpl extends LifecycleAdapter implements Transaction, Se
     public void setChangeTxnId(String changeTransactionId)
     {
         this.changeTxnId = changeTransactionId;
+    }
+
+    public Long getCommitTimeMs()
+    {
+        return commitTimeMs;
+    }
+
+    public void setCommitTimeMs(Long commitTimeMs)
+    {
+        this.commitTimeMs = commitTimeMs;
     }
 
     public Server getServer()

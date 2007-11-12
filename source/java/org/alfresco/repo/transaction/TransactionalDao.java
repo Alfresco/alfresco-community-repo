@@ -23,4 +23,11 @@ public interface TransactionalDao
      * @return true => changes are pending
      */
     public boolean isDirty();
+    
+    /**
+     * This callback provides a chance for the DAO to do any pre-commit work.
+     * 
+     * @since 1.4.5
+     */
+    public void beforeCommit();
 }

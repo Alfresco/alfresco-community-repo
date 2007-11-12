@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.node.index;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.i18n.I18NUtil;
@@ -40,7 +42,10 @@ import org.apache.commons.logging.LogFactory;
  * Component to check and recover the indexes.  By default, the server is
  * put into read-only mode during the reindex process in order to prevent metadata changes.
  * This is not critical and can be {@link #setLockServer(boolean) switched off} if the
- * server is required immediately. 
+ * server is required immediately.
+ * <p>
+ * 
+ * @see RecoveryMode
  * 
  * @author Derek Hulley
  */
@@ -51,6 +56,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
     private static final String MSG_RECOVERY_COMPLETE = "index.recovery.complete";
     private static final String MSG_RECOVERY_PROGRESS = "index.recovery.progress";
     private static final String MSG_RECOVERY_TERMINATED = "index.recovery.terminated";
+    private static final String MSG_RECOVERY_ERROR = "index.recovery.error";
     
     private static Log logger = LogFactory.getLog(FullIndexRecoveryComponent.class);
     
@@ -59,11 +65,17 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         /** Do nothing - not even a check. */
         NONE,
         /**
-         * Perform a quick check on the state of the indexes only.
+         * Perform a quick check on the state of the indexes only.  This only checks that the
+         * first N transactions are present in the index and doesn't guarantee that the indexes
+         * are wholely consistent.  Normally, the indexes are consistent up to a certain time.
+         * The system does a precautionary index top-up by default, so the last transactions are
+         * not validated.
          */
         VALIDATE,
         /**
-         * Performs a validation and starts a quick recovery, if necessary.
+         * Performs a validation and starts a recovery if necessary.  In this mode, if start
+         * transactions are missing then FULL mode is enabled.  If end transactions are missing
+         * then the indexes will be "topped up" to bring them up to date.
          */
         AUTO,
         /**
@@ -75,7 +87,16 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
     
     private RecoveryMode recoveryMode;
     private boolean lockServer;
+    private IndexTransactionTracker indexTracker;
+    private boolean stopOnError;
     
+    /**
+     * <ul>
+     *   <li><b>recoveryMode: </b>VALIDATE</li>
+     *   <li><b>stopOnError:</b> true</li>
+     * </ul>
+     *
+     */
     public FullIndexRecoveryComponent()
     {
         recoveryMode = RecoveryMode.VALIDATE;
@@ -103,6 +124,29 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         this.lockServer = lockServer;
     }
 
+    /**
+     * Set the tracker that will be used for AUTO mode.
+     * 
+     * @param indexTracker      an index tracker component
+     */
+    public void setIndexTracker(IndexTransactionTracker indexTracker)
+    {
+        this.indexTracker = indexTracker;
+    }
+
+    /**
+     * Set whether a full rebuild should stop in the event of encoutering an error.  The default is
+     * to stop reindexing, and this will lead to the server startup failing when index recovery mode
+     * is <b>FULL</b>.  Sometimes, it is necessary to start the server up regardless of any errors
+     * with particular nodes.
+     * 
+     * @param stopOnError       <tt>true</tt> to stop reindexing when an error is encountered.
+     */
+    public void setStopOnError(boolean stopOnError)
+    {
+        this.stopOnError = stopOnError;
+    }
+
     @Override
     protected void reindexImpl()
     {
@@ -111,41 +155,10 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
             logger.debug("Performing index recovery for type: " + recoveryMode);
         }
         
-        // do we just ignore
+        // Ignore when NONE
         if (recoveryMode == RecoveryMode.NONE)
         {
             return;
-        }
-        // check the level of cover required
-        boolean fullRecoveryRequired = false;
-        if (recoveryMode == RecoveryMode.FULL)                  // no validate required
-        {
-            fullRecoveryRequired = true;
-        }
-        else                                                    // validate first
-        {
-            Transaction txn = nodeDaoService.getLastTxn();
-            if (txn == null)
-            {
-                // no transactions - just bug out
-                return;
-            }
-            long txnId = txn.getId();
-            InIndex txnInIndex = isTxnIdPresentInIndex(txnId);
-            if (txnInIndex != InIndex.YES)
-            {
-                String msg = I18NUtil.getMessage(ERR_INDEX_OUT_OF_DATE);
-                logger.warn(msg);
-                // this store isn't up to date
-                if (recoveryMode == RecoveryMode.VALIDATE)
-                {
-                    // the store is out of date - validation failed
-                }
-                else if (recoveryMode == RecoveryMode.AUTO)
-                {
-                    fullRecoveryRequired = true;
-                }
-            }
         }
         
         // put the server into read-only mode for the duration
@@ -158,10 +171,40 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                 transactionService.setAllowWrite(false);
             }
             
-            // do we need to perform a full recovery
-            if (fullRecoveryRequired)
+            // Check that the first and last meaningful transactions are indexed 
+            List<Transaction> startTxns = nodeDaoService.getTxnsByCommitTimeAscending(
+                    Long.MIN_VALUE, Long.MAX_VALUE, 10, null);
+            boolean startAllPresent = areTxnsInIndex(startTxns);
+            List<Transaction> endTxns = nodeDaoService.getTxnsByCommitTimeDescending(
+                    Long.MIN_VALUE, Long.MAX_VALUE, 10, null);
+            boolean endAllPresent = areTxnsInIndex(endTxns);
+            
+            // check the level of cover required
+            switch (recoveryMode)
             {
+            case AUTO:
+                if (!startAllPresent)
+                {
+                    // Initial transactions are missing - rebuild
+                    performFullRecovery();
+                }
+                else if (!endAllPresent)
+                {
+                    // Trigger the tracker, which will top up the indexes
+                    indexTracker.reindex();
+                }
+                break;
+            case VALIDATE:
+                // Check
+                if (!startAllPresent || !endAllPresent)
+                {
+                    // Index is out of date
+                    logger.warn(I18NUtil.getMessage(ERR_INDEX_OUT_OF_DATE));
+                }
+                break;
+            case FULL:
                 performFullRecovery();
+                break;
             }
         }
         finally
@@ -182,18 +225,24 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         
         // count the transactions
         int processedCount = 0;
-        Transaction lastTxn = null;
+        long fromTimeInclusive = Long.MIN_VALUE;
+        long toTimeExclusive = Long.MAX_VALUE;
+        List<Long> lastTxnIds = Collections.<Long>emptyList();
         while(true)
         {
-            long lastTxnId = (lastTxn == null) ? -1L : lastTxn.getId().longValue();
-            List<Transaction> nextTxns = nodeDaoService.getNextTxns(
-                    lastTxnId,
-                    MAX_TRANSACTIONS_PER_ITERATION);
+            List<Transaction> nextTxns = nodeDaoService.getTxnsByCommitTimeAscending(
+                    fromTimeInclusive,
+                    toTimeExclusive,
+                    MAX_TRANSACTIONS_PER_ITERATION,
+                    lastTxnIds);
 
+            lastTxnIds = new ArrayList<Long>(nextTxns.size());
             // reindex each transaction
             for (Transaction txn : nextTxns)
             {
                 Long txnId = txn.getId();
+                // Keep it to ensure we exclude it from the next iteration
+                lastTxnIds.add(txnId);
                 // check if we have to terminate
                 if (isShuttingDown())
                 {
@@ -201,8 +250,26 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                     logger.warn(msgTerminated);
                     return;
                 }
-                
-                reindexTransaction(txnId);
+                // Allow exception to bubble out or not
+                if (stopOnError)
+                {
+                    reindexTransaction(txnId);
+                }
+                else
+                {
+                    try
+                    {
+                        reindexTransaction(txnId);
+                    }
+                    catch (Throwable e)
+                    {
+                        String msgError = I18NUtil.getMessage(MSG_RECOVERY_ERROR, txnId, e.getMessage());
+                        logger.info(msgError, e);
+                    }
+                }
+                // Although we use the same time as this transaction for the next iteration, we also
+                // make use of the exclusion list to ensure that it doesn't get pulled back again.
+                fromTimeInclusive = txn.getCommitTimeMs();
                 
                 // dump a progress report every 10% of the way
                 double before = (double) processedCount / (double) txnCount * 10.0;     // 0 - 10 
@@ -222,7 +289,6 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                 // there are no more
                 break;
             }
-            lastTxn = nextTxns.get(nextTxns.size() - 1);
         }
         // done
         String msgDone = I18NUtil.getMessage(MSG_RECOVERY_COMPLETE);

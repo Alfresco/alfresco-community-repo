@@ -16,6 +16,11 @@
 #db.pool.max=100
 
 #
+# Sample index tracking frequency
+#
+#index.tracking.cronExpression=0/5 * * * * ?
+
+#
 # Property to control whether schema updates are performed automatically.
 # Updates must be enabled during upgrades as, apart from the static upgrade scripts,
 # there are also auto-generated update scripts that will need to be executed.  After

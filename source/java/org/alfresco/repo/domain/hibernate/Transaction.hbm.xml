@@ -32,6 +32,7 @@
             not-null="false"
             cascade="none" />
       <property name="changeTxnId" column="change_txn_id" type="string" length="56" not-null="true" />
+      <property name="commitTimeMs" column="commit_time_ms" type="long" not-null="false" index="idx_commit_time_ms" />
    </class>
 
    <class
@@ -63,34 +64,34 @@
          server.ipAddress = :ipAddress
    </query>
 
-   <query name="txn.GetLastTxnIdForStore">
+   <query name="txn.GetTxnsByCommitTimeAsc">
+      <![CDATA[
       select
-         max(txn.id)
+         txn
       from
-         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
-         join status.transaction as txn
+         org.alfresco.repo.domain.hibernate.TransactionImpl as txn
       where
-         status.key.protocol = :protocol and
-         status.key.identifier = :identifier
+         txn.commitTimeMs >= :fromTimeInclusive and
+         txn.commitTimeMs < :toTimeExclusive and
+         txn.id not in (:excludeTxnIds)
+      order by
+         txn.commitTimeMs
+      ]]>
    </query>
-   
-   <query name="txn.GetLastTxnId">
+
+   <query name="txn.GetTxnsByCommitTimeDesc">
+      <![CDATA[
       select
-         max(txn.id)
+         txn
       from
-         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
-         join status.transaction as txn
-   </query>
-   
-   <query name="txn.GetLastRemoteTxnId">
-      select
-         max(txn.id)
-      from
-         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
-         join status.transaction as txn
-         join txn.server as server
+         org.alfresco.repo.domain.hibernate.TransactionImpl as txn
       where
-         server.ipAddress != :serverIpAddress
+         txn.commitTimeMs >= :fromTimeInclusive and
+         txn.commitTimeMs < :toTimeExclusive and
+         txn.id not in (:excludeTxnIds)
+      order by
+         txn.commitTimeMs desc
+      ]]>
    </query>
    
    <query name="txn.CountTransactions">
@@ -98,34 +99,6 @@
          count(txn.id)
       from
          org.alfresco.repo.domain.hibernate.TransactionImpl as txn
-   </query>
-
-   <query name="txn.GetNextTxns">
-      <![CDATA[
-      select
-         txn
-      from
-         org.alfresco.repo.domain.hibernate.TransactionImpl as txn
-      where
-         txn.id > :lastTxnId
-      order by
-         txn.id
-      ]]>
-   </query>
-
-   <query name="txn.GetNextRemoteTxns">
-      <![CDATA[
-      select
-         txn
-      from
-         org.alfresco.repo.domain.hibernate.TransactionImpl as txn
-         join txn.server as server
-      where
-         txn.id > :lastTxnId and
-         server.ipAddress != :serverIpAddress
-      order by
-         txn.id
-      ]]>
    </query>
 
    <query name="txn.GetTxnUpdateCountForStore">

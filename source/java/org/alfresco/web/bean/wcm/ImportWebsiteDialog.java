@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.web.bean.wcm;
@@ -45,6 +45,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ImporterActionExecuter;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -62,31 +63,35 @@ import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.tools.zip.ZipFile;
 
 /**
  * Backing bean for the Import Website Content dialog.
- * 
+ *
  * This dialog manages the upload of a ZIP archive file, which is then unpacked and loaded into
  * the AVM store with the complete folder and file structure.
- * 
+ *
  * @author Kevin Roast
  */
 public class ImportWebsiteDialog
 {
    private static final int BUFFER_SIZE = 16384;
-   
+   private static Log logger = LogFactory.getLog(ImportWebsiteDialog.class);
+
    protected File file;
    protected String fileName;
    protected boolean isFinished = false;
-   
+   protected boolean highByteZip = false;
+
    protected FileFolderService fileFolderService;
    protected ContentService contentService;
    protected AVMBrowseBean avmBrowseBean;
    protected AVMService avmService;
    protected NodeService nodeService;
-   
-   
+
+
    /**
     * @param contentService      The ContentService to set.
     */
@@ -102,7 +107,7 @@ public class ImportWebsiteDialog
    {
       this.fileFolderService = fileFolderService;
    }
-   
+
    /**
     * @param avmBrowseBean       The AVMBrowseBean to set.
     */
@@ -118,7 +123,7 @@ public class ImportWebsiteDialog
    {
       this.avmService = avmService;
    }
-   
+
    /**
     * @param nodeService         The NodeService to set.
     */
@@ -142,7 +147,7 @@ public class ImportWebsiteDialog
          this.file = fileBean.getFile();
          this.fileName = fileBean.getFileName();
       }
-      
+
       return this.fileName;
    }
 
@@ -152,7 +157,7 @@ public class ImportWebsiteDialog
    public void setFileName(String fileName)
    {
       this.fileName = fileName;
-      
+
       // we also need to keep the file upload bean in sync
       FacesContext ctx = FacesContext.getCurrentInstance();
       FileUploadBean fileBean = (FileUploadBean)ctx.getExternalContext().getSessionMap().
@@ -162,16 +167,32 @@ public class ImportWebsiteDialog
          fileBean.setFileName(this.fileName);
       }
    }
-   
+
+   /**
+    * @return the highByteZip encoding switch
+    */
+   public boolean isHighByteZip()
+   {
+      return this.highByteZip;
+   }
+
+   /**
+    * @param highByteZip the encoding switch for high-byte ZIP filenames to set
+    */
+   public void setHighByteZip(boolean highByteZip)
+   {
+      this.highByteZip = highByteZip;
+   }
+
    public boolean getFinishButtonDisabled()
    {
       return (this.fileName == null || this.fileName.length() == 0);
    }
-   
-   
+
+
    // ------------------------------------------------------------------------------
    // Action event handlers
-   
+
    /**
     * Action listener called when the add content dialog is called
     */
@@ -180,55 +201,58 @@ public class ImportWebsiteDialog
       clearUpload();
       this.fileName = null;
    }
-   
+
    /**
     * Action handler called when the Finish button is pressed
     */
    public String finish()
    {
       String outcome = null;
-      
+
       // check the isFinished flag to stop the finish button
       // being pressed multiple times
       if (this.isFinished == false)
       {
          this.isFinished = true;
-         
+
          UserTransaction tx = null;
-         
+
          try
          {
             FacesContext context = FacesContext.getCurrentInstance();
-            tx = Repository.getUserTransaction(context);
-            tx.begin();
-            
-            // get the AVM path that will contain the imported content
-            String rootPath = this.avmBrowseBean.getCurrentPath();
-            
-            // convert the AVM path to a NodeRef so we can use the NodeService to perform import
-            NodeRef importRef = AVMNodeConverter.ToNodeRef(-1, rootPath);
-            processZipImport(this.file, importRef);
-            
-            // After a bulk import it's a good idea to snapshot the store
-            this.avmService.createSnapshot(
-                  AVMUtil.getStoreName(rootPath),
-                  "Import of file: " + this.fileName, null);
-            
-            tx.commit();
+            RetryingTransactionHelper.RetryingTransactionCallback<String> cb =
+            new RetryingTransactionHelper.RetryingTransactionCallback<String>()
+            {
+                public String execute()
+                {
+                    // get the AVM path that will contain the imported content
+                    String rootPath = avmBrowseBean.getCurrentPath();
+
+                    // convert the AVM path to a NodeRef so we can use the NodeService to perform import
+                    NodeRef importRef = AVMNodeConverter.ToNodeRef(-1, rootPath);
+                    processZipImport(file, importRef);
+
+                    // After a bulk import it's a good idea to snapshot the store
+                    avmService.createSnapshot(
+                          AVMUtil.getStoreName(rootPath),
+                          "Import of file: " + fileName, null);
+
+                    return rootPath;
+                }
+            };
+            String rootPath = Repository.getRetryingTransactionHelper(context).doInTransaction(cb);
 
             // Reload virtualisation server as required
             AVMUtil.updateVServerWebapp(rootPath, true);
-            
+
             UIContextService.getInstance(context).notifyBeans();
-            
+
             outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
          }
          catch (Throwable e)
          {
-            // rollback the transaction
-            try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
             Utils.addErrorMessage(MessageFormat.format(
-                  Application.getMessage(FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), 
+                  Application.getMessage(FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC),
                   e.getMessage()), e);
          }
          finally
@@ -237,38 +261,38 @@ public class ImportWebsiteDialog
             this.isFinished = false;
          }
       }
-      
+
       return outcome;
    }
-   
+
    /**
     * Action handler called when the user wishes to remove an uploaded file
     */
    public String removeUploadedFile()
    {
       clearUpload();
-      
+
       // also clear the file name
       this.fileName = null;
-      
+
       // refresh the current page
       return null;
    }
-   
+
    /**
     * Action handler called when the dialog is cancelled
     */
    public String cancel()
    {
       clearUpload();
-      
+
       return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
    }
-   
-   
+
+
    // ------------------------------------------------------------------------------
    // Helper Methods
-   
+
    /**
     * Deletes the uploaded file and removes the FileUploadBean from the session
     */
@@ -279,9 +303,9 @@ public class ImportWebsiteDialog
       {
          this.file.delete();
       }
-      
+
       this.file = null;
-      
+
       // remove the file upload bean from the session
       FacesContext ctx = FacesContext.getCurrentInstance();
       ctx.getExternalContext().getSessionMap().remove(FileUploadBean.FILE_UPLOAD_BEAN_NAME);
@@ -289,7 +313,7 @@ public class ImportWebsiteDialog
 
    /**
     * Process ZIP file for import into an AVM repository store location
-    *  
+    *
     * @param file       ZIP format file
     * @param rootRef    Root reference of the AVM location to import into
     */
@@ -299,7 +323,7 @@ public class ImportWebsiteDialog
       {
          // NOTE: This encoding allows us to workaround bug:
          //       http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
-         ZipFile zipFile = new ZipFile(file, "Cp437"); 
+         ZipFile zipFile = new ZipFile(file, this.highByteZip ? "Cp437" : null);
          File alfTempDir = TempFileProvider.getTempDir();
          // build a temp dir name based on the name of the file we are importing
          File tempDir = new File(alfTempDir.getPath() + File.separatorChar + file.getName() + "_unpack");
@@ -321,10 +345,10 @@ public class ImportWebsiteDialog
          throw new AlfrescoRuntimeException("Unable to process Zip file. File may not be of the expected format.", e);
       }
    }
-   
+
    /**
     * Recursively import a directory structure into the specified root node
-    * 
+    *
     * @param dir     The directory of files and folders to import
     * @param root    The root node to import into
     */
@@ -346,12 +370,12 @@ public class ImportWebsiteDialog
                List<QName> aspects = new ArrayList<QName>();
                aspects.add(ContentModel.ASPECT_TITLED);
                Map<QName, PropertyValue> properties = new HashMap<QName, PropertyValue>();
-               properties.put(ContentModel.PROP_TITLE, 
+               properties.put(ContentModel.PROP_TITLE,
                               new PropertyValue(DataTypeDefinition.TEXT, fileName));
                this.avmService.createFile(
                      avmPath, fileName,new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE),
                      aspects, properties);
-               
+
                // TODO: restore this code once performance is acceptable
                // NodeRef fileRef = AVMNodeConverter.ToNodeRef(-1, filePath);
                //       see AVMBrowseBean.setAVMNodeDescriptor
@@ -359,19 +383,19 @@ public class ImportWebsiteDialog
                // Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
                // titledProps.put(ContentModel.PROP_TITLE, fileName);
                // this.nodeService.addAspect(fileRef, ContentModel.ASPECT_TITLED, titledProps);
-               
+
                // for now use the avm service directly
                // String filePath = avmPath + '/' + fileName;
                // this.avmService.addAspect(filePath, ContentModel.ASPECT_TITLED);
                // this.avmService.setNodeProperty(filePath, ContentModel.PROP_TITLE,
                //                                 new PropertyValue(DataTypeDefinition.TEXT, fileName));
-               
+
                // create content node based on the filename
                /*FileInfo contentFile = fileFolderService.create(root, fileName, ContentModel.TYPE_AVM_PLAIN_CONTENT);
                NodeRef content = contentFile.getNodeRef();
-               
+
                InputStream contentStream = new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE);
-               
+
                ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
                writer.setMimetype(mimetypeService.guessMimetype(file.getAbsolutePath()));
                // TODO: what should we set this too? (definitely not Cp437...!)
@@ -381,17 +405,17 @@ public class ImportWebsiteDialog
             else
             {
                //FileInfo fileInfo = fileFolderService.create(root, file.getName(), ContentModel.TYPE_AVM_PLAIN_FOLDER);
-               
-               // Create a directory in the AVM store 
+
+               // Create a directory in the AVM store
                String avmPath = AVMNodeConverter.ToAVMVersionPath(root).getSecond();
                List<QName> aspects = new ArrayList<QName>();
                aspects.add(ApplicationModel.ASPECT_UIFACETS);
                this.avmService.createDirectory(avmPath, file.getName(), aspects, null);
-               
+
                String folderPath = avmPath + '/' + file.getName();
                NodeRef folderRef = AVMNodeConverter.ToNodeRef(-1, folderPath);
                importDirectory(file.getPath(), folderRef);
-               
+
                // TODO: restore this code once performance is acceptable
                //       see AVMBrowseBean.setAVMNodeDescriptor
                // add the uifacets aspect for the read/edit properties screens

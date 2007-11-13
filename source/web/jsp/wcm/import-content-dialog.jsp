@@ -177,8 +177,15 @@
                                        </div>
                                     </td>
                                  </tr>
+                                 <tr><td colspan="2" class="paddingRow"></td></tr>
+                                 <tr>
+                                    <td colspan="2">
+                                       <h:selectBooleanCheckbox id="chkHighByte" value="#{ImportWebsiteDialog.highByteZip}" />&nbsp;
+                                       <span style="vertical-align:20%"><h:outputText id="msgHighByte" value="#{msg.import_high_byte_zip_file}"/></span>
+                                    </td>
+                                 </tr>
+                                 <tr><td colspan="2" class="paddingRow"></td></tr>
                                  <% } %>
-                                 
                               </table>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
                            </td>

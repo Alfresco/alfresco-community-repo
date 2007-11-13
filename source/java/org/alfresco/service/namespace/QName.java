@@ -401,7 +401,7 @@ public final class QName implements QNamePattern, Serializable, Cloneable
     {
         QName qname = null;
 
-        if (str == null && str.length() == 0)
+        if (str == null || str.length() == 0)
         {
             throw new IllegalArgumentException("str parameter is mandatory");
         }
@@ -449,7 +449,7 @@ public final class QName implements QNamePattern, Serializable, Cloneable
     {
         String result = str;
 
-        if (str == null && str.length() == 0)
+        if (str == null || str.length() == 0)
         {
             throw new IllegalArgumentException("str parameter is mandatory");
         }

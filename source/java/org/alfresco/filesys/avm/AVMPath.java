@@ -86,6 +86,10 @@ public class AVMPath {
 	
 	private String m_avmPath;
 
+	// Path is read-only access
+	
+	private boolean m_readOnly;
+	
 	/**
 	 * Default constructor
 	 */
@@ -131,6 +135,15 @@ public class AVMPath {
 	public LevelId isLevel()
 	{
 		return m_levelId;
+	}
+
+	/**
+	 * Check if the path is read-only
+	 * 
+	 * @return boolean
+	 */
+	public final boolean isReadOnlyAccess() {
+		return m_readOnly;
 	}
 	
 	/**
@@ -596,6 +609,16 @@ public class AVMPath {
 		
 		return fid;
 	}
+
+	/**
+	 * Set the path access, true for read-only access
+	 * 
+	 * @param access boolean
+	 */
+	public final void setReadOnlyAccess( boolean readOnly)
+	{
+		m_readOnly = readOnly;
+	}
 	
 	/**
 	 * Return the AVM path details as a string
@@ -676,6 +699,10 @@ public class AVMPath {
 				str.append(getAVMPath());
 				break;
 		}
+		
+		if ( isReadOnlyAccess())
+			str.append("-ReadOnly");
+		
 		str.append("]");
 		
 		return str.toString();

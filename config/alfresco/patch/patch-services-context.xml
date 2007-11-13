@@ -1109,5 +1109,19 @@
             </list>
         </property>
     </bean>
+    
+    <bean id="patch.avmFormPropertyIdentifier" class="org.alfresco.repo.admin.patch.impl.AVMFormsPropertyTokenisationPatch" parent="basePatch" >
+        <property name="id"><value>patch.avmFormPropertyIdentifier</value></property>
+        <property name="description"><value>patch.avmFormPropertyIdentifier.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>111</value></property>
+        <property name="targetSchema"><value>112</value></property>
+        <property name="spacesImporterBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="indexerAndSearcher">
+            <ref bean="indexerAndSearcherFactory" />
+        </property>
+    </bean>
 
 </beans>

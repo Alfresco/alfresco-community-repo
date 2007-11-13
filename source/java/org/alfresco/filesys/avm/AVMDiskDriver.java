@@ -25,6 +25,7 @@ package org.alfresco.filesys.avm;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +37,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.server.SrvSession;
+import org.alfresco.filesys.server.auth.ClientInfo;
 import org.alfresco.filesys.server.core.DeviceContext;
 import org.alfresco.filesys.server.core.DeviceContextException;
 import org.alfresco.filesys.server.core.DeviceInterface;
@@ -58,12 +60,14 @@ import org.alfresco.filesys.server.pseudo.PseudoFolderNetworkFile;
 import org.alfresco.filesys.server.state.FileState;
 import org.alfresco.filesys.util.StringList;
 import org.alfresco.filesys.util.WildCard;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.CreateStoreTxnListener;
 import org.alfresco.repo.avm.CreateVersionTxnListener;
 import org.alfresco.repo.avm.PurgeStoreTxnListener;
 import org.alfresco.repo.avm.PurgeVersionTxnListener;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -73,9 +77,17 @@ import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.avm.locking.AVMLockingException;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -97,39 +109,44 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     // Configuration key names
 
     private static final String KEY_STORE = "storePath";
-
     private static final String KEY_VERSION = "version";
-
     private static final String KEY_CREATE = "createStore";
 
     // AVM path seperator
 
     public static final char AVM_SEPERATOR = '/';
-
     public static final String AVM_SEPERATOR_STR = "/";
 
+    // Define client role names
+    
+    public static final String RoleContentManager = "ContentManager";
+    public static final String RoleWebProject     = "WebProject";
+    public static final String RoleNotWebAuthor   = "NotWebAuthor";
+
+    // Content manager web project role
+    
+    private static final String ROLE_CONTENT_MANAGER = "ContentManager";
+    
     // Services and helpers
 
     private AVMService m_avmService;
-
     private TransactionService m_transactionService;
-
     private MimetypeService m_mimetypeService;
-
     private AuthenticationComponent m_authComponent;
-
     private AuthenticationService m_authService;
+    private NodeService m_nodeService;
 
     // AVM listeners
 
     private CreateStoreTxnListener m_createStoreListener;
-
     private PurgeStoreTxnListener m_purgeStoreListener;
-
     private CreateVersionTxnListener m_createVerListener;
-
     private PurgeVersionTxnListener m_purgeVerListener;
 
+    // Web project store
+    
+    private String m_webProjectStore;
+    
     /**
      * Default constructor
      */
@@ -223,6 +240,16 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     }
 
     /**
+     * Set the node service
+     * 
+     * @param nodeService NodeService
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+    	m_nodeService = nodeService;
+    }
+    
+    /**
      * Set the create store listener
      * 
      * @param createStoreListener
@@ -267,6 +294,16 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     }
 
     /**
+     * Set the web project store
+     * 
+     * @param webStore String
+     */
+    public void setWebProjectStore(String webStore)
+    {
+    	m_webProjectStore = webStore;
+    }
+    
+    /**
      * Parse and validate the parameter string and create a device context object for this instance of the shared
      * device.
      * 
@@ -307,13 +344,48 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                 ConfigElement virtElem = cfg.getChild("virtualView");
                 if (virtElem != null)
                 {
-                    // Check if sandboxes should be shown in the virtualization view
-
-                    boolean showSandboxes = cfg.getChild("showAllSandboxes") != null ? true : false;
+                    // Check if virtualization view show options have been specified
+                	
+                	int showOptions = AVMContext.ShowStagingStores + AVMContext.ShowAuthorStores;
+                	
+                	String showAttr = virtElem.getAttribute( "stores");
+                	if ( showAttr != null)
+                	{
+                		// Split the show options string
+                		
+                		StringTokenizer tokens = new StringTokenizer( showAttr, ",");
+                		StringList optList = new StringList();
+                		
+                		while ( tokens.hasMoreTokens())
+                			optList.addString( tokens.nextToken().trim().toLowerCase());
+                		
+                		// Build the show options mask
+                		
+                		showOptions = 0;
+                		
+                		if ( optList.containsString("normal"))
+                			showOptions += AVMContext.ShowNormalStores;
+                		
+                		if ( optList.containsString("author"))
+                			showOptions += AVMContext.ShowAuthorStores;
+                		
+                		if ( optList.containsString("preview"))
+                			showOptions += AVMContext.ShowPreviewStores;
+                		
+                		if ( optList.containsString("staging"))
+                			showOptions += AVMContext.ShowStagingStores;
+                	}
+                	else if ( cfg.getChild("showAllSandboxes") != null)
+                	{
+                		// Old style show options
+                		
+                		showOptions = AVMContext.ShowNormalStores + AVMContext.ShowAuthorStores +
+                					  AVMContext.ShowPreviewStores + AVMContext.ShowStagingStores;
+                	}
 
                     // Create the context
 
-                    context = new AVMContext(name, showSandboxes, this);
+                    context = new AVMContext(name, showOptions, this);
 
                     // Enable file state caching
 
@@ -327,6 +399,10 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
                     m_createVerListener.addCallback(context);
                     m_purgeVerListener.addCallback(context);
+                    
+                    // Create the file state for the root path, this will build the store pseudo folder list
+                    
+                    findPseudoState( new AVMPath( ""), context);
                 }
                 else
                 {
@@ -518,7 +594,9 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                     }
                 }
             }
+            
             // Return the context for this shared filesystem
+            
             return context;
         }
         finally
@@ -673,13 +751,14 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     /**
      * Build the full store path for a file/folder using the share relative path
      * 
-     * @param ctx
-     *            AVMContext
-     * @param path
-     *            String
+     * @param ctx AVMContext
+     * @param path String
+     * @param sess SrvSession
      * @return AVMPath
+     * @exception AccessDeniedException
      */
-    protected final AVMPath buildStorePath(AVMContext ctx, String path)
+    protected final AVMPath buildStorePath(AVMContext ctx, String path, SrvSession sess)
+    	throws AccessDeniedException
     {
         // Check if the AVM filesystem is a normal or virtualization view
 
@@ -690,6 +769,10 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
             // Create a path for the virtualization view
 
             avmPath = new AVMPath(path);
+            
+            // Check that the user has access to the path
+            
+            checkPathAccess( avmPath, ctx, sess);
         }
         else
         {
@@ -771,7 +854,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Convert the relative path to a store path
 
-        AVMPath storePath = buildStorePath(ctx, paths[0]);
+        AVMPath storePath = buildStorePath(ctx, paths[0], sess);
 
         // DEBUG
 
@@ -839,7 +922,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Convert the relative path to a store path
 
-        AVMPath storePath = buildStorePath(ctx, paths[0]);
+        AVMPath storePath = buildStorePath(ctx, paths[0], sess);
 
         // DEBUG
 
@@ -871,7 +954,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
             // Get the new file details
 
-            AVMPath fileStorePath = buildStorePath(ctx, params.getPath());
+            AVMPath fileStorePath = buildStorePath(ctx, params.getPath(), sess);
             AVMNodeDescriptor nodeDesc = m_avmService.lookup(fileStorePath.getVersion(), fileStorePath.getAVMPath());
 
             if (nodeDesc != null)
@@ -933,7 +1016,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         // Convert the relative path to a store path
 
         AVMContext ctx = (AVMContext) tree.getContext();
-        AVMPath storePath = buildStorePath(ctx, dir);
+        AVMPath storePath = buildStorePath(ctx, dir, sess);
 
         // DEBUG
 
@@ -1001,7 +1084,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         // Convert the relative path to a store path
 
         AVMContext ctx = (AVMContext) tree.getContext();
-        AVMPath storePath = buildStorePath(ctx, name);
+        AVMPath storePath = buildStorePath(ctx, name, sess);
 
         // DEBUG
 
@@ -1067,8 +1150,22 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         // Convert the relative path to a store path
 
         AVMContext ctx = (AVMContext) tree.getContext();
-        AVMPath storePath = buildStorePath(ctx, name);
-
+        AVMPath storePath = null;
+        
+        try
+        {
+        	storePath = buildStorePath(ctx, name, sess);
+        }
+        catch ( AccessDeniedException ex)
+        {
+        	// DEBUG
+        	
+        	if ( logger.isDebugEnabled())
+        		logger.debug("File exists check, path=" + name + " Access denied");
+        	
+        	return FileStatus.NotExist;
+        }
+        
         // DEBUG
 
         if (logger.isDebugEnabled())
@@ -1173,8 +1270,8 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         // Convert the relative path to a store path
         
         AVMContext ctx = (AVMContext) tree.getContext();
-        AVMPath storePath = buildStorePath( ctx, name);
-        
+        AVMPath storePath = buildStorePath( ctx, name, sess);
+
         // DEBUG
         
         if ( logger.isDebugEnabled())
@@ -1260,8 +1357,11 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                 
                 // Mark the file/folder as read-only if not the head version
                 
-                if ( ctx.isVersion() != AVMContext.VERSION_HEAD)
+                if ( ctx.isVersion() != AVMContext.VERSION_HEAD || storePath.isReadOnlyAccess())
                     attr += FileAttribute.ReadOnly;
+                
+                if ( attr == 0)
+                	attr = FileAttribute.NTNormal;
                 
                 info.setFileAttributes( attr);
 
@@ -1326,7 +1426,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         // Convert the relative path to a store path
 
         AVMContext ctx = (AVMContext) tree.getContext();
-        AVMPath storePath = buildStorePath(ctx, params.getPath());
+        AVMPath storePath = buildStorePath(ctx, params.getPath(), sess);
 
         // DEBUG
 
@@ -1492,8 +1592,8 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Convert the parent paths to store paths
 
-        AVMPath oldAVMPath = buildStorePath(ctx, oldPaths[0]);
-        AVMPath newAVMPath = buildStorePath(ctx, newPaths[0]);
+        AVMPath oldAVMPath = buildStorePath(ctx, oldPaths[0], sess);
+        AVMPath newAVMPath = buildStorePath(ctx, newPaths[0], sess);
 
         // DEBUG
 
@@ -1631,7 +1731,21 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Build the store path to the folder being searched
 
-        AVMPath storePath = buildStorePath(avmCtx, paths[0]);
+        AVMPath storePath = null;
+        
+        try
+        {
+        	storePath = buildStorePath(avmCtx, paths[0], sess);
+        }
+        catch ( AccessDeniedException ex)
+        {
+        	// DEBUG
+        	
+        	if ( logger.isDebugEnabled())
+        		logger.debug("Start search access denied");
+        	
+        	throw new FileNotFoundException("Access denied");
+        }
 
         // Check if the filesystem is the virtualization view
 
@@ -1649,7 +1763,12 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                 {
                     // Get the pseudo file list for the parent directory
 
-                    PseudoFileList searchList = fstate.getPseudoFileList();
+                	PseudoFileList searchList = null;
+                	
+                	if ( storePath.isLevel() == AVMPath.LevelId.Root)
+                		searchList = filterPseudoFolders(avmCtx, sess, storePath, fstate);
+                	else
+                		searchList = fstate.getPseudoFileList();
 
                     // Check if the pseudo file list is valid
 
@@ -1664,7 +1783,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                         // folder listing
 
                         WildCard wildCardFilter = new WildCard(paths[1], false);
-                        return new PseudoFileListSearchContext(searchList, attrib, wildCardFilter);
+                        return new PseudoFileListSearchContext(searchList, attrib, wildCardFilter, storePath.isReadOnlyAccess());
                     }
                     else
                     {
@@ -1678,7 +1797,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                             PseudoFileList singleList = new PseudoFileList();
                             singleList.addFile(pseudoFile);
 
-                            return new PseudoFileListSearchContext(singleList, attrib, null);
+                            return new PseudoFileListSearchContext(singleList, attrib, null, storePath.isReadOnlyAccess());
                         }
                     }
                 }
@@ -1694,7 +1813,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
                 PseudoFileList metaFiles = new PseudoFileList();
 
-                return new PseudoFileListSearchContext(metaFiles, attrib, null);
+                return new PseudoFileListSearchContext(metaFiles, attrib, null, storePath.isReadOnlyAccess());
             }
         }
 
@@ -1707,8 +1826,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         {
             // Get the file listing for the folder
 
-            AVMNodeDescriptor[] fileList = m_avmService.getDirectoryListingArray(storePath.getVersion(), storePath
-                    .getAVMPath(), false);
+            AVMNodeDescriptor[] fileList = m_avmService.getDirectoryListingArray(storePath.getVersion(), storePath.getAVMPath(), false);
 
             // Create the search context
 
@@ -1724,14 +1842,26 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                 // folder listing
 
                 WildCard wildCardFilter = new WildCard(paths[1], false);
-                context = new AVMSearchContext(fileList, attrib, wildCardFilter, storePath.getRelativePath());
+                context = new AVMSearchContext(fileList, attrib, wildCardFilter, storePath.getRelativePath(), storePath.isReadOnlyAccess());
             }
         }
         else
         {
             // Single file/folder search, convert the path to a store path
 
-            storePath = buildStorePath(avmCtx, searchPath);
+        	try
+        	{
+        		storePath = buildStorePath(avmCtx, searchPath, sess);
+        	}
+        	catch ( AccessDeniedException ex)
+        	{
+            	// DEBUG
+            	
+            	if ( logger.isDebugEnabled())
+            		logger.debug("Start search access denied");
+            	
+            	throw new FileNotFoundException("Access denied");
+        	}
 
             // Get the single file/folder details
 
@@ -1741,7 +1871,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
             {
                 // Create the search context for the single file/folder
 
-                context = new AVMSingleFileSearchContext(nodeDesc, storePath.getRelativePath());
+                context = new AVMSingleFileSearchContext(nodeDesc, storePath.getRelativePath(), storePath.isReadOnlyAccess());
             }
 
         }
@@ -2074,7 +2204,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
      *            AVMContext
      * @return FileState
      */
-    private final FileState findPseudoState(AVMPath avmPath, AVMContext avmCtx)
+    protected final FileState findPseudoState(AVMPath avmPath, AVMContext avmCtx)
     {
         // Make sure the is to a pseudo file/folder
         
@@ -2114,29 +2244,184 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                     {
                         // Add pseudo files for the stores
                         
-                        boolean sandbox = false;
-                        
                         for ( AVMStoreDescriptor storeDesc : storeList)
                         {
                             // Get the properties for the current store
+
+                        	String storeName = storeDesc.getName();
+                            Map<QName, PropertyValue> props = m_avmService.getStoreProperties( storeName);
                             
-                            Map<QName, PropertyValue> props = m_avmService.getStoreProperties( storeDesc.getName());
+                            // Check if the store is a main web project
                             
-                            if ( props.containsKey( AVMContext.PROP_WORKFLOWPREVIEW) || props.containsKey( AVMContext.PROP_AUTHORPREVIEW))
-                                sandbox = true;
+                            if ( props.containsKey( SandboxConstants.PROP_SANDBOX_STAGING_MAIN))
+                            {
+                            	// Get the noderef for the web project
+                            	
+                            	PropertyValue prop = props.get( SandboxConstants.PROP_WEB_PROJECT_NODE_REF);
+                            	if ( prop != null) {
+                            		
+                            		// Get the web project noderef
+                            		
+                            		NodeRef webNodeRef = new NodeRef( prop.getStringValue());
+                            		
+                            		// Create the web project pseudo folder
+                            		
+                            		WebProjectStorePseudoFile webProjFolder = new WebProjectStorePseudoFile( storeDesc, FileName.DOS_SEPERATOR_STR + storeName, webNodeRef);
+                            		fstate.addPseudoFile( webProjFolder);
+
+                            		// DEBUG
+                            		
+                            		if ( logger.isDebugEnabled())
+                            			logger.debug( "Found web project " + webProjFolder.getFileName());
+                            		
+                            		// Get the list of content managers for this web project
+
+                            		List<ChildAssociationRef> mgrAssocs = m_nodeService.getChildAssocs( webNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+                            		
+                            		for ( ChildAssociationRef mgrRef : mgrAssocs)
+                            		{
+                            			// Get the child node and see if it is a content manager association
+                            			
+                            			NodeRef childRef = mgrRef.getChildRef();
+                            			
+                            			if ( m_nodeService.getProperty( childRef, WCMAppModel.PROP_WEBUSERROLE).equals(ROLE_CONTENT_MANAGER))
+                            			{
+                            				// Get the user name add it to the web project pseudo folder
+                            				
+                            				String userName = (String) m_nodeService.getProperty( childRef, WCMAppModel.PROP_WEBUSERNAME);
+                            				
+                            				webProjFolder.addUserRole( userName, WebProjectStorePseudoFile.RoleContentManager);
+                            				
+                            				// DEBUG
+                            				
+                            				if ( logger.isDebugEnabled())
+                            					logger.debug("  Added content manager " + userName);
+                            			}
+                            		}
+                            	}
+                            }
                             else
-                                sandbox = false;
+                            {
+                            	// Check if this store is a web project sandbox
+                            	
+                            	int storeType = StoreType.Normal;
+                            	String webProjName = null;
+                            	String userName    = null;
+                            	
+	                            if ( props.containsKey( SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN))
+	                            {
+	                            	// Sandbox store, linked to a web project
+	                            	
+	                                storeType = StoreType.WebAuthorMain;
+	                                
+	                                // Get the associated web project name
 
-                            // DEBUG
-                            
-                            if ( logger.isDebugEnabled())
-                                logger.debug( "Store " + storeDesc.getName() + ", sandbox=" + sandbox);
-                            
-                            // Add a pseudo file for the current store
+	                                webProjName = props.get( SandboxConstants.PROP_WEBSITE_NAME).getStringValue();
 
-                            if ( sandbox == false || avmCtx.showSandboxes() == true)
-                                fstate.addPseudoFile( new StorePseudoFile( storeDesc, FileName.DOS_SEPERATOR_STR + storeDesc.getName()));
+	                                // Get the user name from teh store name
+
+	                                userName = storeName.substring( webProjName.length() + 2);
+	                            }
+	                            else if ( props.containsKey( SandboxConstants.PROP_SANDBOX_AUTHOR_PREVIEW))
+	                            {
+	                            	// Author preview sandbox store, linked to a web project
+	                            	
+	                                storeType = StoreType.WebAuthorPreview;
+	                                
+	                                // Get the associated web project name
+
+	                                String projPlusUser = storeName.substring( 0, storeName.length() - "--preview".length());
+	                                int pos = projPlusUser.lastIndexOf("--");
+	                                if ( pos != -1)
+	                                {
+	                                	webProjName = projPlusUser.substring( 0, pos);
+	                                	userName    = projPlusUser.substring(pos + 2);
+	                                }
+	                            }
+	                            else if ( props.containsKey( SandboxConstants.PROP_SANDBOX_WORKFLOW_PREVIEW))
+	                            {
+	                            	// Staging preview sandbox store, linked to a web project
+	                            	
+	                                storeType = StoreType.WebStagingPreview;
+	                            }
+	                            else if ( props.containsKey( SandboxConstants.PROP_SANDBOX_STAGING_PREVIEW))
+	                            {
+	                            	// Staging preview sandbox store, linked to a web project
+	                            	
+	                                storeType = StoreType.WebStagingPreview;
+	                                
+	                                // Get the associated web project name
+
+	                                webProjName = storeName.substring( 0, storeName.length() - "--preview".length());
+	                            }
+	                            
+	                            // DEBUG
+	                            
+	                            if ( logger.isDebugEnabled())
+	                                logger.debug( "Store " + storeDesc.getName() + ", type=" + StoreType.asString( storeType) + ", webproj=" + webProjName + ", username=" + userName);
+	                            
+	                            // Add a pseudo file for the current store
+	
+	                            if ( avmCtx.showStoreType( storeType))
+	                            {
+	                            	// Create the pseudo folder for the store
+	                            	
+	                            	StorePseudoFile storeFolder = new StorePseudoFile( storeDesc, FileName.DOS_SEPERATOR_STR + storeName, storeType);
+	                            	if ( storeType != StoreType.Normal)
+	                            	{
+	                            		storeFolder.setWebProject( webProjName);
+	                            		storeFolder.setUserName( userName);
+	                            	}
+
+	                            	// Add the store pseudo folder to the root folder file list
+	                            	
+	                                fstate.addPseudoFile( storeFolder);
+	                            }
+                            }
                         }
+                    }
+                    
+                    // Scan the pseudo folder list and add all publisher/reviewer user names to the web project roles list
+                    
+                    PseudoFileList folderList = fstate.getPseudoFileList();
+                    if ( folderList != null && folderList.numberOfFiles() > 0)
+                    {
+                    	// Scan the pseudo folder list
+                    	
+                    	for ( int i = 0; i < folderList.numberOfFiles(); i++)
+                    	{
+                    		// Check if the current pseduo file is a store folder
+                    		
+                    		if ( folderList.getFileAt( i) instanceof StorePseudoFile)
+                    		{
+                    			// Check if the store has an associated web project
+                    			
+                    			StorePseudoFile curFile = (StorePseudoFile) folderList.getFileAt( i);
+                    			if ( curFile.hasWebProject())
+                    			{
+                    				// Find the associated web project pseudo folder
+                    				
+                    				WebProjectStorePseudoFile webProj = (WebProjectStorePseudoFile) folderList.findFile( curFile.getWebProject(), true);
+                    				
+                    				// Strip the web project name from the sandbox store name and extract the user name.
+                    				// Add the user as a publisher/reviewer to the web project roles list
+                    				
+                    				String userName = curFile.getFileName().substring( webProj.getFileName().length() + 2);
+                    				
+                    				// If the user does not have a content manager role then add as a publisher
+                    				
+                    				if ( webProj.getUserRole( userName) == WebProjectStorePseudoFile.RoleNone)
+                    				{
+                    					webProj.addUserRole( userName, WebProjectStorePseudoFile.RolePublisher);
+                    				
+	                    				// DEBUG
+	                    				
+	                    				if ( logger.isDebugEnabled())
+	                    					logger.debug( "Added publisher " + userName + " to " + webProj.getFileName());
+                    				}
+                    			}
+                    		}
+                    	}
                     }
                 }
                 break;
@@ -2405,5 +2690,220 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                 }
             }
         }
+    }
+    
+    /**
+     * Check that the user has access to the path
+     * 
+     * @param avmPath AVMPath
+     * @param avmCtx AVMContext
+     * @param sess SrvSession
+     * @exception AccessDeniedException
+     */
+    private final void checkPathAccess( AVMPath avmPath, AVMContext avmCtx, SrvSession sess)
+    	throws AccessDeniedException {
+    	
+    	// Only enforce access checks on virtualization views
+    	
+    	if ( avmCtx.isVirtualizationView() == false)
+    		return;
+    	
+    	// Get the client details for the session
+    	
+    	ClientInfo cInfo = sess.getClientInformation();
+    	if ( cInfo == null || cInfo.getUserName() == null || cInfo.getUserName().length() == 0)
+    		throw new AccessDeniedException();
+
+    	// Allow access to the root folder
+    	
+    	if ( avmPath.isLevel() == AVMPath.LevelId.Root)
+    		return;
+    	
+    	// Admin user has full access
+    	
+    	if ( cInfo.getUserName().equalsIgnoreCase( m_authComponent.getSystemUserName()))
+    		return;
+    	
+    	// Get root file state, get the store pseudo folder details
+
+    	FileState rootState = avmCtx.getStateTable().findFileState( FileName.DOS_SEPERATOR_STR);
+    	if ( rootState == null){
+    	
+    		// Recreate the root file state, new stores may have been added
+    		
+    		rootState = findPseudoState( new AVMPath( FileName.DOS_SEPERATOR_STR), avmCtx);
+    	}
+    	
+    	// Check if there are any store pseudo folders
+    	
+    	if ( rootState != null && rootState.hasPseudoFiles())
+    	{
+    		PseudoFile pseudoFolder = rootState.getPseudoFileList().findFile( avmPath.getStoreName(), false);
+    		if ( pseudoFolder != null)
+    		{
+    			// Check if the pseudo folder is a web project folder or sandbox within a web project
+    			
+    			if ( pseudoFolder instanceof WebProjectStorePseudoFile)
+    			{
+    				// Check the users role within the web project
+    				
+    				WebProjectStorePseudoFile webFolder = (WebProjectStorePseudoFile) pseudoFolder;
+    				
+    				int role = webFolder.getUserRole( cInfo.getUserName());
+    				
+    				if ( role == WebProjectStorePseudoFile.RoleNone)
+    				{
+	    				// User does not have access to this web project
+	    				
+	    				throw new AccessDeniedException("User " + cInfo.getUserName() + " has no access to web project, " + webFolder.getFileName());
+    				}
+    				else if ( role == WebProjectStorePseudoFile.RolePublisher)
+    				{
+    					// Only allow read-only access to the staging area
+    					
+    					avmPath.setReadOnlyAccess( true);
+    				}
+    			}
+    			else if ( pseudoFolder instanceof StorePseudoFile)
+    			{
+    				// Check the store type
+    				
+    				StorePseudoFile storeFolder = (StorePseudoFile) pseudoFolder;
+    				if ( storeFolder.isStoreType() == StoreType.Normal)
+    					return;
+    				else if ( storeFolder.hasWebProject())
+    				{
+    					// Get the web project that the sandbox is linked to
+    					
+    					WebProjectStorePseudoFile webFolder = (WebProjectStorePseudoFile) rootState.getPseudoFileList().findFile( storeFolder.getWebProject(), false);
+    					
+    					int role = webFolder.getUserRole( cInfo.getUserName());
+    					
+        				if ( role == WebProjectStorePseudoFile.RoleNone)
+        				{
+	        				// User does not have access to this web project
+	        				
+	        				throw new AccessDeniedException("User " + cInfo.getUserName() + " has no access to web project, " + webFolder.getFileName() + "/" + storeFolder.getFileName());
+        				}
+        				else if ( role == WebProjectStorePseudoFile.RolePublisher &&
+        						  storeFolder.getUserName().equalsIgnoreCase( cInfo.getUserName()) == false)
+        				{
+	        				// User does not have access to this web project
+	        				
+	        				throw new AccessDeniedException("User " + cInfo.getUserName() + " has no access to web project, " + webFolder.getFileName() + "/" + storeFolder.getFileName());
+        				}
+    				}
+    			}
+    		}
+    	}
+    	else
+    	{
+	    	// Store does not exist
+	    	
+	    	throw new AccessDeniedException("Store does not exist, " + avmPath.getStoreName());
+    	}
+    	
+    	// DEBUG
+    	
+    	if (logger.isDebugEnabled())
+    		logger.debug( "Check access " + avmPath);
+    }
+    
+    /**
+     * Filter the list of pseudo folders returned in a search
+     * 
+     * @param avmCtx AVMContext
+     * @param sess SrvSession
+     * @param avmPath AVMPath
+     * @param fstate FileState
+     * @return PseudoFileList
+     */
+    private final PseudoFileList filterPseudoFolders( AVMContext avmCtx, SrvSession sess, AVMPath avmPath, FileState fstate)
+    {
+    	// Check if the root folder file state has any store pseudo folders 
+
+    	if ( fstate.hasPseudoFiles() == false)
+    		return null;
+
+    	// Get the client details for the session
+    	
+    	ClientInfo cInfo = sess.getClientInformation();
+    	if ( cInfo == null || cInfo.getUserName() == null || cInfo.getUserName().length() == 0)
+    		return null;
+    	
+    	// Check for the admin user, no need to filter the list
+
+    	PseudoFileList fullList   = fstate.getPseudoFileList();
+    	if ( cInfo.getUserName().equalsIgnoreCase( m_authComponent.getSystemUserName()))
+    		return fullList;
+    	
+    	// Create a filtered list of store pseudo folders that the user has access to
+    	
+    	PseudoFileList filterList = new PseudoFileList();
+    	
+    	for ( int i = 0; i < fullList.numberOfFiles(); i++)
+    	{
+    		// Get the current store pseudo folder
+    		
+    		PseudoFile pseudoFolder = fullList.getFileAt( i);
+    		
+			// Check if the pseudo folder is a web project folder or sandbox within a web project
+			
+			if ( pseudoFolder instanceof WebProjectStorePseudoFile)
+			{
+				// Check the users role within the web project
+				
+				WebProjectStorePseudoFile webFolder = (WebProjectStorePseudoFile) pseudoFolder;
+				
+				if ( avmCtx.showStagingStores() && webFolder.getUserRole( cInfo.getUserName()) != WebProjectStorePseudoFile.RoleNone)
+				{
+					// User has access to this store
+					
+					filterList.addFile( pseudoFolder);
+				}
+			}
+			else if ( pseudoFolder instanceof StorePseudoFile)
+			{
+				// Check if the store type should be included in the visible list
+				
+				StorePseudoFile storeFolder = (StorePseudoFile) pseudoFolder;
+				if ( avmCtx.showStoreType( storeFolder.isStoreType()))
+				{
+					// Check if the user has access to this store
+					
+					if ( storeFolder.hasWebProject())
+					{
+						// Get the web project that the sandbox is linked to
+						
+						WebProjectStorePseudoFile webFolder = (WebProjectStorePseudoFile) fullList.findFile( storeFolder.getWebProject(), false);
+						int role = webFolder.getUserRole( cInfo.getUserName());
+						
+						if ( role == WebProjectStorePseudoFile.RoleContentManager && avmCtx.showStoreType( storeFolder.isStoreType()))
+	    				{
+	    					// User is a content manager, allow access to the store
+	    					
+	    					filterList.addFile( storeFolder);
+	    				}
+						else if ( role == WebProjectStorePseudoFile.RolePublisher && avmCtx.showStoreType( storeFolder.isStoreType()))
+						{
+							// Allow access if the user owns the current folder
+							
+							if ( storeFolder.getUserName().equalsIgnoreCase( cInfo.getUserName()))
+								filterList.addFile( storeFolder);
+						}
+					}
+					else if ( avmCtx.showNormalStores())
+					{
+						// Store is not linked to a web project, allow access to the store
+						
+						filterList.addFile( storeFolder);
+					}
+				}
+			}
+    	}
+    	
+    	// Return the filtered list
+    	
+    	return filterList;
     }
 }

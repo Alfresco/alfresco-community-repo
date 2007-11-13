@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 
@@ -44,6 +44,7 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.remote.AVMRemoteImpl;
+import org.alfresco.repo.remote.AVMSyncServiceRemote;
 import org.alfresco.repo.remote.ClientTicketHolder;
 import org.alfresco.repo.remote.ClientTicketHolderThread;
 import org.alfresco.service.cmr.action.ActionService;
@@ -62,6 +63,7 @@ import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.remote.AVMRemoteTransport;
+import org.alfresco.service.cmr.remote.AVMSyncServiceTransport;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
@@ -79,7 +81,7 @@ public class DeploymentServiceImpl implements DeploymentService
      * The local AVMService Instance.
      */
     private AVMService fAVMService;
-    
+
     /**
      * The Ticket holder.
      */
@@ -92,7 +94,7 @@ public class DeploymentServiceImpl implements DeploymentService
     {
         fTicketHolder = new ClientTicketHolderThread();
     }
-    
+
     /**
      * Setter.
      * @param service The instance to set.
@@ -101,7 +103,7 @@ public class DeploymentServiceImpl implements DeploymentService
     {
         fAVMService = service;
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.deploy.DeploymentService#deployDifference(int, java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, java.lang.String, boolean, boolean)
      */
@@ -113,7 +115,7 @@ public class DeploymentServiceImpl implements DeploymentService
             AVMRemote remote = getRemote(hostName, port, userName, password);
             if (callback != null)
             {
-                DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.START, 
+                DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.START,
                                                             new Pair<Integer, String>(version, srcPath),
                                                             dstPath);
                 callback.eventOccurred(event);
@@ -153,14 +155,14 @@ public class DeploymentServiceImpl implements DeploymentService
                         throw new AVMNotFoundException("Node Not Found: " + parentBase[0]);
                     }
                 }
-                snapshot = remote.createSnapshot(storePath[0], "PreDeploy", "Pre Deployment Snapshot").get(storePath[0]);   
+                snapshot = remote.createSnapshot(storePath[0], "PreDeploy", "Pre Deployment Snapshot").get(storePath[0]);
             }
             // Get the root of the deployment on the destination server.
             AVMNodeDescriptor dstRoot = remote.lookup(-1, dstPath);
             if (dstRoot == null)
             {
                 // If it doesn't exist, do a copyDirectory to create it.
-                DeploymentEvent event = 
+                DeploymentEvent event =
                     new DeploymentEvent(DeploymentEvent.Type.COPIED,
                                         new Pair<Integer, String>(version, srcPath),
                                         dstPath);
@@ -177,7 +179,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
                 if (callback != null)
                 {
-                    event = new DeploymentEvent(DeploymentEvent.Type.END, 
+                    event = new DeploymentEvent(DeploymentEvent.Type.END,
                                                 new Pair<Integer, String>(version, srcPath),
                                                 dstPath);
                     callback.eventOccurred(event);
@@ -187,7 +189,7 @@ public class DeploymentServiceImpl implements DeploymentService
             if (!dstRoot.isDirectory())
             {
                 throw new AVMWrongTypeException("Not a Directory: " + dstPath);
-            } 
+            }
             // The corresponding directory exists so recursively deploy.
             try
             {
@@ -195,7 +197,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
                 if (callback != null)
                 {
-                    DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.END, 
+                    DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.END,
                                                                 new Pair<Integer, String>(version, srcPath),
                                                                 dstPath);
                     callback.eventOccurred(event);
@@ -223,9 +225,9 @@ public class DeploymentServiceImpl implements DeploymentService
         finally
         {
             fTicketHolder.setTicket(null);
-        }        
+        }
     }
-    
+
     /**
      * Deploy all the children of corresponding directories.
      * @param src The source directory.
@@ -234,9 +236,9 @@ public class DeploymentServiceImpl implements DeploymentService
      * @param dontDelete Flag for not deleting.
      * @param dontDo Flag for dry run.
      */
-    private void deployDirectoryPush(int version, 
+    private void deployDirectoryPush(int version,
                                      AVMNodeDescriptor src, AVMNodeDescriptor dst,
-                                     AVMRemote remote, 
+                                     AVMRemote remote,
                                      NameMatcher matcher,
                                      boolean dontDelete, boolean dontDo,
                                      DeploymentReport report,
@@ -278,7 +280,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 String destination = AVMNodeConverter.ExtendAVMPath(dst.getPath(), name);
                 if (!excluded(matcher, null, destination))
                 {
-                    DeploymentEvent event = 
+                    DeploymentEvent event =
                         new DeploymentEvent(DeploymentEvent.Type.DELETED,
                                             source,
                                             destination);
@@ -296,7 +298,7 @@ public class DeploymentServiceImpl implements DeploymentService
             }
         }
     }
-    
+
     /**
      * Push out a single node.
      * @param src The source node.
@@ -308,7 +310,7 @@ public class DeploymentServiceImpl implements DeploymentService
      */
     private void deploySinglePush(int version,
                                   AVMNodeDescriptor src, AVMNodeDescriptor dstParent,
-                                  AVMNodeDescriptor dst, AVMRemote remote, 
+                                  AVMNodeDescriptor dst, AVMRemote remote,
                                   NameMatcher matcher,
                                   boolean dontDelete, boolean dontDo,
                                   DeploymentReport report,
@@ -338,7 +340,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 copyDirectory(version, src, dstParent, remote, matcher);
                 return;
             }
-            Pair<Integer, String> source = 
+            Pair<Integer, String> source =
                 new Pair<Integer, String>(version, src.getPath());
             String destination = AVMNodeConverter.ExtendAVMPath(dstParent.getPath(), src.getName());
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
@@ -369,7 +371,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 deployDirectoryPush(version, src, dst, remote, matcher, dontDelete, dontDo, report, callback);
                 return;
             }
-            Pair<Integer, String> source = 
+            Pair<Integer, String> source =
                 new Pair<Integer, String>(version, src.getPath());
             String destination = dst.getPath();
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
@@ -395,7 +397,7 @@ public class DeploymentServiceImpl implements DeploymentService
             {
                 return;
             }
-            Pair<Integer, String> source = 
+            Pair<Integer, String> source =
                 new Pair<Integer, String>(version, src.getPath());
             String destination = dst.getPath();
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.UPDATED,
@@ -439,7 +441,7 @@ public class DeploymentServiceImpl implements DeploymentService
         copyStream(in, out);
         copyMetadata(version, src, remote.lookup(-1, dstParent.getPath() + '/' + dst.getName()), remote);
     }
-    
+
     /**
      * Recursively copy a directory.
      * @param src
@@ -453,7 +455,7 @@ public class DeploymentServiceImpl implements DeploymentService
         remote.createDirectory(parent.getPath(), src.getName());
         AVMNodeDescriptor newParent = remote.lookup(-1, parent.getPath() + '/' + src.getName());
         copyMetadata(version, src, newParent, remote);
-        SortedMap<String, AVMNodeDescriptor> list = 
+        SortedMap<String, AVMNodeDescriptor> list =
             fAVMService.getDirectoryListing(src);
         // For each child in the source directory.
         for (AVMNodeDescriptor child : list.values())
@@ -474,7 +476,7 @@ public class DeploymentServiceImpl implements DeploymentService
             }
         }
     }
-    
+
     /**
      * Utility for copying from one stream to another.
      * @param in The input stream.
@@ -488,7 +490,7 @@ public class DeploymentServiceImpl implements DeploymentService
         {
             while ((read = in.read(buff)) != -1)
             {
-                out.write(buff, 0, read);            
+                out.write(buff, 0, read);
             }
             in.close();
             out.close();
@@ -520,7 +522,7 @@ public class DeploymentServiceImpl implements DeploymentService
             remote.setMimeType(dst.getPath(), contData.getMimetype());
         }
     }
-    
+
     /**
      * Utility to get an AVMRemote from a remote Alfresco Server.
      * @param hostName
@@ -558,7 +560,7 @@ public class DeploymentServiceImpl implements DeploymentService
             throw new AVMException("Could not Initialize Remote Connection to " + hostName, e);
         }
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.deploy.DeploymentService#getRemoteActionService(java.lang.String, int, java.lang.String, java.lang.String)
      */
@@ -624,18 +626,21 @@ public class DeploymentServiceImpl implements DeploymentService
         {
             RmiProxyFactoryBean syncFactory = new RmiProxyFactoryBean();
             syncFactory.setRefreshStubOnConnectFailure(true);
-            syncFactory.setServiceInterface(AVMSyncService.class);
+            syncFactory.setServiceInterface(AVMSyncServiceTransport.class);
             syncFactory.setServiceUrl("rmi://" + hostName + ":" + port + "/avmsync");
             syncFactory.afterPropertiesSet();
-            AVMSyncService syncService = (AVMSyncService)syncFactory.getObject();
-            return syncService;
+            AVMSyncServiceTransport syncServiceTransport = (AVMSyncServiceTransport)syncFactory.getObject();
+            AVMSyncServiceRemote remote = new AVMSyncServiceRemote();
+            remote.setAvmSyncServiceTransport(syncServiceTransport);
+            remote.setClientTicketHolder(fTicketHolder);
+            return remote;
         }
         catch (Exception e)
         {
             throw new AVMException("Could not roll back failed deployment to " + hostName, e);
         }
     }
- 
+
     /**
      * Helper function to create a non existent destination.
      * @param remote The AVMRemote instance.
@@ -668,7 +673,7 @@ public class DeploymentServiceImpl implements DeploymentService
             prevPath = currPath;
         }
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.deploy.DeploymentService#deployDifferenceFS(int, java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, java.lang.String, boolean, boolean)
      */
@@ -703,7 +708,7 @@ public class DeploymentServiceImpl implements DeploymentService
         report.add(event);
         return report;
     }
-    
+
     private void deployDirectoryPush(DeploymentReceiverService service, String ticket,
                                      DeploymentReport report, DeploymentCallback callback,
                                      int version,
@@ -738,7 +743,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 if (!excluded(matcher, null, newDstPath))
                 {
                     service.delete(ticket, newDstPath);
-                    DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.DELETED, 
+                    DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.DELETED,
                                                                 new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())),
                                                                 newDstPath);
                     if (callback != null)
@@ -821,7 +826,7 @@ public class DeploymentServiceImpl implements DeploymentService
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.DELETED,
                                                         new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())),
                                                         newDstPath);
-            if (callback != null) 
+            if (callback != null)
             {
                 callback.eventOccurred(event);
             }
@@ -829,7 +834,7 @@ public class DeploymentServiceImpl implements DeploymentService
             dst = null;
         }
     }
-    
+
     /**
      * Copy or overwrite a single file.
      * @param service
@@ -840,7 +845,7 @@ public class DeploymentServiceImpl implements DeploymentService
      * @param src
      * @param dstPath
      */
-    private void copyFile(DeploymentReceiverService service, String ticket, 
+    private void copyFile(DeploymentReceiverService service, String ticket,
                           DeploymentReport report, DeploymentCallback callback, int version,
                           AVMNodeDescriptor src, String dstPath)
     {
@@ -865,7 +870,7 @@ public class DeploymentServiceImpl implements DeploymentService
             throw new AVMException("Failed to copy " + src + ". Deployment aborted.", e);
         }
     }
-    
+
     /**
      * Copy a file or directory to an empty destination.
      * @param service
@@ -877,7 +882,7 @@ public class DeploymentServiceImpl implements DeploymentService
      * @param parentPath
      */
     private void copy(DeploymentReceiverService service, String ticket,
-                      DeploymentReport report, DeploymentCallback callback, 
+                      DeploymentReport report, DeploymentCallback callback,
                       int version, AVMNodeDescriptor src, String parentPath, NameMatcher matcher)
     {
         String dstPath = extendPath(parentPath, src.getName());
@@ -905,7 +910,7 @@ public class DeploymentServiceImpl implements DeploymentService
             }
         }
     }
-    
+
     /**
      * Extend a path.
      * @param path
@@ -920,7 +925,7 @@ public class DeploymentServiceImpl implements DeploymentService
         }
         return path + '/' + name;
     }
-    
+
     /**
      * Returns true if either srcPath or dstPath are matched by matcher.
      * @param matcher

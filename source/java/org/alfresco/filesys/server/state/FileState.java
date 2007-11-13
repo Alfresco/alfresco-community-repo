@@ -95,6 +95,10 @@ public class FileState
     
     private PseudoFileList m_pseudoFiles;
     
+    // Last updated time
+    
+    private long m_lastUpdate;
+    
     /**
      * Class constructor
      * 
@@ -356,6 +360,26 @@ public class FileState
         if ( m_pseudoFiles == null)
             m_pseudoFiles = new PseudoFileList();
         m_pseudoFiles.addFile( pfile);
+    }
+
+    /**
+     * Return the last updated time
+     * 
+     * @return long
+     */
+    public final long getLastUpdated()
+    {
+    	return m_lastUpdate;
+    }
+
+    /**
+     * Set the last updated time
+     * 
+     * @param updateTime long
+     */
+    public final void setLastUpdated(long updateTime)
+    {
+    	m_lastUpdate = updateTime;
     }
     
     /**

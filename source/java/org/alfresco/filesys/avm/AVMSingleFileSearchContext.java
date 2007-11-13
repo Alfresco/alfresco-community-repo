@@ -49,16 +49,23 @@ public class AVMSingleFileSearchContext extends SearchContext {
 	
 	private String m_relativePath;
 	
+	// Mark thel file/folder as read-only
+	
+	private boolean m_readOnly;
+	
 	/**
 	 * Class constructor
 	 * 
 	 * @param fileDetails AVMNodeDescriptor
 	 * @param relPath String
+	 * @param readOnly boolean
 	 */
-	public AVMSingleFileSearchContext( AVMNodeDescriptor fileDetails, String relPath)
+	public AVMSingleFileSearchContext( AVMNodeDescriptor fileDetails, String relPath, boolean readOnly)
 	{
 		m_fileDetails  = fileDetails;
 		m_relativePath = relPath;
+		
+		m_readOnly = readOnly;
 	}
 	
     /**
@@ -112,6 +119,9 @@ public class AVMSingleFileSearchContext extends SearchContext {
     			m_fileDetails.getName().equalsIgnoreCase( "Desktop.ini") ||
     			m_fileDetails.getName().equalsIgnoreCase( "Thumbs.db"))
     		attr += FileAttribute.Hidden;
+
+    	if ( m_readOnly == true)
+    		attr += FileAttribute.ReadOnly;
     	
     	info.setFileAttributes( attr);
     	info.setFileId( m_relativePath.hashCode());

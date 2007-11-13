@@ -26,74 +26,29 @@
 package org.alfresco.repo.admin.patch.impl;
 
 import org.alfresco.i18n.I18NUtil;
-import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ImporterBootstrap;
-import org.alfresco.repo.search.Indexer;
-import org.alfresco.repo.search.IndexerAndSearcher;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
 
 /**
  * Patch wca:webfolder objects so that the avmstore property is in the 
  * index in untokenized form. 
  * 
  * @author gavinc
- *
  */
-public class AVMStorePropertyTokenisationPatch extends AbstractPatch
+public class AVMStorePropertyTokenisationPatch extends BaseReindexingPatch
 {
     private static final String MSG_SUCCESS = "patch.avmStoreAsIdentifier.result";
     
     private ImporterBootstrap spacesImporterBootstrap;
-    private IndexerAndSearcher indexerAndSearcher;
-
-    public AVMStorePropertyTokenisationPatch()
-    {
-        
-    }
 
     public void setSpacesImporterBootstrap(ImporterBootstrap spacesImporterBootstrap)
     {
         this.spacesImporterBootstrap = spacesImporterBootstrap;
     }
     
-    public void setIndexerAndSearcher(IndexerAndSearcher indexerAndSearcher)
-    {
-        this.indexerAndSearcher = indexerAndSearcher;
-    }
-
     @Override
     protected String applyInternal() throws Exception
     {
         reindex("TYPE:\"wca:webfolder\"", spacesImporterBootstrap.getStoreRef());
         return I18NUtil.getMessage(MSG_SUCCESS);
-    }
-    
-    private void reindex(String query, StoreRef store)
-    {
-        SearchParameters sp = new SearchParameters();
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery(query);
-        sp.addStore(store);
-        ResultSet rs = null;
-        try
-        {
-            rs = searchService.query(sp);
-            for(ResultSetRow row : rs)
-            {
-                Indexer indexer = indexerAndSearcher.getIndexer(row.getNodeRef().getStoreRef());
-                indexer.updateNode(row.getNodeRef());
-            }
-        }
-        finally
-        {
-          if(rs != null)
-          {
-              rs.close();
-          }
-        }
     }
 }

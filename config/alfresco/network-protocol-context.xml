@@ -94,6 +94,7 @@
 	  <property name="mimetypeService"><ref bean="mimetypeService" /></property>
 	  <property name="serviceRegistry"><ref bean="ServiceRegistry"/></property>
       <property name="stateReaper"><ref bean="fileStateReaper"/></property>
+      <property name="nodeService"><ref bean="NodeService" /></property>
 	   
 	  <property name="createStoreListener"><ref bean="createStoreTxnListener"/></property>
 	  <property name="purgeStoreListener"><ref bean="purgeStoreTxnListener"/></property>

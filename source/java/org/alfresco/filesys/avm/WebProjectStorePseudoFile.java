@@ -23,6 +23,8 @@
 
 package org.alfresco.filesys.avm;
 
+import java.util.Hashtable;
+
 import org.alfresco.filesys.server.filesys.FileAttribute;
 import org.alfresco.filesys.server.filesys.FileInfo;
 import org.alfresco.filesys.server.filesys.FileName;
@@ -30,38 +32,41 @@ import org.alfresco.filesys.server.filesys.NetworkFile;
 import org.alfresco.filesys.server.pseudo.PseudoFile;
 import org.alfresco.filesys.server.pseudo.PseudoFolderNetworkFile;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Store Pseudo File Class
+ * Web Project Store Pseudo File Class
  * 
  * <p>Represents an AVM store as a folder.
  *
  * @author gkspencer
  */
-public class StorePseudoFile extends PseudoFile {
+public class WebProjectStorePseudoFile extends StorePseudoFile {
 
-	// Store type
+	// Store/web project user access roles
 	
-	private int m_storeType = StoreType.Normal;
+	public static final int RoleNone			= 0;
+	public static final int RolePublisher		= 1;
+	public static final int RoleContentManager	= 2;
 	
-	// Web project this sandbox links to, or null if this store is not linked
+	// Node ref for this store
 	
-	private String m_webProject;
+	private NodeRef m_noderef;
 	
-	// User name if this is an author sandbox for a web project
+	// List of users that are content managers/publishers for this web project store
 	
-	private String m_userName;
+	private Hashtable<String, Integer> m_users;
 	
 	/**
 	 * Class constructor
 	 * 
 	 * @param storeDesc AVMStoreDescriptor
 	 * @param relPath String
-	 * @param storeType int
+	 * @param nodeRef NodeRef
 	 */
-	public StorePseudoFile( AVMStoreDescriptor storeDesc, String relPath, int storeType)
+	public WebProjectStorePseudoFile( AVMStoreDescriptor storeDesc, String relPath, NodeRef nodeRef)
 	{
-		super( storeDesc.getName(), FileAttribute.Directory + FileAttribute.ReadOnly);
+		super( storeDesc, relPath, StoreType.WebStagingMain);
 		
 		// Create static file information from the store details
 		
@@ -76,8 +81,10 @@ public class StorePseudoFile extends PseudoFile {
 		fInfo.setFileId( relPath.hashCode());
 		
 		setFileInfo( fInfo);
+
+		// Set the associated node ref for the web project
 		
-		setStoreType( storeType);
+		m_noderef = nodeRef;
 	}
 	
 	/**
@@ -85,10 +92,11 @@ public class StorePseudoFile extends PseudoFile {
 	 * 
 	 * @param storeName String
 	 * @param relPath String
+	 * @param nodeRef NodeRef
 	 */
-	public StorePseudoFile( String storeName, String relPath)
+	public WebProjectStorePseudoFile( String storeName, String relPath, NodeRef nodeRef)
 	{
-		super( storeName, FileAttribute.Directory + FileAttribute.ReadOnly);
+		super( storeName, relPath);
 		
 		// Create static file information from the store details
 		
@@ -104,113 +112,79 @@ public class StorePseudoFile extends PseudoFile {
 		fInfo.setFileId( relPath.hashCode());
 		
 		setFileInfo( fInfo);
+
+		// Set the associated node ref for the web project
+		
+		m_noderef = nodeRef;
 	}
 	
-    /**
-     * Return a network file for reading/writing the pseudo file
-     * 
-     * @param netPath String
-     * @return NetworkFile
-     */
-	@Override
-	public NetworkFile getFile(String netPath) {
-		
-		// Split the path to get the name
-		
-		String[] paths = FileName.splitPath( netPath);
-		
-		// Create a network file for the folder
-		
-		return new PseudoFolderNetworkFile( paths[1], netPath);
-	}
-
-    /**
-     * Return the file information for the pseudo file
-     *
-     * @return FileInfo
-     */
-	@Override
-	public FileInfo getFileInfo() {
-		return getInfo();
-	}
-
 	/**
-	 * Return the store type
+	 * Check if the associated node ref is valid
 	 * 
+	 * @return boolean
+	 */
+	public final boolean hasNodeRef()
+	{
+		return m_noderef != null ? true : false;
+	}
+	
+	/**
+	 * Get the associated node ref for the store
+	 * 
+	 * @return NodeRef
+	 */
+	public final NodeRef getNodeRef()
+	{
+		return m_noderef;
+	}
+	
+	/**
+	 * Set the associated node ref for the store
+	 * 
+	 * @param node NodeRef
+	 */
+	public final void setNodeRef(NodeRef node)
+	{
+		m_noderef = node;
+	}
+	
+	/**
+	 * Return the role for the specified user within this web project
+	 * 
+	 * @param userName String
 	 * @return int
 	 */
-	public final int isStoreType()
+	public final int getUserRole(String userName)
 	{
-		return m_storeType;
+		if ( m_users == null)
+			return RoleNone;
+		
+		Integer role = m_users.get( userName);
+		return role != null ? role.intValue() : RoleNone;
 	}
 	
 	/**
-	 * Check if this store is linked to a web project
+	 * Add a user role for this web project
 	 * 
-	 * @return boolean
+	 * @param userName String
+	 * @param role int
 	 */
-	public final boolean hasWebProject()
+	public final void addUserRole(String userName, int role)
 	{
-		return m_webProject != null ? true : false;
+		if ( m_users == null)
+			m_users = new Hashtable<String, Integer>();
+		
+		m_users.put(userName, new Integer(role));
 	}
 	
 	/**
-	 * Get the web project that this store links to, or null if not linked
-	 * 
-	 * @return String
-	 */
-	public final String getWebProject()
-	{
-		return m_webProject;
-	}
-	
-	/**
-	 * Set the web project that this store is linked to
-	 * 
-	 * @param webProject String
-	 */
-	public final void setWebProject(String webProject)
-	{
-		m_webProject = webProject;
-	}
-	
-	/**
-	 * Check if this store is an author sandbox
-	 * 
-	 * @return boolean
-	 */
-	public final boolean hasUserName()
-	{
-		return m_userName != null ? true : false;
-	}
-	
-	/**
-	 * Get the owner of this sandbox
-	 * 
-	 * @return String
-	 */
-	public final String getUserName()
-	{
-		return m_userName;
-	}
-	
-	/**
-	 * Set the owner of this sandbox
+	 * Remove a user role for this project
 	 * 
 	 * @param userName String
 	 */
-	public final void setUserName(String userName)
+	public final void removeUserRole(String userName)
 	{
-		m_userName = userName;
-	}
-	
-	/**
-	 * Set the store type
-	 * 
-	 * @param storeType int
-	 */
-	public final void setStoreType(int storeType)
-	{
-		m_storeType = storeType;
+		if ( m_users != null)
+			m_users.remove(userName);
 	}
 }

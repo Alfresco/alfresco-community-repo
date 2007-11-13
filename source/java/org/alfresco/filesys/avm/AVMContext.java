@@ -38,7 +38,7 @@ import org.alfresco.repo.avm.CreateVersionCallback;
 import org.alfresco.repo.avm.PurgeStoreCallback;
 import org.alfresco.repo.avm.PurgeVersionCallback;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -63,10 +63,12 @@ public class AVMContext extends AlfrescoContext
 	
 	public static final int VERSION_HEAD	= -1;
 	
-    // Store properties
+	// Store types to show in the virtualization view
 	
-    public static QName PROP_WORKFLOWPREVIEW = QName.createQName(NamespaceService.DEFAULT_URI, ".sandbox.workflow.preview");
-    public static QName PROP_AUTHORPREVIEW   = QName.createQName(NamespaceService.DEFAULT_URI, ".sandbox.author.preview");
+	public static final int ShowNormalStores		= 0x0001;
+	public static final int ShowStagingStores		= 0x0002;
+	public static final int ShowAuthorStores		= 0x0004;	
+	public static final int ShowPreviewStores		= 0x0008;
 	
     // Store, root path and version
     
@@ -80,13 +82,13 @@ public class AVMContext extends AlfrescoContext
 
     private boolean m_virtualView;
     
-    // Show sandboxes in the virtualization view
-    
-    private boolean m_showSandboxes = false;
-    
-    // associated AVM filesystem driver
+    // Associated AVM filesystem driver
     
     private AVMDiskDriver m_avmDriver;
+
+    // Virtualization view filtering options
+    
+    private int m_showOptions;
     
     /**
      * Class constructor
@@ -118,17 +120,17 @@ public class AVMContext extends AlfrescoContext
      * <p>Construct a context for a virtualization view onto all stores/versions within AVM.
      * 
      * @param filesysName String
-     * @param showSandboxes boolean
+     * @param showOptions int
      * @param avmDriver AVMDiskDriver
      */
-    public AVMContext( String filesysName, boolean showSandboxes, AVMDiskDriver avmDriver)
+    public AVMContext( String filesysName, int showOptions, AVMDiskDriver avmDriver)
     {
     	super( filesysName, "VirtualView");
     	
     	// Enable the virtualization view
     	
     	m_virtualView = true;
-    	m_showSandboxes = showSandboxes;
+    	m_showOptions = showOptions;
     	
     	// Save the associated filesystem driver
     	
@@ -176,15 +178,74 @@ public class AVMContext extends AlfrescoContext
     }
     
     /**
-     * Check if sandboxes should be shown in the virtualization view
+     * Check if normal stores should be shown in the virtualization view
      * 
      * @return boolean
      */
-    public final boolean showSandboxes()
+    public final boolean showNormalStores()
     {
-    	return m_showSandboxes;
+    	return (m_showOptions & ShowNormalStores) != 0 ? true : false;
     }
     
+    /**
+     * Check if author stores should be shown in the virtualization view
+     * 
+     * @return boolean
+     */
+    public final boolean showAuthorStores()
+    {
+    	return (m_showOptions & ShowAuthorStores) != 0 ? true : false;
+    }
+    
+    /**
+     * Check if preview stores should be shown in the virtualization view
+     * 
+     * @return boolean
+     */
+    public final boolean showPreviewStores()
+    {
+    	return (m_showOptions & ShowPreviewStores) != 0 ? true : false;
+    }
+
+    /**
+     * Check if staging stores should be shown in the virtualization view
+     * 
+     * @return boolean
+     */
+    public final boolean showStagingStores()
+    {
+    	return (m_showOptions & ShowStagingStores) != 0 ? true : false;
+    }
+
+    /**
+     * Check if the specified store type should be visible
+     * 
+     * @param storeType int
+     * @return boolean
+     */
+    public final boolean showStoreType(int storeType)
+    {
+    	boolean showStore = false;
+    	
+    	switch ( storeType)
+    	{
+    	case StoreType.Normal:
+    		showStore = showNormalStores();
+    		break;
+    	case StoreType.WebAuthorMain:
+    		showStore = showAuthorStores();
+    		break;
+    	case StoreType.WebStagingMain:
+    		showStore = showStagingStores();
+    		break;
+    	case StoreType.WebAuthorPreview:
+    	case StoreType.WebStagingPreview:
+    		showStore = showPreviewStores();
+    		break;
+    	}
+    	
+    	return showStore;
+    }
     /**
      * Close the filesystem context
      */
@@ -226,43 +287,10 @@ public class AVMContext extends AlfrescoContext
 
 		if ( rootState != null)
 		{
-    		// Get the properties for the new store
-    		
-			boolean sandbox = false;
-    		Map<QName, PropertyValue> props = m_avmDriver.getAVMStoreProperties( storeName);
-    		
-    		if ( props.containsKey( PROP_WORKFLOWPREVIEW) || props.containsKey( PROP_AUTHORPREVIEW))
-    			sandbox = true;
-    		
-    		// Add a pseudo file for the current store
-
-    		if ( sandbox == false || showSandboxes() == true)
-    		{
-				// Add a pseudo folder for the new store
-				
-				rootState.addPseudoFile( new StorePseudoFile( storeName, FileName.DOS_SEPERATOR_STR + storeName));
-				
-				// DEBUG
-				
-				if ( logger.isDebugEnabled())
-					logger.debug( "Added pseudo folder for new store " + storeName);
-				
-				// Send a change notification for the new folder
-				
-				if ( hasChangeHandler())
-				{
-					// Build the filesystem relative path to the new store folder
-					
-					StringBuilder str = new StringBuilder();
-					
-					str.append( FileName.DOS_SEPERATOR);
-					str.append( storeName);
-					
-					// Send the change notification
-					
-	                getChangeHandler().notifyDirectoryChanged(NotifyChange.ActionAdded, str.toString());
-				}
-    		}
+			// Delete the root folder file state and recreate it
+			
+			fsTable.removeFileState( FileName.DOS_SEPERATOR_STR);
+//			m_avmDriver.findPseudoState( new AVMPath( ""), this);
 		}
 	}
 	
@@ -305,6 +333,10 @@ public class AVMContext extends AlfrescoContext
 			
 			if ( logger.isDebugEnabled())
 				logger.debug( "Removed pseudo folder for purged store " + storeName);
+			
+			// Update the file state modify time
+			
+			rootState.setLastUpdated( System.currentTimeMillis());
 			
 			// Send a change notification for the deleted folder
 			

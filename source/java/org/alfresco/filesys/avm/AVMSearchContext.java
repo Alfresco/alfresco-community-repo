@@ -56,6 +56,10 @@ public class AVMSearchContext extends SearchContext {
 	
 	private String m_parentPath;
 	
+	// Mark all files/folders as read-only
+	
+	private boolean m_readOnly;
+	
 	/**
 	 * Class constructor
 	 * 
@@ -63,8 +67,9 @@ public class AVMSearchContext extends SearchContext {
 	 * @param attrib int
 	 * @param filter WildCard
 	 * @param parentPath String
+	 * @param readOnly boolean
 	 */
-	public AVMSearchContext( AVMNodeDescriptor[]  fileList, int attrib, WildCard filter, String parentPath)
+	public AVMSearchContext( AVMNodeDescriptor[]  fileList, int attrib, WildCard filter, String parentPath, boolean readOnly)
 	{
 		m_attrib   = attrib;
 		m_filter   = filter;
@@ -73,6 +78,8 @@ public class AVMSearchContext extends SearchContext {
 		m_parentPath = parentPath;
 		if ( m_parentPath != null && m_parentPath.endsWith( FileName.DOS_SEPERATOR_STR) == false)
 			m_parentPath = m_parentPath + FileName.DOS_SEPERATOR_STR;
+		
+		m_readOnly = readOnly;
 	}
 	
     /**
@@ -177,6 +184,12 @@ public class AVMSearchContext extends SearchContext {
         			curFile.getName().equalsIgnoreCase( "Desktop.ini") ||
         			curFile.getName().equalsIgnoreCase( "Thumbs.db"))
         		attr += FileAttribute.Hidden;
+
+        	if ( isReadOnly())
+        		attr += FileAttribute.ReadOnly;
+        	
+        	if ( attr == 0)
+        		attr = FileAttribute.NTNormal;
         	
         	info.setFileAttributes( attr);
         	
@@ -292,5 +305,25 @@ public class AVMSearchContext extends SearchContext {
     	
     	m_fileIdx = curFileIdx;
     	return false;
+    }
+    
+    /**
+     * Check if all files/folders returned by the search should be marked as read-only
+     * 
+     * @return boolean
+     */
+    public final boolean isReadOnly()
+    {
+    	return m_readOnly;
+    }
+    
+    /**
+     * Set all files/folders returned by the search as read-only
+     * 
+     * @param readOnly boolean
+     */
+    public final void setReadOnly( boolean readOnly)
+    {
+    	m_readOnly = readOnly;
     }
 }

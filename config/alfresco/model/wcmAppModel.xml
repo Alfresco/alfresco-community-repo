@@ -110,11 +110,11 @@
          <properties>
             <property name="wca:username">
                <type>d:text</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
             <property name="wca:role">
                <type>d:text</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
          </properties>
       </type>
@@ -125,7 +125,12 @@
          <properties>
             <property name="wca:formname">
                <type>d:text</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
             </property>
          </properties>
          <associations>
@@ -164,7 +169,7 @@
 			<properties>
             <property name="wca:baserenderingenginetemplatename">
                <type>d:text</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
          </properties>
          <mandatory-aspects>
@@ -178,7 +183,7 @@
 			<properties>
             <property name="wca:workflowname">
                <type>d:text</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
             <property name="wca:workflowdefaultproperties">
                <type>d:content</type>
@@ -203,7 +208,7 @@
             <property name="wca:mimetypeforrendition">
                <title>Mimetype for generated assets</title>
                <type>d:text</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
          </properties>
          <mandatory-aspects>
@@ -223,22 +228,22 @@
             <property name="wca:deployserver">
                <title>Server Deployed To</title>
                <type>d:text</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
             <property name="wca:deployversion">
                <title>Snapshot Version Deployed</title>
                <type>d:int</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
             <property name="wca:deploystarttime">
                <title>Time Deploy Started</title>
                <type>d:datetime</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
             <property name="wca:deployendtime">
                <title>Time Deploy Finished</title>
                <type>d:datetime</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
             <property name="wca:deploysuccessful">
                <title>Deployment Successful</title>
@@ -284,12 +289,12 @@
             <property name="wca:xmlschemarootelementname">
                <title>Schema Root Element Name</title>
                <type>d:text</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
             <property name="wca:xmlschema">
                <title>Schema</title>
                <type>d:noderef</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
          </properties>
          <associations>
@@ -325,15 +330,15 @@
       <aspect name="wca:renderingenginetemplate">
          <title>A Rendering Engine</title>
          <properties>
-            <property name="wca:parentrendereringenginename">
+            <property name="wca:parentrenderingenginename">
                <title>Type</title>
                <type>d:text</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
             <property name="wca:formsource">
                <title>Form Source</title>
                <type>d:noderef</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
          </properties>
          <associations>
@@ -359,7 +364,7 @@
             <property name="wca:parentformname">
                <title>Form that generated this asset</title>
                <type>d:text</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
             <property name="wca:originalparentpath">
               <title>The original parent path when this form instance data was created - used for regenerating accurately.</title>
@@ -381,17 +386,17 @@
             <property name="wca:parentrenderingenginetemplate">
                <title>Form data renderer that generated this asset</title>
                <type>d:noderef</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
             <property name="wca:parentrenditionproperties">
                <title>Rendition properties used for this rendition</title>
                <type>d:noderef</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
             <property name="wca:primaryforminstancedata">
                <title>Primary XML Asset used to generate this asset</title>
                <type>d:text</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
          </properties>
       </aspect>
@@ -402,7 +407,7 @@
             <property name="wca:expirationDate">
                <title>Expiration Date</title>
                <type>d:datetime</type>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
          </properties>
       </aspect>

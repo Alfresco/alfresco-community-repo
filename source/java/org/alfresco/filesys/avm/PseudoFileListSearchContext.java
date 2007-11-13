@@ -52,18 +52,24 @@ public class PseudoFileListSearchContext extends SearchContext {
 	
 	private WildCard m_filter;
 	
+	// Mark all files/folders as read-only
+	
+	private boolean m_readOnly;
+	
 	/**
 	 * Class constructor
 	 * 
 	 * @param fileList PseudoFileList
 	 * @param attrib int
 	 * @param filter WildCard
+	 * @param readOnly boolean
 	 */
-	public PseudoFileListSearchContext( PseudoFileList fileList, int attrib, WildCard filter)
+	public PseudoFileListSearchContext( PseudoFileList fileList, int attrib, WildCard filter, boolean readOnly)
 	{
 		m_attrib   = attrib;
 		m_filter   = filter;
 		m_fileList = fileList;
+		m_readOnly = readOnly;
 	}
 	
     /**
@@ -176,6 +182,11 @@ public class PseudoFileListSearchContext extends SearchContext {
         			curFile.getFileName().equalsIgnoreCase( "Desktop.ini") ||
         			curFile.getFileName().equalsIgnoreCase( "Thumbs.db"))
         		attr += FileAttribute.Hidden;
+
+        	// Check if the file/folder should be marked as read-only
+        	
+        	if ( m_readOnly && pfInfo.isReadOnly() == false)
+        		attr += FileAttribute.ReadOnly;
         	
         	info.setFileAttributes( attr);
         	info.setFileId( pfInfo.getFileId());

@@ -25,6 +25,7 @@
 package org.alfresco.web.ui.wcm.component;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -208,13 +209,27 @@ public class UIDeploymentReports extends SelfRenderingComponent
       
       // extract the information we need to display
       String server = (String)nodeService.getProperty(deploymentReport, WCMAppModel.PROP_DEPLOYSERVER);
-      Integer snapshot = (Integer)nodeService.getProperty(deploymentReport, WCMAppModel.PROP_DEPLOYVERSION);
       String creator = (String)nodeService.getProperty(deploymentReport, ContentModel.PROP_CREATOR);
       Date startTime = (Date)nodeService.getProperty(deploymentReport, WCMAppModel.PROP_DEPLOYSTARTTIME);
+      String started = null;
+      if (startTime != null)
+      {
+         started = Utils.getDateTimeFormat(context).format(startTime);
+      }
+      
       Date endTime = (Date)nodeService.getProperty(deploymentReport, WCMAppModel.PROP_DEPLOYENDTIME);
-      String started = Utils.getDateTimeFormat(context).format(startTime);
-      String finished = Utils.getDateTimeFormat(context).format(endTime);
+      String finished = null;
+      if (endTime != null)
+      {
+         finished = Utils.getDateTimeFormat(context).format(endTime);
+      }
+      
       Boolean success = (Boolean)nodeService.getProperty(deploymentReport, WCMAppModel.PROP_DEPLOYSUCCESSFUL);
+      if (success == null)
+      {
+         success = Boolean.FALSE;
+      }
+      
       String failReason = (String)nodeService.getProperty(deploymentReport, WCMAppModel.PROP_DEPLOYFAILEDREASON);
       String content = "";
       ContentReader reader = contentService.getReader(deploymentReport, ContentModel.PROP_CONTENT);
@@ -229,6 +244,13 @@ public class UIDeploymentReports extends SelfRenderingComponent
          {
             content = "";
          }
+      }
+      
+      int snapshot = -1;
+      Serializable snapshotObj = nodeService.getProperty(deploymentReport, WCMAppModel.PROP_DEPLOYVERSION);
+      if (snapshotObj != null && snapshotObj instanceof Integer)
+      {
+         snapshot = (Integer)snapshotObj;
       }
       
       out.write("<table cellspacing='0' cellpadding='2' border='0' width='100%'>");
@@ -261,7 +283,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
       out.write("<div style='margin-top: 6px;'>");
       out.write(Application.getMessage(context, "snapshot"));
       out.write(":&nbsp;");
-      out.write(snapshot.toString());
+      out.write(Integer.toString(snapshot));
       out.write("</div>");
       out.write("<div style='margin-top: 3px;'>");
       out.write(Application.getMessage(context, "deploy_started"));

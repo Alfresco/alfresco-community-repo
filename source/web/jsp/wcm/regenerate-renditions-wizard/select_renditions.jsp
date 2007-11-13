@@ -51,7 +51,7 @@
                     value="#{msg.web_project}:"/>
       <h:selectOneMenu id="selectone-webproject" 
 		       style="width:100%;"
-                       onclick="this.form.submit()"
+                       onchange="this.form.submit()"
                        value="#{WizardManager.bean.selectedWebProject}">
         <f:selectItems id="selectitems-webproject"
 		       value="#{WizardManager.bean.webProjectChoices}"/>

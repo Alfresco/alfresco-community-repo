@@ -116,7 +116,14 @@ public class DeploySnapshotDialog extends BaseDialogBean
             NodeRef report = ref.getChildRef();
             
             String server = (String)this.nodeService.getProperty(report, WCMAppModel.PROP_DEPLOYSERVER);
-            int version = (Integer)this.nodeService.getProperty(report, WCMAppModel.PROP_DEPLOYVERSION);
+            
+            int version = -1;
+            Serializable snapshotObj = nodeService.getProperty(report, WCMAppModel.PROP_DEPLOYVERSION);
+            if (snapshotObj != null && snapshotObj instanceof Integer)
+            {
+               version = (Integer)snapshotObj;
+            }
+            
             if ((version == this.versionToDeploy && selectedDeployTo.contains(server)) ||
                 (version != this.versionToDeploy) || (allDeployToServers.contains(server) == false))
             {

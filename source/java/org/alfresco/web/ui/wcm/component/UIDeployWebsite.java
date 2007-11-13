@@ -25,6 +25,7 @@
 package org.alfresco.web.ui.wcm.component;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,6 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.DeploymentMonitor;
-import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -80,6 +80,7 @@ public class UIDeployWebsite extends UIInput
       return "org.alfresco.faces.DeployWebsite";
    }
    
+   @SuppressWarnings("unchecked")
    @Override
    public void decode(FacesContext context)
    {
@@ -186,14 +187,24 @@ public class UIDeployWebsite extends UIInput
             for (ChildAssociationRef ref : deployReportRefs)
             {
                NodeRef report = ref.getChildRef();
-               Boolean success = (Boolean)nodeService.getProperty(report, 
-                        WCMAppModel.PROP_DEPLOYSUCCESSFUL);
-               int deployedVersion = (Integer)nodeService.getProperty(report, 
-                        WCMAppModel.PROP_DEPLOYVERSION);
-               if (success.booleanValue() && (deployingVersion == deployedVersion))
+               if (report != null)
                {
-                  serversAlreadyDeployed.add((String)nodeService.getProperty(report, 
-                           WCMAppModel.PROP_DEPLOYSERVER));
+                  int deployedVersion = -1;
+                  Boolean success = (Boolean)nodeService.getProperty(report, 
+                           WCMAppModel.PROP_DEPLOYSUCCESSFUL);
+                  
+                  Serializable deployVersionObj = nodeService.getProperty(report, 
+                           WCMAppModel.PROP_DEPLOYVERSION); 
+                  if (deployVersionObj != null && deployVersionObj instanceof Integer)
+                  {
+                     deployedVersion = (Integer)deployVersionObj;
+                  }
+                  
+                  if (success != null && success.booleanValue() && (deployingVersion == deployedVersion))
+                  {
+                     serversAlreadyDeployed.add((String)nodeService.getProperty(report, 
+                              WCMAppModel.PROP_DEPLOYSERVER));
+                  }
                }
             }
             

@@ -346,12 +346,15 @@ public final class FormsService
       }
    }
 
+   /**
+    * Return the list of web project nodes that reference a form name in their model  
+    */
    private List<NodeRef> getFormConfigurations(final String formName)
    {
       final String query = 
-         "+TYPE:\"" + WCMAppModel.TYPE_WEBFORM + 
-         "\" +@" + Repository.escapeQName(WCMAppModel.PROP_FORMNAME) + 
-         ":\"" + QueryParser.escape(formName) + "\"";
+         "+TYPE:\"" + WCMAppModel.TYPE_WEBFORM + "\"" +
+         " +@" + Repository.escapeQName(WCMAppModel.PROP_FORMNAME) + 
+         ":\"" + formName + "\"";
       final ResultSet rs = this.searchService.query(Repository.getStoreRef(),
                                                     SearchService.LANGUAGE_LUCENE,
                                                     query);

@@ -23,55 +23,47 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.io.File;
-import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import javax.faces.application.FacesMessage;
 import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
-import javax.faces.event.ValueChangeEvent;
-import javax.faces.model.DataModel;
-import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
-import org.alfresco.web.ui.common.component.UIListItems;
-import org.alfresco.web.ui.common.component.data.UIRichList;
-import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.cmr.model.FileExistsException;
-import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.repository.*;
-import org.alfresco.service.cmr.search.*;
-import org.alfresco.service.namespace.QName;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
-import org.alfresco.web.data.IDataContainer;
-import org.alfresco.web.data.QuickSort;
-import org.alfresco.web.forms.*;
+import org.alfresco.web.forms.Form;
+import org.alfresco.web.forms.FormInstanceData;
+import org.alfresco.web.forms.FormNotFoundException;
+import org.alfresco.web.forms.FormsService;
+import org.alfresco.web.forms.RenderingEngineTemplate;
+import org.alfresco.web.forms.RenderingEngineTemplateImpl;
+import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
-import org.alfresco.web.ui.wcm.WebResources;
-import org.apache.commons.io.FilenameUtils;
+import org.alfresco.web.ui.common.component.UIListItems;
+import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
 
 /**
  * @author arielb
@@ -79,7 +71,6 @@ import org.w3c.dom.Document;
 public class RegenerateRenditionsWizard
    extends BaseWizardBean
 {
-
    public final String REGENERATE_SCOPE_ALL = "all";
    public final String REGENERATE_SCOPE_FORM = "form";
    public final String REGENERATE_SCOPE_RENDERING_ENGINE_TEMPLATE = "rendering_engine_template";
@@ -115,7 +106,8 @@ public class RegenerateRenditionsWizard
                                            -1, AVMUtil.getCorrespondingPathInMainStore(r.getPath()), 
                                            AVMDifference.NEWER));
          }
-         LOGGER.debug("updating " + diffList.size() + " renditions in staging");
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("updating " + diffList.size() + " renditions in staging");
          this.avmSyncService.update(diffList, null, true, true, true, true, null, null);
          String description = null;
          final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
@@ -157,11 +149,6 @@ public class RegenerateRenditionsWizard
          if (this.browseBean.getDocument().hasAspect(WCMAppModel.ASPECT_FORM))
          {
             this.selectedForms = new String[] { this.browseBean.getDocument().getName() };
-         }
-         else if (this.browseBean.getDocument().hasAspect(WCMAppModel.ASPECT_RENDERING_ENGINE_TEMPLATE))
-         {
-//            System.err.println("how to handle  ? " + this.browseBean.getDocument());
-//            this.selectedRenderingEngineTemplates = new String[] { "*:
          }
       }
       else if (this.browseBean.getActionSpace() != null)
@@ -429,13 +416,14 @@ public class RegenerateRenditionsWizard
       final StoreRef storeRef = AVMNodeConverter.ToStoreRef(webProject.getStagingStore());
       sp.addStore(storeRef);
       sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-      final StringBuilder query = new StringBuilder();
+      final StringBuilder query = new StringBuilder(256);
       query.append("+ASPECT:\"" + WCMAppModel.ASPECT_FORM_INSTANCE_DATA + "\"");
-      query.append("-ASPECT:\"" + WCMAppModel.ASPECT_RENDITION + "\"");
+      query.append(" -ASPECT:\"" + WCMAppModel.ASPECT_RENDITION + "\"");
       query.append(" +@" + Repository.escapeQName(WCMAppModel.PROP_PARENT_FORM_NAME) + 
                    ":\"" + f.getName() + "\"");
-
-      LOGGER.debug("running query " + query);
+      
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("running query " + query);
       sp.setQuery(query.toString());
       final ResultSet rs = this.searchService.query(sp);
       final List<FormInstanceData> result = new ArrayList<FormInstanceData>(rs.length());
@@ -458,8 +446,8 @@ public class RegenerateRenditionsWizard
       query.append("+ASPECT:\"" + WCMAppModel.ASPECT_RENDITION + "\"");
       query.append(" +@" + Repository.escapeQName(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE) + 
                    ":\"" + ((RenderingEngineTemplateImpl)ret).getNodeRef() + "\"");
-
-      LOGGER.debug("running query " + query);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("running query " + query);
       sp.setQuery(query.toString());
       final ResultSet rs = this.searchService.query(sp);
       final List<Rendition> result = new ArrayList<Rendition>(rs.length()); 
@@ -482,12 +470,12 @@ public class RegenerateRenditionsWizard
       final StoreRef storeRef = AVMNodeConverter.ToStoreRef(this.selectedWebProject.getStagingStore());
       sp.addStore(storeRef);
       sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-      StringBuilder query = new StringBuilder();
+      StringBuilder query = new StringBuilder(128);
       if (this.regenerateScope.equals(REGENERATE_SCOPE_ALL) ||
           this.regenerateScope.equals(REGENERATE_SCOPE_FORM))
       {
          query.append("+ASPECT:\"" + WCMAppModel.ASPECT_FORM_INSTANCE_DATA + "\"");
-         query.append("-ASPECT:\"" + WCMAppModel.ASPECT_RENDITION + "\"");
+         query.append(" -ASPECT:\"" + WCMAppModel.ASPECT_RENDITION + "\"");
       }
       else
       {
@@ -531,18 +519,20 @@ public class RegenerateRenditionsWizard
             }
             catch (FormNotFoundException fnfe)
             {
-               LOGGER.debug(fnfe);
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug(fnfe);
             }
          }
          query.append(") ");
       }
 
-      LOGGER.debug("running query " + query);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("running query " + query);
       sp.setQuery(query.toString());
       final ResultSet rs = this.searchService.query(sp);
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("received " + rs.length() + " results");
-    
+
       final List<Rendition> result = new ArrayList<Rendition>(rs.length());
       for (final ResultSetRow row : rs)
       {

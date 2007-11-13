@@ -204,9 +204,31 @@ public class CreateWebContentWizard extends BaseContentWizard
       String storeName = AVMUtil.getStoreName(this.avmBrowseBean.getCurrentPath());
       storeName = AVMUtil.getCorrespondingPreviewStoreName(storeName);
       final String path = AVMUtil.buildStoreRootPath(storeName);
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("reseting layer " + path);
-      this.avmSyncService.resetLayer(path);
+
+      FacesContext context = FacesContext.getCurrentInstance();
+      RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(context);
+      RetryingTransactionCallback<String> callback = new RetryingTransactionCallback<String>()
+      {
+         public String execute() throws Throwable
+         {
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug("reseting layer " + path);
+            
+            // call the actual implementation
+            avmSyncService.resetLayer(path);
+            return null;
+         }
+      };
+      
+      try
+      {
+         // Execute
+         txnHelper.doInTransaction(callback);
+      }
+      catch (Exception e)
+      {
+         Utils.addErrorMessage(e.getMessage(), e);
+      }
    }
 
    @Override
@@ -249,19 +271,42 @@ public class CreateWebContentWizard extends BaseContentWizard
    {
       if ("content".equals(Application.getWizardManager().getCurrentStepName()))
       {
-         if (this.formInstanceData != null)
+         FacesContext context = FacesContext.getCurrentInstance();
+         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(context);
+         RetryingTransactionCallback<String> callback = new RetryingTransactionCallback<String>()
          {
-            if (LOGGER.isDebugEnabled())
-               LOGGER.debug("clearing form instance data: " + this.formInstanceData.getPath());
-            this.avmService.removeNode(this.formInstanceData.getPath());
-         }
-         if (this.renditions != null)
-         {
-            for (Rendition r : this.renditions)
+            public String execute() throws Throwable
             {
-               this.avmService.removeNode(r.getPath());
+               if (formInstanceData != null)
+               {
+                  if (LOGGER.isDebugEnabled())
+                     LOGGER.debug("clearing form instance data: " + formInstanceData.getPath());
+                  
+                  avmService.removeNode(formInstanceData.getPath());
+               }
+               
+               if (renditions != null)
+               {
+                  for (Rendition r : renditions)
+                  {
+                     avmService.removeNode(r.getPath());
+                  }
+               }
+               
+               return null;
             }
+         };
+         
+         try
+         {
+            // Execute
+            txnHelper.doInTransaction(callback);
          }
+         catch (Exception e)
+         {
+            Utils.addErrorMessage(e.getMessage(), e);
+         }
+         
          this.formInstanceData = null;
          this.renditions = null;
       }

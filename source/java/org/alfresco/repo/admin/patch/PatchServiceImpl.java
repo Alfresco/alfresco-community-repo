@@ -56,11 +56,12 @@ import org.apache.commons.logging.LogFactory;
 public class PatchServiceImpl implements PatchService
 {
     private static final String MSG_NOT_RELEVANT = "patch.service.not_relevant";
+    private static final String MSG_APPLYING_PATCH = "patch.service.applying_patch";
     
     private static final Date ZERO_DATE = new Date(0L);
     private static final Date INFINITE_DATE = new Date(Long.MAX_VALUE);
     
-    private static Log logger = LogFactory.getLog(PatchServiceImpl.class);
+    private static Log logger = LogFactory.getLog(PatchExecuter.class);
     
     private DescriptorService descriptorService;
     private TransactionService transactionService;
@@ -226,15 +227,35 @@ public class PatchServiceImpl implements PatchService
         // get the patch from the DAO
         AppliedPatch appliedPatch = patchDaoService.getAppliedPatch(patch.getId());
         // We bypass the patch if it was executed successfully
-        if (appliedPatch != null && appliedPatch.getWasExecuted() && appliedPatch.getSucceeded())
+        if (appliedPatch != null)
         {
-            // it has already been applied
-            if (logger.isDebugEnabled())
+            if (appliedPatch.getWasExecuted() && appliedPatch.getSucceeded())
             {
-                logger.debug("Patch was already successfully applied: \n" +
-                        "   patch: " + appliedPatch);
+                // It has already been successfully applied
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Patch was already successfully applied: \n" +
+                            "   patch: " + appliedPatch);
+                }
+                return appliedPatch;
             }
-            return appliedPatch;
+            else if (patch.getTargetSchema() != appliedPatch.getTargetSchema())
+            {
+                // The target schema of the defined patch has changed.
+                // The patch applicability was changed for some reason, usually as a result of
+                // merges between branches.  We need to detect new patches in clean installs.
+                if (appliedPatch.getAppliedToSchema() == appliedPatch.getTargetSchema())
+                {
+                    // The patch applicability changed, but it was originally not executed because
+                    // it was a new patch in a clean install
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Patch not applied to a previously clean install: \n" +
+                                "   patch: " + appliedPatch);
+                    }
+                    return appliedPatch;
+                }
+            }
         }
         // the execution report
         String report = null;
@@ -253,6 +274,7 @@ public class PatchServiceImpl implements PatchService
             // perform actual execution
             try
             {
+                logger.info(I18NUtil.getMessage(MSG_APPLYING_PATCH, patch.getId(), patch.getDescription()));
                 report = patch.apply();
                 success = true;
             }

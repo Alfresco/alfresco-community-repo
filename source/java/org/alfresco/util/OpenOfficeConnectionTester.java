@@ -83,11 +83,18 @@ public class OpenOfficeConnectionTester extends AbstractLifecycleBean
     }
 
     /**
-     * Does nothing.
+     * Disconnect
      */
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
+        if(connection != null)
+        {
+            if(connection.isConnected())
+            {
+                connection.disconnect();
+            }
+        }
     }
 
     /**

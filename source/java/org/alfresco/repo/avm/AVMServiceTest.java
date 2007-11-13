@@ -486,7 +486,7 @@ public class AVMServiceTest extends AVMServiceTestBase
     {
         try
         {
-            DeploymentService depService = (DeploymentService) fContext.getBean("DeploymentService");
+            final DeploymentService depService = (DeploymentService) fContext.getBean("DeploymentService");
             NameMatcher matcher = (NameMatcher)fContext.getBean("globalPathExcluder");
             setupBasicTree();
             fService.addAspect("main:/a", ContentModel.ASPECT_REFERENCEABLE);
@@ -553,6 +553,36 @@ public class AVMServiceTest extends AVMServiceTestBase
             depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target2:/wiggly/diggly", matcher,
                     true, false, false, null);
             System.out.println(report);
+            fService.createStore("source");
+            RetryingTransactionHelper.RetryingTransactionCallback<Object> cb =
+                new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+                {
+                    public Object execute()
+                        throws Exception
+                    {
+                        BulkLoader loader = new BulkLoader();
+                        loader.setAvmService(fService);
+                        loader.recursiveLoad("source/java/org/alfresco/repo/avm", "source:/");
+                        return null;
+                    }
+                };
+            RetryingTransactionHelper helper = (RetryingTransactionHelper)fContext.getBean("retryingTransactionHelper");
+            helper.doInTransaction(cb);
+            fService.createStore("dest");
+            depService.deployDifference(-1, "source:/avm", "localhost", 50500, "admin", "admin", "dest:/avm", null, true, false, false, null);
+            Runnable runner = new Runnable()
+            {
+                public void run()
+                {
+                    depService.deployDifference(-1, "source:/avm", "localhost", 50500, "admin", "admin", "dest:/avm", null, true, false, false, null);
+                }
+            };
+            Thread thread = new Thread(runner);
+            thread.start();
+            thread.join();
+            report = depService.deployDifference(-1, "source:/avm", "localhost", 50500, "admin", "admin", "dest:/avm", null, true, false, false, null);
+            System.out.println(report);
+            assertEquals("", report.toString());
         }
         catch (Exception e)
         {

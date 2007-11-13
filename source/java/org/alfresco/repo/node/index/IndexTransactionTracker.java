@@ -274,6 +274,10 @@ found:
         for (Long toExpireTxnId : toExpireTxnIds)
         {
             voids.remove(toExpireTxnId);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Void has expired: " + toExpireTxnId);
+            }
         }
         // Done
         return fromTimeAdjusted;

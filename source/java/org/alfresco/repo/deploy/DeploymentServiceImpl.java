@@ -28,6 +28,8 @@ package org.alfresco.repo.deploy;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +80,57 @@ import org.springframework.remoting.rmi.RmiProxyFactoryBean;
 public class DeploymentServiceImpl implements DeploymentService
 {
     /**
+     * Class to hold Deployment destination information.
+     * Used as a lock to serialize deployments to the same
+     * destination.
+     * @author britt
+     */
+    private static class DeploymentDestination
+    {
+        private String fHost;
+
+        private int fPort;
+
+        DeploymentDestination(String host, int port)
+        {
+            fHost = host;
+            fPort = port;
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj)
+            {
+                return true;
+            }
+            if (!(obj instanceof DeploymentDestination))
+            {
+                return false;
+            }
+            DeploymentDestination other = (DeploymentDestination)obj;
+            return fHost.equals(other.fHost) && fPort == other.fPort;
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode()
+        {
+            return fHost.hashCode() + fPort;
+        }
+    };
+
+    /**
+     * Holds locks for all deployment destinations (alfresco->alfresco)
+     */
+    private Map<DeploymentDestination, DeploymentDestination> fDestinations;
+
+    /**
      * The local AVMService Instance.
      */
     private AVMService fAVMService;
@@ -93,6 +146,7 @@ public class DeploymentServiceImpl implements DeploymentService
     public DeploymentServiceImpl()
     {
         fTicketHolder = new ClientTicketHolderThread();
+        fDestinations = new HashMap<DeploymentDestination, DeploymentDestination>();
     }
 
     /**
@@ -109,122 +163,126 @@ public class DeploymentServiceImpl implements DeploymentService
      */
     public DeploymentReport deployDifference(int version, String srcPath, String hostName, int port, String userName, String password, String dstPath, NameMatcher matcher, boolean createDst, boolean dontDelete, boolean dontDo, DeploymentCallback callback)
     {
-        try
+        DeploymentDestination dest = getLock(hostName, port);
+        synchronized (dest)
         {
-            DeploymentReport report = new DeploymentReport();
-            AVMRemote remote = getRemote(hostName, port, userName, password);
-            if (callback != null)
-            {
-                DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.START,
-                                                            new Pair<Integer, String>(version, srcPath),
-                                                            dstPath);
-                callback.eventOccurred(event);
-            }
-            if (version < 0)
-            {
-                String storeName = srcPath.substring(0, srcPath.indexOf(":"));
-                version = fAVMService.createSnapshot(storeName, null, null).get(storeName);
-            }
-            // Get the root of the deployment from this server.
-            AVMNodeDescriptor srcRoot = fAVMService.lookup(version, srcPath);
-            if (srcRoot == null)
-            {
-                throw new AVMNotFoundException("Directory Not Found: " + srcPath);
-            }
-            if (!srcRoot.isDirectory())
-            {
-                throw new AVMWrongTypeException("Not a directory: " + srcPath);
-            }
-            // Create a snapshot on the destination store.
-            String [] storePath = dstPath.split(":");
-            int snapshot = -1;
-            AVMNodeDescriptor dstParent = null;
-            if (!dontDo)
-            {
-                String[] parentBase = AVMNodeConverter.SplitBase(dstPath);
-                dstParent = remote.lookup(-1, parentBase[0]);
-                if (dstParent == null)
-                {
-                    if (createDst)
-                    {
-                        createDestination(remote, parentBase[0]);
-                        dstParent = remote.lookup(-1, parentBase[0]);
-                    }
-                    else
-                    {
-                        throw new AVMNotFoundException("Node Not Found: " + parentBase[0]);
-                    }
-                }
-                snapshot = remote.createSnapshot(storePath[0], "PreDeploy", "Pre Deployment Snapshot").get(storePath[0]);
-            }
-            // Get the root of the deployment on the destination server.
-            AVMNodeDescriptor dstRoot = remote.lookup(-1, dstPath);
-            if (dstRoot == null)
-            {
-                // If it doesn't exist, do a copyDirectory to create it.
-                DeploymentEvent event =
-                    new DeploymentEvent(DeploymentEvent.Type.COPIED,
-                                        new Pair<Integer, String>(version, srcPath),
-                                        dstPath);
-                report.add(event);
-                if (callback != null)
-                {
-                    callback.eventOccurred(event);
-                }
-                if (dontDo)
-                {
-                    return report;
-                }
-                copyDirectory(version, srcRoot, dstParent, remote, matcher);
-                remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
-                if (callback != null)
-                {
-                    event = new DeploymentEvent(DeploymentEvent.Type.END,
-                                                new Pair<Integer, String>(version, srcPath),
-                                                dstPath);
-                    callback.eventOccurred(event);
-                }
-                return report;
-            }
-            if (!dstRoot.isDirectory())
-            {
-                throw new AVMWrongTypeException("Not a Directory: " + dstPath);
-            }
-            // The corresponding directory exists so recursively deploy.
             try
             {
-                deployDirectoryPush(version, srcRoot, dstRoot, remote, matcher, dontDelete, dontDo, report, callback);
-                remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
+                DeploymentReport report = new DeploymentReport();
+                AVMRemote remote = getRemote(hostName, port, userName, password);
                 if (callback != null)
                 {
-                    DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.END,
+                    DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.START,
                                                                 new Pair<Integer, String>(version, srcPath),
                                                                 dstPath);
                     callback.eventOccurred(event);
                 }
-                return report;
-            }
-            catch (AVMException e)
-            {
+                if (version < 0)
+                {
+                    String storeName = srcPath.substring(0, srcPath.indexOf(":"));
+                    version = fAVMService.createSnapshot(storeName, null, null).get(storeName);
+                }
+                // Get the root of the deployment from this server.
+                AVMNodeDescriptor srcRoot = fAVMService.lookup(version, srcPath);
+                if (srcRoot == null)
+                {
+                    throw new AVMNotFoundException("Directory Not Found: " + srcPath);
+                }
+                if (!srcRoot.isDirectory())
+                {
+                    throw new AVMWrongTypeException("Not a directory: " + srcPath);
+                }
+                // Create a snapshot on the destination store.
+                String [] storePath = dstPath.split(":");
+                int snapshot = -1;
+                AVMNodeDescriptor dstParent = null;
+                if (!dontDo)
+                {
+                    String[] parentBase = AVMNodeConverter.SplitBase(dstPath);
+                    dstParent = remote.lookup(-1, parentBase[0]);
+                    if (dstParent == null)
+                    {
+                        if (createDst)
+                        {
+                            createDestination(remote, parentBase[0]);
+                            dstParent = remote.lookup(-1, parentBase[0]);
+                        }
+                        else
+                        {
+                            throw new AVMNotFoundException("Node Not Found: " + parentBase[0]);
+                        }
+                    }
+                    snapshot = remote.createSnapshot(storePath[0], "PreDeploy", "Pre Deployment Snapshot").get(storePath[0]);
+                }
+                // Get the root of the deployment on the destination server.
+                AVMNodeDescriptor dstRoot = remote.lookup(-1, dstPath);
+                if (dstRoot == null)
+                {
+                    // If it doesn't exist, do a copyDirectory to create it.
+                    DeploymentEvent event =
+                        new DeploymentEvent(DeploymentEvent.Type.COPIED,
+                                            new Pair<Integer, String>(version, srcPath),
+                                            dstPath);
+                    report.add(event);
+                    if (callback != null)
+                    {
+                        callback.eventOccurred(event);
+                    }
+                    if (dontDo)
+                    {
+                        return report;
+                    }
+                    copyDirectory(version, srcRoot, dstParent, remote, matcher);
+                    remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
+                    if (callback != null)
+                    {
+                        event = new DeploymentEvent(DeploymentEvent.Type.END,
+                                                    new Pair<Integer, String>(version, srcPath),
+                                                    dstPath);
+                        callback.eventOccurred(event);
+                    }
+                    return report;
+                }
+                if (!dstRoot.isDirectory())
+                {
+                    throw new AVMWrongTypeException("Not a Directory: " + dstPath);
+                }
+                // The corresponding directory exists so recursively deploy.
                 try
                 {
-                    if (snapshot != -1)
+                    deployDirectoryPush(version, srcRoot, dstRoot, remote, matcher, dontDelete, dontDo, report, callback);
+                    remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
+                    if (callback != null)
                     {
-                        AVMSyncService syncService = getSyncService(hostName, port);
-                        List<AVMDifference> diffs = syncService.compare(snapshot, dstPath, -1, dstPath, null);
-                        syncService.update(diffs, null, false, false, true, true, "Aborted Deployment", "Aborted Deployment");
+                        DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.END,
+                                                                    new Pair<Integer, String>(version, srcPath),
+                                                                    dstPath);
+                        callback.eventOccurred(event);
                     }
+                    return report;
                 }
-                catch (Exception ee)
+                catch (AVMException e)
                 {
-                    throw new AVMException("Failed to rollback to version " + snapshot + " on " + hostName, ee);
+                    try
+                    {
+                        if (snapshot != -1)
+                        {
+                            AVMSyncService syncService = getSyncService(hostName, port);
+                            List<AVMDifference> diffs = syncService.compare(snapshot, dstPath, -1, dstPath, null);
+                            syncService.update(diffs, null, false, false, true, true, "Aborted Deployment", "Aborted Deployment");
+                        }
+                    }
+                    catch (Exception ee)
+                    {
+                        throw new AVMException("Failed to rollback to version " + snapshot + " on " + hostName, ee);
+                    }
+                    throw new AVMException("Deployment to " + hostName + "failed.", e);
                 }
-                throw new AVMException("Deployment to " + hostName + "failed.", e);
             }
-        }
-        finally
-        {
-            fTicketHolder.setTicket(null);
+            finally
+            {
+                fTicketHolder.setTicket(null);
+            }
         }
     }
 
@@ -936,5 +994,23 @@ public class DeploymentServiceImpl implements DeploymentService
     private boolean excluded(NameMatcher matcher, String srcPath, String dstPath)
     {
         return matcher != null && ((srcPath != null && matcher.matches(srcPath)) || (dstPath != null && matcher.matches(dstPath)));
+    }
+
+    /**
+     * Get the object to lock for an alfresco->alfresco target.
+     * @param host
+     * @param port
+     * @return
+     */
+    private synchronized DeploymentDestination getLock(String host, int port)
+    {
+        DeploymentDestination newDest = new DeploymentDestination(host, port);
+        DeploymentDestination dest = fDestinations.get(newDest);
+        if (dest == null)
+        {
+            dest = newDest;
+            fDestinations.put(dest, dest);
+        }
+        return dest;
     }
 }

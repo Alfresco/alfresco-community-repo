@@ -16,5 +16,5 @@ insert into alf_applied_patch
   values
   (
     'patch.db-V1.4-PerfIndexes02', 'Executed script AlfrescoSchemaUpdate-1.4-PerfIndexes02.sql',
-    0, 26, -1, 27, null, 'UNKOWN', TRUE, TRUE, 'Script completed'
+    0, 75, -1, 76, null, 'UNKOWN', TRUE, TRUE, 'Script completed'
   );

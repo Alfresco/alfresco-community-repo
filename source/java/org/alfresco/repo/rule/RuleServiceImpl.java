@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
+import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -772,6 +773,9 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
 	@SuppressWarnings("unchecked")
     public void addRulePendingExecution(NodeRef actionableNodeRef, NodeRef actionedUponNodeRef, Rule rule, boolean executeAtEnd) 
 	{
+        ParameterCheck.mandatory("actionableNodeRef", actionableNodeRef);
+        ParameterCheck.mandatory("actionedUponNodeRef", actionedUponNodeRef);
+        
         // First check to see if the node has been disabled
         if (this.isEnabled() == true &&
             this.disabledNodeRefs.contains(this.getOwningNodeRef(rule)) == false &&

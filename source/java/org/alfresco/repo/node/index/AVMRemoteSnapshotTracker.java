@@ -96,11 +96,18 @@ public class AVMRemoteSnapshotTracker extends AbstractReindexComponent
                     {
                         if (logger.isDebugEnabled())
                         {
-                            logger.debug("Updating index for store " + store.getName() + " from snapshot " + lastIndexed + " to " + current);
+                            logger.debug("Reindexing snapshots for AVM store " + store.getName() + " from " + lastIndexed + " to " + current);
                         }
                         recoverSnapShot(store.getName(), lastIndexed, current);
                         upToDate = false;
                     }
+                }
+            }
+            if (upToDate)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Reindex check complete for AVM stores");
                 }
             }
         }

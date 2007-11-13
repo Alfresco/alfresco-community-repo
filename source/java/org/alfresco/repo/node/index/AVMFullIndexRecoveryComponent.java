@@ -236,7 +236,7 @@ public class AVMFullIndexRecoveryComponent extends AbstractReindexComponent
             }
             else
             {
-                return recoveryMode.NONE;
+                return RecoveryMode.NONE;
             }
         }
 

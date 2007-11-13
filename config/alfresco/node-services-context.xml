@@ -185,8 +185,7 @@
          <value>10000</value>
       </property>
       <property name="resourceManagerCallFrequencyMillis">
-         <!-- Was 5000 -->
-         <value>1000</value>
+         <value>5000</value>
       </property>
    </bean>
    <bean id="sessionSizeResourceManager" class="org.alfresco.repo.domain.hibernate.SessionSizeResourceManager">
@@ -194,8 +193,7 @@
          <ref bean="sessionFactory" />
       </property>
       <property name="threshold">
-         <!-- Was 5000 -->
-         <value>100</value>
+         <value>5000</value>
       </property>
    </bean>
 

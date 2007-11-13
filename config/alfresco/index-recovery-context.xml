@@ -62,7 +62,7 @@
    <!-- Index tracking -->
    <!--
       This is the default index tracker component.  It is used during bootstrap when incremental recovery
-      is required.  It is also used, by default in the clustered index tracking sample.
+      is required.
    -->
    <bean
          id="admIndexTrackerComponent"
@@ -99,10 +99,51 @@
             <ref bean="schedulerFactory" />
         </property>
         <property name="cronExpression">
-            <value>${index.tracking.cronExpression}</value>
+            <value>${index.tracking.adm.cronExpression}</value>
         </property>
     </bean>
 
+    <!--===========================-->
+    <!-- AVM (WCM) index tracking  -->
+    <!--===========================-->
+
+    <bean
+          id="avmIndexTrackerComponent"
+          class="org.alfresco.repo.node.index.AVMRemoteSnapshotTracker"
+          parent="indexRecoveryComponentBase">
+	   <property name="avmService">
+          <ref bean="avmService" />
+      </property>
+	   <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
+		   <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
+      </property>
+    </bean>
+
+    <!-- Schedule index tracking for AVM -->
+    <bean id="avmIndexTrackerTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="indexRecoveryComponent">
+                            <ref bean="avmIndexTrackerComponent" />
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <property name="cronExpression">
+            <value>${index.tracking.avm.cronExpression}</value>
+        </property>
+    </bean>
+    
+   <!-- Missing Content -->
    <!-- Bean that attempts to index content that was previously missing -->
    <bean
          id="missingContentReindexComponent"

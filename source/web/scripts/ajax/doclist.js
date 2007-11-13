@@ -18,7 +18,7 @@ var MyDocs = {
       {
          $('docPanelOverlay').setStyle('opacity', 0);
          // show AJAX loading overlay
-         $('docPanelOverlayAjax').setStyle('visibility', 'visible');
+         $('docPanelOverlayAjax').setStyle('display', 'block');
          $('docPanel').setStyle('visibility', 'hidden');
 
          var messagePanel = $('docMessagePanel');
@@ -48,7 +48,7 @@ var MyDocs = {
                   $('docPanel').setHTML("Sorry, data currently unavailable.");
                   
                   // hide the ajax wait panel and show the main doc panel
-                  $('docPanelOverlayAjax').setStyle('visibility', 'hidden');
+                  $('docPanelOverlayAjax').setStyle('display', 'none');
                   $('docPanel').setStyle('visibility', 'visible');
                }
             }
@@ -61,7 +61,7 @@ var MyDocs = {
       MyDocs.parseDocPanels();
       // hide the ajax wait panel and show the main doc panel
       $('docPanel').setStyle('visibility', 'visible');
-      $('docPanelOverlayAjax').setStyle('visibility', 'hidden');
+      $('docPanelOverlayAjax').setStyle('display', 'none');
 
       if (MyDocs.postInit)
       {
@@ -741,7 +741,7 @@ var MyDocs = {
       var docPanel = $('docPanel');
       docPanel.setStyle('visibility', 'hidden');
       // show the ajax wait panel
-      $('docPanelOverlayAjax').setStyle('visibility', 'visible');
+      $('docPanelOverlayAjax').setStyle('display', 'block');
       
       // Stop all the animation effects
       MyDocs.FxAll.each(function(fx, i)

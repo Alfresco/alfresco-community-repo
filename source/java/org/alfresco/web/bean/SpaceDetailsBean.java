@@ -411,7 +411,7 @@ public class SpaceDetailsBean extends BaseDetailsBean
       // add the mimetype=text/xml URL parameter - required to return correct stream type
       return GuestTemplateContentServlet.generateURL(space.getNodeRef(),
                 (NodeRef)space.getProperties().get(ApplicationModel.PROP_FEEDTEMPLATE))
-                    + "/rss.xml?mimetype=text%2Fxml";
+                    + "/rss.xml?mimetype=text%2Fxml%3Bcharset=utf-8";
    }
 
    /**

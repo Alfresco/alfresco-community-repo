@@ -186,6 +186,10 @@ a.docfilterLinkSelected:link, a.docfilterLinkSelected:visited
    vertical-align: top;
 }
 
+.docHeader th
+{
+	text-align: center;
+}
 
 .docFooter
 {

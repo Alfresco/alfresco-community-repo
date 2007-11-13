@@ -63,6 +63,7 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_SIMPLESEARCHADDITIONALATTRSQNAME = "qname";
    public static final String ELEMENT_MINUSERNAMELENGTH = "username-min-length";
    public static final String ELEMENT_MINPASSWORDLENGTH = "password-min-length";
+   public static final String ELEMENT_CIFSURLSUFFIX = "cifs-url-suffix";
    
    /**
     * @see org.alfresco.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
@@ -243,6 +244,16 @@ public class ClientElementReader implements ConfigElementReader
          if (minPassword != null)
          {
             configElement.setMinPasswordLength(Integer.parseInt(minPassword.getTextTrim()));
+         }
+         
+         // Get the CIFS URL suffix
+         Element cifsSuffix = element.element(ELEMENT_CIFSURLSUFFIX);
+         if ( cifsSuffix != null)
+         {
+        	 String suffix = cifsSuffix.getTextTrim();
+        	 if ( suffix.startsWith( ".") == false)
+        		 suffix = "." + suffix;
+        	 configElement.setCifsURLSuffix( suffix);
          }
       }
       

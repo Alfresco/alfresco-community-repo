@@ -26,7 +26,7 @@ var MySpaces = {
          messagePanel.setStyle('display', 'block');
          
          // show AJAX loading overlay
-         $('spacePanelOverlayAjax').setStyle('visibility', 'visible');
+         $('spacePanelOverlayAjax').setStyle('display', 'block');
          $('spacePanel').setStyle('visibility', 'hidden');
          
          // fire off the ajax request to populate the spaces list - the 'myspacespanel' webscript
@@ -63,7 +63,7 @@ var MySpaces = {
                   $('spacePanel').setHTML("Sorry, data currently unavailable.");
                   
                   // hide the ajax wait panel and show the main spaces panel
-                  $('spacePanelOverlayAjax').setStyle('visibility', 'hidden');
+                  $('spacePanelOverlayAjax').setStyle('display', 'none');
                   $('spacePanel').setStyle('visibility', 'visible');
                }
             }
@@ -76,7 +76,7 @@ var MySpaces = {
       MySpaces.parseSpacePanels();
       
       // hide the ajax wait panel and show the main spaces panel
-      $('spacePanelOverlayAjax').setStyle('visibility', 'hidden');
+      $('spacePanelOverlayAjax').setStyle('display', 'none');
       $('spacePanel').setStyle('visibility', 'visible');
 
       if (MySpaces.postInit)
@@ -504,7 +504,7 @@ var MySpaces = {
       var panel = $E(".spaceCreateSpacePanel", $(actionEl).getParent());
       panel.setStyle("opacity", 0);
       panel.setStyle("display", "inline");
-      panel.getElementsBySelector('#space-name').removeClass("spaceFormItemError");
+      $E("#space-name", panel).removeClass("spaceFormItemError");
 
       Alfresco.Dom.smartAlignElement(panel, panel.getParent());
       // make into a dragable panel
@@ -517,7 +517,7 @@ var MySpaces = {
             transition: Fx.Transitions.linear,
             onComplete: function()
             {
-               var nameInput = this.element.getElementById("space-name");
+            	var nameInput = $E("#space-name", this.element);
                nameInput.focus();
                nameInput.select();
             }
@@ -543,9 +543,9 @@ var MySpaces = {
       {
          if (spaceName.test(/(.*[\"\*\\\>\<\?\/\:\|]+.*)|(.*[\.]?.*[\.]+$)|(.*[ ]+$)/i))
          {
-            // Different object access methods to workaround MSIE7 problem
-            panel.getElementsBySelector('#space-name').addClass("spaceFormItemError");
-            panel.getElementById("space-name").focus();
+            var spaceName = $E("#space-name", panel);
+            spaceName.addClass("spaceFormItemError");
+            spaceName.focus();
          }
          else
          {
@@ -905,7 +905,7 @@ var MySpaces = {
       var spacePanel = $('spacePanel');
       spacePanel.setStyle('visibility', 'hidden');
       // show the ajax wait panel
-      $('spacePanelOverlayAjax').setStyle('visibility', 'visible');
+      $('spacePanelOverlayAjax').setStyle('display', 'block');
       
       // Stop all the animation effects
       MySpaces.FxAll.each(function(fx, i)
@@ -923,7 +923,9 @@ var MySpaces = {
     */
    applyModal: function()
    {
-      $("spacePanelOverlay").setStyle('opacity', MySpaces.OVERLAY_OPACITY);
+      var overlay = $('spacePanelOverlay')
+      overlay.setStyle('opacity', MySpaces.OVERLAY_OPACITY);
+      overlay.setStyle('display', 'block');
    },
    
    /**
@@ -931,7 +933,10 @@ var MySpaces = {
     */
    removeModal: function()
    {
-      $("spacePanelOverlay").setStyle('opacity', 0);
+      var overlay = $('spacePanelOverlay')
+      overlay.setStyle('opacity', 0);
+      overlay.setStyle('display', 'none');
+      overlay.setStyle('visibility', 'visible');
    },
    
    /**

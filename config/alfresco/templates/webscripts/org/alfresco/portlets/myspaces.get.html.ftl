@@ -132,6 +132,8 @@ a.spacefilterLink:hover
 {
    color: #168ECE;
    background-color: #EEF7FB;
+   font-weight: bold;
+   text-decoration: none;
 }
 
 a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited, .spaceCurrentSpace
@@ -163,6 +165,11 @@ a.spacefilterLinkSelected:link, a.spacefilterLinkSelected:visited, .spaceCurrent
 {
    background-image: url(${url.context}/images/parts/doclist_headerbg.png);
    height: 30px;
+}
+.spaceHeader table
+{
+	border-collapse: separate;
+	border-spacing: 6px 6px;
 }
 
 #spacePanel

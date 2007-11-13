@@ -826,9 +826,15 @@ public class NavigationBean
          String serverName = this.cifsServer.getConfiguration().getServerName();
          if (serverName != null && serverName.length() != 0)
          {
-            buf.append("\\\\")
-               .append(serverName)
-               .append("\\");
+            buf.append("\\\\");
+            buf.append(serverName);
+            
+            // Check if there is a suffix to apply to the host name
+            
+            if ( clientConfig != null && clientConfig.getCifsURLSuffix() != null)
+            	buf.append(clientConfig.getCifsURLSuffix());
+            
+            buf.append("\\");
             buf.append(diskShare.getName());
          }
          

@@ -74,6 +74,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private List<QName> simpleSearchAdditionalAttributes = null;
    private int minUsernameLength = 2;
    private int minPasswordLength = 3;
+   private String cifsURLSuffix;
    
    /**
     * Default Constructor
@@ -230,6 +231,12 @@ public class ClientConfigElement extends ConfigElementAdapter
       if (newElement.getMinPasswordLength() != combinedElement.getMinPasswordLength())
       {
          combinedElement.setMinPasswordLength(newElement.getMinPasswordLength());
+      }
+      
+      if ( newElement.getCifsURLSuffix() != null &&
+    	   newElement.getCifsURLSuffix().equals(combinedElement.getCifsURLSuffix()) == false)
+      {
+    	  combinedElement.setCifsURLSuffix(newElement.getCifsURLSuffix());
       }
       
       return combinedElement;
@@ -622,5 +629,25 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setMinPasswordLength(int minPasswordLength)
    {
       this.minPasswordLength = minPasswordLength;
+   }
+   
+   /**
+    * Get the CIFs URL suffix
+    * 
+    * @return String
+    */
+   public final String getCifsURLSuffix()
+   {
+	   return cifsURLSuffix;
+   }
+   
+   /**
+    * Set the CIFS URL suffix
+    * 
+    * @param suffix String
+    */
+   void setCifsURLSuffix(String suffix)
+   {
+	   cifsURLSuffix = suffix;
    }
 }

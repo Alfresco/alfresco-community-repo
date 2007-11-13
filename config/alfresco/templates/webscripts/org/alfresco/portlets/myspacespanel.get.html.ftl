@@ -18,7 +18,7 @@
          <#else>
             <#-- the component parts need to build up an encoded url to the outer webscript -->
             <#-- the client-side url encoder method of the outer webscript runtime will be used -->
-            <span class="spaceNavLinkUrl">${url.serviceContext}/ui/myspaces?f=${args.f}&amp;p=${args.p}/${d.name}</span>
+            <span class="spaceNavLinkUrl">${url.serviceContext}/ui/myspaces?f=${args.f}&amp;p=${args.p?url}%2F${d.name?url}</span>
             <span class="spaceNavLinkImg" style="display:none"><img class="spaceIconImage" alt="" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border="0"></span>
          </#if>
          <div style="display:none"><img class="spaceIconImage64" alt="" width="64" height="64" src="${url.context}${d.icon64}"></div>

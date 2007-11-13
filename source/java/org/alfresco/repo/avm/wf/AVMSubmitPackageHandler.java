@@ -163,21 +163,13 @@ public class AVMSubmitPackageHandler
         }
         else 
         {
-           if (desc.isDeletedDirectory())
+           if (desc.isDeletedDirectory() == false)
            {
-              // lookup the previous child and get its contents
-              final List<AVMNodeDescriptor> history = fAVMService.getHistory(desc, 2);
-              if (history.size() == 1)
+              Map<String, AVMNodeDescriptor> list = fAVMService.getDirectoryListing(desc, true);
+              for (AVMNodeDescriptor child : list.values())
               {
-                 return;
+                  recursivelyRemoveLocks(webProject, version, child.getPath());
               }
-              desc = history.get(1);
-           }
-
-           Map<String, AVMNodeDescriptor> list = fAVMService.getDirectoryListing(desc, true);
-           for (AVMNodeDescriptor child : list.values())
-           {
-               recursivelyRemoveLocks(webProject, version, child.getPath());
            }
         }
     }

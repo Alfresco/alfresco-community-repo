@@ -72,6 +72,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
+import org.alfresco.service.cmr.avm.locking.AVMLockingException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
@@ -905,6 +906,10 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         {
             throw new FileNotFoundException(params.getPath());
         }
+        catch (AVMLockingException ex)
+        {
+        	throw new AccessDeniedException(params.getPath());
+        }
 
         // Return the file
 
@@ -1038,6 +1043,10 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         catch (AVMWrongTypeException ex)
         {
             throw new IOException("Invalid path, " + name);
+        }
+        catch (AVMLockingException ex)
+        {
+        	throw new AccessDeniedException("File locked, " + name);
         }
     }
 

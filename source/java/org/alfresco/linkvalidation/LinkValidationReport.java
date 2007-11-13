@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Object representing the result of a link validation action being executed.
@@ -54,7 +56,9 @@ public class LinkValidationReport implements Serializable
    private int numberBrokenLinks = -1;
    private int baseSnapshotVersion = -1;
    private int latestSnapshotVersion = -1;
+   private int maxNumberLinksInReport = -1;
    private boolean successful = true;
+   private boolean maxLinksReached = false;
    private Date completedAt;
    
    private Throwable error;
@@ -62,6 +66,7 @@ public class LinkValidationReport implements Serializable
    private Map<String, HrefManifestEntry> brokenLinksByFile;
    
    private static final long serialVersionUID = 7562964706845609991L;
+   private static Log logger = LogFactory.getLog(LinkValidationReport.class);
    
    /**
     * Constructs a link validation report from the results of a check of the 
@@ -72,9 +77,11 @@ public class LinkValidationReport implements Serializable
     * @param manifest The manifest of broken links and snapshot info
     * @param noFilesChecked The number of files checked
     * @param noLinksChecked The number of links checked
+    * @param maxNumberLinksInReport The maximum number of links to store in
+    *        the report, -1 will store all links passed in the manifest object
     */
    public LinkValidationReport(String store, String webapp, HrefManifest manifest,
-            int noFilesChecked, int noLinksChecked)
+            int noFilesChecked, int noLinksChecked, int maxNumberLinksInReport)
    {
       this.store = store;
       this.webapp = webapp;
@@ -84,6 +91,7 @@ public class LinkValidationReport implements Serializable
       this.numberLinksChecked = noLinksChecked;
       this.baseSnapshotVersion   = manifest.getBaseSnapshotVersion(); 
       this.latestSnapshotVersion = manifest.getLatestSnapshotVersion();
+      this.maxNumberLinksInReport = maxNumberLinksInReport;
       
       // create list and map
       List<HrefManifestEntry> manifests = manifest.getManifestEntries();
@@ -147,6 +155,16 @@ public class LinkValidationReport implements Serializable
       return this.numberBrokenLinks;
    }
    
+   public int getMaxNumberLinksInReport()
+   {
+      return this.maxNumberLinksInReport;
+   }
+   
+   public boolean hasMaxNumberLinksExceeded()
+   {
+      return this.maxLinksReached;
+   }
+   
    public List<String> getFilesWithBrokenLinks()
    {
       return this.brokenFiles;
@@ -199,6 +217,8 @@ public class LinkValidationReport implements Serializable
       buffer.append(" webapp=").append(this.webapp);
       buffer.append(" baseSnapshot=").append(this.baseSnapshotVersion);
       buffer.append(" latestSnapshot=").append(this.latestSnapshotVersion);
+      buffer.append(" maxNumberLinksInReport=").append(this.maxNumberLinksInReport);
+      buffer.append(" maxLinksReached=").append(this.maxLinksReached);
       buffer.append(" error=").append(this.error).append(")");
       return buffer.toString();
    }
@@ -212,6 +232,7 @@ public class LinkValidationReport implements Serializable
    {
       ParameterCheck.mandatory("manifests", manifests);
       
+      // iterate over required amount of links and store them
       for (HrefManifestEntry manifest : manifests)
       {
          String fileName = manifest.getFileName();
@@ -219,6 +240,20 @@ public class LinkValidationReport implements Serializable
          this.brokenFiles.add(fileName);
          this.brokenLinksByFile.put(fileName, manifest);
          this.numberBrokenLinks = this.numberBrokenLinks + manifest.getHrefs().size();
+         
+         // check whether we have exceeded the maximum number
+         // of links, if we have break out
+         if (this.maxNumberLinksInReport != -1 &&
+             (this.numberBrokenLinks > this.maxNumberLinksInReport))
+         {
+            if (logger.isWarnEnabled())
+               logger.warn("Maximum number of links ("+ this.maxNumberLinksInReport + 
+                           ") for report has been exceeded at file number: " + 
+                           this.brokenFiles.size());
+            
+            this.maxLinksReached = true;
+            break;
+         }
       }
    }
 }

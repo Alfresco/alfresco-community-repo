@@ -1093,5 +1093,21 @@
             </list>
         </property>
     </bean>
+    <bean id="patch.db-V1.4-PerfIndexes02" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V1.4-PerfIndexes02</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>110</value></property>
+        <property name="targetSchema"><value>111</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/1.4/${db.script.dialect}/AlfrescoSchemaUpdate-1.4-PerfIndexes02.sql</value>
+        </property>
+        <!-- dependent on upgrade script 1.4-2 having being run -->
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.schemaUpdateScript-V1.4-2" />
+            </list>
+        </property>
+    </bean>
 
 </beans>

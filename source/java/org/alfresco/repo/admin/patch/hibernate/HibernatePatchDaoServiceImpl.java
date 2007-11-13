@@ -128,4 +128,10 @@ public class HibernatePatchDaoServiceImpl extends HibernateDaoSupport implements
         // done
         return queryResults;
     }
+
+    public void setAppliedOnDate(String id, Date appliedOnDate)
+    {
+        AppliedPatch patch = (AppliedPatch) getHibernateTemplate().get(AppliedPatchImpl.class, id);
+        patch.setAppliedOnDate(appliedOnDate);
+    }
 }

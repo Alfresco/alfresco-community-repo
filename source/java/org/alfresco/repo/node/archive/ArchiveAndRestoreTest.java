@@ -35,6 +35,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
@@ -471,6 +472,8 @@ public class ArchiveAndRestoreTest extends TestCase
      */
     public void testArchiveVsDeletePerformance() throws Exception
     {
+        // Disable the in-transaction flushing
+        SessionSizeResourceManager.setDisableInTransaction();
         // Start by deleting the node structure and then recreating it.
         // Only measure the delete speed
         int iterations = 100;

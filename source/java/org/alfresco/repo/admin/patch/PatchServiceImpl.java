@@ -116,7 +116,7 @@ public class PatchServiceImpl implements PatchService
                 // construct a list of executed patches by ID (also check the date)
                 Map<String, AppliedPatch> appliedPatchesById = new HashMap<String, AppliedPatch>(23);
                 List<AppliedPatch> appliedPatches = patchDaoService.getAppliedPatches();
-                for (AppliedPatch appliedPatch : appliedPatches)
+                for (final AppliedPatch appliedPatch : appliedPatches)
                 {
                     appliedPatchesById.put(appliedPatch.getId(), appliedPatch);
                     // Update the time of execution if it is null.  This is to deal with
@@ -124,7 +124,16 @@ public class PatchServiceImpl implements PatchService
                     // an execution time assigned
                     if (appliedPatch.getAppliedOnDate() == null)
                     {
-                        appliedPatch.setAppliedOnDate(new Date());
+                        RetryingTransactionCallback<Date> callback = new RetryingTransactionCallback<Date>()
+                        {
+                            public Date execute() throws Throwable
+                            {
+                                Date now = new Date();
+                                patchDaoService.setAppliedOnDate(appliedPatch.getId(), now);
+                                return now;
+                            }
+                        };
+                        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
                     }
                 }
             

@@ -530,6 +530,9 @@
       <property name="publicAction">
           <value>false</value>
       </property>
+      <property name="maxNumberLinksInReport">
+         <value>500</value>
+      </property>
     </bean>
     
     <!-- Scheduled action helper beans -->

@@ -80,4 +80,12 @@ public interface PatchDaoService
      *      a date
      */
     public List<AppliedPatch> getAppliedPatches(Date from, Date to);
+    
+    /**
+     * Update the patch <i>applied on</i> date.
+     * 
+     * @param id                    the patch ID
+     * @param appliedOnDate         the date applied
+     */
+    public void setAppliedOnDate(String id, Date appliedOnDate);
 }

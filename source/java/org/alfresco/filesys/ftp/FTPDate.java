@@ -127,7 +127,8 @@ public class FTPDate
      */
     public final static String packMlstDateTime( long dateTime)
     {
-    	return _mlstFormat.format( new Date( dateTime));
+    	long dst = TimeZone.getDefault().getDSTSavings();
+    	return _mlstFormat.format( new Date( dateTime - dst));
     }
 
     /**
@@ -138,6 +139,7 @@ public class FTPDate
      */
     public final static String packMlstDateTimeLong( long dateTime)
     {
-    	return _mlstFormatLong.format( new Date( dateTime));
+    	long dst = TimeZone.getDefault().getDSTSavings();
+    	return _mlstFormatLong.format( new Date( dateTime - dst));
     }
 }

@@ -57,6 +57,7 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
 
     private LinkValidationService linkValidationService;
     private AVMService avmService;
+    private int maxNumberLinksInReport = -1;
 
     private static Log logger = LogFactory.getLog(LinkValidationAction.class);
    
@@ -80,7 +81,19 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
         this.avmService = service;
     }
     
-    
+    /**
+     * Sets the maximum number of links to show in a report
+     * 
+     * @param maxLinks The maximum number of links to store in the report,
+     *                 -1 will store all links but this must be used with
+     *                 extreme caution as the report is stored as a BLOB
+     *                 in the underlying database and these have different
+     *                 maximum sizes
+     */
+    public void setMaxNumberLinksInReport(int maxLinks)
+    {
+       this.maxNumberLinksInReport = maxLinks;
+    }
 
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
@@ -136,12 +149,13 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
         {
             if (destWebappPath == null)
             {
-                logger.debug("Performing link validation check for webapp '" + webappPath + "'");
+                logger.debug("Performing link validation check for webapp '" + webappPath + "', storing a maximum of " + 
+                         this.maxNumberLinksInReport + " broken links");
             }
             else
             {
                logger.debug("Performing link validation check for webapp '" + webappPath + "', comparing against '" +
-                            destWebappPath + "'");
+                            destWebappPath + "', storing a maximum of " + this.maxNumberLinksInReport + " broken links");
             }
         }
         
@@ -160,16 +174,18 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
 
                 // create the report object using the 2 sets of results
                 report = new LinkValidationReport(storeName, webappName, manifest,
-                         monitor.getFileUpdateCount(), monitor.getUrlUpdateCount());
+                         monitor.getFileUpdateCount(), monitor.getUrlUpdateCount(),
+                         this.maxNumberLinksInReport);
             }
             else
             {
                 // retrieve the manifest of all the broken links and files for the webapp
                 HrefManifest manifest =  this.linkValidationService.getBrokenHrefManifest(webappPath);
-
+                   
                 // Create the report object using the link check results
                 report = new LinkValidationReport(storeName, webappName, manifest,
-                         manifest.getBaseFileCount(), manifest.getBaseLinkCount());
+                         manifest.getBaseFileCount(), manifest.getBaseLinkCount(),
+                         this.maxNumberLinksInReport);
                 
                 // the monitor object is not used here so manually set
                 // the done status so the client can retrieve the report.

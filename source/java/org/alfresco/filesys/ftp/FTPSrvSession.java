@@ -4619,8 +4619,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
 					if (finfo.hasModifyDateTime()) {
 						buf.append(_factNames[i]);
 						buf.append("=");
-						buf.append(FTPDate.packMlstDateTime(finfo
-								.getModifyDateTime()));
+						buf.append(FTPDate.packMlstDateTime(finfo.getModifyDateTime()));
 						buf.append(";");
 					}
 					break;
@@ -4631,8 +4630,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
 					if (finfo.hasCreationDateTime()) {
 						buf.append(_factNames[i]);
 						buf.append("=");
-						buf.append(FTPDate.packMlstDateTime(finfo
-								.getCreationDateTime()));
+						buf.append(FTPDate.packMlstDateTime(finfo.getCreationDateTime()));
 						buf.append(";");
 					}
 					break;

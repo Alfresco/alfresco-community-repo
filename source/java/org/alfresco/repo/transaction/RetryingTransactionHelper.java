@@ -40,6 +40,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.StaleStateException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.LockAcquisitionException;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -70,6 +71,7 @@ public class RetryingTransactionHelper
                 StaleObjectStateException.class,
                 LockAcquisitionException.class,
                 BatchUpdateException.class,
+                ConstraintViolationException.class,
                 DataIntegrityViolationException.class,
                 StaleStateException.class
                 };

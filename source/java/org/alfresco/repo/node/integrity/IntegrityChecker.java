@@ -623,7 +623,7 @@ public class IntegrityChecker
         if (failOnViolation && !warnOnly)
         {
             logger.error(sb.toString());
-            throw new IntegrityException(failures);
+            throw new IntegrityException(sb.toString(), failures);
         }
         else
         {

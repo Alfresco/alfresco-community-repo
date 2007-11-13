@@ -28,7 +28,10 @@ import java.io.IOException;
 import java.io.Reader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
 
 import org.alfresco.util.CachingDateFormat;
 import org.apache.lucene.analysis.Token;
@@ -41,7 +44,9 @@ import org.apache.lucene.analysis.WhitespaceTokenizer;
 public class DateTimeTokenFilter extends Tokenizer
 {
     Tokenizer baseTokeniser;
-    
+
+    Iterator<Token> tokenIterator = null;
+
     public DateTimeTokenFilter(Reader in)
     {
         super(in);
@@ -50,10 +55,26 @@ public class DateTimeTokenFilter extends Tokenizer
 
     public Token next() throws IOException
     {
-        SimpleDateFormat df = CachingDateFormat.getDateFormat();
-        SimpleDateFormat dof = CachingDateFormat.getDateFormat();
+        if (tokenIterator == null)
+        {
+            buildIterator();
+        }
+        if (tokenIterator.hasNext())
+        {
+            return tokenIterator.next();
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public void buildIterator() throws IOException
+    {
+        SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
         Token candidate;
-        while((candidate = baseTokeniser.next()) != null)
+        ArrayList<Token> tokens = new ArrayList<Token>();
+        while ((candidate = baseTokeniser.next()) != null)
         {
             Date date;
             try
@@ -62,13 +83,99 @@ public class DateTimeTokenFilter extends Tokenizer
             }
             catch (ParseException e)
             {
-               continue;
+                continue;
             }
-            String valueString = dof.format(date);
-            Token integerToken = new Token(valueString, candidate.startOffset(), candidate.startOffset(),
-                    candidate.type());
-            return integerToken;
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(date);
+
+            Token token;
+
+            // four digits
+            token = new Token("YE" + cal.get(Calendar.YEAR), candidate.startOffset(), candidate.startOffset(), candidate.type());
+            tokens.add(token);
+
+            // 2 digits
+            int month = cal.get(Calendar.MONTH);
+            if (month < 10)
+            {
+                token = new Token("MO0" + month, candidate.startOffset(), candidate.startOffset(), candidate.type());
+                tokens.add(token);
+            }
+            else
+            {
+                token = new Token("MO" + month, candidate.startOffset(), candidate.startOffset(), candidate.type());
+                tokens.add(token);
+            }
+
+            int day = cal.get(Calendar.DAY_OF_MONTH);
+            if (day < 10)
+            {
+                token = new Token("DA0" + day, candidate.startOffset(), candidate.startOffset(), candidate.type());
+                tokens.add(token);
+            }
+            else
+            {
+                token = new Token("DA" + day, candidate.startOffset(), candidate.startOffset(), candidate.type());
+                tokens.add(token);
+            }
+
+            int hour = cal.get(Calendar.HOUR_OF_DAY);
+            if (hour < 10)
+            {
+                token = new Token("HO0" + hour, candidate.startOffset(), candidate.startOffset(), candidate.type());
+                tokens.add(token);
+            }
+            else
+            {
+                token = new Token("HO" + hour, candidate.startOffset(), candidate.startOffset(), candidate.type());
+                tokens.add(token);
+            }
+
+            int minute = cal.get(Calendar.MINUTE);
+            if (minute < 10)
+            {
+                token = new Token("MI0" + minute, candidate.startOffset(), candidate.startOffset(), candidate.type());
+                tokens.add(token);
+            }
+            else
+            {
+                token = new Token("MI" + minute, candidate.startOffset(), candidate.startOffset(), candidate.type());
+                tokens.add(token);
+            }
+
+            int second = cal.get(Calendar.SECOND);
+            if (second < 10)
+            {
+                token = new Token("SE0" + second, candidate.startOffset(), candidate.startOffset(), candidate.type());
+                tokens.add(token);
+            }
+            else
+            {
+                token = new Token("SE" + second, candidate.startOffset(), candidate.startOffset(), candidate.type());
+                tokens.add(token);
+            }
+
+            int millis = cal.get(Calendar.MILLISECOND);
+            if (millis < 10)
+            {
+                token = new Token("MS00" + millis, candidate.startOffset(), candidate.startOffset(), candidate.type());
+                tokens.add(token);
+            }
+            else if (millis < 100)
+            {
+                token = new Token("MS0" + millis, candidate.startOffset(), candidate.startOffset(), candidate.type());
+                tokens.add(token);
+            }
+            else
+            {
+                token = new Token("MS" + millis, candidate.startOffset(), candidate.startOffset(), candidate.type());
+                tokens.add(token);
+            }
+
+            break;
         }
-        return null;
+
+        tokenIterator = tokens.iterator();
     }
 }

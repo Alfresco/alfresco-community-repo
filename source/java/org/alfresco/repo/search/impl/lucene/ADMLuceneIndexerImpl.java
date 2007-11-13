@@ -31,8 +31,11 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -46,6 +49,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.search.IndexerException;
+import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
 import org.alfresco.repo.search.impl.lucene.fts.FTSIndexerAware;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.tenant.TenantService;
@@ -69,10 +73,12 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ISO9075;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.analysis.Token;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
@@ -93,7 +99,7 @@ import org.apache.lucene.search.BooleanClause.Occur;
  */
 public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> implements ADMLuceneIndexer
 {
-    static Log    s_logger = LogFactory.getLog(ADMLuceneIndexerImpl.class);
+    static Log s_logger = LogFactory.getLog(ADMLuceneIndexerImpl.class);
 
     /**
      * The node service we use to get information about nodes
@@ -131,16 +137,6 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     ADMLuceneIndexerImpl()
     {
         super();
-    }
-
-    /**
-     * IOC setting of the dictionary service
-     * 
-     * @param dictionaryService
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        super.setDictionaryService(dictionaryService);
     }
 
     /**
@@ -722,6 +718,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         boolean isContent = false;
         boolean isMultiLingual = false;
         boolean isText = false;
+        boolean isDateTime = false;
 
         PropertyDefinition propertyDef = getDictionaryService().getProperty(propertyName);
         if (propertyDef != null)
@@ -733,6 +730,12 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             isContent = propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT);
             isMultiLingual = propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT);
             isText = propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT);
+            if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
+            {
+                DataTypeDefinition dataType = propertyDef.getDataType();
+                String analyserClassName = dataType.getAnalyserClassName();
+                isDateTime = analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName());
+            }
         }
         if (value == null)
         {
@@ -843,10 +846,8 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                                 // Check that the reader is a view onto something concrete
                                 if (!reader.exists())
                                 {
-                                    throw new ContentIOException(
-                                            "The transformation did not write any content, yet: \n" +
-                                            "   transformer:     " + transformer + "\n" +
-                                            "   temp writer:     " + writer);
+                                    throw new ContentIOException("The transformation did not write any content, yet: \n"
+                                            + "   transformer:     " + transformer + "\n" + "   temp writer:     " + writer);
                                 }
                             }
                             catch (ContentIOException e)
@@ -976,6 +977,24 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         {
                             doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
                         }
+                    }
+                    else if (isDateTime)
+                    {
+                        doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
+
+                        SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
+
+                        Date date;
+                        try
+                        {
+                            date = df.parse(strValue);
+                            doc.add(new Field(attributeName + ".sort", df.format(date), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
+                        }
+                        catch (ParseException e)
+                        {
+                            // ignore for ordering
+                        }
+
                     }
                     else
                     {

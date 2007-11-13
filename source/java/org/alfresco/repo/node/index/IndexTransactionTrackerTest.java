@@ -66,7 +66,7 @@ public class IndexTransactionTrackerTest extends TestCase
         searchService = serviceRegistry.getSearchService();
         nodeService = serviceRegistry.getNodeService();
         fileFolderService = serviceRegistry.getFileFolderService();
-        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponentImpl");
+        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         contentStore = (ContentStore) ctx.getBean("fileContentStore");
         ftsIndexer = (FullTextSearchIndexer) ctx.getBean("LuceneFullTextSearchIndexer");
 
@@ -108,7 +108,7 @@ public class IndexTransactionTrackerTest extends TestCase
                 return childAssocRef;
             }
         };
-        ChildAssociationRef childAssocRef = transactionService.getRetryingTransactionHelper().doInTransaction(createNodeWork, true);
+        ChildAssociationRef childAssocRef = transactionService.getRetryingTransactionHelper().doInTransaction(createNodeWork, false);
     }
     
     public void testSetup() throws Exception

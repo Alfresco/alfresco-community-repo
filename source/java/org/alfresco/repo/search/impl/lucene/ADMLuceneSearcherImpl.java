@@ -41,7 +41,10 @@ import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NodeSearcher;
 import org.alfresco.repo.search.impl.lucene.QueryParser.Operator;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -80,7 +83,7 @@ import com.werken.saxpath.XPathReader;
  */
 public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneSearcher
 {
-    static Log    s_logger = LogFactory.getLog(ADMLuceneSearcherImpl.class);
+    static Log s_logger = LogFactory.getLog(ADMLuceneSearcherImpl.class);
 
     /**
      * Default field name
@@ -92,8 +95,6 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     private NodeService nodeService;
     
     private TenantService tenantService;
-
-    private DictionaryService dictionaryService;
 
     private QueryRegisterComponent queryRegister;
 
@@ -161,10 +162,6 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
         this.tenantService = tenantService;
     }
 
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
 
     /**
      * Set the query register
@@ -249,10 +246,10 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                 Query query = LuceneQueryParser.parse(
                         parameterisedQueryString, DEFAULT_FIELD,
                         new LuceneAnalyser(
-                                dictionaryService,
+                                getDictionaryService(),
                                 searchParameters.getMlAnalaysisMode() == null ? getLuceneConfig().getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode()),
                         namespacePrefixResolver,
-                        dictionaryService,
+                        getDictionaryService(),
                         tenantService,
                         defaultOperator,
                         searchParameters,
@@ -279,9 +276,26 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                         switch (sd.getSortType())
                         {
                         case FIELD:
-                            if (fieldHasTerm(searcher.getReader(), sd.getField()))
+                            String field = sd.getField();
+                            if(field.startsWith("@"))
                             {
-                                fields[index++] = new SortField(sd.getField(), !sd.isAscending());
+                               field = expandAttributeFieldName(field);
+                               PropertyDefinition propertyDef = getDictionaryService().getProperty(QName.createQName(field.substring(1)));
+
+                               if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
+                               {
+                                   DataTypeDefinition dataType = propertyDef.getDataType();
+                                   String analyserClassName = dataType.getAnalyserClassName();
+                                   if(analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName()))
+                                   {
+                                       field = field + ".sort";
+                                   }
+                               }
+
+                            }
+                            if (fieldHasTerm(searcher.getReader(), field))
+                            {                                
+                                fields[index++] = new SortField(field, !sd.isAscending());
                             }
                             else
                             {
@@ -329,7 +343,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                 XPathReader reader = new XPathReader();
                 LuceneXPathHandler handler = new LuceneXPathHandler();
                 handler.setNamespacePrefixResolver(namespacePrefixResolver);
-                handler.setDictionaryService(dictionaryService);
+                handler.setDictionaryService(getDictionaryService());
                 // TODO: Handler should have the query parameters to use in
                 // building its lucene query
                 // At the moment xpath style parameters in the PATH
@@ -569,7 +583,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
             boolean followAllParentLinks, String language) throws InvalidNodeRefException, XPathException
     {
-        NodeSearcher nodeSearcher = new NodeSearcher(nodeService, dictionaryService, this);
+        NodeSearcher nodeSearcher = new NodeSearcher(nodeService, getDictionaryService(), this);
         
         contextNodeRef = tenantService.getName(contextNodeRef);
         
@@ -582,7 +596,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     public List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
             boolean followAllParentLinks, String language) throws InvalidNodeRefException, XPathException
     {
-        NodeSearcher nodeSearcher = new NodeSearcher(nodeService, dictionaryService, this);
+        NodeSearcher nodeSearcher = new NodeSearcher(nodeService, getDictionaryService(), this);
         return nodeSearcher.selectProperties(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, language);
     }
 
@@ -714,5 +728,26 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
             boolean followAllParentLinks) throws InvalidNodeRefException, XPathException
     {
         return selectProperties(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, SearchService.LANGUAGE_XPATH);
+    }
+
+    private String expandAttributeFieldName(String field)
+    {
+        String fieldName = field;
+        // Check for any prefixes and expand to the full uri
+        if (field.charAt(1) != '{')
+        {
+            int colonPosition = field.indexOf(':');
+            if (colonPosition == -1)
+            {
+                // use the default namespace
+                fieldName = "@{" + namespacePrefixResolver.getNamespaceURI("") + "}" + field.substring(1);
+            }
+            else
+            {
+                // find the prefix
+                fieldName = "@{" + namespacePrefixResolver.getNamespaceURI(field.substring(1, colonPosition)) + "}" + field.substring(colonPosition + 1);
+            }
+        }
+        return fieldName;
     }
 }

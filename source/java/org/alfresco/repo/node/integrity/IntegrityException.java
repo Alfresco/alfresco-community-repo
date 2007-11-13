@@ -45,6 +45,12 @@ public class IntegrityException extends AlfrescoRuntimeException
         this.records = records;
     }
 
+    public IntegrityException(String msg, List<IntegrityRecord> records)
+    {
+        super(msg);
+        this.records = records;
+    }
+
     /**
      * @return Returns a list of all the integrity violations
      */

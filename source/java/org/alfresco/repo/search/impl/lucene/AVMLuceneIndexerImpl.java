@@ -31,6 +31,8 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -52,6 +54,7 @@ import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.search.IndexMode;
 import org.alfresco.repo.search.Indexer;
+import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
 import org.alfresco.repo.search.impl.lucene.fts.FTSIndexerAware;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -74,6 +77,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ISO9075;
@@ -104,7 +108,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
     private static String SNAP_SHOT_ID = "SnapShot";
 
-    static Log    s_logger = LogFactory.getLog(AVMLuceneIndexerImpl.class);
+    static Log s_logger = LogFactory.getLog(AVMLuceneIndexerImpl.class);
 
     private AVMService avmService;
 
@@ -649,6 +653,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         boolean isContent = false;
         boolean isMultiLingual = false;
         boolean isText = false;
+        boolean isDateTime = false;
 
         PropertyDefinition propertyDef = getDictionaryService().getProperty(propertyName);
         if (propertyDef != null)
@@ -660,6 +665,12 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
             isContent = propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT);
             isMultiLingual = propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT);
             isText = propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT);
+            if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
+            {
+                DataTypeDefinition dataType = propertyDef.getDataType();
+                String analyserClassName = dataType.getAnalyserClassName();
+                isDateTime = analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName());
+            }
         }
         if (value == null)
         {
@@ -894,6 +905,24 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                         else
                         {
                             doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
+                        }
+                    }
+                    else if (isDateTime)
+                    {
+
+                        doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
+
+                        SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
+
+                        Date date;
+                        try
+                        {
+                            date = df.parse(strValue);
+                            doc.add(new Field(attributeName + ".sort", df.format(date), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
+                        }
+                        catch (ParseException e)
+                        {
+                            // ignore for ordering
                         }
                     }
                     else
@@ -1546,12 +1575,11 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         }
     }
 
-    
     public boolean hasIndexBeenCreated(String store)
     {
         return hasIndexBeenCreatedimpl(store, IndexChannel.MAIN) || hasIndexBeenCreatedimpl(store, IndexChannel.DELTA);
     }
-    
+
     public boolean hasIndexBeenCreatedimpl(String store, IndexChannel channel)
     {
         IndexReader reader = null;

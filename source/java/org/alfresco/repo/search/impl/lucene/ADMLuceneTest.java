@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.repo.search.impl.lucene;
@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -67,6 +68,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.TransactionResourceInterceptor;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -201,7 +203,7 @@ public class ADMLuceneTest extends TestCase
     private Date testDate;
 
     /**
-     * 
+     *
      */
     public ADMLuceneTest()
     {
@@ -398,7 +400,7 @@ public class ADMLuceneTest extends TestCase
         writer.putContent("The quick brown fox jumped over the lazy dog and ate the Alfresco Tutorial, in pdf format, along with the following stop words;  a an and are"
                 + " as at be but by for if in into is it no not of on or such that the their then there these they this to was will with: "
                 + " and random charcters \u00E0\u00EA\u00EE\u00F0\u00F1\u00F6\u00FB\u00FF");
-        //System.out.println("Size is " + writer.getSize());
+        // System.out.println("Size is " + writer.getSize());
 
         nodeService.addChild(rootNodeRef, n8, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}eight-0"));
         nodeService.addChild(n1, n8, ASSOC_TYPE_QNAME, QName.createQName("{namespace}eight-1"));
@@ -1191,6 +1193,7 @@ public class ADMLuceneTest extends TestCase
                 {
                     public Object execute() throws Throwable
                     {
+                        SessionSizeResourceManager.setDisableInTransaction();
                         for (int i = 0; i < 20; i++)
                         {
                             HashSet<ChildAssociationRef> refs = new HashSet<ChildAssociationRef>();
@@ -1575,6 +1578,47 @@ public class ADMLuceneTest extends TestCase
             date = currentBun;
         }
         results.close();
+        
+        SearchParameters sp_7 = new SearchParameters();
+        sp_7.addStore(rootNodeRef.getStoreRef());
+        sp_7.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp_7.setQuery("PATH:\"//.\"");
+        sp_7.addSort("@" + ContentModel.PROP_MODIFIED, true);
+        results = searcher.query(sp_7);
+
+        date = null;
+        for (ResultSetRow row : results)
+        {
+            Date currentBun = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_MODIFIED));
+            // System.out.println(currentBun);
+            if (date != null)
+            {
+                assertTrue(date.compareTo(currentBun) <= 0);
+            }
+            date = currentBun;
+        }
+        results.close();
+
+        SearchParameters sp_8 = new SearchParameters();
+        sp_8.addStore(rootNodeRef.getStoreRef());
+        sp_8.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp_8.setQuery("PATH:\"//.\"");
+        sp_8.addSort("@" + ContentModel.PROP_MODIFIED, false);
+        results = searcher.query(sp_8);
+
+        date = null;
+        for (ResultSetRow row : results)
+        {
+            Date currentBun = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_MODIFIED));
+            // System.out.println(currentBun);
+            if ((date != null) && (currentBun != null))
+            {
+                assertTrue(date.compareTo(currentBun) >= 0);
+            }
+            date = currentBun;
+        }
+        results.close();
+        
 
         // sort by double
 
@@ -2481,23 +2525,25 @@ public class ADMLuceneTest extends TestCase
         results.close();
 
         // Dates
-        
+
         PropertyDefinition propertyDef = dictionaryService.getProperty(QName.createQName(TEST_NAMESPACE, "datetime-ista"));
         DataTypeDefinition dataType = propertyDef.getDataType();
         String analyserClassName = dataType.getAnalyserClassName();
         boolean usesDateTimeAnalyser = analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName());
-        
+
         Date date = new Date();
-        String sDate = CachingDateFormat.getDateFormat().format(date);
+        SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
+        String sDate = df.format(date);
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":\"" + sDate + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":\"" + sDate + "\"", null, null);
-        assertEquals(usesDateTimeAnalyser ? 0 : 1 , results.length());
+        assertEquals(usesDateTimeAnalyser ? 0 : 1, results.length());
         results.close();
-        
-        sDate = CachingDateFormat.getDateFormat().format(testDate);
+
+        sDate = df.format(testDate);
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":\"" + sDate + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
@@ -2505,7 +2551,63 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":\"" + sDate + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
-        
+
+        // Date ranges
+        // Test date collapses but date time does not
+
+        sDate = df.format(date);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":[" + sDate + " TO " + sDate + "]",
+                null, null);
+        assertEquals(1, results.length());
+        results.close();
+
+        sDate = CachingDateFormat.getDateFormat().format(date);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene",
+                "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO " + sDate + "]", null, null);
+        assertEquals(usesDateTimeAnalyser ? 0 : 1, results.length(), results.length());
+        results.close();
+
+        if (usesDateTimeAnalyser)
+        {
+            sDate = df.format(testDate);
+            // System.out.println("SD = " + sDate);
+
+            for (long i : new long[] { 333, 20000, 20 * 60 * 1000, 8 * 60 * 60 * 1000, 10 * 24 * 60 * 60 * 1000, 4 * 30 * 24 * 60 * 60 * 1000, 10 * 12 * 30 * 24 * 60 * 60 * 1000 })
+            {
+                String startDate = df.format(new Date(testDate.getTime() - i));
+                // System.out.println("\tStart = " + startDate);
+                
+                
+                String endDate = df.format(new Date(testDate.getTime() + i));
+                // System.out.println("\tEnd = " + endDate);
+
+                results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + startDate + " TO " + endDate + "]", null, null);
+                assertEquals(1, results.length());
+                results.close();
+
+                results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO " + endDate + "]", null, null);
+                assertEquals(1, results.length());
+                results.close();
+
+                results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + startDate + " TO " + sDate + "]", null, null);
+                assertEquals(1, results.length());
+                results.close();
+
+                results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":{" + sDate + " TO " + endDate + "}", null, null);
+                assertEquals(0, results.length());
+                results.close();
+
+                results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                        + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":{" + startDate + " TO " + sDate + "}", null, null);
+                assertEquals(0, results.length());
+                results.close();
+            }
+        }
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "boolean-ista")) + ":\"true\"", null, null);
         assertEquals(1, results.length());
         results.close();
@@ -2549,48 +2651,59 @@ public class ADMLuceneTest extends TestCase
         results.close();
 
         // proximity searches
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"Tutorial Alfresco\"~0", null, null);
         assertEquals(0, results.length());
         results.close();
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"Tutorial Alfresco\"~1", null, null);
         assertEquals(0, results.length());
         results.close();
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"Tutorial Alfresco\"~2", null, null);
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"Tutorial Alfresco\"~3", null, null);
         assertEquals(1, results.length());
         results.close();
-        
-        
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString())+":\"Alfresco Tutorial\"", null, null);
+
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Alfresco Tutorial\"", null,
+                null);
+
         assertEquals(1, results.length());
         results.close();
-        
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString())+":\"Tutorial Alfresco\"", null, null);
+
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"", null,
+                null);
+
         assertEquals(0, results.length());
         results.close();
-        
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString())+":\"Tutorial Alfresco\"~0", null, null);
+
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~0", null,
+                null);
+
         assertEquals(0, results.length());
         results.close();
-        
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString())+":\"Tutorial Alfresco\"~1", null, null);
+
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~1", null,
+                null);
+
         assertEquals(0, results.length());
         results.close();
-        
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString())+":\"Tutorial Alfresco\"~2", null, null);
+
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~2", null,
+                null);
+
         assertEquals(1, results.length());
         results.close();
-        
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString())+":\"Tutorial Alfresco\"~3", null, null);
+
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~3", null,
+                null);
+
         assertEquals(1, results.length());
         results.close();
-        
+
         // multi ml text
 
         QName multimlQName = QName.createQName(TEST_NAMESPACE, "mltext-many-ista");
@@ -3221,7 +3334,7 @@ public class ADMLuceneTest extends TestCase
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) +":\"alfres??\"");
+        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfres??\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5425,7 +5538,7 @@ public class ADMLuceneTest extends TestCase
     {
 
         /**
-         * 
+         *
          */
         private static final long serialVersionUID = -6729690518573349055L;
 

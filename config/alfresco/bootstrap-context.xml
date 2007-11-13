@@ -36,6 +36,7 @@
        <property name="postCreateScriptUrls">
           <list>
              <value>classpath:alfresco/dbscripts/create/2.1/${db.script.dialect}/AlfrescoPostCreate-2.1-FKIndexes.sql</value>
+             <value>classpath:alfresco/dbscripts/create/1.4/${db.script.dialect}/post-create-indexes-02.sql</value>
           </list>
        </property>
        <property name="validateUpdateScriptPatches">

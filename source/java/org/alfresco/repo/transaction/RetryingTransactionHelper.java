@@ -38,6 +38,7 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.ObjectNotFoundException;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.StaleStateException;
 import org.hibernate.exception.ConstraintViolationException;
@@ -73,7 +74,8 @@ public class RetryingTransactionHelper
                 BatchUpdateException.class,
                 ConstraintViolationException.class,
                 DataIntegrityViolationException.class,
-                StaleStateException.class
+                StaleStateException.class,
+                ObjectNotFoundException.class
                 };
     }
 
@@ -397,6 +399,15 @@ public class RetryingTransactionHelper
                 // Not valid
                 return null;
             }
+        }
+        else if (retryCause instanceof ObjectNotFoundException)
+        {
+            // This is (I'm almost certain) an optimistic locking failure in disguise.
+            if (retryCause.getMessage().contains("No row"))
+            {
+                return retryCause;
+            }
+            return null;
         }
         else
         {

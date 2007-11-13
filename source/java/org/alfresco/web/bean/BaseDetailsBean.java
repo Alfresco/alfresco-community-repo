@@ -682,6 +682,7 @@ public abstract class BaseDetailsBean
          // clear template property
          this.nodeService.setProperty(getNode().getNodeRef(), ContentModel.PROP_TEMPLATE, null);
          this.nodeService.removeAspect(getNode().getNodeRef(), ContentModel.ASPECT_TEMPLATABLE);
+         this.nodeService.removeAspect(getNode().getNodeRef(), ContentModel.ASPECT_WEBSCRIPTABLE);
          
          // reset node details for next refresh of details page
          getNode().reset();

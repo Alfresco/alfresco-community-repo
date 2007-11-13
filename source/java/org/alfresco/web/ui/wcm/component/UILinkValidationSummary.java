@@ -115,83 +115,99 @@ public class UILinkValidationSummary extends AbstractLinkValidationReportCompone
          out.write("</div>");
       }
       
-      if (linkState.getError() == null)
+      if (linkState != null)
       {
-         // render the main summary info
-         
-         int latestVersion = linkState.getLatestSnapshotVersion();
-         int baseVersion = linkState.getBaseSnapshotVersion();
-
-         String pattern = bundle.getString("link_check_completed_at");
-         Date checkAt = linkState.getCheckCompletedAt();
-         String checkTime = Utils.getDateTimeFormat(context).format(checkAt);
-         String checkTimeSummary = MessageFormat.format(pattern, 
-                 new Object[] {checkTime, baseVersion});
-         
-         out.write("<div class='linkValSummaryText'>");
-         out.write(checkTimeSummary);
-         
-         // NOTE: Whenever latestVersion > baseVersion, link validation  is "behind".
-         if (latestVersion > baseVersion)
+         if (linkState.getError() == null)
          {
-            pattern = bundle.getString("link_check_not_latest");
-            String latestVersionInfo = 
-                     MessageFormat.format(
-                       pattern, new Object[] { new Integer( latestVersion )});
-
+            // render the main summary info
+            
+            int latestVersion = linkState.getLatestSnapshotVersion();
+            int baseVersion = linkState.getBaseSnapshotVersion();
+   
+            String pattern = bundle.getString("link_check_completed_at");
+            Date checkAt = linkState.getCheckCompletedAt();
+            String checkTime = Utils.getDateTimeFormat(context).format(checkAt);
+            String checkTimeSummary = MessageFormat.format(pattern, 
+                    new Object[] {checkTime, baseVersion});
+            
+            out.write("<div class='linkValSummaryText'>");
+            out.write(checkTimeSummary);
+            
+            // NOTE: Whenever latestVersion > baseVersion, link validation  is "behind".
+            if (latestVersion > baseVersion)
+            {
+               pattern = bundle.getString("link_check_not_latest");
+               String latestVersionInfo = 
+                        MessageFormat.format(
+                          pattern, new Object[] { new Integer( latestVersion )});
+   
+               out.write("&nbsp;<img src='");
+               out.write(context.getExternalContext().getRequestContextPath());
+               out.write("/images/icons/warning.gif' />&nbsp;");
+               out.write( latestVersionInfo );
+            }
+            
+            pattern = bundle.getString("link_check_items_found");
+            String checkedSummary = MessageFormat.format(pattern, 
+                     new Object[] {linkState.getNumberFilesChecked(), 
+                                   linkState.getNumberLinksChecked()});
+            
+            pattern = bundle.getString("link_check_items_broken");
+            
+            String numBrokenLinks = Integer.toString(linkState.getNumberBrokenLinks());
+            if (linkState.hasMaxNumberLinksExceeded())
+            {
+               numBrokenLinks = Integer.toString(linkState.getMaxNumberLinksInReport()) + "+";
+            }
+            
+            String brokenSummary = MessageFormat.format(pattern, 
+                     new Object[] {numBrokenLinks, linkState.getNumberBrokenFiles()});
+            
+            out.write("</div><div class='linkValSummaryText'>");
+            out.write(checkedSummary);
             out.write("&nbsp;<img src='");
             out.write(context.getExternalContext().getRequestContextPath());
-            out.write("/images/icons/warning.gif' />&nbsp;");
-            out.write( latestVersionInfo );
-         }
-         
-         pattern = bundle.getString("link_check_items_found");
-         String checkedSummary = MessageFormat.format(pattern, 
-                  new Object[] {linkState.getNumberFilesChecked(), 
-                                linkState.getNumberLinksChecked()});
-         
-         pattern = bundle.getString("link_check_items_broken");
-         String brokenSummary = MessageFormat.format(pattern, 
-                  new Object[] {linkState.getNumberBrokenLinks(),
-                                linkState.getNumberBrokenFiles()});
-         
-         out.write("</div><div class='linkValSummaryText'>");
-         out.write(checkedSummary);
-         out.write("&nbsp;<img src='");
-         out.write(context.getExternalContext().getRequestContextPath());
-         
-         if (linkState.getNumberBrokenLinks() == 0)
-         {
-            out.write("/images/icons/info_icon.gif' />&nbsp;");
-            out.write(bundle.getString("link_check_no_broken"));
+            
+            if (linkState.getNumberBrokenLinks() == 0)
+            {
+               out.write("/images/icons/info_icon.gif' />&nbsp;");
+               out.write(bundle.getString("link_check_no_broken"));
+            }
+            else
+            {
+               out.write("/images/icons/warning.gif' />&nbsp;");
+               out.write(brokenSummary);
+            }
+            out.write("</div>");
          }
          else
          {
-            out.write("/images/icons/warning.gif' />&nbsp;");
-            out.write(brokenSummary);
+            // render the error that occurred
+            String pattern = bundle.getString("link_check_error");
+            Date initialCheck = linkState.getCheckCompletedAt();
+            String initialCheckTime = Utils.getDateTimeFormat(context).format(initialCheck);
+            String initialCheckSummary = MessageFormat.format(pattern, 
+                     new Object[] {initialCheckTime});
+            
+            out.write(initialCheckSummary);
+            out.write("&nbsp;<span class='errorMessage'>");
+            String err = linkState.getError().getMessage();
+            if (err == null)
+            {
+               out.write(linkState.getError().toString());
+            }
+            else
+            {
+               out.write(err);
+            }
+            out.write("</span>");
          }
-         out.write("</div>");
       }
       else
       {
-         // render the error that occurred
-         String pattern = bundle.getString("link_check_error");
-         Date initialCheck = linkState.getCheckCompletedAt();
-         String initialCheckTime = Utils.getDateTimeFormat(context).format(initialCheck);
-         String initialCheckSummary = MessageFormat.format(pattern, 
-                  new Object[] {initialCheckTime});
-         
-         out.write(initialCheckSummary);
-         out.write("&nbsp;<span class='errorMessage'>");
-         String err = linkState.getError().getMessage();
-         if (err == null)
-         {
-            out.write(linkState.getError().toString());
-         }
-         else
-         {
-            out.write(err);
-         }
+         // if the report was not found at all, show an error to that effect
+         out.write("<span class='errorMessage'>");
+         out.write(bundle.getString("failed_to_find_validation_report"));
          out.write("</span>");
       }
       

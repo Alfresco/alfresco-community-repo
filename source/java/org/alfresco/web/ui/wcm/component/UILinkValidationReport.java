@@ -119,206 +119,213 @@ public class UILinkValidationReport extends AbstractLinkValidationReportComponen
       if (logger.isDebugEnabled())
          logger.debug("Rendering report from state object: " + linkState);
       
-      if (linkState.getError() == null && linkState.getNumberBrokenLinks() > 0)
+      if (linkState != null)
       {
-         // determine whether the generated files and broken links sections
-         // should be expanded
-         boolean sectionsExpanded = this.getItemsExpanded();
-
-         // render the required JavaScript
-         String selectedTab = this.getInitialTab(); 
-         out.write("<script type='text/javascript'>");
-         out.write("var _alfCurrentTab = '");
-         out.write(selectedTab);
-         out.write("';</script>\n");
-         
-         out.write("<script type='text/javascript' src='");
-         out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/scripts/ajax/yahoo/dom/dom-min.js'></script>\n");
-         
-         out.write("<script type='text/javascript' src='");
-         out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/scripts/ajax/link-validation-report.js'></script>\n");
-         
-         // gather count data for tab titles
-         int numStaticFiles = linkState.getStaticFilesWithBrokenLinks().size();
-         int numForms = linkState.getFormsWithBrokenLinks().size();
-         int numBrokenFileLinks = linkState.getNoBrokenLinksInStaticFiles();
-         int numBrokenFormLinks = linkState.getNoBrokenLinksInForms();
-         int numFixedItems = linkState.getNumberFixedItems();
-         
-         String pattern = bundle.getString("static_tab");
-         String staticTabTitle = MessageFormat.format(pattern, 
-                  new Object[] {numStaticFiles});
-         
-         pattern = bundle.getString("generated_tab");
-         String generatedTabTitle = MessageFormat.format(pattern, 
-                  new Object[] {numForms});
-         
-         // render the tabs
-         out.write("<div class='tabs'><ul><li><span class='tabLabel'>");
-         out.write(bundle.getString("broken"));
-         out.write(":</span></li><li id='staticTab'");
-         if (selectedTab.equals("staticTab"))
+         if (linkState.getError() == null && linkState.getNumberBrokenLinks() > 0)
          {
-            out.write(" class='selectedTab'");
-         }
-         out.write("><a href=\"");
-         out.write("javascript:Alfresco.tabSelected('static');\"><span>");
-         out.write(staticTabTitle);
-         out.write("&nbsp;(<img class='tabTitleBrokenLinkIcon' src='");
-         out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/images/icons/broken_link.gif' />");
-         out.write(Integer.toString(numBrokenFileLinks));
-         out.write(")</span></a></li><li id='generatedTab'");
-         if (selectedTab.equals("generatedTab"))
-         {
-            out.write(" class='selectedTab'");
-         }
-         out.write("><a href=\"");
-         out.write("javascript:Alfresco.tabSelected('generated');\"><span>");
-         out.write(generatedTabTitle);
-         out.write("&nbsp;(<img class='tabTitleBrokenLinkIcon' src='");
-         out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/images/icons/broken_link.gif' />");
-         out.write(Integer.toString(numBrokenFormLinks));
-         out.write(")</span></a></li><li><span class='tabLabel'>");
-         out.write(bundle.getString("fixed"));
-         out.write(":</span></li><li id='fixedTab'>");
-         if (selectedTab.equals("fixedTab"))
-         {
-            out.write(" class='selectedTab'");
-         }
-         out.write("<a href=\"");
-         out.write("javascript:Alfresco.tabSelected('fixed');\"><span>");
-         out.write(bundle.getString("all_items_tab"));
-         out.write("&nbsp;(<img class='tabTitleBrokenLinkIcon' src='");
-         out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/images/icons/green_tick.gif' />");
-         out.write(Integer.toString(numFixedItems));
-         out.write(")</span></a></li>");
-         out.write("<li><span class='tabButton'>");
-         
-         // render the update status button
-         UICommand updateStatusAction = aquireUpdateStatusAction(context, 
-                  "update_status_" + linkState.getStore());
-         Utils.encodeRecursive(context, updateStatusAction);
-         
-         out.write("</span></li></ul></div>");
-         
-         // reset the oddRow flag
-         this.oddRow = true;
-         
-         // render the list of broken files and their contained links
-         out.write("<div id='staticTabContent'");
-         if (selectedTab.equals("staticTab") == false)
-         {
-            out.write(" style='display: none;'");
-         }
-         out.write(">");
-         renderTabHeader(out, context, "staticTab", true);
-         out.write("<div id='staticTabBody' class='linkValTabContentBody'>");
+            // determine whether the generated files and broken links sections
+            // should be expanded
+            boolean sectionsExpanded = this.getItemsExpanded();
    
-         List<String> brokenFiles = linkState.getStaticFilesWithBrokenLinks();
-         if (brokenFiles == null || brokenFiles.size() == 0)
-         {
-            renderNoItems(out, context);
-         }
-         else
-         {
-            UIActions actions = aquireFileActions("broken_file_actions", getValue().getStore());
-            AVMService avmService = Repository.getServiceRegistry(context).getAVMService();
-            int rootPathIndex = AVMUtil.buildSandboxRootPath(linkState.getStore()).length();
-            String dns = AVMUtil.lookupStoreDNS(linkState.getStore());
-            ClientConfigElement config = Application.getClientConfig(context);
-            String wcmDomain = config.getWCMDomain();
-            String wcmPort = config.getWCMPort();
-         
-            // render each broken file
-            for (String file : brokenFiles)
-            {
-               renderBrokenFile(context, out, file, linkState, actions, avmService,
-                        rootPathIndex, wcmDomain, wcmPort, dns, sectionsExpanded);
-            }
-         }
-         
-         out.write("</div></div>");
-         
-         // reset the oddRow flag
-         this.oddRow = true;
-         
-         // render the list of broken forms, the files it generated and their contained links
-         out.write("<div id='generatedTabContent'");
-         if (selectedTab.equals("generatedTab") == false)
-         {
-            out.write(" style='display: none;'");
-         }
-         out.write(">");
-         renderTabHeader(out, context, "generatedTab", true);
-         out.write("<div id='generatedTabBody' class='linkValTabContentBody'>");
-         
-         List<String> brokenForms = linkState.getFormsWithBrokenLinks();
-         if (brokenForms == null || brokenForms.size() == 0)
-         {
-            renderNoItems(out, context);
-         }
-         else
-         {
-            UIActions actions = aquireFileActions("broken_form_actions", getValue().getStore());
-            AVMService avmService = Repository.getServiceRegistry(context).getAVMService();
+            // render the required JavaScript
+            String selectedTab = this.getInitialTab(); 
+            out.write("<script type='text/javascript'>");
+            out.write("var _alfCurrentTab = '");
+            out.write(selectedTab);
+            out.write("';</script>\n");
             
-            for (String form : brokenForms)
+            out.write("<script type='text/javascript' src='");
+            out.write(context.getExternalContext().getRequestContextPath());
+            out.write("/scripts/ajax/yahoo/dom/dom-min.js'></script>\n");
+            
+            out.write("<script type='text/javascript' src='");
+            out.write(context.getExternalContext().getRequestContextPath());
+            out.write("/scripts/ajax/link-validation-report.js'></script>\n");
+            
+            // gather count data for tab titles
+            int numStaticFiles = linkState.getStaticFilesWithBrokenLinks().size();
+            int numForms = linkState.getFormsWithBrokenLinks().size();
+            int numBrokenFileLinks = linkState.getNoBrokenLinksInStaticFiles();
+            int numBrokenFormLinks = linkState.getNoBrokenLinksInForms();
+            int numFixedItems = linkState.getNumberFixedItems();
+            
+            String pattern = bundle.getString("static_tab");
+            String staticTabTitle = MessageFormat.format(pattern, 
+                     new Object[] {numStaticFiles});
+            
+            pattern = bundle.getString("generated_tab");
+            String generatedTabTitle = MessageFormat.format(pattern, 
+                     new Object[] {numForms});
+            
+            // render the tabs
+            out.write("<div class='tabs'><ul><li><span class='tabLabel'>");
+            out.write(bundle.getString("broken"));
+            out.write(":</span></li><li id='staticTab'");
+            if (selectedTab.equals("staticTab"))
             {
-               renderBrokenForm(context, out, form, linkState, actions, 
-                        avmService, sectionsExpanded);
+               out.write(" class='selectedTab'");
             }
-         }
-         
-         out.write("</div></div>");
-         
-         // reset the oddRow flag
-         this.oddRow = true;
-         
-         // render the list of fixed items
-         out.write("<div id='fixedTabContent'");
-         if (selectedTab.equals("fixedTab") == false)
-         {
-            out.write(" style='display: none;'");
-         }
-         out.write(">");
-         renderTabHeader(out, context, "fixedTab", false);
-         out.write("<div id='fixedTabBody' class='linkValTabContentBody'>");
-         
-         int fixedItems = 0;
-         List<String> fixedFiles = linkState.getFixedFiles();
-         List<String> fixedForms = linkState.getFixedForms();
-         if (fixedFiles != null)
-         {
-            fixedItems = fixedFiles.size();
-         }
-         if (fixedForms != null)
-         {
-            fixedItems += fixedForms.size();
-         }
-         
-         if (fixedItems == 0)
-         {
-            renderNoItems(out, context);
+            out.write("><a href=\"");
+            out.write("javascript:Alfresco.tabSelected('static');\"><span>");
+            out.write(staticTabTitle);
+            out.write("&nbsp;(<img class='tabTitleBrokenLinkIcon' src='");
+            out.write(context.getExternalContext().getRequestContextPath());
+            out.write("/images/icons/broken_link.gif' />");
+            out.write(Integer.toString(numBrokenFileLinks));
+            out.write(")</span></a></li><li id='generatedTab'");
+            if (selectedTab.equals("generatedTab"))
+            {
+               out.write(" class='selectedTab'");
+            }
+            out.write("><a href=\"");
+            out.write("javascript:Alfresco.tabSelected('generated');\"><span>");
+            out.write(generatedTabTitle);
+            out.write("&nbsp;(<img class='tabTitleBrokenLinkIcon' src='");
+            out.write(context.getExternalContext().getRequestContextPath());
+            out.write("/images/icons/broken_link.gif' />");
+            out.write(Integer.toString(numBrokenFormLinks));
+            out.write(")</span></a></li><li><span class='tabLabel'>");
+            out.write(bundle.getString("fixed"));
+            out.write(":</span></li><li id='fixedTab'>");
+            if (selectedTab.equals("fixedTab"))
+            {
+               out.write(" class='selectedTab'");
+            }
+            out.write("<a href=\"");
+            out.write("javascript:Alfresco.tabSelected('fixed');\"><span>");
+            out.write(bundle.getString("all_items_tab"));
+            out.write("&nbsp;(<img class='tabTitleBrokenLinkIcon' src='");
+            out.write(context.getExternalContext().getRequestContextPath());
+            out.write("/images/icons/green_tick.gif' />");
+            out.write(Integer.toString(numFixedItems));
+            out.write(")</span></a></li>");
+            out.write("<li><span class='tabButton'>");
+            
+            // render the update status button
+            UICommand updateStatusAction = aquireUpdateStatusAction(context, 
+                     "update_status_" + linkState.getStore());
+            Utils.encodeRecursive(context, updateStatusAction);
+            
+            out.write("</span></li></ul></div>");
+            
+            // reset the oddRow flag
+            this.oddRow = true;
+            
+            // render the list of broken files and their contained links
+            out.write("<div id='staticTabContent'");
+            if (selectedTab.equals("staticTab") == false)
+            {
+               out.write(" style='display: none;'");
+            }
+            out.write(">");
+            renderTabHeader(out, context, "staticTab", true);
+            out.write("<div id='staticTabBody' class='linkValTabContentBody'>");
+      
+            List<String> brokenFiles = linkState.getStaticFilesWithBrokenLinks();
+            if (brokenFiles == null || brokenFiles.size() == 0)
+            {
+               renderNoItems(out, context);
+            }
+            else
+            {
+               UIActions actions = aquireFileActions("broken_file_actions", getValue().getStore());
+               AVMService avmService = Repository.getServiceRegistry(context).getAVMService();
+               int rootPathIndex = AVMUtil.buildSandboxRootPath(linkState.getStore()).length();
+               String dns = AVMUtil.lookupStoreDNS(linkState.getStore());
+               ClientConfigElement config = Application.getClientConfig(context);
+               String wcmDomain = config.getWCMDomain();
+               String wcmPort = config.getWCMPort();
+            
+               // render each broken file
+               for (String file : brokenFiles)
+               {
+                  renderBrokenFile(context, out, file, linkState, actions, avmService,
+                           rootPathIndex, wcmDomain, wcmPort, dns, sectionsExpanded);
+               }
+            }
+            
+            out.write("</div></div>");
+            
+            // reset the oddRow flag
+            this.oddRow = true;
+            
+            // render the list of broken forms, the files it generated and their contained links
+            out.write("<div id='generatedTabContent'");
+            if (selectedTab.equals("generatedTab") == false)
+            {
+               out.write(" style='display: none;'");
+            }
+            out.write(">");
+            renderTabHeader(out, context, "generatedTab", true);
+            out.write("<div id='generatedTabBody' class='linkValTabContentBody'>");
+            
+            List<String> brokenForms = linkState.getFormsWithBrokenLinks();
+            if (brokenForms == null || brokenForms.size() == 0)
+            {
+               renderNoItems(out, context);
+            }
+            else
+            {
+               UIActions actions = aquireFileActions("broken_form_actions", getValue().getStore());
+               AVMService avmService = Repository.getServiceRegistry(context).getAVMService();
+               
+               for (String form : brokenForms)
+               {
+                  renderBrokenForm(context, out, form, linkState, actions, 
+                           avmService, sectionsExpanded);
+               }
+            }
+            
+            out.write("</div></div>");
+            
+            // reset the oddRow flag
+            this.oddRow = true;
+            
+            // render the list of fixed items
+            out.write("<div id='fixedTabContent'");
+            if (selectedTab.equals("fixedTab") == false)
+            {
+               out.write(" style='display: none;'");
+            }
+            out.write(">");
+            renderTabHeader(out, context, "fixedTab", false);
+            out.write("<div id='fixedTabBody' class='linkValTabContentBody'>");
+            
+            int fixedItems = 0;
+            List<String> fixedFiles = linkState.getFixedFiles();
+            List<String> fixedForms = linkState.getFixedForms();
+            if (fixedFiles != null)
+            {
+               fixedItems = fixedFiles.size();
+            }
+            if (fixedForms != null)
+            {
+               fixedItems += fixedForms.size();
+            }
+            
+            if (fixedItems == 0)
+            {
+               renderNoItems(out, context);
+            }
+            else
+            {
+               for (String file : fixedFiles)
+               {
+                  renderFixedItem(context, out, file, linkState);
+               }
+               
+               for (String file : fixedForms)
+               {
+                  renderFixedItem(context, out, file, linkState);
+               }
+            }
+            
+            out.write("</div></div>");
          }
          else
          {
-            for (String file : fixedFiles)
-            {
-               renderFixedItem(context, out, file, linkState);
-            }
-            
-            for (String file : fixedForms)
-            {
-               renderFixedItem(context, out, file, linkState);
-            }
+            out.write("<div>&nbsp;</div>");
          }
-         
-         out.write("</div></div>");
       }
       else
       {

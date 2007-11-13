@@ -123,6 +123,7 @@ a.spacefilterLink:link, a.spacefilterLink:visited
    font-size: 12px;
    font-weight: bold;
    text-decoration: none;
+   outline: none;
    padding-left: 4px;
    padding-right: 4px;
 }
@@ -531,6 +532,7 @@ a.refreshViewLink:link, a.refreshViewLink:visited, a.refreshViewLink:hover
    font-size: 12px;
    color: #515D6B;
    text-decoration: none;
+   outline: none;
 }
 
 .spacePreview

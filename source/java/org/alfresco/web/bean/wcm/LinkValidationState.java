@@ -60,6 +60,7 @@ public class LinkValidationState
    private String store;
    private String webapp;
    private boolean checkBeenReRun = false;
+   private boolean maxLinksReached = false;
    private Date checkCompletedAt;
    
    private int noFilesCheckedStart = -1;
@@ -81,6 +82,8 @@ public class LinkValidationState
    
    private int baseSnapshotVersion = 0;
    private int latestSnapshotVersion = 0;
+   
+   private int maxNumberLinksInReport = -1;
    
    private List<String> brokenStaticFilesStart;
    private List<String> brokenFormsStart;
@@ -237,7 +240,7 @@ public class LinkValidationState
     */
    public int getBaseSnapshotVersion()
    {
-      return baseSnapshotVersion;
+      return this.baseSnapshotVersion;
    }
 
    /**
@@ -245,7 +248,23 @@ public class LinkValidationState
     */
    public int getLatestSnapshotVersion()
    {
-      return latestSnapshotVersion;
+      return this.latestSnapshotVersion;
+   }
+   
+   /**
+    * @return The maximum number of links a report can have
+    */
+   public int getMaxNumberLinksInReport()
+   {
+      return this.maxNumberLinksInReport;
+   }
+   
+   /**
+    * @return true if the maximum number of links was exceeded in the last check
+    */
+   public boolean hasMaxNumberLinksExceeded()
+   {
+      return this.maxLinksReached;
    }
 
    /**
@@ -360,6 +379,11 @@ public class LinkValidationState
       // get the snapshot versions
       this.baseSnapshotVersion = report.getBaseSnapshotVersion();
       this.latestSnapshotVersion = report.getLatestSnapshotVersion();
+      
+      // get whether the max number of links was exceeded for the report
+      // and the maximum number of links allowed
+      this.maxLinksReached = report.hasMaxNumberLinksExceeded();
+      this.maxNumberLinksInReport = report.getMaxNumberLinksInReport();
          
       if (this.cause == null)
       {

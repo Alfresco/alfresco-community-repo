@@ -3,6 +3,8 @@
 <#assign weekms=1000*60*60*24*7>
 <#list companyhome.nodeByReference[args.h].children?sort_by('name') as d>
    <#if (d.isContainer || d.isDocument) &&
+   			(d.type != "{http://www.alfresco.org/model/forum/1.0}forums") &&
+   			(d.type != "{http://www.alfresco.org/model/wcmappmodel/1.0}webfolder") &&
         ((args.f="0") ||
          (args.f="1" && d.isContainer) ||
          (args.f="2" && d.isDocument) ||

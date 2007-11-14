@@ -48,11 +48,6 @@
          </#if>
       </#list>
    </div>
-<!--
-   <div class="spaceTitle">
-      <img src="${url.context}${home.icon16}" width="16" height="16" alt="" class="spaceImageIcon">${home.name?html}
-   </div>
--->
    <div class="spaceToolbar">
       <#-- TODO: permission checks on the actions! -->
       <#-- Upload File action -->

@@ -1,23 +1,30 @@
 <#assign user=person.properties.userName>
 <#assign count=0>
 <#assign weekms=1000*60*60*24*7>
+<#function encodepath node>
+<#if node.parent?exists><#return encodepath(node.parent) + "/" + node.name?url><#else><#return ""></#if>
+</#function>
 <#list companyhome.nodeByReference[args.h].children?sort_by('name') as d>
-   <#if (d.isContainer || d.isDocument) &&
-   			(d.type != "{http://www.alfresco.org/model/forum/1.0}forums") &&
-   			(d.type != "{http://www.alfresco.org/model/wcmappmodel/1.0}webfolder") &&
-        ((args.f="0") ||
-         (args.f="1" && d.isContainer) ||
-         (args.f="2" && d.isDocument) ||
-         (args.f="3" && (d.properties.creator == user || d.properties.modifier == user)) ||
-         (args.f="4" && (dateCompare(d.properties["cm:modified"],date,weekms) == 1 || dateCompare(d.properties["cm:created"], date, weekms) == 1)))>
+   <#if (d.isDocument || 
+           (d.type != "{http://www.alfresco.org/model/forum/1.0}forums" &&
+   		   d.type != "{http://www.alfresco.org/model/wcmappmodel/1.0}webfolder" &&
+   		   d.type != "{http://www.alfresco.org/model/content/1.0}systemfolder")) &&
+         ((args.f="0") ||
+          (args.f="1" && !d.isDocument) ||
+          (args.f="2" && d.isDocument) ||
+          (args.f="3" && (d.properties.creator == user || d.properties.modifier == user)) ||
+          (args.f="4" && (dateCompare(d.properties["cm:modified"],date,weekms) == 1 || dateCompare(d.properties["cm:created"], date, weekms) == 1)))>
    <#assign count=count+1>
    <div class="spaceRow spaceRow${(count % 2 = 0)?string("Odd", "Even")}" id="${d.id}">
       <div class="spaceIcon">
          <#if d.isDocument>
             <a href="${url.context}${d.url}" target="new" onclick="event.cancelBubble=true"><img class="spaceIconImage" alt="" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border=0></a>
-         <#else>
+         <#elseif d.type="{http://www.alfresco.org/model/application/1.0}folderlink"> 
             <#-- the component parts need to build up an encoded url to the outer webscript -->
             <#-- the client-side url encoder method of the outer webscript runtime will be used -->
+            <span class="spaceNavLinkUrl">${url.serviceContext}/ui/myspaces?f=${args.f}&amp;p=${encodepath(d.properties.destination)}</span>
+            <span class="spaceNavLinkImg" style="display:none"><img class="spaceIconImage" alt="" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border="0"></span> 
+         <#else>
             <span class="spaceNavLinkUrl">${url.serviceContext}/ui/myspaces?f=${args.f}&amp;p=${args.p?url}%2F${d.name?url}</span>
             <span class="spaceNavLinkImg" style="display:none"><img class="spaceIconImage" alt="" width="16" height="16" src="${url.context}${d.icon16?replace(".gif",".png")}" border="0"></span>
          </#if>

@@ -120,7 +120,7 @@ public class SimpleAuthorityServiceTest extends TestCase
         authenticationComponent.setCurrentUser("admin");
         assertTrue(authorityService.hasAdminAuthority());
         assertTrue(pubAuthorityService.hasAdminAuthority());
-        assertEquals(2, authorityService.getAuthorities().size());
+        assertEquals(3, authorityService.getAuthorities().size());
 
         authenticationComponent.setCurrentUser("administrator");
         assertTrue(authorityService.hasAdminAuthority());
@@ -137,7 +137,7 @@ public class SimpleAuthorityServiceTest extends TestCase
         assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.EVERYONE).size());
         assertTrue(pubAuthorityService.getAllAuthorities(AuthorityType.EVERYONE).contains(
                 PermissionService.ALL_AUTHORITIES));
-        assertEquals(0, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
+        assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.GUEST).size());
         assertTrue(pubAuthorityService.getAllAuthorities(AuthorityType.GUEST).contains(PermissionService.GUEST_AUTHORITY));
         assertEquals(0, pubAuthorityService.getAllAuthorities(AuthorityType.OWNER).size());

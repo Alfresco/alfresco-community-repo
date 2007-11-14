@@ -31,6 +31,7 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -156,19 +157,26 @@ public class EditContentPropertiesDialog extends BaseDialogBean
          Serializable propValue = (Serializable)editedProps.get(propName);
          
          // check for empty strings when using number types, set to null in this case
-         if ((propValue != null) && (propValue instanceof String) && 
-             (propValue.toString().length() == 0))
+         if (propValue instanceof String)
          {
             PropertyDefinition propDef = this.dictionaryService.getProperty(qname);
-            if (propDef != null)
+            if (((String)propValue).length() == 0)
             {
-               if (propDef.getDataType().getName().equals(DataTypeDefinition.DOUBLE) || 
-                   propDef.getDataType().getName().equals(DataTypeDefinition.FLOAT) ||
-                   propDef.getDataType().getName().equals(DataTypeDefinition.INT) || 
-                   propDef.getDataType().getName().equals(DataTypeDefinition.LONG))
+               if (propDef != null)
                {
-                  propValue = null;
+                  if (propDef.getDataType().getName().equals(DataTypeDefinition.DOUBLE) || 
+                      propDef.getDataType().getName().equals(DataTypeDefinition.FLOAT) ||
+                      propDef.getDataType().getName().equals(DataTypeDefinition.INT) || 
+                      propDef.getDataType().getName().equals(DataTypeDefinition.LONG))
+                  {
+                     propValue = null;
+                  }
                }
+            }
+            // handle locale strings to Locale objects
+            else if (propDef != null && propDef.getDataType().getName().equals(DataTypeDefinition.LOCALE))
+            {
+               propValue = I18NUtil.parseLocale((String)propValue);
             }
          }
          

@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -149,27 +150,20 @@ public class MultilingualDocumentAspect implements
      */
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        /*
+        /* 
          * TODO: Move this into MultilingualContentService#setTranslationLocale
          */
-
-        Locale localeBefore = (Locale) before.get(ContentModel.PROP_LOCALE);
-        Locale localeAfter;
-
-        // the after local property type can be either Locale or String
+        Locale localeBefore = (Locale)before.get(ContentModel.PROP_LOCALE);
+        
+        Locale localeAfter = null;
         Serializable objLocaleAfter = after.get(ContentModel.PROP_LOCALE);
-
-        if (objLocaleAfter instanceof Locale )
+        if (objLocaleAfter != null)
         {
-            localeAfter = (Locale) objLocaleAfter;
+            localeAfter = DefaultTypeConverter.INSTANCE.convert(Locale.class, objLocaleAfter);
         }
-        else
-        {
-            localeAfter = I18NUtil.parseLocale(objLocaleAfter.toString());
-        }
-
+        
         // if the local has been modified
-        if(!localeBefore.equals(localeAfter))
+        if (!localeBefore.equals(localeAfter))
         {
             NodeRef mlContainer = multilingualContentService.getTranslationContainer(nodeRef);
 

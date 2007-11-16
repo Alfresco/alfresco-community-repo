@@ -229,6 +229,11 @@
                     <prop key="location">alfresco/bootstrap/customWorkflowDefsSpace.acp</prop>
                 </props>
 
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/formsSpace.xml</prop>
+                </props>
+                
             </list>
         </property>
     </bean>

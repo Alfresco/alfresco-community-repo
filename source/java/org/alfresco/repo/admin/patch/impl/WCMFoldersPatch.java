@@ -63,9 +63,9 @@ public class WCMFoldersPatch extends AbstractPatch
     public static final String PROPERTY_WEBPROJECTS_FOLDER_CHILDNAME = "spaces.wcm.childname";
     private static final String MSG_WEBPROJECTS_FOLDER_NAME = "spaces.wcm.name";
     private static final String MSG_WEBPROJECTS_FOLDER_DESCRIPTION = "spaces.wcm.description";
-    public static final String PROPERTY_WEBFORMS_FOLDER_CHILDNAME = "spaces.content_forms.childname";
-    private static final String MSG_WEBFORMS_FOLDER_NAME = "spaces.content_forms.name";
-    private static final String MSG_WEBFORMS_FOLDER_DESCRIPTION = "spaces.content_forms.description";
+    public static final String PROPERTY_WEBFORMS_FOLDER_CHILDNAME = "spaces.wcm_content_forms.childname";
+    private static final String MSG_WEBFORMS_FOLDER_NAME = "spaces.wcm_content_forms.name";
+    private static final String MSG_WEBFORMS_FOLDER_DESCRIPTION = "spaces.wcm_content_forms.description";
     
     private static final String PROPERTY_ICON = "space-icon-default";
     

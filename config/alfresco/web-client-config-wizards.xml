@@ -289,6 +289,18 @@
                      instruction-id="default_instruction" />
             </step>
             <step name="content" title-id="enter_content" description-id="create_content_step2_desc">
+               <condition if="#{CreateContentWizard.formName != ''}">
+                  <page path="/jsp/content/create-content-wizard/create-form.jsp"
+                     title-id="create_content_step2_title"
+                     description-id="create_content_step2_desc"
+                     instruction-id="default_instruction" />
+               </condition>
+               <condition if="#{CreateContentWizard.mimeType == 'text/xml'}">
+                  <page path="/jsp/content/create-content-wizard/create-xml.jsp"
+                        title-id="create_content_step2_title"
+                        description-id="create_content_step2_desc"
+                        instruction-id="default_instruction" />
+               </condition>
                <condition if="#{CreateContentWizard.mimeType == 'text/html'}">
                   <page path="/jsp/content/create-content-wizard/create-html.jsp"
                         title-id="create_content_step2_title"
@@ -302,6 +314,52 @@
                      instruction-id="default_instruction" />
             </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wizard/summary.jsp"
+                     title-id="summary"
+                     description-id="summary_desc"
+                     instruction-id="content_finish_instruction" />
+            </step>
+         </wizard>
+         
+         <!-- Definition of the Edit Content wizard -->
+         <wizard name="editContent" managed-bean="EditContentWizard"
+                 title-id="edit_web_content_title" description-id="edit_web_content_desc"
+                 icon="/images/icons/edit_large.gif">
+            <step name="content"
+                 title-id="create_web_content_enter_content_title"
+                 description-id="create_content_step2_desc">
+               <!--  JanV -->
+               <condition if="#{EditContentWizard.formName != ''}">
+                  <page path="/jsp/content/create-content-wizard/create-form.jsp"
+                     title-id="create_content_step2_title"
+                     description-id="create_content_step2_desc"
+                     instruction-id="default_instruction" />
+               </condition>
+               <condition if="#{EditContentWizard.mimeType == 'text/xml'}">
+                  <page path="/jsp/content/create-content-wizard/create-xml.jsp"
+                        title-id="edit_web_content_enter_content_step_title"
+                        description-id="create_content_step2_desc"
+                        instruction-id="default_instruction" />
+               </condition>             
+               <condition if="#{EditContentWizard.mimeType == 'text/html'}">
+                  <page path="/jsp/content/create-content-wizard/create-html.jsp"
+                        title-id="edit_web_content_enter_content_step_title"
+                        description-id="create_content_step2_desc"
+                        instruction-id="default_instruction" />
+               </condition>
+               <!-- Default to the inline text editor -->
+               <page path="/jsp/content/create-content-wizard/create-text.jsp"
+                     title-id="edit_web_content_enter_content_step_title"
+                     description-id="create_content_step2_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <condition if="#{EditWebContentWizard.mimeType == 'text/xml'}">
+                  <page path="/jsp/content/create-content-wizard/summary.jsp"
+                          title-id="summary"
+                          description-id="create_web_content_summary_desc"
+                          instruction-id="content_finish_instruction" />
+               </condition>
                <page path="/jsp/wizard/summary.jsp"
                      title-id="summary"
                      description-id="summary_desc"
@@ -395,7 +453,7 @@
             </step>
          </wizard>
 
-         <!-- Definition of the create form wizard -->
+        <!-- Definition of the create form wizard -->
          <wizard name="createForm" managed-bean="CreateFormWizard"
                  title-id="create_form_title" description-id="create_form_desc"
                  icon="/images/icons/create_form_large.gif">
@@ -406,30 +464,14 @@
                      description-id="create_form_form_details_desc"
                      instruction-id="default_instruction" />
             </step>
-            <step name="configure_rendering_engine_templates"
-                  title-id="create_form_configure_rendering_engine_templates_title"
-                  description-id="create_form_configure_rendering_engine_templates_desc">
-               <page path="/jsp/wcm/create-form-wizard/configure-rendering-engines.jsp"
-                     title-id="create_form_configure_rendering_engine_templates_step_title"
-                     description-id="create_form_configure_rendering_engine_templates_desc"
-                     instruction-id="default_instruction" />
-            </step>
-            <step name="select_default_workflow"
-                  title-id="create_form_select_default_workflow_title"
-                  description-id="create_form_select_default_workflow_desc">
-               <page path="/jsp/wcm/create-form-wizard/select-default-workflow.jsp"
-                     title-id="create_form_select_default_workflow_step_title"
-                     description-id="create_form_select_default_workflow_desc"
-                     instruction-id="default_instruction" />
-            </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">
-               <page path="/jsp/wcm/create-form-wizard/summary.jsp"
+               <page path="/jsp/wcm/create-form-wizard/form-summary.jsp"
                      title-id="summary"
                      description-id="summary_desc"
                      instruction-id="content_finish_instruction" />
             </step>
          </wizard>
-
+         
          <!-- Definition of the edit form wizard -->
          <wizard name="editForm" managed-bean="EditFormWizard"
                  title-id="edit_form_title" description-id="edit_form_desc"
@@ -441,6 +483,25 @@
                      description-id="create_form_form_details_desc"
                      instruction-id="default_instruction" />
             </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wcm/create-form-wizard/form-summary.jsp"
+                     title-id="summary"
+                     description-id="summary_desc"
+                     instruction-id="content_finish_instruction" />
+            </step>
+         </wizard>
+
+         <!-- Definition of the create web form wizard -->
+         <wizard name="createWebForm" managed-bean="CreateWebFormWizard"
+                 title-id="create_web_form_title" description-id="create_form_desc"
+                 icon="/images/icons/create_form_large.gif">
+            <step name="form_details" title-id="create_web_form_form_details_title"
+                  description-id="create_form_form_details_desc">
+               <page path="/jsp/wcm/create-form-wizard/details.jsp"
+                     title-id="create_web_form_form_details_step_title"
+                     description-id="create_form_form_details_desc"
+                     instruction-id="default_instruction" />
+            </step>
             <step name="configure_rendering_engine_templates"
                   title-id="create_form_configure_rendering_engine_templates_title"
                   description-id="create_form_configure_rendering_engine_templates_desc">
@@ -458,14 +519,49 @@
                      instruction-id="default_instruction" />
             </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">
-               <page path="/jsp/wcm/create-form-wizard/summary.jsp"
+               <page path="/jsp/wcm/create-form-wizard/web-form-summary.jsp"
                      title-id="summary"
                      description-id="summary_desc"
                      instruction-id="content_finish_instruction" />
             </step>
          </wizard>
 
-         <!-- Definition of the create form wizard -->
+         <!-- Definition of the edit web form wizard -->
+         <wizard name="editWebForm" managed-bean="EditWebFormWizard"
+                 title-id="edit_web_form_title" description-id="edit_form_desc"
+                 icon="/images/icons/edit_form_large.gif">
+            <step name="form_details" title-id="create_web_form_form_details_title"
+                  description-id="create_form_form_details_desc">
+               <page path="/jsp/wcm/create-form-wizard/details.jsp"
+                     title-id="create_web_form_form_details_step_title"
+                     description-id="create_form_form_details_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="configure_rendering_engine_templates"
+                  title-id="create_form_configure_rendering_engine_templates_title"
+                  description-id="create_form_configure_rendering_engine_templates_desc">
+               <page path="/jsp/wcm/create-form-wizard/configure-rendering-engines.jsp"
+                     title-id="create_form_configure_rendering_engine_templates_step_title"
+                     description-id="create_form_configure_rendering_engine_templates_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="select_default_workflow"
+                  title-id="create_form_select_default_workflow_title"
+                  description-id="create_form_select_default_workflow_desc">
+               <page path="/jsp/wcm/create-form-wizard/select-default-workflow.jsp"
+                     title-id="create_form_select_default_workflow_step_title"
+                     description-id="create_form_select_default_workflow_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wcm/create-form-wizard/web-form-summary.jsp"
+                     title-id="summary"
+                     description-id="summary_desc"
+                     instruction-id="content_finish_instruction" />
+            </step>
+         </wizard>
+
+         <!-- Definition of the regenerate renditions wizard -->
          <wizard name="regenerateRenditions" managed-bean="RegenerateRenditionsWizard"
                  title-id="regenerate_renditions_title" description-id="regenerate_renditions_desc"
                  icon="/images/icons/regenerate_renditions_large.gif">

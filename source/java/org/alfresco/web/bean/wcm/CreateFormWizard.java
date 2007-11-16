@@ -235,8 +235,8 @@ public class CreateFormWizard
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("creating form " + this.getFormName());
 
-      // get the node ref of the node that will contain the content
-      final NodeRef contentFormsNodeRef = this.formsService.getContentFormsNodeRef();
+      // get the node ref of the node that will contain the content (either Forms or Web Forms dictionary space)
+      final NodeRef contentFormsNodeRef = this.navigator.getCurrentNode().getNodeRef();
 
       final FileInfo folderInfo = 
          this.fileFolderService.create(contentFormsNodeRef,
@@ -430,6 +430,23 @@ public class CreateFormWizard
       }
    }
 
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
+      final int step = Application.getWizardManager().getCurrentStep();
+      final int stepCount = Application.getWizardManager().getStepItems().size();
+      
+      if ((stepCount == 1) && (step == 1))
+      {
+         // assume Create Form Wizard
+         return false;
+      }
+      else
+      {
+         return true;
+      }
+   }
+   
    @Override
    public String getStepDescription()
    {

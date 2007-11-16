@@ -28,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -60,15 +61,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.content.BaseContentWizard;
+import org.alfresco.web.bean.content.CreateContentWizard;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormNotFoundException;
-import org.alfresco.web.forms.FormProcessor;
-import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.forms.XMLUtil;
@@ -83,19 +82,16 @@ import org.w3c.dom.Document;
 /**
  * Bean implementation for the "Create Web Content Wizard" dialog
  */
-public class CreateWebContentWizard extends BaseContentWizard
+public class CreateWebContentWizard extends CreateContentWizard
 {
    private static final Log LOGGER = LogFactory.getLog(CreateWebContentWizard.class);
    
    protected String content = null;
-   protected String formName;
    protected transient List<SelectItem> createMimeTypes;
    protected transient List<SelectItem> formChoices;
    protected String createdPath = null;
    protected List<Rendition> renditions = null;
    protected FormInstanceData formInstanceData = null;
-   protected FormProcessor.Session formProcessorSession = null;
-   protected Document instanceDataDocument = null;
    protected boolean formSelectDisabled = false;
    protected boolean startWorkflow = false;
 
@@ -104,7 +100,6 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected AVMSyncService avmSyncService;
    protected AVMBrowseBean avmBrowseBean;
    protected FilePickerBean filePickerBean;
-   protected FormsService formsService;
 
    /**
     * @param avmService       The AVMService to set.
@@ -145,14 +140,6 @@ public class CreateWebContentWizard extends BaseContentWizard
    {
       this.filePickerBean = filePickerBean;
    }
-
-   /**
-    * @param formsService    The FormsService to set.
-    */
-   public void setFormsService(final FormsService formsService)
-   {
-      this.formsService = formsService;
-   }
   
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -167,12 +154,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       this.formName = null;
       this.mimeType = MimetypeMap.MIMETYPE_XML;
       this.formInstanceData = null;
-      if (this.formProcessorSession != null)
-      {
-         this.formProcessorSession.destroy();
-      }
-      this.formProcessorSession = null;
-      this.instanceDataDocument = null;
+      
       this.renditions = null;
       this.startWorkflow = false;
       this.formSelectDisabled = false;
@@ -415,7 +397,8 @@ public class CreateWebContentWizard extends BaseContentWizard
             LOGGER.debug("reset form instance data " + this.formInstanceData.getName() + 
                          " and " + this.renditions.size() + " to main store");
       }
-      return super.doPostCommitProcessing(facesContext, outcome);
+
+      return outcome;
    }
    
    @Override
@@ -641,15 +624,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       
       return this.createMimeTypes;
    }
-   
-   /**
-    * @return the current seleted form's name or <tt>null</tt>.
-    */
-   public String getFormName()
-   {
-      return this.formName;
-   }
-   
+
    public Form getForm()
       throws FormNotFoundException
    {
@@ -658,14 +633,6 @@ public class CreateWebContentWizard extends BaseContentWizard
               : null);
    }
    
-   /**
-    * @param form Sets the currently selected form
-    */
-   public void setFormName(final String formName)
-   {
-      this.formName = formName;
-   }
-
    /**
     * @return Returns the wrapper instance data for feeding the xml
     * content to the form processor.
@@ -689,21 +656,20 @@ public class CreateWebContentWizard extends BaseContentWizard
       }
       return this.instanceDataDocument;
    }
-
+   
    /**
-    * Returns the form processor session.
+    * @return List of UI items to represent the full list of available Web Forms
     */
-   public FormProcessor.Session getFormProcessorSession()
+   public List<SelectItem> getFormsList()
    {
-      return this.formProcessorSession;
-   }
-
-   /**
-    * Sets the form processor session.
-    */
-   public void setFormProcessorSession(final FormProcessor.Session formProcessorSession)
-   {
-      this.formProcessorSession = formProcessorSession;
+      Collection<Form> forms = this.formsService.getWebForms();
+      List<SelectItem> items = new ArrayList<SelectItem>(forms.size()+1);
+      items.add(new SelectItem("", ""));
+      for (Form form : forms)
+      {
+       items.add(new SelectItem(form.getName(), form.getTitle()));
+      }
+      return items;
    }
       
    /**

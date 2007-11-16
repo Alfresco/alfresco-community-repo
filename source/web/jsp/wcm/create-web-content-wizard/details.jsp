@@ -106,7 +106,7 @@
    </h:selectOneMenu>
 
    <h:outputText value=""/>
-   <h:outputText value="#{msg.form}:"/>
+   <h:outputText value="#{msg.web_form}:"/>
    <h:selectOneMenu value="#{WizardManager.bean.formName}" 
                     disabled="#{WizardManager.bean.formSelectDisabled}"
                     rendered="#{!empty WizardManager.bean.formChoices}">

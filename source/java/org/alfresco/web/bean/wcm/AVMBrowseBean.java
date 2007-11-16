@@ -499,7 +499,8 @@ public class AVMBrowseBean implements IContextListener
    {
       if (this.webapp == null)
       {
-         this.webapp = this.getWebProject().getDefaultWebapp();
+         // TODO - temporary, should only be called for WCM forms (not ECM forms)
+         this.webapp = this.getWebProject() != null ? this.getWebProject().getDefaultWebapp() : null;
       }
       return this.webapp;
    }
@@ -717,7 +718,12 @@ public class AVMBrowseBean implements IContextListener
    {
       if (this.currentPath == null)
       {
-         this.currentPath = AVMUtil.buildStoreWebappPath(getSandbox(), getWebapp());
+         // TODO - temporary, should only be called for WCM forms (not ECM forms)
+         String webApp = getWebapp();
+         if (webApp != null)
+         {
+            this.currentPath = AVMUtil.buildStoreWebappPath(getSandbox(), webApp);
+         }     
       }
       return this.currentPath;
    }

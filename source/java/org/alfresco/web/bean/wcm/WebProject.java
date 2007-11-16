@@ -442,7 +442,7 @@ public class WebProject
             nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_FORMNAME);
          try
          {
-            final Form baseForm = formsService.getForm(formName);
+            final Form baseForm = formsService.getWebForm(formName);
             result.put(formName, new FormWrapper(baseForm, ref.getChildRef(), formsService));
          }
          catch (FormNotFoundException fnfe)

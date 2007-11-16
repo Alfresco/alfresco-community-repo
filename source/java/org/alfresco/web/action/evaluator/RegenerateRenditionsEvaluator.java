@@ -23,6 +23,8 @@
  */
 package org.alfresco.web.action.evaluator;
 
+import java.util.Iterator;
+
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.WCMAppModel;
@@ -35,7 +37,7 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 
 /**
- * UI Action Evaluator for Regenerate Renditions in the Forms DataDictionary folder
+ * UI Action Evaluator for Regenerate Renditions in the Web Forms DataDictionary folder
  * 
  * @author Ariel Backenroth
  */
@@ -50,13 +52,24 @@ public class RegenerateRenditionsEvaluator extends BaseActionEvaluator
       final ServiceRegistry services = Repository.getServiceRegistry(fc);
       final NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
       
-      // get the path to the current name - compare last element with the Website folder assoc name
+      // TODO improve how we determine whether the form supports the ability to regenerate renditions or not
+      
+      // get the path to the current name - compare each path element with the Web Forms folder name
       final Path path = navigator.getCurrentNode().getNodePath();
-      final Path.Element element = path.get(path.size() - 1);
-      final String endPath = element.getPrefixedString(services.getNamespaceService());
+      
+      boolean isWebFormsPath = false;
+      Iterator<Path.Element> itr = path.iterator();
+      while (itr.hasNext())
+      {
+         Path.Element element = (Path.Element)itr.next();
+         String pathElement = element.getPrefixedString(services.getNamespaceService());
+         if (Application.getWebContentFormsFolderName(fc).equals(pathElement))
+         {
+            isWebFormsPath = true;
+            break;
+         }
+      }
 
-      return (node.hasAspect(WCMAppModel.ASPECT_FORM) ||
-              node.hasAspect(WCMAppModel.ASPECT_RENDERING_ENGINE_TEMPLATE) || 
-              Application.getContentFormsFolderName(fc).equals(endPath));
+      return (node.hasAspect(WCMAppModel.ASPECT_RENDERING_ENGINE_TEMPLATE) || isWebFormsPath);
    }
 }

@@ -23,72 +23,58 @@
  */
 package org.alfresco.web.forms.xforms;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
-
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
-import org.alfresco.web.app.servlet.ajax.InvokeCommand;
-import org.alfresco.web.bean.FileUploadBean;
-import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.wcm.AVMBrowseBean;
 import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.bean.wcm.AVMUtil;
-import org.alfresco.web.forms.*;
-import org.alfresco.web.ui.common.Utils;
-
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.servlet.ServletRequestContext;
+import org.alfresco.web.forms.Form;
+import org.alfresco.web.forms.FormProcessor;
+import org.alfresco.web.forms.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.chiba.xml.events.ChibaEventNames;
 import org.chiba.xml.events.DOMEventNames;
 import org.chiba.xml.events.XFormsEventNames;
 import org.chiba.xml.events.XMLEvent;
+import org.chiba.xml.ns.NamespaceConstants;
 import org.chiba.xml.xforms.ChibaBean;
-import org.chiba.xml.xforms.XFormsElement;
-import org.chiba.xml.xforms.connector.SubmissionHandler;
 import org.chiba.xml.xforms.connector.AbstractConnector;
+import org.chiba.xml.xforms.connector.SubmissionHandler;
 import org.chiba.xml.xforms.core.Instance;
-import org.chiba.xml.xforms.core.ModelItem;
 import org.chiba.xml.xforms.core.Model;
+import org.chiba.xml.xforms.core.ModelItem;
 import org.chiba.xml.xforms.core.Submission;
-import org.chiba.xml.xforms.core.UpdateHandler;
 import org.chiba.xml.xforms.core.impl.DefaultValidatorMode;
 import org.chiba.xml.xforms.exception.XFormsException;
 import org.chiba.xml.xforms.ui.RepeatItem;
 import org.chiba.xml.xforms.ui.Upload;
-import org.chiba.xml.ns.NamespaceConstants;
-import org.springframework.util.FileCopyUtils;
-
-import org.w3c.dom.*;
-import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
-import org.w3c.dom.ls.*;
 import org.xml.sax.SAXException;
 
 /**
@@ -187,6 +173,7 @@ public class XFormsBean
    private Schema2XFormsProperties schema2XFormsProperties;
    private AVMBrowseBean avmBrowseBean;
    private AVMService avmService;
+   private NavigationBean navigator;
    
    public XFormsBean()
    {
@@ -206,6 +193,11 @@ public class XFormsBean
    public void setAvmBrowseBean(final AVMBrowseBean avmBrowseBean)
    {
       this.avmBrowseBean = avmBrowseBean;
+   }
+   
+   public void setNavigator(final NavigationBean navigator)
+   {
+      this.navigator = navigator;
    }
    
    /**
@@ -665,13 +657,19 @@ public class XFormsBean
    private Document getXFormsDocument()
       throws FormBuilderException
    {
-      final String cwdAVMPath = this.getCurrentAVMPath();
+      // TODO - need better way to to determine if WCM or ECM context, or earlier ...
+      final String path = this.getCurrentPath();
+      
+      if (path == null)
+      {
+         this.getCurrentAVMPath();
+      }
 
       if (LOGGER.isDebugEnabled())
       {
          LOGGER.debug("building xform for schema " + this.xformsSession.form.getName() +
                       " root element " + this.xformsSession.form.getSchemaRootElementName() +
-                      " avm cwd " + cwdAVMPath);
+                      " cwd " + path);
       }
 
       final Locale locale = 
@@ -682,7 +680,7 @@ public class XFormsBean
       try
       {
          final Document schemaDocument = this.xformsSession.form.getSchema();
-         XFormsBean.rewriteInlineURIs(schemaDocument, cwdAVMPath);
+         XFormsBean.rewriteInlineURIs(schemaDocument, path);
          final String rootElementName = this.xformsSession.form.getSchemaRootElementName();
          final Document result = 
             this.xformsSession.schema2XForms.buildXForm(this.xformsSession.formInstanceData, 
@@ -715,5 +713,17 @@ public class XFormsBean
 
       final String result = node.getPath();
       return node.isDirectory() ? result : AVMNodeConverter.SplitBase(result)[0];
+   }
+   
+   private String getCurrentPath()
+   {
+      org.alfresco.web.bean.repository.Node node = this.navigator.getCurrentNode();
+      if (node == null)
+      {
+         return null;
+      }
+
+      final String result = node.getPath();
+      return result;
    }
 }

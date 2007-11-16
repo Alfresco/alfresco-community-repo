@@ -383,8 +383,31 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
+         
+         <!-- Create XML content type (WCM) -->
+         <action id="create_web_form">
+            <evaluator>org.alfresco.web.action.evaluator.CreateWebFormEvaluator</evaluator>
+            <label-id>create_web_form</label-id>
+            <image>/images/icons/create_form.gif</image>
+            <action>wizard:createWebForm</action>
+         </action>
 
-         <!-- Create XML content type -->
+         <!-- Edit XML content type (WCM) -->
+         <action id="edit_web_form">
+            <permissions>
+               <permission allow="true">Write,AddChildren</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.EditWebFormEvaluator</evaluator>
+            <label-id>edit_web_form</label-id>
+            <image>/images/icons/edit_form.gif</image>
+            <action>wizard:editWebForm</action>
+            <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+
+         <!-- Regenerate Renditions (WCM) -->
          <action id="regenerate_renditions">
             <evaluator>org.alfresco.web.action.evaluator.RegenerateRenditionsEvaluator</evaluator>
             <label-id>regenerate_renditions</label-id>
@@ -798,6 +821,7 @@
          <action-group id="browse_create_menu">
             <action idref="create_content" />
             <action idref="create_form" />
+            <action idref="create_web_form" />      
             <action idref="create_website_wizard" />
             <action idref="create_space" />
             <action idref="create_space_wizard" />

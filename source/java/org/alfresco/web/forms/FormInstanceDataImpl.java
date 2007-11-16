@@ -42,6 +42,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.apache.commons.logging.Log;
@@ -130,7 +131,15 @@ import org.xml.sax.SAXException;
       final String parentFormName = this.getParentFormName();
       try
       {
-         return this.formsService.getForm(parentFormName);
+         // TODO - forms should be identified by nodeRef rather than name (which can be non-unique)
+         if (getNodeRef().getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+         {
+            return this.formsService.getWebForm(parentFormName);
+         }
+         else
+         {
+            return this.formsService.getForm(parentFormName);
+         }
       }
       catch (FormNotFoundException fnfe)
       {

@@ -96,6 +96,7 @@ public final class FormsService
    private final SearchService searchService;
 
    private NodeRef contentFormsNodeRef;
+   private NodeRef webContentFormsNodeRef;
    
    /** instantiated using spring */
    public FormsService(final ContentService contentService,
@@ -170,29 +171,72 @@ public final class FormsService
          final String xpath = (Application.getRootPath(fc) + "/" +
                                Application.getGlossaryFolderName(fc) + "/" +
                                Application.getContentFormsFolderName(fc));
-         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("locating content forms at " + xpath);
-         final List<NodeRef> results = 
-            searchService.selectNodes(this.nodeService.getRootNode(Repository.getStoreRef()),
-                                      xpath,
-                                      null,
-                                      namespaceService,
-                                      false);
-         this.contentFormsNodeRef = (results != null && results.size() == 1 ? results.get(0) : null);
+
+         this.contentFormsNodeRef = getNodeRefFromXPath(xpath);
       }
       return this.contentFormsNodeRef;
    }
    
+   /**
+    * @return the cached reference to the WCM Content Forms folder
+    */
+   public NodeRef getWebContentFormsNodeRef()
+   {
+      if (this.webContentFormsNodeRef == null)
+      {
+         final FacesContext fc = FacesContext.getCurrentInstance();
+         final String xpath = (Application.getRootPath(fc) + "/" +
+                               Application.getGlossaryFolderName(fc) + "/" +
+                               Application.getWebContentFormsFolderName(fc));
+         
+         this.webContentFormsNodeRef = getNodeRefFromXPath(xpath);
+      }
+      return this.webContentFormsNodeRef;
+   }
+   
+   private NodeRef getNodeRefFromXPath(String xpath)
+   {
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("locating noderef at " + xpath);
+      final List<NodeRef> results = 
+         searchService.selectNodes(this.nodeService.getRootNode(Repository.getStoreRef()),
+                                   xpath,
+                                   null,
+                                   namespaceService,
+                                   false);
+      return (results != null && results.size() == 1 ? results.get(0) : null);
+   }
+   
    /** 
-    * returns all registered forms 
+    * returns registered forms 
     *
-    * @return all registered forms.
+    * @return registered (ECM) forms
     */
    public Collection<Form> getForms()
    {
       final String query =
          "+ASPECT:\"" + WCMAppModel.ASPECT_FORM + 
          "\" +PARENT:\"" + this.getContentFormsNodeRef() + "\"";
+
+      return getForms(query);
+   }
+   
+   /** 
+    * returns registered web forms 
+    *
+    * @return registered (WCM) forms
+    */
+   public Collection<Form> getWebForms()
+   {
+      final String query =
+         "+ASPECT:\"" + WCMAppModel.ASPECT_FORM + 
+         "\" +PARENT:\"" + this.getWebContentFormsNodeRef() + "\"";
+      
+      return getForms(query);
+   }
+      
+   private Collection<Form> getForms(String query)
+   {
       final ResultSet rs = this.searchService.query(Repository.getStoreRef(),
                                                     SearchService.LANGUAGE_LUCENE,
                                                     query);
@@ -213,6 +257,7 @@ public final class FormsService
     * return the form by name or <tt>null</tt> if not found 
     *
     * @return the form by name or <tt>null</tt> if not found 
+    * @deprecated
     */
    public Form getForm(final String name)
       throws FormNotFoundException
@@ -226,6 +271,25 @@ public final class FormsService
       }
       return this.getForm(result);
    }
+   
+   /** 
+    * return the web form by name or <tt>null</tt> if not found 
+    *
+    * @return the (WCM) form by name or <tt>null</tt> if not found 
+    * @deprecated
+    */
+   public Form getWebForm(final String name)
+     throws FormNotFoundException
+   {
+     final NodeRef result = this.nodeService.getChildByName(this.getWebContentFormsNodeRef(),
+                                                            ContentModel.ASSOC_CONTAINS,
+                                                            name);
+     if (result == null)
+     {
+        throw new FormNotFoundException(name);
+     }
+     return this.getForm(result);
+  }
 
    /**
     * Returns the form backed by the given NodeRef.  The NodeRef should

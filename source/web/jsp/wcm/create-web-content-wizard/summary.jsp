@@ -72,7 +72,7 @@
 	  <table width="100%" cellspacing="0" cellpadding="0" border="0">
 	    <colgroup><col width="25%"/><col width="75%"/></colgroup>
 	    <tbody>
-              <tr><td>${msg.form}:</td><td>${WizardManager.bean.form.title}</td></tr>
+              <tr><td>${msg.web_form}:</td><td>${WizardManager.bean.form.title}</td></tr>
               <tr><td>${msg.location}:</td><td>${WizardManager.bean.formInstanceData.sandboxRelativePath}</td></tr>
 	    </tbody>
 	  </table>

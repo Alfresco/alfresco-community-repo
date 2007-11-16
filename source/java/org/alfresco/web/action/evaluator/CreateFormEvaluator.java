@@ -36,8 +36,8 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 
 /**
- * UI Action Evaluator - Create Web Form in the Forms DataDictionary folder
- * 
+ * UI Action Evaluator - Create Form in the Forms DataDictionary folder
+ *
  * @author Kevin Roast
  */
 public class CreateFormEvaluator extends BaseActionEvaluator
@@ -51,12 +51,12 @@ public class CreateFormEvaluator extends BaseActionEvaluator
       final ServiceRegistry services = Repository.getServiceRegistry(fc);
       final NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
       
-      // get the path to the current name - compare last element with the Website folder assoc name
+      // get the path to the current name - compare last element with the Forms folder name
       final Path path = navigator.getCurrentNode().getNodePath();
       final Path.Element element = path.get(path.size() - 1);
       final String endPath = element.getPrefixedString(services.getNamespaceService());
       
-      // check we have the permission to create nodes in that Website folder
+      // check we have the permission to create nodes in that Forma folder
       return (Application.getContentFormsFolderName(fc).equals(endPath) &&
               navigator.getCurrentNode().hasPermission(PermissionService.ADD_CHILDREN));
    }

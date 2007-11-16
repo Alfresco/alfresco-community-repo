@@ -39,7 +39,7 @@
 </h:panelGrid>
 <h:panelGrid columns="3" cellpadding="3" cellspacing="3" border="0">
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
-   <h:outputText value="#{msg.form}:"/>
+   <h:outputText value="#{msg.web_form}:"/>
    <h:selectOneMenu value="#{DialogManager.bean.formName}" 
                     rendered="#{!empty DialogManager.bean.formChoices}">
       <f:selectItems value="#{DialogManager.bean.formChoices}" />

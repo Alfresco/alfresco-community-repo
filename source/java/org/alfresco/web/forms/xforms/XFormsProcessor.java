@@ -192,13 +192,29 @@ public class XFormsProcessor
       js.append("alfresco.constants.WEBAPP_CONTEXT = '").
          append(JavaScriptUtils.javaScriptEscape(contextPath)).
          append("';\n");
-      js.append("alfresco.constants.AVM_WEBAPP_CONTEXT = '").
-         append(JavaScriptUtils.javaScriptEscape(avmBrowseBean.getWebapp())).
-         append("';\n");
-      js.append("alfresco.constants.AVM_WEBAPP_URL = '").
-         append(JavaScriptUtils.javaScriptEscape(AVMUtil.buildWebappUrl(AVMUtil.getCorrespondingPreviewStoreName(avmBrowseBean.getSandbox()), 
-                                                                             avmBrowseBean.getWebapp()))).
-         append("';\n");
+      
+      String avmWebApp = avmBrowseBean.getWebapp();
+      
+      // TODO - need better way to determine WCM vs ECM context
+      js.append("alfresco.constants.AVM_WEBAPP_CONTEXT = '");
+      if (avmWebApp != null)
+      {
+         js.append(JavaScriptUtils.javaScriptEscape(avmWebApp));
+      }
+      js.append("';\n");
+      
+      // TODO - need better way to determine WCM vs ECM context
+      js.append("alfresco.constants.AVM_WEBAPP_URL = '");
+      if (avmWebApp != null)
+      {
+         String storeName = avmBrowseBean.getSandbox();
+         if (storeName != null)
+         {
+            js.append(JavaScriptUtils.javaScriptEscape(AVMUtil.buildWebappUrl(AVMUtil.getCorrespondingPreviewStoreName(storeName), avmBrowseBean.getWebapp())));
+         }
+      }
+         
+      js.append("';\n");
       js.append("alfresco.xforms.constants.XFORMS_UI_DIV_ID = '").
          append(xformsUIDivId).
          append("';\n");

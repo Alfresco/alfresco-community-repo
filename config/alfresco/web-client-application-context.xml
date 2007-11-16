@@ -287,11 +287,16 @@
          <ref bean="SearchService" />
       </constructor-arg>
       <property name="locations">
-	<list>
-	  <value>alfresco:/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.content_forms.childname}/${form.name}/cm:strings</value>
-	  <value>alfresco:/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.content_forms.childname}/cm:strings</value>
-	  <value>classpath:alfresco/messages/webclient</value>
-	</list>
+	     <list>
+            <!-- TODO currently WCM form string will override form string, which may not be desired -->			  
+            <value>alfresco:/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.wcm_content_forms.childname}/${form.name}/cm:strings</value>
+            <value>alfresco:/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.wcm_content_forms.childname}/cm:strings</value>
+		      
+            <value>alfresco:/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.content_forms.childname}/${form.name}/cm:strings</value>
+            <value>alfresco:/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.content_forms.childname}/cm:strings</value>
+			
+            <value>classpath:alfresco/messages/webclient</value>
+	    </list>
       </property>
    </bean>
 </beans>

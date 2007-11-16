@@ -79,7 +79,7 @@
 	         columnClasses="panelGridRequiredImageColumn,panelGridLabelColumn,panelGridValueColumn">
       <h:graphicImage value="/images/icons/required_field.gif" 
                       alt="#{msg.required_field}" />
-      <h:outputText value="#{msg.form}:"/>
+      <h:outputText value="#{msg.web_form}:"/>
       <a:selectList id="select_list_form_choices"
                     style="width:100%;"
                     onchange="this.form.submit()"

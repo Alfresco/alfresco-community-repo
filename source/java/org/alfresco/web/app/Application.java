@@ -86,6 +86,7 @@ public class Application
    private static String scriptsFolderName;
    private static String guestHomeFolderName;
    private static String websitesFolderName;
+   private static String webContentFormsFolderName;
    private static String contentFormsFolderName;
    
    private static Boolean isDynamicConfig = null;
@@ -523,13 +524,29 @@ public class Application
    /**
     * @return the WCM Content Forms folder name
     */
+   public static String getWebContentFormsFolderName(ServletContext context)
+   {
+      return getWebContentFormsFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return the WCM Content Forms folder name
+    */
+   public static String getWebContentFormsFolderName(FacesContext context)
+   {
+      return getWebContentFormsFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return the Content Forms folder name
+    */
    public static String getContentFormsFolderName(ServletContext context)
    {
       return getContentFormsFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
    }
    
    /**
-    * @return the WCM Content Forms folder name
+    * @return the Content Forms folder name
     */
    public static String getContentFormsFolderName(FacesContext context)
    {
@@ -935,6 +952,24 @@ public class Application
    
    /**
     * Returns the WCM Content Forms folder name
+    * 
+    * @param context The Spring context
+    * @return The WCM Content Forms folder name
+    */
+   private static String getWebContentFormsFolderName(WebApplicationContext context)
+   {
+      if (webContentFormsFolderName == null)
+      {
+         ImporterBootstrap bootstrap = (ImporterBootstrap)context.getBean(BEAN_IMPORTER_BOOTSTRAP);
+         Properties configuration = bootstrap.getConfiguration();
+         webContentFormsFolderName = configuration.getProperty("spaces.wcm_content_forms.childname");
+      }
+      
+      return webContentFormsFolderName;
+   }
+   
+   /**
+    * Returns the Content Forms folder name
     * 
     * @param context The Spring context
     * @return The WCM Content Forms folder name

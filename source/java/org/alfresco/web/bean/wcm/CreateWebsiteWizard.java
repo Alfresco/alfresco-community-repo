@@ -1017,7 +1017,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
     */
    public List<UIListItem> getFormsList()
    {
-      Collection<Form> forms = this.formsService.getForms();
+      Collection<Form> forms = this.formsService.getWebForms();
       List<UIListItem> items = new ArrayList<UIListItem>(forms.size());
       for (Form form : forms)
       {

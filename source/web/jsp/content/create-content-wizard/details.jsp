@@ -47,12 +47,12 @@
       if (document.getElementById("wizard:wizard-body:file-name").value.length == 0 )
       {
          document.getElementById("wizard:next-button").disabled = true;
-         document.getElementById("wizard:finish-button").disabled = true;
+         //document.getElementById("wizard:finish-button").disabled = true;
       }
       else
       {
          document.getElementById("wizard:next-button").disabled = false;
-         document.getElementById("wizard:finish-button").disabled = false;
+         //document.getElementById("wizard:finish-button").disabled = false;
       }
    }
    
@@ -98,6 +98,12 @@
    <h:selectOneMenu value="#{WizardManager.bean.mimeType}" 
                     valueChangeListener="#{WizardManager.bean.createContentChanged}">
       <f:selectItems value="#{WizardManager.bean.createMimeTypes}" />
+   </h:selectOneMenu>
+   
+   <h:outputText value=""/>
+   <h:outputText value="#{msg.form}:"/>
+   <h:selectOneMenu value="#{WizardManager.bean.formName}">
+      <f:selectItems value="#{WizardManager.bean.formsList}" />
    </h:selectOneMenu>
 </h:panelGrid>
 

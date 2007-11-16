@@ -235,9 +235,17 @@ public class CreateFormWizard
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("creating form " + this.getFormName());
 
-      // get the node ref of the node that will contain the content (either Forms or Web Forms dictionary space)
-      final NodeRef contentFormsNodeRef = this.navigator.getCurrentNode().getNodeRef();
-
+      // get the node ref of the node that will contain the content
+      
+      // TODO - need better way to determine WCM vs ECM context
+      // can create form from CreateWebProject Wizard, or from Forms DataDictionary space or Web Forms DataDictionary space     
+      NodeRef contentFormsNodeRef = this.formsService.getWebContentFormsNodeRef();
+      if (this.navigator.getCurrentNode().getNodeRef().equals(this.formsService.getContentFormsNodeRef()))
+      {
+         // ECM form, store in Forms DataDictionary space
+         contentFormsNodeRef = this.formsService.getContentFormsNodeRef();
+      }
+      
       final FileInfo folderInfo = 
          this.fileFolderService.create(contentFormsNodeRef,
                                        this.getFormName(),

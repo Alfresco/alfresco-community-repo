@@ -41,7 +41,7 @@
       </a:selectList>
       <f:verbatim></div></f:verbatim>
    </h:panelGroup>
-   <h:commandButton id="cmd-create" value="#{msg.create_form}" style="margin:2px" styleClass="dialogControls" action="wizard:createForm" />
+   <h:commandButton id="cmd-create" value="#{msg.create_web_form}" style="margin:2px" styleClass="dialogControls" action="wizard:createWebForm" />
    
    <%-- Selected Form table, with configuration buttons and info text --%>
    <f:verbatim><div style='padding:4px'></div></f:verbatim>

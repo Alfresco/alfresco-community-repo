@@ -34,6 +34,7 @@ import javax.faces.event.ActionEvent;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -53,6 +54,7 @@ import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.forms.FormNotFoundException;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.apache.commons.logging.Log;
@@ -282,8 +284,20 @@ public class CheckinCheckoutDialog extends BaseDialogBean
          boolean editingInline = false;
          Node node = setupContentDocument(id);
          
+         if (node.hasAspect(WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+         {
+            editingInline = true;
+            
+            // editable form document
+            FacesContext fc = FacesContext.getCurrentInstance();
+            this.navigator.setupDispatchContext(node);
+            
+            // TODO - rename editContent Wizard since it only deals with editing form content
+            fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "wizard:editContent");
+         }
+         
          // detect the inline editing aspect to see which edit mode to use
-         if (node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) && 
+         else if (node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) && 
              node.getProperties().get(ApplicationModel.PROP_EDITINLINE) != null &&
              ((Boolean)node.getProperties().get(ApplicationModel.PROP_EDITINLINE)).booleanValue() == true)
          {

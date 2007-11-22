@@ -42,12 +42,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.web.app.AlfrescoNavigationHandler;
-import org.alfresco.web.forms.xforms.FormBuilderException;
-import org.alfresco.web.forms.xforms.SchemaUtil;
 import org.alfresco.web.forms.Form;
-import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.RenderingEngineTemplate;
+import org.alfresco.web.forms.xforms.SchemaUtil;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -137,7 +134,11 @@ public class EditFormWizard
          this.renderingEngineTemplates.add(data);
       }
       this.removedRenderingEngineTemplates = null;
-      this.associatedWebProjects = this.formsService.getAssociatedWebProjects(form);
+      
+      if (getIsWebForm() == true)
+      {
+         this.associatedWebProjects = this.formsService.getAssociatedWebProjects(form);
+      }
    }
    
    /**

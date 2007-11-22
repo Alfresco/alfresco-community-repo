@@ -471,7 +471,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          String name = (String)this.nodeService.getProperty(formRef, WCMAppModel.PROP_FORMNAME);
          try
          {
-            Form formImpl = this.formsService.getForm(name);
+            Form formImpl = this.formsService.getWebForm(name);
             FormWrapper form = new FormWrapper(formImpl);
             form.setTitle((String)this.nodeService.getProperty(formRef, ContentModel.PROP_TITLE));
             form.setDescription((String)this.nodeService.getProperty(formRef, ContentModel.PROP_DESCRIPTION));

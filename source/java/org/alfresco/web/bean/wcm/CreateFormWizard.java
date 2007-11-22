@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.ValueChangeEvent;
@@ -237,15 +236,16 @@ public class CreateFormWizard
 
       // get the node ref of the node that will contain the content
       
-      // TODO - need better way to determine WCM vs ECM context
-      // can create form from CreateWebProject Wizard, or from Forms DataDictionary space or Web Forms DataDictionary space     
-      NodeRef contentFormsNodeRef = this.formsService.getWebContentFormsNodeRef();
-      if (this.navigator.getCurrentNode().getNodeRef().equals(this.formsService.getContentFormsNodeRef()))
+      NodeRef contentFormsNodeRef = null;
+      if (getIsWebForm() == true)
       {
-         // ECM form, store in Forms DataDictionary space
+         contentFormsNodeRef = this.formsService.getWebContentFormsNodeRef();
+      }
+      else
+      {
          contentFormsNodeRef = this.formsService.getContentFormsNodeRef();
       }
-      
+        
       final FileInfo folderInfo = 
          this.fileFolderService.create(contentFormsNodeRef,
                                        this.getFormName(),
@@ -1105,6 +1105,19 @@ public class CreateFormWizard
       return this.defaultWorkflowChoices;
    }
 
+   public boolean getIsWebForm()
+   {
+      boolean isWebForm = true;
+      // TODO - need better way to determine WCM vs ECM context
+      // can create form from CreateWebProject Wizard, or from Forms DataDictionary space or Web Forms DataDictionary space     
+      if (this.navigator.getCurrentNode().getNodeRef().equals(this.formsService.getContentFormsNodeRef()))
+      {
+         // ECM form
+         isWebForm = false;
+      }
+      return isWebForm;
+   }
+   
    // ------------------------------------------------------------------------------
    // Service Injection
    

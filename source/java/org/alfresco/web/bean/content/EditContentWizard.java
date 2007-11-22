@@ -24,78 +24,28 @@
  */
 package org.alfresco.web.bean.content;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.Serializable;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.faces.context.FacesContext;
-import javax.faces.event.ValueChangeEvent;
-import javax.faces.model.SelectItem;
 
-import org.alfresco.config.Config;
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigService;
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.model.WCMWorkflowModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.workflow.WorkflowModel;
-import org.alfresco.service.cmr.avm.AVMExistsException;
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.locking.AVMLock;
-import org.alfresco.service.cmr.avmsync.AVMDifference;
-import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.workflow.WorkflowDefinition;
-import org.alfresco.service.cmr.workflow.WorkflowPath;
-import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.cmr.workflow.WorkflowTask;
-import org.alfresco.service.cmr.workflow.WorkflowTaskState;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.content.BaseContentWizard;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.data.IDataContainer;
-import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.Form;
-import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormNotFoundException;
-import org.alfresco.web.forms.FormProcessor;
-import org.alfresco.web.forms.FormsService;
-import org.alfresco.web.forms.RenderingEngineTemplate;
-import org.alfresco.web.forms.Rendition;
-import org.alfresco.web.forms.XMLUtil;
 import org.alfresco.web.ui.common.Utils;
-import org.alfresco.web.ui.common.component.UIListItem;
-import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
 
 /**
  * Bean implementation for the "Edit Content Wizard" dialog
  */
 public class EditContentWizard extends CreateContentWizard
 {
-   private static final Log LOGGER = LogFactory.getLog(EditContentWizard.class);
-   
    private NodeRef nodeRef;
    private Form form;
 

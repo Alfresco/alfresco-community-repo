@@ -95,8 +95,7 @@ public class CreateContentWizard extends BaseContentWizard
       {
          this.content = XMLUtil.toString(this.instanceDataDocument, true);
          
-         // TODO - first step in wizard should auto-select XML when form is selected
-         this.mimeType = MimetypeMap.MIMETYPE_XML; // override mimetype (in case is not set to XML)
+         this.mimeType = MimetypeMap.MIMETYPE_XML; // belts & braces - override mimetype (in case is not set to XML)
       }
       
       String result = super.finish();
@@ -130,6 +129,7 @@ public class CreateContentWizard extends BaseContentWizard
       this.content = null;
       this.inlineEdit = true;
       this.mimeType = MimetypeMap.MIMETYPE_HTML;
+      this.formName = "";
       
       this.instanceDataDocument = null;
       if (this.formProcessorSession != null)
@@ -146,6 +146,24 @@ public class CreateContentWizard extends BaseContentWizard
       //       wizard implementations don't have to worry about 
       //       checking step numbers
       
+      boolean disabled = false;
+      int step = Application.getWizardManager().getCurrentStep();
+      switch(step)
+      {
+         case 1:
+         {
+            disabled = (this.fileName == null || this.fileName.length() == 0);
+            break;
+         }
+      }
+      
+      return disabled;
+   }
+   
+   
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
       boolean disabled = false;
       int step = Application.getWizardManager().getCurrentStep();
       switch(step)
@@ -257,8 +275,7 @@ public class CreateContentWizard extends BaseContentWizard
       
       if (this.instanceDataDocument != null)
       {
-         // TODO - first step in wizard should auto-select XML when form is selected
-         this.mimeType = MimetypeMap.MIMETYPE_XML; // override mimetype (in case it is not set to XML)
+         this.mimeType = MimetypeMap.MIMETYPE_XML; // belts & braces - override mimetype (in case is not set to XML)
       }
       
       // TODO: show first few lines of content here?

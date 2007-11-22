@@ -70,6 +70,19 @@
          return true;
       }
    }
+   
+   function formChanged()
+   {
+      if (document.getElementById("wizard:wizard-body:form-name").value != "")
+      {
+         document.getElementById("wizard:wizard-body:mime-type").disabled = true;
+         document.getElementById("wizard:wizard-body:mime-type").value = "text/xml";
+      }
+      else
+      {
+         document.getElementById("wizard:wizard-body:mime-type").disabled = false;
+      }
+   }
 
 </script>
 </f:verbatim>
@@ -95,14 +108,15 @@
    
    <h:outputText value=""/>
    <h:outputText value="#{msg.content_type}:"/>
-   <h:selectOneMenu value="#{WizardManager.bean.mimeType}" 
+   <h:selectOneMenu id="mime-type" value="#{WizardManager.bean.mimeType}" 
                     valueChangeListener="#{WizardManager.bean.createContentChanged}">
       <f:selectItems value="#{WizardManager.bean.createMimeTypes}" />
    </h:selectOneMenu>
    
    <h:outputText value=""/>
    <h:outputText value="#{msg.form}:"/>
-   <h:selectOneMenu value="#{WizardManager.bean.formName}">
+   <h:selectOneMenu id="form-name" value="#{WizardManager.bean.formName}" 
+                    onchange="formChanged();">
       <f:selectItems value="#{WizardManager.bean.formsList}" />
    </h:selectOneMenu>
 </h:panelGrid>

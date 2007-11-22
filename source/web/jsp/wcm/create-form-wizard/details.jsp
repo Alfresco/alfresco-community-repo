@@ -224,16 +224,20 @@
       
       <h:graphicImage id="img_form_instance_data_output_path_pattern" 
 		      value="/images/icons/required_field.gif" 
-		      alt="#{msg.required_field}" />
+		      alt="#{msg.required_field}"
+		      rendered="#{WizardManager.bean.isWebForm == true}"/>
       <h:outputText id="out_form_instance_data_output_path_pattern" 
-		    value="#{msg.output_path_pattern}:"/>
+              value="#{msg.output_path_pattern}:"
+		      rendered="#{WizardManager.bean.isWebForm == true}"/>
       <h:inputText id="form_instance_data_output_path_pattern" 
-                   disabled="#{WizardManager.bean.schemaFileName == null}"
-		   value="#{WizardManager.bean.outputPathPatternForFormInstanceData}" 
-		   style="width:100%"/>
+              disabled="#{WizardManager.bean.schemaFileName == null}"
+		      value="#{WizardManager.bean.outputPathPatternForFormInstanceData}" 
+		      style="width:100%"
+		      rendered="#{WizardManager.bean.isWebForm == true}"/>
       <h:graphicImage id="img_form_instance_data_output_path_pattern_help"
 		      value="/images/icons/Help_icon.gif" style="cursor:help"
-		      onclick="javascript:toggleOutputPathPatternHelp()" />
+		      onclick="javascript:toggleOutputPathPatternHelp()" 
+		      rendered="#{WizardManager.bean.isWebForm == true}"/>
 
       <h:column id="output_path_pattern_help_empty_col_1"/>
       <h:column id="output_path_pattern_help_empty_col_2"/>

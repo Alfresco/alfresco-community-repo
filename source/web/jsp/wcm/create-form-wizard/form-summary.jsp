@@ -60,7 +60,6 @@
 	      </td>
 	    </tr>
             <tr><td>${msg.schema_root_element_name}:</td><td>${WizardManager.bean.schemaRootElementName}</td></tr>
-            <tr><td>${msg.output_path_pattern}:</td><td>${WizardManager.bean.outputPathPatternForFormInstanceData}</td></tr>
 	  </tbody>
 	</table>
       </jsp:attribute>

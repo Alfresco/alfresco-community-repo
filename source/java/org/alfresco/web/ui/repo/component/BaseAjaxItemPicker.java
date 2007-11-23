@@ -139,8 +139,6 @@ public abstract class BaseAjaxItemPicker extends UIInput
       // TODO: from submitted value or 'none'
       String selection = "none";
       
-      // TODO: output images with context correctly
-      
       String divId = getId();
       String objId = divId + "Obj"; 
       String contextPath = fc.getExternalContext().getRequestContextPath();
@@ -151,8 +149,12 @@ public abstract class BaseAjaxItemPicker extends UIInput
       {
          out.write(" window." + objId + ".setStartId('" + getInitialSelection() + "');");
       }
+      if (getDefaultIcon() != null)
+      {
+         out.write(" window." + objId + ".setDefaultIcon('" + getDefaultIcon() + "');");
+      }
       out.write("}");
-      out.write(" window.addEvent('domready', init" + divId + ");");
+      out.write("window.addEvent('domready', init" + divId + ");");
       out.write("</script>");
       
       out.write("<div id='" + divId + "' class='picker'>") ;
@@ -207,6 +209,12 @@ public abstract class BaseAjaxItemPicker extends UIInput
     * @return the ajax service bean call, for instance 'PickerBean.getFolderNodes'
     */
    protected abstract String getServiceCall();
+   
+   /**
+    * @return default icon for the picker - if null then assume 'icon' property is always returned in
+    *         service call results JSON objects.
+    */
+   protected abstract String getDefaultIcon();
    
    
    // ------------------------------------------------------------------------------

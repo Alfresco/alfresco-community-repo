@@ -213,6 +213,11 @@
       <component-type>org.alfresco.faces.AjaxFolderPicker</component-type>
       <component-class>org.alfresco.web.ui.repo.component.UIAjaxFolderPicker</component-class>
    </component>
+   
+   <component>
+      <component-type>org.alfresco.faces.AjaxCategoryPicker</component-type>
+      <component-class>org.alfresco.web.ui.repo.component.UIAjaxCategoryPicker</component-class>
+   </component>
 
 
    <!-- ==================== CONVERTERS ==================== -->

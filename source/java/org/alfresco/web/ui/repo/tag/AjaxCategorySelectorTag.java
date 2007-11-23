@@ -20,31 +20,24 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing
+ * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.web.ui.repo.component;
+/*
+ * Created on 25-May-2005
+ */
+package org.alfresco.web.ui.repo.tag;
+
 
 /**
  * @author Kevin Roast
  */
-public class UIAjaxFolderPicker extends BaseAjaxItemPicker
+public class AjaxCategorySelectorTag extends AjaxItemSelectorTag
 {
-   @Override
-   public String getFamily()
+   /**
+    * @see javax.faces.webapp.UIComponentTag#getComponentType()
+    */
+   public String getComponentType()
    {
-      return "org.alfresco.faces.AjaxFolderPicker";
-   }
-
-   @Override
-   protected String getServiceCall()
-   {
-      return "PickerBean.getFolderNodes";
-   }
-
-   @Override
-   protected String getDefaultIcon()
-   {
-      // none required - we always return an icon name in the service call
-      return null;
+      return "org.alfresco.faces.AjaxCategoryPicker";
    }
 }

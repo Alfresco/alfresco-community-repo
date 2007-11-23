@@ -4196,6 +4196,31 @@
       <managed-bean-class>org.alfresco.web.bean.ajax.PresenceProxyBean</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Bean backing the ajax requests for the ajax based picker components
+      </description>
+      <managed-bean-name>PickerBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.ajax.PickerBean</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+      <managed-property>
+         <property-name>categoryService</property-name>
+         <value>#{CategoryService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>internalNodeService</property-name>
+         <value>#{nodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>fileFolderService</property-name>
+         <value>#{FileFolderService}</value>
+      </managed-property>
+   </managed-bean>
 
    <managed-bean>
       <description>

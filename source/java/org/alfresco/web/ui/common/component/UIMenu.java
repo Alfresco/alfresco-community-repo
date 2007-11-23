@@ -81,7 +81,7 @@ public class UIMenu extends SelfRenderingComponent
       // output image
       if (getAttributes().get("image") != null)
       {
-         out.write(Utils.buildImageTag(context, (String)getAttributes().get("image"), null, "middle"));
+         out.write(Utils.buildImageTag(context, (String)getAttributes().get("image"), null, "-4px"));
       }
       
       out.write("</a>");

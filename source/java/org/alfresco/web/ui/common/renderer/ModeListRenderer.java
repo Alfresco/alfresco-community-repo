@@ -214,7 +214,7 @@ public class ModeListRenderer extends BaseRenderer
          // output image
          if (list.getMenuImage() != null)
          {
-            out.write(Utils.buildImageTag(context, list.getMenuImage(), null, "middle"));
+            out.write(Utils.buildImageTag(context, list.getMenuImage(), null, "-4px"));
          }
          
          out.write("</a></td></tr></table>");

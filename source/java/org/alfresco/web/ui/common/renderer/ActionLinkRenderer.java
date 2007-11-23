@@ -142,7 +142,7 @@ public class ActionLinkRenderer extends BaseRenderer
             renderActionLinkAnchor(context, out, link); 
          }
          
-         out.write(Utils.buildImageTag(context, image, (String)link.getValue(), "middle"));
+         out.write(Utils.buildImageTag(context, image, (String)link.getValue(), "-4px"));
          
          if (link.getShowLink() == false)
          {

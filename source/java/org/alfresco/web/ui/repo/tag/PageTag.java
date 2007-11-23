@@ -45,9 +45,9 @@ public class PageTag extends TagSupport
    private static final long serialVersionUID = 8142765393181557228L;
    
    private final static String SCRIPTS_START = "<script type=\"text/javascript\" src=\"";
-   private final static String SCRIPTS_END = "\"></script>\n";
+   private final static String SCRIPTS_END   = "\"></script>\n";
    private final static String STYLES_START  = "<link rel=\"stylesheet\" href=\"";
-   private final static String STYLES_MAIN  = "/css/main.css\" type=\"text/css\">\n";
+   private final static String STYLES_MAIN   = "\" type=\"text/css\">\n";
 
    private final static String[] SCRIPTS = 
    {
@@ -66,7 +66,15 @@ public class PageTag extends TagSupport
       // common Alfresco util methods
       "/scripts/ajax/common.js",
       // pop-up panel helper objects
-      "/scripts/ajax/summary-info.js"
+      "/scripts/ajax/summary-info.js",
+      // ajax pickers
+      "/scripts/ajax/picker.js"
+   };
+   
+   private final static String[] CSS = 
+   {
+      "/css/main.css",
+      "/css/picker.css"
    };
 
 /**
@@ -219,10 +227,15 @@ public class PageTag extends TagSupport
          }
          
          // CSS style includes
-         out.write(STYLES_START);
-         out.write(reqPath);
-         out.write(STYLES_MAIN);
+         for (final String css : PageTag.CSS)
+         {
+            out.write(STYLES_START);
+            out.write(reqPath);
+            out.write(css);
+            out.write(STYLES_MAIN);
+         }
          
+         // JavaScript includes
          for (final String s : PageTag.SCRIPTS)
          {
             out.write(SCRIPTS_START);

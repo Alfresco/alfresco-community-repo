@@ -69,6 +69,7 @@
       <param-name>contextConfigLocation</param-name>
       <param-value>
          classpath:alfresco/application-context.xml 
+         classpath:alfresco/web-framework-application-context.xml
          classpath:alfresco/web-client-application-context.xml
          classpath:alfresco/web-scripts-application-context.xml
          classpath:alfresco/web-pagerenderer-application-context.xml

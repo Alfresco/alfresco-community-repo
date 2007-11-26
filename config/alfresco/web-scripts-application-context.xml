@@ -3,156 +3,10 @@
 
 <beans>
  
-   <!--  -->
-   <!--  Web Script Storage -->
-   <!--  -->
-   
-   <bean id="webscripts.repostore" class="org.alfresco.web.scripts.RepoStore" abstract="true">
-      <property name="transactionHelper" ref="retryingTransactionHelper" />
-      <property name="nodeService" ref="nodeService" />
-      <property name="namespaceService" ref="namespaceService" />
-      <property name="contentService" ref="contentService" />
-      <property name="fileFolderService" ref="fileFolderService" />
-      <property name="searchService" ref="SearchService" />
-      <property name="permissionService" ref="PermissionService" />
-   </bean>
-   
-   <bean id="webscripts.classpathstore" class="org.alfresco.web.scripts.ClassPathStore" abstract="true" />
-
-   <bean parent="webscripts.repostore">
-      <property name="store"><value>workspace://SpacesStore</value></property>
-      <property name="path"><value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/cm:extensionwebscripts</value></property>
-   </bean>
-
-   <bean parent="webscripts.repostore">
-      <property name="mustExist"><value>true</value></property>
-      <property name="store"><value>workspace://SpacesStore</value></property>
-      <property name="path"><value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/cm:webscripts</value></property>
-   </bean>
-
-   <bean parent="webscripts.classpathstore">
-      <property name="classPath"><value>alfresco/extension/templates/webscripts</value></property>
-   </bean>
-
-   <bean parent="webscripts.classpathstore">
-      <property name="mustExist"><value>true</value></property>
-      <property name="classPath"><value>alfresco/templates/webscripts</value></property>
-   </bean>
-
-   <bean id="webscripts.storage" class="org.alfresco.web.scripts.WebScriptStorage">
-      <property name="templateProcessor" ref="webscripts.templateprocessor" />
-      <property name="scriptProcessor" ref="webscripts.scriptprocessor" />
-   </bean>
-
-
-   <!--  -->
-   <!--  Web Script Context -->
-   <!--  -->
-
-   <bean id="webscripts.resources" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
-      <property name="resourceBundles">
-         <list>
-            <value>alfresco.messages.webscripts</value>
-         </list>
-      </property>
-   </bean>
-
-   <bean id="webscripts.context" class="org.alfresco.web.scripts.WebScriptContext">
-      <property name="transactionHelper" ref="retryingTransactionHelper" />
-      <property name="namespaceService" ref="namespaceService" />
-      <property name="nodeService" ref="nodeService" />
-      <property name="personService" ref="personService" />
-      <property name="searchService" ref="searchService" />
-      <property name="companyHomeStore"><value>${spaces.store}</value></property>
-      <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>
-   </bean>
-
-   <bean id="webscripts.templateprocessor" class="org.alfresco.web.scripts.TemplateProcessor">
-      <property name="freeMarkerProcessor" ref="freeMarkerProcessor" /> 
-      <property name="serviceRegistry" ref="ServiceRegistry" />     
-      <!-- <property name="defaultEncoding"><value>UTF-8</value></property> -->
-   </bean>
-
-   <bean id="webscripts.scriptprocessor" class="org.alfresco.web.scripts.ScriptProcessor">
-      <property name="scriptService" ref="ScriptService" />
-   </bean>
-
-
-   <!--  -->
-   <!--  Web Script Registry -->   
-   <!--  -->
-
-   <bean id="webscripts.registry" class="org.alfresco.web.scripts.DeclarativeWebScriptRegistry">
-      <property name="storage" ref="webscripts.storage" />
-      <property name="formatRegistry" ref="webscripts.formatregistry" />
-      <property name="defaultWebScript"><value>webscript_default</value></property>
-   </bean>
-
-   <!--  Alfresco Web Client Authenticator (Servlet based) -->
-   <bean id="webscripts.authenticator.webclient" class="org.alfresco.web.scripts.WebClientAuthenticator" />
-   
-   <!--  HTTP Basic Authenticator (Servlet based) -->
-   <bean id="webscripts.authenticator.basic" class="org.alfresco.web.scripts.BasicHttpAuthenticator">
-      <property name="authenticationService" ref="AuthenticationService" />
-   </bean>
-
-   <!--  JSR-168 Authenticator (Portal based) -->
-   <bean id="webscripts.authenticator.jsr168" class="org.alfresco.web.scripts.portlet.JSR168PortletAuthenticator">
-      <property name="authenticationService" ref="AuthenticationService" />
-   </bean>
-   <!--  -->
-   <bean id="webscripts.authenticator.jsr168.webclient" class="org.alfresco.web.scripts.portlet.WebClientPortletAuthenticator">
-      <property name="scriptContext" ref="webscripts.context" />
-      <property name="authenticationService" ref="AuthenticationService" />
-   </bean>
-
-
-   <!--  -->
-   <!--  Response Formats -->
-   <!--  -->
-
-   <!--  Format Registry -->
-   <bean id="webscripts.formatregistry" class="org.alfresco.web.scripts.FormatRegistry" />
-
-   <!--  Format Map -->
-   <bean id="webscripts.formatmap" class="org.alfresco.web.scripts.FormatMap" abstract="true">
-      <property name="registry" ref="webscripts.formatregistry" />
-   </bean>
-
-   <!--  Default set of API Formats -->
-   <bean id="webscripts.formats" parent="webscripts.formatmap">
-      <property name="formats">
-         <props>
-            <prop key="html">text/html</prop>
-            <prop key="text">text/plain</prop>
-            <prop key="xml">text/xml</prop>
-            <prop key="atom">application/atom+xml</prop>
-            <prop key="rss">application/rss+xml</prop>
-            <prop key="json">application/json</prop>
-            <prop key="opensearchdescription">application/opensearchdescription+xml</prop>
-            <prop key="mediawiki">text/plain</prop>
-            <prop key="portlet">text/html</prop>
-            <prop key="fbml">text/html</prop>
-         </props>
-      </property>
-   </bean>
-
-   <!--  IE Specific set of API Formats -->
-   <bean id="webscripts.formats.IE" parent="webscripts.formatmap">
-      <property name="agent"><value>MSIE</value></property>
-      <property name="formats">
-         <props>
-            <prop key="atom">text/xml</prop>
-            <prop key="rss">text/xml</prop>
-            <prop key="opensearchdescription">text/xml</prop>
-         </props>
-      </property>
-   </bean>
-
-
-   <!--  -->   
+ 
+   <!--                           -->
    <!--  Web Script Configuration -->
-   <!--  -->   
+   <!--                           -->   
 
    <bean id="webscripts.configsource" class="org.alfresco.config.source.UrlConfigSource">
       <constructor-arg>
@@ -169,100 +23,193 @@
          <ref bean="webscripts.configsource" />
       </constructor-arg>
    </bean>
+ 
+ 
+   <!--              -->   
+   <!--  API Testing -->
+   <!--              -->   
+
+   <bean id="webscripts.test" class="org.alfresco.repo.web.scripts.TestWebScriptRepoServer">
+      <property name="container" ref="webscripts.container" />
+      <property name="authenticationService" ref="authenticationService" />
+      <property name="transactionHelper" ref="retryingTransactionHelper" />
+      <property name="messages">
+         <bean class="org.springframework.context.support.ResourceBundleMessageSource">
+            <property name="basenames">
+               <list>
+                  <value>alfresco/messages/webscripts</value>
+               </list>
+            </property>
+         </bean>
+      </property>
+   </bean>
+ 
+ 
+   <!--                     -->
+   <!--  Web Script Storage -->
+   <!--                     -->
+
+   <bean id="webscripts.repostore" class="org.alfresco.repo.web.scripts.RepoStore" abstract="true">
+      <property name="transactionHelper" ref="retryingTransactionHelper" />
+      <property name="nodeService" ref="nodeService" />
+      <property name="namespaceService" ref="namespaceService" />
+      <property name="contentService" ref="contentService" />
+      <property name="fileFolderService" ref="fileFolderService" />
+      <property name="searchService" ref="SearchService" />
+      <property name="permissionService" ref="PermissionService" />
+   </bean>
+
+   <bean name="webscripts.store.repo.extension" parent="webscripts.repostore">
+      <property name="store"><value>workspace://SpacesStore</value></property>
+      <property name="path"><value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/cm:extensionwebscripts</value></property>
+   </bean>
+
+   <bean name="webscripts.store.repo" parent="webscripts.repostore">
+      <property name="mustExist"><value>true</value></property>
+      <property name="store"><value>workspace://SpacesStore</value></property>
+      <property name="path"><value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/cm:webscripts</value></property>
+   </bean>
+
+   <bean id="webscripts.store.client.extension" parent="webscripts.classpathstore">
+      <property name="classPath"><value>alfresco/extension/templates/webscripts</value></property>
+   </bean>
+
+   <bean id="webscripts.store.client" parent="webscripts.classpathstore">
+      <property name="mustExist"><value>true</value></property>
+      <property name="classPath"><value>alfresco/templates/webscripts</value></property>
+   </bean>
+   
+   <bean id="webscripts.searchpath" class="org.alfresco.web.scripts.SearchPath">
+      <property name="searchPath">
+          <list>
+             <ref bean="webscripts.store.repo.extension" />
+             <ref bean="webscripts.store.repo" />
+             <ref bean="webscripts.store.client.extension" />
+             <ref bean="webscripts.store.client" />
+             <ref bean="webscripts.store" />
+          </list>
+      </property>
+   </bean>
 
 
-   <!--  -->
-   <!--  Base implementations of a Web Script Backing Bean -->
-   <!--  -->
+   <!--                                                -->
+   <!--  Web Script Repository (Server-Tier) Container -->
+   <!--                                                -->
 
-   <!--  Abstract API Service -->
-   <bean id="webscript" abstract="true">
-      <property name="scriptContext" ref="webscripts.context" />
-      <property name="serviceRegistry" ref="ServiceRegistry" />
+   <bean id="webscripts.repo" class="org.alfresco.repo.web.scripts.Repository">
+      <property name="transactionHelper" ref="retryingTransactionHelper" />
+      <property name="namespaceService" ref="namespaceService" />
+      <property name="nodeService" ref="nodeService" />
+      <property name="personService" ref="personService" />
+      <property name="fileFolderService" ref="fileFolderService" />
+      <property name="searchService" ref="searchService" />
+      <property name="companyHomeStore"><value>${spaces.store}</value></property>
+      <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>
+   </bean>
+
+   <bean id="webscripts.repo.imageresolver" class="org.alfresco.repo.web.scripts.RepositoryImageResolver" />
+   
+   <bean id="webscripts.repo.templateprocessor" class="org.alfresco.repo.web.scripts.RepositoryTemplateProcessor">
+      <property name="serviceRegistry" ref="ServiceRegistry" />     
+      <property name="freeMarkerProcessor" ref="freeMarkerProcessor" /> 
+      <property name="searchPath" ref="webscripts.searchpath" />
+      <!-- <property name="defaultEncoding"><value>UTF-8</value></property> -->
+   </bean>
+
+   <bean id="webscripts.repo.scriptprocessor" class="org.alfresco.repo.web.scripts.RepositoryScriptProcessor">
+      <property name="searchPath" ref="webscripts.searchpath" />
+   </bean>
+ 
+   <bean id="webscripts.container" class="org.alfresco.repo.web.scripts.RepositoryContainer">
+      <property name="name"><value>Repository</value></property>
+      <property name="transactionHelper" ref="retryingTransactionHelper" />
+      <property name="permissionService" ref="permissionService" />
+      <property name="repository" ref="webscripts.repo" />
+      <property name="repositoryImageResolver" ref="webscripts.repo.imageresolver" />
+      <property name="registry" ref="webscripts.registry" />
+      <property name="formatRegistry" ref="webscripts.formatregistry" />
+      <property name="templateProcessor" ref="webscripts.repo.templateprocessor" />
+      <property name="scriptProcessor" ref="webscripts.repo.scriptprocessor" />
       <property name="descriptorService" ref="DescriptorService" />
    </bean>
 
-   <!--  Scripted API Service -->
-   <bean id="webscript_default" parent="webscript" class="org.alfresco.web.scripts.DeclarativeWebScript" singleton="false"/>
 
+   <!--                            -->
+   <!--  Web Script Authenticators -->
+   <!--                            -->
 
-   <!--  -->
-   <!--  Facebook Web Scripts -->
-   <!--  -->
-
-   <bean id="facebook.service" class="org.alfresco.web.scripts.facebook.FacebookService">
-      <property name="registry" ref="webscripts.registry" />
+   <!--  Alfresco Web Client Authenticator (Servlet based) -->
+   <bean id="webscripts.authenticator.webclient" class="org.alfresco.repo.web.scripts.servlet.WebClientAuthenticatorFactory" />
+   
+   <!--  HTTP Basic Authenticator (Servlet based) -->
+   <bean id="webscripts.authenticator.basic" class="org.alfresco.repo.web.scripts.servlet.BasicHttpAuthenticatorFactory">
+      <property name="authenticationService" ref="AuthenticationService" />
    </bean>
 
-   <bean id="facebook.authenticator" class="org.alfresco.web.scripts.facebook.FacebookAuthenticator"/>
-
-
-   <!--  -->
-   <!--  Custom Java Web Script Backing Beans -->
-   <!--  -->
-
-   <!--  List of available Web APIs -->
-   <bean id="webscript.org.alfresco.index.get" class="org.alfresco.web.scripts.bean.Index" parent="webscript" singleton="false"/>
-   <alias name="webscript.org.alfresco.index.get" alias="webscript.org.alfresco.indexall.get"/>
-   <bean id="webscript.org.alfresco.indexuri.get" class="org.alfresco.web.scripts.bean.IndexURI" parent="webscript" />
-   <bean id="webscript.org.alfresco.indexpackage.get" class="org.alfresco.web.scripts.bean.IndexPackage" parent="webscript" />
-
-   <!--  Maintain list of available Web APIs -->
-   <bean id="webscript.org.alfresco.index.post" class="org.alfresco.web.scripts.bean.IndexUpdate" parent="webscript" >
-      <property name="facebookService" ref="facebook.service"/>
+   <!--  JSR-168 Authenticator (Portal based) -->
+   <bean id="webscripts.authenticator.jsr168" class="org.alfresco.repo.web.scripts.portlet.JSR168PortletAuthenticatorFactory">
+      <property name="authenticationService" ref="AuthenticationService" />
+   </bean>
+   <bean id="webscripts.authenticator.jsr168.webclient" class="org.alfresco.repo.web.scripts.portlet.WebClientPortletAuthenticatorFactory">
+      <property name="repository" ref="webscripts.repo" />
+      <property name="authenticationService" ref="AuthenticationService" />
    </bean>
 
-   <!--  Retrieve Web Script Description Document -->
-   <bean id="webscript.org.alfresco.scriptdescription.get" class="org.alfresco.web.scripts.bean.ServiceDescription" parent="webscript" />
+   <!--  Facebook Authenticator -->
+   <bean id="webscripts.authenticator.facebook" class="org.alfresco.repo.web.scripts.facebook.FacebookAuthenticatorFactory" />
 
-   <!--  Web Script Dump -->
-   <bean id="webscript.org.alfresco.scriptdump.get" class="org.alfresco.web.scripts.bean.ServiceDump" parent="webscript" >
-      <property name="storage" ref="webscripts.storage"/>
-   </bean>
 
-   <!--  Web Script Install -->
-   <bean id="webscript.org.alfresco.scriptinstall.post" class="org.alfresco.web.scripts.bean.ServiceInstall" parent="webscript" >
-      <property name="storage" ref="webscripts.storage"/>
-   </bean>
+   <!--            -->
+   <!--  API Beans -->
+   <!--            -->
 
    <!--  Javascript APIs -->
-   <bean id="webscript.org.alfresco.jsdebugger.get" class="org.alfresco.web.scripts.bean.JavascriptDebugger" parent="webscript">
+   <bean id="webscript.org.alfresco.jsdebugger.get" class="org.alfresco.repo.web.scripts.bean.JavascriptDebugger" parent="webscript">
       <property name="debugger" ref="rhinoScriptDebugger" />
    </bean>
-   <bean id="webscript.org.alfresco.jsdebugger.post" class="org.alfresco.web.scripts.bean.JavascriptDebuggerPost" parent="webscript">
+   <bean id="webscript.org.alfresco.jsdebugger.post" class="org.alfresco.repo.web.scripts.bean.JavascriptDebuggerPost" parent="webscript">
       <property name="debugger" ref="rhinoScriptDebugger" />
    </bean>
 
    <!--  Authentication APIs -->
-   <bean id="webscript.org.alfresco.repository.login.get" class="org.alfresco.web.scripts.bean.Login" parent="webscript">
+   <bean id="webscript.org.alfresco.repository.login.get" class="org.alfresco.repo.web.scripts.bean.Login" parent="webscript">
       <property name="authenticationService" ref="authenticationService" />
    </bean>
-   <bean id="webscript.org.alfresco.repository.loginticket.get" class="org.alfresco.web.scripts.bean.LoginTicket" parent="webscript">
+   <bean id="webscript.org.alfresco.repository.loginticket.get" class="org.alfresco.repo.web.scripts.bean.LoginTicket" parent="webscript">
       <property name="ticketComponent" ref="ticketComponent" />
    </bean>
-   <bean id="webscript.org.alfresco.repository.loginticket.delete" class="org.alfresco.web.scripts.bean.LoginTicketDelete" parent="webscript">
+   <bean id="webscript.org.alfresco.repository.loginticket.delete" class="org.alfresco.repo.web.scripts.bean.LoginTicketDelete" parent="webscript">
       <property name="authenticationService" ref="authenticationService" />
       <property name="ticketComponent" ref="ticketComponent" />
    </bean>
    
    <!--  List of registered (OpenSearch) search engines -->
-   <bean id="webscript.org.alfresco.repository.search.searchengines.get" class="org.alfresco.web.scripts.bean.SearchEngines" parent="webscript">
+   <bean id="webscript.org.alfresco.repository.search.searchengines.get" class="org.alfresco.repo.web.scripts.bean.SearchEngines" parent="webscript">
       <property name="configService" ref="webscripts.config" />
       <property name="searchProxy" ref="webscript.org.alfresco.repository.search.searchproxy.get" />
    </bean>
 
    <!--  Alfresco Web Client Keyword Search (OpenSearch) -->
-   <bean id="webscript.org.alfresco.repository.search.keywordsearch.get" class="org.alfresco.web.scripts.bean.KeywordSearch" parent="webscript">
+   <bean id="webscript.org.alfresco.repository.search.keywordsearch.get" class="org.alfresco.repo.web.scripts.bean.KeywordSearch" parent="webscript">
       <property name="searchService" ref="SearchService" />
+      <property name="serviceRegistry" ref="ServiceRegistry" />     
+      <property name="repositoryImageResolver" ref="webscripts.repo.imageresolver" />
    </bean>
 
    <!--  Alfresco (OpenSearch) Proxy -->
-   <bean id="webscript.org.alfresco.repository.search.searchproxy.get" class="org.alfresco.web.scripts.bean.SearchProxy" parent="webscript">
+   <bean id="webscript.org.alfresco.repository.search.searchproxy.get" class="org.alfresco.repo.web.scripts.bean.SearchProxy" parent="webscript">
       <property name="configService" ref="webscripts.config" />
       <property name="formatRegistry" ref="webscripts.formatregistry" />
    </bean>
 
    <!--  Content Retrieval -->
-   <bean id="webscript.org.alfresco.repository.store.content.get" class="org.alfresco.web.scripts.bean.ContentGet" parent="webscript"/>
+   <bean id="webscript.org.alfresco.repository.store.content.get" class="org.alfresco.repo.web.scripts.bean.ContentGet" parent="webscript">
+      <property name="repository" ref="webscripts.repo" />
+      <property name="namespaceService" ref="NamespaceService" />
+      <property name="permissionService" ref="PermissionService" />
+      <property name="nodeService" ref="NodeService" />
+      <property name="contentService" ref="ContentService" />
+      <property name="mimetypeService" ref="MimetypeService" />
+   </bean>
 
 </beans>

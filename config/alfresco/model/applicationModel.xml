@@ -52,6 +52,12 @@
          <parent>cm:link</parent>
       </type>
       
+      <!-- project model -->
+      <type name="app:projectfolder">
+         <title>Project Folder</title>
+         <parent>cm:folder</parent>
+      </type>
+      
 	</types>
 
 	<aspects>

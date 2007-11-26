@@ -20,31 +20,51 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing
+ * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.web.app.servlet;
+package org.alfresco.web.scripts;
 
-import org.alfresco.web.scripts.TemplateProcessor;
 
 /**
- * Extension to the webscripts TemplateProcessor class to allow the default encoding
- * to be returned and also enable config to be initialised from a public accessor.
+ * Web Script Path
  * 
- * @author Kevin Roast
+ * @author davidc
  */
-public class PageTemplateProcessor extends TemplateProcessor
+public interface WebScriptPath
 {
-   public String getDefaultEncoding()
-   {
-      return this.defaultEncoding;
-   }
-   
-   /**
-    * Initialise FreeMarker Configuration
-    */
-   public void initConfig()
-   {
-      super.initConfig();
-      templateConfig.setTemplateUpdateDelay(0);
-   }
+    /**
+     * Gets the full path
+     * 
+     * @return  path
+     */
+    public String getPath();
+
+    /**
+     * Gets the name of the path (last path segment)
+     *  
+     * @return  name
+     */
+    public String getName();
+    
+    /**
+     * Gets the parent path
+     * 
+     * @return  path
+     */
+    public WebScriptPath getParent();
+    
+    /**
+     * Gets the child paths
+     * 
+     * @return  child paths
+     */
+    public WebScriptPath[] getChildren();
+    
+    /**
+     * Gets Web Scripts associated with this path
+     * 
+     * @return  web scripts
+     */
+    public WebScript[] getScripts();
+    
 }

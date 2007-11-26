@@ -20,31 +20,29 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing
+ * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.web.app.servlet;
+package org.alfresco.web.scripts;
 
-import org.alfresco.web.scripts.TemplateProcessor;
+import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 
 /**
- * Extension to the webscripts TemplateProcessor class to allow the default encoding
- * to be returned and also enable config to be initialised from a public accessor.
+ * Web Script Authenticator for the HTTP Servlet environment
  * 
- * @author Kevin Roast
+ * @author davidc
  */
-public class PageTemplateProcessor extends TemplateProcessor
+public interface WebScriptServletAuthenticator
 {
-   public String getDefaultEncoding()
-   {
-      return this.defaultEncoding;
-   }
-   
    /**
-    * Initialise FreeMarker Configuration
+    * Authenticate Web Script execution
+    * 
+    * @param required  required level of authentication
+    * @param isGuest  is Guest accessing the web script
+    * @param req  http servlet request
+    * @param res  http servlet response
+    * 
+    * @return true if authorised to execute the script, false otherwise
     */
-   public void initConfig()
-   {
-      super.initConfig();
-      templateConfig.setTemplateUpdateDelay(0);
-   }
+   // TODO: DC - This method to be refactored during Web Script F/W extraction
+   public boolean authenticate(RequiredAuthentication required, boolean isGuest, WebScriptServletRequest req, WebScriptServletResponse res);
 }

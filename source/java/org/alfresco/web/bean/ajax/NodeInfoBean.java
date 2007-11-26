@@ -26,14 +26,17 @@ package org.alfresco.web.bean.ajax;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
+import org.alfresco.repo.template.AbsoluteUrlMethod;
 import org.alfresco.repo.template.CropContentMethod;
 import org.alfresco.repo.template.TemplateNode;
+import org.alfresco.repo.template.UrlEncodeMethod;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;

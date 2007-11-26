@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Display Web Script</shortname>
+  <description>Full inspection of Web Script implementation - useful for diagnostics and download/upload</description>
+  <url>/script/{serviceId}</url>
+  <format>argument</format>
+  <authentication>admin</authentication>
+</webscript>

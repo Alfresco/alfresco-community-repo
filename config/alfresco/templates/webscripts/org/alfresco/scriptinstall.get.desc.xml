@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>Web Script Installer Form</shortname>
+  <description>Web Script Installer Form</description>
+  <url>/installer</url>
+  <authentication>admin</authentication>
+</webscript>

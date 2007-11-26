@@ -20,31 +20,70 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing
+ * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.web.app.servlet;
+package org.alfresco.web.scripts.facebook;
 
-import org.alfresco.web.scripts.TemplateProcessor;
 
 /**
- * Extension to the webscripts TemplateProcessor class to allow the default encoding
- * to be returned and also enable config to be initialised from a public accessor.
+ * Facebook Application
  * 
- * @author Kevin Roast
+ * @author davidc
  */
-public class PageTemplateProcessor extends TemplateProcessor
+public class FacebookAppModel
 {
-   public String getDefaultEncoding()
-   {
-      return this.defaultEncoding;
-   }
-   
-   /**
-    * Initialise FreeMarker Configuration
-    */
-   public void initConfig()
-   {
-      super.initConfig();
-      templateConfig.setTemplateUpdateDelay(0);
-   }
+    String appId;
+    String apiKey;    
+    String secretKey;
+    
+    /**
+     * Construct
+     * 
+     * @param apiKey
+     */
+    public FacebookAppModel(String apiKey)
+    {
+        this.apiKey = apiKey;
+    }
+    
+    /**
+     * @return  application apiKey
+     */
+    public String getApiKey()
+    {
+        return apiKey;
+    }
+
+    /**
+     * @return  application secret
+     */
+    public String getSecret()
+    {
+        return secretKey;
+    }
+
+    /**
+     * @param secretKey  application secret
+     */
+    public void setSecret(String secretKey)
+    {
+        this.secretKey = secretKey;
+    }
+
+    /**
+     * @return  application id
+     */
+    public String getId()
+    {
+        return appId;
+    }
+
+    /**
+     * @param appId  application id
+     */
+    public void setId(String appId)
+    {
+        this.appId = appId;
+    }
+    
 }

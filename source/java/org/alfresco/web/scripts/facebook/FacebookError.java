@@ -20,31 +20,35 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing
+ * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.web.app.servlet;
-
-import org.alfresco.web.scripts.TemplateProcessor;
+package org.alfresco.web.scripts.facebook;
 
 /**
- * Extension to the webscripts TemplateProcessor class to allow the default encoding
- * to be returned and also enable config to be initialised from a public accessor.
+ * Facebook Error.
  * 
- * @author Kevin Roast
+ * @author David Caruana
  */
-public class PageTemplateProcessor extends TemplateProcessor
+public class FacebookError extends RuntimeException
 {
-   public String getDefaultEncoding()
-   {
-      return this.defaultEncoding;
-   }
-   
-   /**
-    * Initialise FreeMarker Configuration
-    */
-   public void initConfig()
-   {
-      super.initConfig();
-      templateConfig.setTemplateUpdateDelay(0);
-   }
+    private static final long serialVersionUID = -7338963365877285084L;
+
+    private int code = -1;
+
+    public FacebookError(String msg)
+    {
+        super(msg);
+    }
+
+    public FacebookError(int code, String msg)
+    {
+        super(msg);
+        this.code = code;
+    }
+    
+    public int getCode()
+    {
+        return code;
+    }
+    
 }

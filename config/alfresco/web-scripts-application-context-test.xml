@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!--  -->   
+   <!--  API Testing -->
+   <!--  -->   
+
+   <bean id="webscripts.test" class="org.alfresco.web.scripts.TestWebScriptServer">
+      <property name="registry" ref="webscripts.registry" />
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+      <property name="authenticationService" ref="authenticationService" />
+      <property name="transactionHelper" ref="retryingTransactionHelper" />
+      <property name="configService" ref="webClientConfigService" />
+      <property name="messages">
+         <bean class="org.springframework.context.support.ResourceBundleMessageSource">
+            <property name="basenames">
+               <list>
+                  <value>alfresco/messages/webscripts</value>
+               </list>
+            </property>
+         </bean>
+      </property>
+   </bean>
+
+</beans>

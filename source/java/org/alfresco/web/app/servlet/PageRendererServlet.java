@@ -51,23 +51,22 @@ import org.alfresco.config.ConfigService;
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.service.ServiceRegistry;
+import org.alfresco.repo.template.ClassPathRepoTemplateLoader;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.URLEncoder;
-import org.alfresco.web.scripts.Cache;
-import org.alfresco.web.scripts.Runtime;
-import org.alfresco.web.scripts.AbstractRuntime;
-import org.alfresco.web.scripts.Authenticator;
-import org.alfresco.web.scripts.Match;
+import org.alfresco.web.scripts.WebScriptCache;
+import org.alfresco.web.scripts.WebScriptMatch;
 import org.alfresco.web.scripts.WebScriptRequest;
-import org.alfresco.web.scripts.WebScriptRequestURLImpl;
 import org.alfresco.web.scripts.WebScriptResponse;
-import org.alfresco.web.scripts.WebScriptResponseImpl;
-import org.alfresco.web.scripts.Description.RequiredAuthentication;
-import org.alfresco.web.scripts.servlet.WebScriptServlet;
+import org.alfresco.web.scripts.WebScriptRuntime;
+import org.alfresco.web.scripts.WebScriptServlet;
+import org.alfresco.web.scripts.WebScriptServletRequest;
+import org.alfresco.web.scripts.WebScriptServletResponse;
+import org.alfresco.web.scripts.WebScriptURLRequest;
+import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
@@ -78,6 +77,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
+import freemarker.cache.MultiTemplateLoader;
 import freemarker.cache.TemplateLoader;
 
 /**
@@ -109,7 +109,6 @@ public class PageRendererServlet extends WebScriptServlet
    // timeout to reload default page cache from 
    private static final int DEFAULT_PAGE_CONFIG_CACHE_TIMEOUT = 30000;
    
-   private ServiceRegistry serviceRegistry;
    private PageTemplateProcessor templateProcessor;
    private WebScriptTemplateLoader webscriptTemplateLoader;
    private Map<String, ExpiringValueCache<PageDefinition>> defaultPageDefMap = null;
@@ -121,18 +120,15 @@ public class PageRendererServlet extends WebScriptServlet
       
       // init beans
       ApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-      serviceRegistry = (ServiceRegistry)context.getBean("serviceRegistry");
       templateProcessor = (PageTemplateProcessor)context.getBean("pagerenderer.templateprocessor");
       webscriptTemplateLoader = new WebScriptTemplateLoader();
-      
-      // TODO: Refactor to use web script stores
-//      ClassPathRepoTemplateLoader repoLoader = new ClassPathRepoTemplateLoader(
-//            serviceRegistry.getNodeService(),
-//            serviceRegistry.getContentService(),
-//            templateProcessor.getDefaultEncoding());
-//      templateProcessor.setTemplateLoader(new MultiTemplateLoader(new TemplateLoader[]{
-//         webscriptTemplateLoader, repoLoader}));
-//      templateProcessor.initConfig();
+      ClassPathRepoTemplateLoader repoLoader = new ClassPathRepoTemplateLoader(
+            serviceRegistry.getNodeService(),
+            serviceRegistry.getContentService(),
+            templateProcessor.getDefaultEncoding());
+      templateProcessor.setTemplateLoader(new MultiTemplateLoader(new TemplateLoader[]{
+         webscriptTemplateLoader, repoLoader}));
+      templateProcessor.initConfig();
       
       // we use a specific config service instance
       configService = (ConfigService)context.getBean("pagerenderer.config");
@@ -476,7 +472,7 @@ public class PageRendererServlet extends WebScriptServlet
    /**
     * WebScript runtime for the PageRenderer servlet.
     */
-   private class PageRendererWebScriptRuntime extends AbstractRuntime
+   private class PageRendererWebScriptRuntime extends WebScriptRuntime
    {
       private PageComponent component;
       private PageRendererContext context;
@@ -488,7 +484,7 @@ public class PageRendererServlet extends WebScriptServlet
       PageRendererWebScriptRuntime(
             PageComponent component, PageRendererContext context, String webScript, String executeUrl, String encoding)
       {
-         super(PageRendererServlet.this.container);
+         super(registry, serviceRegistry);
          this.component = component;
          this.context = context;
          this.webScript = webScript;
@@ -498,14 +494,6 @@ public class PageRendererServlet extends WebScriptServlet
             logger.debug("Constructing runtime for url: " + executeUrl);
       }
 
-      /* (non-Javadoc)
-       * @see org.alfresco.web.scripts.Runtime#getName()
-       */
-      public String getName()
-      {
-          return "Page Renderer";
-      }
-
       @Override
       protected String getScriptUrl()
       {
@@ -513,7 +501,7 @@ public class PageRendererServlet extends WebScriptServlet
       }
 
       @Override
-      protected WebScriptRequest createRequest(Match match)
+      protected WebScriptRequest createRequest(WebScriptMatch match)
       {
          // set the component properties as the additional request attributes 
          Map<String, String> attributes = new HashMap<String, String>();
@@ -521,7 +509,7 @@ public class PageRendererServlet extends WebScriptServlet
          // add the "well known" attributes - such as avm store
          attributes.put("store", this.context.AVMStore);
          attributes.put("theme", this.context.Theme);
-         return new WebScriptPageRendererRequest(this, scriptUrl, match, attributes);
+         return new WebScriptPageRendererRequest(scriptUrl, match, attributes);
       }
 
       @Override
@@ -534,12 +522,19 @@ public class PageRendererServlet extends WebScriptServlet
             this.baOut = new ByteArrayOutputStream(4096);
             BufferedWriter wrOut = new BufferedWriter(
                   encoding == null ? new OutputStreamWriter(baOut) : new OutputStreamWriter(baOut, encoding));
-            return new WebScriptPageRendererResponse(this, context, component.Id, wrOut, baOut);
+            return new WebScriptPageRendererResponse(context, component.Id, wrOut, baOut);
          }
          catch (UnsupportedEncodingException err)
          {
             throw new AlfrescoRuntimeException("Unsupported encoding.", err);
          }
+      }
+
+      @Override
+      protected boolean authenticate(RequiredAuthentication required, boolean isGuest, WebScriptRequest req, WebScriptResponse res)
+      {
+         // TODO: what authentication here?
+         return true;
       }
 
       @Override
@@ -568,32 +563,21 @@ public class PageRendererServlet extends WebScriptServlet
             throw new AlfrescoRuntimeException("Unsupported encoding.", err);
          }
       }
-
-      @Override
-      protected Authenticator createAuthenticator()
-      {
-         return null;
-      }
-
    }
    
    /**
     * Simple implementation of a WebScript URL Request for a webscript on the page
     */
-   private class WebScriptPageRendererRequest extends WebScriptRequestURLImpl
+   private class WebScriptPageRendererRequest extends WebScriptURLRequest
    {
       private Map<String, String> attributes;
       
-      WebScriptPageRendererRequest(Runtime runtime, String scriptUrl, Match match, Map<String, String> attributes)
+      WebScriptPageRendererRequest(String scriptUrl, WebScriptMatch match, Map<String, String> attributes)
       {
-         super(runtime, scriptUrl, match);
+         super(scriptUrl, match);
          this.attributes = attributes;
       }
 
-      //
-      // TODO: Refactor attribute methods - implement getScriptParameters and getTemplateParameters instead
-      //       
-      
       /* (non-Javadoc)
        * @see org.alfresco.web.scripts.WebScriptRequest#getAttribute(java.lang.String)
        */
@@ -632,7 +616,7 @@ public class PageRendererServlet extends WebScriptServlet
    /**
     * Implementation of a WebScript Response object for PageRenderer servlet
     */
-   private class WebScriptPageRendererResponse extends WebScriptResponseImpl
+   private class WebScriptPageRendererResponse implements WebScriptResponse
    {
       private Writer outWriter;
       private OutputStream outStream;
@@ -640,9 +624,8 @@ public class PageRendererServlet extends WebScriptServlet
       private String componentId;
       
       public WebScriptPageRendererResponse(
-            Runtime runtime, PageRendererContext context, String componentId, Writer outWriter, OutputStream outStream)
+            PageRendererContext context, String componentId, Writer outWriter, OutputStream outStream)
       {
-         super(runtime);
          this.context = context;
          this.componentId = componentId;
          this.outWriter = outWriter;
@@ -678,7 +661,7 @@ public class PageRendererServlet extends WebScriptServlet
          // not supported
       }
 
-      public void setCache(Cache cache)
+      public void setCache(WebScriptCache cache)
       {
          // not supported
       }

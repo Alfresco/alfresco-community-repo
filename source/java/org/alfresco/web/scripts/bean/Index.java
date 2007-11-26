@@ -20,31 +20,37 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing
+ * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.web.app.servlet;
+package org.alfresco.web.scripts.bean;
 
-import org.alfresco.web.scripts.TemplateProcessor;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.alfresco.web.scripts.DeclarativeWebScript;
+import org.alfresco.web.scripts.WebScriptRequest;
+import org.alfresco.web.scripts.WebScriptStatus;
+
 
 /**
- * Extension to the webscripts TemplateProcessor class to allow the default encoding
- * to be returned and also enable config to be initialised from a public accessor.
+ * Index of all Web Scripts
  * 
- * @author Kevin Roast
+ * @author davidc
  */
-public class PageTemplateProcessor extends TemplateProcessor
+public class Index extends DeclarativeWebScript
 {
-   public String getDefaultEncoding()
-   {
-      return this.defaultEncoding;
-   }
-   
-   /**
-    * Initialise FreeMarker Configuration
-    */
-   public void initConfig()
-   {
-      super.initConfig();
-      templateConfig.setTemplateUpdateDelay(0);
-   }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
+     */
+    @Override
+    protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptStatus status)
+    {
+        Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
+        model.put("webscripts",  getWebScriptRegistry().getWebScripts());
+        model.put("rooturl", getWebScriptRegistry().getUri("/"));
+        model.put("rootpackage", getWebScriptRegistry().getPackage("/"));
+        return model;
+    }
+
 }

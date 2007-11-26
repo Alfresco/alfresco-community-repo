@@ -50,4 +50,12 @@
       </navigation>
    </config>
    
+   <config evaluator="node-type" condition="app:projectfolder">
+      <navigation>
+         <override from-view-id="/jsp/browse/browse.jsp" to-view-id="/jsp/projects/project.jsp" />
+         <override from-outcome="browse" to-view-id="/jsp/projects/project.jsp" />
+         <override from-outcome="showSpaceDetails" to-view-id="/jsp/projects/project-details.jsp" />
+      </navigation>
+   </config>
+   
 </alfresco-config>

@@ -5,8 +5,15 @@
       <plain-dialog-container>/jsp/dialog/plain-container.jsp</plain-dialog-container>
 
       <dialogs>
-      
-         <!--                           -->
+         
+         <!--                       -->
+         <!-- Project Space Dialogs -->
+         
+         <dialog name="editProject" page="/jsp/spaces/edit-space-dialog.jsp" managed-bean="EditSpaceDialog"
+                 icon="/images/icons/details_large.gif" title-id="modify_project_properties" 
+                 description-id="edit_project_description" />
+         
+         <!--                       -->
          <!-- Multilingual Dialogs -->
          
          <!-- Definition of the make multilingual dialog -->         
@@ -23,8 +30,7 @@
          <dialog name="editMlContainer" page="/jsp/ml/edit-ml-container-dialog.jsp" managed-bean="EditMLContainerDialog"
                  icon="/images/icons/details_large.gif" title-id="edit_ml_container_properties" 
                  description-id="edit_ml_container_description" />
-                 
-          
+         
          <!--                           -->
          <!-- Content and Space Dialogs -->
          

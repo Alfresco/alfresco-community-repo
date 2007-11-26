@@ -1,0 +1,36 @@
+<alfresco-config>
+
+   <config>
+      <actions>
+         
+         <!-- the 'action-group' elements define unique blocks of actions that reference the actions
+              as defined above and can override or supply display elements for the group of actions -->
+         <!-- the component is responsible for making the context Node object available with name
+              of 'actionContext' so the actions can access it directly to get properties -->
+         
+         <!-- Override browse actions and doc/space details screen actions for the Projects module -->
+         
+         <!-- Actions Menu for Project Details page -->
+         <action-group id="project_details_actions">
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="delete_space" />
+            <action idref="import_space" />
+            <action idref="export_space" />
+            <action idref="manage_space_users" />
+            <action idref="create_shortcut" />
+         </action-group>
+         
+         <!-- More Actions Menu for Project view -->
+         <action-group id="project_actions_menu">
+            <action idref="details_space" />
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="delete_space" />
+            <action idref="manage_space_users" />
+         </action-group>
+         
+      </actions>
+   </config>
+
+</alfresco-config>

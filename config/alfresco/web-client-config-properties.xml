@@ -658,4 +658,19 @@
       </property-sheet>
    </config>
    
+   <!-- ********************************** -->
+   <!-- Configuration for Project types    -->
+   <!-- ********************************** -->
+
+   <config evaluator="node-type" condition="app:projectfolder">
+      <property-sheet>
+         <show-property name="name"/>
+         <show-property name="description"/>
+         <show-property name="app:icon" show-in-view-mode="false" display-label-id="icon"
+                        component-generator="SpaceIconPickerGenerator" />
+         <!-- hide the title property -->
+         <show-property name="title" show-in-view-mode="false" show-in-edit-mode="false" />
+      </property-sheet>
+   </config>
+   
 </alfresco-config>

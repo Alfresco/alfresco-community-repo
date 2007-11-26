@@ -939,4 +939,13 @@
       </navigation-case>
    </navigation-rule>
    
+   <!-- Project screen action outcomes -->
+   <navigation-rule>
+      <from-view-id>/jsp/projects/*</from-view-id>
+      <navigation-case>
+         <from-outcome>manageInvitedUsers</from-outcome>
+         <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
 </faces-config>

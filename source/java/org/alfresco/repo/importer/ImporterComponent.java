@@ -220,6 +220,7 @@ public class ImporterComponent
      */
     public void importView(Reader viewReader, Location location, ImporterBinding binding, ImporterProgress progress)
     {
+        System.out.println("PATCHED IMPORTERCOMPONENT FOR MIKEF");
         NodeRef nodeRef = getNodeRef(location, binding);
         parserImport(nodeRef, location.getChildAssocType(), viewReader, new DefaultStreamHandler(), binding, progress);       
     }
@@ -229,6 +230,7 @@ public class ImporterComponent
      */
     public void importView(ImportPackageHandler importHandler, Location location, ImporterBinding binding, ImporterProgress progress) throws ImporterException
     {
+        System.out.println("PATCHED IMPORTERCOMPONENT FOR MIKEF");
         importHandler.startImport();
         Reader dataFileReader = importHandler.getDataStream(); 
         NodeRef nodeRef = getNodeRef(location, binding);
@@ -660,17 +662,18 @@ public class ImporterComponent
             {
                 DataTypeDefinition dataTypeDef = dictionaryService.getDataType(DataTypeDefinition.CONTENT);
                 ContentData contentData = (ContentData)DefaultTypeConverter.INSTANCE.convert(dataTypeDef, importContentData);
-                String contentUrl = contentData.getContentUrl();
-                if (contentUrl != null && contentUrl.length() > 0)
-                {
-                    // import the content from the url
-                    InputStream contentStream = streamHandler.importStream(contentUrl);
-                    ContentWriter writer = contentService.getWriter(nodeRef, propertyName, true);
-                    writer.setEncoding(contentData.getEncoding());
-                    writer.setMimetype(contentData.getMimetype());
-                    writer.putContent(contentStream);
-                    reportContentCreated(nodeRef, contentUrl);
-                }
+                nodeService.setProperty(nodeRef, propertyName, contentData);
+//                String contentUrl = contentData.getContentUrl();
+//                if (contentUrl != null && contentUrl.length() > 0)
+//                {
+//                    // import the content from the url
+//                    InputStream contentStream = streamHandler.importStream(contentUrl);
+//                    ContentWriter writer = contentService.getWriter(nodeRef, propertyName, true);
+//                    writer.setEncoding(contentData.getEncoding());
+//                    writer.setMimetype(contentData.getMimetype());
+//                    writer.putContent(contentStream);
+//                    reportContentCreated(nodeRef, contentUrl);
+//                }
             }
         }
         

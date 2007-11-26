@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -178,8 +179,6 @@ public class ExporterComponent
      */
     public void exportView(ExportPackageHandler exportHandler, ExporterCrawlerParameters parameters, Exporter progress)
     {
-        System.out.println("PATCHED EXPORTERCOMPONENT FOR MIKEF");
-        
         ParameterCheck.mandatory("Stream Handler", exportHandler);
 
         // create exporter around export handler
@@ -456,7 +455,6 @@ public class ExporterComponent
             if (parameters.isCrawlChildNodes())
             {
                 exporter.startAssocs(nodeRef);
-                QName prevAssocType = null;
                 List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(nodeRef);
                 for (int i = 0; i < childAssocs.size(); i++)
                 {
@@ -471,20 +469,15 @@ public class ExporterComponent
                         nodesWithSecondaryLinks.put(nodeRef, nodeRef);
                         continue;
                     }
-                    if (prevAssocType == null || prevAssocType.equals(childAssocType) == false)
+                    if (i == 0 || childAssocs.get(i - 1).getTypeQName().equals(childAssocType) == false)
                     {
-                        if (prevAssocType != null)
-                        {
-                            exporter.endAssoc(nodeRef, prevAssocType);
-                        }
                         exporter.startAssoc(nodeRef, childAssocType);
-                        prevAssocType = childAssocType;
                     }
                     if (!isExcludedURI(parameters.getExcludeNamespaceURIs(), childAssoc.getQName().getNamespaceURI()))
                     {
                         walkNode(childAssoc.getChildRef(), parameters, exporter, false);
                     }
-                    if (i == childAssocs.size() - 1)
+                    if (i == childAssocs.size() - 1 || childAssocs.get(i + 1).getTypeQName().equals(childAssocType) == false)
                     {
                         exporter.endAssoc(nodeRef, childAssocType);
                     }
@@ -560,13 +553,12 @@ public class ExporterComponent
             {
                 // export property of datatype CONTENT
                 ContentReader reader = contentService.getReader(nodeRef, property);
-                if (true)
+                if (!parameters.isCrawlContent() || reader == null || reader.exists() == false)
                 {
                     // export an empty url for the content
                     ContentData contentData = (ContentData)value;
-//                    ContentData noContentURL = new ContentData("", contentData.getMimetype(), contentData.getSize(), contentData.getEncoding());
-//                    exporter.content(nodeRef, property, null, noContentURL, index);
-                    exporter.value(nodeRef, property, contentData, index);
+                    ContentData noContentURL = new ContentData("", contentData.getMimetype(), contentData.getSize(), contentData.getEncoding());
+                    exporter.content(nodeRef, property, null, noContentURL, index);
                     exporter.warning("Skipped content for property " + property + " on node " + nodeRef);
                 }
                 else
@@ -711,15 +703,15 @@ public class ExporterComponent
          */
         private boolean isExcludeAspect(QName aspectQName)
         {
-//            if (aspectQName.equals(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT) ||
-//                    aspectQName.equals(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
-//            {
-//                return true;
-//            }
-//            else
-//            {
+            if (aspectQName.equals(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT) ||
+                    aspectQName.equals(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+            {
+                return true;
+            }
+            else
+            {
                 return false;
-//            }
+            }
         }
         
         /**

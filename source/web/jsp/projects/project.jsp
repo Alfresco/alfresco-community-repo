@@ -75,7 +75,7 @@
  
                            <%-- top-level actions for the Project --%>
                            <td width=32>
-                              <h:graphicImage id="space-logo" url="/images/icons/project_large.gif" width="32" height="32" />
+                              <h:graphicImage id="space-logo" url="/images/icons/project.gif" width="32" height="32" />
                            </td>
                            <td>
                               <%-- Summary --%>

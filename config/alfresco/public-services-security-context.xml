@@ -456,6 +456,8 @@
 
     <!-- Category queries are filtered for nodes that are visible to the current user    -->
     <!-- Other methods are unrestricted at the moment                                    -->
+	
+	<!-- Uses the public node service for all mutations -  access is allowed here and enforced by the public node service -->
 
     <bean id="CategoryService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
@@ -468,11 +470,12 @@
                 org.alfresco.service.cmr.search.CategoryService.getClassifications=AFTER_ACL_NODE.sys:base.ReadProperties
                 org.alfresco.service.cmr.search.CategoryService.getRootCategories=AFTER_ACL_NODE.sys:base.ReadProperties
                 org.alfresco.service.cmr.search.CategoryService.getClassificationAspects=ACL_ALLOW
-                org.alfresco.service.cmr.search.CategoryService.createClassifiction=ACL_METHOD.ROLE_ADMINISTRATOR
-                org.alfresco.service.cmr.search.CategoryService.createRootCategory=ACL_METHOD.ROLE_ADMINISTRATOR
-                org.alfresco.service.cmr.search.CategoryService.createCategory=ACL_METHOD.ROLE_ADMINISTRATOR
-                org.alfresco.service.cmr.search.CategoryService.deleteClassification=ACL_METHOD.ROLE_ADMINISTRATOR
-                org.alfresco.service.cmr.search.CategoryService.deleteCategory=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.search.CategoryService.createClassifiction=ACL_ALLOW
+                org.alfresco.service.cmr.search.CategoryService.createRootCategory=ACL_ALLOW
+                org.alfresco.service.cmr.search.CategoryService.createCategory=ACL_ALLOW
+                org.alfresco.service.cmr.search.CategoryService.deleteClassification=ACL_ALLOW
+                org.alfresco.service.cmr.search.CategoryService.deleteCategory=ACL_ALLOW
+				org.alfresco.service.cmr.search.CategoryService.getTopCategories=ACL_ALLOW
             </value>
         </property>
     </bean>

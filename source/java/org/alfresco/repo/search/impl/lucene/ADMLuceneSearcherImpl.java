@@ -27,8 +27,10 @@ package org.alfresco.repo.search.impl.lucene;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -60,11 +62,13 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
+import org.alfresco.util.Pair;
 import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Query;
@@ -93,7 +97,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     private NamespacePrefixResolver namespacePrefixResolver;
 
     private NodeService nodeService;
-    
+
     private TenantService tenantService;
 
     private QueryRegisterComponent queryRegister;
@@ -156,12 +160,11 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-
 
     /**
      * Set the query register
@@ -175,8 +178,8 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
 
     public ResultSet query(StoreRef store, String language, String queryString, Path[] queryOptions, QueryParameterDefinition[] queryParameterDefinitions) throws SearcherException
     {
-    	store = tenantService.getName(store);
-        
+        store = tenantService.getName(store);
+
         SearchParameters sp = new SearchParameters();
         sp.addStore(store);
         sp.setLanguage(language);
@@ -206,9 +209,9 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
         {
             throw new IllegalStateException("Only one store can be searched at present");
         }
-        
+
         ArrayList<StoreRef> stores = searchParameters.getStores();
-        stores.set(0, tenantService.getName(searchParameters.getStores().get(0)));      
+        stores.set(0, tenantService.getName(searchParameters.getStores().get(0)));
 
         String parameterisedQueryString;
         if (searchParameters.getQueryParameterDefinitions().size() > 0)
@@ -243,18 +246,9 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                 }
 
                 ClosingIndexSearcher searcher = getSearcher(indexer);
-                Query query = LuceneQueryParser.parse(
-                        parameterisedQueryString, DEFAULT_FIELD,
-                        new LuceneAnalyser(
-                                getDictionaryService(),
-                                searchParameters.getMlAnalaysisMode() == null ? getLuceneConfig().getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode()),
-                        namespacePrefixResolver,
-                        getDictionaryService(),
-                        tenantService,
-                        defaultOperator,
-                        searchParameters,
-                        getLuceneConfig(),
-                        searcher.getIndexReader());
+                Query query = LuceneQueryParser.parse(parameterisedQueryString, DEFAULT_FIELD, new LuceneAnalyser(getDictionaryService(),
+                        searchParameters.getMlAnalaysisMode() == null ? getLuceneConfig().getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode()),
+                        namespacePrefixResolver, getDictionaryService(), tenantService, defaultOperator, searchParameters, getLuceneConfig(), searcher.getIndexReader());
                 if (s_logger.isDebugEnabled())
                 {
                     s_logger.debug("Query is " + query.toString());
@@ -277,24 +271,24 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                         {
                         case FIELD:
                             String field = sd.getField();
-                            if(field.startsWith("@"))
+                            if (field.startsWith("@"))
                             {
-                               field = expandAttributeFieldName(field);
-                               PropertyDefinition propertyDef = getDictionaryService().getProperty(QName.createQName(field.substring(1)));
+                                field = expandAttributeFieldName(field);
+                                PropertyDefinition propertyDef = getDictionaryService().getProperty(QName.createQName(field.substring(1)));
 
-                               if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
-                               {
-                                   DataTypeDefinition dataType = propertyDef.getDataType();
-                                   String analyserClassName = dataType.getAnalyserClassName();
-                                   if(analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName()))
-                                   {
-                                       field = field + ".sort";
-                                   }
-                               }
+                                if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
+                                {
+                                    DataTypeDefinition dataType = propertyDef.getDataType();
+                                    String analyserClassName = dataType.getAnalyserClassName();
+                                    if (analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName()))
+                                    {
+                                        field = field + ".sort";
+                                    }
+                                }
 
                             }
                             if (fieldHasTerm(searcher.getReader(), field))
-                            {                                
+                            {
                                 fields[index++] = new SortField(field, !sd.isAscending());
                             }
                             else
@@ -319,13 +313,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                 }
 
                 Path[] paths = searchParameters.getAttributePaths().toArray(new Path[0]);
-                return new LuceneResultSet(
-                        hits,
-                        searcher,
-                        nodeService,
-                        tenantService,
-                        paths,
-                        searchParameters);
+                return new LuceneResultSet(hits, searcher, nodeService, tenantService, paths, searchParameters);
             }
             catch (ParseException e)
             {
@@ -358,13 +346,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                     return new EmptyResultSet();
                 }
                 Hits hits = searcher.search(query);
-                return new LuceneResultSet(
-                        hits,
-                        searcher,
-                        nodeService,
-                        tenantService,
-                        searchParameters.getAttributePaths().toArray(new Path[0]),
-                        searchParameters);
+                return new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters.getAttributePaths().toArray(new Path[0]), searchParameters);
             }
             catch (SAXPathException e)
             {
@@ -584,9 +566,9 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
             boolean followAllParentLinks, String language) throws InvalidNodeRefException, XPathException
     {
         NodeSearcher nodeSearcher = new NodeSearcher(nodeService, getDictionaryService(), this);
-        
+
         contextNodeRef = tenantService.getName(contextNodeRef);
-        
+
         return nodeSearcher.selectNodes(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, language);
     }
 
@@ -750,4 +732,91 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
         }
         return fieldName;
     }
+
+    public List<Pair<String, Integer>> getTopTerms(String field, int count)
+    {
+        ClosingIndexSearcher searcher = null;
+        try
+        {
+            LinkedList<Pair<String, Integer>> answer = new LinkedList<Pair<String, Integer>>();
+            searcher = getSearcher(indexer);
+            IndexReader reader = searcher.getIndexReader();
+            TermEnum terms = reader.terms(new Term(field, ""));
+            while (terms.next())
+            {
+                Term term = terms.term();
+                if(!term.field().equals(field))
+                {
+                    break;
+                }
+                int freq = terms.docFreq();
+                Pair<String, Integer> pair = new Pair<String, Integer>(term.text(), Integer.valueOf(freq));
+                if (answer.size() < count)
+                {
+                    if (answer.size() == 0)
+                    {
+                        answer.add(pair);
+                    }
+                    else if (answer.get(answer.size() - 1).getSecond().compareTo(pair.getSecond()) >= 0)
+                    {
+                        answer.add(pair);
+                    }
+                    else
+                    {
+                        for (ListIterator<Pair<String, Integer>> it = answer.listIterator(); it.hasNext(); /**/)
+                        {
+                            Pair<String, Integer> test = it.next();
+                            if (test.getSecond().compareTo(pair.getSecond()) < 0)
+                            {
+                                it.previous();
+                                it.add(pair);
+                                break;
+                            }
+                        }
+                    }
+                }
+                else if (answer.get(count - 1).getSecond().compareTo(pair.getSecond()) < 0)
+                {
+                    for (ListIterator<Pair<String, Integer>> it = answer.listIterator(); it.hasNext(); /**/)
+                    {
+                        Pair<String, Integer> test = it.next();
+                        if (test.getSecond().compareTo(pair.getSecond()) < 0)
+                        {
+                            it.previous();
+                            it.add(pair);
+                            break;
+                        }
+                    }
+                    answer.removeLast();
+                }
+                else
+                {
+                    // off the end
+                }
+            }
+            terms.close();
+            return answer;
+
+        }
+        catch (IOException e)
+        {
+            throw new SearcherException(e);
+        }
+        finally
+        {
+            if (searcher != null)
+            {
+                try
+                {
+                    searcher.close();
+                }
+                catch (IOException e)
+                {
+                    throw new SearcherException(e);
+                }
+            }
+        }
+
+    }
+
 }

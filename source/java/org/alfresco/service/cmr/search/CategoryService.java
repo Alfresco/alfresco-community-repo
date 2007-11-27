@@ -25,6 +25,7 @@
 package org.alfresco.service.cmr.search;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
@@ -32,6 +33,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * Category Service
@@ -163,4 +165,14 @@ public interface CategoryService
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public void deleteCategory(NodeRef nodeRef);
+    
+   /** 
+    * Get the most polular categories 
+    * 
+    * @param storeRef
+    * @param aspectName
+    * @param count
+    * @return
+    */
+    public List<Pair<NodeRef, Integer>> getTopCategories(StoreRef storeRef, QName aspectName, int count);
 }

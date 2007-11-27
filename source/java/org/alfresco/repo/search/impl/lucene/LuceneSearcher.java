@@ -24,9 +24,13 @@
  */
 package org.alfresco.repo.search.impl.lucene;
 
+import java.util.List;
+
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.util.Pair;
 
 /**
  * Lucene implementation specific entension to the seracher API
@@ -50,4 +54,13 @@ public interface LuceneSearcher extends SearchService
     * @param namespacePrefixResolver
     */
    public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver);
+   
+   /**
+    * Get top terms
+    * 
+    * @param field
+    * @param count
+    * @return
+    */
+   public List<Pair<String, Integer>> getTopTerms(String field, int count);
 }

@@ -28,8 +28,11 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
+import javax.transaction.NotSupportedException;
+import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -58,6 +61,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.Pair;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -282,7 +286,7 @@ public class ADMLuceneCategoryTest extends TestCase
         genCatProp.setMandatory(true);
         genCatProp.setMultiValued(true);
         genCatProp.setStoredInIndex(true);
-        genCatProp.setTokenisedInIndex(true);
+        genCatProp.setTokenisedInIndex(false);
         genCatProp.setType("d:" + DataTypeDefinition.CATEGORY.getLocalName());
         
         assetClassCategorisationQName = QName.createQName(TEST_NAMESPACE, "AssetClass");
@@ -294,7 +298,7 @@ public class ADMLuceneCategoryTest extends TestCase
         acProp.setMandatory(true);
         acProp.setMultiValued(true);
         acProp.setStoredInIndex(true);
-        acProp.setTokenisedInIndex(true);
+        acProp.setTokenisedInIndex(false);
         acProp.setType("d:" + DataTypeDefinition.CATEGORY.getLocalName());
         
         investmentRegionCategorisationQName = QName.createQName(TEST_NAMESPACE, "InvestmentRegion");
@@ -306,7 +310,7 @@ public class ADMLuceneCategoryTest extends TestCase
         irProp.setMandatory(true);
         irProp.setMultiValued(true);
         irProp.setStoredInIndex(true);
-        irProp.setTokenisedInIndex(true);
+        irProp.setTokenisedInIndex(false);
         irProp.setType("d:" + DataTypeDefinition.CATEGORY.getLocalName());
         
         marketingRegionCategorisationQName = QName.createQName(TEST_NAMESPACE, "MarketingRegion");
@@ -318,7 +322,7 @@ public class ADMLuceneCategoryTest extends TestCase
         mrProp.setMandatory(true);
         mrProp.setMultiValued(true);
         mrProp.setStoredInIndex(true);
-        mrProp.setTokenisedInIndex(true);
+        mrProp.setTokenisedInIndex(false);
         mrProp.setType("d:" + DataTypeDefinition.CATEGORY.getLocalName());
 
         dictionaryDAO.putModel(model);
@@ -798,6 +802,52 @@ public class ADMLuceneCategoryTest extends TestCase
 
     }
 
+    public void testCatCount() throws Exception
+    {
+        TransactionService transactionService = serviceRegistry.getTransactionService();
+        UserTransaction tx = transactionService.getUserTransaction();
+        tx.begin();
+        
+        
+        assertEquals(1, categoryService.getChildren(catACBase , CategoryService.Mode.MEMBERS, CategoryService.Depth.IMMEDIATE).size());
+        assertEquals(2, categoryService.getChildren(catACBase , CategoryService.Mode.SUB_CATEGORIES, CategoryService.Depth.IMMEDIATE).size());
+        assertEquals(3, categoryService.getChildren(catACBase , CategoryService.Mode.ALL, CategoryService.Depth.IMMEDIATE).size());
+        assertEquals(14, categoryService.getChildren(catACBase , CategoryService.Mode.MEMBERS, CategoryService.Depth.ANY).size());
+        assertEquals(3, categoryService.getChildren(catACBase , CategoryService.Mode.SUB_CATEGORIES, CategoryService.Depth.ANY).size());
+        assertEquals(17, categoryService.getChildren(catACBase , CategoryService.Mode.ALL, CategoryService.Depth.ANY).size());
+        assertEquals(2, categoryService.getClassifications(rootNodeRef.getStoreRef()).size());
+        assertEquals(2, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.IMMEDIATE).size());
+        assertEquals(3, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.ANY).size());
+        assertEquals(6, categoryService.getClassificationAspects().size());
+        assertEquals(2, categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass")).size());
+        
+        List<Pair<NodeRef, Integer>> top = categoryService.getTopCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), 10);
+        for(Pair<NodeRef, Integer> current : top)
+        {
+            System.out.println(""+nodeService.getPaths(current.getFirst(), true) + " "+current.getSecond());
+        }
+        
+       top = categoryService.getTopCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "InvestmentRegion"), 10);
+        for(Pair<NodeRef, Integer> current : top)
+        {
+            System.out.println(""+nodeService.getPaths(current.getFirst(), true) + " "+current.getSecond());
+        }    
+        
+        top = categoryService.getTopCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "MarketingRegion"), 10);
+        for(Pair<NodeRef, Integer> current : top)
+        {
+            System.out.println(""+nodeService.getPaths(current.getFirst(), true) + " "+current.getSecond());
+        }
+        
+        top = categoryService.getTopCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "Region"), 10);
+        for(Pair<NodeRef, Integer> current : top)
+        {
+            System.out.println(""+nodeService.getPaths(current.getFirst(), true) + " "+current.getSecond());
+        }
+        
+        tx.commit();
+    }
+    
     @SuppressWarnings("unused")
     private int getTotalScore(ResultSet results)
     {

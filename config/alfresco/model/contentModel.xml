@@ -668,7 +668,7 @@
                <index enabled="true">
                   <atomic>true</atomic>
                   <stored>true</stored>
-                  <tokenised>true</tokenised>
+                  <tokenised>false</tokenised>
                </index>
             </property>         
          </properties>

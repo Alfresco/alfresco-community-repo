@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -38,7 +39,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -47,22 +51,25 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
+import org.alfresco.util.Pair;
 
 /**
  * Category service implementation
  * 
  * @author andyh
- *
  */
 public class LuceneCategoryServiceImpl implements CategoryService
 {
     private NodeService nodeService;
+    
+    private NodeService publicNodeService;
 
     private TenantService tenantService;
-    
+
     private NamespacePrefixResolver namespacePrefixResolver;
 
     private DictionaryService dictionaryService;
@@ -81,6 +88,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     /**
      * Set the node service
+     * 
      * @param nodeService
      */
     public void setNodeService(NodeService nodeService)
@@ -89,7 +97,18 @@ public class LuceneCategoryServiceImpl implements CategoryService
     }
     
     /**
+     * Set the public node service
+     * 
+     * @param nodeService
+     */
+    public void setPublicNodeService(NodeService publicNodeService)
+    {
+        this.publicNodeService = publicNodeService;
+    }
+
+    /**
      * Set the tenant service
+     * 
      * @param tenantService
      */
     public void setTenantService(TenantService tenantService)
@@ -99,6 +118,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     /**
      * Set the service to map prefixes to uris
+     * 
      * @param namespacePrefixResolver
      */
     public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
@@ -108,6 +128,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     /**
      * Set the dictionary service
+     * 
      * @param dictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
@@ -117,6 +138,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     /**
      * Set the indexer and searcher
+     * 
      * @param indexerAndSearcher
      */
     public void setIndexerAndSearcher(IndexerAndSearcher indexerAndSearcher)
@@ -132,13 +154,13 @@ public class LuceneCategoryServiceImpl implements CategoryService
         }
 
         categoryRef = tenantService.getName(categoryRef);
-        
+
         ResultSet resultSet = null;
         try
         {
             StringBuilder luceneQuery = new StringBuilder(64);
 
-            switch(mode)
+            switch (mode)
             {
             case ALL:
                 luceneQuery.append("PATH:\"");
@@ -264,15 +286,15 @@ public class LuceneCategoryServiceImpl implements CategoryService
         ResultSet resultSet = null;
         try
         {
-            resultSet = indexerAndSearcher.getSearcher(storeRef, false).query(storeRef, "lucene", "PATH:\"/" + getPrefix(qname.getNamespaceURI()) + ISO9075.encode(qname.getLocalName()) + "\"",
-                    null, null);
+            resultSet = indexerAndSearcher.getSearcher(storeRef, false).query(storeRef, "lucene",
+                    "PATH:\"/" + getPrefix(qname.getNamespaceURI()) + ISO9075.encode(qname.getLocalName()) + "\"", null, null);
 
             Set<NodeRef> nodeRefs = new HashSet<NodeRef>(resultSet.length());
             for (ResultSetRow row : resultSet)
             {
                 nodeRefs.add(row.getNodeRef());
             }
-            
+
             return nodeRefs;
         }
         finally
@@ -305,7 +327,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     public Collection<QName> getClassificationAspects()
     {
-    	return dictionaryService.getSubAspects(ContentModel.ASPECT_CLASSIFIABLE, true);
+        return dictionaryService.getSubAspects(ContentModel.ASPECT_CLASSIFIABLE, true);
     }
 
     public NodeRef createClassifiction(StoreRef storeRef, QName typeName, String attributeName)
@@ -326,23 +348,23 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     public NodeRef createCategory(NodeRef parent, String name)
     {
-        if(!nodeService.exists(parent))
+        if (!nodeService.exists(parent))
         {
             throw new AlfrescoRuntimeException("Missing category?");
         }
         String uri = nodeService.getPrimaryParent(parent).getQName().getNamespaceURI();
         String validLocalName = QName.createValidLocalName(name);
-        NodeRef newCategory = nodeService.createNode(parent, ContentModel.ASSOC_SUBCATEGORIES, QName.createQName(uri, validLocalName), ContentModel.TYPE_CATEGORY).getChildRef();
-        nodeService.setProperty(newCategory, ContentModel.PROP_NAME, name);
+        NodeRef newCategory = publicNodeService.createNode(parent, ContentModel.ASSOC_SUBCATEGORIES, QName.createQName(uri, validLocalName), ContentModel.TYPE_CATEGORY).getChildRef();
+        publicNodeService.setProperty(newCategory, ContentModel.PROP_NAME, name);
         return newCategory;
     }
 
     public NodeRef createRootCategory(StoreRef storeRef, QName aspectName, String name)
     {
         Set<NodeRef> nodeRefs = getClassificationNodes(storeRef, aspectName);
-        if(nodeRefs.size() == 0)
+        if (nodeRefs.size() == 0)
         {
-            throw new AlfrescoRuntimeException("Missing classification: "+aspectName);
+            throw new AlfrescoRuntimeException("Missing classification: " + aspectName);
         }
         NodeRef parent = nodeRefs.iterator().next();
         return createCategory(parent, name);
@@ -350,16 +372,78 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     public void deleteCategory(NodeRef nodeRef)
     {
-        nodeService.deleteNode(nodeRef);
+        publicNodeService.deleteNode(nodeRef);
     }
 
     public void deleteClassification(StoreRef storeRef, QName aspectName)
     {
         throw new UnsupportedOperationException();
     }
-    
-    
 
-    
-    
+    public List<Pair<NodeRef, Integer>> getTopCategories(StoreRef storeRef, QName aspectName, int count)
+    {
+        if (indexerAndSearcher instanceof LuceneIndexerAndSearcher)
+        {
+            AspectDefinition definition = dictionaryService.getAspect(aspectName);
+            if(definition == null)
+            {
+                throw new IllegalStateException("Unknown aspect");
+            }
+            QName catProperty = null;
+            Map<QName, PropertyDefinition> properties = definition.getProperties();
+            for(QName pName : properties.keySet())
+            {
+                if(pName.getNamespaceURI().equals(aspectName.getNamespaceURI()))
+                {
+                    if(pName.getLocalName().equalsIgnoreCase(aspectName.getLocalName()))
+                    {
+                        PropertyDefinition def = properties.get(pName);
+                        if(def.getDataType().getName().equals(DataTypeDefinition.CATEGORY))
+                        {
+                            catProperty = pName;
+                        }
+                    }
+                }
+            }
+            if(catProperty == null)
+            {
+                throw new IllegalStateException("Aspect does not have category property mirroring the aspect name");
+            }
+            
+            
+            LuceneIndexerAndSearcher lias = (LuceneIndexerAndSearcher) indexerAndSearcher;
+            String field = "@" + catProperty;
+            SearchService searchService = lias.getSearcher(storeRef, true);
+            if (searchService instanceof LuceneSearcher)
+            {
+                LuceneSearcher luceneSearcher = (LuceneSearcher)searchService;
+                List<Pair<String, Integer>> topTerms = luceneSearcher.getTopTerms(field, count);
+                List<Pair<NodeRef, Integer>> answer = new ArrayList<Pair<NodeRef, Integer>>();
+                for (Pair<String, Integer> term : topTerms)
+                {
+                    Pair<NodeRef, Integer> toAdd;
+                    NodeRef nodeRef = new NodeRef(term.getFirst());
+                    if (nodeService.exists(nodeRef))
+                    {
+                        toAdd = new Pair<NodeRef, Integer>(nodeRef, term.getSecond());
+                    }
+                    else
+                    {
+                        toAdd = new Pair<NodeRef, Integer>(null, term.getSecond());
+                    }
+                    answer.add(toAdd);
+                }
+                return answer;
+            }
+            else
+            {
+                throw new UnsupportedOperationException("getPolularCategories is only supported for lucene indexes");
+            }
+        }
+        else
+        {
+            throw new UnsupportedOperationException("getPolularCategories is only supported for lucene indexes");
+        }
+    }
+
 }

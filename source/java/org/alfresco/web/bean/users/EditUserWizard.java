@@ -34,6 +34,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
@@ -72,6 +73,14 @@ public class EditUserWizard extends CreateUserWizard
         this.companyId = (String) props.get("organizationId");
         this.presenceProvider = (String) props.get("presenceProvider");
         this.presenceUsername = (String) props.get("presenceUsername");
+        this.sizeQuota = (Long) props.get("sizeQuota");
+        
+        if (this.sizeQuota != null)
+        {
+           Pair<Long, String> size = convertFromBytes(this.sizeQuota);
+           this.sizeQuota = size.getFirst();
+           this.sizeQuotaUnits = size.getSecond();
+        }
 
         // calculate home space name and parent space Id from homeFolderId
         this.homeSpaceLocation = null; // default to Company root space
@@ -185,6 +194,9 @@ public class EditUserWizard extends CreateUserWizard
 
             // TODO: RESET HomeSpace Ref found in top-level navigation bar!
             // NOTE: not need cos only admin can do this?
+            
+            putSizeQuotaProperty(this.userName, this.sizeQuota, this.sizeQuotaUnits);
+            
         }
         catch (Throwable e)
         {

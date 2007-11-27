@@ -189,6 +189,26 @@
                                     <r:nodePath value="#{r.homeSpace}" disabled="true" showLeaf="true" />
                                  </a:column>
                                  
+                                 <%-- Usage column --%>
+                                 <a:column style="text-align:left">
+                                    <f:facet name="header">
+                                       <h:outputText value="#{msg.sizeCurrent}" rendered="#{UsersBeanProperties.usagesEnabled == true}"/>
+                                    </f:facet>
+                           			<h:outputText value="#{r.sizeLatest}" rendered="#{UsersBeanProperties.usagesEnabled == true}">
+                                        <a:convertSize />
+                                    </h:outputText>
+                                 </a:column>
+                                 
+                                 <%-- Quota column --%>
+                                 <a:column style="text-align:left">
+                                    <f:facet name="header">
+                                       <h:outputText value="#{msg.sizeQuota}" rendered="#{UsersBeanProperties.usagesEnabled == true}"/>
+                                    </f:facet>
+                                    <h:outputText value="#{r.sizeQuota}" rendered="#{UsersBeanProperties.usagesEnabled == true}">
+                              			<a:convertSize />
+                           			</h:outputText>
+                                 </a:column>
+                                 
                                  <%-- Actions column --%>
                                  <a:column actions="true" style="text-align:left">
                                     <f:facet name="header">
@@ -211,6 +231,17 @@
                               </a:richList>
                               
                               </a:panel>
+                              
+                                <table>
+                                    <tr>
+                                        <td><h:outputText value="Total Usage (for this search):" rendered="#{UsersBeanProperties.usagesEnabled == true}"/></td>
+                                        <td><h:outputText value="#{UsersDialog.usersTotalUsage}" rendered="#{UsersBeanProperties.usagesEnabled == true}"><a:convertSize/></h:outputText></td>
+                                    </tr>
+                                    <tr>
+                                        <td><h:outputText value="Total Quota (for this search):" rendered="#{UsersBeanProperties.usagesEnabled == true}"/></td>
+                                        <td><h:outputText value="#{UsersDialog.usersTotalQuota}" rendered="#{UsersBeanProperties.usagesEnabled == true}"><a:convertSize/></h:outputText></td>
+                                    </tr>
+                                </table>
                               
                            </td>
                            

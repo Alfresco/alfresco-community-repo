@@ -103,5 +103,16 @@
 		</f:verbatim><h:inputText value="#{WizardManager.bean.presenceUsername}" size="35" maxlength="256" /><f:verbatim>
 	</td>
 </tr>
+<tr>
+	<td></f:verbatim><h:outputText value="#{msg.sizeQuota}:" rendered="#{UsersBeanProperties.usagesEnabled == true}"/><f:verbatim></td>
+	<td>
+		</f:verbatim><h:inputText value="#{WizardManager.bean.sizeQuota}" size="10" maxlength="256" rendered="#{UsersBeanProperties.usagesEnabled == true}"/><f:verbatim>
+		</f:verbatim><h:selectOneMenu value="#{WizardManager.bean.sizeQuotaUnits}" rendered="#{UsersBeanProperties.usagesEnabled == true}">
+		    <f:selectItem itemValue="gigabyte" itemLabel="#{msg.gigabyte}"/>
+			<f:selectItem itemValue="megabyte" itemLabel="#{msg.megabyte}"/>
+			<f:selectItem itemValue="kilobyte" itemLabel="#{msg.kilobyte}"/>
+		</h:selectOneMenu><f:verbatim>
+	</td>
+</tr>
 
 </table></f:verbatim>

@@ -46,8 +46,10 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.repository.Repository;
@@ -65,6 +67,10 @@ public class CreateUserWizard extends BaseWizardBean
     private static Logger logger = Logger.getLogger(CreateUserWizard.class);
     protected static final String ERROR = "error_person";
 
+    protected static final String QUOTA_UNITS_KB = "kilobyte";
+    protected static final String QUOTA_UNITS_MB = "megabyte";
+    protected static final String QUOTA_UNITS_GB = "gigabyte";
+    
     /** form variables */
     protected String firstName = null;
     protected String lastName = null;
@@ -77,6 +83,9 @@ public class CreateUserWizard extends BaseWizardBean
     protected NodeRef homeSpaceLocation = null;
     protected String presenceProvider = null;
     protected String presenceUsername = null;
+    
+    protected Long sizeQuota = null; // null is also equivalent to -1 (ie. no quota limit set)
+    protected String sizeQuotaUnits = null;
 
     /** AuthenticationService bean reference */
     private AuthenticationService authenticationService;
@@ -89,6 +98,10 @@ public class CreateUserWizard extends BaseWizardBean
 
     /** OwnableService bean reference */
     private OwnableService ownableService;
+    
+    /** ContentUsageService bean reference */
+    private ContentUsageService contentUsageService;
+    
 
     /** ref to the company home space folder */
     private NodeRef companyHomeSpaceRef = null;
@@ -127,6 +140,14 @@ public class CreateUserWizard extends BaseWizardBean
     {
         this.ownableService = ownableService;
     }
+   
+    /**
+     * @param contentUsageService The contentUsageService to set.
+     */
+    public void setContentUsageService(ContentUsageService contentUsageService)
+    {
+        this.contentUsageService = contentUsageService;
+    }
 
     /**
      * Initialises the wizard
@@ -148,6 +169,9 @@ public class CreateUserWizard extends BaseWizardBean
         this.homeSpaceLocation = getDefaultHomeSpace();
         this.presenceProvider = "";
         this.presenceUsername = "";
+        
+        this.sizeQuota = null;
+        this.sizeQuotaUnits = "";
     }
 
     /**
@@ -351,6 +375,26 @@ public class CreateUserWizard extends BaseWizardBean
     public void setConfirm(String confirm)
     {
         this.confirm = confirm;
+    }
+    
+    public Long getSizeQuota()
+    {
+       return sizeQuota;
+    }
+
+    public void setSizeQuota(Long sizeQuota)
+    {
+       this.sizeQuota = sizeQuota;
+    }
+
+    public String getSizeQuotaUnits()
+    {
+       return sizeQuotaUnits;
+    }
+
+    public void setSizeQuotaUnits(String sizeQuotaUnits)
+    {
+       this.sizeQuotaUnits = sizeQuotaUnits;
     }
 
     // ------------------------------------------------------------------------------
@@ -603,6 +647,8 @@ public class CreateUserWizard extends BaseWizardBean
 
                 if (logger.isDebugEnabled())
                     logger.debug("Created User Authentication instance for username: " + this.userName);
+                
+                putSizeQuotaProperty(this.userName, this.sizeQuota, this.sizeQuotaUnits);
             }
             else
             {
@@ -632,5 +678,60 @@ public class CreateUserWizard extends BaseWizardBean
             return false;
         }
         return true;
+    }
+    
+    protected void putSizeQuotaProperty(String userName, Long quota, String quotaUnits)
+    {
+       if ((quota != null) && (quota > 0))
+       {
+          quota = convertToBytes(quota, quotaUnits);
+       }
+
+       this.contentUsageService.setUserQuota(userName, (quota == null ? -1 : quota));
+    }
+    
+    protected long convertToBytes(long size, String units)
+    {
+       if (units != null)
+       {
+          if (units.equals(QUOTA_UNITS_KB))
+          {
+             size = size * 1024L;
+          }
+          else if (units.equals(QUOTA_UNITS_MB))
+          {
+             size = size * 1048576L;
+          }
+          else if (units.equals(QUOTA_UNITS_GB))
+          {
+             size = size * 1073741824L;
+          }
+       }
+       return size;
+    }
+    
+    protected Pair<Long, String> convertFromBytes(long size)
+    {
+       String units = null;
+       if (size <= 0)
+       {
+          units = QUOTA_UNITS_GB;
+       }
+       else if (size < 999999)
+       {
+          size = (long)((double)size / 1024.0d);
+          units = QUOTA_UNITS_KB;
+       }
+       else if (size < 999999999)
+       {
+          size = (long)((double)size / 1048576.0d);
+          units = QUOTA_UNITS_MB;
+       }
+       else
+       {
+          size = (long)((double)size / 1073741824.0d);
+          units = QUOTA_UNITS_GB;
+       }
+       return new Pair<Long, String>(size, units);
     }
 }

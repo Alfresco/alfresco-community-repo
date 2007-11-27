@@ -51,6 +51,7 @@ import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -109,6 +110,36 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
       }
       
       return this.users;
+   }
+   
+   public long getUsersTotalUsage()
+   {
+       long totalUsage = 0L;
+       List<Node> users = getUsers();
+       for(Node user : users)
+       {
+           Long sizeLatest = (Long)properties.getUserUsage((String)user.getProperties().get("userName"));
+           if (sizeLatest != null)
+           {
+              totalUsage = totalUsage + sizeLatest;
+           }
+       }
+       return totalUsage;
+   }
+   
+   public long getUsersTotalQuota()
+   {
+       long totalQuota = 0L;
+       List<Node> users = getUsers();
+       for(Node user : users)
+       {
+           Long sizeCurrent = (Long)user.getProperties().get("sizeQuota");
+           if (sizeCurrent != null)
+           {
+               totalQuota = totalQuota + sizeCurrent;
+           }
+       }
+       return totalQuota;
    }
    
    /**
@@ -305,6 +336,8 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
                   props.put("homeSpace", homeFolderNodeRef);
                }
                
+               node.addPropertyResolver("sizeLatest", this.resolverUserSizeLatest);
+               
                this.users.add(node);
             }
    
@@ -331,6 +364,13 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
       return null;
    }
    
+   public NodePropertyResolver resolverUserSizeLatest = new NodePropertyResolver() {
+      public Object get(Node personNode) {
+         Long sizeLatest = (Long)properties.getUserUsage((String)personNode.getProperties().get("userName"));
+         return sizeLatest;
+      }
+   };
+   
    /**
     * Action handler to show all the users currently in the system
     * 
@@ -342,6 +382,11 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
       
       this.users = Repository.getUsers(FacesContext.getCurrentInstance(), 
             properties.getNodeService(), properties.getSearchService());
+      
+      for (Node node : this.users)
+      {
+         node.addPropertyResolver("sizeLatest", this.resolverUserSizeLatest);
+      }
       
       // return null to stay on the same page
       return null;

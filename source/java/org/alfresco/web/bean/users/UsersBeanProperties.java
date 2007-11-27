@@ -24,10 +24,12 @@
  */
 package org.alfresco.web.bean.users;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 
@@ -45,6 +47,10 @@ public class UsersBeanProperties
     /** PersonService bean reference */
     private PersonService personService;
     
+    /** ContentUsageService bean reference */
+    private ContentUsageService contentUsageService;
+    
+    
     /** Component reference for Users RichList control */
     private UIRichList usersRichList;
 
@@ -55,7 +61,7 @@ public class UsersBeanProperties
     private String oldPassword = null;
     private String confirm = null;
     private String searchCriteria = null;
-    
+    private String userName = null;
     
     // ------------------------------------------------------------------------------
     // Bean property getters and setters
@@ -122,6 +128,14 @@ public class UsersBeanProperties
     public void setPersonService(PersonService personService)
     {
        this.personService = personService;
+    }
+    
+    /**
+     * @param contentUsageService  The ContentUsageService to set.
+     */
+    public void setContentUsageService(ContentUsageService contentUsageService)
+    {
+        this.contentUsageService = contentUsageService;
     }
 
     /**
@@ -218,5 +232,29 @@ public class UsersBeanProperties
     public void setPerson(Node person)
     {
        this.person = person;
+       this.userName = (String)person.getProperties().get(ContentModel.PROP_USERNAME);
+    }
+    
+    public Long getUserUsage(String userName)
+    {
+       long usage = this.contentUsageService.getUserUsage(userName);
+       return (usage == -1 ? null : usage);
+    }
+    
+    public Long getUserUsage()
+    {
+       long usage = this.contentUsageService.getUserUsage(this.userName);
+       return (usage == -1 ? null : usage);
+    }
+  
+    public Long getUserQuota()
+    {
+       long quota = this.contentUsageService.getUserQuota(this.userName);
+       return (quota == -1 ? null : quota);
+    }
+     
+    public boolean getUsagesEnabled()
+    {
+       return this.contentUsageService.getEnabled();
     }
 }

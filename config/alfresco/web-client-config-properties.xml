@@ -226,7 +226,7 @@
 
    <config evaluator="aspect-name" condition="cm:ownable">
       <property-sheet>
-         <show-property name="cm:owner" />
+         <show-property name="cm:owner" read-only="true" />
       </property-sheet>
    </config>
 

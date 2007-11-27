@@ -543,6 +543,12 @@
          <property-name>personService</property-name>
          <value>#{PersonService}</value>
       </managed-property>
+      
+      <managed-property>
+         <property-name>contentUsageService</property-name>
+         <value>#{ContentUsageService}</value>
+      </managed-property>
+      
    </managed-bean>
 
    <managed-bean>
@@ -644,6 +650,12 @@
          <property-name>namespaceService</property-name>
          <value>#{NamespaceService}</value>
       </managed-property>
+      
+      <managed-property>
+         <property-name>contentUsageService</property-name>
+         <value>#{ContentUsageService}</value>
+      </managed-property>
+      
    </managed-bean>
 
    <managed-bean>
@@ -4388,6 +4400,12 @@
          <property-name>ownableService</property-name>
          <value>#{OwnableService}</value>
       </managed-property>
+      
+      <managed-property>
+         <property-name>contentUsageService</property-name>
+         <value>#{ContentUsageService}</value>
+      </managed-property>
+      
    </managed-bean>
 
    <managed-bean>
@@ -4439,6 +4457,12 @@
          <property-name>properties</property-name>
          <value>#{UsersBeanProperties}</value>
       </managed-property>
+      
+      <managed-property>
+         <property-name>contentUsageService</property-name>
+         <value>#{ContentUsageService}</value>
+      </managed-property>
+      
    </managed-bean>
 
    <managed-bean>

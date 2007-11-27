@@ -119,6 +119,34 @@
 				rendered="#{NavigationBean.isGuest == false}" border="white"
 				bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted"
 				titleBgcolor="white">
+				
+				<a:panel id="usage-quota" rendered="#{UsersBeanProperties.usagesEnabled == true}">			
+				<f:verbatim>
+					<table cellspacing=2 cellpadding=2 border=0>
+						<tr>
+							<td class="propertiesLabel"></f:verbatim> <h:outputText
+								value="#{msg.sizeCurrent}" /> <f:verbatim>:
+							</td>
+							<td></f:verbatim><h:outputText value="#{UsersBeanProperties.userUsage}">
+									<a:convertSize />
+								</h:outputText><f:verbatim>
+							</td>
+					    </tr>
+					    <tr>
+							<td class="propertiesLabel"></f:verbatim> <h:outputText
+								value="#{msg.sizeQuota}" /> <f:verbatim>:
+							</td>
+							<td></f:verbatim>
+							    <h:outputText value="#{UsersBeanProperties.userQuota}">
+									<a:convertSize />
+								</h:outputText>
+								<f:verbatim>
+							</td>
+						</tr>
+					</table>
+				</f:verbatim>
+				</a:panel>
+						
 				<f:verbatim>
 					<table cellspacing=2 cellpadding=2 border=0>
 						<tr>

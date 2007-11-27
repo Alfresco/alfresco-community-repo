@@ -564,6 +564,36 @@
             </props>
         </property>
     </bean>
+    
+    <!-- Content Usage Service -->
+    
+    <bean id="ContentUsageService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.usage.ContentUsageService</value>
+        </property>
+        <property name="target">
+            <ref bean="contentUsageImpl"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="ContenUsageService_transaction"/>
+                <idref local="AuditMethodInterceptor"/>
+                <idref local="exceptionTranslator"/>
+                <idref bean="ContentUsageService_security"/>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="ContenUsageService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
     <!-- Authentication Service -->
 

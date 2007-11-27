@@ -805,5 +805,12 @@
     <!-- TODO: Add repository admin security -->
     
     <bean id="RepoAdminService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
+    <!-- ===================== -->
+    <!-- Content Usage Service -->
+    <!-- ===================== -->
+    
+    <!-- TODO: Add content usage security -->
+    <bean id="ContentUsageService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
     
 </beans>

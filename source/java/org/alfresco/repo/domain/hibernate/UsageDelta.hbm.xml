@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!DOCTYPE hibernate-mapping PUBLIC
+    '-//Hibernate/Hibernate Mapping DTD 3.0//EN' 
+    'http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd'>
+
+<!-- Hibernate mapping for storing usage delta information                 -->
+<!--                                                                       -->
+<!-- This generates a schema for content usage deltas                      -->
+<!-- which can be used to keep track of current usages until a             -->
+<!-- background job has rolled up and stored against                       -->
+<!-- the actual entity (e.g. person, folder).                              --> 
+<!--                                                                       -->
+
+<hibernate-mapping>
+
+   <!-- The Usage Delta -->
+    
+   <class name="org.alfresco.repo.usage.hibernate.UsageDeltaImpl" 
+          proxy="org.alfresco.repo.usage.UsageDelta" 
+          table="alf_usage_delta"
+          dynamic-update="false" 
+          dynamic-insert="false"
+          select-before-update="false" 
+          lazy="true" 
+          optimistic-lock="version">
+          
+      <!-- An auto-generated id -->
+      <id name="id" column="id" type="long">
+         <generator class="native"/>
+      </id>     
+
+      <!-- Optimistic locking -->
+      <version column="version" name="version" type="long" />
+      
+      <!-- forward assoc to node -->
+      <many-to-one
+            name="node"
+            not-null="true"
+            lazy="proxy"
+            class="org.alfresco.repo.domain.hibernate.NodeImpl"
+            fetch="select" >
+         <column name="node_id" />
+      </many-to-one>
+
+      <property name="deltaSize" column="delta_size" type="long" not-null="true"/>
+       
+    </class>
+        
+    <!-- Get total usage delta for a node -->
+    <query name="usage.GetTotalDeltaSize">
+        select
+            sum(deltaSize)
+        from
+            org.alfresco.repo.usage.hibernate.UsageDeltaImpl as usage_delta
+        where
+            usage_delta.node = :node
+    </query>
+    
+    
+    <!-- Get nodes with usage deltas -->
+    <query name="usage.GetUsageDeltaNodes">
+        select 
+            distinct usage_delta.node
+        from
+            org.alfresco.repo.usage.hibernate.UsageDeltaImpl as usage_delta
+    </query>
+    
+    <!--  Get usage deltas for a node -->
+    <query name="usage.GetDeltas">
+        select
+            usage_delta
+        from
+            org.alfresco.repo.usage.hibernate.UsageDeltaImpl as usage_delta
+        where
+            usage_delta.node = :node
+    </query>
+    
+</hibernate-mapping>

@@ -60,6 +60,7 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionAwareSingleton;
 import org.alfresco.repo.transaction.TransactionalDao;
+import org.alfresco.repo.usage.UsageDeltaDAO;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
@@ -113,6 +114,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_CHILD_ASSOCS_FOR_STORE = "node.GetChildAssocsForStore";
     private static final String QUERY_GET_NODES_EXCEPT_ROOT_FOR_STORE = "node.GetNodesExceptRootForStore";
     
+    private static final String QUERY_NODES_WITH_PROPERTY_STRING_VALUE_FOR_STORE = "node.GetNodesWithPropertyStringValueForStore";
+
     private static Log logger = LogFactory.getLog(HibernateNodeDaoServiceImpl.class);
     /** Log to trace parent association caching: <b>classname + .ParentAssocsCache</b> */
     private static Log loggerParentAssocsCache = LogFactory.getLog(HibernateNodeDaoServiceImpl.class.getName() + ".ParentAssocsCache");
@@ -131,7 +134,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     /** used for debugging */
     private Set<String> changeTxnIdSet;
     
-    TenantService tenantService;
+    private UsageDeltaDAO usageDeltaDao;
+    private TenantService tenantService;
+    
+
+    public void setUsageDeltaDao(UsageDeltaDAO usageDeltaDao)
+    {
+        this.usageDeltaDao = usageDeltaDao;
+    }
     
     public void setTenantService(TenantService tenantService)
     {
@@ -616,6 +626,13 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             getHibernateTemplate().delete(assoc);
         }
+        
+        if (isDebugEnabled)
+        {
+            logger.debug("Deleting usage deltas of node (if any)" + node.getId());
+        }
+        usageDeltaDao.deleteDeltas(node);
+        
         // update the node status
         NodeRef nodeRef = node.getNodeRef();
         NodeStatus nodeStatus = getNodeStatus(nodeRef, true);
@@ -1427,6 +1444,29 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         // done
         return count.intValue();
     }
+    
+    
+    @SuppressWarnings("unchecked")
+    public Collection<Node> getNodesWithPropertyStringValueForStore(final StoreRef storeRef, final QName propQName, final String propStringValue)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_NODES_WITH_PROPERTY_STRING_VALUE_FOR_STORE);
+                query.setString("protocol", storeRef.getProtocol())
+                     .setString("identifier", storeRef.getIdentifier())
+                     .setParameter("propQName", propQName)
+                     .setString("propStringValue", propStringValue)
+                     .setReadOnly(true);
+                return query.list();
+            }
+        };
+        
+        List<Node> queryResults = (List<Node>) getHibernateTemplate().execute(callback);
+        return queryResults;
+    }
+
 
     /*
      * Queries for transactions

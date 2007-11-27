@@ -293,6 +293,8 @@ public interface NodeDaoService
      */
     public int getNodeCount(final StoreRef storeRef);
     
+    public Collection<Node> getNodesWithPropertyStringValueForStore(final StoreRef storeRef, final QName propQName, final String propStringValue);
+    
     public Transaction getTxnById(long txnId);
     /**
      * Get all transactions in a given time range.  Since time-based retrieval doesn't guarantee uniqueness

@@ -116,7 +116,7 @@ public class WorkflowInterpreter extends BaseInterpreter
             
             if (!transactionService.isReadOnly())
             {
-                interpretCommand("var bpm:package package 1");
+                //interpretCommand("var bpm:package package 1"); // only used for testing workflows, causes increment usage/delta
                 interpretCommand("var bpm:assignee person admin");
             }
             

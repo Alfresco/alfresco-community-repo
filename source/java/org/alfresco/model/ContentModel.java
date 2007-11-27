@@ -168,6 +168,9 @@ public interface ContentModel
     static final QName PROP_PRESENCEPROVIDER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "presenceProvider");
     static final QName PROP_PRESENCEUSERNAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "presenceUsername");
     
+    static final QName PROP_SIZE_CURRENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "sizeCurrent");
+    static final QName PROP_SIZE_QUOTA = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "sizeQuota");
+    
     // Ownable aspect  
     static final QName ASPECT_OWNABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "ownable");
     static final QName PROP_OWNER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "owner");

@@ -607,6 +607,10 @@ public class PersonServiceImpl implements PersonService,
         properties.put(ContentModel.PROP_EMAIL, "");
         properties.put(ContentModel.PROP_ORGID, "");
         properties.put(ContentModel.PROP_HOME_FOLDER_PROVIDER, defaultHomeFolderProvider);
+        
+        properties.put(ContentModel.PROP_SIZE_CURRENT, 0L);
+        properties.put(ContentModel.PROP_SIZE_QUOTA, -1L); // no quota
+        
         return properties;
     }
 
@@ -615,6 +619,9 @@ public class PersonServiceImpl implements PersonService,
         String userName = DefaultTypeConverter.INSTANCE.convert(String.class, properties
                 .get(ContentModel.PROP_USERNAME));
         properties.put(ContentModel.PROP_USERNAME, userName);
+        
+        properties.put(ContentModel.PROP_SIZE_CURRENT, 0L);
+        
         return nodeService.createNode(getPeopleContainer(), ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_PERSON,
                 ContentModel.TYPE_PERSON, properties).getChildRef();
     }

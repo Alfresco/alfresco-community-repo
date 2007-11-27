@@ -197,4 +197,26 @@
       </property>
    </bean>
 
+   <bean id="usageService" class="org.alfresco.repo.usage.UsageServiceImpl">
+      <property name="usageDeltaDao">
+         <ref bean="usageDeltaDao"/>
+      </property>
+      <property name="nodeDaoService">
+         <ref bean="nodeDaoService" />
+      </property>
+      <property name="tenantService">
+         <ref bean="tenantService"/>
+      </property>    
+   </bean>
+   
+   <bean id="contentUsageImpl" class="org.alfresco.repo.usage.ContentUsageImpl" init-method="init">
+      <property name="personService" ref="personService"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="policyComponent" ref="policyComponent"/>
+      <property name="usageService" ref="usageService"/>
+      <property name="enabled">
+            <value>${system.usages.enabled}</value>
+      </property>
+   </bean>
+   
 </beans>

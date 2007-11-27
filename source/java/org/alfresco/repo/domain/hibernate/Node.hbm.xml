@@ -502,4 +502,17 @@
          node.store.key.identifier = :identifier
    </query>
    
+    <query name="node.GetNodesWithPropertyStringValueForStore">
+      select 
+         node 
+      from 
+         org.alfresco.repo.domain.hibernate.NodeImpl as node
+         join node.properties prop
+      where
+         index(prop) = :propQName and
+         prop.stringValue = :propStringValue and
+         node.store.key.protocol = :protocol and
+         node.store.key.identifier = :identifier
+   </query>
+   
 </hibernate-mapping>

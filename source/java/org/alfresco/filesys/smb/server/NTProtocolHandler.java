@@ -1482,8 +1482,15 @@ public class NTProtocolHandler extends CoreProtocolHandler
             m_sess.sendErrorResponseSMB(SMBStatus.DOSInvalidData, SMBStatus.ErrDos);
             return;
         }
+        catch (DiskFullException ex)
+        {
+             m_sess.sendErrorResponseSMB(SMBStatus.NTDiskFull, SMBStatus.HRDWriteFault, SMBStatus.ErrHrd);
+            return;
+        }
         catch (java.io.IOException ex)
         {
+            if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_FILE))
+                logger.debug("IOException ignore: "+ex);
         }
 
         // Remove the file from the connections list of open files

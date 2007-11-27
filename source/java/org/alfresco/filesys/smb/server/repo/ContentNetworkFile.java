@@ -35,6 +35,7 @@ import java.nio.charset.Charset;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.server.filesys.AccessDeniedException;
+import org.alfresco.filesys.server.filesys.DiskFullException;
 import org.alfresco.filesys.server.filesys.FileAttribute;
 import org.alfresco.filesys.server.filesys.FileInfo;
 import org.alfresco.filesys.server.filesys.FileOpenParams;
@@ -52,6 +53,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.usage.ContentQuotaException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -382,7 +384,14 @@ public class ContentNetworkFile extends NodeRefNetworkFile
             // Update node properties
             
             ContentData contentData = content.getContentData();
-            nodeService.setProperty( getNodeRef(), ContentModel.PROP_CONTENT, contentData);
+            try
+            {
+                nodeService.setProperty( getNodeRef(), ContentModel.PROP_CONTENT, contentData);
+            }
+            catch (ContentQuotaException qe)
+            {
+                throw new DiskFullException(qe.getMessage());
+            }
         }
         else
         {

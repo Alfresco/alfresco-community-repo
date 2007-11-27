@@ -185,6 +185,14 @@
             <property name="cm:presenceUsername">
             	<type>d:text</type>
             </property>
+            
+            <property name="cm:sizeCurrent">
+                <type>d:long</type>
+            </property>
+            <property name="cm:sizeQuota">
+                <type>d:long</type>
+            </property>
+            
          </properties>
       </type>
 

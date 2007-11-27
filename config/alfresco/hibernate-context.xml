@@ -47,6 +47,7 @@
                 <value>org/alfresco/repo/domain/hibernate/Permission.hbm.xml</value>
                 <value>org/alfresco/repo/avm/hibernate/AVM.hbm.xml</value>
                 <value>org/alfresco/repo/attributes/hibernate/Attributes.hbm.xml</value>
+                <value>org/alfresco/repo/domain/hibernate/UsageDelta.hbm.xml</value>
 
                 <!-- Audit config -->
                 <!-- TODO: Move into org/alfresco/repo/domain/hibernate/ -->
@@ -229,6 +230,12 @@
 		</property>
    </bean>
 
+    <bean id="usageDeltaDao" class="org.alfresco.repo.usage.hibernate.HibernateUsageDeltaDAO">
+        <property name="sessionFactory">
+            <ref bean="sessionFactory"/>
+        </property>
+    </bean>
+    
    <bean id="nodeDaoServiceImpl" class="org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl">
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
@@ -238,6 +245,9 @@
       </property>
       <property name="tenantService">
           <ref bean="tenantService"/>
+      </property>
+      <property name="usageDeltaDao">
+          <ref bean="usageDeltaDao"/>
       </property>
    </bean>
 

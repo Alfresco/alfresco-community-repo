@@ -231,4 +231,123 @@
             <value>0 30 3 * * ?</value>
         </property>
     </bean>
+    
+    
+    <bean id="userUsageCollapseComponent" class="org.alfresco.repo.usage.UserUsageTrackingComponent">
+        <property name="nodeDaoService">
+        	<ref bean="nodeDaoService"/>
+        </property>
+        <property name="transactionService">
+        	<ref bean="transactionService"/>
+        </property>
+        <property name="contentUsageImpl">
+            <ref bean="contentUsageImpl"/>
+        </property>
+        <property name="personService">
+            <ref bean="personService"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="usageService">
+            <ref bean="usageService"/>
+        </property>
+        <property name="enabled">
+            <value>${system.usages.enabled}</value>
+        </property>
+    </bean>
+    
+    <bean id="userUsageBootstrapComponent" class="org.alfresco.repo.usage.UserUsageTrackingComponent">
+        <property name="nodeDaoService">
+            <ref bean="nodeDaoService"/>
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService"/>
+        </property>
+        <property name="contentUsageImpl">
+            <ref bean="contentUsageImpl"/>
+        </property>
+        <property name="personService">
+            <ref bean="personService"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="usageService">
+            <ref bean="usageService"/>
+        </property>
+        <property name="enabled">
+            <value>${system.usages.enabled}</value>
+        </property>
+        <property name="bootstrap">
+            <value>true</value>
+        </property>
+    </bean>
+    
+    <!-- enable scheduler property to activate -->
+    <bean id="userUsageCollapseJob" class="org.alfresco.util.TriggerBean">
+        <property name="jobDetail">
+            <bean id="userUsageTrackingJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.usage.UserUsageCollapseJob</value>
+                </property>
+               <property name="jobDataAsMap">
+	               <map>
+		               	<entry key="userUsageCollapseComponent">
+		                    <ref bean="userUsageCollapseComponent" />
+		                </entry>
+		           </map>
+	           </property>
+	        </bean>
+        </property>
+        
+        <!-- enable this to activate bean -->
+        
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+                
+        <!-- start after 5 minutes and repeat every 5 minutes -->
+        <property name="startDelayMinutes">
+            <value>5</value>
+        </property>
+        <property name="repeatIntervalMinutes">
+            <value>5</value>
+        </property>
+          
+    </bean>
+    
+    <!-- enable scheduler property to activate -->
+    <bean id="userUsageBootstrapJob" class="org.alfresco.util.TriggerBean">
+        <property name="jobDetail">
+            <bean id="userUsageBootstrapDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.usage.UserUsageBootstrapJob</value>
+                </property>
+               <property name="jobDataAsMap">
+                   <map>
+                        <entry key="userUsageBootstrapComponent">
+                            <ref bean="userUsageBootstrapComponent" />
+                        </entry>
+                   </map>
+               </property>
+            </bean>
+        </property>
+        
+        <!-- enable this to activate bean -->
+        
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+                
+        <!-- start after bootstrap (0 minutes) and run once -->
+        <property name="startDelayMinutes">
+            <value>0</value>
+        </property>
+        <property name="repeatCount">
+            <value>0</value>
+        </property>
+          
+    </bean>
+    
 </beans>

@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.usage.ContentQuotaException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -566,6 +567,10 @@ public class RoutingContentService implements ContentService
                             "   property: " + propertyQName + "\n" +
                             "   value: " + contentData);
                 }
+            }
+            catch (ContentQuotaException qe)
+            {
+                throw qe;
             }
             catch (Throwable e)
             {

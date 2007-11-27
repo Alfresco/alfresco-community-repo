@@ -586,6 +586,8 @@ public class CreateUserWizard extends BaseWizardBean
                 props.put(ContentModel.PROP_HOMEFOLDER, homeSpaceNodeRef);
                 props.put(ContentModel.PROP_EMAIL, this.email);
                 props.put(ContentModel.PROP_ORGID, this.companyId);
+                props.put(ContentModel.PROP_PRESENCEPROVIDER, this.presenceProvider);
+                props.put(ContentModel.PROP_PRESENCEUSERNAME, this.presenceUsername);
 
                 // create the node to represent the Person
                 NodeRef newPerson = this.personService.createPerson(props);

@@ -69,6 +69,7 @@
       <param-name>contextConfigLocation</param-name>
       <param-value>
          classpath:alfresco/application-context.xml 
+         classpath:alfresco/web-framework-application-context.xml
          classpath:alfresco/web-client-application-context.xml
          classpath:alfresco/web-scripts-application-context.xml
          classpath:alfresco/web-pagerenderer-application-context.xml
@@ -256,7 +257,7 @@
       
    <servlet>
       <servlet-name>apiServlet</servlet-name>
-      <servlet-class>org.alfresco.web.scripts.WebScriptServlet</servlet-class>
+      <servlet-class>org.alfresco.web.scripts.servlet.WebScriptServlet</servlet-class>
       <init-param>
          <param-name>authenticator</param-name>
          <param-value>webscripts.authenticator.basic</param-value>
@@ -265,7 +266,7 @@
 
    <servlet>
       <servlet-name>wcapiServlet</servlet-name>
-      <servlet-class>org.alfresco.web.scripts.WebScriptServlet</servlet-class>
+      <servlet-class>org.alfresco.web.scripts.servlet.WebScriptServlet</servlet-class>
       <init-param>
          <param-name>authenticator</param-name>
          <param-value>webscripts.authenticator.webclient</param-value>
@@ -274,17 +275,29 @@
    
    <servlet>
       <servlet-name>portalapiServlet</servlet-name>
-      <servlet-class>org.alfresco.web.scripts.WebScriptServlet</servlet-class>
+      <servlet-class>org.alfresco.web.scripts.servlet.WebScriptServlet</servlet-class>
+      <init-param>
+         <param-name>authenticator</param-name>
+         <param-value>webscripts.authenticator.jsr168.webclient</param-value>
+      </init-param>
    </servlet>
 
    <servlet>
       <servlet-name>facebookServlet</servlet-name>
       <servlet-class>org.alfresco.web.scripts.facebook.FacebookServlet</servlet-class>
+      <init-param>
+         <param-name>authenticator</param-name>
+         <param-value>webscripts.authenticator.facebook</param-value>
+      </init-param>
    </servlet>
 
    <servlet>
       <servlet-name>fbapiServlet</servlet-name>
       <servlet-class>org.alfresco.web.scripts.facebook.FacebookAPIServlet</servlet-class>
+      <init-param>
+         <param-name>authenticator</param-name>
+         <param-value>webscripts.authenticator.facebook</param-value>
+      </init-param>
    </servlet>
 
    <servlet>

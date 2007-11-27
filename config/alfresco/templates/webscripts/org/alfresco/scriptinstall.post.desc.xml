@@ -1,6 +1,0 @@
-<webscript>
-  <shortname>Install Web Script</shortname>
-  <description>Install Web Script</description>
-  <url>/installer</url>
-  <authentication>admin</authentication>
-</webscript>

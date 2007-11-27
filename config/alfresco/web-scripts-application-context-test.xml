@@ -3,16 +3,14 @@
 
 <beans>
 
-   <!--  -->   
+   <!--              -->   
    <!--  API Testing -->
-   <!--  -->   
+   <!--              -->   
 
-   <bean id="webscripts.test" class="org.alfresco.web.scripts.TestWebScriptServer">
-      <property name="registry" ref="webscripts.registry" />
-      <property name="serviceRegistry" ref="ServiceRegistry" />
+   <bean id="webscripts.test" class="org.alfresco.repo.web.scripts.TestWebScriptRepoServer">
+      <property name="container" ref="webscripts.container" />
       <property name="authenticationService" ref="authenticationService" />
       <property name="transactionHelper" ref="retryingTransactionHelper" />
-      <property name="configService" ref="webClientConfigService" />
       <property name="messages">
          <bean class="org.springframework.context.support.ResourceBundleMessageSource">
             <property name="basenames">
@@ -23,5 +21,5 @@
          </bean>
       </property>
    </bean>
-
+ 
 </beans>

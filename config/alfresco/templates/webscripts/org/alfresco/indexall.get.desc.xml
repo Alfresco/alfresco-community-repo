@@ -1,6 +1,0 @@
-<webscript>
-  <shortname>All Web Scripts Index</shortname>
-  <description>Retrieve an index of all Web Scripts</description>
-  <url>/index/all</url>
-  <url>/index/all.mediawiki</url>
-</webscript>

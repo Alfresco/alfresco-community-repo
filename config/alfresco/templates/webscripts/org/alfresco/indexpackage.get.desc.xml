@@ -1,5 +1,0 @@
-<webscript>
-  <shortname>Web Script Package Index</shortname>
-  <description>Provide an index of Web Scripts for the specified Web Script package</description>
-  <url>/index/package/{package}</url>
-</webscript>

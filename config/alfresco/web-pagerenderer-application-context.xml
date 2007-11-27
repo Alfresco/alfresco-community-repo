@@ -19,10 +19,4 @@
       </constructor-arg>
    </bean>
    
-   <bean id="pagerenderer.templateprocessor" class="org.alfresco.web.app.servlet.PageTemplateProcessor">
-      <property name="freeMarkerProcessor" ref="freeMarkerProcessor" /> 
-      <property name="serviceRegistry" ref="ServiceRegistry" />     
-      <!-- <property name="defaultEncoding"><value>UTF-8</value></property> -->
-   </bean>
-   
 </beans>

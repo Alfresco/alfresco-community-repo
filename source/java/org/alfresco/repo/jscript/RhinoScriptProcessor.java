@@ -54,6 +54,7 @@ import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.WrapFactory;
 import org.springframework.util.FileCopyUtils;
 
 /**
@@ -70,6 +71,9 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     private static final String PATH_CLASSPATH = "classpath:";
     private static final String SCRIPT_ROOT = "_root";
 
+    /** Wrap Factory */
+    private static WrapFactory wrapFactory = new RhinoWrapFactory();
+    
     /** Base Value Converter */
     private ValueConverter valueConverter = new ValueConverter();
     
@@ -476,6 +480,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             // you need one. However, initStandardObjects is an expensive method to call and it
             // allocates a fair amount of memory.
             Scriptable scope = cx.initStandardObjects();
+            cx.setWrapFactory(wrapFactory);
 
             // there's always a model, if only to hold the util objects
             if (model == null)
@@ -561,5 +566,24 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     	}
         return newModel;
     }
-        
+
+    
+    /**
+     * Rhino script value wraper
+     */
+    private static class RhinoWrapFactory extends WrapFactory
+    {
+    	/* (non-Javadoc)
+    	 * @see org.mozilla.javascript.WrapFactory#wrapAsJavaObject(org.mozilla.javascript.Context, org.mozilla.javascript.Scriptable, java.lang.Object, java.lang.Class)
+    	 */
+        public Scriptable wrapAsJavaObject(Context cx, Scriptable scope, Object javaObject, Class staticType)
+        {
+            if (javaObject instanceof Map && !(javaObject instanceof ScriptableHashMap))
+            {
+                return new NativeMap(scope, (Map)javaObject);
+            }
+            return super.wrapAsJavaObject(cx, scope, javaObject, staticType);
+        }
+    }
+    
 }

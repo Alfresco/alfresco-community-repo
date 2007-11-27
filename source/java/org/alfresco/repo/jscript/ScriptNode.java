@@ -70,6 +70,7 @@ import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.Content;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.URLEncoder;
@@ -2160,61 +2161,9 @@ public class ScriptNode implements Serializable, Scopeable
     
     
     /**
-     * Inner class for representing content
-     */
-    public static abstract class ScriptContent implements Serializable
-    {
-        /**
-         * @return the content stream as a string
-         */
-        public abstract String getContent();
-        
-        public String jsGet_content()
-        {
-            return getContent();
-        }
-        
-        /**
-         * @return the content mimetype 
-         */
-        public abstract String getMimetype();
-        
-        public String jsGet_mimetype()
-        {
-            return getMimetype();
-        }
-
-        /**
-         * @return the content encoding
-         */
-        public abstract String getEncoding();
-        
-        public String jsGet_encoding()
-        {
-            return getEncoding();
-        }
-        
-        /**
-         * @return the content size
-         */
-        public abstract long getSize();
-
-        public long jsGet_size()
-        {
-            return getSize();
-        }
-        
-        /**
-         * @return input stream onto content
-         */
-        /*package*/ abstract InputStream getInputStream();
-    }
-    
-    
-    /**
      * Inner class wrapping and providing access to a ContentData property
      */
-    public class ScriptContentData extends ScriptContent implements Serializable
+    public class ScriptContentData implements Content, Serializable
     {
         private static final long serialVersionUID = -7819328543933312278L;
         
@@ -2241,7 +2190,7 @@ public class ScriptNode implements Serializable, Scopeable
             return (reader != null && reader.exists()) ? reader.getContentString() : "";
         }
         
-        /*package*/ InputStream getInputStream()
+        public InputStream getInputStream()
         {
             ContentService contentService = services.getContentService();
             ContentReader reader = contentService.getReader(nodeRef, property);
@@ -2275,7 +2224,7 @@ public class ScriptNode implements Serializable, Scopeable
          *  
          * @param content  ScriptContent to set
          */
-        public void write(ScriptContent content)
+        public void write(Content content)
         {
             ContentService contentService = services.getContentService();
             ContentWriter writer = contentService.getWriter(nodeRef, this.property, true);
@@ -2370,79 +2319,6 @@ public class ScriptNode implements Serializable, Scopeable
         
         private QName property;
     }
-    
-
-    /**
-     * Inner class wrapping and providing access to a Content stream
-     */
-    public static class ScriptContentStream extends ScriptContent implements Serializable
-    {
-        private static final long serialVersionUID = -7819328543933312278L;
-        
-        /**
-         * Constructor
-         * 
-         * @param stream    content input stream
-         * @param mimetype  content mimetype
-         */
-        public ScriptContentStream(InputStream stream, String mimetype, String encoding)
-        {
-            this.stream = stream;
-            this.mimetype = mimetype;
-            this.encoding = encoding;
-        }
-
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.jscript.ScriptNode.ScriptContent#getContent()
-         */
-        public String getContent()
-        {
-            try
-            {
-                ByteArrayOutputStream os = new ByteArrayOutputStream();
-                FileCopyUtils.copy(stream, os);  // both streams are closed
-                byte[] bytes = os.toByteArray();
-                // get the encoding for the string
-                String encoding = getEncoding();
-                // create the string from the byte[] using encoding if necessary
-                String content = (encoding == null) ? new String(bytes) : new String(bytes, encoding);
-                // done
-                return content;
-            }
-            catch (IOException e)
-            {
-                throw new ContentIOException("Failed to copy content to string", e);
-            }
-        }
-        
-        /*package*/ InputStream getInputStream()
-        {
-            return stream;
-        }
-        
-        public long getSize()
-        {
-            return -1;
-        }
-        
-        public String getMimetype()
-        {
-            return mimetype;
-        }
-        
-        public String getEncoding()
-        {
-            return encoding;
-        }
-
-        
-        private InputStream stream;
-        
-        private String mimetype;
-        
-        private String encoding;
-    }
-
     
     /**
      * Interface contract for simple anonymous classes that implement document transformations

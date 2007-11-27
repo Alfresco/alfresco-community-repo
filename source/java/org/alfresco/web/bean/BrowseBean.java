@@ -527,8 +527,7 @@ public class BrowseBean implements IContextListener
 	               MapNode node = null;
 
 	               // look for Space folder node
-	               if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) == true &&
-	                        this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
+	               if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER))
 	               {
 	                  // create our Node representation
 	                  node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
@@ -782,8 +781,7 @@ public class BrowseBean implements IContextListener
                   this.contentNodes.add(node);
                }
                // look for Space folder node
-               else if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) == true &&
-                        this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
+               else if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER))
                {
                   // create our Node representation
                   node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());

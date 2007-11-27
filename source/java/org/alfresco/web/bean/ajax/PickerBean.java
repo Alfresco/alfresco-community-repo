@@ -34,13 +34,16 @@ import javax.transaction.UserTransaction;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.app.servlet.ajax.InvokeCommand;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Repository;
@@ -55,6 +58,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class PickerBean
 {
+   private static final String FOLDER_IMAGE_PREFIX = "/images/icons/";
+   
    private static Log logger = LogFactory.getLog(PickerBean.class);
    
    private CategoryService categoryService;
@@ -134,6 +139,8 @@ public class PickerBean
          {
             out.writeNullValue("id");
             out.writeValue("name", "Categories");
+            out.writeValue("isroot", true);
+            out.writeValue("selectable", false);
          }
          else
          {
@@ -178,12 +185,14 @@ public class PickerBean
          tx.begin();
          
          List<ChildAssociationRef> childRefs;
+         NodeRef companyHomeRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId(fc));
          NodeRef parentRef = null;
          Map params = fc.getExternalContext().getRequestParameterMap();
          String strParentRef = (String)params.get("parent");
          if (strParentRef == null || strParentRef.length() == 0)
          {
-            parentRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId(fc));
+            parentRef = companyHomeRef;
+            strParentRef = parentRef.toString();
          }
          else
          {
@@ -195,15 +204,11 @@ public class PickerBean
          out.startObject();
          out.startValue("parent");
          out.startObject();
-         if (strParentRef == null || strParentRef.length() == 0)
+         out.writeValue("id", strParentRef);
+         out.writeValue("name", Repository.getNameForNode(this.internalNodeService, parentRef));
+         if (parentRef.equals(companyHomeRef))
          {
-            out.writeNullValue("id");
-            out.writeValue("name", Repository.getNameForNode(this.internalNodeService, parentRef));
-         }
-         else
-         {
-            out.writeValue("id", strParentRef);
-            out.writeValue("name", Repository.getNameForNode(this.internalNodeService, parentRef));
+            out.writeValue("isroot", true);
          }
          out.endObject();
          out.endValue();
@@ -217,7 +222,7 @@ public class PickerBean
             out.writeValue("id", folder.getNodeRef().toString());
             out.writeValue("name", (String)folder.getProperties().get(ContentModel.PROP_NAME));
             String icon = (String)folder.getProperties().get(ApplicationModel.PROP_ICON);
-            out.writeValue("icon", (icon != null ? icon + "-16.gif" : BrowseBean.SPACE_SMALL_DEFAULT + ".gif"));
+            out.writeValue("icon", FOLDER_IMAGE_PREFIX + (icon != null ? icon + "-16.gif" : BrowseBean.SPACE_SMALL_DEFAULT + ".gif"));
             out.endObject();
          }
          
@@ -230,6 +235,89 @@ public class PickerBean
       catch (Throwable err)
       {
          Utils.addErrorMessage("PickerBean exception in getFolderNodes()", err);
+         fc.getResponseWriter().write("ERROR: " + err.getMessage());
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
+   }
+   
+   @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_HTML)
+   public void getFileFolderNodes() throws Exception
+   {
+      FacesContext fc = FacesContext.getCurrentInstance();
+      
+      UserTransaction tx = null;
+      try
+      {
+         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
+         tx.begin();
+         
+         DictionaryService dd = Repository.getServiceRegistry(fc).getDictionaryService();
+         
+         List<ChildAssociationRef> childRefs;
+         NodeRef companyHomeRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId(fc));
+         NodeRef parentRef = null;
+         Map params = fc.getExternalContext().getRequestParameterMap();
+         String strParentRef = (String)params.get("parent");
+         if (strParentRef == null || strParentRef.length() == 0)
+         {
+            parentRef = companyHomeRef;
+            strParentRef = parentRef.toString();
+         }
+         else
+         {
+            parentRef = new NodeRef(strParentRef);
+         }
+         List<FileInfo> items = this.fileFolderService.list(parentRef);
+         
+         JSONWriter out = new JSONWriter(fc.getResponseWriter());
+         out.startObject();
+         out.startValue("parent");
+         out.startObject();
+         out.writeValue("id", strParentRef);
+         out.writeValue("name", Repository.getNameForNode(this.internalNodeService, parentRef));
+         if (parentRef.equals(companyHomeRef))
+         {
+            out.writeValue("isroot", true);
+         }
+         out.writeValue("selectable", false);
+         out.endObject();
+         out.endValue();
+         out.startValue("children");
+         out.startArray();
+         
+         // filter out those children that are not spaces
+         for (FileInfo item : items)
+         {
+            out.startObject();
+            out.writeValue("id", item.getNodeRef().toString());
+            String name = (String)item.getProperties().get(ContentModel.PROP_NAME);
+            out.writeValue("name", name);
+            if (dd.isSubClass(this.internalNodeService.getType(item.getNodeRef()), ContentModel.TYPE_FOLDER))
+            {
+               // found a folder
+               String icon = (String)item.getProperties().get(ApplicationModel.PROP_ICON);
+               out.writeValue("icon", FOLDER_IMAGE_PREFIX + (icon != null ? icon + "-16.gif" : BrowseBean.SPACE_SMALL_DEFAULT + ".gif"));
+               out.writeValue("selectable", false);
+            }
+            else
+            {
+               // must be a file
+               String icon = Utils.getFileTypeImage(fc, name, FileTypeImageSize.Small);
+               out.writeValue("icon", icon);
+               out.writeValue("url", DownloadContentServlet.generateBrowserURL(item.getNodeRef(), name));
+            }
+            out.endObject();
+         }
+         
+         out.endArray();
+         out.endValue();
+         out.endObject();
+         
+         tx.commit();
+      }
+      catch (Throwable err)
+      {
+         Utils.addErrorMessage("PickerBean exception in getFileFolderNodes()", err);
          fc.getResponseWriter().write("ERROR: " + err.getMessage());
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
       }

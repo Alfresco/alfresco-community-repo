@@ -28,7 +28,10 @@ var AlfPicker = new Class(
    id: null,
 
    /* variable name being used */
-   varName: null, 
+   varName: null,
+   
+   /* form Id to submit when selection complete */
+   formClientId: null,
    
    /* the item the picker will start with */
    startId: null,
@@ -57,13 +60,15 @@ var AlfPicker = new Class(
    /* single selection mode flag */
    singleSelect: false,
    
-   initialize: function(id, varName, service, singleSelect) 
+   /* initial display style of the outer div */
+   initialDisplayStyle: null,
+   
+   initialize: function(id, varName, service, formClientId, singleSelect) 
    {
       this.id = id;
       this.varName = varName;
-      this.parent = this.startId;
-      this.selected = [];
       this.service = service;
+      this.formClientId = formClientId;
       if (singleSelect != undefined)
       {
          this.singleSelect = singleSelect;
@@ -82,7 +87,13 @@ var AlfPicker = new Class(
    
    showSelector: function()
    {
+      // init selector state
+      this.selected = [];
+      this.stack = [];
+      
+      this.initialDisplayStyle = $(this.id + "-noitems").getStyle("display");
       $(this.id + "-selector").setStyle("display", "block");
+      $(this.id + "-selected").empty();
       $(this.id + "-selected").setStyle("display", "block");
       $(this.id + "-noitems").setStyle("display", "none");
       if (this.singleSelect)
@@ -90,7 +101,7 @@ var AlfPicker = new Class(
          $(this.id + "-finish").setStyle("display", "none");
       }
       
-      // simulate an ajax request for children of start item
+      // first ajax request for the children of the start item
       this.getChildData(this.startId, this.populateChildren);
    },
    
@@ -115,7 +126,15 @@ var AlfPicker = new Class(
    
    addItem: function(index)
    {
-      var item = this.items[index];
+      var item;
+      if (index != -1)
+      {
+         item = this.items[index];
+      }
+      else
+      {
+         item = this.parent;
+      }
       
       // add item to list of selected items      
       this.selected.push(item);
@@ -154,7 +173,7 @@ var AlfPicker = new Class(
          itemDiv.injectInside($(this.id + "-selected"));
          
          // set the background image now the itemdiv has been added to the DOM (for IE)
-         itemDiv.setStyle("background-image", "url(" + getContextPath() + "/images/icons/" + item.icon + ")");
+         itemDiv.setStyle("background-image", "url(" + getContextPath() + item.icon + ")");
          
          // set opacity the style now the item has been added to the DOM (for IE)
          $E('.pickerSelectedIcon', itemDiv).setStyle("opacity", 0);
@@ -253,10 +272,23 @@ var AlfPicker = new Class(
    
    doneClicked: function()
    {
-      $(this.id + "-selector").setStyle("display", "none");
-      $(this.id + "-value").setProperty("value", this.selected);
+      var ids = "";
+      for (i=0; i<this.selected.length; i++)
+      {
+         if (i != 0) ids += ",";
+         ids += this.selected[i].id;
+      }
+      $(this.id + "-value").setProperty("value", ids);
       
-      alert("The following items have been selected: " + $(this.id + "-value").value);
+      document.forms[this.formClientId].submit();
+      return false;
+   },
+   
+   cancelClicked: function()
+   {
+      $(this.id + "-selector").setStyle("display", "none");
+      $(this.id + "-selected").setStyle("display", "none");
+      $(this.id + "-noitems").setStyle("display", this.initialDisplayStyle);
    },
    
    populateChildren: function(response, picker, scrollpos)
@@ -266,18 +298,18 @@ var AlfPicker = new Class(
       results.empty();
       
       // set the new parent
-      picker.parent = response.parent.id;
+      picker.parent = {id: response.parent.id, name: response.parent.name};
       
-      // if nav stack is empty - add an item to represent the parent as the first entry
+      // if nav stack is empty - add the parent item as the first entry
       if (picker.stack.length == 0)
       {
-         picker.stack.push({id: response.parent.id, name: response.parent.name});
+         picker.stack.push(picker.parent);
       }
       
       // if the parent is null we're at the root so hide the up link
       // otherwise we need to render it with the correct details
       var upLink = $(picker.id + "-nav-up");
-      if (picker.parent == null)
+      if (picker.parent.id == null || response.parent.isroot == true)
       {
          upLink.setStyle("display", "none");
          upLink.setProperty("href", "#");
@@ -285,11 +317,37 @@ var AlfPicker = new Class(
       else
       {
          upLink.setStyle("display", "block");
-         upLink.setProperty("href", "javascript:" + picker.varName + ".upClicked('" + picker.parent + "');");
+         upLink.setProperty("href", "javascript:" + picker.varName + ".upClicked('" + picker.parent.id + "');");
       }
       
       // show what the parent next to the breadcrumb drop-down
-      $(picker.id + "-nav-txt").setText(response.parent.name);
+      $(picker.id + "-nav-txt").setText(picker.parent.name);
+      
+      // render action for parent item (as it may be the root and not shown in child list!)
+      $(picker.id + "-nav-add").empty();
+      if (response.parent.selectable != false)
+      {
+         var isSelected = false;
+         for (i=0; i<picker.selected.length; i++)
+         {
+            if (picker.selected[i].id == picker.parent.id)
+            {
+               isSelected = true; break;
+            }
+         }
+         if (isSelected == false)
+         {
+            var actionId = picker.id + "-add-" + picker.parent.id;
+            var actionScript = "javascript:" + picker.varName + ".addItem(-1);";
+            var actionLink = new Element("a", {"href": actionScript});
+            var actionImg = new Element("img", {"id": actionId, "src": getContextPath() + "/images/icons/plus.gif", "class": "pickerActionButton",
+                                        "border": 0, "title": "Add", "alt": "Add"});
+            actionImg.injectInside(actionLink);
+            actionLink.injectInside($(picker.id + "-nav-add"));
+            // style modification for this Add button - it's inside a floating div unlike the others
+            if (document.all == undefined) actionImg.setStyle("vertical-align", "-18px");
+         }
+      }
       
       // iterate through the children and render a row for each one
       picker.items = [];
@@ -322,37 +380,48 @@ var AlfPicker = new Class(
       
       // render icon
       var iconSpan = new Element("span", {"class": "pickerResultIcon"});
-      var iconImg = new Element("img", {"src": getContextPath() + "/images/icons/" + item.icon});
+      var iconImg = new Element("img", {"src": getContextPath() + item.icon});
       iconImg.injectInside(iconSpan);
       iconSpan.injectInside(div);
       
       // render actions
-      var actionsSpan = new Element("span", {"class": "pickerResultActions"});
-      
-      // see if the item exists in the selected items array - don't display Add button if it does
-      var found = false;
-      for (i=0; i<this.selected.length; i++)
+      var isSelected = false;
+      if (item.selectable != false)
       {
-         if (this.selected[i].id == item.id)
+         var actionsSpan = new Element("span", {"class": "pickerResultActions"});
+         
+         // display Add button for the item 
+         for (i=0; i<this.selected.length; i++)
          {
-            found = true; break;
+            if (this.selected[i].id == item.id)
+            {
+               isSelected = true; break;
+            }
          }
+         // even if found in the selected list, still need to generate the button - but hide it later
+         var actionId = this.id + "-add-" + item.id;
+         var actionScript = "javascript:" + this.varName + ".addItem(" + index + ");";
+         var actionLink = new Element("a", {"href": actionScript});
+         var actionImg = new Element("img", {"id": actionId, "src": getContextPath() + "/images/icons/plus.gif", "class": "pickerActionButton",
+                                     "border": 0, "title": "Add", "alt": "Add"});
+         actionImg.injectInside(actionLink);
+         actionLink.injectInside(actionsSpan);
+         
+         actionsSpan.injectInside(div);
       }
-      var actionId = this.id + "-add-" + item.id;
-      var actionScript = "javascript:" + this.varName + ".addItem(" + index + ");";
-      var actionLink = new Element("a", {"href": actionScript});
-      var actionImg = new Element("img", {"id": actionId, "src": getContextPath() + "/images/icons/plus.gif", "class": "pickerActionButton",
-                                  "border": 0, "title": "Add", "alt": "Add"});
-      actionImg.injectInside(actionLink);
-      actionLink.injectInside(actionsSpan);
-      actionsSpan.injectInside(div);
       
-      // render name
+      // render name link
       var nameSpan = new Element("span", {"class": "pickerResultName"});
-      
-      var link = "javascript:" + this.varName + ".childClicked(" + index + ");";
-      
-      var nameLink = new Element("a", {"href": link});
+      var nameLink;
+      if (item.url == undefined)
+      {
+         var link = "javascript:" + this.varName + ".childClicked(" + index + ");";
+         nameLink = new Element("a", {"href": link});
+      }
+      else
+      {
+         nameLink = new Element("a", {"href": getContextPath() + item.url, "target": "new"});
+      }
       nameLink.appendText(item.name);
       nameLink.injectInside(nameSpan);
       nameSpan.injectInside(div);
@@ -361,7 +430,7 @@ var AlfPicker = new Class(
       div.injectInside($(this.id + "-results-list"));
       
       // hide the Add button (now this item is in the DOM) if in the selected list
-      if (found)
+      if (isSelected)
       {
          actionImg.setStyle("display", "none");
       }

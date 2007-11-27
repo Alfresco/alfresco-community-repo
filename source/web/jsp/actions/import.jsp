@@ -113,11 +113,10 @@
                                  <tr>
                                     <td><h:outputText value="#{msg.import_to}"/>:</td>
                                     <td width="90%">
-                                       <r:spaceSelector id="category-selector"
-                                                        label="#{msg.select_destination_prompt}" 
-                                                        value="#{WizardManager.bean.actionProperties.destinationLocation}" 
-                                                        initialSelection="#{NavigationBean.currentNodeId}"
-                                                        style="border: 1px dashed #cccccc; padding: 6px;"/>
+                                       <r:ajaxFolderSelector id="spaceSelector" label="#{msg.select_destination_prompt}" 
+                                                             value="#{WizardManager.bean.actionProperties.destinationLocation}" 
+                                                             initialSelection="#{NavigationBean.currentNode.nodeRefAsString}"
+                                                             style="border: 1px dashed #cccccc; padding: 6px; display: inline;" />
                                     </td>
                                  </tr>
                                  <%--

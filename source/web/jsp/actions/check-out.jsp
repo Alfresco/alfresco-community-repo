@@ -113,10 +113,10 @@
                                  <tr>
                                     <td><nobr><h:outputText value="#{msg.checkout_location}"/>:</nobr></td>
                                     <td width="100%">
-                                       <r:spaceSelector id="space-selector" label="#{msg.select_checkout_prompt}" 
-                                                        value="#{WizardManager.bean.actionProperties.destinationLocation}" 
-                                                        initialSelection="#{NavigationBean.currentNodeId}"
-                                                        styleClass="selector"/>
+                                       <r:ajaxFolderSelector id="spaceSelector" label="#{msg.select_checkout_prompt}" 
+                                                             value="#{WizardManager.bean.actionProperties.destinationLocation}" 
+                                                             initialSelection="#{NavigationBean.currentNode.nodeRefAsString}"
+                                                             styleClass="selector" />
                                     </td>
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>

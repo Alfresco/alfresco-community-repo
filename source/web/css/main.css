@@ -422,6 +422,7 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 {
    border: 1px dashed #cccccc;
    padding: 4px;
+   display: inline;
 }
 
 .selectedItems

@@ -175,11 +175,11 @@
                                              <td valign="top" style="padding-top:10px;"><h:outputText value="#{msg.to}"/>:</td>
                                              <td style="padding-left:6px;"></td>
                                              <td style="padding-top:6px;">
-                                                <r:spaceSelector id="client-approve-folder"
-                                                        label="#{msg.select_destination_prompt}" 
-                                                        value="#{WizardManager.bean.actionProperties.approveFolder}" 
-                                                        initialSelection="#{NavigationBean.currentNodeId}"
-                                                        styleClass="selector"/>
+                                                <r:ajaxFolderSelector id="clientApproveFolder"
+                                                             label="#{msg.select_destination_prompt}" 
+                                                             value="#{WizardManager.bean.actionProperties.approveFolder}" 
+                                                             initialSelection="#{NavigationBean.currentNode.nodeRefAsString}"
+                                                             styleClass="selector" />
                                              </td>
                                           </tr>
                                        </table>
@@ -231,11 +231,11 @@
                                                                <td valign="top" style="padding-top:10px;"><h:outputText value="#{msg.to}"/>:</td>
                                                                <td style="padding-left:6px;"></td>
                                                                <td style="padding-top:6px;">
-                                                                  <r:spaceSelector id="client-reject-folder"
-                                                                          label="#{msg.select_destination_prompt}" 
-                                                                          value="#{WizardManager.bean.actionProperties.rejectFolder}"
-                                                                          initialSelection="#{NavigationBean.currentNodeId}" 
-                                                                          styleClass="selector"/>
+                                                                  <r:ajaxFolderSelector id="clientRejectFolder"
+                                                                               label="#{msg.select_destination_prompt}" 
+                                                                               value="#{WizardManager.bean.actionProperties.rejectFolder}" 
+                                                                               initialSelection="#{NavigationBean.currentNode.nodeRefAsString}"
+                                                                               styleClass="selector" />
                                                                </td>
                                                             </tr>
                                                          </table>

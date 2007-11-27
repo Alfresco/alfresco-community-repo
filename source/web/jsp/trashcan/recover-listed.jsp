@@ -68,8 +68,10 @@
 </f:verbatim><h:outputText value="#{msg.destination}" /><f:verbatim>:&nbsp;
 </td>
 <td width=100%>
-</f:verbatim><r:spaceSelector id="space-selector" label="#{msg.select_destination_prompt}"
-value="#{TrashcanDialogProperty.destination}" styleClass="selector" />
+</f:verbatim>
+<r:ajaxFolderSelector id="spaceSelector" label="#{msg.select_destination_prompt}" 
+                               value="#{TrashcanDialogProperty.destination}" 
+                               styleClass="selector" />
 <f:verbatim>
 </td>
 </tr>

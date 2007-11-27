@@ -44,8 +44,9 @@
                                noSelectedItemsMsg="#{msg.no_selected_categories}"
                                styleClass="selector">
             <f:subview id="categorySelector">
-               <r:categorySelector id="category-selector" label="#{msg.select_category_prompt}"
-                                   styleClass="selector" value="#{DialogManager.bean.addedCategory}" />
+               <r:ajaxCategorySelector id="catSelector" styleClass="selector"
+                        value="#{DialogManager.bean.addedCategory}" 
+                        label="#{msg.select_category_prompt}" />
             </f:subview>
          </r:multiValueSelector>
          <f:verbatim>

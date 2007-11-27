@@ -203,7 +203,10 @@
                                  <tr>
                                     <td><h:outputText value="#{msg.home_space_location}"/>:</td>
                                     <td>
-                                       <r:spaceSelector id="space-selector" label="#{msg.select_home_space_prompt}" value="#{NewUserWizard.homeSpaceLocation}" initialSelection="#{NavigationBean.currentNodeId}" style="border: 1px dashed #cccccc; padding: 2px;"/>
+                                       <r:ajaxFolderSelector id="spaceSelector" label="#{msg.select_home_space_prompt}" 
+                                                                      value="#{NewUserWizard.homeSpaceLocation}" 
+                                                                      initialSelection="#{NavigationBean.currentNode.nodeRefAsString}"
+                                                                      style="border: 1px dashed #cccccc; padding: 2px; display: inline;" />
                                     </td>
                                  </tr>
                                  <tr>

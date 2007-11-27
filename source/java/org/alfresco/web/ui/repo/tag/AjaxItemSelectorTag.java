@@ -29,14 +29,14 @@ package org.alfresco.web.ui.repo.tag;
 
 import javax.faces.component.UIComponent;
 
-import org.alfresco.web.ui.common.tag.BaseComponentTag;
+import org.alfresco.web.ui.common.tag.HtmlComponentTag;
 
 /**
  * Base class for the item selector tag
  * 
  * @author Kevin Roast
  */
-public abstract class AjaxItemSelectorTag extends BaseComponentTag
+public abstract class AjaxItemSelectorTag extends HtmlComponentTag
 {
    /** the value */
    private String value;

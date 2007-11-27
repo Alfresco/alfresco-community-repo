@@ -128,10 +128,10 @@
                                  <tr>
                                     <td><h:outputText value="#{msg.destination}"/>:</td>
                                     <td>
-                                       <r:spaceSelector id="space-selector" label="#{msg.select_destination_prompt}" 
-                                                        value="#{WizardManager.bean.actionProperties.destinationLocation}" 
-                                                        initialSelection="#{NavigationBean.currentNodeId}"
-                                                        styleClass="selector"/>
+                                       <r:ajaxFolderSelector id="spaceSelector" label="#{msg.select_destination_prompt}" 
+                                                             value="#{WizardManager.bean.actionProperties.destinationLocation}" 
+                                                             initialSelection="#{NavigationBean.currentNode.nodeRefAsString}"
+                                                             styleClass="selector" />
                                     </td>
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>

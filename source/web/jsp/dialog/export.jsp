@@ -64,10 +64,12 @@ onkeyup="javascript:checkButtonState();" /><f:verbatim>
 <tr>
 <td><nobr></f:verbatim><h:outputText value="#{msg.destination}"/><f:verbatim>:</nobr></td>
 <td>
-</f:verbatim><r:spaceSelector id="destination" label="#{msg.select_destination_prompt}"
-value="#{DialogManager.bean.destination}"
-initialSelection="#{NavigationBean.currentNodeId}"
-styleClass="selector"/><f:verbatim>
+</f:verbatim>
+<r:ajaxFolderSelector id="destination" label="#{msg.select_destination_prompt}" 
+   value="#{DialogManager.bean.destination}" 
+   initialSelection="#{NavigationBean.currentNode.nodeRefAsString}"
+   styleClass="selector" />
+<f:verbatim>
 </td>
 </tr>
 <tr><td class="paddingRow"></td></tr>

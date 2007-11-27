@@ -102,12 +102,12 @@
 					<td valign="top" style="padding-top:10px;"></f:verbatim><h:outputText
 						value="#{msg.to}" /><f:verbatim>:</td>
 					<td style="padding-left:6px;"></td>
-					<td style="padding-top:6px;"></f:verbatim><r:spaceSelector
-						id="client-approve-folder"
-						label="#{msg.select_destination_prompt}"
-						value="#{EditSpaceSimpleWorkflowDialog.workflowProperties.approveFolder}"
-						initialSelection="#{NavigationBean.currentNodeId}"
-						styleClass="selector" /><f:verbatim></td>
+					<td style="padding-top:6px;"></f:verbatim><r:ajaxFolderSelector
+   			      id="clientApproveFolder"
+   			      label="#{msg.select_destination_prompt}" 
+                  value="#{EditSpaceSimpleWorkflowDialog.workflowProperties.approveFolder}" 
+                  initialSelection="#{NavigationBean.currentNode.nodeRefAsString}"
+                  styleClass="selector" /><f:verbatim></td>
 				</tr>
 			</table>
 			</td>
@@ -162,12 +162,12 @@
 									<td valign="top" style="padding-top:10px;"></f:verbatim><h:outputText
 										value="#{msg.to}" /><f:verbatim>:</td>
 									<td style="padding-left:6px;"></td>
-									<td style="padding-top:6px;"></f:verbatim><r:spaceSelector
-										id="client-reject-folder"
-										label="#{msg.select_destination_prompt}"
-										value="#{EditSpaceSimpleWorkflowDialog.workflowProperties.rejectFolder}"
-										initialSelection="#{NavigationBean.currentNodeId}"
-										styleClass="selector" /><f:verbatim></td>
+									<td style="padding-top:6px;"></f:verbatim><r:ajaxFolderSelector
+   							      id="clientRejectFolder"
+               			      label="#{msg.select_destination_prompt}" 
+                              value="#{EditSpaceSimpleWorkflowDialog.workflowProperties.rejectFolder}" 
+                              initialSelection="#{NavigationBean.currentNode.nodeRefAsString}"
+                              styleClass="selector" /><f:verbatim></td>
 								</tr>
 							</table>
 							</td>

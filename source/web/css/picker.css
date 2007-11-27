@@ -1,8 +1,3 @@
-.pickerNoSelectedItems
-{
-   margin-top: 2px
-}
-
 .pickerSelectedItems
 {
    padding-left: 6px;
@@ -112,7 +107,7 @@ img.pickerActionButton
 div.pickerResultsRow
 {
    padding: 4px;
-   height: 16px;
+   height: auto;
 }
 
 .pickerResultsOddRow
@@ -142,7 +137,7 @@ div.pickerResultsRow
    float: right;
 }
 
-div.pickerDoneButton
+div.pickerButtons
 {
    margin: 0 auto;
    width: 50px;
@@ -155,6 +150,8 @@ div.pickerDoneButton
 div.pickerFinishControls
 {
    text-align: center;
+   padding: 0px 64px 0px 64px;
+   height: 2em;
 }
 
 .pickerNavBreadcrumb

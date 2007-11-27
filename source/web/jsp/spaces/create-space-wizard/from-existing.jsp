@@ -63,10 +63,10 @@
    <tr>
       <td>
          </f:verbatim>
-         <r:spaceSelector id="space-selector" label="#{msg.select_existing_space_prompt}" 
-                          value="#{WizardManager.bean.existingSpaceId}" 
-                          initialSelection="#{NavigationBean.currentNodeId}"
-                          styleClass="selector" />
+         <r:ajaxFolderSelector id="spaceSelector" label="#{msg.select_existing_space_prompt}" 
+                               value="#{WizardManager.bean.existingSpaceId}" 
+                               initialSelection="#{NavigationBean.currentNode.nodeRefAsString}"
+                               styleClass="selector" />
          <f:verbatim>
       </td>
    </tr>

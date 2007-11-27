@@ -72,6 +72,7 @@ import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIModeList;
 import org.alfresco.web.ui.common.component.UIPanel.ExpandedEvent;
+import org.alfresco.web.ui.repo.component.UIAjaxCategoryPicker;
 import org.alfresco.web.ui.repo.component.UICategorySelector;
 import org.alfresco.web.ui.repo.component.UISearchCustomProperties;
 
@@ -936,16 +937,21 @@ public class AdvancedSearchDialog extends BaseDialogBean
     */
    public void addCategory(ActionEvent event)
    {
-      UICategorySelector selector = (UICategorySelector)event.getComponent().findComponent("catSelector");
+      UIAjaxCategoryPicker selector = (UIAjaxCategoryPicker)event.getComponent().findComponent("catSelector");
       UISelectBoolean chkChildren = (UISelectBoolean)event.getComponent().findComponent("chkCatChildren");
       
-      NodeRef categoryRef = (NodeRef)selector.getValue();
-      if (categoryRef != null)
+      List<NodeRef> categoryRefs = (List<NodeRef>)selector.getValue();
+      if (categoryRefs != null)
       {
-         Node categoryNode = new MapNode(categoryRef);
-         // add a value bound propery used to indicate if searching across children is selected
-         categoryNode.getProperties().put(INCLUDE_CHILDREN, chkChildren.isSelected());
-         properties.getCategories().add(categoryNode);
+         for (NodeRef categoryRef : categoryRefs)
+         {
+            Node categoryNode = new MapNode(categoryRef);
+            // add a value bound propery used to indicate if searching across children is selected
+            categoryNode.getProperties().put(INCLUDE_CHILDREN, chkChildren.isSelected());
+            properties.getCategories().add(categoryNode);
+         }
+         // clear selector value after the list has been populated
+         selector.setValue(null);
       }
    }
    

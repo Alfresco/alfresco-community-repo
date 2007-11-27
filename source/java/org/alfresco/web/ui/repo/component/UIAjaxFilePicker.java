@@ -27,23 +27,24 @@ package org.alfresco.web.ui.repo.component;
 /**
  * @author Kevin Roast
  */
-public class UIAjaxCategoryPicker extends BaseAjaxItemPicker
+public class UIAjaxFilePicker extends BaseAjaxItemPicker
 {
    @Override
    public String getFamily()
    {
-      return "org.alfresco.faces.AjaxCategoryPicker";
+      return "org.alfresco.faces.AjaxFilePicker";
    }
 
    @Override
    protected String getServiceCall()
    {
-      return "PickerBean.getCategoryNodes";
+      return "PickerBean.getFileFolderNodes";
    }
 
    @Override
    protected String getDefaultIcon()
    {
-      return "/images/icons/category_small.gif";
+      // none required - we always return an icon name in the service call
+      return null;
    }
 }

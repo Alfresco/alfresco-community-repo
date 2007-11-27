@@ -25,17 +25,25 @@
 package org.alfresco.web.ui.repo.component;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
-import javax.faces.event.AbortProcessingException;
-import javax.faces.event.FacesEvent;
+import javax.transaction.UserTransaction;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.Utils;
+import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * @author Kevin Roast
@@ -110,16 +118,23 @@ public abstract class BaseAjaxItemPicker extends UIInput
       Map requestMap = context.getExternalContext().getRequestParameterMap();
       String fieldId = getHiddenFieldName();
       String value = (String)requestMap.get(fieldId);
-      
-      
-   }
-   
-   /**
-    * @see javax.faces.component.UIInput#broadcast(javax.faces.event.FacesEvent)
-    */
-   public void broadcast(FacesEvent event) throws AbortProcessingException
-   {
-      super.broadcast(event);
+      if (value != null && value.length() != 0)
+      {
+         if (getSingleSelect() == true)
+         {
+            NodeRef ref = new NodeRef(value);
+            this.setSubmittedValue(ref);
+         }
+         else
+         {
+            List<NodeRef> refs = new ArrayList<NodeRef>(5);
+            for (StringTokenizer t = new StringTokenizer(value, ","); t.hasMoreTokens(); /**/)
+            {
+               refs.add(new NodeRef(t.nextToken()));
+            }
+            this.setSubmittedValue(refs);
+         }
+      }
    }
    
    /**
@@ -134,17 +149,83 @@ public abstract class BaseAjaxItemPicker extends UIInput
       
       ResponseWriter out = fc.getResponseWriter();
       
+      String formClientId = Utils.getParentForm(fc, this).getClientId(fc);
+      Map attrs = this.getAttributes();
       ResourceBundle msg = Application.getBundle(fc);
       
-      // TODO: from submitted value or 'none'
-      String selection = "none";
+      // get values from submitted value or none selected
+      String selection = null;
+      List<NodeRef> submitted = null;
+      if (getSingleSelect() == true)
+      {
+         NodeRef ref = (NodeRef)getSubmittedValue();
+         if (ref == null)
+         {
+            Object objRef = getValue();
+            if (objRef instanceof String)
+            {
+               ref = new NodeRef((String)objRef);
+            }
+            else if (objRef instanceof NodeRef)
+            {
+               ref = (NodeRef)objRef;
+            }
+         }
+         if (ref != null)
+         {
+            submitted = new ArrayList<NodeRef>(1);
+            submitted.add(ref);
+         }
+      }
+      else
+      {
+         submitted = (List<NodeRef>)getSubmittedValue();
+         if (submitted == null)
+         {
+            submitted = (List<NodeRef>)getValue();
+         }
+      }
+      if (submitted != null)
+      {
+         UserTransaction tx = null;
+         try
+         {
+            tx = Repository.getUserTransaction(fc, true);
+            tx.begin();
+            
+            StringBuilder buf = new StringBuilder(128);
+            NodeService nodeService = (NodeService)FacesContextUtils.getRequiredWebApplicationContext(
+                  fc).getBean("nodeService");
+            for (NodeRef value : submitted)
+            {
+               String name = (String)nodeService.getProperty(value, ContentModel.PROP_NAME);
+               if (buf.length() != 0)
+               {
+                  buf.append(", ");
+               }
+               buf.append(name);
+            }
+            selection = buf.toString();
+            
+            // commit the transaction
+            tx.commit();
+         }
+         catch (Throwable err)
+         {
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         }
+      }
       
+      // generate the Ids for our script object and containing DIV element
       String divId = getId();
       String objId = divId + "Obj"; 
+      
+      // generate the script to create and init our script object
       String contextPath = fc.getExternalContext().getRequestContextPath();
       out.write("<script type='text/javascript'>");
       out.write("function init" + divId + "() {");
-      out.write(" window." + objId + " = new AlfPicker('" + divId + "','" + objId + "','" + getServiceCall() + "'," + getSingleSelect() + ");");
+      out.write(" window." + objId + " = new AlfPicker('" + divId + "','" + objId + "','" + getServiceCall() +
+                "','" + formClientId + "'," + getSingleSelect() + ");");
       if (getInitialSelection() != null)
       {
          out.write(" window." + objId + ".setStartId('" + getInitialSelection() + "');");
@@ -157,12 +238,32 @@ public abstract class BaseAjaxItemPicker extends UIInput
       out.write("window.addEvent('domready', init" + divId + ");");
       out.write("</script>");
       
+      // generate the DIV structure for our component as expected by the script object
       out.write("<div id='" + divId + "' class='picker'>") ;
-      out.write(" <input id='" + divId + "-value' name='" + divId + "-value' type='hidden'>");
-      out.write(" <div id='" + divId + "-noitems' class='pickerNoSelectedItems'>");
-      out.write("  <span>&lt;" + selection + "&gt;</span>");
-      out.write("  <span class='pickerActionButton'><a href='#' onclick='" + objId + ".showSelector();'>");
-      out.write(msg.getString(getLabel()));
+      out.write(" <input id='" + getHiddenFieldName() + "' name='" + getHiddenFieldName() + "' type='hidden'>");
+      // current selection displayed as link and message to launch the selector
+      out.write(" <div id='" + divId + "-noitems'");
+      if (attrs.get("style") != null)
+      {
+         out.write(" style=\"");
+         out.write((String)attrs.get("style"));
+         out.write('"');
+      }
+      if (attrs.get("styleClass") != null)
+      {
+         out.write(" class=");
+         out.write((String)attrs.get("styleClass"));
+      }
+      out.write(">");
+      out.write("  <span class='pickerActionButton'><a href='javascript:" + objId + ".showSelector();'>");
+      if (selection == null)
+      {
+         out.write(getLabel());
+      }
+      else
+      {
+         out.write(selection);
+      }
       out.write("</a></span>");
       out.write(" </div>");
       // container for item navigation
@@ -181,10 +282,11 @@ public abstract class BaseAjaxItemPicker extends UIInput
       out.write("     </span>");
       out.write("     <span class='pickerNavBreadcrumb'>");
       out.write("      <div id='" + divId + "-nav-bread' class='pickerNavBreadcrumbPanel'></div>");
-      out.write("      <a href='#' onclick='" + objId + ".breadcrumbToggle();'><span id='" + divId + "-nav-txt'></span><img border='0' src='");
+      out.write("      <a href='javascript:" + objId + ".breadcrumbToggle();'><span id='" + divId + "-nav-txt'></span><img border='0' src='");
       out.write(contextPath);
       out.write("/images/icons/arrow_open.gif'></a>");
       out.write("     </span>");
+      out.write("     <span id='" + divId + "-nav-add'></span>");
       out.write("    </div>");
       out.write("   </div>");
       // container for item selection
@@ -193,14 +295,17 @@ public abstract class BaseAjaxItemPicker extends UIInput
       out.write("    <div id='" + divId + "-results-list' class='pickerResultsList'></div>");
       out.write("   </div>");
       out.write("  </div>");
-      out.write("  <div id='" + divId + "-finish' class='pickerFinishControls'>");
-      out.write("   <div class='pickerDoneButton'><a href='#' onclick='" + objId + ".doneClicked();'>");
+      // controls (OK & Cancel buttons etc.)
+      out.write("  <div class='pickerFinishControls'>");
+      out.write("   <div id='" + divId + "-finish' style='float:left' class='pickerButtons'><a href='javascript:" + objId + ".doneClicked();'>");
       out.write(msg.getString(MSG_OK));
       out.write("</a></div>");
-      // TODO: Cancel button
+      out.write("   <div style='float:right' class='pickerButtons'><a href='javascript:" + objId + ".cancelClicked();'>");
+      out.write(msg.getString(MSG_CANCEL));
+      out.write("</a></div>");
       out.write("  </div>");
       out.write(" </div>");
-      // container for selected items
+      // container for the selected items
       out.write(" <div id='" + divId + "-selected' class='pickerSelectedItems'></div>");
       out.write("</div>");
    }
@@ -331,6 +436,6 @@ public abstract class BaseAjaxItemPicker extends UIInput
     */
    protected String getHiddenFieldName()
    {
-      return this.getClientId(getFacesContext());
+      return this.getId() + "-value";
    }
 }

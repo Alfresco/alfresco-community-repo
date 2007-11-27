@@ -184,7 +184,7 @@
                                              </tr>
                                              <tr>
                                                 <td style="padding-left:26px">
-                                                   <r:spaceSelector label="#{msg.select_space_prompt}" value="#{SearchProperties.location}" initialSelection="#{NavigationBean.currentNodeId}" styleClass="selector" id="spaceSelector" />
+                                                   <r:ajaxFolderSelector id="spaceSelector" styleClass="selector" label="#{msg.select_space_prompt}" value="#{SearchProperties.location}" singleSelect="true" initialSelection="#{NavigationBean.currentNode.nodeRefAsString}" />
                                                 </td>
                                              </tr>
                                              <tr>
@@ -203,7 +203,7 @@
                                           <table cellpadding="2" cellspacing="2" border="0">
                                              <tr>
                                                 <td style="padding-left:8px;padding-top:8px">
-                                                   <r:categorySelector id="catSelector" label="#{msg.select_category_prompt}" styleClass="selector" />
+                                                   <r:ajaxCategorySelector id="catSelector" styleClass="selector" label="#{msg.select_category_prompt}" singleSelect="false" />
                                                 </td>
                                              </tr>
                                              <tr>

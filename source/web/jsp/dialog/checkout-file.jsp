@@ -69,10 +69,11 @@
                   <td style="padding-left:26px">
                      <%-- Space selector to allow user to pick a Space --%>
                      </f:verbatim>
-                     <r:spaceSelector id="space-selector" label="#{msg.select_space_prompt}"
-                                      value="#{CCProperties.selectedSpaceId}"
-                                      initialSelection="#{NavigationBean.currentNodeId}"
-                                      styleClass="selector"/><f:verbatim>
+                     <r:ajaxFolderSelector id="spaceSelector" label="#{msg.select_space_prompt}" 
+                                           value="#{CCProperties.selectedSpaceId}" 
+                                           initialSelection="#{NavigationBean.currentNode.nodeRefAsString}"
+                                           styleClass="selector" />
+                     <f:verbatim>
                   </td>
                </tr>
             </table>

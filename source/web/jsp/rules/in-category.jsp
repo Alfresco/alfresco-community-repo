@@ -113,9 +113,9 @@
                                  <tr>
                                     <td valign="top"><h:outputText value="#{msg.category}"/>:</td>
                                     <td width="90%">
-                                       <r:categorySelector id="category-selector" label="#{msg.select_category_prompt}" 
-                                                        value="#{WizardManager.bean.conditionProperties.category}" 
-                                                        styleClass="selector"/>
+                                       <r:ajaxCategorySelector id="catSelector" styleClass="selector"
+                                                value="#{WizardManager.bean.conditionProperties.category}" 
+                                                label="#{msg.select_category_prompt}" />
                                     </td>
                                  </tr>
                                  <tr><td colspan="2" class="paddingRow"></td></tr>

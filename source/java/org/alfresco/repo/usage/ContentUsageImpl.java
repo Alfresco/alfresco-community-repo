@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.usage.ContentQuotaException;
 import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.cmr.usage.UsageService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -296,6 +297,7 @@ public class ContentUsageImpl implements ContentUsageService,
                               ", usage=" + currentSize +
                               ", quota=" + quotaSize);
             }
+            throw new ContentQuotaException("User quota exceeded");
         }
         
         NodeRef personNodeRef = personService.getPerson(userName);

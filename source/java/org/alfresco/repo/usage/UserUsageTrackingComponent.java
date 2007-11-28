@@ -148,7 +148,7 @@ public class UserUsageTrackingComponent
          
                     if (logger.isDebugEnabled()) 
                     {
-                        logger.debug("... cleared usage for " + count + " users");
+                        logger.debug("... cleared usages for " + count + " users");
                     }
                 }
             }
@@ -160,7 +160,7 @@ public class UserUsageTrackingComponent
                 {
                     if (logger.isDebugEnabled()) 
                     {
-                        logger.debug("Enabled - calculate usages for all users (without usage) ...");
+                        logger.debug("Enabled - calculate missing usages ...");
                     }
 
                     RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
@@ -195,7 +195,7 @@ public class UserUsageTrackingComponent
          
                     if (logger.isDebugEnabled()) 
                     {
-                        logger.debug("... calculated usage for " + userNames.size() + " users");
+                        logger.debug("... calculated missing usages for " + userNames.size() + " users");
                     }
                 }
                 else

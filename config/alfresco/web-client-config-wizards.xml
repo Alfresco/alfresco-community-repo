@@ -693,9 +693,9 @@
 
 			<wizard name="editUser"
 				managed-bean="EditUserWizard"
-				title-id="new_user_title"
-				description-id="new_user_desc"
-				icon="/images/icons/new_user_large.gif">
+				title-id="new_user_title_edit"
+				description-id="new_user_desc_edit"
+				icon="/images/icons/edituser_large.gif">
 				<step name="person-properties"
 					title-id="person_properties"
 					description-id="new_user_step1_desc">
@@ -720,6 +720,7 @@
 						instruction-id="new_user_finish_instruction" />
 				</step>
 			</wizard>
+			
          <!--
          	Definition of the 2 steps edition wizard.
          	The first step is skiped to force the new edition to start with a translation selected by the user.

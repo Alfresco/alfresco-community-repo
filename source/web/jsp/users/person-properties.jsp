@@ -38,8 +38,8 @@
 	function updateButtonState()
 	{
 		if (document.getElementById("wizard:wizard-body:firstName").value.length == 0 ||
-		document.getElementById("wizard:wizard-body:lastName").value.length == 0 ||
-		document.getElementById("wizard:wizard-body:email").value.length == 0)
+   		 document.getElementById("wizard:wizard-body:lastName").value.length == 0 ||
+   		 document.getElementById("wizard:wizard-body:email").value.length == 0)
 		{
 			document.getElementById("wizard:next-button").disabled = true;			
 		}
@@ -49,70 +49,53 @@
 		}
 	}
 </script>
+</f:verbatim>
+
+<h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
+             width="100%" rowClasses="wizardSectionHeading">
+   <h:outputText value="&nbsp;#{msg.person_properties}" escape="false" />
+</h:panelGrid>
+
+<h:panelGrid columns="3" cellpadding="2" cellspacing="2" width="100%">
+   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+   <h:outputText value="#{msg.first_name}:"/>
+   <h:inputText id="firstName" value="#{WizardManager.bean.firstName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
+   
+   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+   <h:outputText value="#{msg.last_name}:"/>
+   <h:inputText id="lastName" value="#{WizardManager.bean.lastName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
+   
+   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+   <h:outputText value="#{msg.email}"/>
+   <h:inputText id="email" value="#{WizardManager.bean.email}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
+</h:panelGrid>
+
+<h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
+             width="100%" rowClasses="wizardSectionHeading">
+   <h:outputText value="&nbsp;#{msg.other_options}" escape="false" />
+</h:panelGrid>
+
+<h:panelGrid columns="2" cellpadding="2" cellspacing="2" width="100%">
+   <h:outputText value="#{msg.company_id}:"/>
+   <h:inputText value="#{WizardManager.bean.companyId}" size="35" maxlength="1024" />
+   
+   <h:outputText value="#{msg.presence_provider}:"/>
+   <h:selectOneMenu value="#{WizardManager.bean.presenceProvider}">
+		<f:selectItem itemValue="" itemLabel="(#{msg.none})"/>
+		<f:selectItem itemValue="skype" itemLabel="Skype"/>
+		<f:selectItem itemValue="yahoo" itemLabel="Yahoo"/>
+	</h:selectOneMenu>
 	
-<table cellpadding="2" cellspacing="2" border="0" width="100%">
-<tr>
-	<td colspan="2" class="paddingRow"></td></tr>
-<tr>
-	<td colspan="2" class="wizardSectionHeading"></f:verbatim><h:outputText value="#{msg.person_properties}"/><f:verbatim></td>
-</tr>
+	<h:outputText value="#{msg.presence_username}:"/>
+	<h:inputText value="#{WizardManager.bean.presenceUsername}" size="35" maxlength="256" />
 	
-<tr>
-<td></f:verbatim><h:outputText value="#{msg.first_name}"/><f:verbatim>:</td>
-<td></f:verbatim>
-<h:inputText id="firstName" value="#{WizardManager.bean.firstName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" /><f:verbatim>&nbsp;*
-</td>
-</tr>
-<tr>
-<td></f:verbatim><h:outputText value="#{msg.last_name}"/><f:verbatim>:</td>
-<td>
-</f:verbatim><h:inputText id="lastName" value="#{WizardManager.bean.lastName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" /><f:verbatim>&nbsp;*
-</td>
-</tr>
-<tr>
-<td></f:verbatim><h:outputText value="#{msg.email}"/><f:verbatim>:</td>
-<td>
-</f:verbatim><h:inputText id="email" value="#{WizardManager.bean.email}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" /><f:verbatim>&nbsp;*
-</td>
-</tr>
-
-<tr><td colspan="2" class="paddingRow"></td></tr>
-<tr>
-<td colspan="2" class="wizardSectionHeading"></f:verbatim><h:outputText value="#{msg.other_options}"/><f:verbatim></td>
-</tr>
-<tr>
-<td></f:verbatim><h:outputText value="#{msg.company_id}"/><f:verbatim>:</td>
-<td>
-</f:verbatim><h:inputText value="#{WizardManager.bean.companyId}" size="35" maxlength="1024" /><f:verbatim>
-</td>
-</tr>
-
-<tr>
-	<td></f:verbatim><h:outputText value="Presence Provider"/><f:verbatim>:</td>
-	<td>
-		</f:verbatim><h:selectOneMenu value="#{WizardManager.bean.presenceProvider}">
-			<f:selectItem itemValue="" itemLabel="(None)"/>
-			<f:selectItem itemValue="skype" itemLabel="Skype"/>
-			<f:selectItem itemValue="yahoo" itemLabel="Yahoo"/>
-		</h:selectOneMenu><f:verbatim>
-	</td>
-</tr>
-<tr>
-	<td></f:verbatim><h:outputText value="Presence Username"/><f:verbatim>:</td>
-	<td>
-		</f:verbatim><h:inputText value="#{WizardManager.bean.presenceUsername}" size="35" maxlength="256" /><f:verbatim>
-	</td>
-</tr>
-<tr>
-	<td></f:verbatim><h:outputText value="#{msg.sizeQuota}:" rendered="#{UsersBeanProperties.usagesEnabled == true}"/><f:verbatim></td>
-	<td>
-		</f:verbatim><h:inputText value="#{WizardManager.bean.sizeQuota}" size="10" maxlength="256" rendered="#{UsersBeanProperties.usagesEnabled == true}"/><f:verbatim>
-		</f:verbatim><h:selectOneMenu value="#{WizardManager.bean.sizeQuotaUnits}" rendered="#{UsersBeanProperties.usagesEnabled == true}">
-		    <f:selectItem itemValue="gigabyte" itemLabel="#{msg.gigabyte}"/>
-			<f:selectItem itemValue="megabyte" itemLabel="#{msg.megabyte}"/>
-			<f:selectItem itemValue="kilobyte" itemLabel="#{msg.kilobyte}"/>
-		</h:selectOneMenu><f:verbatim>
-	</td>
-</tr>
-
-</table></f:verbatim>
+	<h:outputText value="#{msg.sizeQuota}:" rendered="#{UsersBeanProperties.usagesEnabled == true}"/>
+	<h:panelGroup>
+   	<h:inputText value="#{WizardManager.bean.sizeQuota}" size="10" maxlength="256" rendered="#{UsersBeanProperties.usagesEnabled == true}"/>
+   	<h:selectOneMenu value="#{WizardManager.bean.sizeQuotaUnits}" rendered="#{UsersBeanProperties.usagesEnabled == true}">
+   	    <f:selectItem itemValue="gigabyte" itemLabel="#{msg.gigabyte}"/>
+   		<f:selectItem itemValue="megabyte" itemLabel="#{msg.megabyte}"/>
+   		<f:selectItem itemValue="kilobyte" itemLabel="#{msg.kilobyte}"/>
+   	</h:selectOneMenu>
+	</h:panelGroup>
+</h:panelGrid>

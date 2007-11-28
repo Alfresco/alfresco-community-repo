@@ -53,31 +53,29 @@ function updateButtonState()
 	}
 }
 </script>
+</f:verbatim>
 
-<table cellpadding="2" cellspacing="2" border="0" width="100%">
-<tr>
-<td colspan="2"></f:verbatim><h:outputText value="#{msg.person_properties}" /><f:verbatim></td>
-</tr>
-<tr><td colspan="2" class="paddingRow"></td></tr>
-<tr>
-<td></f:verbatim><h:outputText value="#{msg.first_name}"/><f:verbatim>:</td>
-<td>
-</f:verbatim><h:inputText id="first-name" value="#{DialogManager.bean.firstName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" /><f:verbatim>&nbsp;*
-</td>
-</tr>
-<tr>
-<td></f:verbatim><h:outputText value="#{msg.last_name}"/><f:verbatim>:</td>
-<td>
-</f:verbatim><h:inputText id="last-name" value="#{DialogManager.bean.lastName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" /><f:verbatim>&nbsp;*
-</td>
-</tr>
-<tr>
-<td></f:verbatim><h:outputText value="#{msg.email}"/><f:verbatim>:</td>
-<td>
-</f:verbatim><h:inputText id="email" value="#{DialogManager.bean.email}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" /><f:verbatim>&nbsp;*
-</td>
-</tr>
-</table>
+<h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
+             width="100%" rowClasses="wizardSectionHeading">
+   <h:outputText value="&nbsp;#{msg.person_properties}" escape="false" />
+</h:panelGrid>
+
+<h:panelGrid columns="3" cellpadding="2" cellspacing="2" width="100%">
+   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+   <h:outputText value="#{msg.first_name}:"/>
+   <h:inputText id="first-name" value="#{DialogManager.bean.firstName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
+   
+   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+   <h:outputText value="#{msg.last_name}:"/>
+   <h:inputText id="last-name" value="#{DialogManager.bean.lastName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
+   
+   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+   <h:outputText value="#{msg.email}"/>
+   <h:inputText id="email" value="#{DialogManager.bean.email}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
+</h:panelGrid>
+
+<f:verbatim>
 <script>
-updateButtonState();
-</script></f:verbatim>
+   updateButtonState();
+</script>
+</f:verbatim>

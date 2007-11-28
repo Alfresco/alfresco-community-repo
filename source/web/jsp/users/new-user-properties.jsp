@@ -72,49 +72,42 @@ function updateButtonState()
 	}
 }
 </script>
+</f:verbatim>
 
+<h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
+             width="100%" rowClasses="wizardSectionHeading">
+   <h:outputText value="&nbsp;#{msg.user_properties}" escape="false" />
+</h:panelGrid>
 
-<table cellpadding="2" cellspacing="2" border="0" width="100%">
-<tr><td colspan="2" class="paddingRow"></td></tr>
-<tr>
-<td colspan="2" class="wizardSectionHeading"></f:verbatim><h:outputText value="#{msg.user_properties}"/><f:verbatim></td>
-</tr>
-<tr>
-<td></f:verbatim><h:outputText value="#{msg.username}"/><f:verbatim>:</td>
-<td>
-</f:verbatim><h:inputText id="userName" value="#{WizardManager.bean.userName}" size="35" maxlength="1024" validator="#{LoginBean.validateUsername}" onkeyup="updateButtonState();" onchange="updateButtonState();"/><f:verbatim>&nbsp;*
-&nbsp;</f:verbatim><h:message id="errors1" for="userName" style="color:red" /><f:verbatim>
-</td>
-</tr>
-<tr>
-<td></f:verbatim><h:outputText value="#{msg.password}"/><f:verbatim>:</td>
-<td>
-</f:verbatim><h:inputSecret id="password" value="#{WizardManager.bean.password}" size="35" maxlength="1024" validator="#{LoginBean.validatePassword}" onkeyup="updateButtonState();" onchange="updateButtonState();" redisplay="true" /><f:verbatim>&nbsp;*
-&nbsp;</f:verbatim><h:message id="errors2" for="password" style="color:red" /><f:verbatim>
-</td>
-</tr>
-<tr>
-<td></f:verbatim><h:outputText value="#{msg.confirm}"/><f:verbatim>:</td>
-<td>
-</f:verbatim><h:inputSecret id="confirm" value="#{WizardManager.bean.confirm}" size="35" maxlength="1024" validator="#{LoginBean.validatePassword}" onkeyup="updateButtonState();" onchange="updateButtonState();" redisplay="true" /><f:verbatim>&nbsp;*
-&nbsp;</f:verbatim><h:message id="errors3" for="confirm" style="color:red" /><f:verbatim>
-</td>
-</tr>
+<h:panelGrid columns="4" cellpadding="2" cellspacing="2" width="100%">
+   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+   <h:outputText value="#{msg.username}:"/>
+   <h:inputText id="userName" value="#{WizardManager.bean.userName}" size="35" maxlength="1024" validator="#{LoginBean.validateUsername}" onkeyup="updateButtonState();" onchange="updateButtonState();"/>
+   <h:message id="errors1" for="userName" style="color:red" />
+   
+   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+   <h:outputText value="#{msg.password}:"/>
+   <h:inputSecret id="password" value="#{WizardManager.bean.password}" size="35" maxlength="1024" validator="#{LoginBean.validatePassword}" onkeyup="updateButtonState();" onchange="updateButtonState();" redisplay="true" />
+   <h:message id="errors2" for="password" style="color:red" />
+   
+   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+   <h:outputText value="#{msg.confirm}:"/>
+   <h:inputSecret id="confirm" value="#{WizardManager.bean.confirm}" size="35" maxlength="1024" validator="#{LoginBean.validatePassword}" onkeyup="updateButtonState();" onchange="updateButtonState();" redisplay="true" />
+   <h:message id="errors3" for="confirm" style="color:red" />
+</h:panelGrid>
 
-<tr><td colspan="2" class="paddingRow"></td></tr>
-<tr>
-<td colspan="2" class="wizardSectionHeading"></f:verbatim><h:outputText value="#{msg.homespace}"/><f:verbatim></td>
-</tr>
-<tr>
-<td></f:verbatim><h:outputText value="#{msg.home_space_location}"/><f:verbatim>:</td>
-<td>
-</f:verbatim><r:spaceSelector id="space-selector" label="#{msg.select_home_space_prompt}" value="#{WizardManager.bean.homeSpaceLocation}" initialSelection="#{NavigationBean.currentNodeId}" style="border: 1px dashed #cccccc; padding: 2px;"/><f:verbatim>
-</td>
-</tr>
-<tr>
-<td></f:verbatim><h:outputText value="#{msg.home_space_name}"/><f:verbatim>:</td>
-<td>
-</f:verbatim><h:inputText id="homeSpaceName" value="#{WizardManager.bean.homeSpaceName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" /><f:verbatim>
-</td>
-</tr>
-</table></f:verbatim>
+<h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
+             width="100%" rowClasses="wizardSectionHeading">
+   <h:outputText value="&nbsp;#{msg.homespace}" escape="false" />
+</h:panelGrid>
+
+<h:panelGrid columns="2" cellpadding="2" cellspacing="2" width="100%">
+   <h:outputText value="#{msg.home_space_location}:"/>
+   <r:ajaxFolderSelector id="spaceSelector" label="#{msg.select_home_space_prompt}" 
+                      value="#{WizardManager.bean.homeSpaceLocation}" 
+                      initialSelection="#{NavigationBean.currentNode.nodeRefAsString}"
+                      styleClass="selector" />
+
+   <h:outputText value="#{msg.home_space_name}:"/>
+   <h:inputText id="homeSpaceName" value="#{WizardManager.bean.homeSpaceName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
+</h:panelGrid>

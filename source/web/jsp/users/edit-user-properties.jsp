@@ -29,60 +29,42 @@
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
-<f:verbatim>
-<table cellpadding="2" cellspacing="2" border="0" width="100%">
-<tr><td colspan="2" class="paddingRow"></td></tr>
-<tr>
-<td colspan="2" class="wizardSectionHeading"></f:verbatim><h:outputText value="#{msg.user_properties}"/><f:verbatim></td>
-</tr>
-<tr>
-<td></f:verbatim><h:outputText value="#{msg.username}"/><f:verbatim>:</td>
-<td>
-</f:verbatim><h:inputText id="userName" disabled="true" value="#{WizardManager.bean.userName}" size="35" maxlength="1024" /><f:verbatim>
-</td>
-</tr>
-<tr>
-<td></f:verbatim><h:outputText value="#{msg.password}"/><f:verbatim>:</td>
-<td>
-</f:verbatim><h:inputSecret id="password" disabled="true" value="#{WizardManager.bean.password}" size="35" maxlength="1024" redisplay="true" /><f:verbatim>
-</td>
-</tr>
-<tr>
-<td></f:verbatim><h:outputText value="#{msg.confirm}"/><f:verbatim>:</td>
-<td>
-</f:verbatim><h:inputSecret id="confirm" disabled="true" value="#{WizardManager.bean.confirm}" size="35" maxlength="1024" redisplay="true" />
-<f:verbatim>
-</td>
-</tr>
+<h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
+             width="100%" rowClasses="wizardSectionHeading">
+   <h:outputText value="&nbsp;#{msg.user_properties}" escape="false" />
+</h:panelGrid>
 
-<tr><td colspan="2" class="paddingRow"></td></tr>
-<tr>
-<td colspan="2" class="wizardSectionHeading"></f:verbatim><h:outputText value="#{msg.homespace}"/><f:verbatim></td>
-</tr>
-<tr>
-<td></f:verbatim><h:outputText value="#{msg.home_space_location}"/><f:verbatim>:</td>
-<td>
-</f:verbatim><r:spaceSelector id="space-selector" label="#{msg.select_home_space_prompt}" value="#{WizardManager.bean.homeSpaceLocation}" initialSelection="#{NavigationBean.currentNodeId}" style="border: 1px dashed #cccccc; padding: 2px;"/><f:verbatim>
-</td>
-</tr>
-<tr>
-<td></f:verbatim><h:outputText value="#{msg.home_space_name}"/><f:verbatim>:</td>
-<td>
-</f:verbatim><h:inputText id="homeSpaceName" value="#{WizardManager.bean.homeSpaceName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" /><f:verbatim>
-</td>
-</tr>
-<tr>
-<td colspan=2>
+<h:panelGrid columns="2" cellpadding="2" cellspacing="2" width="100%">
+   <h:outputText value="#{msg.username}:"/>
+   <h:inputText id="userName" disabled="true" value="#{WizardManager.bean.userName}" size="35" maxlength="1024" />
+   
+   <h:outputText value="#{msg.password}:"/>
+   <h:inputSecret id="password" disabled="true" value="#{WizardManager.bean.password}" size="35" maxlength="1024" redisplay="true" />
+</h:panelGrid>
+
+<h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
+             width="100%" rowClasses="wizardSectionHeading">
+   <h:outputText value="&nbsp;#{msg.homespace}" escape="false" />
+</h:panelGrid>
+
+<h:panelGrid columns="2" cellpadding="2" cellspacing="2" width="100%">
+   <h:outputText value="#{msg.home_space_location}:"/>
+   <r:ajaxFolderSelector id="spaceSelector" label="#{msg.select_home_space_prompt}" 
+                      value="#{WizardManager.bean.homeSpaceLocation}" 
+                      initialSelection="#{NavigationBean.currentNode.nodeRefAsString}"
+                      styleClass="selector" />
+
+   <h:outputText value="#{msg.home_space_name}:"/>
+   <h:inputText id="homeSpaceName" value="#{WizardManager.bean.homeSpaceName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
+</h:panelGrid>
+
+<f:verbatim>
 <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
 <table cellpadding="0" cellspacing="0" border="0" width="100%">
-<tr>
-<td valign=top style="padding-top:2px" width=20></f:verbatim><h:graphicImage url="/images/icons/info_icon.gif" width="16" height="16"/><f:verbatim></td>
-<td class="mainSubText">
-</f:verbatim><h:outputText value="#{msg.user_change_homespace_info}" />
-<f:verbatim></td>
-</tr>
+   <tr>
+      <td valign=top style="padding-top:2px" width=20></f:verbatim><h:graphicImage url="/images/icons/info_icon.gif" width="16" height="16"/><f:verbatim></td>
+      <td class="mainSubText"></f:verbatim><h:outputText value="#{msg.user_change_homespace_info}" /><f:verbatim></td>
+   </tr>
 </table>
 <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %>
-</td>
-</tr>
-</table></f:verbatim>
+</f:verbatim>

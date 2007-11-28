@@ -58,6 +58,15 @@ import org.apache.commons.logging.LogFactory;
  */
 public class PickerBean
 {
+   private static final String ID_URL = "url";
+   private static final String ID_ICON = "icon";
+   private static final String ID_CHILDREN = "children";
+   private static final String ID_SELECTABLE = "selectable";
+   private static final String ID_ISROOT = "isroot";
+   private static final String ID_NAME = "name";
+   private static final String ID_ID = "id";
+   private static final String ID_PARENT = "parent";
+   
    private static final String FOLDER_IMAGE_PREFIX = "/images/icons/";
    
    private static Log logger = LogFactory.getLog(PickerBean.class);
@@ -115,7 +124,7 @@ public class PickerBean
          Collection<ChildAssociationRef> childRefs;
          NodeRef parentRef = null;
          Map params = fc.getExternalContext().getRequestParameterMap();
-         String strParentRef = (String)params.get("parent");
+         String strParentRef = (String)params.get(ID_PARENT);
          if (strParentRef == null || strParentRef.length() == 0)
          {
             childRefs = this.categoryService.getRootCategories(
@@ -133,30 +142,30 @@ public class PickerBean
          
          JSONWriter out = new JSONWriter(fc.getResponseWriter());
          out.startObject();
-         out.startValue("parent");
+         out.startValue(ID_PARENT);
          out.startObject();
          if (parentRef == null)
          {
-            out.writeNullValue("id");
-            out.writeValue("name", "Categories");
-            out.writeValue("isroot", true);
-            out.writeValue("selectable", false);
+            out.writeNullValue(ID_ID);
+            out.writeValue(ID_NAME, "Categories");
+            out.writeValue(ID_ISROOT, true);
+            out.writeValue(ID_SELECTABLE, false);
          }
          else
          {
-            out.writeValue("id", strParentRef);
-            out.writeValue("name", Repository.getNameForNode(this.internalNodeService, parentRef));
+            out.writeValue(ID_ID, strParentRef);
+            out.writeValue(ID_NAME, Repository.getNameForNode(this.internalNodeService, parentRef));
          }
          out.endObject();
          out.endValue();
-         out.startValue("children");
+         out.startValue(ID_CHILDREN);
          out.startArray();
          for (ChildAssociationRef ref : childRefs)
          {
             NodeRef nodeRef = ref.getChildRef();
             out.startObject();
-            out.writeValue("id", nodeRef.toString());
-            out.writeValue("name", Repository.getNameForNode(this.internalNodeService, nodeRef));
+            out.writeValue(ID_ID, nodeRef.toString());
+            out.writeValue(ID_NAME, Repository.getNameForNode(this.internalNodeService, nodeRef));
             out.endObject();
          }
          out.endArray();
@@ -188,7 +197,7 @@ public class PickerBean
          NodeRef companyHomeRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId(fc));
          NodeRef parentRef = null;
          Map params = fc.getExternalContext().getRequestParameterMap();
-         String strParentRef = (String)params.get("parent");
+         String strParentRef = (String)params.get(ID_PARENT);
          if (strParentRef == null || strParentRef.length() == 0)
          {
             parentRef = companyHomeRef;
@@ -202,27 +211,27 @@ public class PickerBean
          
          JSONWriter out = new JSONWriter(fc.getResponseWriter());
          out.startObject();
-         out.startValue("parent");
+         out.startValue(ID_PARENT);
          out.startObject();
-         out.writeValue("id", strParentRef);
-         out.writeValue("name", Repository.getNameForNode(this.internalNodeService, parentRef));
+         out.writeValue(ID_ID, strParentRef);
+         out.writeValue(ID_NAME, Repository.getNameForNode(this.internalNodeService, parentRef));
          if (parentRef.equals(companyHomeRef))
          {
-            out.writeValue("isroot", true);
+            out.writeValue(ID_ISROOT, true);
          }
          out.endObject();
          out.endValue();
-         out.startValue("children");
+         out.startValue(ID_CHILDREN);
          out.startArray();
          
          // filter out those children that are not spaces
          for (FileInfo folder : folders)
          {
             out.startObject();
-            out.writeValue("id", folder.getNodeRef().toString());
-            out.writeValue("name", (String)folder.getProperties().get(ContentModel.PROP_NAME));
+            out.writeValue(ID_ID, folder.getNodeRef().toString());
+            out.writeValue(ID_NAME, (String)folder.getProperties().get(ContentModel.PROP_NAME));
             String icon = (String)folder.getProperties().get(ApplicationModel.PROP_ICON);
-            out.writeValue("icon", FOLDER_IMAGE_PREFIX + (icon != null ? icon + "-16.gif" : BrowseBean.SPACE_SMALL_DEFAULT + ".gif"));
+            out.writeValue(ID_ICON, FOLDER_IMAGE_PREFIX + (icon != null ? icon + "-16.gif" : BrowseBean.SPACE_SMALL_DEFAULT + ".gif"));
             out.endObject();
          }
          
@@ -257,7 +266,7 @@ public class PickerBean
          NodeRef companyHomeRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId(fc));
          NodeRef parentRef = null;
          Map params = fc.getExternalContext().getRequestParameterMap();
-         String strParentRef = (String)params.get("parent");
+         String strParentRef = (String)params.get(ID_PARENT);
          if (strParentRef == null || strParentRef.length() == 0)
          {
             parentRef = companyHomeRef;
@@ -271,40 +280,40 @@ public class PickerBean
          
          JSONWriter out = new JSONWriter(fc.getResponseWriter());
          out.startObject();
-         out.startValue("parent");
+         out.startValue(ID_PARENT);
          out.startObject();
-         out.writeValue("id", strParentRef);
-         out.writeValue("name", Repository.getNameForNode(this.internalNodeService, parentRef));
+         out.writeValue(ID_ID, strParentRef);
+         out.writeValue(ID_NAME, Repository.getNameForNode(this.internalNodeService, parentRef));
          if (parentRef.equals(companyHomeRef))
          {
-            out.writeValue("isroot", true);
+            out.writeValue(ID_ISROOT, true);
          }
-         out.writeValue("selectable", false);
+         out.writeValue(ID_SELECTABLE, false);
          out.endObject();
          out.endValue();
-         out.startValue("children");
+         out.startValue(ID_CHILDREN);
          out.startArray();
          
          // filter out those children that are not spaces
          for (FileInfo item : items)
          {
             out.startObject();
-            out.writeValue("id", item.getNodeRef().toString());
+            out.writeValue(ID_ID, item.getNodeRef().toString());
             String name = (String)item.getProperties().get(ContentModel.PROP_NAME);
-            out.writeValue("name", name);
+            out.writeValue(ID_NAME, name);
             if (dd.isSubClass(this.internalNodeService.getType(item.getNodeRef()), ContentModel.TYPE_FOLDER))
             {
                // found a folder
                String icon = (String)item.getProperties().get(ApplicationModel.PROP_ICON);
-               out.writeValue("icon", FOLDER_IMAGE_PREFIX + (icon != null ? icon + "-16.gif" : BrowseBean.SPACE_SMALL_DEFAULT + ".gif"));
-               out.writeValue("selectable", false);
+               out.writeValue(ID_ICON, FOLDER_IMAGE_PREFIX + (icon != null ? icon + "-16.gif" : BrowseBean.SPACE_SMALL_DEFAULT + ".gif"));
+               out.writeValue(ID_SELECTABLE, false);
             }
             else
             {
                // must be a file
                String icon = Utils.getFileTypeImage(fc, name, FileTypeImageSize.Small);
-               out.writeValue("icon", icon);
-               out.writeValue("url", DownloadContentServlet.generateBrowserURL(item.getNodeRef(), name));
+               out.writeValue(ID_ICON, icon);
+               out.writeValue(ID_URL, DownloadContentServlet.generateBrowserURL(item.getNodeRef(), name));
             }
             out.endObject();
          }

@@ -230,18 +230,20 @@
                                  <a:dataPager styleClass="pager" />
                               </a:richList>
                               
+                              <a:panel id="quota-panel" rendered="#{UsersBeanProperties.usagesEnabled == true}">
+                                 <table border="0" cellspacing="2" cellpadding="2">
+                                    <tr>
+                                       <td><h:outputText value="#{msg.quota_totalusage}:" /></td>
+                                       <td><h:outputText value="#{UsersDialog.usersTotalUsage}"><a:convertSize/></h:outputText></td>
+                                    </tr>
+                                    <tr>
+                                       <td><h:outputText value="#{msg.quote_totalquota}:" /></td>
+                                       <td><h:outputText value="#{UsersDialog.usersTotalQuota}"><a:convertSize/></h:outputText></td>
+                                    </tr>
+                                 </table>
                               </a:panel>
                               
-                                <table>
-                                    <tr>
-                                        <td><h:outputText value="Total Usage (for this search):" rendered="#{UsersBeanProperties.usagesEnabled == true}"/></td>
-                                        <td><h:outputText value="#{UsersDialog.usersTotalUsage}" rendered="#{UsersBeanProperties.usagesEnabled == true}"><a:convertSize/></h:outputText></td>
-                                    </tr>
-                                    <tr>
-                                        <td><h:outputText value="Total Quota (for this search):" rendered="#{UsersBeanProperties.usagesEnabled == true}"/></td>
-                                        <td><h:outputText value="#{UsersDialog.usersTotalQuota}" rendered="#{UsersBeanProperties.usagesEnabled == true}"><a:convertSize/></h:outputText></td>
-                                    </tr>
-                                </table>
+                              </a:panel>
                               
                            </td>
                            

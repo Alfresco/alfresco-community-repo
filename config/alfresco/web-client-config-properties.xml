@@ -658,6 +658,12 @@
       </property-sheet>
    </config>
    
+   <config evaluator="aspect-name" condition="emailserver:attached">
+      <property-sheet>
+         <show-association name="emailserver:attachment" />
+      </property-sheet>
+   </config>
+
    <!-- ********************************** -->
    <!-- Configuration for Project types    -->
    <!-- ********************************** -->

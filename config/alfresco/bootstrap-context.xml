@@ -436,6 +436,9 @@
        <property name="descriptorService">
 	       	<ref local="descriptorComponent"/>
        </property>
+       <property name="tenantService">
+            <ref bean="tenantService"/>
+       </property>
 	</bean>
 
     <!-- Workflow Scheduler -->

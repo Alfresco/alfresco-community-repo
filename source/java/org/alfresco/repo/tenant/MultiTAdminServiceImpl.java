@@ -180,6 +180,9 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
             // bootstrap Tenant Service internal cache            
             List<Tenant> tenants = getAllTenants();
                     
+            int enabledCount = 0;
+            int disabledCount = 0;
+            
             if (tenants != null)
             {
                 for (Tenant tenant : tenants)
@@ -188,11 +191,13 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
                     {
                         // this will also call tenant deployers registered so far ...
                         enableTenant(tenant.getTenantDomain(), true);
+                        enabledCount++;
                     }
                     else
                     {
                         // explicitly disable, without calling disableTenant callback
                         disableTenant(tenant.getTenantDomain(), false);
+                        disabledCount++;
                     }
                 } 
                 
@@ -200,6 +205,12 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
             }
             
             userTransaction.commit();
+            
+            if (logger.isInfoEnabled())
+            {
+                logger.info(String.format("Alfresco Multi-Tenant startup - %d enabled tenants, %d disabled tenants",
+                                          enabledCount, disabledCount));
+            }
         }
         catch(Throwable e)
         {

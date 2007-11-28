@@ -28,6 +28,7 @@ import java.security.Principal;
 import java.util.Date;
 import java.util.Map;
 
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.license.LicenseDescriptor;
@@ -49,6 +50,7 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
 
     // Dependencies
     private DescriptorService descriptorService;
+    private TenantService tenantService;
 
     /**
      * @param descriptorService  Descriptor Service
@@ -56,6 +58,14 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
     public void setDescriptorService(DescriptorService descriptorService)
     {
         this.descriptorService = descriptorService;
+    }
+    
+    /**
+     * @param tenantService  Tenant Service
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
     
     
@@ -150,6 +160,12 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
             Descriptor serverDescriptor = descriptorService.getServerDescriptor();
             Descriptor installedRepoDescriptor = descriptorService.getInstalledRepositoryDescriptor();
             String serverEdition = serverDescriptor.getEdition();
+            
+            if (tenantService.isEnabled())
+            {
+                serverEdition = serverEdition + " - Multi-Tenant";
+            }
+            
             String serverVersion = serverDescriptor.getVersion();
             int serverSchemaVersion = serverDescriptor.getSchema();
             String installedRepoVersion = installedRepoDescriptor.getVersion();

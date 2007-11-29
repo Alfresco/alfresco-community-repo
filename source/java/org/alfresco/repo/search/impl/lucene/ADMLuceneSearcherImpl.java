@@ -742,26 +742,42 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
             searcher = getSearcher(indexer);
             IndexReader reader = searcher.getIndexReader();
             TermEnum terms = reader.terms(new Term(field, ""));
-            while (terms.next())
+            do
             {
                 Term term = terms.term();
-                if(!term.field().equals(field))
+                if (term != null)
                 {
-                    break;
-                }
-                int freq = terms.docFreq();
-                Pair<String, Integer> pair = new Pair<String, Integer>(term.text(), Integer.valueOf(freq));
-                if (answer.size() < count)
-                {
-                    if (answer.size() == 0)
+                    if(!term.field().equals(field))
                     {
-                        answer.add(pair);
+                        break;
                     }
-                    else if (answer.get(answer.size() - 1).getSecond().compareTo(pair.getSecond()) >= 0)
+                    int freq = terms.docFreq();
+                    Pair<String, Integer> pair = new Pair<String, Integer>(term.text(), Integer.valueOf(freq));
+                    if (answer.size() < count)
                     {
-                        answer.add(pair);
+                       if (answer.size() == 0)
+                       {
+                           answer.add(pair);
+                       }
+                       else if (answer.get(answer.size() - 1).getSecond().compareTo(pair.getSecond()) >= 0)
+                       {
+                           answer.add(pair);
+                       }
+                       else
+                       {
+                           for (ListIterator<Pair<String, Integer>> it = answer.listIterator(); it.hasNext(); /**/)
+                           {
+                               Pair<String, Integer> test = it.next();
+                               if (test.getSecond().compareTo(pair.getSecond()) < 0)
+                               {
+                                   it.previous();
+                                   it.add(pair);
+                                   break;
+                               }
+                           }
+                        }
                     }
-                    else
+                    else if (answer.get(count - 1).getSecond().compareTo(pair.getSecond()) < 0)
                     {
                         for (ListIterator<Pair<String, Integer>> it = answer.listIterator(); it.hasNext(); /**/)
                         {
@@ -773,27 +789,14 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                                 break;
                             }
                         }
+                        answer.removeLast();
                     }
-                }
-                else if (answer.get(count - 1).getSecond().compareTo(pair.getSecond()) < 0)
-                {
-                    for (ListIterator<Pair<String, Integer>> it = answer.listIterator(); it.hasNext(); /**/)
+                    else
                     {
-                        Pair<String, Integer> test = it.next();
-                        if (test.getSecond().compareTo(pair.getSecond()) < 0)
-                        {
-                            it.previous();
-                            it.add(pair);
-                            break;
-                        }
+                        // off the end
                     }
-                    answer.removeLast();
                 }
-                else
-                {
-                    // off the end
-                }
-            }
+            } while (terms.next());
             terms.close();
             return answer;
 
